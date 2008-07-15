@@ -648,6 +648,7 @@ public class TypeConverter {
         map.put("status", this.genHashVal(resv.getStatus()));
         map.put("description", this.genHashVal(resv.getDescription()));
         map.put("gri", this.genHashVal(resv.getGlobalReservationId()));
+        map.put("userLogin", this.genHashVal(resv.getLogin()));
         
         //set Token
         Token token = resv.getToken();
@@ -682,7 +683,7 @@ public class TypeConverter {
         ArrayList<String> intraPath = new ArrayList<String>();
         ArrayList<String> interPath = new ArrayList<String>();
         
-        map.put("isPathExplicit", this.genHashVal(path.isExplicit() ? "true" : "false"));
+        map.put("isExplicitPath", this.genHashVal(path.isExplicit() ? "true" : "false"));
         map.put("pathSetupMode", this.genHashVal(path.getPathSetupMode()));
         
         if(nextDomain != null){
@@ -697,11 +698,13 @@ public class TypeConverter {
             map.put("destPort", this.genHashVal(layer3Data.getDestIpPort() + ""));
             map.put("protocol", this.genHashVal(layer3Data.getProtocol()));
             map.put("dscp", this.genHashVal(layer3Data.getDscp()));
+            map.put("layer", this.genHashVal("3"));
         }
         
         if(layer2Data != null){
             map.put("source", this.genHashVal(layer2Data.getSrcEndpoint()));
             map.put("destination", this.genHashVal(layer2Data.getDestEndpoint()));
+            map.put("layer", this.genHashVal("2"));
         }
         
         if(mplsData != null){

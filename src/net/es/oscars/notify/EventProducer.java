@@ -1,14 +1,14 @@
 package net.es.oscars.notify;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.apache.log4j.*;
 import org.quartz.*;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.scheduler.NotifyJob;
 
 /**
@@ -54,21 +54,13 @@ public class EventProducer{
     public void addEvent(String type, String userLogin, String source,
             Reservation resv, String errorCode, String errorMessage){
         OSCARSEvent event = new OSCARSEvent();
-        Reservation resvCopy = null;
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        try {
-            resvCopy = resv.copy();
-        } catch (Exception e) {
-            this.log.info("caught exception");
-            e.printStackTrace(pw);
-            this.log.info(sw.toString());
-        }
+        TypeConverter tc = new TypeConverter();
+        HashMap<String, String[]> resvParams = tc.reservationToHashMap(resv);
         event.setType(type);
         event.setTimestamp(System.currentTimeMillis());
         event.setUserLogin(userLogin);
         event.setSource(source);
-        event.setReservation(resvCopy);
+        event.setReservationParams(resvParams);
         event.setErrorCode(errorCode);
         event.setErrorMessage(errorMessage);
         this.addEvent(event);

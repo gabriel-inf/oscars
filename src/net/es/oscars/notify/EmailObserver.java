@@ -161,11 +161,7 @@ public class EmailObserver implements Observer {
      * @return the template with all dynamic fields replaced
      */
     private String applyTemplate(String template, OSCARSEvent event){
-        Reservation resv = event.getReservation();
-        Path path = null;
-        Layer2Data l2Data = null;
-        Layer3Data l3Data = null;
-        MPLSData mplsData = null;
+        HashMap<String,String[]> resv = event.getReservationParams();
         String msg = template;
         String eventTime = this.formatTime(event.getTimestamp());
         String val = null;
@@ -183,27 +179,55 @@ public class EmailObserver implements Observer {
         msg = this.replaceTemplateField("##errorMessage##", event.getErrorMessage(), msg);
         
         if(resv != null){
-            path = resv.getPath();
-            String startTime = this.formatTime(resv.getStartTime());
-            String endTime = this.formatTime(resv.getEndTime());
-            String createdTime = this.formatTime(resv.getCreatedTime());
-            msg = this.replaceTemplateField("##reservation##", 
-                resv.toString("bss"), msg);
-            msg = this.replaceTemplateField("##gri##", 
-                resv.getGlobalReservationId(), msg);
+            String startTime = this.formatTime(resv.get("startSeconds"));
+            String endTime = this.formatTime(resv.get("endSeconds"));
+            String createdTime = this.formatTime(resv.get("createSeconds"));
+            msg = this.replaceResvField("##reservation##", resv, msg);
+            msg = this.replaceTemplateField("##gri##", resv.get("gri"), msg);
             msg = this.replaceTemplateField("##startTime##", startTime, msg);
             msg = this.replaceTemplateField("##endTime##", endTime, msg);
-            msg = this.replaceTemplateField("##createdTime##", 
-                createdTime, msg);
+            msg = this.replaceTemplateField("##createdTime##", createdTime, msg);
             msg = this.replaceTemplateField("##bandwidth##", 
-                resv.getBandwidth() + "", msg);
+                                            resv.get("bandwidth"), msg);
             msg = this.replaceTemplateField("##resvUserLogin##", 
-                resv.getLogin(), msg);
+                                            resv.get("userLogin"), msg);
             msg = this.replaceTemplateField("##status##", 
-                resv.getStatus(), msg);
+                                            resv.get("status"), msg);
             msg = this.replaceTemplateField("##description##", 
-                resv.getDescription(), msg);
-            msg = this.applyUserDefinedTags(resv.getDescription(), msg);
+                                            resv.get("description"), msg);
+            msg = this.applyUserDefinedTags(resv.get("description"), msg);
+            msg = this.replaceTemplateField("##layer##", resv.get("layer"), msg);
+            msg = this.replaceTemplateField("##pathSetupMode##", 
+                                            resv.get("pathSetupMode"), msg);
+            msg = this.replaceTemplateField("##isExplicitPath##", 
+                                            resv.get("isExplicitPath"), msg);
+            msg = this.replaceTemplateField("##nextDomain##",
+                                            resv.get("nextDomain"), msg);
+            msg = this.replaceTemplateField("##source##", 
+                                            resv.get("source"), msg);
+            msg = this.replaceTemplateField("##destination##", 
+                                            resv.get("destination"), msg);
+            msg = this.replaceTemplateField("##vlanTag##", 
+                                            resv.get("vlanTag"), msg);
+            msg = this.replaceTemplateField("##tagSrcPort##", 
+                                            resv.get("tagSrcPort"), msg);
+            msg = this.replaceTemplateField("##tagDestPort##", 
+                                            resv.get("tagDestPort"), msg);
+            msg = this.replaceTemplateField("##srcPort##", 
+                                            resv.get("srcPort"), msg);
+            msg = this.replaceTemplateField("##destPort##", 
+                                            resv.get("destPort"), msg);
+            msg = this.replaceTemplateField("##protocol##", 
+                                            resv.get("protocol"), msg);
+            msg = this.replaceTemplateField("##dscp##", resv.get("dscp"), msg);
+            msg = this.replaceTemplateField("##burstLimit##", 
+                                            resv.get("burstLimit"), msg);
+            msg = this.replaceTemplateField("##lspClass##", 
+                                            resv.get("lspClass"), msg);
+            msg = this.replaceTemplateField("##interdomainPath##",
+                                            resv.get("interdomainPath"), msg);
+            msg = this.replaceTemplateField("##intradomainPath##",
+                                            resv.get("intradomainPath"), msg);
         }else{
             //need to clear out template objects so aren't in sent messages
             msg = this.replaceTemplateField("##reservation##", "", msg);
@@ -215,94 +239,48 @@ public class EmailObserver implements Observer {
             msg = this.replaceTemplateField("##resvUserLogin##", "", msg);
             msg = this.replaceTemplateField("##status##", "", msg);
             msg = this.replaceTemplateField("##description##", "", msg);
-        }
-        
-        if(path != null){
-            l2Data = path.getLayer2Data();
-            l3Data = path.getLayer3Data();
-            mplsData = path.getMplsData();
-            msg = this.replaceTemplateField("##pathSetupMode##", 
-                path.getPathSetupMode(), msg);
-            msg = this.replaceTemplateField("##isExplicitPath##", 
-                path.isExplicit() + "", msg);
-            String nextDomain = null;
-            if(path.getNextDomain() != null){
-               nextDomain = path.getNextDomain().getTopologyIdent();
-            }
-            msg = this.replaceTemplateField("##nextDomain##", nextDomain, msg);
-            //TODO: Add path fields. May require some toString() changes
-        }else{
             msg = this.replaceTemplateField("##pathSetupMode##", "", msg);
             msg = this.replaceTemplateField("##isExplicitPath##", "", msg);
             msg = this.replaceTemplateField("##nextDomain##", "", msg);
-        }
-        
-        if(l2Data != null){
-            msg = this.replaceTemplateField("##l2Source##", 
-                l2Data.getSrcEndpoint(), msg);
-            msg = this.replaceTemplateField("##l2Dest##", 
-                l2Data.getDestEndpoint(), msg);
-        }else{
-            msg = this.replaceTemplateField("##l2Source##", "", msg);
-            msg = this.replaceTemplateField("##l2Dest##", "", msg);
-        }
-        
-        if(l3Data != null){
-            msg = this.replaceTemplateField("##l3Source##", 
-                l3Data.getSrcHost(), msg);
-            msg = this.replaceTemplateField("##l3Dest##", 
-                l3Data.getDestHost(), msg);
-            intVal = l3Data.getSrcIpPort();
-            if (intVal != null) {
-                val = intVal.toString();
-            } else {
-                val = "";
-            }
-            msg = this.replaceTemplateField("##l3SrcPort##", 
-                val, msg);
-            intVal = l3Data.getDestIpPort();
-            if (intVal != null) {
-                val = intVal.toString();
-            } else {
-                val = "";
-            }
-            msg = this.replaceTemplateField("##l3DestPort##", 
-                val, msg);
-            val = l3Data.getProtocol();
-            if (val == null) {
-                val = "";
-            }
-            msg = this.replaceTemplateField("##protocol##", 
-                val, msg);
-            val = l3Data.getDscp();
-            if (val == null) {
-                val = "";
-            }
-            msg = this.replaceTemplateField("##dscp##", 
-                val, msg);
-        }else{
-            msg = this.replaceTemplateField("##l3Source##", "", msg);
-            msg = this.replaceTemplateField("##l3Dest##", "", msg);
-            msg = this.replaceTemplateField("##l3SrcPort##", "", msg);
-            msg = this.replaceTemplateField("##l3DestPort##", "", msg);
+            msg = this.replaceTemplateField("##source##", "", msg);
+            msg = this.replaceTemplateField("##destination##", "", msg);
+            msg = this.replaceTemplateField("##srcPort##", "", msg);
+            msg = this.replaceTemplateField("##destPort##", "", msg);
             msg = this.replaceTemplateField("##protocol##", "", msg);
             msg = this.replaceTemplateField("##dscp##", "", msg);
-        }
-        
-        if(mplsData != null){
-            msg = this.replaceTemplateField("##burstLimit##", 
-                mplsData.getBurstLimit()+"", msg);
-            msg = this.replaceTemplateField("##lspClass##", 
-                mplsData.getLspClass(), msg);
-        }else{
             msg = this.replaceTemplateField("##burstLimit##", "", msg);
             msg = this.replaceTemplateField("##lspClass##", "", msg);
+            msg = this.replaceTemplateField("##interdomainPath##", "", msg);
+            msg = this.replaceTemplateField("##intradomainPath##", "", msg);
         }
         
         this.log.debug(msg);
         this.log.info("applyTemplate.end");
         
         return msg;
+    }
+    
+    /**
+     * Convenience method for replacing a single value in a template
+     *
+     * @param field the field to replace
+     * @param value the String[] value with which to replace the field
+     * @param template the template on which the replacement will be made
+     * @return the template with replaced fields
+     */
+    private String replaceTemplateField(String field, String[] value, String template){
+        //clear out fields if value is null
+        if(value == null){
+            return template.replaceAll(field, "");
+        }
+        
+        String delim = (value.length > 1 ? "\n" : "");
+        String strValue = "";
+        for(int i = 0; i < value.length; i++){
+            strValue += (value[i] + delim);
+        }
+        
+        return template.replaceAll(field, strValue);
     }
     
     /**
@@ -326,6 +304,89 @@ public class EmailObserver implements Observer {
     }
     
     /**
+     * Convenience method for replacing a an entire reservation
+     *
+     * @param field the field to replace
+     * @param resv the reservation fields
+     * @param template the template on which the replacement will be made
+     * @return the template with replaced fields
+     */
+    private String replaceResvField(String field, 
+                                        HashMap<String,String[]> resv, 
+                                        String template){       
+        String resvTemplate = "";
+        
+        if(resv.get("gri") != null){
+            resvTemplate += "GRI: ##gri##\n";
+        }
+        if(resv.get("description") != null){
+            resvTemplate += "description: ##description##\n";
+        }
+        if(resv.get("userLogin") != null){
+            resvTemplate += "login: ##resvUserLogin##\n";
+        }
+        if(resv.get("status") != null){
+            resvTemplate += "status: ##status##\n";
+        }
+        if(resv.get("startSeconds") != null){
+            resvTemplate += "start time: ##startTime##\n";
+        }
+        if(resv.get("endSeconds") != null){
+            resvTemplate += "end time: ##endTime##\n";
+        }
+        if(resv.get("bandwidth") != null){
+            resvTemplate += "bandwidth: ##bandwidth##\n";
+        }
+        if(resv.get("pathSetupMode") != null){
+            resvTemplate += "path setup mode: ##pathSetupMode##\n";
+        }
+        if(resv.get("layer") != null){
+            resvTemplate += "layer: ##layer##\n";
+        }
+        if(resv.get("source") != null){
+            resvTemplate += "source: ##source##\n";
+        }
+        if(resv.get("destination") != null){
+            resvTemplate += "destination: ##destination##\n";
+        }
+        if(resv.get("vlanTag") != null){
+            resvTemplate += "VLAN tag: ##vlanTag##\n";
+        }
+        if(resv.get("tagSrcPort") != null){
+            resvTemplate += "source tagged: ##tagSrcPort##\n";
+        }
+        if(resv.get("tagDestPort") != null){
+            resvTemplate += "destination tagged: ##tagDestPort##\n";
+        }
+        if(resv.get("protocol") != null){
+            resvTemplate += "protocol: ##protocol##\n";
+        }
+        if(resv.get("srcPort") != null){
+            resvTemplate += "src IP port: ##srcPort##\n";
+        }
+        if(resv.get("destPort") != null){
+            resvTemplate += "dest IP port: ##destPort##\n";
+        }
+        if(resv.get("dscp") != null){
+            resvTemplate += "dscp: ##dscp##\n";
+        }
+        if(resv.get("burstLimit") != null){
+            resvTemplate += "burst limit: ##burstLimit##\n";
+        }
+        if(resv.get("lspClass") != null){
+            resvTemplate += "LSP class: ##lspClass##\n";
+        }
+        if(resv.get("intradomainPath") != null){
+            resvTemplate += "intradomain hops: \n\n ##intradomainPath##\n";
+        }
+        if(resv.get("interdomainPath") != null){
+            resvTemplate += "interdomain hops: \n\n ##interdomainPath##\n";
+        }
+        
+        return template.replaceAll(field, resvTemplate);
+    }
+    
+    /**
      * Applies user-defined tags specified in ##TAG:<i>TAG_NAME</i>## fields to
      * a given template.
      *
@@ -333,14 +394,18 @@ public class EmailObserver implements Observer {
      * @param template the template to which in which tags may be shown
      * @return the template with all user-defined tags displayed
      */
-    private String applyUserDefinedTags(String description, String template){
+    private String applyUserDefinedTags(String[] description, String template){
         Pattern tagPattern = Pattern.compile("##TAG:(.+?)##");
         Matcher tagMatcher = tagPattern.matcher(template);
+        
+        if(description == null || description.length < 1){
+            return template;
+        }
         
         while(tagMatcher.find()){
             String tag = tagMatcher.group(1);
             String printTag = "[" + tag + "]";
-            if(description != null && description.contains(printTag)){
+            if(description[0].contains(printTag)){
                 template = template.replaceAll("##TAG:" + tag + "##", 
                     printTag + " ");
             }else{
@@ -380,11 +445,18 @@ public class EmailObserver implements Observer {
      * @param timestamp a Long containing the timestamp
      * @return string-formatted datetime
      */
-    private String formatTime(Long timestamp){
-        if(timestamp != null){
-            return this.formatTime(timestamp.longValue());
+    private String formatTime(String[] timestamp){
+        if(timestamp == null || timestamp.length < 1){
+            return "";
         }
-        return "";
+        
+        String time = "";
+        try{
+           long stamp = Long.parseLong(timestamp[0]);
+           time = this.formatTime(stamp);
+        }catch(Exception e){}
+        
+        return time;
     }
     
     /**
