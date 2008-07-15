@@ -22,7 +22,6 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 
-
 /**
  * Has methods to convert between Axis2 WSDL type classes and Hibernate beans.
  * Used by both the API and the WBUI.
@@ -628,5 +627,159 @@ public class TypeConverter {
         if (dint < 10) { fixedLength = "0" + dint; }
         else { fixedLength = "" + dint; }
         return fixedLength;
+    }
+    
+    /**
+     * Converts Reservation Hibernate bean to a HashMap
+     *
+     * @param resv the Reservation to convert
+     * @return the converted HashMap
+     */
+    public HashMap<String, String[]> reservationToHashMap(Reservation resv){
+        HashMap<String, String[]> map = new HashMap<String, String[]>();
+        if(resv == null){
+            return map;
+        }
+        
+        map.put("startSeconds", this.genHashVal(resv.getStartTime() + ""));
+        map.put("endSeconds", this.genHashVal(resv.getEndTime() + ""));
+        map.put("createSeconds", this.genHashVal(resv.getCreatedTime() + ""));
+        map.put("bandwidth", this.genHashVal(resv.getBandwidth() + ""));
+        map.put("status", this.genHashVal(resv.getStatus()));
+        map.put("description", this.genHashVal(resv.getDescription()));
+        map.put("gri", this.genHashVal(resv.getGlobalReservationId()));
+        
+        //set Token
+        Token token = resv.getToken();
+        if(token != null){
+            map.put("token", this.genHashVal(token.getValue()));
+        }
+        
+        //set path
+        map.putAll(this.pathToHashMap(resv.getPath()));
+        
+        return map;
+    }
+    
+    /**
+     * Converts Path Hibernate bean to a HashMap
+     *
+     * @param path the Path to convert
+     * @return the converted HashMap
+     */
+    public HashMap<String, String[]> pathToHashMap(Path path){
+        HashMap<String, String[]> map = new HashMap<String, String[]>();
+        if(path == null){
+            return map;
+        }
+        
+        Domain nextDomain = path.getNextDomain();
+        Layer2Data layer2Data = path.getLayer2Data();
+        Layer3Data layer3Data = path.getLayer3Data();
+        MPLSData mplsData = path.getMplsData();
+        PathElem pathElem = path.getPathElem();
+        PathElem interPathElem = path.getInterPathElem();
+        ArrayList<String> intraPath = new ArrayList<String>();
+        ArrayList<String> interPath = new ArrayList<String>();
+        
+        map.put("isPathExplicit", this.genHashVal(path.isExplicit() ? "true" : "false"));
+        map.put("pathSetupMode", this.genHashVal(path.getPathSetupMode()));
+        
+        if(nextDomain != null){
+            map.put("nextDomain", this.genHashVal(nextDomain.getTopologyIdent()));
+        }
+        
+        if(layer3Data != null){
+            map.put("source", this.genHashVal(layer3Data.getSrcHost()));
+            map.put("destination", this.genHashVal(layer3Data.getDestHost()));
+            //these are in the TCP/UDP headers, not IP headers, hence L4
+            map.put("srcPort", this.genHashVal(layer3Data.getSrcIpPort() + ""));
+            map.put("destPort", this.genHashVal(layer3Data.getDestIpPort() + ""));
+            map.put("protocol", this.genHashVal(layer3Data.getProtocol()));
+            map.put("dscp", this.genHashVal(layer3Data.getDscp()));
+        }
+        
+        if(layer2Data != null){
+            map.put("source", this.genHashVal(layer2Data.getSrcEndpoint()));
+            map.put("destination", this.genHashVal(layer2Data.getDestEndpoint()));
+        }
+        
+        if(mplsData != null){
+            map.put("burstLimit", this.genHashVal(mplsData.getBurstLimit() + ""));
+            map.put("lspClass", this.genHashVal(mplsData.getLspClass()));
+        }
+        
+        while(interPathElem != null){
+            String linkId = interPathElem.getLink().getTopologyIdent();
+            interPath.add(linkId);
+            map.putAll(this.vlanToHashMap(interPathElem, map.get("source")[0], 
+                                          map.get("destination")[0], layer2Data));
+            interPathElem = interPathElem.getNextElem();
+        }
+        map.put("interdomainPath", (String[])interPath.toArray());
+        
+        while(pathElem != null){
+            //might be no interdomain path
+            String linkId = pathElem.getLink().getTopologyIdent();
+            intraPath.add(linkId);
+            map.putAll(this.vlanToHashMap(interPathElem, map.get("source")[0], 
+                                          map.get("destination")[0], layer2Data));
+            pathElem = pathElem.getNextElem();
+        }
+        map.put("intradomainPath", (String[])intraPath.toArray());
+        
+        return map;
+    }
+    
+    /**
+     * Converts PathElem Hibernate bean of a layer2 link to a HashMap
+     *
+     * @param elem the PathElem to convert
+     * @param src the source URN of the reservation
+     * @param dest the destination URN of the reservation
+     * @param layer2Data the layer 2 data associated with a reservation
+     * @return the converted HashMap
+     */
+    private HashMap<String, String[]> vlanToHashMap(PathElem elem, String src, 
+                                                    String dest, 
+                                                    Layer2Data layer2Data){
+        HashMap<String, String[]> map = new HashMap<String, String[]>();
+        if(layer2Data == null){
+            return map;
+        }
+        
+        String linkId = elem.getLink().getTopologyIdent();
+        String descr = elem.getDescription();
+        String tagField = "";
+        if(linkId.equals(src)){
+            tagField = "tagSrcPort";
+        }else if(linkId.equals(dest)){
+            tagField = "tagDestPort";
+        }else{
+            return map;
+        }
+        
+        try{
+            int vtag = Integer.parseInt(descr);
+            map.put(tagField, this.genHashVal(vtag > 0 ? "true" : "false"));
+            map.put("vlanTag", this.genHashVal(descr));
+        }catch(Exception e){}  
+        
+        return map;
+    }
+    
+    /**
+     * Generates a String array from a String
+     * 
+     * @param value the String to convert
+     * @param the converted array
+     */
+    private String[] genHashVal(String value){
+        if(value == null){
+            return null;
+        }
+        String[] array = new String[1];
+        array[0] = value;
+        return array;
     }
 }
