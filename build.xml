@@ -202,7 +202,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
 Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="aar" description="Create OSCARS.aar file" depends="compile">
         <jar destfile="build/OSCARS.aar">
-            <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*, **/notify/ws/**/*, **/notify/Subscribription**, **/org/oasis_open/**/*, **/org/w3/**/*"/>
+            <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*"/>
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
             <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml"/>
         </jar>
