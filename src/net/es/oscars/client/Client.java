@@ -41,7 +41,7 @@ public class Client {
         this.log = Logger.getLogger(this.getClass());
         this.configContext =
                 ConfigurationContextFactory
-                .createConfigurationContextFromFileSystem(repo, null);
+                .createConfigurationContextFromFileSystem(repo, axisConfig);
 
         this.stub = new OSCARSStub(this.configContext, url);
         ServiceClient sc = this.stub._getServiceClient();
