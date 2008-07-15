@@ -40,6 +40,31 @@ public class EventProducer{
             Reservation resv){
         this.addEvent(type, userLogin, source, resv, null, null);
     }
+    
+    /**
+     * Schedules an event notification
+     *
+     * @param type the type of event.
+     * @param userLogin the login of the user that triggered the event
+     * @param source the entity that caused the event (API, WBUI, or SCHEDULER)
+     */
+    public void addEvent(String type, String userLogin, String source){
+        this.addEvent(type, userLogin, source, null, null, null);
+    }
+    
+    /**
+     * Schedules an event notification
+     *
+     * @param type the type of event.
+     * @param userLogin the login of the user that triggered the event
+     * @param source the entity that caused the event (API, WBUI, or SCHEDULER)
+     * @param errorCode the error code of the event. null if no error.
+     * @param errorMessage a message describing an error. null if no error.
+     */
+    public void addEvent(String type, String userLogin, String source,
+            Reservation resv){
+        this.addEvent(type, userLogin, source, resv, null, null);
+    }
 
     /**
      * Schedules an event notification
