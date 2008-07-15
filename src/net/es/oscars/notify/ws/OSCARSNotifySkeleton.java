@@ -14,6 +14,7 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import org.oasis_open.docs.wsn.b_2.*;
+import org.oasis_open.docs.wsn.br_2.*;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.UserManager.AuthValue;
@@ -97,6 +98,21 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#ResumeSubscription");
 	}
 	
+	public RegisterPublisherResponse RegisterPublisher(RegisterPublisher request)
+            throws TopicNotSupportedFault,InvalidTopicExpressionFault,
+                PublisherRegistrationFailedFault,
+                UnacceptableInitialTerminationTimeFault,
+                PublisherRegistrationRejectedFault{
+        //TODO : fill this with the necessary business logic
+        throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#RegisterPublisher");
+    }
+
+    public DestroyRegistrationResponse DestroyRegistration(DestroyRegistration request)
+            throws ResourceNotDestroyedFault{
+        //TODO : fill this with the necessary business logic
+        throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#DestroyRegistration");
+    }
+    
 	/**
 	 * COPIED FROM net.es.oscars.oscars.OSCARSSkeleton
      * Called from checkUser to get the DN out of the message context.

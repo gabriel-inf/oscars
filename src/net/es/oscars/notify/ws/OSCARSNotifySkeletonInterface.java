@@ -95,5 +95,33 @@
                  )
             throws AAAFaultMessage,ResumeFailedFault;
         
+         
+        /**
+         * Auto generated method signature
+         
+                                    * @param registerPublisher
+         */
+
+        
+                public org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse RegisterPublisher
+                (
+                  org.oasis_open.docs.wsn.br_2.RegisterPublisher registerPublisher
+                 )
+            throws TopicNotSupportedFault,InvalidTopicExpressionFault,PublisherRegistrationFailedFault,UnacceptableInitialTerminationTimeFault,PublisherRegistrationRejectedFault;
+        
+         
+        /**
+         * Auto generated method signature
+         
+                                    * @param destroyRegistration
+         */
+
+        
+                public org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse DestroyRegistration
+                (
+                  org.oasis_open.docs.wsn.br_2.DestroyRegistration destroyRegistration
+                 )
+            throws ResourceNotDestroyedFault;
+        
          }
     

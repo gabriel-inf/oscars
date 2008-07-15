@@ -38,92 +38,128 @@
 
             if("Subscribe".equals(methodName)){
                 
-                org.oasis_open.docs.wsn.b_2.SubscribeResponse subscribeResponse24 = null;
+                org.oasis_open.docs.wsn.b_2.SubscribeResponse subscribeResponse32 = null;
 	                        org.oasis_open.docs.wsn.b_2.Subscribe wrappedParam =
                                                              (org.oasis_open.docs.wsn.b_2.Subscribe)fromOM(
                                     msgContext.getEnvelope().getBody().getFirstElement(),
                                     org.oasis_open.docs.wsn.b_2.Subscribe.class,
                                     getEnvelopeNamespaces(msgContext.getEnvelope()));
                                                 
-                                               subscribeResponse24 =
+                                               subscribeResponse32 =
                                                    
                                                    
                                                          skel.Subscribe(wrappedParam)
                                                     ;
                                             
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), subscribeResponse24, false);
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), subscribeResponse32, false);
                                     } else 
 
             if("Renew".equals(methodName)){
                 
-                org.oasis_open.docs.wsn.b_2.RenewResponse renewResponse26 = null;
+                org.oasis_open.docs.wsn.b_2.RenewResponse renewResponse34 = null;
 	                        org.oasis_open.docs.wsn.b_2.Renew wrappedParam =
                                                              (org.oasis_open.docs.wsn.b_2.Renew)fromOM(
                                     msgContext.getEnvelope().getBody().getFirstElement(),
                                     org.oasis_open.docs.wsn.b_2.Renew.class,
                                     getEnvelopeNamespaces(msgContext.getEnvelope()));
                                                 
-                                               renewResponse26 =
+                                               renewResponse34 =
                                                    
                                                    
                                                          skel.Renew(wrappedParam)
                                                     ;
                                             
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), renewResponse26, false);
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), renewResponse34, false);
                                     } else 
 
             if("Unsubscribe".equals(methodName)){
                 
-                org.oasis_open.docs.wsn.b_2.UnsubscribeResponse unsubscribeResponse28 = null;
+                org.oasis_open.docs.wsn.b_2.UnsubscribeResponse unsubscribeResponse36 = null;
 	                        org.oasis_open.docs.wsn.b_2.Unsubscribe wrappedParam =
                                                              (org.oasis_open.docs.wsn.b_2.Unsubscribe)fromOM(
                                     msgContext.getEnvelope().getBody().getFirstElement(),
                                     org.oasis_open.docs.wsn.b_2.Unsubscribe.class,
                                     getEnvelopeNamespaces(msgContext.getEnvelope()));
                                                 
-                                               unsubscribeResponse28 =
+                                               unsubscribeResponse36 =
                                                    
                                                    
                                                          skel.Unsubscribe(wrappedParam)
                                                     ;
                                             
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), unsubscribeResponse28, false);
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), unsubscribeResponse36, false);
                                     } else 
 
             if("PauseSubscription".equals(methodName)){
                 
-                org.oasis_open.docs.wsn.b_2.PauseSubscriptionResponse pauseSubscriptionResponse30 = null;
+                org.oasis_open.docs.wsn.b_2.PauseSubscriptionResponse pauseSubscriptionResponse38 = null;
 	                        org.oasis_open.docs.wsn.b_2.PauseSubscription wrappedParam =
                                                              (org.oasis_open.docs.wsn.b_2.PauseSubscription)fromOM(
                                     msgContext.getEnvelope().getBody().getFirstElement(),
                                     org.oasis_open.docs.wsn.b_2.PauseSubscription.class,
                                     getEnvelopeNamespaces(msgContext.getEnvelope()));
                                                 
-                                               pauseSubscriptionResponse30 =
+                                               pauseSubscriptionResponse38 =
                                                    
                                                    
                                                          skel.PauseSubscription(wrappedParam)
                                                     ;
                                             
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), pauseSubscriptionResponse30, false);
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), pauseSubscriptionResponse38, false);
                                     } else 
 
             if("ResumeSubscription".equals(methodName)){
                 
-                org.oasis_open.docs.wsn.b_2.ResumeSubscriptionResponse resumeSubscriptionResponse32 = null;
+                org.oasis_open.docs.wsn.b_2.ResumeSubscriptionResponse resumeSubscriptionResponse40 = null;
 	                        org.oasis_open.docs.wsn.b_2.ResumeSubscription wrappedParam =
                                                              (org.oasis_open.docs.wsn.b_2.ResumeSubscription)fromOM(
                                     msgContext.getEnvelope().getBody().getFirstElement(),
                                     org.oasis_open.docs.wsn.b_2.ResumeSubscription.class,
                                     getEnvelopeNamespaces(msgContext.getEnvelope()));
                                                 
-                                               resumeSubscriptionResponse32 =
+                                               resumeSubscriptionResponse40 =
                                                    
                                                    
                                                          skel.ResumeSubscription(wrappedParam)
                                                     ;
                                             
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), resumeSubscriptionResponse32, false);
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), resumeSubscriptionResponse40, false);
+                                    } else 
+
+            if("RegisterPublisher".equals(methodName)){
+                
+                org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse registerPublisherResponse42 = null;
+	                        org.oasis_open.docs.wsn.br_2.RegisterPublisher wrappedParam =
+                                                             (org.oasis_open.docs.wsn.br_2.RegisterPublisher)fromOM(
+                                    msgContext.getEnvelope().getBody().getFirstElement(),
+                                    org.oasis_open.docs.wsn.br_2.RegisterPublisher.class,
+                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
+                                                
+                                               registerPublisherResponse42 =
+                                                   
+                                                   
+                                                         skel.RegisterPublisher(wrappedParam)
+                                                    ;
+                                            
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), registerPublisherResponse42, false);
+                                    } else 
+
+            if("DestroyRegistration".equals(methodName)){
+                
+                org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse destroyRegistrationResponse44 = null;
+	                        org.oasis_open.docs.wsn.br_2.DestroyRegistration wrappedParam =
+                                                             (org.oasis_open.docs.wsn.br_2.DestroyRegistration)fromOM(
+                                    msgContext.getEnvelope().getBody().getFirstElement(),
+                                    org.oasis_open.docs.wsn.br_2.DestroyRegistration.class,
+                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
+                                                
+                                               destroyRegistrationResponse44 =
+                                                   
+                                                   
+                                                         skel.DestroyRegistration(wrappedParam)
+                                                    ;
+                                            
+                                        envelope = toEnvelope(getSOAPFactory(msgContext), destroyRegistrationResponse44, false);
                                     
             } else {
               throw new java.lang.RuntimeException("method not found");
@@ -153,6 +189,15 @@
          catch (ResumeFailedFault e) {
 
             msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"ResumeFailedFault");
+            org.apache.axis2.AxisFault f = createAxisFault(e);
+            if (e.getFaultMessage() != null){
+                f.setDetail(toOM(e.getFaultMessage(),false));
+            }
+            throw f;
+            }
+         catch (PublisherRegistrationRejectedFault e) {
+
+            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"PublisherRegistrationRejectedFault");
             org.apache.axis2.AxisFault f = createAxisFault(e);
             if (e.getFaultMessage() != null){
                 f.setDetail(toOM(e.getFaultMessage(),false));
@@ -204,9 +249,27 @@
             }
             throw f;
             }
+         catch (ResourceNotDestroyedFault e) {
+
+            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"ResourceNotDestroyedFault");
+            org.apache.axis2.AxisFault f = createAxisFault(e);
+            if (e.getFaultMessage() != null){
+                f.setDetail(toOM(e.getFaultMessage(),false));
+            }
+            throw f;
+            }
          catch (AAAFaultMessage e) {
 
             msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"AAAFault");
+            org.apache.axis2.AxisFault f = createAxisFault(e);
+            if (e.getFaultMessage() != null){
+                f.setDetail(toOM(e.getFaultMessage(),false));
+            }
+            throw f;
+            }
+         catch (PublisherRegistrationFailedFault e) {
+
+            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"PublisherRegistrationFailedFault");
             org.apache.axis2.AxisFault f = createAxisFault(e);
             if (e.getFaultMessage() != null){
                 f.setDetail(toOM(e.getFaultMessage(),false));
@@ -222,15 +285,6 @@
             }
             throw f;
             }
-         catch (UnableToDestroySubscriptionFault e) {
-
-            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"UnableToDestroySubscriptionFault");
-            org.apache.axis2.AxisFault f = createAxisFault(e);
-            if (e.getFaultMessage() != null){
-                f.setDetail(toOM(e.getFaultMessage(),false));
-            }
-            throw f;
-            }
          catch (UnacceptableInitialTerminationTimeFault e) {
 
             msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"UnacceptableInitialTerminationTimeFault");
@@ -240,9 +294,9 @@
             }
             throw f;
             }
-         catch (PauseFailedFault e) {
+         catch (UnableToDestroySubscriptionFault e) {
 
-            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"PauseFailedFault");
+            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"UnableToDestroySubscriptionFault");
             org.apache.axis2.AxisFault f = createAxisFault(e);
             if (e.getFaultMessage() != null){
                 f.setDetail(toOM(e.getFaultMessage(),false));
@@ -252,6 +306,15 @@
          catch (InvalidProducerPropertiesExpressionFault e) {
 
             msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"InvalidProducerPropertiesExpressionFault");
+            org.apache.axis2.AxisFault f = createAxisFault(e);
+            if (e.getFaultMessage() != null){
+                f.setDetail(toOM(e.getFaultMessage(),false));
+            }
+            throw f;
+            }
+         catch (PauseFailedFault e) {
+
+            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"PauseFailedFault");
             org.apache.axis2.AxisFault f = createAxisFault(e);
             if (e.getFaultMessage() != null){
                 f.setDetail(toOM(e.getFaultMessage(),false));
@@ -339,6 +402,48 @@
 
             }
         
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.DestroyRegistration param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.DestroyRegistration.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
             private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.Renew param, boolean optimizeContent)
             throws org.apache.axis2.AxisFault {
 
@@ -373,6 +478,104 @@
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnacceptableTerminationTimeFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.RegisterPublisher param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.RegisterPublisher.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -507,54 +710,12 @@
 
             }
         
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
             private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault param, boolean optimizeContent)
             throws org.apache.axis2.AxisFault {
 
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -675,12 +836,40 @@
                     }
                     }
                     
+                    private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse param, boolean optimizeContent)
+                        throws org.apache.axis2.AxisFault{
+                      try{
+                          org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
+                           
+                                    emptyEnvelope.getBody().addChild(param.getOMElement(org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.MY_QNAME,factory));
+                                
+
+                         return emptyEnvelope;
+                    } catch(org.apache.axis2.databinding.ADBException e){
+                        throw org.apache.axis2.AxisFault.makeFault(e);
+                    }
+                    }
+                    
                     private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.oasis_open.docs.wsn.b_2.RenewResponse param, boolean optimizeContent)
                         throws org.apache.axis2.AxisFault{
                       try{
                           org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
                            
                                     emptyEnvelope.getBody().addChild(param.getOMElement(org.oasis_open.docs.wsn.b_2.RenewResponse.MY_QNAME,factory));
+                                
+
+                         return emptyEnvelope;
+                    } catch(org.apache.axis2.databinding.ADBException e){
+                        throw org.apache.axis2.AxisFault.makeFault(e);
+                    }
+                    }
+                    
+                    private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse param, boolean optimizeContent)
+                        throws org.apache.axis2.AxisFault{
+                      try{
+                          org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
+                           
+                                    emptyEnvelope.getBody().addChild(param.getOMElement(org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.MY_QNAME,factory));
                                 
 
                          return emptyEnvelope;
@@ -776,6 +965,27 @@
 
                 }
            
+                if (org.oasis_open.docs.wsn.br_2.DestroyRegistration.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.DestroyRegistration.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsn.b_2.Renew.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.Renew.Factory.parse(param.getXMLStreamReaderWithoutCaching());
@@ -800,6 +1010,55 @@
                 if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
                 
                            return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.RegisterPublisher.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.RegisterPublisher.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }

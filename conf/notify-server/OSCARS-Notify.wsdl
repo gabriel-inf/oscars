@@ -4,7 +4,8 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/"
-    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" 
+    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
+    xmlns:wsnt-br="http://docs.oasis-open.org/wsn/br-2" 
     xmlns:tns="http://oscars.es.net/OSCARS">
 
     <wsdl:documentation>
@@ -27,6 +28,11 @@
             <xsd:import
                 namespace="http://docs.oasis-open.org/wsn/b-2" 
                 schemaLocation="b-2-idc.xsd"/>
+        </xsd:schema>
+        <xsd:schema>
+            <xsd:import
+                namespace="http://docs.oasis-open.org/wsn/br-2" 
+                schemaLocation="br-2-idc.xsd"/>
         </xsd:schema>
     </wsdl:types>
 
@@ -193,6 +199,46 @@
         <wsdl:part name="fault" element="tns:AAAFault" />
     </wsdl:message>
     
+    <!-- ========== NotificationBroker::RegisterPublisher =============
+   RegisterPublisher(PublisherReference, TopicExpression* ,
+                     [Demand], [InitialTerminationTime])
+   returns: WS-Resource qualified EPR to a PublisherRegistration --> 
+   <wsdl:message name="RegisterPublisherRequest">
+      <wsdl:part name="RegisterPublisherRequest" 
+                 element="wsnt-br:RegisterPublisher"/>
+   </wsdl:message>
+
+   <wsdl:message name="RegisterPublisherResponse">
+      <wsdl:part name="RegisterPublisherResponse" 
+                 element="wsnt-br:RegisterPublisherResponse"/>
+   </wsdl:message>
+      
+   <wsdl:message name="PublisherRegistrationRejectedFault">
+      <wsdl:part name="PublisherRegistrationRejectedFault"             
+            element="wsnt-br:PublisherRegistrationRejectedFault"/>
+   </wsdl:message> 
+
+   <wsdl:message name="PublisherRegistrationFailedFault">
+      <wsdl:part name="PublisherRegistrationFailedFault"
+            element="wsnt-br:PublisherRegistrationFailedFault"/>
+   </wsdl:message> 
+
+   <wsdl:message name="DestroyRegistrationRequest">
+      <wsdl:part name="DestroyRegistrationRequest" 
+            element="wsnt-br:DestroyRegistration"/>
+   </wsdl:message>
+
+   <wsdl:message name="DestroyRegistrationResponse">
+      <wsdl:part name="DestroyRegistrationResponse"
+            element="wsnt-br:DestroyRegistrationResponse"/>
+   </wsdl:message>
+
+   <wsdl:message name="ResourceNotDestroyedFault">
+      <wsdl:part name="ResourceNotDestroyedFault"
+            element="wsnt-br:ResourceNotDestroyedFault"/>
+   </wsdl:message> 
+
+    
     <wsdl:portType name="OSCARSNotify">
         <wsdl:operation name="Notify">
             <wsdl:input message="tns:Notify" />
@@ -267,6 +313,30 @@
                       message="tns:ResumeFailedFault" />   
             <wsdl:fault name="AAAErrorException"
                       message="tns:AAAFaultMessage" />
+        </wsdl:operation>
+        
+        <wsdl:operation name="RegisterPublisher">
+            <wsdl:input  message="tns:RegisterPublisherRequest"/>
+            <wsdl:output message="tns:RegisterPublisherResponse"/>
+            <wsdl:fault  name="InvalidTopicExpressionFault" 
+                         message="tns:InvalidTopicExpressionFault"/>
+            <wsdl:fault  name="TopicNotSupportedFault" 
+                         message="tns:TopicNotSupportedFault"/>
+            <wsdl:fault  name="PublisherRegistrationRejectedFault" 
+                    message="tns:PublisherRegistrationRejectedFault"/>
+            <wsdl:fault  name="PublisherRegistrationFailedFault" 
+                    message="tns:PublisherRegistrationFailedFault"/>
+            <wsdl:fault  name="UnacceptableInitialTerminationTimeFault" 
+                 message="tns:UnacceptableInitialTerminationTimeFault"/>
+        </wsdl:operation>
+        
+        <wsdl:operation name="DestroyRegistration">
+            <wsdl:input  name="DestroyRegistrationRequest" 
+                          message="tns:DestroyRegistrationRequest" />
+            <wsdl:output name="DestroyRegistrationResponse" 
+                          message="tns:DestroyRegistrationResponse" />
+            <wsdl:fault  name="ResourceNotDestroyedFault" 
+                          message="tns:ResourceNotDestroyedFault" />
         </wsdl:operation>
         
     </wsdl:portType>
@@ -400,6 +470,48 @@
             </wsdl:fault>
             <wsdl:fault name="AAAErrorException">
                 <soap:fault name="AAAErrorException" use="literal" />
+            </wsdl:fault>
+        </wsdl:operation>
+        
+        <wsdl:operation name="RegisterPublisher">
+            <soap:operation style="document"
+                soapAction="http://oscars.es.net/OSCARS/RegisterPublisher" />
+            <wsdl:input>
+                <soap:body use="literal" parts="RegisterPublisherRequest" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"
+                    parts="RegisterPublisherResponse" />
+            </wsdl:output>
+            <wsdl:fault name="InvalidTopicExpressionFault">
+                <soap:fault name="InvalidTopicExpressionFault" use="literal" />
+            </wsdl:fault>
+            <wsdl:fault name="TopicNotSupportedFault">
+                <soap:fault name="TopicNotSupportedFault" use="literal" />
+            </wsdl:fault>
+            <wsdl:fault name="PublisherRegistrationRejectedFault">
+                <soap:fault name="PublisherRegistrationRejectedFault" use="literal" />
+            </wsdl:fault>
+            <wsdl:fault name="PublisherRegistrationFailedFault">
+                <soap:fault name="PublisherRegistrationFailedFault" use="literal" />
+            </wsdl:fault>
+            <wsdl:fault name="UnacceptableInitialTerminationTimeFault">
+                <soap:fault name="UnacceptableInitialTerminationTimeFault" use="literal" />
+            </wsdl:fault>
+        </wsdl:operation>
+
+        <wsdl:operation name="DestroyRegistration">
+            <soap:operation style="document"
+                soapAction="http://oscars.es.net/OSCARS/DestroyRegistration" />
+            <wsdl:input>
+                <soap:body use="literal" parts="DestroyRegistrationRequest" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"
+                    parts="DestroyRegistrationResponse" />
+            </wsdl:output>
+            <wsdl:fault name="ResourceNotDestroyedFault">
+                <soap:fault name="ResourceNotDestroyedFault" use="literal" />
             </wsdl:fault>
         </wsdl:operation>
     </wsdl:binding>

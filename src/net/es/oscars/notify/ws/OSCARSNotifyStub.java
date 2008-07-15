@@ -32,7 +32,7 @@
         //creating the operations
         org.apache.axis2.description.AxisOperation __operation;
 
-        _operations = new org.apache.axis2.description.AxisOperation[6];
+        _operations = new org.apache.axis2.description.AxisOperation[8];
         
                     __operation = new org.apache.axis2.description.OutOnlyAxisOperation();
                 
@@ -104,6 +104,30 @@
 	    
 	    
             _operations[5]=__operation;
+            
+        
+                   __operation = new org.apache.axis2.description.OutInAxisOperation();
+                
+
+            __operation.setName(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS", "RegisterPublisher"));
+	    _service.addOperation(__operation);
+	    
+
+	    
+	    
+            _operations[6]=__operation;
+            
+        
+                   __operation = new org.apache.axis2.description.OutInAxisOperation();
+                
+
+            __operation.setName(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS", "DestroyRegistration"));
+	    _service.addOperation(__operation);
+	    
+
+	    
+	    
+            _operations[7]=__operation;
             
         
         }
@@ -411,6 +435,96 @@
                  "org.oasis_open.docs.wsn.b_2.ResumeFailedFault"
                );
            
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "TopicNotSupportedFault"),
+                 "net.es.oscars.notify.ws.TopicNotSupportedFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "TopicNotSupportedFault"),
+                "net.es.oscars.notify.ws.TopicNotSupportedFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "TopicNotSupportedFault"),
+                 "org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "InvalidTopicExpressionFault"),
+                 "net.es.oscars.notify.ws.InvalidTopicExpressionFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "InvalidTopicExpressionFault"),
+                "net.es.oscars.notify.ws.InvalidTopicExpressionFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "InvalidTopicExpressionFault"),
+                 "org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/br-2",
+                 "PublisherRegistrationFailedFault"),
+                 "net.es.oscars.notify.ws.PublisherRegistrationFailedFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/br-2",
+                "PublisherRegistrationFailedFault"),
+                "net.es.oscars.notify.ws.PublisherRegistrationFailedFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/br-2",
+                 "PublisherRegistrationFailedFault"),
+                 "org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "UnacceptableInitialTerminationTimeFault"),
+                 "net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "UnacceptableInitialTerminationTimeFault"),
+                "net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "UnacceptableInitialTerminationTimeFault"),
+                 "org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/br-2",
+                 "PublisherRegistrationRejectedFault"),
+                 "net.es.oscars.notify.ws.PublisherRegistrationRejectedFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/br-2",
+                "PublisherRegistrationRejectedFault"),
+                "net.es.oscars.notify.ws.PublisherRegistrationRejectedFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/br-2",
+                 "PublisherRegistrationRejectedFault"),
+                 "org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/br-2",
+                 "ResourceNotDestroyedFault"),
+                 "net.es.oscars.notify.ws.ResourceNotDestroyedFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/br-2",
+                "ResourceNotDestroyedFault"),
+                "net.es.oscars.notify.ws.ResourceNotDestroyedFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/br-2",
+                 "ResourceNotDestroyedFault"),
+                 "org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault"
+               );
+           
 
 
     }
@@ -481,7 +595,7 @@
          
                 
                 public void  Notify(
-                 org.oasis_open.docs.wsn.b_2.Notify notify66
+                 org.oasis_open.docs.wsn.b_2.Notify notify90
 
                 ) throws java.rmi.RemoteException
                 
@@ -505,7 +619,7 @@
                                                     
                                                                     
                                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                                    notify66,
+                                                                    notify90,
                                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                     "Notify")));
                                                                 
@@ -528,14 +642,14 @@
                     /**
                      * Auto generated method signature
                      * @see net.es.oscars.notify.ws.OSCARSNotify#Subscribe
-                     * @param subscribe67
+                     * @param subscribe91
                     
                      */
 
                     
                             public  org.oasis_open.docs.wsn.b_2.SubscribeResponse Subscribe(
 
-                            org.oasis_open.docs.wsn.b_2.Subscribe subscribe67)
+                            org.oasis_open.docs.wsn.b_2.Subscribe subscribe91)
                         
 
                     throws java.rmi.RemoteException
@@ -574,7 +688,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    subscribe67,
+                                                    subscribe91,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "Subscribe")));
                                                 
@@ -703,14 +817,14 @@
                     /**
                      * Auto generated method signature
                      * @see net.es.oscars.notify.ws.OSCARSNotify#Renew
-                     * @param renew69
+                     * @param renew93
                     
                      */
 
                     
                             public  org.oasis_open.docs.wsn.b_2.RenewResponse Renew(
 
-                            org.oasis_open.docs.wsn.b_2.Renew renew69)
+                            org.oasis_open.docs.wsn.b_2.Renew renew93)
                         
 
                     throws java.rmi.RemoteException
@@ -739,7 +853,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    renew69,
+                                                    renew93,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "Renew")));
                                                 
@@ -828,14 +942,14 @@
                     /**
                      * Auto generated method signature
                      * @see net.es.oscars.notify.ws.OSCARSNotify#Unsubscribe
-                     * @param unsubscribe71
+                     * @param unsubscribe95
                     
                      */
 
                     
                             public  org.oasis_open.docs.wsn.b_2.UnsubscribeResponse Unsubscribe(
 
-                            org.oasis_open.docs.wsn.b_2.Unsubscribe unsubscribe71)
+                            org.oasis_open.docs.wsn.b_2.Unsubscribe unsubscribe95)
                         
 
                     throws java.rmi.RemoteException
@@ -864,7 +978,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    unsubscribe71,
+                                                    unsubscribe95,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "Unsubscribe")));
                                                 
@@ -953,14 +1067,14 @@
                     /**
                      * Auto generated method signature
                      * @see net.es.oscars.notify.ws.OSCARSNotify#PauseSubscription
-                     * @param pauseSubscription73
+                     * @param pauseSubscription97
                     
                      */
 
                     
                             public  org.oasis_open.docs.wsn.b_2.PauseSubscriptionResponse PauseSubscription(
 
-                            org.oasis_open.docs.wsn.b_2.PauseSubscription pauseSubscription73)
+                            org.oasis_open.docs.wsn.b_2.PauseSubscription pauseSubscription97)
                         
 
                     throws java.rmi.RemoteException
@@ -989,7 +1103,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    pauseSubscription73,
+                                                    pauseSubscription97,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "PauseSubscription")));
                                                 
@@ -1078,14 +1192,14 @@
                     /**
                      * Auto generated method signature
                      * @see net.es.oscars.notify.ws.OSCARSNotify#ResumeSubscription
-                     * @param resumeSubscription75
+                     * @param resumeSubscription99
                     
                      */
 
                     
                             public  org.oasis_open.docs.wsn.b_2.ResumeSubscriptionResponse ResumeSubscription(
 
-                            org.oasis_open.docs.wsn.b_2.ResumeSubscription resumeSubscription75)
+                            org.oasis_open.docs.wsn.b_2.ResumeSubscription resumeSubscription99)
                         
 
                     throws java.rmi.RemoteException
@@ -1114,7 +1228,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    resumeSubscription75,
+                                                    resumeSubscription99,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "ResumeSubscription")));
                                                 
@@ -1168,6 +1282,266 @@
                         
                         if (ex instanceof net.es.oscars.notify.ws.ResumeFailedFault){
                           throw (net.es.oscars.notify.ws.ResumeFailedFault)ex;
+                        }
+                        
+
+                        throw new java.rmi.RemoteException(ex.getMessage(), ex);
+                    }catch(java.lang.ClassCastException e){
+                       // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    } catch (java.lang.ClassNotFoundException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }catch (java.lang.NoSuchMethodException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }  catch (java.lang.IllegalAccessException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }   catch (java.lang.InstantiationException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }
+                }else{
+                    throw f;
+                }
+            }else{
+                throw f;
+            }
+        }
+        }
+            
+                    /**
+                     * Auto generated method signature
+                     * @see net.es.oscars.notify.ws.OSCARSNotify#RegisterPublisher
+                     * @param registerPublisher101
+                    
+                     */
+
+                    
+                            public  org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse RegisterPublisher(
+
+                            org.oasis_open.docs.wsn.br_2.RegisterPublisher registerPublisher101)
+                        
+
+                    throws java.rmi.RemoteException
+                    
+                    
+                        ,net.es.oscars.notify.ws.TopicNotSupportedFault
+                        ,net.es.oscars.notify.ws.InvalidTopicExpressionFault
+                        ,net.es.oscars.notify.ws.PublisherRegistrationFailedFault
+                        ,net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault
+                        ,net.es.oscars.notify.ws.PublisherRegistrationRejectedFault{
+
+              try{
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
+              _operationClient.getOptions().setAction("http://oscars.es.net/OSCARS/RegisterPublisher");
+              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
+
+              
+              
+                  addPropertyToOperationClient(_operationClient,org.apache.axis2.description.WSDL2Constants.ATTR_WHTTP_QUERY_PARAMETER_SEPARATOR,"&");
+              
+
+              // create a message context
+              org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext();
+
+              
+
+              // create SOAP envelope with that payload
+              org.apache.axiom.soap.SOAPEnvelope env = null;
+                    
+                                                    
+                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
+                                                    registerPublisher101,
+                                                    optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                    "RegisterPublisher")));
+                                                
+        //adding SOAP soap_headers
+         _serviceClient.addHeadersToEnvelope(env);
+        // set the message context with that soap envelope
+        _messageContext.setEnvelope(env);
+
+        // add the message contxt to the operation client
+        _operationClient.addMessageContext(_messageContext);
+
+        //execute the operation client
+        _operationClient.execute(true);
+
+         
+               org.apache.axis2.context.MessageContext _returnMessageContext = _operationClient.getMessageContext(
+                                           org.apache.axis2.wsdl.WSDLConstants.MESSAGE_LABEL_IN_VALUE);
+                org.apache.axiom.soap.SOAPEnvelope _returnEnv = _returnMessageContext.getEnvelope();
+                
+                
+                                java.lang.Object object = fromOM(
+                                             _returnEnv.getBody().getFirstElement() ,
+                                             org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.class,
+                                              getEnvelopeNamespaces(_returnEnv));
+                                _messageContext.getTransportOut().getSender().cleanup(_messageContext);
+                               
+                                        return (org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse)object;
+                                   
+         }catch(org.apache.axis2.AxisFault f){
+
+            org.apache.axiom.om.OMElement faultElt = f.getDetail();
+            if (faultElt!=null){
+                if (faultExceptionNameMap.containsKey(faultElt.getQName())){
+                    //make the fault by reflection
+                    try{
+                        java.lang.String exceptionClassName = (java.lang.String)faultExceptionClassNameMap.get(faultElt.getQName());
+                        java.lang.Class exceptionClass = java.lang.Class.forName(exceptionClassName);
+                        java.lang.Exception ex=
+                                (java.lang.Exception) exceptionClass.newInstance();
+                        //message class
+                        java.lang.String messageClassName = (java.lang.String)faultMessageMap.get(faultElt.getQName());
+                        java.lang.Class messageClass = java.lang.Class.forName(messageClassName);
+                        java.lang.Object messageObject = fromOM(faultElt,messageClass,null);
+                        java.lang.reflect.Method m = exceptionClass.getMethod("setFaultMessage",
+                                   new java.lang.Class[]{messageClass});
+                        m.invoke(ex,new java.lang.Object[]{messageObject});
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.TopicNotSupportedFault){
+                          throw (net.es.oscars.notify.ws.TopicNotSupportedFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.InvalidTopicExpressionFault){
+                          throw (net.es.oscars.notify.ws.InvalidTopicExpressionFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.PublisherRegistrationFailedFault){
+                          throw (net.es.oscars.notify.ws.PublisherRegistrationFailedFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault){
+                          throw (net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.PublisherRegistrationRejectedFault){
+                          throw (net.es.oscars.notify.ws.PublisherRegistrationRejectedFault)ex;
+                        }
+                        
+
+                        throw new java.rmi.RemoteException(ex.getMessage(), ex);
+                    }catch(java.lang.ClassCastException e){
+                       // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    } catch (java.lang.ClassNotFoundException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }catch (java.lang.NoSuchMethodException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }  catch (java.lang.IllegalAccessException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }   catch (java.lang.InstantiationException e) {
+                        // we cannot intantiate the class - throw the original Axis fault
+                        throw f;
+                    }
+                }else{
+                    throw f;
+                }
+            }else{
+                throw f;
+            }
+        }
+        }
+            
+                    /**
+                     * Auto generated method signature
+                     * @see net.es.oscars.notify.ws.OSCARSNotify#DestroyRegistration
+                     * @param destroyRegistration103
+                    
+                     */
+
+                    
+                            public  org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse DestroyRegistration(
+
+                            org.oasis_open.docs.wsn.br_2.DestroyRegistration destroyRegistration103)
+                        
+
+                    throws java.rmi.RemoteException
+                    
+                    
+                        ,net.es.oscars.notify.ws.ResourceNotDestroyedFault{
+
+              try{
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
+              _operationClient.getOptions().setAction("http://oscars.es.net/OSCARS/DestroyRegistration");
+              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
+
+              
+              
+                  addPropertyToOperationClient(_operationClient,org.apache.axis2.description.WSDL2Constants.ATTR_WHTTP_QUERY_PARAMETER_SEPARATOR,"&");
+              
+
+              // create a message context
+              org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext();
+
+              
+
+              // create SOAP envelope with that payload
+              org.apache.axiom.soap.SOAPEnvelope env = null;
+                    
+                                                    
+                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
+                                                    destroyRegistration103,
+                                                    optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                    "DestroyRegistration")));
+                                                
+        //adding SOAP soap_headers
+         _serviceClient.addHeadersToEnvelope(env);
+        // set the message context with that soap envelope
+        _messageContext.setEnvelope(env);
+
+        // add the message contxt to the operation client
+        _operationClient.addMessageContext(_messageContext);
+
+        //execute the operation client
+        _operationClient.execute(true);
+
+         
+               org.apache.axis2.context.MessageContext _returnMessageContext = _operationClient.getMessageContext(
+                                           org.apache.axis2.wsdl.WSDLConstants.MESSAGE_LABEL_IN_VALUE);
+                org.apache.axiom.soap.SOAPEnvelope _returnEnv = _returnMessageContext.getEnvelope();
+                
+                
+                                java.lang.Object object = fromOM(
+                                             _returnEnv.getBody().getFirstElement() ,
+                                             org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.class,
+                                              getEnvelopeNamespaces(_returnEnv));
+                                _messageContext.getTransportOut().getSender().cleanup(_messageContext);
+                               
+                                        return (org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse)object;
+                                   
+         }catch(org.apache.axis2.AxisFault f){
+
+            org.apache.axiom.om.OMElement faultElt = f.getDetail();
+            if (faultElt!=null){
+                if (faultExceptionNameMap.containsKey(faultElt.getQName())){
+                    //make the fault by reflection
+                    try{
+                        java.lang.String exceptionClassName = (java.lang.String)faultExceptionClassNameMap.get(faultElt.getQName());
+                        java.lang.Class exceptionClass = java.lang.Class.forName(exceptionClassName);
+                        java.lang.Exception ex=
+                                (java.lang.Exception) exceptionClass.newInstance();
+                        //message class
+                        java.lang.String messageClassName = (java.lang.String)faultMessageMap.get(faultElt.getQName());
+                        java.lang.Class messageClass = java.lang.Class.forName(messageClassName);
+                        java.lang.Object messageObject = fromOM(faultElt,messageClass,null);
+                        java.lang.reflect.Method m = exceptionClass.getMethod("setFaultMessage",
+                                   new java.lang.Class[]{messageClass});
+                        m.invoke(ex,new java.lang.Object[]{messageObject});
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceNotDestroyedFault){
+                          throw (net.es.oscars.notify.ws.ResourceNotDestroyedFault)ex;
                         }
                         
 
@@ -1288,6 +1662,48 @@
 
             }
         
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.DestroyRegistration param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.DestroyRegistration.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
             private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.Renew param, boolean optimizeContent)
             throws org.apache.axis2.AxisFault {
 
@@ -1322,6 +1738,104 @@
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnacceptableTerminationTimeFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.RegisterPublisher param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.RegisterPublisher.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -1456,54 +1970,12 @@
 
             }
         
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
             private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault param, boolean optimizeContent)
             throws org.apache.axis2.AxisFault {
 
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -1632,6 +2104,27 @@
 
                              
                             
+                            private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.oasis_open.docs.wsn.br_2.DestroyRegistration param, boolean optimizeContent)
+                            throws org.apache.axis2.AxisFault{
+
+                                 
+                                        try{
+
+                                                org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
+                                                emptyEnvelope.getBody().addChild(param.getOMElement(org.oasis_open.docs.wsn.br_2.DestroyRegistration.MY_QNAME,factory));
+                                                return emptyEnvelope;
+                                            } catch(org.apache.axis2.databinding.ADBException e){
+                                                throw org.apache.axis2.AxisFault.makeFault(e);
+                                            }
+                                    
+
+                            }
+
+                             
+                             /* methods to provide back word compatibility */
+
+                             
+                            
                             private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.oasis_open.docs.wsn.b_2.Renew param, boolean optimizeContent)
                             throws org.apache.axis2.AxisFault{
 
@@ -1640,6 +2133,27 @@
 
                                                 org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
                                                 emptyEnvelope.getBody().addChild(param.getOMElement(org.oasis_open.docs.wsn.b_2.Renew.MY_QNAME,factory));
+                                                return emptyEnvelope;
+                                            } catch(org.apache.axis2.databinding.ADBException e){
+                                                throw org.apache.axis2.AxisFault.makeFault(e);
+                                            }
+                                    
+
+                            }
+
+                             
+                             /* methods to provide back word compatibility */
+
+                             
+                            
+                            private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.oasis_open.docs.wsn.br_2.RegisterPublisher param, boolean optimizeContent)
+                            throws org.apache.axis2.AxisFault{
+
+                                 
+                                        try{
+
+                                                org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
+                                                emptyEnvelope.getBody().addChild(param.getOMElement(org.oasis_open.docs.wsn.br_2.RegisterPublisher.MY_QNAME,factory));
                                                 return emptyEnvelope;
                                             } catch(org.apache.axis2.databinding.ADBException e){
                                                 throw org.apache.axis2.AxisFault.makeFault(e);
@@ -1781,6 +2295,27 @@
 
                 }
            
+                if (org.oasis_open.docs.wsn.br_2.DestroyRegistration.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.DestroyRegistration.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsn.b_2.Renew.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.Renew.Factory.parse(param.getXMLStreamReaderWithoutCaching());
@@ -1805,6 +2340,55 @@
                 if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
                 
                            return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.RegisterPublisher.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.RegisterPublisher.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.br_2.PublisherRegistrationRejectedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }
