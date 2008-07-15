@@ -62,8 +62,8 @@ public class EventProducer{
      * @param errorMessage a message describing an error. null if no error.
      */
     public void addEvent(String type, String userLogin, String source,
-            Reservation resv){
-        this.addEvent(type, userLogin, source, resv, null, null);
+            String errorCode, String errorMessage){
+        this.addEvent(type, userLogin, source, null, errorCode, errorMessage);
     }
 
     /**
