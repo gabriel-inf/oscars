@@ -12,10 +12,16 @@ import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
+import org.apache.axis2.databinding.types.URI;
+import org.apache.axis2.databinding.types.URI.MalformedURIException;
+
+import org.oasis_open.docs.wsn.b_2.*;
+import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
+import net.es.oscars.notify.ws.OSCARSNotifyStub;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.security.KeyManagement;
 
@@ -28,27 +34,48 @@ public class Client {
     protected Logger log;
     protected ConfigurationContext configContext;
     protected OSCARSStub stub;
+    protected OSCARSNotifyStub notifyStub;
 
     public void setUp(boolean useKeyStore, String url, String repo)
             throws AxisFault {
-        this.setUp(useKeyStore, url, repo, null);
+        this.setUp(useKeyStore, url, null, repo, null);
     }
 
     public void setUp(boolean useKeyStore, String url, String repo,
                       String axisConfig) throws AxisFault {
+        this.setUp(useKeyStore, url, null, repo, axisConfig);
+    }
+
+    public void setUp(boolean useKeyStore, String url, String notifyUrl, 
+                     String repo, String axisConfig) throws AxisFault {
 
         if (useKeyStore) { KeyManagement.setKeyStore(repo); }
         this.log = Logger.getLogger(this.getClass());
         this.configContext =
                 ConfigurationContextFactory
                 .createConfigurationContextFromFileSystem(repo, axisConfig);
+        
+        if(url != null){
+            this.stub = new OSCARSStub(this.configContext, url);
+            ServiceClient sc = this.stub._getServiceClient();
+            Options opts = sc.getOptions();
+            opts.setTimeOutInMilliSeconds(300000); // set to 5 minutes
+            sc.setOptions(opts);
+            this.stub._setServiceClient(sc);
+        }
+        if(notifyUrl != null){
+            this.notifyStub = new OSCARSNotifyStub(this.configContext, notifyUrl);
+            ServiceClient sc = this.notifyStub._getServiceClient();
+            Options opts = sc.getOptions();
+            opts.setTimeOutInMilliSeconds(300000); // set to 5 minutes
+            sc.setOptions(opts);
+            this.notifyStub._setServiceClient(sc);
+        }
+    }
 
-        this.stub = new OSCARSStub(this.configContext, url);
-        ServiceClient sc = this.stub._getServiceClient();
-        Options opts = sc.getOptions();
-        opts.setTimeOutInMilliSeconds(300000); // set to 5 minutes
-        sc.setOptions(opts);
-        this.stub._setServiceClient(sc);
+    public void setUpNotify(boolean useKeyStore, String url, 
+                            String repo, String axisConfig) throws AxisFault {
+        this.setUp(useKeyStore, null, url, repo, axisConfig);
     }
     
     /**
@@ -306,5 +333,34 @@ public class Client {
         frsp = this.stub.forward(fwd);
         freply = frsp.getForwardResponse();
         return freply;
+    }
+    
+    public void notify(NotificationMessageHolderType msgHolder) 
+                        throws RemoteException{
+        Notify notification = new Notify();
+        notification.addNotificationMessage(msgHolder);
+        this.notifyStub.Notify(notification);
+    }
+    
+    public EndpointReferenceType generateEndpointReference(String address)
+            throws MalformedURIException{
+        return this.generateEndpointReference(address, null);
+    }
+    
+    public EndpointReferenceType generateEndpointReference(
+        String address, String subscriptionId) throws MalformedURIException{
+        EndpointReferenceType epr = new EndpointReferenceType();
+        AttributedURIType attrUri = new AttributedURIType();
+        URI refUri = new URI(address);
+        attrUri.setAnyURI(refUri);
+        epr.setAddress(attrUri);
+        //set ReferenceParameters
+        if(subscriptionId != null){
+            ReferenceParametersType refParams = new ReferenceParametersType();
+            refParams.setSubscriptionId(subscriptionId);
+            epr.setReferenceParameters(refParams); 
+        }
+        
+        return epr;
     }
 }
