@@ -199,6 +199,8 @@ public class EmailObserver implements Observer {
             msg = this.replaceTemplateField("##layer##", resv.get("layer"), msg);
             msg = this.replaceTemplateField("##pathSetupMode##", 
                                             resv.get("pathSetupMode"), msg);
+            msg = this.replaceTemplateField("##pathType##", 
+                                            resv.get("pathType"), msg);
             msg = this.replaceTemplateField("##isExplicitPath##", 
                                             resv.get("isExplicitPath"), msg);
             msg = this.replaceTemplateField("##nextDomain##",
