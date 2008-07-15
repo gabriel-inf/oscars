@@ -846,11 +846,23 @@ public class TypeConverter {
      * @return the converted HashMap in a ResDatils object
      */
     public ResDetails hashMaptoResDetails(HashMap<String, String[]> map){
+        //Verify that map has enough fields to build valid ResDetails object
+        final String[] requiredFields = { "gri", "userLogin", "status", 
+                                          "startSeconds", "endSeconds", 
+                                          "createSeconds", "bandwidth", 
+                                          "description", "pathSetupMode" };
+        if(map == null){ return null; }
+        for(int i = 0; i < requiredFields.length; i++){
+            if(map.get(requiredFields[i]) == null){
+                return null;
+            }
+        }
+        
+        //If everything looks good then build the object
         ResDetails details = new ResDetails();
         PathInfo pathInfo = new PathInfo();
         boolean hasLayer2Params = false;
         boolean hasLayer3Params = false;
-        
         details.setGlobalReservationId(this.extractHashVal(map.get("gri")));
         details.setLogin(this.extractHashVal(map.get("userLogin")));
         details.setStatus(this.extractHashVal(map.get("status")));
