@@ -2,6 +2,7 @@ package net.es.oscars.notify;
 
 import net.es.oscars.bss.Reservation;
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Stores information about an event that occurs in OSCARS. It implements
@@ -14,7 +15,7 @@ public class OSCARSEvent implements Serializable{
     private String userLogin;
     private String errorCode;
     private String errorMessage;
-    private Reservation reservation;
+    private HashMap<String, String[]> reservationParams;
     private String source;
     
     public static String RESV_CREATE_STARTED = "RESERVATION_CREATE_STARTED";
@@ -157,18 +158,18 @@ public class OSCARSEvent implements Serializable{
     /**
      * Sets the reservation affected by this event
      *
-     * @param reservation the reservation to set
+     * @param reservationParams the reservation parameters to set
      */
-    public void setReservation(Reservation reservation){
-        this.reservation = reservation;
+    public void setReservationParams(HashMap<String, String[]> reservationParams){
+        this.reservationParams = reservationParams;
     }
     
     /**
-     * Returns the reservation affected by this event
+     * Returns the reservation parameters of this event
      *
-     * @return the reservation affected by this event
+     * @return the reservation parameters of this event
      */
-    public Reservation getReservation(){
-        return this.reservation;
+    public HashMap<String, String[]> getReservationParams(){
+        return this.reservationParams;
     }
 }
