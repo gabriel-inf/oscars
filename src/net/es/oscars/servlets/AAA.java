@@ -15,7 +15,7 @@ import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.AuthValue;
 
 
-public class AAA extends HttpServlet {
+public class Institutions extends HttpServlet {
     private Logger log;
     private String dbname;
     
@@ -26,29 +26,17 @@ public class AAA extends HttpServlet {
 
         this.log = Logger.getLogger(this.getClass());
         this.dbname = "aaa";
-        this.log.debug("AAA:start");
-        String methodName = "AAA";
+        this.log.debug("Institutions:start");
+        String methodName = "Institutions";
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
-        String[] ops = request.getQueryString().split("&");
+        String[] ops = request.getQueryString().split("=");
         if (ops.length != 2) {
-            utils.handleFailure(out, "incorrect input from AAA page",
+            utils.handleFailure(out, "incorrect input from Institutions page",
                                 methodName, null, null);
         }
-        String[] tableParams = ops[0].split("=");
-        if (tableParams.length != 2) {
-            utils.handleFailure(out, "incorrect input from AAA page",
-                                methodName, null, null);
-        }
-        String tableName = tableParams[1];
-        this.log.info("table is " + tableName);
-        String[] opParams = ops[1].split("=");
-        if (opParams.length != 2) {
-            utils.handleFailure(out, "incorrect input from AAA page",
-                                methodName, null, null);
-        }
-        String opName = opParams[1];
+        String opName = ops[1];
         this.log.info("op is " + opName);
 
         response.setContentType("text/json-comment-filtered");
@@ -61,22 +49,20 @@ public class AAA extends HttpServlet {
         
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (authVal != AuthValue.ALLUSERS) {
-            utils.handleFailure(out, "no permission to modify AAA tables",
+            utils.handleFailure(out, "no permission to modify Institutions table",
                                 methodName, aaa, null);
         }
         Map outputMap = new HashMap();
-        if (tableName.equals("institution")) {
-            if (opName.equals("list")) {
-                outputMap.put("status", "Institution list");
-                this.outputInstitutions(outputMap);
-            }
+        outputMap.put("status", "Institutions management");
+        if (opName.equals("list")) {
+            this.outputInstitutions(outputMap);
         }
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.debug("AAA:finish");
+        this.log.debug("Institutions:finish");
     }
 
     /**
@@ -97,7 +83,6 @@ public class AAA extends HttpServlet {
         }
         outputMap.put("items", institutionList);
     }
-
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)

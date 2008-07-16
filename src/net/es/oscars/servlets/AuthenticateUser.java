@@ -84,7 +84,7 @@ public class AuthenticateUser extends HttpServlet {
         AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
         if (authVal == AuthValue.ALLUSERS)  { 
             authorizedTabs.put("usersPane", Boolean.TRUE);
-            authorizedTabs.put("aaaPane", Boolean.TRUE);
+            authorizedTabs.put("aaaTab", Boolean.TRUE);
             //authorizedTabs.put("userAttributesPane", Boolean.TRUE);
             //authorizedTabs.put("authorizationsPane", Boolean.TRUE);           
         }

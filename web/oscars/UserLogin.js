@@ -98,15 +98,15 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
             mainTabContainer.addChild(userAddPane, 4);
             userAddPane.startup();
         }
-        // basic AAA management form (institutions, resources, permissions,
+        // AAA management tab (institutions, resources, permissions,
         // attributes)
-        if (responseObject.authorizedTabs.aaaPane) {
-            var aaaPane = new dojox.layout.ContentPane(
-                  {title:'AAA', id: 'aaaPane'},
+        if (responseObject.authorizedTabs.aaaTab) {
+            var institutionsPane = new dojox.layout.ContentPane(
+                  {title:'Institutions', id: 'institutionsPane'},
                    dojo.doc.createElement('div'));
-            aaaPane.setHref("forms/aaa.html");
-            mainTabContainer.addChild(aaaPane, 5);
-            aaaPane.startup();
+            institutionsPane.setHref("forms/institutions.html");
+            mainTabContainer.addChild(institutionsPane, 5);
+            institutionsPane.startup();
         }
     }
 };

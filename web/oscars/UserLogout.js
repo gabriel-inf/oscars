@@ -59,11 +59,11 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     if (dijit.byId("userProfilePane") != null) {
         mainTabContainer.closeChild(dijit.byId("userProfilePane"));
     }
-    if (dijit.byId("aaaPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("aaaPane"));
+    if (dijit.byId("institutionsPane") != null) {
+        mainTabContainer.closeChild(dijit.byId("institutionsPane"));
     }
     // reset global state
     oscarsState.userGridInitialized = false;
     oscarsState.resvGridInitialized = false;
-    oscarsState.aaaGridsInitialized = false;
+    oscarsState.institutionGridInitialized = false;
 };
