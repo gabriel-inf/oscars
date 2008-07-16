@@ -310,7 +310,11 @@ public class TypeConverter {
             } else {
                 String nodeName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = link.getValidIpaddr();
-                hopId = nodeName + ": " + ipaddr.getIP();
+                if (ipaddr == null) {
+                    hopId = "*out-of-date IP*";
+                } else {
+                    hopId = nodeName + ": " + ipaddr.getIP();
+                }
             }
             hop.setId(hopId);
             hop.setLinkIdRef(hopId);
@@ -482,7 +486,11 @@ public class TypeConverter {
                 Link link = domainDAO.getFullyQualifiedLink(componentList);
                 hostName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = link.getValidIpaddr();
-                hopId = hostName + ": " + ipaddr.getIP();
+                if (ipaddr == null) {
+                    hopId = "*out-of-date IP*";
+                } else {
+                    hopId = hostName + ": " + ipaddr.getIP();
+                }
             } else {
                 // this component is IP address in other domain
                 String ip = componentList[6];
