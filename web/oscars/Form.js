@@ -86,11 +86,11 @@ oscars.Form.applyParams = function (responseObject) {
                 var w = dijit.byId(cb);
                 if (w != null) {
                     if (responseObject[param][cb]) {
-                        w.setChecked(true);
+                        w.setAttribute('checked', true);
                     } else {
-                        w.setChecked(false);
+                        w.setAttribute('checked', false);
                     }
-                    w.setDisabled(disabled);
+                    w.setAttribute('disabled', disabled);
                 }
             }
         } else if (param.match(/Display$/i) != null) {
