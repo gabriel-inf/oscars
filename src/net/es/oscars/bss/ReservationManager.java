@@ -91,13 +91,14 @@ public class ReservationManager {
                 throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
             }
         }
-
+        
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
 
         // This is a pretty bad misuse of this function
         // TODO: Test if this actually works
         Path tempPath = this.convertPath(pathInfo, pathInfo, null, false);
+        //Path tempPath = this.buildInitialPath(pathInfo);
         resv.setPath(tempPath);
 
         // This will be the ONLY time we set status with setStatus
@@ -516,7 +517,40 @@ public class ReservationManager {
         path.setExplicit(isExplicit);
         return path;
     }
-
+    
+    /**
+     * Finds the intradomain ingress link and returns a Path containing only 
+     * that link. This is needed for initially holding the reservation to
+     * meet the database schema requirments.
+     *
+     * @param pathInfo the PathInfo element to analyze
+     * @return the Path containing only the ingress link
+     */
+     public Path buildInitialPath(PathInfo pathInfo) throws BSSException{
+        this.log.debug("buildInitialPath.start");
+        Path path = new Path();
+        PathElem elem = new PathElem();
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        String ingressLink = null;
+        Link link = null;
+        
+        //get ingress link id
+        try{
+            ingressLink = this.pceMgr.findIngress(pathInfo);
+        }catch(PathfinderException e){
+            throw new BSSException(e.getMessage());
+        }
+        this.log.debug("ingress=" + ingressLink);
+        link = domainDAO.getFullyQualifiedLink(ingressLink);
+        elem.setLink(link);
+        
+        path.setPathElem(elem);
+        path.setPathSetupMode(pathInfo.getPathSetupMode());
+        
+        this.log.debug("buildInitialPath.end");
+        return path;
+     }
+    
     /**
      * Converts the intradomain and interdomain paths in Axis2 data structure into
      * database Path class containing both.
