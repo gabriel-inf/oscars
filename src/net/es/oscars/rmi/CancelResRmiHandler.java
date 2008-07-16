@@ -39,7 +39,7 @@ public class CancelResRmiHandler {
      */
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
         throws IOException {
-        this.log.debug("create.start");
+        this.log.debug("cancel.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
 
