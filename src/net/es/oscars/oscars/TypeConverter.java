@@ -691,6 +691,8 @@ public class TypeConverter {
         PathElem interPathElem = path.getInterPathElem();
         ArrayList<String> intraPath = new ArrayList<String>();
         ArrayList<String> interPath = new ArrayList<String>();
+        String src = null;
+        String dest = null;
         
         map.put("isExplicitPath", this.genHashVal(path.isExplicit() ? "true" : "false"));
         map.put("pathSetupMode", this.genHashVal(path.getPathSetupMode()));
@@ -700,8 +702,10 @@ public class TypeConverter {
         }
         
         if(layer3Data != null){
-            map.put("source", this.genHashVal(layer3Data.getSrcHost()));
-            map.put("destination", this.genHashVal(layer3Data.getDestHost()));
+            src = layer3Data.getSrcHost();
+            dest = layer3Data.getDestHost();
+            map.put("source", this.genHashVal(src));
+            map.put("destination", this.genHashVal(dest));
             //these are in the TCP/UDP headers, not IP headers, hence L4
             map.put("srcPort", this.genHashVal(layer3Data.getSrcIpPort() + ""));
             map.put("destPort", this.genHashVal(layer3Data.getDestIpPort() + ""));
@@ -712,8 +716,10 @@ public class TypeConverter {
         }
         
         if(layer2Data != null){
-            map.put("source", this.genHashVal(layer2Data.getSrcEndpoint()));
-            map.put("destination", this.genHashVal(layer2Data.getDestEndpoint()));
+            src = layer2Data.getSrcEndpoint();
+            dest = layer2Data.getDestEndpoint();
+            map.put("source", this.genHashVal(src));
+            map.put("destination", this.genHashVal(dest));
             layers.add("2");
         }
         
@@ -727,8 +733,7 @@ public class TypeConverter {
         while(interPathElem != null){
             String linkId = this.linkToURN(interPathElem.getLink());
             interPath.add(linkId);
-            map.putAll(this.vlanToHashMap(interPathElem, map.get("source")[0], 
-                                          map.get("destination")[0], layer2Data));
+            map.putAll(this.vlanToHashMap(interPathElem, src, dest, layer2Data));
             interPathElem = interPathElem.getNextElem();
         }
         map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
@@ -737,8 +742,7 @@ public class TypeConverter {
             //might be no interdomain path
             String linkId = this.linkToURN(pathElem.getLink());
             intraPath.add(linkId);
-           // map.putAll(this.vlanToHashMap(pathElem, map.get("source")[0], 
-            //                              map.get("destination")[0], layer2Data));
+            map.putAll(this.vlanToHashMap(pathElem, src, dest, layer2Data));
             pathElem = pathElem.getNextElem();
         }
         map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
