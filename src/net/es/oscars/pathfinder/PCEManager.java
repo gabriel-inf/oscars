@@ -48,6 +48,28 @@ public class PCEManager {
         this.log.info("PCEManager.findPath.end");
         return intraPath;
     }
+    
+    /**
+     * Finds the local ingress of a path
+     *
+     * @param pathInfo instance containing layer 2 or layer 3 information
+     * @return local ingress link id
+     * @throws PathfinderException
+     */
+    public String findIngress(PathInfo pathInfo) throws PathfinderException {
+
+        this.log.info("PCEManager.findIngress.start");
+        String pathMethod = this.getPathMethod();
+        this.log.info("pathfinder method is " + pathMethod);
+        if (pathMethod == null) {
+            return null;
+        }
+        this.pathfinder =
+            new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
+        String ingress = this.pathfinder.findIngress(pathInfo);
+        this.log.info("PCEManager.findIngress.end");
+        return ingress;
+    }
 
     /**
      * Does error checking to make sure method of pathfinding is set,

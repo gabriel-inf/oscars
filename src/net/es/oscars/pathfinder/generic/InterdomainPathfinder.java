@@ -29,7 +29,7 @@ import org.apache.log4j.*;
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class InterdomainPathfinder extends Pathfinder implements PCE {
+public class InterdomainPathfinder extends Pathfinder{
     private Logger log;
 
     /**

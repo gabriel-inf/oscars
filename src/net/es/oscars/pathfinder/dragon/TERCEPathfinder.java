@@ -92,6 +92,27 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
 
         return intraPathInfo;
     }
+    
+    /**
+     * Extract layer2Info/srcEndpoint and path then passes it to super class
+     * findIngress method.
+     *
+     * @param pathInfo the PathInfo element in which to find an ingress
+     * @return a String containing the link-id URN of the ingress
+     * @throws PathfinderException
+     */
+    public String findIngress(PathInfo pathInfo) throws PathfinderException{
+        this.log.debug("findIngress.start");
+        CtrlPlanePathContent path = pathInfo.getPath();
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        if(layer2Info == null){
+            throw new PathfinderException("This IDC requires layer2Info");
+        }
+        String src = layer2Info.getSrcEndpoint();
+        
+        this.log.debug("findIngress.end");
+        return super.findIngress(src, path);
+    }
 
     /**
      * Retrieves path calculation from TERCE

@@ -14,4 +14,7 @@ public interface PCE {
 
     PathInfo findPath(PathInfo pathInfo, Reservation reservation)
         throws PathfinderException;
+    
+    String findIngress(PathInfo pathInfo)
+        throws PathfinderException;
 }

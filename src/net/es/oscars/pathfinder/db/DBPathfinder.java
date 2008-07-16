@@ -63,6 +63,13 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         domDAO = new DomainDAO(dbname);
     }
+    
+    public String findIngress(PathInfo pathInfo) throws PathfinderException{
+        //1. extract appropriate l3 or l2 source from pathInfo
+        //2. convert to URN
+        //3. Call super.findIngress
+        return super.findIngress(null, pathInfo.getPath());
+    }
 
     /**
      * Finds a path given just source and destination or by expanding

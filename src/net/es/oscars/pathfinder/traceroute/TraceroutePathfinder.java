@@ -125,7 +125,13 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         this.log.debug("pathFromHops.finish");
         return ctrlPlanePath;
     }
-
+    
+    public String findIngress(PathInfo pathInfo) throws PathfinderException{
+        //1. extract appropriate l3 or l2 source from pathInfo
+        //2. convert to URN
+        //3. Call super.findIngress
+        return super.findIngress(null, pathInfo.getPath());
+    }
 
     /**
      * Given sections of a traceroute, eliminate duplicates and build complete
