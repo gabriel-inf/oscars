@@ -23,11 +23,12 @@ public class LinkDAO extends GenericHibernateDAO<Link, Integer> {
      * @return a Link instance with the given topologyIdent and parent port
      */
     public Link fromTopologyIdent(String topologyIdent, Port port){
-        String hsql = "from Link "+
-            "where port = ? AND topologyIdent = ?";
+        String sql = "select * from links "+
+            "where portId = ? AND topologyIdent = ?";
         
-         return (Link) this.getSession().createQuery(hsql)
-                                         .setEntity(0, port)
+         return (Link) this.getSession().createSQLQuery(sql)
+                                         .addEntity(Link.class)
+                                         .setInteger(0, port.getId())
                                          .setString(1, topologyIdent)
                                          .setMaxResults(1)
                                          .uniqueResult();

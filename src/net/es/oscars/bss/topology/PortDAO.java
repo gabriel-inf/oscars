@@ -23,11 +23,12 @@ public class PortDAO extends GenericHibernateDAO<Port, Integer> {
      * @return a Port instance with the given topologyIdent and parent node
      */
     public Port fromTopologyIdent(String topologyIdent, Node node){
-        String hsql = "from Port "+
-            "where node = ? AND topologyIdent = ?";
+        String sql = "select * from ports "+
+            "where nodeId = ? AND topologyIdent = ?";
         
-         return (Port) this.getSession().createQuery(hsql)
-                                         .setEntity(0, node)
+         return (Port) this.getSession().createSQLQuery(sql)
+                                         .addEntity(Port.class)
+                                         .setInteger(0, node.getId())
                                          .setString(1, topologyIdent)
                                          .setMaxResults(1)
                                          .uniqueResult();

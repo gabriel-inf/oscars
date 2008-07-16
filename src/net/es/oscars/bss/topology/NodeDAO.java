@@ -45,11 +45,12 @@ public class NodeDAO extends GenericHibernateDAO<Node, Integer> {
      * @return a Node instance with the given topologyIdent and parent domain
      */
     public Node fromTopologyIdent(String topologyIdent, Domain domain){
-        String hsql = "from Node "+
-            "where domain = ? AND topologyIdent = ?";
+        String sql = "select * from nodes "+
+            "where domainId=? AND topologyIdent=?";
         
-         return (Node) this.getSession().createQuery(hsql)
-                                         .setEntity(0, domain)
+         return (Node) this.getSession().createSQLQuery(sql)
+                                         .addEntity(Node.class)  
+                                         .setInteger(0, domain.getId())
                                          .setString(1, topologyIdent)
                                          .setMaxResults(1)
                                          .uniqueResult();
