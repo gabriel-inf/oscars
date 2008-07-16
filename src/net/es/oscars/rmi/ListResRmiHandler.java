@@ -169,7 +169,6 @@ public class ListResRmiHandler {
         return inLinks;
     }
  
-
     /**
      * Gets description search parameter and sets to blank field if empty.
      *
@@ -245,9 +244,8 @@ public class ListResRmiHandler {
         String source = null;
         String hostName = null;
         String destination = null;
-
-        // TODO:  fix hard-wired database name
-        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
+        
+        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils(core.getBssDbName());
         ArrayList resvList = new ArrayList();
         int rowsReturned = reservations.size();
 
