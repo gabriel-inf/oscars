@@ -725,23 +725,23 @@ public class TypeConverter {
         }
         
         while(interPathElem != null){
-            String linkId = interPathElem.getLink().getTopologyIdent();
+            String linkId = this.linkToURN(interPathElem.getLink());
             interPath.add(linkId);
             map.putAll(this.vlanToHashMap(interPathElem, map.get("source")[0], 
                                           map.get("destination")[0], layer2Data));
             interPathElem = interPathElem.getNextElem();
         }
-        map.put("interdomainPath", interPath.toArray(new String[layers.size()]));
+        map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
         
         while(pathElem != null){
             //might be no interdomain path
-            String linkId = pathElem.getLink().getTopologyIdent();
+            String linkId = this.linkToURN(pathElem.getLink());
             intraPath.add(linkId);
            // map.putAll(this.vlanToHashMap(pathElem, map.get("source")[0], 
             //                              map.get("destination")[0], layer2Data));
             pathElem = pathElem.getNextElem();
         }
-        map.put("intradomainPath", intraPath.toArray(new String[layers.size()]));
+        map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
         
         return map;
     }
@@ -763,7 +763,7 @@ public class TypeConverter {
             return map;
         }
         
-        String linkId = elem.getLink().getTopologyIdent();
+        String linkId = this.linkToURN(elem.getLink());
         String descr = elem.getDescription();
         String tagField = "";
         if(linkId.equals(src)){
@@ -955,4 +955,82 @@ public class TypeConverter {
         
         return details;
     }
+    
+    /**
+     * Converts a Hibernate Link bean to a URN
+     *
+     * @param link the link to be converted
+     * @return the fully-qulaified URN of the given link
+     */
+    public String linkToURN(Link link){
+        /* Note: Database schema prevent potential NullPointer exceptions below */
+        Port port = link.getPort();
+        Node node = port.getNode();
+        Domain domain = node.getDomain();
+        String urn = "urn:ogf:network";
+        
+        urn += ":domain=" + domain.getTopologyIdent();
+        urn += ":node=" + node.getTopologyIdent();
+        urn += ":port=" + port.getTopologyIdent();
+        urn += ":link=" + link.getTopologyIdent();
+        
+        return urn;
+    }
+    
+    /**
+     * Converts Axis2 Layer2Info object to a Layer2Data Hibernate bean
+     *
+     * @param layer2Info the Layer2Info object to convert
+     * @return the converted Layer2Data bean
+     */
+     public Layer2Data layer2InfoToData(Layer2Info layer2Info){
+        if(layer2Info == null){
+            return null;
+        }
+        Layer2Data layer2Data = new Layer2Data();
+        layer2Data.setSrcEndpoint(layer2Info.getSrcEndpoint());
+        layer2Data.setDestEndpoint(layer2Info.getDestEndpoint());
+        
+        return layer2Data;
+     }
+     
+     /**
+     * Converts Axis2 Layer3Info object to a Layer3Data Hibernate bean
+     *
+     * @param layer3Info the Layer3Info object to convert
+     * @return the converted Layer3Data bean
+     */
+     public Layer3Data layer3InfoToData(Layer3Info layer3Info){
+        if(layer3Info == null){
+            return null;
+        }
+        Layer3Data layer3Data = new Layer3Data();
+        
+        layer3Data.setSrcHost(layer3Info.getSrcHost());
+        layer3Data.setDestHost(layer3Info.getDestHost());
+        layer3Data.setSrcIpPort(layer3Info.getSrcIpPort());
+        layer3Data.setDestIpPort(layer3Info.getDestIpPort());
+        layer3Data.setProtocol(layer3Info.getProtocol());
+        layer3Data.setDscp(layer3Info.getDscp());
+        
+        return layer3Data;
+     }
+     
+     /**
+     * Converts Axis2 MplsInfo object to a MPLSData Hibernate bean
+     *
+     * @param mplsInfo the MplsInfo object to convert
+     * @return the converted MPLSData bean
+     */
+     public MPLSData mplsInfoToData(MplsInfo mplsInfo){
+        if(mplsInfo == null){
+            return null;
+        }
+        MPLSData mplsData = new MPLSData();
+        
+        mplsData.setBurstLimit((long) mplsInfo.getBurstLimit());
+        mplsData.setLspClass(mplsInfo.getLspClass());
+
+        return mplsData;
+     }
 }

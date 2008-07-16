@@ -528,13 +528,16 @@ public class ReservationManager {
      */
      public Path buildInitialPath(PathInfo pathInfo) throws BSSException{
         this.log.debug("buildInitialPath.start");
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
+        MplsInfo mplsInfo = pathInfo.getMplsInfo();
         Path path = new Path();
         PathElem elem = new PathElem();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         String ingressLink = null;
         Link link = null;
         
-        //get ingress link id
+        //Build path containing only the ingress link id
         try{
             ingressLink = this.pceMgr.findIngress(pathInfo);
         }catch(PathfinderException e){
@@ -543,9 +546,13 @@ public class ReservationManager {
         this.log.debug("ingress=" + ingressLink);
         link = domainDAO.getFullyQualifiedLink(ingressLink);
         elem.setLink(link);
-        
         path.setPathElem(elem);
         path.setPathSetupMode(pathInfo.getPathSetupMode());
+        
+        //Convert layer2/layer3/mplsInfo to Hibernate beans
+        path.setLayer2Data(this.tc.layer2InfoToData(layer2Info));
+        path.setLayer3Data(this.tc.layer3InfoToData(layer3Info));
+        path.setMplsData(this.tc.mplsInfoToData(mplsInfo));
         
         this.log.debug("buildInitialPath.end");
         return path;
