@@ -717,7 +717,7 @@ public class TypeConverter {
             layers.add("2");
         }
         
-        map.put("layer", (String[]) layers.toArray());
+        map.put("layer", layers.toArray(new String[layers.size()]));
         
         if(mplsData != null){
             map.put("burstLimit", this.genHashVal(mplsData.getBurstLimit() + ""));
@@ -731,17 +731,17 @@ public class TypeConverter {
                                           map.get("destination")[0], layer2Data));
             interPathElem = interPathElem.getNextElem();
         }
-        map.put("interdomainPath", (String[])interPath.toArray());
+        map.put("interdomainPath", interPath.toArray(new String[layers.size()]));
         
         while(pathElem != null){
             //might be no interdomain path
             String linkId = pathElem.getLink().getTopologyIdent();
             intraPath.add(linkId);
-            map.putAll(this.vlanToHashMap(interPathElem, map.get("source")[0], 
-                                          map.get("destination")[0], layer2Data));
+           // map.putAll(this.vlanToHashMap(pathElem, map.get("source")[0], 
+            //                              map.get("destination")[0], layer2Data));
             pathElem = pathElem.getNextElem();
         }
-        map.put("intradomainPath", (String[])intraPath.toArray());
+        map.put("intradomainPath", intraPath.toArray(new String[layers.size()]));
         
         return map;
     }
