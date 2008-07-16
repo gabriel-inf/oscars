@@ -71,7 +71,6 @@ public class ReservationAdapter {
         }
 
         PathInfo pathInfo = params.getPathInfo();
-        CreateReply forwardReply = null;
         CreateReply reply = null;
         EventProducer eventProducer = new EventProducer();
 
@@ -84,18 +83,7 @@ public class ReservationAdapter {
             this.log.debug("create, to toReply");
             reply = this.tc.reservationToReply(resv);
             
-            // FIXME: This test will always fail on asynchronous mode
-            if (pathInfo.getLayer3Info() != null && forwardReply != null && forwardReply.getPathInfo() != null) {
-                // Add remote hops to returned explicitPath
-                this.addHops(reply.getPathInfo(), forwardReply.getPathInfo());
-            }
-            // set to input argument, which possibly has been modified during
-            // reservation creation
-            pathInfo.getPath().setId("unimplemented");
-            this.tc.clientConvert(pathInfo);
-            //Set pathType to null so backward-compatible with old clients
-            //pathType always strict in response so not needed anyways
-            pathInfo.setPathType(null);
+            ///PathInfo is unchanged so just return the user-given pathInfo
             reply.setPathInfo(pathInfo);
         } catch (BSSException e) {
             // send notification in all cases
