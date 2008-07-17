@@ -5,6 +5,7 @@ import net.es.oscars.pss.cisco.LSP;
 import net.es.oscars.pss.jnx.JnxLSP;
 import net.es.oscars.pss.*;
 import net.es.oscars.oscars.*;
+import net.es.oscars.notify.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.*;
@@ -51,7 +52,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
-
+        String errString = "";
         boolean pathWasSetup = true;
         LSP ciscoLSP = null;
         JnxLSP jnxLSP = null;
@@ -61,6 +62,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 jnxLSP.createPath(resv, lspData, direction);
             } catch (PSSException ex) {
                 this.log.error("Could not set up path!", ex);
+                errString = ex.getMessage();
                 pathWasSetup = false;
             }
         } else if (routerType.equals("cisco")) {
@@ -69,10 +71,12 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 ciscoLSP.createPath(resv, lspData, direction);
             } catch (PSSException ex) {
                 this.log.error("Could not set up path!", ex);
+                errString = ex.getMessage();
                 pathWasSetup = false;
             }
         }
 
+        EventProducer eventProducer = new EventProducer();
         String status;
         StateEngine stateEngine = new StateEngine();
         try {
@@ -80,14 +84,16 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             this.log.debug("Reservation status was: "+status);
             if (pathWasSetup) {
                 status = stateEngine.updateStatus(resv, StateEngine.ACTIVE);
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", "JOB", resv);
             } else {
                 status = stateEngine.updateStatus(resv, StateEngine.FAILED);
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errString);
             }
             this.log.debug("Reservation status now is: "+status);
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", ex.getMessage());
         }
-
 
         bss.getTransaction().commit();
 

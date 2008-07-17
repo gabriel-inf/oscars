@@ -1,11 +1,10 @@
 package net.es.oscars.scheduler;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.StateEngine;
+import net.es.oscars.bss.*;
 import net.es.oscars.pss.cisco.LSP;
 import net.es.oscars.pss.jnx.JnxLSP;
 import net.es.oscars.pss.*;
 import net.es.oscars.oscars.*;
+import net.es.oscars.notify.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -28,11 +27,9 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         String direction = (String) dataMap.get("direction");
         String routerType = (String) dataMap.get("routerType");
         String newStatus = (String) dataMap.get("newStatus");
-        
-        String status;
-        StateEngine stateEngine = new StateEngine();
 
-        
+
+
         String gri;
         if (resv != null) {
             gri = (String) resv.getGlobalReservationId();
@@ -55,6 +52,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
+        String errString = "";
         boolean pathWasTornDown = true;
         LSP ciscoLSP = null;
         JnxLSP jnxLSP = null;
@@ -65,6 +63,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             } catch (PSSException ex) {
                 pathWasTornDown = false;
                 this.log.error("Could not set up path", ex);
+                errString = ex.getMessage();
             }
         } else if (routerType.equals("cisco")) {
             ciscoLSP = new LSP(bssDbName);
@@ -73,20 +72,27 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             } catch (PSSException ex) {
                 pathWasTornDown = false;
                 this.log.error("Could not set up path", ex);
+                errString = ex.getMessage();
             }
         }
 
+        EventProducer eventProducer = new EventProducer();
+        String status;
+        StateEngine stateEngine = new StateEngine();
         try {
             status = StateEngine.getStatus(resv);
             this.log.debug("Reservation status was: "+status);
             if (pathWasTornDown) {
                 status = stateEngine.updateStatus(resv, newStatus);
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "JOB", resv);
             } else {
                 status = stateEngine.updateStatus(resv, StateEngine.FAILED);
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errString);
             }
             this.log.debug("Reservation status now is: "+status);
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", ex.getMessage());
         }
 
 
