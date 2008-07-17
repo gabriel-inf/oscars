@@ -506,7 +506,7 @@ public class UserManager {
                                    auth.getConstraintValue() +
                                    ", requested bandwidth: " + reqBandwidth);
                     if (reqBandwidth > auth.getConstraintValue() ) {
-                        // found an authorization that allows the bandwidth
+                        // found an authorization that limits the bandwidth
                         bandwidthAllowed = false;
                     }
                 } else if (auth.getConstraintName().equals("max-duration")) {
@@ -514,7 +514,7 @@ public class UserManager {
                                    auth.getConstraintValue() +
                                    ", requested duration: " + reqDuration);
                     if (reqDuration > auth.getConstraintValue()) {
-                        // found an authorization that allows the duration
+                        // found an authorization that limits the duration
                         durationAllowed = false;
                     }
                 } else if (auth.getConstraintName().equals(
@@ -537,7 +537,7 @@ public class UserManager {
         if (!bandwidthAllowed || !durationAllowed) { 
             this.log.info("denied, over bandwidth or duration limits");
             retVal= AuthValue.DENIED;
-        }  else { retVal = AuthValue.SELFONLY; }
+        }  
         if (specPathElems && !specifyPE) {
             this.log.info("denied, not permitted to specify path");
             retVal = AuthValue.DENIED; 
