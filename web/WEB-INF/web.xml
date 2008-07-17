@@ -15,6 +15,7 @@
 
     <servlet>
         <servlet-name>AuthenticateUser</servlet-name>
+        <load-on-startup>2</load-on-startup>
         <servlet-class>net.es.oscars.servlets.AuthenticateUser</servlet-class>
     </servlet>
     <servlet>
