@@ -43,28 +43,28 @@ public class PolicyManager {
                Reservation newReservation)
             throws BSSException {
         this.log.info("checkOversubscribed.start");
-        
-        
+
+
         List<Link> localLinks = this.getLocalLinksFromPath(intraPath);
-        
+
         BandwidthFilter bwf = new BandwidthFilter();
         bwf.applyFilter(pathInfo, localLinks, newReservation, activeReservations);
-        
-        
-        VlanFilter vlf = new VlanFilter();
-        // TODO: make this configurable
-        vlf.setScope(VlanFilter.edgeNodeScope);
-        vlf.applyFilter(pathInfo, localLinks, newReservation, activeReservations);
-        
-        
+
+        if (pathInfo.getLayer2Info() != null) {
+            VlanFilter vlf = new VlanFilter();
+            // TODO: make this configurable
+            vlf.setScope(VlanFilter.edgeNodeScope);
+            vlf.applyFilter(pathInfo, localLinks, newReservation, activeReservations);
+        }
+
         this.log.info("checkOversubscribed.end");
     }
-    
-    
-    
 
-    
-	 /**
+
+
+
+
+     /**
      * Retrieves linkIntervals given a PathInfo instance.
      * Path contains series of link id's.
      *
@@ -83,7 +83,7 @@ public class PolicyManager {
         if (ctrlPlanePath == null) {
             throw new BSSException("no path provided to initlinkIntervals");
         }
-        
+
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         for (int i = 0; i < hops.length; i++) {
@@ -101,7 +101,7 @@ public class PolicyManager {
                         throw new BSSException("unable to find link with id " + hops[i].getLinkIdRef());
                     }
                     links.add(link);
-                    
+
                 } else {
                     this.log.info("not local: " + hops[i].getLinkIdRef());
                 }
@@ -109,9 +109,9 @@ public class PolicyManager {
                 this.log.info("unknown type: "+hopType+"for hop: " + hopTopoId);
             }
         }
-        
+
         this.log.info("getLocalLinksFromPath.end");
         return links;
     }
-    
+
 }
