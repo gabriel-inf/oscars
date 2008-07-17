@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.apache.log4j.*;
 import org.quartz.*;
+import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
@@ -12,6 +13,8 @@ import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.jnx.JnxLSP;
 import net.es.oscars.pss.cisco.LSP;
 import net.es.oscars.scheduler.*;
+
+
 
 /**
  * This class decides whether to configure Juniper or Cisco routers,
@@ -66,15 +69,15 @@ public class VendorPSS implements PSS {
         String forwardRouterType = "";
         String reverseRouterType = "";
         boolean doReverse = false;
-        // for Juniper circuit set up
-//        JnxLSP jnxLSP = null;
-        // for Cisco circuit set up
-//        LSP ciscoLSP = null;
 
         Path path = resv.getPath();
         lspData.setPathVars(path.getPathElem());
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
         String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+
+        // needed to avoid lazy initialization errors
+        Hibernate.initialize(lspData.getLastXfaceElem().getLink().getValidIpaddr());
+        Hibernate.initialize(lspData.getIngressPathElem().getNextElem().getLink().getValidIpaddr());
 
 
         this.log.info("Getting forward router type");
@@ -208,7 +211,7 @@ public class VendorPSS implements PSS {
             throw new PSSException(ex);
         }
         String status;
-        
+
         LSPData lspData = new LSPData(dbname);
 
         String forwardRouterType = "";
@@ -253,7 +256,7 @@ public class VendorPSS implements PSS {
                 throw new PSSException("Unsupported router type " + sysDescr);
             }
         }
-        
+
         StateEngine stateEngine = new StateEngine();
         try {
             status = StateEngine.getStatus(resv);
