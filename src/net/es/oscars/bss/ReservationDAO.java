@@ -174,17 +174,40 @@ public class ReservationDAO
             overlappingReservations(Long startTime, Long endTime) {
 
         this.reservations = null;
+        
+        ArrayList<String> states = new ArrayList<String>();
+        states.add(StateEngine.RESERVED);
+        states.add(StateEngine.ACTIVE);
+        states.add(StateEngine.INMODIFY);
+        states.add(StateEngine.INSETUP);
+        states.add(StateEngine.INTEARDOWN);
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> iter = states.iterator();
+        if (iter.hasNext()) {
+        	String status = "'"+iter.next()+"'";
+        	sb.append(status);
+        	while (iter.hasNext()) {
+            	status = "'"+iter.next()+"'";
+            	sb.append(",");
+        		sb.append(status);
+        	}
+        }
+        String stateClause = sb.toString();
+        
+        
         // Get reservations with times overlapping that of the reservation
         // request.
         String hsql = "from Reservation r " +
             "where ((r.startTime <= :startTime and r.endTime >= :startTime) or " +
             "(r.startTime <= :endTime and r.endTime >= :endTime) or " +
             "(r.startTime >= :startTime and r.endTime <= :endTime)) " +
-            "and (r.status = 'PENDING' or r.status = 'ACTIVE')";
+            "and (r.status IN (:stateClause))";
         this.reservations = this.getSession().createQuery(hsql)
                                         .setLong("startTime", startTime)
                                         .setLong("endTime", endTime)
+                                        .setString("stateClause", stateClause)
                                         .list();
+        System.out.println(hsql);
         return this.reservations;
     }
 
@@ -204,10 +227,12 @@ public class ReservationDAO
         seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where status = :status " +
                       "and startTime < :startTime " +
+                      "and endTime > :now "+
                       " order by startTime";
         this.reservations = this.getSession().createQuery(hsql)
-                              .setString("status", "PENDING")
+                              .setString("status", StateEngine.RESERVED)
                               .setLong("startTime", seconds)
+                              .setLong("now", seconds)
                               .list();
         return this.reservations;
     }
@@ -226,15 +251,35 @@ public class ReservationDAO
 
         this.reservations = null;
         long seconds = 0;
+        
+        
+        ArrayList<String> states = new ArrayList<String>();
+        states.add(StateEngine.FAILED);
+        states.add(StateEngine.CANCELLED);
+        states.add(StateEngine.FINISHED);
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> iter = states.iterator();
+        if (iter.hasNext()) {
+        	String status = "'"+iter.next()+"'";
+        	sb.append(status);
+        	while (iter.hasNext()) {
+            	status = "'"+iter.next()+"'";
+            	sb.append(",");
+        		sb.append(status);
+        	}
+        }
+        String stateClause = sb.toString();
 
         long periodStart = offset;
         long periodEnd = offset + interval;
 
         String hsql = "from Reservation where " +
-                      " ((status = 'ACTIVE' or status= 'PENDING') and " +
-                      " (endTime >= :periodStart and endTime <= :periodEnd)) or (status = 'PRECANCEL')" +
+                      " ( (status NOT IN (:stateClause)) and " +
+                      "   (endTime >= :periodStart and endTime <= :periodEnd) )" +
                       " order by endTime";
+        
         this.reservations = this.getSession().createQuery(hsql)
+                              .setString("stateClause", stateClause)
                               .setLong("periodStart", periodStart)
                               .setLong("periodEnd", periodEnd)
                               .list();
