@@ -142,6 +142,10 @@ CREATE TABLE IF NOT EXISTS authorizations (
 
 CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintName(9));
 -- authorizations for standard attributes
+
+-- authorizations for OSCARS-user
+-- query and modify own profile
+-- list, query, modify, create and signal own reservations
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="users"),
@@ -179,11 +183,15 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      NULL, NULL); 
      
 -- authorizations for OSCARS-engineer
+-- query and modify own profile
+-- list,query,modify, create and signal all reservations
+-- when creating or modifying reservations may set path elements
+-- query and modify topology information
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="users"),
      (select id from permissions where name="query"),
-    "all-users", 0);
+     NULL, NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="users"),
@@ -232,6 +240,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      NULL, NULL);
      
 --  Authorizations for OSCARS-administrator
+-- list, query, create and modify all user information
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="users"),
@@ -253,13 +262,11 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from permissions where name="modify"),
      "all-users", 1);
      
--- authorizations for service user 
--- note that all the reservations fowarded by a service are owned by the service
-INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-service"),
-     (select id from resources where name="domains"),
-     (select id from permissions where name="query"),
-     NULL, NULL);
+-- authorizations for an IDC forwarding a request to an adjacent domain 
+-- note that all the reservations fowarded by a IDC are owned by the IDC
+-- Query, modify, list, signal reservations that it owns
+-- Create reservations specifying GRI and path elements
+-- Fetch topology, modify local topology
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
@@ -308,6 +315,9 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      NULL, NULL);
      
 -- NOC operators
+-- List and query all reservations
+-- List all users
+-- See and modify own profile
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="reservations"),
@@ -322,19 +332,21 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="users"),
      (select id from permissions where name="list"),
-    "all-users", 1);
+     "all-users", 1);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="users"),
      (select id from permissions where name="query"),
-    "NULL", NULL);
+     NULL, NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
-    "NULL", NULL);     
+     NULL, NULL);     
 
     -- Site Administrator
+    -- List, query, modify, create and signal any reservation
+    --   that starts or terminates at his site
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-siteAdmin"),
      (select id from resources where name="reservations"),
