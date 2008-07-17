@@ -146,7 +146,6 @@ public class LSP {
             this.log.info("Forward circuit set up done");
         } else {
             this.log.info("Circuit set up done");
-            resv.setStatus("ACTIVE");
         }
         this.log.info("createPath.end");
     }
@@ -160,9 +159,6 @@ public class LSP {
      */
     public String refreshPath(Reservation resv, LSPData lspData)
             throws PSSException {
-
-        PathElem ingressPathElem = null;
-        boolean active = false;
 
         if (lspData == null) {
             throw new PSSException(
@@ -186,27 +182,7 @@ public class LSP {
         this.hm.put("resv-id", circuitName);
         this.hm.put("vlan-id", lspData.getVlanTag());
         this.hm.put("router", routerName);
-        String status = resv.getStatus();
-        if (status.equals("PENDING") || status.equals("CANCELLED") ||
-            status.equals("FINISHED") || status.equals("FAILED")) {
-            return status;
-        }
-        if (!this.allowLSP) {
-            return status;
-        }
-        active = this.statusLSP();
-        if (!active) {
-            // try one more time a minute later
-            try {
-                Thread.sleep(60000);
-            } catch (Exception ex) {
-                throw new PSSException(ex.getMessage());
-            }
-            active = this.statusLSP();
-            if (!active) {
-                resv.setStatus("FAILED");
-            }
-        }
+
         return resv.getStatus();
     }
 
@@ -218,14 +194,11 @@ public class LSP {
      * @param direction boolean indicating whether forward path
      * @throws PSSException
      */
-    public void teardownPath(Reservation resv, LSPData lspData,
-                             String direction)
+    public void teardownPath(Reservation resv, LSPData lspData, String direction)
             throws PSSException {
         this.log.info("teardownPath.start");
 
-        String newStatus = null;
 
-        Path path = resv.getPath();
         if (lspData == null) {
             throw new PSSException(
                     "no path related configuration data present");
@@ -246,25 +219,14 @@ public class LSP {
         Link ingressLink = lspData.getIngressLink();
         if (direction.equals("forward")) {
             // router to send configuration command to
-            this.hm.put("router",
-                ingressLink.getPort().getNode().getNodeAddress().getAddress());
+            this.hm.put("router", ingressLink.getPort().getNode().getNodeAddress().getAddress());
             this.hm.put("port", ingressLink.getPort().getTopologyIdent());
             this.teardownLSP();
-        // TODO: makes assumption forward called first
         } else if (direction.equals("reverse")) {
             Link egressLink = lspData.getEgressLink();
-            this.hm.put("router",
-                egressLink.getPort().getNode().getNodeAddress().getAddress());
+            this.hm.put("router", egressLink.getPort().getNode().getNodeAddress().getAddress());
             this.hm.put("port", egressLink.getPort().getTopologyIdent());
             this.teardownLSP();
-            String prevStatus = resv.getStatus();
-            if (!prevStatus.equals("PRECANCEL")) {
-                newStatus = "FINISHED";
-            } else {
-                newStatus = "CANCELLED";
-            }
-            // will be reset if turned out teardown failed
-            resv.setStatus(newStatus);
         }
         this.log.info("teardownPath.end");
     }
@@ -287,8 +249,6 @@ public class LSP {
     public void setupLSP(List<String> hops)
             throws PSSException {
 
-        boolean active = false;
-
         this.log.info("setupLSP.start");
         try {
             String fname =  System.getenv("CATALINA_HOME") +
@@ -308,8 +268,6 @@ public class LSP {
      * @throws PSSException
      */
     public void teardownLSP() throws PSSException {
-
-        boolean active = false;
 
         this.log.info("teardownLSP.start");
         try {

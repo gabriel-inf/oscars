@@ -75,12 +75,6 @@ public class JnxLSP {
         Layer3Data layer3Data = path.getLayer3Data();
         PathElem pathElem = path.getPathElem();
         if (layer2Data != null) {
-            /*
-            if (!path.isExplicit()) {
-                throw new PSSException(
-                        "no explicit path provided for layer 2 Juniper setup");
-            }
-            */
             if (lspData.getIngressLink() == null) {
                 throw new PSSException("createPath called before getting path endpoints");
             }
@@ -109,15 +103,9 @@ public class JnxLSP {
             }
             hm.put("policer_burst-size-limit", Long.toString(mplsData.getBurstLimit()));
         } else {
-            /*
-            throw new PSSException(
-                    "No MPLS data associated with path");
-                    */
-
             Long burst_size = resv.getBandwidth() / 10;
             hm.put("policer_burst-size-limit", burst_size.toString());
             hm.put("lsp_class-of-service", "4");
-
         }
         if (layer2Data != null) {
             hm.put("resv-id", circuitName);
@@ -172,11 +160,6 @@ public class JnxLSP {
         // reset to beginning
         pathElem = path.getPathElem();
         hops = lspData.getHops(pathElem, direction, false);
-        boolean active = this.setupLSP(hops, hm);
-        // TODO:  makes assumption forward called first
-        if ((layer3Data != null) || direction.equals("reverse")) {
-            resv.setStatus("ACTIVE");
-        }
         this.log.info("jnx.createPath.end");
     }
 
@@ -204,8 +187,6 @@ public class JnxLSP {
                              String direction) throws PSSException {
 
         this.log.info("jnx.teardownPath.start");
-        String newStatus = null;
-
         if (lspData == null) {
             throw new PSSException("no path related configuration data present");
         }
@@ -214,8 +195,6 @@ public class JnxLSP {
             throw new PSSException("illegal circuit direction");
         }
         Path path = resv.getPath();
-        PathElem pathElem = path.getPathElem();
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
         if (layer2Data != null) {
@@ -263,18 +242,7 @@ public class JnxLSP {
             this.setupLogin(lspData.getIngressLink(), hm);
         }
 
-        boolean active = this.teardownLSP(hm);
-
-
-        if ((layer3Data != null) || direction.equals("reverse")) {
-            String prevStatus = resv.getStatus();
-            if (!prevStatus.equals("PRECANCEL")) {
-                newStatus = "FINISHED";
-            } else {
-                newStatus = "CANCELLED";
-            }
-            resv.setStatus(newStatus);
-        }
+        this.teardownLSP(hm);
         this.log.info("jnx.teardownPath.end");
     }
 
