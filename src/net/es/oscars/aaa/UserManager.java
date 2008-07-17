@@ -484,10 +484,10 @@ public class UserManager {
         Iterator attrIter = this.userAttrs.iterator();
         while (attrIter.hasNext()) {
             currentAttr = (UserAttribute) attrIter.next();
-            /*
+           /*
             this.log.debug("looking up authorization for attrId: " +
                            currentAttr.getAttributeId());
-            */
+           */
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) {                   
@@ -495,13 +495,19 @@ public class UserManager {
                                currentAttr.getAttributeId());
                 continue;
             } 
+            
             Iterator authItr = auths.iterator();
             while (authItr.hasNext()) {
                 Authorization auth = (Authorization) authItr.next();
-                // no constraint
+                retVal = AuthValue.SELFONLY;  // minimum authorization
+                
+                this.log.debug("constraint for attrId " + currentAttr.getAttributeId() +
+                	" is " + auth.getConstraintName());
+                
                 if (auth.getConstraintName() == null) {
-                    retVal = AuthValue.SELFONLY;
-                } else if (auth.getConstraintName().equals("max-bandwidth")) {
+                    continue;
+                }
+                if (auth.getConstraintName().equals("max-bandwidth")) {
                     this.log.debug("Allowed bandwidth: " +
                                    auth.getConstraintValue() +
                                    ", requested bandwidth: " + reqBandwidth);
@@ -526,10 +532,10 @@ public class UserManager {
                     if (auth.getConstraintValue() == 1) {
                         specifyGRI = true;
                     }
-                }else if (auth.getConstraintName().equals("all-users")){
-                    if (auth.getConstraintValue() == 0) {
-                        retVal = AuthValue.SELFONLY;
-                    } else { retVal = AuthValue.ALLUSERS; }
+                } else if (auth.getConstraintName().equals("all-users")){
+                    if (auth.getConstraintValue() == 1) {
+                     retVal = AuthValue.ALLUSERS; 
+                    }
                 } // end of looking at constraint
             }     // end of loop over authorizations for one attribute
         }
