@@ -31,6 +31,12 @@
 
     <property name="attrType" />
 
+    <property name="description" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
     <!-- Associations -->
 
 </class>

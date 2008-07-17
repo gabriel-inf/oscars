@@ -20,6 +20,9 @@ public class Attribute extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private String attrType;
 
+    /** persistent field */
+    private String description;
+
     /** default constructor */
     public Attribute() { }
 
@@ -44,6 +47,18 @@ public class Attribute extends HibernateBean implements Serializable {
      */ 
     public void setAttrType(String attrType) {
         this.attrType = attrType;
+    }
+
+    /**
+     * @return name a string with the attribute description
+     */ 
+    public String getDescription() { return this.description; }
+
+    /**
+     * @param name A string with the attribute description
+     */ 
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 
