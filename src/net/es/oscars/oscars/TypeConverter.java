@@ -90,7 +90,7 @@ public class TypeConverter {
             throws BSSException {
 
         Reservation resv = new Reservation();
-        
+
         // Hibernate will pick up error if any properties are null that
         // the database schema says cannot be null
         resv.setStartTime(params.getStartTime());
@@ -242,16 +242,16 @@ public class TypeConverter {
             return null;
         }
     }
-    
+
     /**
      * Takes a pathInfo object and sets the source and destination
      * to the ingress and egress. This makes it valid for pathfinders
-     * testing whether src and dest are set as the first and last hops 
-     * in the path. Assumes that the path object contains the local 
+     * testing whether src and dest are set as the first and last hops
+     * in the path. Assumes that the path object contains the local
      * path segment.
      *
      * @param pathInfo the pathInfo instance to convert
-     * @return the converted pathInfo object 
+     * @return the converted pathInfo object
      */
     public PathInfo toLocalPathInfo(PathInfo pathInfo){
         Layer2Info l2Info = pathInfo.getLayer2Info();
@@ -260,7 +260,7 @@ public class TypeConverter {
         CtrlPlaneHopContent[] hop = path.getHop();
         String ingress = null;
         String egress = null;
-        
+
         if(path == null){
             return pathInfo;
         }
@@ -636,7 +636,7 @@ public class TypeConverter {
         else { fixedLength = "" + dint; }
         return fixedLength;
     }
-    
+
     /**
      * Converts Reservation Hibernate bean to a HashMap
      *
@@ -648,7 +648,7 @@ public class TypeConverter {
         if(resv == null){
             return map;
         }
-        
+
         map.put("startSeconds", this.genHashVal(resv.getStartTime() + ""));
         map.put("endSeconds", this.genHashVal(resv.getEndTime() + ""));
         map.put("createSeconds", this.genHashVal(resv.getCreatedTime() + ""));
@@ -657,19 +657,19 @@ public class TypeConverter {
         map.put("description", this.genHashVal(resv.getDescription()));
         map.put("gri", this.genHashVal(resv.getGlobalReservationId()));
         map.put("userLogin", this.genHashVal(resv.getLogin()));
-        
+
         //set Token
         Token token = resv.getToken();
         if(token != null){
             map.put("token", this.genHashVal(token.getValue()));
         }
-        
+
         //set path
         map.putAll(this.pathToHashMap(resv.getPath()));
-        
+
         return map;
     }
-    
+
     /**
      * Converts Path Hibernate bean to a HashMap
      *
@@ -682,7 +682,7 @@ public class TypeConverter {
         if(path == null){
             return map;
         }
-        
+
         Domain nextDomain = path.getNextDomain();
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
@@ -693,14 +693,14 @@ public class TypeConverter {
         ArrayList<String> interPath = new ArrayList<String>();
         String src = null;
         String dest = null;
-        
+
         map.put("isExplicitPath", this.genHashVal(path.isExplicit() ? "true" : "false"));
         map.put("pathSetupMode", this.genHashVal(path.getPathSetupMode()));
-        
+
         if(nextDomain != null){
             map.put("nextDomain", this.genHashVal(nextDomain.getTopologyIdent()));
         }
-        
+
         if(layer3Data != null){
             src = layer3Data.getSrcHost();
             dest = layer3Data.getDestHost();
@@ -714,7 +714,7 @@ public class TypeConverter {
             map.put("layer", this.genHashVal("3"));
             layers.add("3");
         }
-        
+
         if(layer2Data != null){
             src = layer2Data.getSrcEndpoint();
             dest = layer2Data.getDestEndpoint();
@@ -722,34 +722,36 @@ public class TypeConverter {
             map.put("destination", this.genHashVal(dest));
             layers.add("2");
         }
-        
+
         map.put("layer", layers.toArray(new String[layers.size()]));
-        
+
         if(mplsData != null){
             map.put("burstLimit", this.genHashVal(mplsData.getBurstLimit() + ""));
             map.put("lspClass", this.genHashVal(mplsData.getLspClass()));
         }
-        
+
         while(interPathElem != null){
-            String linkId = this.linkToURN(interPathElem.getLink());
+            String linkId = interPathElem.getLink().getFQTI();
             interPath.add(linkId);
             map.putAll(this.vlanToHashMap(interPathElem, src, dest, layer2Data));
             interPathElem = interPathElem.getNextElem();
         }
         map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
-        
+
         while(pathElem != null){
             //might be no interdomain path
-            String linkId = this.linkToURN(pathElem.getLink());
+
+            String linkId = pathElem.getLink().getFQTI();
+
             intraPath.add(linkId);
             map.putAll(this.vlanToHashMap(pathElem, src, dest, layer2Data));
             pathElem = pathElem.getNextElem();
         }
         map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
-        
+
         return map;
     }
-    
+
     /**
      * Converts PathElem Hibernate bean of a layer2 link to a HashMap
      *
@@ -759,15 +761,15 @@ public class TypeConverter {
      * @param layer2Data the layer 2 data associated with a reservation
      * @return the converted HashMap
      */
-    private HashMap<String, String[]> vlanToHashMap(PathElem elem, String src, 
-                                                    String dest, 
+    private HashMap<String, String[]> vlanToHashMap(PathElem elem, String src,
+                                                    String dest,
                                                     Layer2Data layer2Data){
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         if(layer2Data == null){
             return map;
         }
-        
-        String linkId = this.linkToURN(elem.getLink());
+
+        String linkId = elem.getLink().getFQTI();
         String descr = elem.getDescription();
         String tagField = "";
         if(linkId.equals(src)){
@@ -777,19 +779,19 @@ public class TypeConverter {
         }else{
             return map;
         }
-        
+
         try{
             int vtag = Integer.parseInt(descr);
             map.put(tagField, this.genHashVal(vtag > 0 ? "true" : "false"));
             map.put("vlanTag", this.genHashVal(descr));
-        }catch(Exception e){}  
-        
+        }catch(Exception e){}
+
         return map;
     }
-    
+
     /**
      * Generates a String array from a String
-     * 
+     *
      * @param value the String to convert
      * @return the converted array
      */
@@ -801,10 +803,10 @@ public class TypeConverter {
         array[0] = value;
         return array;
     }
-    
+
     /**
      * Extracts a String from a String array
-     * 
+     *
      * @param array the String[] to extract
      * @return the converted array
      */
@@ -814,10 +816,10 @@ public class TypeConverter {
         }
         return array[0];
     }
-    
+
     /**
      * Extracts a long from a String array
-     * 
+     *
      * @param array the String[] to extract
      * @return the converted array
      */
@@ -829,13 +831,13 @@ public class TypeConverter {
         try{
             longVal = Long.parseLong(array[0]);
         }catch(Exception e){}
-        
+
         return longVal;
     }
-    
+
     /**
      * Extracts a int from a String array
-     * 
+     *
      * @param array the String[] to extract
      * @return the converted array
      */
@@ -847,21 +849,21 @@ public class TypeConverter {
         try{
             intVal = Integer.parseInt(array[0]);
         }catch(Exception e){}
-        
+
         return intVal;
     }
-    
+
     /**
      * Converts a hash map to a ResDetail object for Axis2
-     * 
+     *
      * @param value the String to convert
      * @return the converted HashMap in a ResDatils object
      */
     public ResDetails hashMaptoResDetails(HashMap<String, String[]> map){
         //Verify that map has enough fields to build valid ResDetails object
-        final String[] requiredFields = { "gri", "userLogin", "status", 
-                                          "startSeconds", "endSeconds", 
-                                          "createSeconds", "bandwidth", 
+        final String[] requiredFields = { "gri", "userLogin", "status",
+                                          "startSeconds", "endSeconds",
+                                          "createSeconds", "bandwidth",
                                           "description", "pathSetupMode" };
         if(map == null){ return null; }
         for(int i = 0; i < requiredFields.length; i++){
@@ -869,7 +871,7 @@ public class TypeConverter {
                 return null;
             }
         }
-        
+
         //If everything looks good then build the object
         ResDetails details = new ResDetails();
         PathInfo pathInfo = new PathInfo();
@@ -883,10 +885,10 @@ public class TypeConverter {
         details.setCreateTime(this.extractHashLongVal(map.get("createTime")));
         details.setBandwidth(this.extractHashIntVal(map.get("bandwidth")));
         details.setDescription(this.extractHashVal(map.get("description")));
-        
+
         pathInfo.setPathSetupMode(this.extractHashVal(map.get("pathSetupMode")));
         pathInfo.setPathType(this.extractHashVal(map.get("pathType")));
-        
+
         //Set Path
         //TODO: add fields for intra and interdomain path
         //use intradomain path for now since its never null
@@ -902,7 +904,7 @@ public class TypeConverter {
             }
             pathInfo.setPath(wsPath);
         }
-        
+
         //Get layers
         String[] layers = map.get("layer");
         for(int i = 0; layers!= null && i < layers.length; i++){
@@ -912,7 +914,7 @@ public class TypeConverter {
                 hasLayer3Params = true;
             }
         }
-         
+
         if(hasLayer2Params){
             Layer2Info layer2Info = new Layer2Info();
             String vtagStr = this.extractHashVal(map.get("vlanTag"));
@@ -934,7 +936,7 @@ public class TypeConverter {
             }
             pathInfo.setLayer2Info(layer2Info);
         }
-         
+
         if(hasLayer3Params){
             Layer3Info layer3Info = new Layer3Info();
             layer3Info.setSrcHost(this.extractHashVal(map.get("source")));
@@ -945,7 +947,7 @@ public class TypeConverter {
             layer3Info.setDscp(this.extractHashVal(map.get("dscp")));
             pathInfo.setLayer3Info(layer3Info);
         }
-        
+
         int burstLimit = this.extractHashIntVal(map.get("burstLimit"));
         String lspClass = this.extractHashVal(map.get("lspClass"));
         if(burstLimit != 0 || lspClass != null){
@@ -954,33 +956,12 @@ public class TypeConverter {
             mplsInfo.setBurstLimit(burstLimit);
             pathInfo.setMplsInfo(mplsInfo);
         }
-        
+
         details.setPathInfo(pathInfo);
-        
+
         return details;
     }
-    
-    /**
-     * Converts a Hibernate Link bean to a URN
-     *
-     * @param link the link to be converted
-     * @return the fully-qulaified URN of the given link
-     */
-    public String linkToURN(Link link){
-        /* Note: Database schema prevent potential NullPointer exceptions below */
-        Port port = link.getPort();
-        Node node = port.getNode();
-        Domain domain = node.getDomain();
-        String urn = "urn:ogf:network";
-        
-        urn += ":domain=" + domain.getTopologyIdent();
-        urn += ":node=" + node.getTopologyIdent();
-        urn += ":port=" + port.getTopologyIdent();
-        urn += ":link=" + link.getTopologyIdent();
-        
-        return urn;
-    }
-    
+
     /**
      * Converts Axis2 Layer2Info object to a Layer2Data Hibernate bean
      *
@@ -994,10 +975,10 @@ public class TypeConverter {
         Layer2Data layer2Data = new Layer2Data();
         layer2Data.setSrcEndpoint(layer2Info.getSrcEndpoint());
         layer2Data.setDestEndpoint(layer2Info.getDestEndpoint());
-        
+
         return layer2Data;
      }
-     
+
      /**
      * Converts Axis2 Layer3Info object to a Layer3Data Hibernate bean
      *
@@ -1009,17 +990,17 @@ public class TypeConverter {
             return null;
         }
         Layer3Data layer3Data = new Layer3Data();
-        
+
         layer3Data.setSrcHost(layer3Info.getSrcHost());
         layer3Data.setDestHost(layer3Info.getDestHost());
         layer3Data.setSrcIpPort(layer3Info.getSrcIpPort());
         layer3Data.setDestIpPort(layer3Info.getDestIpPort());
         layer3Data.setProtocol(layer3Info.getProtocol());
         layer3Data.setDscp(layer3Info.getDscp());
-        
+
         return layer3Data;
      }
-     
+
      /**
      * Converts Axis2 MplsInfo object to a MPLSData Hibernate bean
      *
@@ -1031,7 +1012,7 @@ public class TypeConverter {
             return null;
         }
         MPLSData mplsData = new MPLSData();
-        
+
         mplsData.setBurstLimit((long) mplsInfo.getBurstLimit());
         mplsData.setLspClass(mplsInfo.getLspClass());
 
