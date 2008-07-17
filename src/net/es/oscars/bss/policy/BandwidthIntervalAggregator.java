@@ -1,14 +1,14 @@
-package net.es.oscars.bss;
+package net.es.oscars.bss.policy;
 
 import java.util.*;
 
 /**
   * This class handles interval aggregation to check for oversubscription.
   */
-public class IntervalAggregator {
+public class BandwidthIntervalAggregator {
     private List<TimePoint> intervals; 
 
-    public IntervalAggregator(Long start, Long end, 
+    public BandwidthIntervalAggregator(Long start, Long end, 
                               Long newStart, Long newEnd, Long item) {
 
         TimePoint pt = null;

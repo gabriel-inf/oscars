@@ -17,10 +17,8 @@ import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.scheduler.*;
 import net.es.oscars.rmi.*;
+import net.es.oscars.bss.policy.*;
 
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 public class OSCARSCore {
@@ -128,8 +126,8 @@ public class OSCARSCore {
         dbnames.add(this.aaaDbName);
         Initializer dbInitializer = new Initializer();
         dbInitializer.initDatabase(dbnames);
-        Session aaa = this.getAaaSession();
-        Session bss = this.getBssSession();
+        this.getAaaSession();
+        this.getBssSession();
         this.log.debug("initDatabases.end");
     }
 

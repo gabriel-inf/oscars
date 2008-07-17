@@ -1,12 +1,8 @@
 package net.es.oscars.bss;
 
 import java.util.*;
-import java.io.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
+import java.net.*;
 import org.apache.log4j.*;
-import org.hibernate.*;
 
 import org.aaaarch.gaaapi.tvs.TokenBuilder;
 import org.aaaarch.gaaapi.tvs.TokenKey;
@@ -20,11 +16,10 @@ import net.es.oscars.oscars.*;
 import net.es.oscars.scheduler.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.policy.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pss.PSSException;
-import net.es.oscars.scheduler.VendorCreatePathJob;
 import net.es.oscars.notify.*;
-import net.es.oscars.database.HibernateUtil;
 
 
 
@@ -91,7 +86,7 @@ public class ReservationManager {
                 throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
             }
         }
-        
+
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
 
@@ -517,9 +512,9 @@ public class ReservationManager {
         path.setExplicit(isExplicit);
         return path;
     }
-    
+
     /**
-     * Finds the intradomain ingress link and returns a Path containing only 
+     * Finds the intradomain ingress link and returns a Path containing only
      * that link. This is needed for initially holding the reservation to
      * meet the database schema requirments.
      *
@@ -536,7 +531,7 @@ public class ReservationManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         String ingressLink = null;
         Link link = null;
-        
+
         //Build path containing only the ingress link id
         try{
             ingressLink = this.pceMgr.findIngress(pathInfo);
@@ -548,16 +543,16 @@ public class ReservationManager {
         elem.setLink(link);
         path.setPathElem(elem);
         path.setPathSetupMode(pathInfo.getPathSetupMode());
-        
+
         //Convert layer2/layer3/mplsInfo to Hibernate beans
         path.setLayer2Data(this.tc.layer2InfoToData(layer2Info));
         path.setLayer3Data(this.tc.layer3InfoToData(layer3Info));
         path.setMplsData(this.tc.mplsInfoToData(mplsInfo));
-        
+
         this.log.debug("buildInitialPath.end");
         return path;
      }
-    
+
     /**
      * Converts the intradomain and interdomain paths in Axis2 data structure into
      * database Path class containing both.
