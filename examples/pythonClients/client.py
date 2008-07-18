@@ -7,7 +7,7 @@ from wssecurity import SignatureHandler
 from ZSI.client import Binding
 from sampletypes import EchoRequestWrapper, EchoResponseWrapper
 
-WS_URL = 'http://test-idc.internet2.edu:8080/axis2/services/OSCARS'
+WS_URL = 'https://test-idc.internet2.edu:8443/axis2/services/OSCARS'
 
 if __name__ == '__main__':
     parser = OptionParser()

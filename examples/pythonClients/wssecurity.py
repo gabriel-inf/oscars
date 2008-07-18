@@ -223,7 +223,6 @@ class SignatureHandler(object):
     def verify(self, parsedSoap):
         """Verifies incoming responses"""
 
-        # No verification has to be performed, so just print whatever
-        # comes our way
-        print parsedSoap
+        # No verification has to be performed
+        pass
 

@@ -343,7 +343,9 @@ class ComplexType(TypeCode):
             f = lambda attr: d.get(attr)
         else:
             d = pyobj
-            f = lambda attr: pyobj.get(attr)
+            # A 1-tuple containing a single dictionary?
+            if isinstance(d, tuple): d = d[0]
+            f = lambda attr: d.get(attr)
             if TypeCode.typechecks and type(d) != types.DictType:
                 raise TypeError("Classless struct didn't get dictionary")
 

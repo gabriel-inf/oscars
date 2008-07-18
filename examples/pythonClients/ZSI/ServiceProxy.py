@@ -34,7 +34,7 @@ class ServiceProxy:
 
     def __init__(self, wsdl, url=None, service=None, port=None, tracefile=None,
                  nsdict=None, transport=None, transdict=None, 
-                 cachedir='.service_proxy_dir', asdict=True):
+                 cachedir='.service_proxy_dir', asdict=True, sig_handler=None):
         """
         Parameters:
            wsdl -- URL of WSDL.
@@ -48,6 +48,7 @@ class ServiceProxy:
            transdict -- arguments to pass into HTTPConnection constructor.
            cachedir -- where to store generated files
            asdict -- use dicts, else use generated pyclass
+           sig_handler -- XML Signature handler, must sign and verify.
         """
         self._asdict = asdict
         
@@ -57,6 +58,7 @@ class ServiceProxy:
         self._transdict = transdict 
         self._transport = transport
         self._url = url
+        self._sig_handler = sig_handler
         
         # WSDL
         self._wsdl = wstools.WSDLTools.WSDLReader().loadFromURL(wsdl)
@@ -126,8 +128,9 @@ class ServiceProxy:
                 callinfo = method.callinfo
 
         binding = _Binding(tracefile=self._tracefile,
-                          url=self._url or callinfo.location, 
-                          nsdict=self._nsdict, 
+                          url=self._url or callinfo.location,
+                          nsdict=self._nsdict,
+                          sig_handler=self._sig_handler,
                           soapaction=callinfo.soapAction)
 
 
