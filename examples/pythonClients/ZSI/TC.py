@@ -441,7 +441,10 @@ class SimpleType(TypeCode):
         if self.attribute_typecode_dict is not None:
             attributes = self.parse_attributes(elt, ps)
             if attributes:
-                setattr(pyobj, self.attrs_aname, attributes)
+                try:
+                    setattr(pyobj, self.attrs_aname, attributes)
+                except AttributeError:
+                    pass
         
         return pyobj
 

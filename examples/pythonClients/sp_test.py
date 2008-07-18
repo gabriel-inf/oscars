@@ -7,10 +7,10 @@ from wssecurity import SignatureHandler
 WSDL_URL = 'OSCARS.wsdl'
 WS_URL = 'https://test-idc.internet2.edu:8443/axis2/services/OSCARS'
 
-currentTimeMillis = lambda: int(time.time() * 1000)
+currentTimeSecs = lambda: int(time.time())
 req = {
-    "startTime": currentTimeMillis(),
-    "endTime": currentTimeMillis() + 1000*60**2,
+    "startTime": currentTimeSecs(),
+    "endTime": currentTimeSecs() + 60**2,
     "bandwidth": 100,
     "description": "Gianluca's test",
     "pathInfo": {
@@ -24,6 +24,46 @@ req = {
 
 signatureHandler = SignatureHandler('cert.cer', 'key.pem')
 
-sp = ServiceProxy(WSDL_URL, url=WS_URL, tracefile=sys.stdout, sig_handler=signatureHandler)
+sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler)
 
-sp.createReservation(req)
+response = sp.createReservation(req)
+
+print 'IDC reply:'
+from pprint import pprint
+pprint(response)
+print
+
+hops = ( hop['linkIdRef'] for hop in response['pathInfo']['path']['hop'] )
+
+print 'Global reservation ID:', response['globalReservationId']
+print 'Status:', response['status']
+print
+
+print 'Hops:'
+for hop in hops:
+    print '    ', hop
+print
+
+print 'Layer 2 Info:'
+print '    Source endpoint:', response['pathInfo']['layer2Info']['srcEndpoint']
+print '    Source VTAG:', response['pathInfo']['layer2Info']['srcVtag']
+print '    Destination endpoint:', response['pathInfo']['layer2Info']['destEndpoint']
+print '    Destination VTAG:', response['pathInfo']['layer2Info']['destVtag']
+print
+
+print 'Going to sleep for 30 seconds...'
+time.sleep(30)
+print
+
+print 'Reservation status:'
+pprint(sp.queryReservation({'gri': response['globalReservationId']}))
+print
+
+print 'Sleeping another 5 seconds...'
+time.sleep(5)
+print
+
+print 'Canceling reservation:'
+pprint(sp.cancelReservation({'gri': response['globalReservationId']}))
+print
+
