@@ -126,11 +126,45 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         return ctrlPlanePath;
     }
     
+    /**
+     * Finds first IP address and returns the link-id
+     *
+     * @param pathInfo the path to examine
+     * @return the URN of the ingress link
+     */
     public String findIngress(PathInfo pathInfo) throws PathfinderException{
-        //1. extract appropriate l3 or l2 source from pathInfo
-        //2. convert to URN
-        //3. Call super.findIngress
-        return super.findIngress(null, pathInfo.getPath());
+        Layer3Info l3Info = pathInfo.getLayer3Info();
+        CtrlPlanePathContent path = pathInfo.getPath();
+        if(l3Info == null){
+            return null;
+        }
+        String src = l3Info.getSrcHost();
+        if(path == null){
+            return src;
+        }   
+        
+        CtrlPlaneHopContent[] hops = path.getHop();
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        NodeAddressDAO nodeAddrDAO = new NodeAddressDAO(this.dbname);
+        Domain domain = domainDAO.getLocalDomain();
+        String localTopologyIdent = domain.getTopologyIdent();
+        String fqn = null;
+        for(CtrlPlaneHopContent hop:hops){
+            String linkId = hop.getLinkIdRef();
+            if(linkId == null){
+                continue;
+            }else if (ipaddrDAO.queryByParam("IP", linkId) != null) {
+                fqn = domainDAO.setFullyQualifiedLink(localTopologyIdent, linkId);
+            } else if (nodeAddrDAO.queryByParam("address", linkId) != null) {
+                Node node = nodeAddrDAO.queryByParam("address", linkId).getNode();
+                fqn = node.getFQTI();
+            } else {
+                fqn = domainDAO.setFullyQualifiedLink("other", linkId);
+            }
+        }
+        
+        return fqn;
     }
 
     /**

@@ -63,13 +63,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         domDAO = new DomainDAO(dbname);
     }
-    
-    public String findIngress(PathInfo pathInfo) throws PathfinderException{
-        //1. extract appropriate l3 or l2 source from pathInfo
-        //2. convert to URN
-        //3. Call super.findIngress
-        return super.findIngress(null, pathInfo.getPath());
-    }
 
     /**
      * Finds a path given just source and destination or by expanding
@@ -98,8 +91,29 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.log.debug("findPath.End");
         return pathInfo;
     }
-
-
+    
+    /**
+     * Returns the ingress given a path. Converts hops in path to URNs
+     * then passes to superclass
+     *
+     * @param pathInfo the path from which to extract the needed info
+     * @return the ingress linkId of the path
+     */
+    public String findIngress(PathInfo pathInfo) throws PathfinderException{
+        Layer2Info l2Info = pathInfo.getLayer2Info();
+        
+        //need to convert to URN
+        // if layer2 request then already a URN so pass to super...
+        if(l2Info != null){
+            String src = l2Info.getSrcEndpoint();
+            super.findIngress(src, pathInfo.getPath());
+        }
+        
+        //...if layer 3 request then pass to TraceroutePathfinder.findIngress
+        TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
+        return tracePF.findIngress(pathInfo);
+    }
+    
     private void handleLayer3ERO(PathInfo pathInfo, Reservation reservation)
             throws PathfinderException {
         this.log.debug("handleLayer3ERO.start");

@@ -92,8 +92,8 @@ public class ReservationManager {
 
         // This is a pretty bad misuse of this function
         // TODO: Test if this actually works
-        Path tempPath = this.convertPath(pathInfo, pathInfo, null, false);
-        //Path tempPath = this.buildInitialPath(pathInfo);
+        //Path tempPath = this.convertPath(pathInfo, pathInfo, null, false);
+        Path tempPath = this.buildInitialPath(pathInfo);
         resv.setPath(tempPath);
 
         // This will be the ONLY time we set status with setStatus

@@ -18,7 +18,8 @@ public class ParamValidator {
     public StringBuilder validate(Reservation resv, PathInfo pathInfo) {
 
         String explicitPath = null;
-
+        boolean isLayer2 = false;
+        
         StringBuilder sb = new StringBuilder();
         if (resv == null) {
             return sb.append("Null resv");
@@ -38,6 +39,7 @@ public class ParamValidator {
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         Layer3Info layer3Info = pathInfo.getLayer3Info();
         if (layer2Info != null) {
+            isLayer2 = true;
             sb.append(this.checkVtag(layer2Info));
             sb.append(this.checkL2Endpoint(layer2Info, false));
             sb.append(this.checkL2Endpoint(layer2Info, true));
@@ -59,7 +61,7 @@ public class ParamValidator {
         }
         CtrlPlanePathContent path = pathInfo.getPath();
         if (path != null) {
-            sb.append(this.checkPath(path));
+            sb.append(this.checkPath(path, isLayer2));
         }
         return sb;
     }
@@ -137,8 +139,9 @@ public class ParamValidator {
     /**
      * @param path An explicit path containing an ERO (layer 2 or layer 3),
      *     or an ingress and egress (layer 3)
+     * @param isLayer2 true if this is a layer 2 reservation, false otherwise
      */
-    private String checkPath(CtrlPlanePathContent path) {
+    private String checkPath(CtrlPlanePathContent path, boolean isLayer2) {
         // for now, just check length
         if (path == null) {
             return "";
@@ -147,6 +150,27 @@ public class ParamValidator {
         if (hops != null && hops.length == 1) {
             return("path, if specified, must contain more than one hop");
         }
+        if(!isLayer2){
+            return "";
+        }
+        //lookup hops in lookup service if not URNs
+        for(CtrlPlaneHopContent hop:hops){
+            /* If URN do no further checking */
+            String linkId = hop.getLinkIdRef();
+            if(linkId == null || (linkId.matches("^urn:ogf:network:.*"))){
+                continue;
+            }
+            /* Lookup name via perfSONAR Lookup Service */
+            LookupFactory lookupFactory = new LookupFactory();
+            PSLookupClient lsClient = lookupFactory.getPSLookupClient();
+            try {
+                String urn = lsClient.lookup(linkId);
+                hop.setLinkIdRef(urn);
+            } catch(LookupException e){
+                return e.getMessage();
+            }
+        }
+        
         return "";
     }
 
