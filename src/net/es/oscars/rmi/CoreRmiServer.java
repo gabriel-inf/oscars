@@ -4,21 +4,28 @@ import java.io.*;
 import java.util.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
+//import java.rmi.server.UnicastRemoteObject;
+import java.rmi.server.*;
 import java.rmi.*;
+import java.net.*;
+import java.net.UnknownHostException;
 
 import net.es.oscars.notify.RemoteEventProducer;
 
 import org.apache.log4j.*;
 
-public class CoreRmiServer implements CoreRmiInterface {
+public class CoreRmiServer  implements CoreRmiInterface  {
     private Logger log;
     private Registry registry;
 
     /* Make remote object static so GarbageCollector doesn't delete it */
     public static  CoreRmiServer staticObject;
     private CoreRmiInterface stub;
-    private RmiHandlerSwitchboard switchboard;
+    private CreateResRmiHandler createHandler;
+    private QueryResRmiHandler queryHandler;
+    private ListResRmiHandler listHandler;
+    private CancelResRmiHandler cancelHandler;
+    private ModifyResRmiHandler modifyHandler;
 
     /**
      * CoreRmiServer constructor
@@ -37,10 +44,14 @@ public class CoreRmiServer implements CoreRmiInterface {
         this.log.debug("init.start");
         this.registry = LocateRegistry.createRegistry(8091);
 
-        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, 0);
-
+        //this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, 0);
+        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, 8099);
         this.registry.rebind("IDCRMIServer", this.stub);
-        this.switchboard = new RmiHandlerSwitchboard();
+        this.createHandler = new CreateResRmiHandler();
+        this.queryHandler = new QueryResRmiHandler();
+        this.listHandler = new ListResRmiHandler();
+        this.cancelHandler = new CancelResRmiHandler();
+        this.modifyHandler = new ModifyResRmiHandler();
         this.log.debug("init.end");
     }
 
@@ -73,7 +84,10 @@ public class CoreRmiServer implements CoreRmiInterface {
     
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
-        return this.switchboard.createReservation(inputMap, userName);
+        if (!checkClientHost()){
+            throw new RemoteException("rmi call from non-local host");
+        }
+        return this.createHandler.createReservation(inputMap, userName);
     }
 
     /**
@@ -86,7 +100,10 @@ public class CoreRmiServer implements CoreRmiInterface {
    
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
-        return this.switchboard.queryReservation(inputMap, userName);
+        if (!checkClientHost()){
+            throw new RemoteException("rmi call from non-local host");
+        }
+        return this.queryHandler.queryReservation(inputMap, userName);
     }
     
     /**
@@ -99,7 +116,10 @@ public class CoreRmiServer implements CoreRmiInterface {
    
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
-        return this.switchboard.listReservations(inputMap, userName);
+        if (!checkClientHost()){
+            throw new RemoteException("rmi call from non-local host");
+        }
+        return this.listHandler.listReservations(inputMap, userName);
     }
     
     /**
@@ -111,7 +131,10 @@ public class CoreRmiServer implements CoreRmiInterface {
     
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
-        return this.switchboard.cancelReservation(inputMap, userName);
+        if (!checkClientHost()){
+            throw new RemoteException("rmi call from non-local host");
+        }
+        return this.cancelHandler.cancelReservation(inputMap, userName);
     }
 
     /**
@@ -124,7 +147,34 @@ public class CoreRmiServer implements CoreRmiInterface {
     
     public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
-        return this.switchboard.modifyReservation(inputMap, userName);
+        if (!checkClientHost()){
+            throw new RemoteException("rmi call from non-local host");
+        }
+        return this.modifyHandler.modifyReservation(inputMap, userName);
+    }
+    
+    /**
+     * Check that rmi call came from the local host
+     * @return true/false
+     */
+    private boolean checkClientHost(){
+        try {
+            String remoteHost = RemoteServer.getClientHost();
+            String localHost = InetAddress.getLocalHost().getHostAddress();
+            //this.log.info("client host for list reservations is: " + remoteHost);
+            //this.log.info ("local host ipAddr is " + localHost );
+            if (remoteHost.equals(localHost)) {
+                return true;
+            } 
+            this.log.warn("rmiServer called by non-local host: " + remoteHost);
+            return false;
+        } catch (ServerNotActiveException e) {
+            this.log.warn ("Can't get client host in listReservations");
+            return false;
+        } catch (UnknownHostException e) {
+            this.log.warn("Can't get localHost Ipaddr");
+            return false;
+        }
     }
 
 }
