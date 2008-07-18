@@ -2,6 +2,7 @@ package net.es.oscars.pss.cisco;
 
 import java.io.*;
 import java.net.*;
+import java.util.regex.*;
 import java.util.*;
 
 import org.apache.log4j.*;
@@ -282,33 +283,55 @@ public class LSP {
     }
 
     /**
-     * Gets the LSP status on a Cisco router.
+     * Gets the LSP status of a set of VLAN's on a Cisco router.
      *
-     * @return boolean indicating whether the circuit is up or down
+     * @param router string with router id
+     * @param vlanIds list of VLAN's to check
+     * @return vlanStatuses HashMap with VLAN's and their statuses
      * @throws PSSException
      */
-    public boolean statusLSP() throws PSSException {
+    public Map<String, Boolean> statusLSP(String router, List<String> vlanIds)
+            throws PSSException {
 
-        boolean status = false;
-        String outputStr = null;
+        Map<String,Boolean> vlanStatuses = new HashMap<String,Boolean>();
+        Map<String,Boolean> currentVlans = new HashMap<String,Boolean>();
+        BufferedReader cmdOutput = null;
+        StringBuilder sb = null;
 
         this.log.info("statusLSP.start");
         this.log.info("clogin -c \"show mpls l2transport vc\" " +
-                      this.hm.get("router"));
+                      router);
         String[] cmd = { "clogin", "-c", "show mpls l2transport vc",
-                         this.hm.get("router") };
-        String requiredOutput = "Eth VLAN " + this.hm.get("vlan-id");
+                         router };
         try {
-            outputStr = this.runCommand(cmd, requiredOutput);
+            cmdOutput = this.runCommand(cmd);
+            String outputLine = null;
+            sb = new StringBuilder();
+            while ((outputLine = cmdOutput.readLine()) != null) {
+                this.log.info("output: " + outputLine);
+                sb.append(outputLine + "\n");
+            }
+            cmdOutput.close();
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
-        if (outputStr == null) { return false; }
-        String[] fields = outputStr.trim().split(" ");
-        int lastField = fields.length - 1;
-        status = fields[lastField].equals("UP") ? true : false;
-        this.log.info("statusLSP.finish with status " + status);
-        return status;
+        Pattern pattern = Pattern.compile("/.*Eth VLAN (\\d{3,4}).*(UP|DOWN)/");
+        List<MatchResult> results = this.th.findAll(pattern, sb.toString());
+        for (MatchResult r: results) {
+            if (r.group(2).equals("UP")) {
+                currentVlans.put(r.group(1), true);
+            } else {
+                currentVlans.put(r.group(1), false);
+            }
+        }
+        for (String vlanId: vlanIds) {
+            if (!currentVlans.containsKey(vlanId)) {
+                vlanStatuses.put(vlanId, false);
+            } else {
+                vlanStatuses.put(vlanId, currentVlans.get(vlanId));
+            }
+        }
+        return vlanStatuses;
     }
 
     /**
@@ -348,23 +371,32 @@ public class LSP {
      * output.
      *
      * @param cmdStr string with command to send to router
-     * @throws IOException
      * @throws PSSException
      */
     private void sendConfigCommand(String cmdStr)
-            throws IOException, PSSException {
+            throws PSSException {
 
         // create a temporary file for use by RANCID
         String fname =  "/tmp/" + this.hm.get("resv-id")+"-"+this.hm.get("direction");
         File tmpFile = new File(fname);
-        BufferedWriter outputStream =
-            new BufferedWriter(new FileWriter(tmpFile));
-        // write command to temporary file
-        outputStream.write(cmdStr);
-        outputStream.close();
-        this.log.info("clogin -x " + fname + " " + this.hm.get("router"));
-        String cmd[] = { "clogin", "-x", fname, this.hm.get("router") };
-        this.runCommand(cmd, null);
+        try {
+            BufferedWriter outputStream =
+                new BufferedWriter(new FileWriter(tmpFile));
+            // write command to temporary file
+            outputStream.write(cmdStr);
+            outputStream.close();
+            this.log.info("clogin -x " + fname + " " + this.hm.get("router"));
+            String cmd[] = { "clogin", "-x", fname, this.hm.get("router") };
+            BufferedReader cmdOutput = this.runCommand(cmd);
+            String outputLine = null;
+            while ((outputLine = cmdOutput.readLine()) != null) {
+                // just log
+                this.log.info("output: " + outputLine);
+            }
+            cmdOutput.close();
+        } catch (IOException ex) {
+            throw new PSSException(ex.getMessage());
+        }
         // delete temporary file
         tmpFile.delete();
     }
@@ -374,12 +406,11 @@ public class LSP {
      * output.
      *
      * @param cmdStr array with command and arguments to exec
-     * @param requiredOutput string with required output, if any
-     * @return outputStr first line of output with the required string
+     * @return cmdOutput BufferedReader for output from the router
      * @throws IOException
      * @throws PSSException
      */
-    private String runCommand(String[] cmd, String requiredOutput)
+    private BufferedReader runCommand(String[] cmd)
             throws IOException, PSSException {
 
         String outputStr = null;
@@ -396,18 +427,8 @@ public class LSP {
             cmdError.close();
             throw new PSSException("RANCID commnd error: " + errInfo);
         }
-        String outputLine = null;
-        while ((outputLine = cmdOutput.readLine()) != null) {
-            this.log.info("output: " + outputLine);
-            if (requiredOutput != null) {
-                if (outputLine.contains(requiredOutput)) {
-                    outputStr = new String(outputLine);
-                }
-            }
-        }
-        cmdOutput.close();
         cmdError.close();
-        return outputStr;
+        return cmdOutput;
     }
 
     /**
