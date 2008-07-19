@@ -1,4 +1,6 @@
 package net.es.oscars.scheduler;
+import java.util.HashMap;
+
 import net.es.oscars.bss.*;
 import net.es.oscars.pss.cisco.LSP;
 import net.es.oscars.pss.jnx.JnxLSP;
@@ -20,6 +22,9 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         OSCARSCore core = OSCARSCore.getInstance();
 
         String bssDbName = core.getBssDbName();
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
+
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         Reservation resv = (Reservation) dataMap.get("reservation");
@@ -48,9 +53,6 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             this.runNextJob(context);
             return;
         }
-
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
 
         String errString = "";
         boolean pathWasTornDown = true;
@@ -82,14 +84,35 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         try {
             status = StateEngine.getStatus(resv);
             this.log.debug("Reservation status was: "+status);
-            if (pathWasTornDown) {
-                status = stateEngine.updateStatus(resv, newStatus);
-                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "JOB", resv);
-            } else {
+            if (!pathWasTornDown) {
                 status = stateEngine.updateStatus(resv, StateEngine.FAILED);
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errString);
+            } else {
+                try {
+                    Scheduler sched = core.getScheduleManager().getScheduler();
+                    JobDetail jd = sched.getJobDetail("MaintainStatus", "STATUS");
+                    HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) jd.getJobDataMap().get("checklist");
+                    HashMap<String, String> properties = checklist.get(gri);
+                    if (properties == null) {
+                        properties = new HashMap<String, String>();
+                        checklist.put(gri, properties);
+                        jd.getJobDataMap().put("checklist", checklist);
+                    }
+                    properties.put("desiredStatus", newStatus);
+                    properties.put("operation", "PATH_TEARDOWN");
+                    if (direction.equals("forward")) {
+                        properties.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
+                        properties.put("ingressVlan", lspData.getVlanTag());
+                        properties.put("ingressVendor", routerType);
+                    } else if (direction.equals("reverse")) {
+                        properties.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
+                        properties.put("egressVlan", lspData.getVlanTag());
+                        properties.put("egressVendor", routerType);
+                    }
+                } catch (SchedulerException ex) {
+                    this.log.error(ex);
+                }
             }
-            this.log.debug("Reservation status now is: "+status);
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", ex.getMessage());

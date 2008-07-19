@@ -1,5 +1,6 @@
 package net.es.oscars.scheduler;
 
+import net.es.oscars.PropHandler;
 import net.es.oscars.oscars.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.pss.PSSScheduler;
@@ -36,13 +37,32 @@ public class ScheduleManager {
             SchedulerFactory schedFact = new StdSchedulerFactory();
             this.scheduler = schedFact.getScheduler();
 
-            JobDetail jobDetail = new JobDetail("Process Queue", "queue", ProcessQueueJob.class);
-            Trigger trigger = TriggerUtils.makeMinutelyTrigger(1);
+            JobDetail pqJobDetail = new JobDetail("Process Queue", "queue", ProcessQueueJob.class);
+            Trigger pqTrigger = TriggerUtils.makeMinutelyTrigger(1);
 
-            trigger.setStartTime(new Date());
-            trigger.setName("SimpleTrigger");
+            pqTrigger.setStartTime(new Date());
+            pqTrigger.setName("Process Queue Trigger");
 
-            this.scheduler.scheduleJob(jobDetail, trigger);
+            this.scheduler.scheduleJob(pqJobDetail, pqTrigger);
+
+
+
+
+            PropHandler propHandler = new PropHandler("oscars.properties");
+            Properties props = propHandler.getPropertyGroup("pss", true);
+            String method = props.getProperty("method");
+            if (method.equals("vendor")) {
+                JobDetail msJobDetail = new JobDetail("MaintainStatus", "STATUS", VendorMaintainStatusJob.class);
+                Trigger msTrigger = TriggerUtils.makeMinutelyTrigger(1);
+
+                msTrigger.setStartTime(new Date());
+                msTrigger.setName("Maintain Status Trigger");
+                this.scheduler.scheduleJob(msJobDetail, msTrigger);
+            }
+
+
+
+
             this.scheduler.start();
 
         } catch (SchedulerException ex) {
@@ -80,7 +100,7 @@ public class ScheduleManager {
     // cancel means we need to remove all other jobs in the queue related to that job
     // it's initiated by the user so it trumps scheduled actions
     public void processCancel(Reservation resv, String nextStatus) throws BSSException {
-    	this.log.debug("processCancel.start");
+        this.log.debug("processCancel.start");
         String gri = resv.getGlobalReservationId();
         try {
             this.pauseScheduler();
@@ -103,9 +123,9 @@ public class ScheduleManager {
                     String[] jobNames = this.scheduler.getJobNames(queueName);
                     for (String jobName : jobNames) {
                         JobDetail jobDetail = this.scheduler.getJobDetail(jobName, queueName);
-                    	this.log.debug("Examining job "+jobDetail.getFullName());
+                        this.log.debug("Examining job "+jobDetail.getFullName());
                         Reservation tmpResv = (Reservation) jobDetail.getJobDataMap().get("reservation");
-                    	this.log.debug("Reservation is "+tmpResv.getGlobalReservationId());
+                        this.log.debug("Reservation is "+tmpResv.getGlobalReservationId());
                         if (tmpResv != null) {
                             if (gri.equals(tmpResv.getGlobalReservationId())) {
                                 this.scheduler.deleteJob(jobName, queueName);
@@ -123,7 +143,7 @@ public class ScheduleManager {
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
         }
-    	this.log.debug("processCancel.end");
+        this.log.debug("processCancel.end");
     }
 
     public void reformQueue(String queueName) throws SchedulerException {
