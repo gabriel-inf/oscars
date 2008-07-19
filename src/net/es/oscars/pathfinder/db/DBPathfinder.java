@@ -6,9 +6,7 @@ import java.util.*;
 import java.rmi.RemoteException;
 
 import net.es.oscars.*;
-import net.es.oscars.lookup.LookupException;
-import net.es.oscars.lookup.LookupFactory;
-import net.es.oscars.lookup.PSLookupClient;
+import net.es.oscars.lookup.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.pathfinder.db.util.*;
@@ -33,20 +31,14 @@ import org.apache.log4j.*;
  * @author Evangelos Chaniotakis (haniotak@es.net)
  */
 public class DBPathfinder extends Pathfinder implements PCE {
-    private Properties props;
     private Logger log;
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
-    private PSLookupClient lookupClient;
 
     public DBPathfinder(String dbname) {
         super(dbname);
-        LookupFactory lookupFactory = new LookupFactory();
-        this.lookupClient = lookupFactory.getPSLookupClient();
 
         this.log = Logger.getLogger(this.getClass());
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("dbpath", true);
 
         this.dbga = new DBGraphAdapter(dbname);
         /*
@@ -91,7 +83,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.log.debug("findPath.End");
         return pathInfo;
     }
-    
+
     /**
      * Returns the ingress given a path. Converts hops in path to URNs
      * then passes to superclass
@@ -99,32 +91,34 @@ public class DBPathfinder extends Pathfinder implements PCE {
      * @param pathInfo the path from which to extract the needed info
      * @return the ingress linkId of the path
      */
-    public String findIngress(PathInfo pathInfo) throws PathfinderException{
+    public String findIngress(PathInfo pathInfo) throws PathfinderException {
         Layer2Info l2Info = pathInfo.getLayer2Info();
-        
+
         //need to convert to URN
         // if layer2 request then already a URN so pass to super...
-        if(l2Info != null){
+        if (l2Info != null) {
             String src = l2Info.getSrcEndpoint();
-            super.findIngress(src, pathInfo.getPath());
+            String srcURN = this.resolveToFQTI(src);
+            CtrlPlaneHopContent[] hops = pathInfo.getPath().getHop();
+            for (int i = 0; i < hops.length; i++) {
+                hops[i].setLinkIdRef(this.resolveToFQTI(hops[i].getLinkIdRef()));
+            }
+            pathInfo.getPath().setHop(hops);
+            return super.findIngress(srcURN, pathInfo.getPath());
+
         }
-        
+
         //...if layer 3 request then pass to TraceroutePathfinder.findIngress
         TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
         return tracePF.findIngress(pathInfo);
     }
-    
+
     private void handleLayer3ERO(PathInfo pathInfo, Reservation reservation)
             throws PathfinderException {
         this.log.debug("handleLayer3ERO.start");
         Domain localDomain = domDAO.getLocalDomain();
         Hashtable<String, String> parseResults;
         String fqti = null;
-
-        Layer3Info layer3Info = pathInfo.getLayer3Info();
-
-        String srcHost = layer3Info.getSrcHost();
-        String destHost = layer3Info.getDestHost();
 
         TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
         PathInfo tracePathInfo = tracePF.findPath(pathInfo, reservation);
@@ -136,13 +130,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
         String egress = "";
         for (CtrlPlaneHopContent traceHop : traceHops) {
             parseResults = URNParser.parseTopoIdent(traceHop.getId());
-            String type = parseResults.get("type");
-            String nodeId = parseResults.get("nodeId");
-            String portId = parseResults.get("portId");
-            String linkId = parseResults.get("linkId");
             String domainId = parseResults.get("domainId");
             fqti = parseResults.get("fqti");
-            if (domainId.equals(localDomain.getTopologyIdent())) {
+            if (domainId != null && domainId.equals(localDomain.getTopologyIdent())) {
                 egress = fqti;
                 if (!foundIngress) {
                     ingress = fqti;
@@ -197,8 +187,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
     private void handleLayer2ERO(PathInfo pathInfo, Reservation reservation)
             throws PathfinderException {
-        int numHops = 0;
-        this.log.debug("handleLayer2ERO.start");
         Layer2Info layer2Info = pathInfo.getLayer2Info();
 
         Hashtable<String, String> parseResults;
@@ -212,46 +200,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         this.log.debug("handleLayer2ERO.endpoints");
 
-        parseResults = URNParser.parseTopoIdent(srcEndpoint);
-        if (parseResults != null) {
-            fqti = parseResults.get("fqti");
-        } else {
-            fqti = null;
-        }
-
-        if (fqti == null) {
-            if (this.lookupClient == null) {
-                throw new PathfinderException("Could not resolve "+srcEndpoint);
-            } else {
-                try {
-                    fqti = this.lookupClient.lookup(srcEndpoint);
-                } catch (LookupException ex) {
-                    throw new PathfinderException("Could not resolve "+srcEndpoint+" . Error was: "+ex.getMessage());
-                }
-            }
-        }
-        srcEndpoint = fqti;
-
-        fqti = null;
-
-        parseResults = URNParser.parseTopoIdent(destEndpoint);
-        if (parseResults != null) {
-            fqti = parseResults.get("fqti");
-        } else {
-            fqti = null;
-        }
-        if (fqti == null) {
-            if (this.lookupClient == null) {
-                throw new PathfinderException("Could not resolve "+destEndpoint);
-            } else {
-                try {
-                    fqti = this.lookupClient.lookup(destEndpoint);
-                } catch (LookupException ex) {
-                    throw new PathfinderException("Could not resolve "+destEndpoint+" . Error was: "+ex.getMessage());
-                }
-            }
-        }
-        destEndpoint = fqti;
+        srcEndpoint = this.resolveToFQTI(srcEndpoint);
+        destEndpoint = this.resolveToFQTI(destEndpoint);
 
         this.log.debug("handleLayer2ERO.resolved");
 
@@ -281,22 +231,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 hops[1] = new CtrlPlaneHopContent();
                 hops[1].setLinkIdRef(destEndpoint);
             } else if (hops.length == 1) {
-                throw new PathfinderException("ERO must include both source and destination!");
-            } else if (hops.length >= 2) {
-                /* This is likely not needed, breaks interop too
-                CtrlPlaneHopContent firstHop = hops[0];
-                CtrlPlaneHopContent lastHop = hops[hops.length -1];
-                String firstLinkId = firstHop.getLinkIdRef();
-                parseResults = URNParser.parseTopoIdent(firstLinkId);
-                firstLinkId = parseResults.get("fqti");
-                String lastLinkId = lastHop.getLinkIdRef();
-                parseResults = URNParser.parseTopoIdent(lastLinkId);
-                lastLinkId = parseResults.get("fqti");
-
-                if ( (! firstLinkId.equals(srcEndpoint)) || (! lastLinkId.equals(destEndpoint)) ) {
-                    throw new PathfinderException("ERO must include both source and destination!");
-                }
-                */
+                throw new PathfinderException("ERO if nonempty must at least include both source and destination!");
             }
         } else {
             hops = new CtrlPlaneHopContent[2];
@@ -438,35 +373,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
     }
 
     private Path joinPaths(Path pathA, Path pathB) {
-//        System.out.println("joinPaths.start");
-        PathElem tmp;
-        /*
-        if (pathA.getPathElem() != null) {
-            System.out.println("pathA before join, start:");
-            tmp = pathA.getPathElem();
-            while (tmp.getNextElem() != null) {
-                System.out.println(tmp.getLink().getFQTI());
-                tmp = tmp.getNextElem();
-            }
-            System.out.println("pathA before join, end");
-        } else {
-            System.out.println("pathA empty");
-        }
-
-
-        if (pathB.getPathElem() != null) {
-            System.out.println("pathB before join, start:");
-            tmp = pathB.getPathElem();
-            while (tmp.getNextElem() != null) {
-                System.out.println(tmp.getLink().getFQTI());
-                tmp = tmp.getNextElem();
-            }
-            System.out.println("pathB before join, end");
-        } else {
-            System.out.println("pathB empty");
-        }
-        */
-
 
         Path result = new Path();
         if (pathA.getPathElem() != null) {
@@ -495,27 +401,13 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
             // ok, joined the two, now setPath() for all the pathElems
             result.setPathElem(firstOfA);
-//            System.out.println("path after join start:");
             while (firstOfA.getNextElem() != null) {
                 firstOfA.setPath(result);
                 firstOfA = firstOfA.getNextElem();
-//                System.out.println(firstOfA.getLink().getFQTI());
             }
-//            System.out.println("path after join end");
         } else {
             result = pathB;
         }
-/*
-        System.out.println("result after join, start:");
-        tmp = result.getPathElem();
-        while (tmp.getNextElem() != null) {
-            System.out.println(tmp.getLink().getFQTI());
-            tmp = tmp.getNextElem();
-        }
-        System.out.println("result after join, end");
-
-        System.out.println("joinPaths.end");
-        */
         return result;
     }
 
@@ -642,6 +534,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
         return path;
 
     }
+
+
+
 
     private Path removeLoops(Path path) {
         Path newPath = path;
