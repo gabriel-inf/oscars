@@ -1,7 +1,6 @@
 package net.es.oscars.pss;
 
 import java.util.*;
-import net.es.oscars.PropHandler;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.Utils;
 import net.es.oscars.pathfinder.PathfinderException;
@@ -14,7 +13,6 @@ import net.es.oscars.pathfinder.PathfinderException;
  */
 public class LSPData {
     private String dbname;
-    private Utils utils;
     // common layer 2 and layer 3 parameters
     private PathElem ingressPathElem;
     private PathElem egressPathElem;
@@ -27,7 +25,6 @@ public class LSPData {
 
     /** Constructor. */
     public LSPData(String dbname) {
-        this.utils = new Utils(dbname);
         this.dbname = dbname;
     }
 
@@ -94,7 +91,8 @@ public class LSPData {
         NodeAddress ingressNodeAddress =
         this.ingressLink.getPort().getNode().getNodeAddress();
         String ingressAddr = ingressNodeAddress.getAddress();
-        this.ingressRtrLoopback = this.utils.getIP(ingressAddr);
+        Utils utils = new Utils(this.dbname);
+        this.ingressRtrLoopback = utils.getIP(ingressAddr);
         if (this.ingressRtrLoopback == null) {
             throw new PSSException("no ingress loopback in path");
         }
@@ -102,7 +100,7 @@ public class LSPData {
         NodeAddress egressNodeAddress =
             this.egressLink.getPort().getNode().getNodeAddress();
         String egressAddr = egressNodeAddress.getAddress();
-        this.egressRtrLoopback = this.utils.getIP(egressAddr);
+        this.egressRtrLoopback = utils.getIP(egressAddr);
         if (this.egressRtrLoopback == null) {
             throw new PSSException("no egress loopback in path");
         }
@@ -120,8 +118,9 @@ public class LSPData {
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = null;
         ipaddr = ipaddrDAO.queryByParam("linkId", this.ingressLink.getId());
+        Utils utils = new Utils(this.dbname);
         try {
-            this.ingressRtrLoopback = this.utils.getLoopback(ipaddr.getIP(),
+            this.ingressRtrLoopback = utils.getLoopback(ipaddr.getIP(),
                                                              sysDescr);
         } catch (PathfinderException e) {
             throw new PSSException(e.getMessage());

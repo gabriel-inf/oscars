@@ -24,7 +24,6 @@ public class LSP {
     private Properties props;
     private TemplateHandler th;
     private Logger log;
-    private Map<String,String> hm;
     private boolean allowLSP;
     private static String staticAllowLSP;
 
@@ -94,16 +93,16 @@ public class LSP {
         lspData.setLayer2PathInfo(true);
 
         // Fill in parameters for setting up LSP circuit.
-        this.hm = new HashMap<String, String>();
-        this.fillCommonParams(resv, lspData.getVlanTag());
+        HashMap<String, String> hm = new HashMap<String, String>();
+        this.fillCommonParams(resv, lspData.getVlanTag(), hm);
 
-        this.hm.put("bandwidth", Long.toString(resv.getBandwidth()));
-        this.hm.put("lsp_setup-priority",
+        hm.put("bandwidth", Long.toString(resv.getBandwidth()));
+        hm.put("lsp_setup-priority",
              this.commonProps.getProperty("lsp_setup-priority"));
-        this.hm.put("lsp_reservation-priority",
+        hm.put("lsp_reservation-priority",
              this.commonProps.getProperty("lsp_reservation-priority"));
 
-        this.hm.put("direction", direction);
+        hm.put("direction", direction);
 
         if (direction.equals("forward")) {
             // get IP associated with physical interface before egress
@@ -115,13 +114,13 @@ public class LSP {
             }
             Link ingressLink = lspData.getIngressLink();
 
-            this.hm.put("port", ingressLink.getPort().getTopologyIdent());
+            hm.put("port", ingressLink.getPort().getTopologyIdent());
             // router to send configuration command to (forward direction)
-            this.hm.put("router",
+            hm.put("router",
                 ingressLink.getPort().getNode().getNodeAddress().getAddress());
-            this.hm.put("lsp_to", lspFwdTo);
-            this.hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
-            this.log.info("Filled in hash map for forward setup template");
+            hm.put("lsp_to", lspFwdTo);
+            hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
+            log.info("Filled in hash map for forward setup template");
         } else {
             // reverse direction
             // get IP associated with first in-facing physical interface
@@ -132,16 +131,14 @@ public class LSP {
                 throw new PSSException("Egress port has no IP in DB!");
             }
             Link egressLink = lspData.getEgressLink();
-            this.hm.put("port", egressLink.getPort().getTopologyIdent());
-            this.hm.put("router",
-                egressLink.getPort().getNode().getNodeAddress().getAddress());
-            this.hm.put("lsp_to", lspRevTo);
-            this.hm.put("egress-rtr-loopback",
-                    lspData.getIngressRtrLoopback());
+            hm.put("port", egressLink.getPort().getTopologyIdent());
+            hm.put("router", egressLink.getPort().getNode().getNodeAddress().getAddress());
+            hm.put("lsp_to", lspRevTo);
+            hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
         }
         // reset to beginning, and get hops in correct direction
         hops = lspData.getHops(path.getPathElem(), direction, true);
-        this.setupLSP(hops);
+        this.setupLSP(hops, hm);
         // TODO:  makes assumption that forward will always be called first
         if (direction.equals("forward")) {
             this.log.info("Forward circuit set up done");
@@ -162,10 +159,9 @@ public class LSP {
             throws PSSException {
 
         if (lspData == null) {
-            throw new PSSException(
-                    "no path related configuration data present");
+            throw new PSSException("no path related configuration data present");
         }
-        this.hm = new HashMap<String, String>();
+        HashMap<String, String> hm = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
@@ -174,15 +170,14 @@ public class LSP {
             circuitName = circuitName.toUpperCase();
         }
         if (lspData.getIngressLink() == null) {
-            throw new PSSException(
-                    "refreshPath called before getting path endpoints");
+            throw new PSSException("refreshPath called before getting path endpoints");
         }
         lspData.setLayer2PathInfo(false);
-        String routerName =
-            lspData.getIngressLink().getPort().getNode().getNodeAddress().getAddress();
-        this.hm.put("resv-id", circuitName);
-        this.hm.put("vlan-id", lspData.getVlanTag());
-        this.hm.put("router", routerName);
+        String routerName = lspData.getIngressLink().getPort().getNode().getNodeAddress().getAddress();
+
+        hm.put("resv-id", circuitName);
+        hm.put("vlan-id", lspData.getVlanTag());
+        hm.put("router", routerName);
 
         return resv.getStatus();
     }
@@ -214,20 +209,20 @@ public class LSP {
         }
         lspData.setLayer2PathInfo(false);
         // Set up parameters for tearing down an LSP circuit.
-        this.hm = new HashMap<String, String>();
-        this.hm.put("direction", direction);
-        this.fillCommonParams(resv, lspData.getVlanTag());
+        HashMap<String, String> hm = new HashMap<String, String>();
+        hm.put("direction", direction);
+        this.fillCommonParams(resv, lspData.getVlanTag(), hm);
         Link ingressLink = lspData.getIngressLink();
         if (direction.equals("forward")) {
             // router to send configuration command to
-            this.hm.put("router", ingressLink.getPort().getNode().getNodeAddress().getAddress());
-            this.hm.put("port", ingressLink.getPort().getTopologyIdent());
-            this.teardownLSP();
+            hm.put("router", ingressLink.getPort().getNode().getNodeAddress().getAddress());
+            hm.put("port", ingressLink.getPort().getTopologyIdent());
+            this.teardownLSP(hm);
         } else if (direction.equals("reverse")) {
             Link egressLink = lspData.getEgressLink();
-            this.hm.put("router", egressLink.getPort().getNode().getNodeAddress().getAddress());
-            this.hm.put("port", egressLink.getPort().getTopologyIdent());
-            this.teardownLSP();
+            hm.put("router", egressLink.getPort().getNode().getNodeAddress().getAddress());
+            hm.put("port", egressLink.getPort().getTopologyIdent());
+            this.teardownLSP(hm);
         }
         this.log.info("teardownPath.end");
     }
@@ -247,7 +242,7 @@ public class LSP {
      * @param hops a list of hops only used if explicit path was given
      * @throws PSSException
      */
-    public void setupLSP(List<String> hops)
+    public void setupLSP(List<String> hops, HashMap<String, String> hm)
             throws PSSException {
 
         this.log.info("setupLSP.start");
@@ -256,7 +251,7 @@ public class LSP {
                 "/shared/classes/server/";
             fname += this.props.getProperty("setupL2Template");
             this.log.info("Filename: ["+fname+"]");
-            this.configureLSP(hops, fname);
+            this.configureLSP(hops, fname, hm);
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
@@ -268,14 +263,14 @@ public class LSP {
      *
      * @throws PSSException
      */
-    public void teardownLSP() throws PSSException {
+    public void teardownLSP(HashMap<String, String> hm) throws PSSException {
 
         this.log.info("teardownLSP.start");
         try {
             String fname = System.getenv("CATALINA_HOME") +
                 "/shared/classes/server/" +
                 this.props.getProperty("teardownL2Template");
-            this.configureLSP(null, fname);
+            this.configureLSP(null, fname, hm);
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
@@ -342,17 +337,17 @@ public class LSP {
      * @throws IOException
      * @throws PSSException
      */
-    private void configureLSP(List<String> hops, String fname)
+    private void configureLSP(List<String> hops, String fname, HashMap<String, String> hm)
             throws IOException, PSSException {
 
         StringBuilder sb = new StringBuilder();
 
         this.log.info("configureLSP.start");
-        for (String key: this.hm.keySet()) {
-            sb.append(key + ": " + this.hm.get(key) + "\n");
+        for (String key: hm.keySet()) {
+            sb.append(key + ": " + hm.get(key) + "\n");
         }
         this.log.info(sb.toString());
-        String filledTemplate = this.th.buildString(this.hm, hops, fname);
+        String filledTemplate = this.th.buildString(hm, hops, fname);
 
         // log, and then send to router
         this.log.info("\n" + filledTemplate);
@@ -361,7 +356,7 @@ public class LSP {
         if (!this.allowLSP) {
             return;
         }
-        this.sendConfigCommand(filledTemplate);
+        this.sendConfigCommand(filledTemplate, hm);
         this.log.info("configureLSP.end");
         return;
     }
@@ -373,11 +368,11 @@ public class LSP {
      * @param cmdStr string with command to send to router
      * @throws PSSException
      */
-    private void sendConfigCommand(String cmdStr)
+    private void sendConfigCommand(String cmdStr, HashMap<String, String> hm)
             throws PSSException {
 
         // create a temporary file for use by RANCID
-        String fname =  "/tmp/" + this.hm.get("resv-id")+"-"+this.hm.get("direction");
+        String fname =  "/tmp/" + hm.get("resv-id")+"-"+hm.get("direction");
         File tmpFile = new File(fname);
         try {
             BufferedWriter outputStream =
@@ -385,8 +380,8 @@ public class LSP {
             // write command to temporary file
             outputStream.write(cmdStr);
             outputStream.close();
-            this.log.info("clogin -x " + fname + " " + this.hm.get("router"));
-            String cmd[] = { "clogin", "-x", fname, this.hm.get("router") };
+            this.log.info("clogin -x " + fname + " " + hm.get("router"));
+            String cmd[] = { "clogin", "-x", fname, hm.get("router") };
             BufferedReader cmdOutput = this.runCommand(cmd);
             String outputLine = null;
             while ((outputLine = cmdOutput.readLine()) != null) {
@@ -438,7 +433,7 @@ public class LSP {
      * @param vlanTag string with VLAN id
      * @throws PSSException
      */
-    private void fillCommonParams(Reservation resv, String vlanTag)
+    private void fillCommonParams(Reservation resv, String vlanTag, HashMap<String, String> hm)
             throws PSSException {
 
         double resvNumTmp;
@@ -468,8 +463,8 @@ public class LSP {
         this.log.info("Reservation number after cleanup is: "+resvNumForTpt+
                        " initially: "+columns[1]);
 
-        this.hm.put("resv-id", circuitName);
-        this.hm.put("resv-num", resvNumForTpt);
-        this.hm.put("vlan-id", vlanTag);
+        hm.put("resv-id", circuitName);
+        hm.put("resv-num", resvNumForTpt);
+        hm.put("vlan-id", vlanTag);
     }
 }
