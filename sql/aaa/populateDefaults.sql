@@ -53,12 +53,16 @@ CREATE TABLE IF NOT EXISTS resources (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+CREATE UNIQUE INDEX resourceName ON resources(name(6));
 INSERT INTO resources VALUES(NULL, "Users",
                         "Information about all users", NULL);
 INSERT INTO resources VALUES(NULL, "Reservations",
                         "Information about all reservations", NULL);
 INSERT INTO resources VALUES(NULL, "Domains",
                         "Information about OSCARS-realm domain controllers",
+                        NULL);
+INSERT INTO resources VALUES(NULL, "AAA",
+                        "Information about Institutions, Attributes and Authorizations",
                         NULL);
 
 -- populate attributes table
@@ -259,6 +263,18 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="users"),
+     (select id from permissions where name="modify"),
+     "all-users", 1);
+ 
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-administrator"),
+     (select id from resources where name="AAA"),
+     (select id from permissions where name="list"),
+     "all-users", 1); 
+        
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-administrator"),
+     (select id from resources where name="AAA"),
      (select id from permissions where name="modify"),
      "all-users", 1);
      
