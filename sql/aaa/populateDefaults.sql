@@ -270,13 +270,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="AAA"),
      (select id from permissions where name="list"),
-     "all-users", 1); 
+     NULL,NULL); 
         
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="AAA"),
      (select id from permissions where name="modify"),
-     "all-users", 1);
+     NULL,NULL);
      
 -- authorizations for an IDC forwarding a request to an adjacent domain 
 -- note that all the reservations fowarded by a IDC are owned by the IDC

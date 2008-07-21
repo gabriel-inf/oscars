@@ -12,13 +12,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="AAA"),
      (select id from permissions where name="list"),
-     "all-users", 1); 
+     NULL,NULL); 
         
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="AAA"),
      (select id from permissions where name="modify"),
-     "all-users", 1);
+     NULL,NULL);
      
 -- Fill in description for attributes
 ALTER IGNORE TABLE attributes ADD COLUMN description TEXT NOT NULL;
