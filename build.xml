@@ -322,7 +322,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
     <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
-        <delete dir="${catalina.home}/webapps/OSCARS"/>
+	<delete file="${catalina.home}/webapps/OSCARS.war"/>
+	<delete dir="${catalina.home}/webapps/OSCARS"/>
         <copy file="OSCARS.war" todir="${webapp.home}"/>
     </target>
     <target name="deployall" description="deploy both aar and war files" depends="deployaar, deploywbui"/>
