@@ -294,39 +294,48 @@ public class LSP {
         StringBuilder sb = null;
 
         this.log.info("statusLSP.start");
-        this.log.info("clogin -c \"show mpls l2transport vc\" " +
-                      router);
-        String[] cmd = { "clogin", "-c", "show mpls l2transport vc",
-                         router };
-        try {
-            cmdOutput = this.runCommand(cmd);
-            String outputLine = null;
-            sb = new StringBuilder();
-            while ((outputLine = cmdOutput.readLine()) != null) {
-                this.log.info("output: " + outputLine);
-                sb.append(outputLine + "\n");
+
+        if (this.allowLSP) {
+            this.log.info("clogin -c \"show mpls l2transport vc\" " +
+                          router);
+            String[] cmd = { "clogin", "-c", "show mpls l2transport vc",
+                             router };
+            try {
+                cmdOutput = this.runCommand(cmd);
+                String outputLine = null;
+                sb = new StringBuilder();
+                while ((outputLine = cmdOutput.readLine()) != null) {
+                    this.log.info("output: " + outputLine);
+                    sb.append(outputLine + "\n");
+                }
+                cmdOutput.close();
+            } catch (IOException ex) {
+                throw new PSSException(ex.getMessage());
             }
-            cmdOutput.close();
-        } catch (IOException ex) {
-            throw new PSSException(ex.getMessage());
-        }
-        Pattern pattern = Pattern.compile("/.*Eth VLAN (\\d{3,4}).*(UP|DOWN)/");
-        List<MatchResult> results = this.th.findAll(pattern, sb.toString());
-        for (MatchResult r: results) {
-            if (r.group(2).equals("UP")) {
-                currentVlans.put(r.group(1), true);
-            } else {
-                currentVlans.put(r.group(1), false);
+            Pattern pattern = Pattern.compile("/.*Eth VLAN (\\d{3,4}).*(UP|DOWN)/");
+            List<MatchResult> results = this.th.findAll(pattern, sb.toString());
+            for (MatchResult r: results) {
+                if (r.group(2).equals("UP")) {
+                    currentVlans.put(r.group(1), true);
+                } else {
+                    currentVlans.put(r.group(1), false);
+                }
             }
-        }
-        for (String vlanId: vlanIds) {
-            if (!currentVlans.containsKey(vlanId)) {
-                vlanStatuses.put(vlanId, false);
-            } else {
-                vlanStatuses.put(vlanId, currentVlans.get(vlanId));
+            for (String vlanId: vlanIds) {
+                if (!currentVlans.containsKey(vlanId)) {
+                    vlanStatuses.put(vlanId, false);
+                } else {
+                    vlanStatuses.put(vlanId, currentVlans.get(vlanId));
+                }
             }
+            return vlanStatuses;
+        } else {
+            // in case we're not allowed to talk to the routers, let's always return true
+            for (String vlan : vlanIds) {
+                vlanStatuses.put(vlan, true);
+            }
+            return vlanStatuses;
         }
-        return vlanStatuses;
     }
 
     /**
@@ -467,4 +476,12 @@ public class LSP {
         hm.put("resv-num", resvNumForTpt);
         hm.put("vlan-id", vlanTag);
     }
+
+    /**
+     * @return the allowLSP
+     */
+    public boolean isAllowLSP() {
+        return allowLSP;
+    }
+
 }

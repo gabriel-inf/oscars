@@ -483,4 +483,11 @@ public class JnxLSP {
         String reply = buff.toString();
         return reply;
     }
+
+    /**
+     * @return the allowLSP
+     */
+    public boolean isAllowLSP() {
+        return allowLSP;
+    }
 }

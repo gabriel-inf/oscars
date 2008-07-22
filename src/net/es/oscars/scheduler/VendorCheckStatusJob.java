@@ -31,14 +31,18 @@ public class VendorCheckStatusJob implements Job {
         HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) jobDataMap.get("checklist");
 
         HashMap<String, Boolean> results = new HashMap<String, Boolean>();
+        boolean allowLSP = true;
         if (vendor.equals("cisco")) {
             try {
                 net.es.oscars.pss.cisco.LSP ciscoLSP = new net.es.oscars.pss.cisco.LSP(core.getBssDbName());
+                allowLSP = ciscoLSP.isAllowLSP();
                 results.putAll(ciscoLSP.statusLSP(nodeId, vlanList));
             } catch (PSSException ex) {
                 this.log.error(ex);
             }
         } else {
+            net.es.oscars.pss.jnx.JnxLSP jnxLSP = new net.es.oscars.pss.jnx.JnxLSP(core.getBssDbName());
+            allowLSP = jnxLSP.isAllowLSP();
             // TODO: do the jnx case
             return;
         }
@@ -80,7 +84,10 @@ public class VendorCheckStatusJob implements Job {
                     this.log.debug(jobName + ": matched "+gri+" at "+nodeId+":"+egressVlan);
                 }
                 if (isPathUp) {
-                    if (!desiredStatus.equals(StateEngine.ACTIVE)) {
+                    if (!allowLSP) {
+                        // pretend path is whatever is desired
+                        resvsToUpdate.put(gri, desiredStatus);
+                    } else if (!desiredStatus.equals(StateEngine.ACTIVE)) {
                         // path is still up even though we wanted to tear it down
                         resvsToUpdate.put(gri, StateEngine.FAILED);
                     } else {
@@ -88,7 +95,10 @@ public class VendorCheckStatusJob implements Job {
                         resvsToUpdate.put(gri, StateEngine.ACTIVE);
                     }
                 } else {
-                    if (desiredStatus.equals(StateEngine.ACTIVE)) {
+                    if (!allowLSP) {
+                        // pretend path is whatever is desired
+                        resvsToUpdate.put(gri, desiredStatus);
+                    } else if (desiredStatus.equals(StateEngine.ACTIVE)) {
                         // path is down even though we wanted to set it up
                         resvsToUpdate.put(gri, StateEngine.FAILED);
                     } else {

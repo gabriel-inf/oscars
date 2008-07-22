@@ -94,7 +94,7 @@ public class VendorMaintainStatusJob implements Job {
             jobDataMap.put("checklist", checklist);
             jobDetail.setJobDataMap(jobDataMap);
 
-            String triggerId = "checkStatus-"+vlanList.hashCode();
+            String triggerId = "checkStatus-"+nodeId+vlanList.hashCode();
             Trigger trigger = new SimpleTrigger(triggerId, "STATUS", new Date());
 
             try {
