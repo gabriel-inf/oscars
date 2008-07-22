@@ -1,10 +1,11 @@
 /*
 UserList.js:  Handles user list functionality.  Note that it uses a grid.
-Last modified:  May 30, 2008
+Last modified:  July 21, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
+init()
 handleReply(responseObject, ioArgs)
 tabSelected(contentPane, changeStatus)
 refreshUserGrid()
@@ -13,10 +14,29 @@ onUserRowSelect(evt)
 
 dojo.provide("oscars.UserList");
 
+oscars.UserList.init = function () {
+    dojo.xhrPost({
+        url: 'servlet/UserListForm',
+        handleAs: "json-comment-filtered",
+        load: oscars.UserList.handleReply,
+        error: oscars.Form.handleError,
+        form: dijit.byId("userListForm").domNode
+    });
+};
+
 // handles all servlet replies
 oscars.UserList.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
-        return;
+    if (responseObject.method == "UserListForm") {
+        // necessary for correct status message upon login
+        if (!oscars.Form.resetStatus(responseObject, false)) {
+            return;
+        }
+        // set parameter values in form from responseObject
+        oscars.Form.applyParams(responseObject);
+    } else {
+        if (!oscars.Form.resetStatus(responseObject, true)) {
+            return;
+        }
     }
 };
 
@@ -55,6 +75,9 @@ oscars.UserList.refreshUserGrid = function () {
 
 // select user details based on row select in grid
 oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
+    if (!oscarsState.userRowSelectable) {
+        return;
+    }
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userProfilePane = dijit.byId("userProfilePane");
     var userGrid = dijit.byId("userGrid");

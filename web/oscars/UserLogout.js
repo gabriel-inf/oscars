@@ -39,7 +39,9 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     loginSection.style.display = ""; 
     var logoutSection = dojo.byId("logoutSection");
     logoutSection.style.display = "none"; 
-    dijit.byId("cancelDialog").destroy();
+    if (dijit.byId("cancelDialog") != null) {
+        dijit.byId("cancelDialog").destroy();
+    }
     // destroy all other tabs
     if (dijit.byId("reservationsPane") != null) {
         mainTabContainer.closeChild(dijit.byId("reservationsPane"));
@@ -64,6 +66,7 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     }
     // reset global state
     oscarsState.userGridInitialized = false;
+    oscarsState.userRowSelectable = false;
     oscarsState.resvGridInitialized = false;
     oscarsState.institutionGridInitialized = false;
 };

@@ -75,28 +75,51 @@ public class AuthenticateUser extends HttpServlet {
             utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
             return;
         }
-        // Used to indicate if tabbed pages requiring authorization can
-        // be displayed.  Note that some tabs may be displayed by default
-        // before login that don't allow actual use.
+        // Used to indicate which tabs can be displayed.  All except
+        // Login/Logout require some form of authorization.
         Map authorizedTabs = new HashMap();
-
-        boolean allUsers= false;
-        AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
-        if (authVal == AuthValue.ALLUSERS)  { 
-            authorizedTabs.put("usersPane", Boolean.TRUE);
-            authorizedTabs.put("aaaTab", Boolean.TRUE);
-            //authorizedTabs.put("userAttributesPane", Boolean.TRUE);
-            //authorizedTabs.put("authorizationsPane", Boolean.TRUE);           
+        // for special cases where user may be able to view grid but not
+        // go to a different tab upon selecting a row
+        Map selectableRows = new HashMap();
+        AuthValue authVal = mgr.checkAccess(userName, "Reservations", "list");
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("reservationsPane", Boolean.TRUE);
         }
-        authVal = mgr.checkAccess(userName, "Users", "modify");
+        authVal = mgr.checkAccess(userName, "Reservations", "query");
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("reservationDetailsPane", Boolean.TRUE);
+        }
+        authVal = mgr.checkModResAccess(userName, "Reservations",
+                "create", 0, 0, false, false);
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("reservationCreatePane", Boolean.TRUE);
+        }
+        authVal = mgr.checkAccess(userName, "Users", "query");
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("userProfilePane", Boolean.TRUE);
+        }
+        if (authVal == AuthValue.ALLUSERS) {
+            selectableRows.put("users", Boolean.TRUE);
+        }
+        authVal = mgr.checkAccess(userName, "Users", "list");
+        if (authVal == AuthValue.ALLUSERS)  { 
+            authorizedTabs.put("userListPane", Boolean.TRUE);
+        }
+        authVal = mgr.checkAccess(userName, "Users", "create");
         if (authVal == AuthValue.ALLUSERS)  { 
             authorizedTabs.put("userAddPane", Boolean.TRUE);
+        }
+        authVal = mgr.checkAccess(userName, "AAA", "modify");
+        // ?
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("institutionsPane", Boolean.TRUE);
         }
         userSession.setCookie("userName", userName, response);
         userSession.setCookie("sessionName", sessionName, response);
         Map outputMap = new HashMap();
         outputMap.put("method", methodName);
         outputMap.put("authorizedTabs", authorizedTabs);
+        outputMap.put("selectableRows", selectableRows);
         outputMap.put("success", Boolean.TRUE);
         outputMap.put("status", userName + " signed in.  Use tabs " +
                     "to navigate to different pages.");

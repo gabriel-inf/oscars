@@ -48,7 +48,7 @@ public class UserAdd extends HttpServlet {
         aaa = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         aaa.beginTransaction();
         try {
-            AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
+            AuthValue authVal = mgr.checkAccess(userName, "Users", "create");
             if ((authVal == AuthValue.ALLUSERS) && 
                         (profileName != userName)) {
                 newUser = this.toUser(out, profileName, request);

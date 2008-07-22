@@ -12,25 +12,32 @@
     };
     var userLayout = [ userView ];
 </script>
+<script type="text/javascript">
+    dojo.connect(dijit.byId("userListPane"), "onLoad", oscars.UserList.init);
+</script>
 </head>
 
 <body>
-<p>Click on a row to view detailed user information.</p>
+<form id="userListForm" dojoType="dijit.form.Form">
+  <div id="userRowSelectableDisplay" style="display:none">
+  <p>Click on a row to view detailed user information.</p>
+  </div>
 
-<table>
-<tr>
-  <td>User List</td>
-  <td>
-  <button dojoType="dijit.form.Button" id="userList">
-     Refresh 
-     <script type="dojo/method" event="onClick">
-        oscars.UserList.refreshUserGrid();
-    </script>
-  </button>
+  <table>
+  <tr>
+    <td>User List</td>
+    <td>
+    <button dojoType="dijit.form.Button" id="userList">
+       Refresh 
+       <script type="dojo/method" event="onClick">
+          oscars.UserList.refreshUserGrid();
+       </script>
+    </button>
 
-  </td>
-</tr>
-</table>
+    </td>
+  </tr>
+  </table>
+</form>
 
 <!-- store and model declarations are done in Javascript; content pane has
      display:none originally, so any declarations beside the grid's are
