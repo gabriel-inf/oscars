@@ -19,6 +19,16 @@ public class VendorMaintainStatusJob implements Job {
         checklist.put(gri, params);
     }
 
+    private static HashMap<String, HashMap<String, String>> copyChecklist() {
+        HashMap<String, HashMap<String, String>> copy = new HashMap<String, HashMap<String, String>>();
+        Iterator<String> keyIt = checklist.keySet().iterator();
+        while (keyIt.hasNext()) {
+            String key = keyIt.next();
+            copy.put(key, checklist.get(key));
+        }
+        return copy;
+    }
+
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
@@ -91,7 +101,7 @@ public class VendorMaintainStatusJob implements Job {
             jobDataMap.put("nodeId", nodeId);
             jobDataMap.put("vendor", nodeVendor.get(nodeId));
             jobDataMap.put("vlanList", vlanList);
-            jobDataMap.put("checklist", checklist);
+            jobDataMap.put("checklist", VendorMaintainStatusJob.copyChecklist());
             jobDetail.setJobDataMap(jobDataMap);
 
             String triggerId = "checkStatus-"+nodeId+vlanList.hashCode();

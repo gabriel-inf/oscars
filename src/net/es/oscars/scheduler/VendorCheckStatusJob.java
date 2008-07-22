@@ -27,6 +27,8 @@ public class VendorCheckStatusJob implements Job {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
         String nodeId = (String) jobDataMap.get("nodeId");
         String vendor = (String) jobDataMap.get("vendor");
+        this.log.debug(jobName + " for node: "+nodeId+ " vendor: "+vendor);
+
         ArrayList<String> vlanList = (ArrayList<String>) jobDataMap.get("vlanList");
         HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) jobDataMap.get("checklist");
 
@@ -36,7 +38,9 @@ public class VendorCheckStatusJob implements Job {
             try {
                 net.es.oscars.pss.cisco.LSP ciscoLSP = new net.es.oscars.pss.cisco.LSP(core.getBssDbName());
                 allowLSP = ciscoLSP.isAllowLSP();
-                results.putAll(ciscoLSP.statusLSP(nodeId, vlanList));
+                if (allowLSP) {
+                    results.putAll(ciscoLSP.statusLSP(nodeId, vlanList));
+                }
             } catch (PSSException ex) {
                 this.log.error(ex);
             }
@@ -44,7 +48,6 @@ public class VendorCheckStatusJob implements Job {
             net.es.oscars.pss.jnx.JnxLSP jnxLSP = new net.es.oscars.pss.jnx.JnxLSP(core.getBssDbName());
             allowLSP = jnxLSP.isAllowLSP();
             // TODO: do the jnx case
-            return;
         }
 
 
@@ -60,34 +63,38 @@ public class VendorCheckStatusJob implements Job {
         while (griIt.hasNext()) {
             String gri = griIt.next();
             HashMap<String, String> params = checklist.get(gri);
-            String ingressVlan = params.get("ingressVlan");
-            String egressVlan = params.get("egressVlan");
-            String ingressNodeId = params.get("ingressNodeId");
-            String egressNodeId = params.get("egressNodeId");
-            String desiredStatus = params.get("desiredStatus");
-            String ingressVendor = params.get("ingressVendor");
-            String egressVendor = params.get("egressVendor");
+            String ingressVlan 		= params.get("ingressVlan");
+            String egressVlan 		= params.get("egressVlan");
+            String ingressNodeId 	= params.get("ingressNodeId");
+            String egressNodeId 	= params.get("egressNodeId");
+            String desiredStatus 	= params.get("desiredStatus");
 
             String which = null;
             if (nodeId.equals(ingressNodeId)) {
                 which = "ingress";
+                this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId);
             } else if (nodeId.equals(egressNodeId)) {
                 which = "egress";
+                this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId);
             }
+
             if (which != null) {
                 boolean isPathUp = false;
                 if (which.equals("ingress")) {
-                    isPathUp = results.get(ingressVlan);
-                    this.log.debug(jobName + ": matched "+gri+" at "+nodeId+":"+ingressVlan);
+                    if (allowLSP) {
+                        isPathUp = results.get(ingressVlan);
+                    }
+                    this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId+":"+ingressVlan);
                 } else if (which.equals("egress")) {
-                    isPathUp = results.get(egressVlan);
-                    this.log.debug(jobName + ": matched "+gri+" at "+nodeId+":"+egressVlan);
+                    if (allowLSP) {
+                        isPathUp = results.get(egressVlan);
+                    }
+                    this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId+":"+egressVlan);
                 }
-                if (isPathUp) {
-                    if (!allowLSP) {
-                        // pretend path is whatever is desired
-                        resvsToUpdate.put(gri, desiredStatus);
-                    } else if (!desiredStatus.equals(StateEngine.ACTIVE)) {
+                if (!allowLSP) {
+                    resvsToUpdate.put(gri, desiredStatus);
+                } else if (isPathUp) {
+                    if (!desiredStatus.equals(StateEngine.ACTIVE)) {
                         // path is still up even though we wanted to tear it down
                         resvsToUpdate.put(gri, StateEngine.FAILED);
                     } else {
@@ -95,10 +102,7 @@ public class VendorCheckStatusJob implements Job {
                         resvsToUpdate.put(gri, StateEngine.ACTIVE);
                     }
                 } else {
-                    if (!allowLSP) {
-                        // pretend path is whatever is desired
-                        resvsToUpdate.put(gri, desiredStatus);
-                    } else if (desiredStatus.equals(StateEngine.ACTIVE)) {
+                    if (desiredStatus.equals(StateEngine.ACTIVE)) {
                         // path is down even though we wanted to set it up
                         resvsToUpdate.put(gri, StateEngine.FAILED);
                     } else {
