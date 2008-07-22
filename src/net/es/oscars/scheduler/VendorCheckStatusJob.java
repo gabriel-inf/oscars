@@ -9,6 +9,7 @@ import net.es.oscars.oscars.OSCARSCore;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 import org.quartz.*;
 
 public class VendorCheckStatusJob implements Job {
@@ -19,6 +20,12 @@ public class VendorCheckStatusJob implements Job {
         this.log = Logger.getLogger(this.getClass());
 
         this.core = OSCARSCore.getInstance();
+
+
+        String bssDbName = core.getBssDbName();
+        // Need to get our own Hibernate session since this is a new thread
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
 
         EventProducer eventProducer = new EventProducer();
         String jobName = context.getJobDetail().getFullName();
@@ -148,6 +155,7 @@ public class VendorCheckStatusJob implements Job {
             }
         }
 
+        bss.getTransaction().commit();
 
         this.log.debug("checkStatusJob.end "+jobName);
     }
