@@ -32,7 +32,6 @@ public class VendorMaintainStatusJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-        this.log.debug("VendorMaintainStatusJob.start name:"+context.getJobDetail().getFullName());
 
 
         HashMap<String, ArrayList<String>> vlansPerNode = new HashMap<String, ArrayList<String>>();
@@ -118,7 +117,6 @@ public class VendorMaintainStatusJob implements Job {
             checklist.remove(gri);
         }
 
-        this.log.debug("VendorMaintainStatusJob.end name:"+context.getJobDetail().getFullName());
 
     }
 
