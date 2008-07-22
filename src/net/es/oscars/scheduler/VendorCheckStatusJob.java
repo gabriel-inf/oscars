@@ -22,7 +22,7 @@ public class VendorCheckStatusJob implements Job {
 
         EventProducer eventProducer = new EventProducer();
         String jobName = context.getJobDetail().getFullName();
-        this.log.debug("starting "+jobName);
+        this.log.debug("checkStatusJob.start "+jobName);
 
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
         String nodeId = (String) jobDataMap.get("nodeId");
@@ -135,7 +135,7 @@ public class VendorCheckStatusJob implements Job {
         }
 
 
-        this.log.debug("finishing "+jobName);
+        this.log.debug("checkStatusJob.end "+jobName);
     }
 
 }

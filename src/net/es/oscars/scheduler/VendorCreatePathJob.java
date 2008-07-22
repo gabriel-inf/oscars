@@ -105,37 +105,33 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
 
         try {
             status = StateEngine.getStatus(resv);
-            this.log.debug("Reservation status was: "+status);
             if (!pathWasSetup) {
                 status = stateEngine.updateStatus(resv, StateEngine.FAILED);
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errString);
             } else {
-                try {
-                    Scheduler sched = core.getScheduleManager().getScheduler();
-                    JobDetail jd = sched.getJobDetail("MaintainStatus", "STATUS");
-                    HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) jd.getJobDataMap().get("checklist");
-                    HashMap<String, String> properties = checklist.get(gri);
-                    if (properties == null) {
-                        properties = new HashMap<String, String>();
-                        checklist.put(gri, properties);
-                        jd.getJobDataMap().put("checklist", checklist);
-                    }
-                    properties.put("desiredStatus", StateEngine.ACTIVE);
-                    properties.put("operation", "PATH_SETUP");
-                    if (direction.equals("forward")) {
-                        properties.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
-                        properties.put("ingressVlan", lspData.getVlanTag());
-                        properties.put("ingressVendor", routerType);
-                    } else if (direction.equals("reverse")) {
-                        properties.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
-                        properties.put("egressVlan", lspData.getVlanTag());
-                        properties.put("egressVendor", routerType);
-                    }
-                } catch (SchedulerException ex) {
-                    this.log.error(ex);
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("desiredStatus", StateEngine.ACTIVE);
+                params.put("operation", "PATH_SETUP");
+                if (direction.equals("forward")) {
+                    this.log.debug("setting forward status check params");
+                    params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
+                    params.put("ingressVlan", lspData.getVlanTag());
+                    params.put("ingressVendor", routerType);
+                } else if (direction.equals("reverse")) {
+                    this.log.debug("setting reverse status check params");
+                    params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
+                    params.put("egressVlan", lspData.getVlanTag());
+                    params.put("egressVendor", routerType);
                 }
+                VendorMaintainStatusJob.addToCheckList(gri, params);
+                /*
+                Iterator<String> paramIt = VendorMaintainStatusJob.checklist.get(gri).keySet().iterator();
+                while (paramIt.hasNext()) {
+                    String key = paramIt.next();
+                    this.log.debug("key: "+key+ " val: "+VendorMaintainStatusJob.checklist.get(gri).get(key));
+               }
+               */
             }
-            this.log.debug("Reservation status now is: "+status);
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", ex.getMessage());

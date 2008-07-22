@@ -52,6 +52,7 @@ public class ScheduleManager {
             Properties props = propHandler.getPropertyGroup("pss", true);
             String method = props.getProperty("method");
             if (method.equals("vendor")) {
+                this.log.debug("Starting vendor path maintainance job");
                 JobDetail msJobDetail = new JobDetail("MaintainStatus", "STATUS", VendorMaintainStatusJob.class);
                 Trigger msTrigger = TriggerUtils.makeMinutelyTrigger(1);
 

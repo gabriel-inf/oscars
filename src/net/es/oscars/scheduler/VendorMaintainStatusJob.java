@@ -10,14 +10,20 @@ public class VendorMaintainStatusJob implements Job {
     private Logger log;
     private OSCARSCore core;
 
+    public static HashMap<String, HashMap<String, String>> checklist = new HashMap<String, HashMap<String, String>>();
+    public static synchronized void addToCheckList(String gri, HashMap<String, String> params) {
+        HashMap<String, String> tmpParams = checklist.get(gri);
+        if (tmpParams != null) {
+            params.putAll(tmpParams);
+        }
+        checklist.put(gri, params);
+    }
+
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
+        this.log.debug("VendorMaintainStatusJob.start name:"+context.getJobDetail().getFullName());
 
-        HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) context.getJobDetail().getJobDataMap().get("checklist");
-        if (checklist == null) {
-            return;
-        }
 
         HashMap<String, ArrayList<String>> vlansPerNode = new HashMap<String, ArrayList<String>>();
         HashMap<String, String> nodeVendor = new HashMap<String, String>();
@@ -27,16 +33,25 @@ public class VendorMaintainStatusJob implements Job {
         Iterator<String> griIt = checklist.keySet().iterator();
         while (griIt.hasNext()) {
             String gri = griIt.next();
-            HashMap<String, String> params = checklist.get(gri);
-            String ingressVlan = params.get("ingressVlan");
-            String egressVlan = params.get("egressVlan");
-            String ingressNodeId = params.get("ingressNodeId");
-            String egressNodeId = params.get("egressNodeId");
-            String ingressVendor = params.get("ingressVendor");
-            String egressVendor = params.get("egressVendor");
-            String desiredStatus = params.get("desiredStatus");
+            this.log.debug("examining gri :"+gri);
 
-            if (ingressNodeId != null && egressNodeId == null) {
+            HashMap<String, String> params = checklist.get(gri);
+            String ingressVlan 		= params.get("ingressVlan");
+            String egressVlan 		= params.get("egressVlan");
+            String ingressNodeId	= params.get("ingressNodeId");
+            String egressNodeId 	= params.get("egressNodeId");
+            String ingressVendor 	= params.get("ingressVendor");
+            String egressVendor 	= params.get("egressVendor");
+
+            /*
+            Iterator<String> keyIt = params.keySet().iterator();
+            while (keyIt.hasNext()) {
+                String key = keyIt.next();
+                this.log.debug("key: "+key+" val:"+params.get(key));
+            }
+            */
+
+            if (ingressNodeId != null && egressNodeId != null) {
 
                 nodeVendor.put(ingressNodeId, ingressVendor);
                 nodeVendor.put(egressNodeId, egressVendor);
@@ -92,6 +107,8 @@ public class VendorMaintainStatusJob implements Job {
         for (String gri : checkedGris) {
             checklist.remove(gri);
         }
+
+        this.log.debug("VendorMaintainStatusJob.end name:"+context.getJobDetail().getFullName());
 
     }
 
