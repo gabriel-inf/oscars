@@ -1,5 +1,6 @@
 package net.es.oscars.scheduler;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.Path;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pss.cisco.LSP;
 import net.es.oscars.pss.jnx.JnxLSP;
@@ -27,23 +28,47 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
+        ReservationDAO resvDAO = new ReservationDAO(bssDbName);
+
+
+        EventProducer eventProducer = new EventProducer();
+        String status;
+        StateEngine stateEngine = new StateEngine();
+
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        Reservation resv = (Reservation) dataMap.get("reservation");
-        LSPData lspData = (LSPData) dataMap.get("lspData");
         String direction = (String) dataMap.get("direction");
         String routerType = (String) dataMap.get("routerType");
-
-
-        String gri;
-        if (resv != null) {
-            gri = (String) resv.getGlobalReservationId();
-            this.log.debug("GRI is: "+gri+ " for job name: "+jobName);
-        } else {
-            this.log.error("No reservation!");
+        String gri = (String) dataMap.get("gri");
+        Reservation resv = null;
+        try {
+            resv = resvDAO.query(gri);
+        } catch (BSSException ex) {
+            this.log.error("Could not locate reservation in DB for gri: "+gri);
             this.runNextJob(context);
             return;
         }
+
+
+
+        LSPData lspData = new LSPData(bssDbName);
+        Path path = resv.getPath();
+        try {
+            lspData.setPathVars(path.getPathElem());
+        } catch (PSSException ex) {
+            this.log.error(ex);
+            try {
+                status = stateEngine.updateStatus(resv, StateEngine.FAILED);
+            } catch (BSSException bssex) {
+                this.log.error("State engine error", bssex);
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", bssex.getMessage()+"\n"+ex.getMessage());
+            }
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", ex.getMessage());
+            this.runNextJob(context);
+            return;
+        }
+
+
 
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.ACTIVE);
@@ -78,9 +103,6 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             }
         }
 
-        EventProducer eventProducer = new EventProducer();
-        String status;
-        StateEngine stateEngine = new StateEngine();
         try {
             status = StateEngine.getStatus(resv);
             this.log.debug("Reservation status was: "+status);

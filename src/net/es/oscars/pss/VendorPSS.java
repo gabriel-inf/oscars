@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import org.apache.log4j.*;
 import org.quartz.*;
-import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
@@ -75,10 +74,6 @@ public class VendorPSS implements PSS {
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
         String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
-        // needed to avoid lazy initialization errors
-        Hibernate.initialize(lspData.getLastXfaceElem().getLink().getValidIpaddr());
-        Hibernate.initialize(lspData.getIngressPathElem().getNextElem().getLink().getValidIpaddr());
-
 
         this.log.info("Getting forward router type");
         String sysDescr = this.getRouterType(lspData.getIngressLink());
@@ -130,7 +125,7 @@ public class VendorPSS implements PSS {
             this.log.debug("Adding job "+fwdJobName);
             fwdJobDetail.setDurability(true);
             JobDataMap fwdJobDataMap = new JobDataMap();
-            fwdJobDataMap.put("reservation", resv);
+            fwdJobDataMap.put("gri", resv.getGlobalReservationId());
             fwdJobDataMap.put("lspData", lspData);
             fwdJobDataMap.put("direction", "forward");
             fwdJobDataMap.put("routerType", forwardRouterType);
@@ -142,7 +137,7 @@ public class VendorPSS implements PSS {
                 this.log.debug("Adding job "+rvsJobName);
                 rvsJobDetail.setDurability(true);
                 JobDataMap rvsJobDataMap = new JobDataMap();
-                rvsJobDataMap.put("reservation", resv);
+                rvsJobDataMap.put("gri", resv.getGlobalReservationId());
                 rvsJobDataMap.put("lspData", lspData);
                 rvsJobDataMap.put("direction", "reverse");
                 rvsJobDataMap.put("routerType", reverseRouterType);
@@ -217,10 +212,6 @@ public class VendorPSS implements PSS {
         String forwardRouterType = "";
         String reverseRouterType = "";
         boolean doReverse = false;
-        // for Juniper circuit set up
-        JnxLSP jnxLSP = null;
-        // for Cisco circuit set up
-        LSP ciscoLSP = null;
 
         Path path = resv.getPath();
         lspData.setPathVars(path.getPathElem());
@@ -276,8 +267,7 @@ public class VendorPSS implements PSS {
             this.log.debug("Adding job "+fwdJobName);
             fwdJobDetail.setDurability(true);
             JobDataMap fwdJobDataMap = new JobDataMap();
-            fwdJobDataMap.put("reservation", resv);
-            fwdJobDataMap.put("lspData", lspData);
+            fwdJobDataMap.put("gri", resv.getGlobalReservationId());
             fwdJobDataMap.put("direction", "forward");
             fwdJobDataMap.put("routerType", forwardRouterType);
             fwdJobDataMap.put("newStatus", newStatus);
@@ -289,8 +279,7 @@ public class VendorPSS implements PSS {
                 this.log.debug("Adding job "+rvsJobName);
                 rvsJobDetail.setDurability(true);
                 JobDataMap rvsJobDataMap = new JobDataMap();
-                rvsJobDataMap.put("reservation", resv);
-                rvsJobDataMap.put("lspData", lspData);
+                rvsJobDataMap.put("gri", resv.getGlobalReservationId());
                 rvsJobDataMap.put("direction", "reverse");
                 rvsJobDataMap.put("routerType", reverseRouterType);
                 rvsJobDataMap.put("newStatus", newStatus);
