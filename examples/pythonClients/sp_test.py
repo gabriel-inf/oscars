@@ -1,5 +1,6 @@
 import sys
 import time
+from ZSI import FaultException
 from ZSI.ServiceProxy import ServiceProxy
 from wssecurity import SignatureHandler
 
@@ -8,6 +9,17 @@ WSDL_URL = 'OSCARS.wsdl'
 WS_URL = 'https://test-idc.internet2.edu:8443/axis2/services/OSCARS'
 
 currentTimeSecs = lambda: int(time.time())
+
+faultyReq = {
+    "startTime": currentTimeSecs(),
+    "endTime": currentTimeSecs() + 60**2,
+    "bandwidth": 100,
+    "description": "Gianluca's test",
+    "pathInfo": {
+        "pathSetupMode": "user-xml"
+    }
+}
+
 req = {
     "startTime": currentTimeSecs(),
     "endTime": currentTimeSecs() + 60**2,
@@ -26,8 +38,21 @@ signatureHandler = SignatureHandler('cert.cer', 'key.pem')
 
 sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler)
 
-response = sp.createReservation(req)
 
+print 'Sending faulty request'
+print 'IDC reply:'
+try:
+    sp.createReservation(faultyReq)
+except FaultException, reason:
+    print reason
+print
+
+print 'Sleeping for 5 seconds...'
+time.sleep(5)
+print
+
+print 'Sending correct request'
+response = sp.createReservation(req)
 print 'IDC reply:'
 from pprint import pprint
 pprint(response)

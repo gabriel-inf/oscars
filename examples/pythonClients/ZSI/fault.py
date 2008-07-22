@@ -16,31 +16,28 @@ from ZSI.TC import ElementDeclaration
 import traceback, cStringIO as StringIO
 
 
-class Detail:
-    def __init__(self, any=None):
-        self.any = any
+CodeTC = Struct(None,
+                [QName(pname=(SOAP.ENV, 'Value')),
+                 AnyElement(aname='subcode', minOccurs=0)],
+                pname=(SOAP.ENV, 'Code'))
 
-Detail.typecode = Struct(Detail, [AnyElement(aname='any',minOccurs=0, maxOccurs="unbounded",processContents="lax")], pname='detail', minOccurs=0)
+ReasonTC = Struct(None,
+                  [String(pname=(SOAP.ENV, 'Text'), minOccurs=1)],
+                  pname=(SOAP.ENV, 'Reason'))
 
-class FaultType:
-    def __init__(self, faultcode=None, faultstring=None, faultactor=None, detail=None):
-        self.faultcode = faultcode
-        self.faultstring= faultstring
-        self.faultactor = faultactor
-        self.detail = detail
-        
-FaultType.typecode = \
-    Struct(FaultType,
-        [QName(pname='faultcode'), 
-         String(pname='faultstring'),
-         URI(pname=(SOAP.ENV,'faultactor'), minOccurs=0),
-         Detail.typecode,
-         AnyElement(aname='any',minOccurs=0, maxOccurs=UNBOUNDED, processContents="lax"),
-        ], 
-        pname=(SOAP.ENV,'Fault'), 
-        inline=True,
-        hasextras=0, 
-    )
+DetailTC = Struct(None,
+                  [AnyElement(aname='content', minOccurs=0, maxOccurs='unbounded', processContents='lax')],
+                  pname=(SOAP.ENV, 'Detail'),
+                  minOccurs=0)
+
+FaultTypeTC = Struct(None,
+                     [CodeTC,
+                      ReasonTC,
+                      URI(pname=(SOAP.ENV,'Node'), minOccurs=0),
+                      URI(pname=(SOAP.ENV,'Role'), minOccurs=0),
+                      DetailTC],
+                     pname=(SOAP.ENV, 'Fault'))
+
 
 class ZSIHeaderDetail:
     def __init__(self, detail):
@@ -250,13 +247,15 @@ def FaultFromException(ex, inheader, tb=None, actor=None):
 def FaultFromFaultMessage(ps):
     '''Parse the message as a fault.
     '''
-    pyobj = ps.Parse(FaultType.typecode)
+    pyobj = ps.Parse(FaultTypeTC)
 
-    if pyobj.detail == None:  detailany = None
-    else:  detailany = pyobj.detail.any
+    detailContent = pyobj.get('Detail', None)
+    if detailContent is not None:
+        detailContent = detailContent['content']
 
-    return Fault(pyobj.faultcode, pyobj.faultstring,
-                pyobj.faultactor, detailany)
-
+    return Fault(pyobj['Code']['Value'],
+                 pyobj['Reason']['Text'],
+                 pyobj.get('Node', None),
+                 detailContent)
 
 if __name__ == '__main__': print _copyright
