@@ -50,8 +50,8 @@ public class Pathfinder {
             String srcType = parseResults.get("type");
             if (!srcType.equals("link")) {
                 throw new PathfinderException("Could not determine ingress; no path given and source is not a link.");
-            } else if (domainDAO.isLocal(domainId)) {
-                throw new PathfinderException("Could not determine ingress; no path given and source link is not local.");
+            } else if (!domainDAO.isLocal(domainId)) {
+                throw new PathfinderException("Could not determine ingress; no path given and source link is not local (" + domainId + ")");
             } else {
                 return parseResults.get("fqti");
             }
