@@ -17,7 +17,7 @@ public class OSCARSEvent implements Serializable{
     private String errorMessage;
     private HashMap<String, String[]> reservationParams;
     private String source;
-    
+
     public static String RESV_CREATE_STARTED = "RESERVATION_CREATE_STARTED";
     public static String RESV_CREATE_COMPLETED = "RESERVATION_CREATE_COMPLETED";
     public static String RESV_CREATE_FAILED = "RESERVATION_CREATE_FAILED";
@@ -32,15 +32,15 @@ public class OSCARSEvent implements Serializable{
     public static String PATH_SETUP_STARTED = "PATH_SETUP_STARTED";
     public static String PATH_SETUP_COMPLETED = "PATH_SETUP_COMPLETED";
     public static String PATH_SETUP_FAILED = "PATH_SETUP_FAILED";
-    public static String PATH_TEARDOWN_STARTED = "PATH_STEARDOWN_STARTED";
+    public static String PATH_TEARDOWN_STARTED = "PATH_TEARDOWN_STARTED";
     public static String PATH_TEARDOWN_COMPLETED = "PATH_TEARDOWN_COMPLETED";
     public static String PATH_TEARDOWN_FAILED = "PATH_TEARDOWN_FAILED";
     public static String RESV_EXPIRES_IN_1DAY = "RESERVATION_EXPIRES_IN_1DAY";
     public static String RESV_EXPIRES_IN_7DAYS = "RESERVATION_EXPIRES_IN_7DAYS";
     public static String RESV_EXPIRES_IN_30DAYS = "RESERVATION_EXPIRES_IN_30DAYS";
-    
+
     /**
-     * Sets the type of event. See the constants defined in this class for 
+     * Sets the type of event. See the constants defined in this class for
      * common event types.
      *
      * @param type the type to set
@@ -48,9 +48,9 @@ public class OSCARSEvent implements Serializable{
     public void setType(String type){
         this.type = type;
     }
-    
+
     /**
-     * Returns the type of event. See the constants defined in this class for 
+     * Returns the type of event. See the constants defined in this class for
      * common event types.
      *
      * @return the type of event
@@ -58,47 +58,47 @@ public class OSCARSEvent implements Serializable{
     public String getType(){
         return this.type;
     }
-    
+
     /**
-     * Sets the timestamp at which the event ocurred. 
+     * Sets the timestamp at which the event ocurred.
      *
      * @param timestamp the time (in milliseconds) of when the event occurred
      */
     public void setTimestamp(long timestamp){
         this.timestamp = timestamp;
     }
-    
+
     /**
-     * Returns the timestamp at which the event ocurred. 
+     * Returns the timestamp at which the event ocurred.
      *
      * @return the timestamp (in milliseconds) of when the event occurred
      */
     public long getTimestamp(){
         return this.timestamp;
     }
-    
+
     /**
-     * Sets the login of the user that triggered the event. For events 
+     * Sets the login of the user that triggered the event. For events
      * affecting reservations this may or may not be the same person that
-     * created the reservation.     
+     * created the reservation.
      *
      * @param userLogin the user login to set
      */
     public void setUserLogin(String userLogin){
         this.userLogin = userLogin;
     }
-    
+
     /**
-     * Returns the login of the user that triggered the event. For events 
+     * Returns the login of the user that triggered the event. For events
      * affecting reservations this may or may not be the same person that
-     * created the reservation.     
+     * created the reservation.
      *
      * @return the login of the event triggering user
      */
     public String getUserLogin(){
         return this.userLogin;
     }
-    
+
     /**
      * Sets the component that reported the event. Currently may be API, WBUI,
      * or SCHEDULER.
@@ -108,7 +108,7 @@ public class OSCARSEvent implements Serializable{
     public void setSource(String source){
         this.source = source;
     }
-    
+
     /**
      * Returns the component that reported the event. Currently may be API, WBUI,
      * or SCHEDULER.
@@ -118,7 +118,7 @@ public class OSCARSEvent implements Serializable{
     public String getSource(){
         return this.source;
     }
-    
+
     /**
      * Sets the error code if the event is reporting an error.
      *
@@ -127,7 +127,7 @@ public class OSCARSEvent implements Serializable{
     public void setErrorCode(String errorCode){
         this.errorCode = errorCode;
     }
-    
+
     /**
      * Returns the error code if the event is reporting an error.
      *
@@ -136,7 +136,7 @@ public class OSCARSEvent implements Serializable{
     public String getErrorCode(){
         return this.errorCode;
     }
-    
+
     /**
      * Sets the error message if the event is reporting an error.
      *
@@ -145,7 +145,7 @@ public class OSCARSEvent implements Serializable{
     public void setErrorMessage(String errorMessage){
         this.errorMessage = errorMessage;
     }
-    
+
     /**
      * Returns the error message if the event is reporting an error.
      *
@@ -154,7 +154,7 @@ public class OSCARSEvent implements Serializable{
     public String getErrorMessage(){
         return this.errorMessage;
     }
-    
+
     /**
      * Sets the reservation affected by this event
      *
@@ -163,7 +163,7 @@ public class OSCARSEvent implements Serializable{
     public void setReservationParams(HashMap<String, String[]> reservationParams){
         this.reservationParams = reservationParams;
     }
-    
+
     /**
      * Returns the reservation parameters of this event
      *
