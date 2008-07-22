@@ -18,24 +18,30 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("CreateReservationJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
+        String bssDbName = core.getBssDbName();
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
 
         Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        Reservation resv = (Reservation) dataMap.get("reservation");
         PathInfo pathInfo = (PathInfo) dataMap.get("pathInfo");
         String login = (String) dataMap.get("login");
 
-        String gri;
-        if (resv != null) {
-            gri = (String) resv.getGlobalReservationId();
-        } else {
-            this.log.error("No reservation associated with job name:"+jobName);
+        ReservationDAO resvDAO = new ReservationDAO(bssDbName);
+        String gri = (String) dataMap.get("gri");
+        Reservation resv = null;
+        try {
+            resv = resvDAO.query(gri);
+        } catch (BSSException ex) {
+            this.log.error("Could not locate reservation in DB for gri: "+gri);
             this.runNextJob(context);
             return;
         }
+
+
         this.log.debug("GRI is: "+gri+"for job name: "+jobName);
 
         try {
@@ -46,8 +52,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             return;
         }
 
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
         boolean wasReserved = true;
         String errMessage = null;
 
@@ -104,7 +108,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             this.log.error("State engine error", ex);
         }
         // just in case this is an immediate reservation, check pending & add setup actions
-        
+
         PSSScheduler sched = new PSSScheduler(core.getBssDbName());
         sched.pendingReservations(0);
 

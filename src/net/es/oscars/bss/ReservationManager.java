@@ -118,7 +118,7 @@ public class ReservationManager {
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put("reservation", resv);
+        jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
         jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
