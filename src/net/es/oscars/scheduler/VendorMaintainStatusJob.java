@@ -81,7 +81,7 @@ public class VendorMaintainStatusJob implements Job {
             String nodeId = nodeIt.next();
             ArrayList<String> vlanList = vlansPerNode.get(nodeId);
 
-            String jobName = "checkStatus-"+vlanList.hashCode();
+            String jobName = "checkStatus-"+nodeId+vlanList.hashCode();
             JobDetail jobDetail = new JobDetail(jobName, "STATUS", VendorCheckStatusJob.class);
             JobDataMap jobDataMap = new JobDataMap();
 
