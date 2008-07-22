@@ -6,6 +6,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.pss.PSSScheduler;
 
 import java.util.*;
+import java.text.ParseException;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -38,7 +39,13 @@ public class ScheduleManager {
             this.scheduler = schedFact.getScheduler();
 
             JobDetail pqJobDetail = new JobDetail("Process Queue", "queue", ProcessQueueJob.class);
-            Trigger pqTrigger = TriggerUtils.makeMinutelyTrigger(1);
+            CronTrigger pqTrigger = null;
+            try {
+                pqTrigger = new CronTrigger("pqTrigger", "INTERNAL", "0/20 * * * * ?");
+            } catch (ParseException ex) {
+                this.log.error("Error parsing trigger expression", ex);
+                return;
+            }
 
             pqTrigger.setStartTime(new Date());
             pqTrigger.setName("Process Queue Trigger");
@@ -54,7 +61,13 @@ public class ScheduleManager {
             if (method.equals("vendor")) {
                 this.log.debug("Starting vendor path maintainance job");
                 JobDetail msJobDetail = new JobDetail("MaintainStatus", "STATUS", VendorMaintainStatusJob.class);
-                Trigger msTrigger = TriggerUtils.makeMinutelyTrigger(1);
+                CronTrigger msTrigger = null;
+                try {
+                    msTrigger = new CronTrigger("msTrigger", "INTERNAL", "0/20 * * * * ?");
+                } catch (ParseException ex) {
+                    this.log.error("Error parsing trigger expression", ex);
+                    return;
+                }
 
                 msTrigger.setStartTime(new Date());
                 msTrigger.setName("Maintain Status Trigger");
@@ -125,10 +138,10 @@ public class ScheduleManager {
                     for (String jobName : jobNames) {
                         JobDetail jobDetail = this.scheduler.getJobDetail(jobName, queueName);
                         this.log.debug("Examining job "+jobDetail.getFullName());
-                        Reservation tmpResv = (Reservation) jobDetail.getJobDataMap().get("reservation");
-                        this.log.debug("Reservation is "+tmpResv.getGlobalReservationId());
-                        if (tmpResv != null) {
-                            if (gri.equals(tmpResv.getGlobalReservationId())) {
+                        String tmpGri = (String) jobDetail.getJobDataMap().get("gri");
+                        this.log.debug("Reservation is "+tmpGri);
+                        if (tmpGri != null) {
+                            if (gri.equals(tmpGri)) {
                                 this.scheduler.deleteJob(jobName, queueName);
                                 this.log.debug("Removed job: "+jobDetail.getFullName());
                                 wasAltered = true;
