@@ -250,16 +250,22 @@ still be provisioned<br>
   <li><span style="font-weight: bold;">Start Time </span>- Date and
 time at which the reservation circuit will be provisioned (times are
 displayed in the local time zone of the browser)</li>
+  <li><span style="font-weight: bold;">Bandwidth</span> reserved bandwidth in Mbits per second</li>
+  <li><span style="font-weight: bold;">VLAN</span> used to identify a flow across domains</li>
   <li><span style="font-weight: bold;">End Time</span> - Date and time
 at which the reservation circuit will be torn down</li>
-  <li><span style="font-weight: bold;">Origin</span> - Node at which
+  <li><span style="font-weight: bold;">Source</span> - Node at which
 the data flow starts - user host for layer 3, ingress link for layer 2<br>
   </li>
   <li><span style="font-weight: bold;">Destination </span>- Node at
 which the data flow ends - user host for layer 3, egress link for
 layer 2</li>
+<li><span style="font-weight: bold;">Local Source</span> - Local ingress node at which
+the data flow starts</li>
+<li><span style="font-weight: bold;">Local Destination</span> - Local egress node at which
+the data leaves this domain</li>
 </ul>
-If you click on a GRI, you will see the details of the
+If you click on a GRI and you have the required authorization, you will see the details of the
 reservation.<br>
 <h3><a class="mozTocH3" name="mozTocId792110"></a><big>4.
 <a name="ReservationDetails"></a>Reservation Details</big></h3>
@@ -273,14 +279,10 @@ description that the user specified<br>
     <span style="font-weight: bold;"></span></li>
   <li><span style="font-weight: bold;">created time</span> - time the
 reservation was created (local time zone of the browser)</li>
-  <li><span style="font-weight: bold;">bandwidth</span> - in bits per
-second <br>
-  </li>
-  <li><span style="font-weight: bold;">VLAN tag</span> - used to
-identify a flow across domains<br>
-  </li>
-  <li><span style="font-weight: bold;">nodes in path</span> - the
-abstract nodes in the confirmed SIDP (Strict Interdomain Path). It will
+  <li><span style="font-weight: bold;">intradomain hops</span> - the
+abstract nodes in the confirmed SIDP (Strict Interdomain Path) within this domain.</li>
+  <li><span style="font-weight: bold;">interdomain path</span> - the
+abstract nodes in the confirmed SIDP from the source to the destination. It will
 include an ingress and egress link for each domain in the path.</li>
   <li><span style="font-weight: bold;">source, destination port</span>
 - for layer 3 reservations only</li>
@@ -325,25 +327,27 @@ these items are not required</li>
 from the pull-down menu</li>
   <li><span style="font-weight: bold;">Roles</span> - These can only be
 modified by an administrator. Currently
-there are five choices which can be combined:</li>
+there are six choices. It it recommended to choose one from the first 
+five choices. The administrator should be given to whoever is going to manage
+the users and authorizations for your site.</li>
   <ul>
     <li><span style="font-weight: bold;">user</span> - make
 reservations, query, modify and signal own reservations,
 modify own profile</li>
+    <li><span style="font-weight: bold;">operator</span> - list and
+query all reservations, list all users, modify own profile</li>
+ <li><span style="font-weight: bold;">site administrator</span> - list and
+control all reservations that start or end at his site, modify own profile</li>
     <li><span style="font-weight: bold;">engineer</span> - make
 reservations, query, modify and signal all
-reservations,
-modify own profile</li>
-    <li><span style="font-weight: bold;">administrator</span> - create
-new users, modify profiles, including
-roles, for all users</li>
-    <li><span style="font-weight: bold;">operator</span> - list and
-query all reservations, list all users</li>
+reservations, modify own profile</li>
     <li><span style="font-weight: bold;">service</span> - make
 reservations where the GRI and path elements are specified, list,
 query, modify and signal own reservations (granted
-to IDC services in co-operating domains)<br>
-    </li>
+to IDC services in co-operating domains)</li>
+    <li><span style="font-weight: bold;">administrator</span> - create
+new users, modify profiles, including
+roles, for all users</li>
   </ul>
   <li><span style="font-weight: bold;">personal description</span> -
 for our information</li>
