@@ -13,7 +13,8 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
         this.setDatabase(dbname);
     }
 
-    /* Given an attribute id, return the attribute name
+    /** 
+     * Given an attribute id, return the attribute name
      * 
      * @param attrId  int with attribute id
      * @returns a string with name of attribute
@@ -29,17 +30,18 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
         }
     }
     
-    /* given an attribute name, return the attribute id
+    /** 
+     * given an attribute name, return the attribute id
      * 
      * @param attrName string name of the attribute
      * @returns an Integer containing the attribute id
      */
     public Integer getAttributeId(String attrName) throws AAAException {
-	Attribute attr = super.queryByParam("name", attrName);
-	if (attr != null ) {
-	    return attr.getId();
-	} else {
-	    throw new AAAException ("No attribute with name "+ attrName);
-	}
+        Attribute attr = super.queryByParam("name", attrName);
+        if (attr != null ) {
+            return attr.getId();
+        } else {
+            throw new AAAException ("No attribute with name "+ attrName);
+        }
     }
 }

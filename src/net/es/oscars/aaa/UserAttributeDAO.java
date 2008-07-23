@@ -29,7 +29,7 @@ import  org.apache.log4j.*;;
      * Get the list of all the attributes for a user
      * 
      * @param userId Index into the users table
-     * @return  List of attribute ids
+     * @return  List of attributes
      */
     public List<UserAttribute> getAttributesByUser(int userId) {
         
@@ -41,6 +41,38 @@ import  org.apache.log4j.*;;
         return userAttrs;
    
  }
+    /**
+     * Get the list of all the uses who have a given attribute
+     * 
+     * @param attrName String attribute name
+     * @return  List of Users
+     */
+    public List<User> getUsersByAttribute(String attrName) {
+        
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        int attrId;
+        try {
+            attrId = attrDAO.getAttributeId(attrName);
+        } catch (AAAException ae) {
+            return  null;
+        }
+ 
+        String hsql = "from UserAttribute "  +
+                      "where attrId = :attrId" ; 
+        List<UserAttribute> userAttrs = this.getSession().createQuery(hsql)
+                          .setInteger("attrId", attrId )
+                          .list();
+        if (userAttrs != null){
+            return null;
+        }
+        ArrayList<User> users = new ArrayList<User>();
+        UserDAO userDAO = new UserDAO(this.dbname);
+        for (UserAttribute ua : userAttrs) {
+            users.add(userDAO.findById(ua.getUserId(), false));
+        }
+        return users;
+ }
+    
     /**
      * Removes all the attributes for a user, used when deleting a user
      * 
