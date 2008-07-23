@@ -151,11 +151,15 @@ or 1) can be a number, a range of numbers
 (3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"</li>
         <li><span style="font-weight: bold;">srcEndpoin</span>t
 (string)
-The ingress link. Must be a topology identifier<br>
+The ingress link. May be a topology identifier, IPaddr or Host Name. If it looks like a name,
+the DNS server will be called to resolve it to an IPAddr. Given an IPAddr, a lookup server will
+be called to find its topology identifier.<br>
         </li>
         <li><span style="font-weight: bold;">destEndpoint</span>
 (string)
-The egress link . Must be a topology identifier</li>
+The egress link . May be a topology identifier, IPaddr or Host Name. If it looks like a name,
+the DNS server will be called to resolve it to an IPAddr. Given an IPAddr, a lookup server will
+be called to find its topology identifier.</li>
       </ul>
     </li>
     <li> <span style="font-weight: bold;">layer3Info</span>
@@ -163,9 +167,11 @@ The egress link . Must be a topology identifier</li>
     <ul>
       <li><span style="font-weight: bold;">srcHost</span> (string) -
 may be DNS name, IPaddr or topology
-identifier<br>
+identifier. If it is a Host Name, the DNS will be used to resolve it to an IPaddr. 
+If it a topology identifier, its IPaddr will be found from the topology database.<br>
         <span style="font-weight: bold;">destHost</span> (string) - may
-be DNS name, IPaddr or topology identifier<br>
+be DNS name, IPaddr or topology identifier, f it is a Host Name, the DNS will be used to resolve it to an IPaddr. 
+If it a topology identifier, its IPaddr will be found from the topology database.<br>
         <span style="font-weight: bold;">protocol</span> (string, 0 or
 1) - "UDP" or "TCP"<br>
         <span style="font-weight: bold;">srcIpPort </span>(int, 0 or

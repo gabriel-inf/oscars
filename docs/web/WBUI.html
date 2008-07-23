@@ -95,8 +95,8 @@ components notes</a> for more about the topology naming scheme.<br>
 <ul>
   <li><span style="font-weight: bold;">Source </span>and <span
  style="font-weight: bold;">Destination hosts</span> may be specified
-by a DNS host name or IP address for layer 3 reservations or as a
-topology link identifier for layer 2 reservations.<br>
+by a DNS host name, IP address or as a
+topology link identifier. <br>
   </li>
   <li>Example for layer 3 reservation:</li>
   <ul>
@@ -112,10 +112,11 @@ urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
     <small style="font-weight: bold;"> destination:</small> <code>urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1</code></div>
   </li>
   <li>For layer3 reservations the hosts are the machines on which the
-data resides and are specified by DNS names or IPaddrs. For layer2
-reservation, they are the ingress and egress links to the ISP and are
-currently input as topology identifiers.&nbsp; In this case a user must
-communicate with the ISP administrators to find out what links to use.
+data resides. If a host name is specified, the DNS will be used to resolve it to an IPaddr.
+If a topology identifier is specified, the associated IPaddr will be found from the topology database. 
+For layer2 reservations, they are the ingress and egress links to the ISP. If they are input as a host names or IPaddrs
+the DNS and a lookup server are used to resolve them to topology identifiers.  Alternatively, a user may
+communicate with the ISP administrators to find out what topology identifiers to use.
     <br>
   </li>
   <li><span style="font-weight: bold;">Path </span>is a
