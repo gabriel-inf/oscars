@@ -32,7 +32,6 @@ public class ListReservations extends HttpServlet {
         HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
         UserSession userSession = new UserSession();
-        net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
@@ -50,14 +49,14 @@ public class ListReservations extends HttpServlet {
             rmiClient.init();
             outputMap = rmiClient.listReservations(inputMap, userName);
         } catch (Exception ex) {
-            utils.handleFailure(out, "ListReservations not completed: " + ex.getMessage(), 
-                   methodName, null, null);
+            Utils.handleFailure(out, "ListReservations not completed: " + ex.getMessage(), 
+                   methodName, null);
             this.log.error("Error calling rmiClient for ListReservations", ex);
             return;
         }
         String errorMsg = (String)outputMap.get("error");
         if (errorMsg != null) {
-            utils.handleFailure(out, errorMsg, methodName, null,null);
+            Utils.handleFailure(out, errorMsg, methodName, null);
             this.log.error(errorMsg);
             this.log.info("ListReservations.finish with error" + errorMsg);
             return;

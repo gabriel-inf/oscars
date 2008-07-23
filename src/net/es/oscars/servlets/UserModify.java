@@ -17,14 +17,12 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 
 public class UserModify extends HttpServlet {
     private Logger log;
-    private String dbname;
     
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.dbname = "aaa";
         this.log.info("userModify:start");
 
         String methodName = "UserModify";
@@ -35,19 +33,18 @@ public class UserModify extends HttpServlet {
         boolean self = false; // is user modifying own profile
         boolean setPassword = false; 
         List<String> attrNames = new ArrayList<String>();
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
 
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
 
-        mgr = new UserManager(this.dbname);
+        mgr = new UserManager(Utils.getDbName());
         String profileName = request.getParameter("profileName");
         Session aaa = 
-            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         
         Map outputMap = new HashMap();
@@ -76,14 +73,14 @@ public class UserModify extends HttpServlet {
               user= mgr.query(profileName);
               userId=user.getId();
          } else {
-            utils.handleFailure(out,"no permission to modify users", 
-                                methodName, aaa,null);
+            Utils.handleFailure(out,"no permission to modify users", 
+                                methodName, aaa);
             return;
         }
 
         if (user == null) {
             String msg = "User " + profileName + " does not exist";
-            utils.handleFailure(out, msg, methodName, aaa, null);
+            Utils.handleFailure(out, msg, methodName, aaa);
         }
 
         try {
@@ -94,7 +91,7 @@ public class UserModify extends HttpServlet {
 
             // handle password modification if necessary
             // checkpassword will return null, if password is  not to be changed
-            String newPassword = utils.checkPassword(password, confirmationPassword);
+            String newPassword = Utils.checkPassword(password, confirmationPassword);
             if (newPassword != null) {
                 user.setPassword(newPassword);
                 setPassword = true;
@@ -103,6 +100,7 @@ public class UserModify extends HttpServlet {
             
             // see if any attributes need to be added or removed
             if (authVal == AuthValue.ALLUSERS) {
+                RoleUtils roleUtils = new RoleUtils();
                 String roles[] = request.getParameterValues("roles");
                 ArrayList<Integer> newRoles = null;
                 if (roles == null) {
@@ -110,7 +108,7 @@ public class UserModify extends HttpServlet {
                     newRoles = new ArrayList<Integer>();
                 } else {
                     this.log.info("number of roles input is " + roles.length);
-                    newRoles = utils.convertRoles(roles);
+                    newRoles = roleUtils.convertRoles(roles);
                 }
                 ArrayList<Integer> curRoles = new ArrayList<Integer>();
                 for (String s : attrNames) {
@@ -133,8 +131,8 @@ public class UserModify extends HttpServlet {
                     int intCurRoleItem  = curRoleItem.intValue();
                     if (!newRoles.contains(intCurRoleItem)) {
                          this.log.info("delete attrId " + intCurRoleItem);
-                         UserAttributeDAO userAttrDAO = new UserAttributeDAO(
-                                                                 this.dbname);
+                         UserAttributeDAO userAttrDAO =
+                             new UserAttributeDAO(Utils.getDbName());
                          userAttrDAO.remove(userId, intCurRoleItem);
                      }
                  }
@@ -152,7 +150,7 @@ public class UserModify extends HttpServlet {
                  }
              }             
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
         outputMap.put("status", "Profile for user " +
@@ -190,11 +188,11 @@ public class UserModify extends HttpServlet {
 
         String strParam = null;
         String DN = null;
-        Utils utils = new Utils();
 
         strParam = request.getParameter("institutionName");
         if (strParam != null) {
-            InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
+            InstitutionDAO institutionDAO =
+                new InstitutionDAO(Utils.getDbName());
             Institution institution =
                 institutionDAO.queryByParam("name", strParam);
             if (institution != null) {
@@ -203,7 +201,7 @@ public class UserModify extends HttpServlet {
         }
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = utils.checkDN(strParam);
+            DN = Utils.checkDN(strParam);
         }
         // allow setting existent non-required field to null
         if ((DN != null) || (user.getCertIssuer() != null)) {
@@ -211,7 +209,7 @@ public class UserModify extends HttpServlet {
         }
         strParam = request.getParameter("certSubject");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = utils.checkDN(strParam);
+            DN = Utils.checkDN(strParam);
         }
         if ((DN != null) || (user.getCertSubject() != null)) {
             user.setCertSubject(DN);
@@ -246,7 +244,7 @@ public class UserModify extends HttpServlet {
 
     private void addUserAttribute(int attrId, int userId){
 
-        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
+        UserAttributeDAO userAttrDAO = new UserAttributeDAO(Utils.getDbName());
         UserAttribute userAttr = new UserAttribute();
 
         userAttr.setAttributeId(attrId);

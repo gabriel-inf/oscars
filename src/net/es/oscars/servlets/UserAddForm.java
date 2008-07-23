@@ -23,8 +23,7 @@ public class UserAddForm extends HttpServlet {
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager("aaa");
-        Utils utils = new Utils();
+        UserManager mgr = new UserManager(Utils.getDbName());
         List<Institution> institutions = null;
         Logger log = Logger.getLogger(this.getClass());
         log.debug("UserAddForm: start");
@@ -36,12 +35,12 @@ public class UserAddForm extends HttpServlet {
         if (userName == null) { return; }
 
         Session aaa = 
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (authVal != AuthValue.ALLUSERS) {
-            utils.handleFailure(out, "not allowed to add a new user",
-                                methodName, aaa, null);
+            Utils.handleFailure(out, "not allowed to add a new user",
+                                methodName, aaa);
             return;
         }
         institutions = mgr.getInstitutions();

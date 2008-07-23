@@ -17,7 +17,6 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 
 public class Institutions extends HttpServlet {
     private Logger log;
-    private String dbname;
     
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
@@ -25,16 +24,14 @@ public class Institutions extends HttpServlet {
 
 
         this.log = Logger.getLogger(this.getClass());
-        this.dbname = "aaa";
         this.log.debug("Institutions:start");
         String methodName = "Institutions";
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
         PrintWriter out = response.getWriter();
         String[] ops = request.getQueryString().split("=");
         if (ops.length != 2) {
-            utils.handleFailure(out, "incorrect input from Institutions page",
-                                methodName, null, null);
+            Utils.handleFailure(out, "incorrect input from Institutions page",
+                                methodName, null);
         }
         String opName = ops[1];
         this.log.info("op is " + opName);
@@ -43,14 +40,14 @@ public class Institutions extends HttpServlet {
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
         Session aaa = 
-            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();     
-        UserManager mgr = new UserManager(this.dbname);
+        UserManager mgr = new UserManager(Utils.getDbName());
         
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (authVal != AuthValue.ALLUSERS) {
-            utils.handleFailure(out, "no permission to modify Institutions table",
-                                methodName, aaa, null);
+            Utils.handleFailure(out, "no permission to modify Institutions table",
+                                methodName, aaa);
         }
         Map outputMap = new HashMap();
         outputMap.put("status", "Institutions management");
@@ -72,7 +69,7 @@ public class Institutions extends HttpServlet {
      */
     public void outputInstitutions(Map outputMap) {
 
-        InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
+        InstitutionDAO institutionDAO = new InstitutionDAO(Utils.getDbName());
         List<Institution> institutions = institutionDAO.list();
         ArrayList<HashMap<String,String>> institutionList =
             new ArrayList<HashMap<String,String>>();

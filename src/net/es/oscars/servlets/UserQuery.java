@@ -20,14 +20,12 @@ import net.es.oscars.aaa.AAAException;
 
 public class UserQuery extends HttpServlet {
     private Logger log;
-    private String dbname;
     
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.dbname = "aaa";
         this.log.debug("userQuery:start");
 
         String methodName = "UserQuery";
@@ -36,10 +34,9 @@ public class UserQuery extends HttpServlet {
         boolean modifyAllowed = false;
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager("aaa");
+        UserManager mgr = new UserManager(Utils.getDbName());
         List<Institution> institutions = null;
         List<String> attrNames = new ArrayList<String>();
-        Utils utils = new Utils();
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
@@ -48,7 +45,7 @@ public class UserQuery extends HttpServlet {
 
         String profileName = request.getParameter("profileName");
         Session aaa = 
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
 
         // get here by clicking on a name in the users list
@@ -75,8 +72,8 @@ public class UserQuery extends HttpServlet {
         if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
               targetUser= mgr.query(profileName);
          } else {
-            utils.handleFailure(out,"no permission to query users",
-                                methodName, aaa,null);
+            Utils.handleFailure(out,"no permission to query users",
+                                methodName, aaa);
             return;
         }
         /* check to see if user has modify permission for this user

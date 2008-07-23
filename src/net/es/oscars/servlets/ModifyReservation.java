@@ -23,7 +23,6 @@ public class ModifyReservation extends HttpServlet {
         String methodName = "ModifyReservation";
 
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
         PrintWriter out = response.getWriter();
 
         response.setContentType("text/json-comment-filtered");
@@ -45,14 +44,14 @@ public class ModifyReservation extends HttpServlet {
             rmiClient.init();
             outputMap = rmiClient.modifyReservation(inputMap, userName);
         } catch (Exception ex) {
-            utils.handleFailure(out, "ModifyReservation not completed: " + ex.getMessage(), 
-                    methodName, null, null);
+            Utils.handleFailure(out, "ModifyReservation not completed: " + ex.getMessage(), 
+                    methodName, null);
             this.log.error("Error calling rmiClient for ModifyReservation", ex);
             return;
         }
         String errorMsg = (String)outputMap.get("error");
         if (errorMsg != null) {
-            utils.handleFailure(out, errorMsg, methodName, null,null);
+            Utils.handleFailure(out, errorMsg, methodName, null);
             this.log.error("ModifyReservation failed: " + errorMsg);
             return;
         }

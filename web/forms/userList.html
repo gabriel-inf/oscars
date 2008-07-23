@@ -3,11 +3,11 @@
 <script type="text/javascript">
     var userView = {
       cells: [[
-         {name: 'Login', field: "login", width: "15em"},
-         {name: 'Last Name', field: "lastName", width: "11em"},
-         {name: 'First Name', field: "firstName", width: "10em"},
-         {name: 'Organization', field: "organization", width: "22em"},
-         {name: 'Phone', field: "phone", width: "11em"}
+         {name: 'Login', width: "15em"},
+         {name: 'Last Name', width: "11em"},
+         {name: 'First Name', width: "10em"},
+         {name: 'Organization', width: "22em"},
+         {name: 'Phone', width: "11em"}
       ]]
     };
     var userLayout = [ userView ];
@@ -20,21 +20,26 @@
 <body>
 <form id="userListForm" dojoType="dijit.form.Form">
   <div id="userRowSelectableDisplay" style="display:none">
-  <p>Click on a row to view detailed user information.</p>
+  <br />
+  Click on a row to view detailed user information.
   </div>
+  <div id="attributeInfoDisplay" style="display:none">
+  Use the menu and click on REFRESH to select users with a given attribute.
+  </div>
+  <br />
 
   <table>
   <tr>
-    <td>User List</td>
-    <td>
-    <button dojoType="dijit.form.Button" id="userList">
-       Refresh 
+    <td width="7%">User List</td>
+    <td width="7%">
+      <button dojoType="dijit.form.Button" id="userList">
+       REFRESH 
        <script type="dojo/method" event="onClick">
           oscars.UserList.refreshUserGrid();
        </script>
-    </button>
-
+      </button>
     </td>
+    <td><div id="attributeMenuReplace" /></td>
   </tr>
   </table>
 </form>

@@ -47,25 +47,20 @@ import  org.apache.log4j.*;;
      * @param attrName String attribute name
      * @return  List of Users
      */
-    public List<User> getUsersByAttribute(String attrName) {
+    public List<User> getUsersByAttribute(String attrName) 
+        throws AAAException {
         
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        int attrId;
-        try {
-            attrId = attrDAO.getAttributeId(attrName);
-        } catch (AAAException ae) {
-            return  null;
-        }
- 
+        int attributeId = attrDAO.getAttributeId(attrName);
         String hsql = "from UserAttribute "  +
-                      "where attrId = :attrId" ; 
+                      "where attributeId = :attributeId" ; 
         List<UserAttribute> userAttrs = this.getSession().createQuery(hsql)
-                          .setInteger("attrId", attrId )
+                          .setInteger("attributeId", attributeId )
                           .list();
-        if (userAttrs != null){
-            return null;
-        }
         ArrayList<User> users = new ArrayList<User>();
+        if (userAttrs == null) {
+            return users;
+        }
         UserDAO userDAO = new UserDAO(this.dbname);
         for (UserAttribute ua : userAttrs) {
             users.add(userDAO.findById(ua.getUserId(), false));

@@ -25,7 +25,7 @@ public class AuthenticateUser extends HttpServlet {
         log.info("init.start");
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
-        dbnames.add("aaa");
+        dbnames.add(Utils.getDbName());
         initializer.initDatabase(dbnames);
         log.info("init.end");
     }
@@ -34,7 +34,7 @@ public class AuthenticateUser extends HttpServlet {
     public void destroy() {
         Logger log = Logger.getLogger(this.getClass());
         log.info("destroy.start");
-        HibernateUtil.closeSessionFactory("aaa");
+        HibernateUtil.closeSessionFactory(Utils.getDbName());
         log.info("destroy.end");
     }
 
@@ -46,8 +46,7 @@ public class AuthenticateUser extends HttpServlet {
 
         String methodName = "AuthenticateUser";
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
-        UserManager mgr = new UserManager("aaa");
+        UserManager mgr = new UserManager(Utils.getDbName());
         Logger log = Logger.getLogger(this.getClass());
 
         out = response.getWriter();
@@ -64,7 +63,8 @@ public class AuthenticateUser extends HttpServlet {
         }
         response.setContentType("text/json-comment-filtered");
         Session aaa = 
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            HibernateUtil.getSessionFactory(
+                    Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         try {
             String unused =
@@ -72,7 +72,7 @@ public class AuthenticateUser extends HttpServlet {
                                 request.getParameter("initialPassword"),
                                 sessionName);
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
         // Used to indicate which tabs can be displayed.  All except

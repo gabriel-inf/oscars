@@ -20,23 +20,22 @@ public class CreateReservationForm extends HttpServlet {
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
 
         String methodName = "CreateReservationForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
-        UserManager mgr = new UserManager("aaa");
+        UserManager mgr = new UserManager(Utils.getDbName());
         Session aaa = 
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkModResAccess(userName,
                 "Reservations", "create", 0, 0, false, false );
         if (authVal == AuthValue.DENIED ) {
-            utils.handleFailure(out,
+            Utils.handleFailure(out,
                     "No permission granted to create a reservation",
-                    methodName, aaa, null);
+                    methodName, aaa);
             return;
         }
         Map outputMap = new HashMap();
@@ -60,7 +59,7 @@ public class CreateReservationForm extends HttpServlet {
         contentSection(Map outputMap, String userName) {
 
         StringBuilder sb = new StringBuilder();
-        UserManager mgr = new UserManager("aaa");
+        UserManager mgr = new UserManager(Utils.getDbName());
         // check to see if user may specify path elements
         AuthValue authVal = mgr.checkModResAccess(userName,
                 "Reservations", "create", 0, 0, true, false );

@@ -36,9 +36,6 @@ public class QueryReservation extends HttpServlet {
         
         String methodName = "QueryReservation";
         UserSession userSession = new UserSession();
-        net.es.oscars.servlets.Utils utils =
-            new net.es.oscars.servlets.Utils();
-
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
@@ -58,13 +55,13 @@ public class QueryReservation extends HttpServlet {
             rmiClient.init();
             outputMap = rmiClient.queryReservation(inputMap, userName);
         } catch (Exception ex) {
-            utils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(),
-                                      methodName, null, null);
+            Utils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(),
+                                      methodName, null);
             this.log.info("QueryReservation.end: " + ex.getMessage());
         }
         String errorMsg = (String) outputMap.get("error");
         if (errorMsg != null) {
-            utils.handleFailure(out, errorMsg, methodName, null, null);
+            Utils.handleFailure(out, errorMsg, methodName, null);
             this.log.info("QueryReservation.end: " + errorMsg);
             return;
         }

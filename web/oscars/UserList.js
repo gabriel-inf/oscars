@@ -33,10 +33,19 @@ oscars.UserList.handleReply = function (responseObject, ioArgs) {
         }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
-    } else {
+    } else if (responseObject.method == "UserList") {
         if (!oscars.Form.resetStatus(responseObject, true)) {
             return;
         }
+        // set parameter values in form from responseObject
+        oscars.Form.applyParams(responseObject);
+        var mainTabContainer = dijit.byId("mainTabContainer");
+        var userGrid = dijit.byId("userGrid");
+        var model = userGrid.model;
+        model.setData(responseObject.userData);
+        userGrid.resize();
+        userGrid.render();
+        oscarsState.userGridInitialized = true;
     }
 };
 
@@ -54,23 +63,18 @@ oscars.UserList.tabSelected = function (
     if ((userGrid != null) && (!oscarsState.userGridInitialized)) {
         dojo.connect(userGrid, "onRowClick", oscars.UserList.onUserRowSelect);
         oscars.UserList.refreshUserGrid();
-        userGrid.resize();
-        userGrid.render();
-        oscarsState.userGridInitialized = true;
     }
 };
 
 // refresh user list from servlet
 oscars.UserList.refreshUserGrid = function () {
-    var userGrid = dijit.byId("userGrid");
-    var newStore = new dojo.data.ItemFileReadStore(
-                      {url: 'servlet/UserList'});
-    var newModel = new dojox.grid.data.DojoData(
-                      null, newStore,
-                      {query: {login: '*'}, clientSort: true,
-                       rowsPerPage: 20});
-    userGrid.setModel(newModel);
-    userGrid.refresh();
+    dojo.xhrPost({
+        url: 'servlet/UserList',
+        handleAs: "json-comment-filtered",
+        load: oscars.UserList.handleReply,
+        error: oscars.Form.handleError,
+        form: dijit.byId("userListForm").domNode
+    });
 };
 
 // select user details based on row select in grid
@@ -81,8 +85,8 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userProfilePane = dijit.byId("userProfilePane");
     var userGrid = dijit.byId("userGrid");
-    // get user name
-    var profileName = userGrid.model.getDatum(evt.rowIndex, 1);
+    // get user login name
+    var profileName = userGrid.model.getDatum(evt.rowIndex, 0);
     var formParam = dijit.byId("userProfileForm").domNode;
     formParam.reset();
     formParam.profileName.value = profileName;

@@ -33,8 +33,6 @@ public class CreateReservation extends HttpServlet {
         PrintWriter out = response.getWriter();
         UserSession userSession = new UserSession();
         String methodName= "CreateReservation";
-        net.es.oscars.servlets.Utils utils =
-            new net.es.oscars.servlets.Utils();
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
 
@@ -55,14 +53,14 @@ public class CreateReservation extends HttpServlet {
             rmiClient.init();
             outputMap = rmiClient.createReservation(inputMap, userName);
         } catch (Exception ex) {
-            utils.handleFailure(out, "CreateReservation not completed: " + ex.getMessage(), 
-                    methodName, null, null);
+            Utils.handleFailure(out, "CreateReservation not completed: " +
+                    ex.getMessage(), methodName, null);
             this.log.error("Error calling rmiClient for CreateReservation", ex);
             return;
         }
         String errorMsg = (String)outputMap.get("error");
         if (errorMsg != null) {
-            utils.handleFailure(out, errorMsg, methodName, null,null);
+            Utils.handleFailure(out, errorMsg, methodName, null);
             this.log.error(errorMsg);
             return;
         }

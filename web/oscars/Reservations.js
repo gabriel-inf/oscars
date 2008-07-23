@@ -47,6 +47,12 @@ oscars.Reservations.handleReply = function (responseObject, ioArgs) {
     // convert seconds to datetime format before displaying
     oscars.Reservations.convertReservationTimes(responseObject.resvData);
     model.setData(responseObject.resvData);
+    resvGrid.resize();
+    resvGrid.render();
+    oscarsState.resvGridInitialized = true;
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    oscarsStatus.className = "success";
+    oscarsStatus.innerHTML = "Reservations list";
 };
 
 // takes action based on this tab being selected
@@ -71,13 +77,6 @@ oscars.Reservations.tabSelected = function (
             error: oscars.Form.handleError,
             form: dijit.byId("reservationsForm").domNode
         });
-        resvGrid.resize();
-        resvGrid.render();
-        oscarsState.resvGridInitialized = true;
-    }
-    if (changeStatus) {
-        oscarsStatus.className = "success";
-        oscarsStatus.innerHTML = "Reservations list";
     }
 };
 
@@ -86,8 +85,7 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var reservationDetailsPane = dijit.byId("reservationDetailsPane");
     var resvGrid = dijit.byId("resvGrid");
-    // get reservation's GRI; data in row starts at 0 unlike with
-    // ItemFileReadStore
+    // get reservation's GRI
     var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
     var formParam = dijit.byId("reservationDetailsForm").domNode;
     formParam.gri.value = gri;

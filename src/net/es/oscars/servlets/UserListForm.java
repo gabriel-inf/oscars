@@ -9,8 +9,7 @@ import org.hibernate.*;
 import net.sf.json.*;
 
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.AAAException;
-import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.AuthValue;
 
 public class UserListForm extends HttpServlet {
@@ -20,16 +19,15 @@ public class UserListForm extends HttpServlet {
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
 
         String methodName = "UserListForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
-        UserManager mgr = new UserManager("aaa");
+        UserManager mgr = new UserManager(Utils.getDbName());
         Session aaa = 
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkAccess(userName, "Users", "query");
         Map outputMap = new HashMap();
@@ -37,6 +35,13 @@ public class UserListForm extends HttpServlet {
             outputMap.put("userRowSelectableDisplay", Boolean.TRUE);
         } else {
             outputMap.put("userRowSelectableDisplay", Boolean.FALSE);
+        }
+        authVal = mgr.checkAccess(userName, "AAA", "list");
+        if (authVal != AuthValue.DENIED) {
+            outputMap.put("attributeInfoDisplay", Boolean.TRUE);
+            this.outputAttributeMenu(outputMap);
+        } else {
+            outputMap.put("attributeInfoDisplay", Boolean.FALSE);
         }
         outputMap.put("status", "User list form");
         outputMap.put("method", methodName);
@@ -51,5 +56,23 @@ public class UserListForm extends HttpServlet {
             throws IOException, ServletException {
 
         this.doGet(request, response);
+    }
+
+    public void
+        outputAttributeMenu(Map outputMap) {
+
+        StringBuffer sb = new StringBuffer();
+        AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
+        List<Attribute> attributes = attributeDAO.list();
+
+        sb.append("Attributes ->");
+        sb.append("<select name='attributeName'>");
+        sb.append("<option value='Any' selected='selected'>Any</option>");
+        for (Attribute attr: attributes) {
+            sb.append("<option value='" + attr.getName() + "' ");
+            sb.append(">" + attr.getName() + "</option>" );
+        }
+        sb.append("</select>");
+        outputMap.put("attributeMenuReplace", sb.toString());
     }
 }

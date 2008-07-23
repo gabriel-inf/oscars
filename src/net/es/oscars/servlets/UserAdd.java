@@ -19,7 +19,6 @@ import net.es.oscars.aaa.AAAException;
 
 public class UserAdd extends HttpServlet {
     private Logger log;
-    private String dbname;
     
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
@@ -27,7 +26,6 @@ public class UserAdd extends HttpServlet {
 
         this.log = Logger.getLogger(this.getClass());
         String methodName = "UserAdd";
-        this.dbname = "aaa";
         this.log.debug("userAdd:start");
 
         String newRole = null;
@@ -35,19 +33,19 @@ public class UserAdd extends HttpServlet {
 
         Session aaa;
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(this.dbname);
+        UserManager mgr = new UserManager(Utils.getDbName());
         User newUser = null;
-        Utils utils = new Utils();
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
         String profileName = request.getParameter("profileName");
-        aaa = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        aaa = HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         try {
+            RoleUtils roleUtils = new RoleUtils();
             AuthValue authVal = mgr.checkAccess(userName, "Users", "create");
             if ((authVal == AuthValue.ALLUSERS) && 
                         (profileName != userName)) {
@@ -58,7 +56,7 @@ public class UserAdd extends HttpServlet {
                     addRoles = new ArrayList<Integer>();
                 } else {
                     this.log.debug("number of roles input is "+roles.length);
-                    addRoles = utils.convertRoles(roles);
+                    addRoles = roleUtils.convertRoles(roles);
                 }
                 newRole = request.getParameter("newRole");
                 if ((newRole != null) && !newRole.trim().equals("")) {
@@ -76,13 +74,13 @@ public class UserAdd extends HttpServlet {
             }  else {
                 // this also makes sure won't list users either if don't
                 // have permission
-                utils.handleFailure(out, "not allowed to add a new user",
-                                    methodName, aaa, null);
+                Utils.handleFailure(out, "not allowed to add a new user",
+                                    methodName, aaa);
                 return;
             }
         } catch (AAAException e) {
             log.error("UserAdd caught exception: "+ e.getMessage());
-            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
         Map outputMap = new HashMap();
@@ -107,7 +105,6 @@ public class UserAdd extends HttpServlet {
                        HttpServletRequest request)  
          throws AAAException {
 
-        Utils utils = new Utils();
         String strParam;
         String DN;
         String password;
@@ -116,13 +113,13 @@ public class UserAdd extends HttpServlet {
         user.setLogin(userName);
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = utils.checkDN(strParam);
+            DN = Utils.checkDN(strParam);
         }
         else { DN = ""; }
         user.setCertIssuer(DN);
         strParam = request.getParameter("certSubject");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = utils.checkDN(strParam);
+            DN = Utils.checkDN(strParam);
         }
         else { DN = ""; }
         user.setCertSubject(DN);
@@ -131,7 +128,7 @@ public class UserAdd extends HttpServlet {
         user.setFirstName(request.getParameter("firstName"));
         user.setEmailPrimary(request.getParameter("emailPrimary"));
         user.setPhonePrimary(request.getParameter("phonePrimary"));
-        password = utils.checkPassword(request.getParameter("password"),
+        password = Utils.checkPassword(request.getParameter("password"),
                 request.getParameter("passwordConfirmation"));
         user.setPassword(password); 
         // doesn't matter if blank

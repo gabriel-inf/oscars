@@ -33,7 +33,6 @@ public class CancelReservation extends HttpServlet {
 
         String methodName = "CancelReservation";
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
         PrintWriter out = response.getWriter();
         
         response.setContentType("text/json-comment-filtered");
@@ -53,14 +52,14 @@ public class CancelReservation extends HttpServlet {
             rmiClient.init();
             outputMap = rmiClient.cancelReservation(inputMap, userName);
         } catch (Exception ex) {
-            utils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(),
-                                      methodName, null, null);
+            Utils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(),
+                                      methodName, null);
             this.log.info("CancelReservation.end: " + ex.getMessage());
             return;
         }
         String errorMsg = (String) outputMap.get("error");
         if (errorMsg != null) {
-            utils.handleFailure(out, errorMsg, methodName, null, null);
+            Utils.handleFailure(out, errorMsg, methodName, null);
             this.log.info("CancelReservation.end: " + errorMsg);
             return;
         }

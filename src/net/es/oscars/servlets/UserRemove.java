@@ -23,8 +23,7 @@ public class UserRemove extends HttpServlet {
 
         String methodName = "UserRemove";
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
-        UserManager mgr = new UserManager("aaa");
+        UserManager mgr = new UserManager(Utils.getDbName());
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
@@ -36,30 +35,29 @@ public class UserRemove extends HttpServlet {
         aaa.beginTransaction();
  
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
-        
         try {
             // cannot remove oneself
             if (profileName == userName) { 
-                utils.handleFailure(out, "may not remove yourself",
-                                    methodName, aaa, null);
+                Utils.handleFailure(out, "may not remove yourself",
+                                    methodName, aaa);
                 return;
             }
             if (authVal == AuthValue.ALLUSERS) {
-                 mgr.remove(profileName);
+                mgr.remove(profileName);
             } else {
-                   utils.handleFailure(out,"no permission modify users",
-                                       methodName, aaa,null);
-                   return;
+                Utils.handleFailure(out,"no permission modify users",
+                                    methodName, aaa);
+                return;
             }
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
         authVal = mgr.checkAccess(userName, "Users", "list");
         // shouldn't be able to get to this point, but just in case
         if (!(authVal == AuthValue.ALLUSERS)) {
-            utils.handleFailure(out, "no permission to list users",
-                                methodName, aaa, null);
+            Utils.handleFailure(out, "no permission to list users",
+                                methodName, aaa);
             return;
         }
         Map outputMap = new HashMap();
