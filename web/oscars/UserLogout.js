@@ -37,8 +37,8 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     // toggle display of login/logout section of page
     var loginSection = dojo.byId("loginSection");
     loginSection.style.display = ""; 
-    var logoutSection = dojo.byId("logoutSection");
-    logoutSection.style.display = "none"; 
+    var loggedInSection = dojo.byId("loggedInSection");
+    loggedInSection.style.display = "none"; 
     if (dijit.byId("cancelDialog") != null) {
         dijit.byId("cancelDialog").destroy();
     }

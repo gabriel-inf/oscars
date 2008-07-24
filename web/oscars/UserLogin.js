@@ -36,6 +36,7 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
+    oscars.Form.applyParams(responseObject);
     var mainTabContainer = dijit.byId("mainTabContainer");
     var sessionPane = dijit.byId("sessionPane");
     var userNameInput = dojo.byId("userName");
@@ -43,8 +44,8 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     // toggle display of login/logout section of page
     var loginSection = dojo.byId("loginSection");
     loginSection.style.display = "none"; 
-    var logoutSection = dojo.byId("logoutSection");
-    logoutSection.style.display = ""; 
+    var loggedInSection = dojo.byId("loggedInSection");
+    loggedInSection.style.display = ""; 
 
     // Programmatically create all tabs that user is authorized for.
     // All tabs except Login/Logout require authorization.

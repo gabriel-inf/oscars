@@ -75,51 +75,11 @@ public class AuthenticateUser extends HttpServlet {
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
-        // Used to indicate which tabs can be displayed.  All except
-        // Login/Logout require some form of authorization.
-        Map authorizedTabs = new HashMap();
-        // for special cases where user may be able to view grid but not
-        // go to a different tab upon selecting a row
-        Map selectableRows = new HashMap();
-        AuthValue authVal = mgr.checkAccess(userName, "Reservations", "list");
-        if (authVal != AuthValue.DENIED)  { 
-            authorizedTabs.put("reservationsPane", Boolean.TRUE);
-        }
-        authVal = mgr.checkAccess(userName, "Reservations", "query");
-        if (authVal != AuthValue.DENIED)  { 
-            authorizedTabs.put("reservationDetailsPane", Boolean.TRUE);
-        }
-        authVal = mgr.checkModResAccess(userName, "Reservations",
-                "create", 0, 0, false, false);
-        if (authVal != AuthValue.DENIED)  { 
-            authorizedTabs.put("reservationCreatePane", Boolean.TRUE);
-        }
-        authVal = mgr.checkAccess(userName, "Users", "query");
-        if (authVal != AuthValue.DENIED)  { 
-            authorizedTabs.put("userProfilePane", Boolean.TRUE);
-        }
-        if (authVal == AuthValue.ALLUSERS) {
-            selectableRows.put("users", Boolean.TRUE);
-        }
-        authVal = mgr.checkAccess(userName, "Users", "list");
-        if (authVal == AuthValue.ALLUSERS)  { 
-            authorizedTabs.put("userListPane", Boolean.TRUE);
-        }
-        authVal = mgr.checkAccess(userName, "Users", "create");
-        if (authVal == AuthValue.ALLUSERS)  { 
-            authorizedTabs.put("userAddPane", Boolean.TRUE);
-        }
-        authVal = mgr.checkAccess(userName, "AAA", "modify");
-        // ?
-        if (authVal != AuthValue.DENIED)  { 
-            authorizedTabs.put("institutionsPane", Boolean.TRUE);
-        }
+        Map outputMap = new HashMap();
+        this.handleDisplay(mgr, userName, outputMap);
         userSession.setCookie("userName", userName, response);
         userSession.setCookie("sessionName", sessionName, response);
-        Map outputMap = new HashMap();
         outputMap.put("method", methodName);
-        outputMap.put("authorizedTabs", authorizedTabs);
-        outputMap.put("selectableRows", selectableRows);
         outputMap.put("success", Boolean.TRUE);
         outputMap.put("status", userName + " signed in.  Use tabs " +
                     "to navigate to different pages.");
@@ -133,5 +93,78 @@ public class AuthenticateUser extends HttpServlet {
             throws IOException, ServletException {
 
         this.doGet(request, response);
+    }
+
+    /**
+     * Used to indicate which tabs can be displayed.  All except
+     * Login/Logout require some form of authorization.  Also controls
+     * what help information is displayed on login page.
+     *
+     * @param mgr UserManager instance that checks access
+     * @param userName String with user's login name
+     * @param outputMap map indicating what information to display based on
+     *                  user authorization
+     */
+    public void handleDisplay(UserManager mgr, String userName,
+                              Map outputMap) {
+
+        Map authorizedTabs = new HashMap();
+        // for special cases where user may be able to view grid but not
+        // go to a different tab upon selecting a row
+        Map selectableRows = new HashMap();
+        AuthValue authVal = mgr.checkAccess(userName, "Reservations", "list");
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("reservationsPane", Boolean.TRUE);
+            outputMap.put("reservationsDisplay", Boolean.TRUE);
+        } else {
+            outputMap.put("reservationsDisplay", Boolean.FALSE);
+        }
+        authVal = mgr.checkAccess(userName, "Reservations", "query");
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("reservationDetailsPane", Boolean.TRUE);
+        }
+        authVal = mgr.checkModResAccess(userName, "Reservations",
+                "create", 0, 0, false, false);
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("reservationCreatePane", Boolean.TRUE);
+            outputMap.put("createReservationDisplay", Boolean.TRUE);
+        } else {
+            outputMap.put("createReservationDisplay", Boolean.FALSE);
+        }
+        AuthValue authQueryVal = mgr.checkAccess(userName, "Users", "query");
+        if (authQueryVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("userProfilePane", Boolean.TRUE);
+        }
+        authVal = mgr.checkAccess(userName, "Users", "list");
+        if (authVal == AuthValue.ALLUSERS)  { 
+            authorizedTabs.put("userListPane", Boolean.TRUE);
+            if (authQueryVal == AuthValue.ALLUSERS) {
+                selectableRows.put("users", Boolean.TRUE);
+                outputMap.put("authUsersDisplay", Boolean.TRUE);
+                outputMap.put("unAuthUsersDisplay", Boolean.FALSE);
+                outputMap.put("userProfileDisplay", Boolean.FALSE);
+            } else if (authQueryVal == AuthValue.SELFONLY) {
+                outputMap.put("userProfileDisplay", Boolean.TRUE);
+                outputMap.put("unAuthUsersDisplay", Boolean.TRUE);
+                outputMap.put("authUsersDisplay", Boolean.FALSE);
+            }
+        } else if (authQueryVal != AuthValue.DENIED) {
+            outputMap.put("userProfileDisplay", Boolean.TRUE);
+            outputMap.put("authUsersDisplay", Boolean.FALSE);
+            outputMap.put("unAuthUsersDisplay", Boolean.FALSE);
+        }
+        authVal = mgr.checkAccess(userName, "Users", "create");
+        if (authVal == AuthValue.ALLUSERS)  { 
+            authorizedTabs.put("userAddPane", Boolean.TRUE);
+            outputMap.put("addUserDisplay", Boolean.TRUE);
+        } else {
+            outputMap.put("addUserDisplay", Boolean.FALSE);
+        }
+        authVal = mgr.checkAccess(userName, "AAA", "modify");
+        if (authVal != AuthValue.DENIED)  { 
+            authorizedTabs.put("institutionsPane", Boolean.TRUE);
+        }
+        outputMap.put("authorizedTabs", authorizedTabs);
+        outputMap.put("selectableRows", selectableRows);
     }
 }
