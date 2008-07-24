@@ -69,7 +69,7 @@ public class ScheduleManager {
                     return;
                 }
 
-                msTrigger.setStartTime(new Date());
+                msTrigger.setStartTurn:ogf:network:domain=es.net:node=fnal-mr1:port=TenGigabitEthernet7/3:link=*ime(new Date());
                 msTrigger.setName("Maintain Status Trigger");
                 this.scheduler.scheduleJob(msJobDetail, msTrigger);
             }
@@ -177,8 +177,10 @@ public class ScheduleManager {
             }
             previousJobDetail = jobDetail;
         }
-        previousJobDetail.getJobDataMap().remove("nextJobGroup");
-        previousJobDetail.getJobDataMap().remove("nextJobName");
+        if (previousJobDetail != null) {
+            previousJobDetail.getJobDataMap().remove("nextJobGroup");
+            previousJobDetail.getJobDataMap().remove("nextJobName");
+        }
     }
 
 
