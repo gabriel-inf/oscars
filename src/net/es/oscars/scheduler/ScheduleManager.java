@@ -69,7 +69,7 @@ public class ScheduleManager {
                     return;
                 }
 
-                msTrigger.setStartTurn:ogf:network:domain=es.net:node=fnal-mr1:port=TenGigabitEthernet7/3:link=*ime(new Date());
+                msTrigger.setStartTime(new Date());
                 msTrigger.setName("Maintain Status Trigger");
                 this.scheduler.scheduleJob(msJobDetail, msTrigger);
             }
