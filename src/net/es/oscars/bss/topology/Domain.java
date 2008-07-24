@@ -33,7 +33,7 @@ public class Domain extends HibernateBean implements Serializable {
     /** persistent field */
     private boolean local;
 
-    private Set nodes;
+    private Set nodes = new HashSet<Node>();
 
     private Set paths;
 
@@ -52,7 +52,6 @@ public class Domain extends HibernateBean implements Serializable {
         this.setAbbrev("Unknown");
         this.setTopologyIdent("Unknown");
         this.setName("Unknown");
-        this.setNodes(new HashSet());
     }
 
     /** copy constructor */

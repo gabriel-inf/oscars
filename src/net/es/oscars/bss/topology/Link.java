@@ -58,7 +58,7 @@ public class Link extends HibernateBean implements Serializable {
 
     /** persistent field */
     private Port port;
-    private Set ipaddrs;
+    private Set ipaddrs = new HashSet<Ipaddr>();
     private L2SwitchingCapabilityData l2SwitchingCapabilityData;
 
     /** default constructor */
@@ -82,7 +82,6 @@ public class Link extends HibernateBean implements Serializable {
         this.setGranularity(0L);
         this.setPort(portDB);
         this.setRemoteLink(null);
-        this.setIpaddrs(new HashSet());
     }
 
 

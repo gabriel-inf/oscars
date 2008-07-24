@@ -29,7 +29,7 @@ public class Node extends HibernateBean implements Serializable {
 
     /** persistent field */
     private Domain domain;
-    private Set ports;
+    private Set ports = new HashSet<Port>();
     private NodeAddress nodeAddress;
 
     /** default constructor */
@@ -43,7 +43,6 @@ public class Node extends HibernateBean implements Serializable {
         this.setValid(true);
         this.setTopologyIdent("changeme");
         this.setDomain(domDB);
-        this.setPorts(new HashSet());
     }
 
     /** copy constructor */

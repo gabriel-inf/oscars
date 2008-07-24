@@ -50,7 +50,7 @@ public class Port extends HibernateBean implements Serializable {
 
     /** persistent field */
     private Node node;
-    private Set links;
+    private Set links = new HashSet<Link>();
 
     /** default constructor */
     public Port() {
@@ -70,7 +70,6 @@ public class Port extends HibernateBean implements Serializable {
         this.setGranularity(0L);
         this.setAlias("changeme");
         this.setSnmpIndex(1);
-        this.setLinks(new HashSet());
         this.setNode(nodeDB);
     }
 
