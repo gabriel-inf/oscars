@@ -315,6 +315,12 @@ public class VendorPSS implements PSS {
      */
     private String getRouterType(Link link) throws PSSException {
 
+        if (!this.allowLSP) {
+            PropHandler propHandler = new PropHandler("oscars.properties");
+            Properties commonProps = propHandler.getPropertyGroup("pss", true);
+            return commonProps.getProperty("defaultVendor", "cisco");
+        }
+
         String sysDescr = null;
         String nodeAddress = link.getPort().getNode().getNodeAddress().getAddress();
 
