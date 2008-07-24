@@ -67,6 +67,26 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
         oscarsState.userRowSelectable = true;
     }
     // add in reverse order
+    // authorization details tab
+    /*
+    if (responseObject.authorizedTabs.authDetailsPane) {
+        var authDetailsPane = new dojox.layout.ContentPane(
+              {title:'Authorization Details', id: 'authDetailsPane'},
+               dojo.doc.createElement('div'));
+        authDetailsPane.setHref("forms/authorizationDetails.html");
+        mainTabContainer.addChild(authDetailsPane, 0);
+        authDetailsPane.startup();
+    }
+    */
+    // authorizations list tab
+    if (responseObject.authorizedTabs.authorizationsPane) {
+        var authorizationsPane = new dojox.layout.ContentPane(
+              {title:'Authorizations', id: 'authorizationsPane'},
+               dojo.doc.createElement('div'));
+        authorizationsPane.setHref("forms/authorizations.html");
+        mainTabContainer.addChild(authorizationsPane, 0);
+        authorizationsPane.startup();
+    }
     // institutions management tab
     if (responseObject.authorizedTabs.institutionsPane) {
         var institutionsPane = new dojox.layout.ContentPane(

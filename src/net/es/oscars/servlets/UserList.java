@@ -56,7 +56,7 @@ public class UserList extends HttpServlet {
     }
 
     /**
-     * outputUsers - checks access and gets the list of users if allowed.
+     * Checks access and gets the list of users if allowed.
      *  
      * @param outputMap Map containing JSON data
      * @param userName String containing name of user making request
@@ -90,7 +90,6 @@ public class UserList extends HttpServlet {
         } else {
             throw new AAAException("no permission to list users");
         }
-        long seconds = System.currentTimeMillis()/1000;
         ArrayList userList = new ArrayList();
         for (User user: users) {
             ArrayList userEntry = new ArrayList();

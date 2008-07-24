@@ -1,0 +1,43 @@
+<html>
+<head>
+<script type="text/javascript">
+    var authView = {
+      cells: [[
+         {name: 'Attribute', width: "15em"},
+         {name: 'Resource', width: "10em"},
+         {name: 'Permission', width: "10em"},
+         {name: 'Constraint', width: "10em"},
+         {name: 'Constraint Value', width: "11em"}
+      ]]
+    };
+    var authLayout = [ authView ];
+</script>
+<script type="text/javascript">
+    dojo.connect(dijit.byId("authListPane"), "onLoad", oscars.Authorizations.init);
+</script>
+</head>
+
+<body>
+<form id="authListForm" dojoType="dijit.form.Form">
+  <p>Click on a row to view and modify an authorization.</p>
+
+  <table>
+  <tr>
+    <td>Authorizations List</td>
+    <td>
+      <button dojoType="dijit.form.Button" id="authList">
+       REFRESH 
+       <script type="dojo/method" event="onClick">
+          oscars.Authorizations.refreshAuthGrid();
+       </script>
+      </button>
+    </td>
+  </tr>
+  </table>
+</form>
+
+<div id="authGrid" dojoType="dojox.Grid" structure="authLayout">
+</div>
+</body>
+
+</html>

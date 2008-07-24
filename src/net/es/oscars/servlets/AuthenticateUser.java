@@ -163,6 +163,7 @@ public class AuthenticateUser extends HttpServlet {
         authVal = mgr.checkAccess(userName, "AAA", "modify");
         if (authVal != AuthValue.DENIED)  { 
             authorizedTabs.put("institutionsPane", Boolean.TRUE);
+            authorizedTabs.put("authorizationsPane", Boolean.TRUE);
         }
         outputMap.put("authorizedTabs", authorizedTabs);
         outputMap.put("selectableRows", selectableRows);

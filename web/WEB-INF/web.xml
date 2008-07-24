@@ -77,6 +77,26 @@
         <servlet-name>Institutions</servlet-name>
         <servlet-class>net.es.oscars.servlets.Institutions</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AuthorizationList</servlet-name>
+	<servlet-class>net.es.oscars.servlets.AuthorizationList</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AuthorizationQuery</servlet-name>
+	<servlet-class>net.es.oscars.servlets.AuthorizationQuery</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AuthorizationModify</servlet-name>
+	<servlet-class>net.es.oscars.servlets.AuthorizationModify</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AuthorizationRemove</servlet-name>
+	<servlet-class>net.es.oscars.servlets.AuthorizationRemove</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AuthorizationAdd</servlet-name>
+	<servlet-class>net.es.oscars.servlets.AuthorizationAdd</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AuthenticateUser</servlet-name>
         <url-pattern>/servlet/AuthenticateUser</url-pattern>
@@ -140,6 +160,26 @@
     <servlet-mapping>
         <servlet-name>Institutions</servlet-name>
         <url-pattern>/servlet/Institutions</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizationList</servlet-name>
+        <url-pattern>/servlet/AuthorizationList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizationQuery</servlet-name>
+        <url-pattern>/servlet/AuthorizationQuery</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizationModify</servlet-name>
+        <url-pattern>/servlet/AuthorizationModify</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizationRemove</servlet-name>
+        <url-pattern>/servlet/AuthorizationRemove</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizationAdd</servlet-name>
+        <url-pattern>/servlet/AuthorizationAdd</url-pattern>
     </servlet-mapping>
 
 </web-app>

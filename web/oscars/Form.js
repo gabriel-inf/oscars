@@ -146,9 +146,18 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     // selected add user tab
     } else if (contentPane.id == "userAddPane") {
         oscars.UserAdd.tabSelected(contentPane, oscarsStatus, changeStatus);
-    // selected basic AAA management tab
+    // selected institutions management tab
     } else if (contentPane.id == "institutionsPane") {
-        oscars.Institutions.tabSelected(contentPane, oscarsStatus, changeStatus);
+        oscars.Institutions.tabSelected(contentPane, oscarsStatus,
+                                        changeStatus);
+    // selected authorization list tab
+    } else if (contentPane.id == "authorizationsPane") {
+        oscars.Authorizations.tabSelected(contentPane, oscarsStatus,
+                                          changeStatus);
+    // selected authorization details tab
+    } else if (contentPane.id == "authDetailsPane") {
+        oscars.AuthorizationDetails.tabSelected(contentPane, oscarsStatus,
+                                                changeStatus);
     // selected login/logout tab
     } else if (contentPane.id == "sessionPane") {
         oscars.UserLogin.tabSelected(oscarsStatus, changeStatus);
