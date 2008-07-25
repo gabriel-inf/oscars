@@ -43,6 +43,13 @@ public class SubscriptionAdapter{
         return response;
     }
     
+    public void notify(Notify request){
+        SubscriptionManager sm = new SubscriptionManager();
+        this.log.info("notify.start");
+        System.out.println("This should really do something");
+        this.log.info("notify.end");
+    }
+    
     private Subscription axis2Subscription(Subscribe request, String userLogin){
         Subscription subscription = new Subscription();
         AttributedURIType consumerAddress = 
@@ -83,12 +90,6 @@ public class SubscriptionAdapter{
             return filters;
         }
         
-        ArrayList<SubscriptionFilter> eventSubFilters = 
-            this.parseMessageFilter(msgFilter);
-        if(eventSubFilters != null){
-            filters.addAll(eventSubFilters);
-        }
-        
         return filters;
     }
     
@@ -119,67 +120,7 @@ public class SubscriptionAdapter{
         return topics;
     }
     
-    private  ArrayList<SubscriptionFilter> parseMessageFilter(
-            QueryExpressionType msgFilter){
-        ArrayList<SubscriptionFilter> filters = 
-            new ArrayList<SubscriptionFilter>();
-            
-        String[] pathDetailLevel = msgFilter.getPathDetailLevel();
-        filters = this.addStringFilter("PATHDETAIL", pathDetailLevel, filters);
-        
-        String[] userLogin = msgFilter.getUserLogin();
-        filters = this.addStringFilter("USERLOGIN", userLogin, filters);
-        
-        String[] errorCode = msgFilter.getErrorCode();
-        filters = this.addStringFilter("ERRORCODE", errorCode, filters);
-        
-        String[] gri = msgFilter.getGlobalReservationId();
-        filters = this.addStringFilter("GRI", gri, filters);
-        
-        String[] resStatus = msgFilter.getResStatus();
-        filters = this.addStringFilter("RESSTATUS", resStatus, filters);
-        
-        filters = this.addLongFilter("STARTTIME", msgFilter.getStartTime(), filters);
-        filters = this.addLongFilter("ENDTIME", msgFilter.getEndTime(), filters);
-        
-        String description = msgFilter.getDescription();
-        filters = this.addStringFilter("DESCRIPTION", description, filters);
-        
-        String[] linkId = msgFilter.getLinkId();
-        filters = this.addStringFilter("LINK", linkId, filters);
-        
-        int[] vlanTag = msgFilter.getVlanTag();
-        for(int i=0; vlanTag != null && i < vlanTag.length; i++){
-            filters = this.addStringFilter("VLAN", vlanTag[i] + "", filters);
-        }
-        
-        return filters;
-    } 
-    
-    private ArrayList<SubscriptionFilter> addStringFilter(String type, 
-            String value, ArrayList<SubscriptionFilter> filters){
-        if(value != null){
-            filters.add(new SubscriptionFilter(type, value));
-        }
-        return filters;
-    }
-    
-    private ArrayList<SubscriptionFilter> addStringFilter(String type, 
-            String[] value, ArrayList<SubscriptionFilter> filters){
-        for(int i=0; value != null && i < value.length; i++){
-            filters = this.addStringFilter(type, value[i], filters);
-        }
-        return filters;
-    }
-    
-    private ArrayList<SubscriptionFilter> addLongFilter(String type, 
-            long value, ArrayList<SubscriptionFilter> filters){
-        if(value != 0){
-            filters.add(new SubscriptionFilter(type, value + ""));
-        }
-        return filters;
-    }
-    
+   
     private SubscribeResponse subscription2Axis(Subscription subscription){
         SubscribeResponse response = new SubscribeResponse();
         

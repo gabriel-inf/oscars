@@ -15,13 +15,18 @@ import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
 
-import org.oasis_open.docs.wsn.b_2.*;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
+import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
-import net.es.oscars.notify.ws.OSCARSNotifyStub;
+import net.es.oscars.notify.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.security.KeyManagement;
 
@@ -35,7 +40,11 @@ public class Client {
     protected ConfigurationContext configContext;
     protected OSCARSStub stub;
     protected OSCARSNotifyStub notifyStub;
-
+    
+    /* Constants */
+    public static final String WS_TOPIC_FULL = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full";
+    public static final String XPATH_URI = "http://www.w3.org/TR/1999/REC-xpath-19991116";
+    
     public void setUp(boolean useKeyStore, String url, String repo)
             throws AxisFault {
         this.setUp(useKeyStore, url, null, repo, null);
@@ -342,6 +351,20 @@ public class Client {
         this.notifyStub.Notify(notification);
     }
     
+    public SubscribeResponse subscribe(Subscribe request) 
+                  throws RemoteException, TopicNotSupportedFault,
+                  InvalidTopicExpressionFault, UnsupportedPolicyRequestFault,
+                  UnacceptableInitialTerminationTimeFault,
+                  InvalidMessageContentExpressionFault,
+                  InvalidProducerPropertiesExpressionFault,
+                  SubscribeCreationFailedFault,
+                  TopicExpressionDialectUnknownFault,
+                  InvalidFilterFault,NotifyMessageNotSupportedFault,
+                  UnrecognizedPolicyRequestFault,
+                  net.es.oscars.notify.ws.AAAFaultMessage{
+       return this.notifyStub.Subscribe(request);
+    }
+    
     public EndpointReferenceType generateEndpointReference(String address)
             throws MalformedURIException{
         return this.generateEndpointReference(address, null);
@@ -362,5 +385,39 @@ public class Client {
         }
         
         return epr;
+    }
+    
+    public TopicExpressionType generateTopicExpression(String topics){
+        TopicExpressionType topicExpr = new TopicExpressionType();
+        //dialect is a constant so there should be no malformed exception
+        try{
+            URI topicDialectUri = new URI(Client.WS_TOPIC_FULL);
+            topicExpr.setDialect(topicDialectUri);
+        }catch(MalformedURIException e){}
+        topicExpr.setString(topics);
+        return topicExpr;
+    }
+    
+    public QueryExpressionType generateProducerProperties(String[] urls){
+        boolean multiple = false;
+        String xpath = "";
+        for(String url : urls){
+            xpath += (multiple ? " or " : "");
+            xpath += "/wsa:Address='" + url + "'";
+            multiple = true;
+        }
+        return this.generateQueryExpression(xpath);
+    }
+    
+    public QueryExpressionType generateQueryExpression(String xpath){
+        QueryExpressionType query = new QueryExpressionType();
+        //dialect is a constant so there should be no malformed exception
+        try{
+            URI dialect = new URI(Client.XPATH_URI);
+            query.setDialect(dialect);
+        }catch(MalformedURIException e){}
+        query.setString(xpath);
+        
+        return query;
     }
 }

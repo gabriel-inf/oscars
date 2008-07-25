@@ -35,21 +35,12 @@ This document and the information contained herein is provided on an "AS IS" bas
   />
   
 <!-- ===================== Misc. Helper Types ===================== -->
-
-  <!-- <xsd:complexType name="QueryExpressionType" mixed="true">
-    <xsd:sequence>
-      <xsd:element ref="idc:eventFilter" minOccurs="0" maxOccurs="1" />
-      <xsd:any minOccurs="0" maxOccurs="1" processContents="lax" />
-    </xsd:sequence>
-    <xsd:attribute name="Dialect" type="xsd:anyURI" use="required"/>
-  </xsd:complexType> -->
-  
   <xsd:complexType name="QueryExpressionType">
-    <xsd:complexContent>
-      <xsd:extension base="idc:eventFilterType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
         <xsd:attribute name="Dialect" type="xsd:anyURI" use="required"/>
       </xsd:extension>
-    </xsd:complexContent>
+    </xsd:simpleContent>
   </xsd:complexType>
   
   <!-- simpleContent used for IDC case -->

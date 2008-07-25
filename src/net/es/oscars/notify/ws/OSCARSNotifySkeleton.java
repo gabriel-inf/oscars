@@ -21,7 +21,6 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
-
 /**
  *  OSCARSNotifySkeleton java skeleton for the axisService
  */
@@ -52,6 +51,9 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     }
     
 	public void Notify(Notify request){
+	    this.log.debug("Received a notification message from publisher");
+	    SubscriptionAdapter sa = new SubscriptionAdapter();
+	    sa.notify(request);
 	    return;
 	}
 
