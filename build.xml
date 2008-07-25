@@ -286,14 +286,37 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
     </target>
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
-        <!-- Copy default keys to repo -->
+        <!-- Copy default configs if they don't exist. -->
+        <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true" />
+        <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true" />
+        <available property="sec-client.properties.exists" file="${catalina.home}/shared/classes/repo/sec-client.properties" value="true" />
+        <available property="sec-client.jks.exists" file="${catalina.home}/shared/classes/repo/sec-client.jks" value="true" />
+        <available property="sec-server.jks.exists" file="${catalina.home}/shared/classes/server/sec-server.jks" value="true" />
+        <available property="sec-server.properties.exists" file="${catalina.home}/shared/classes/server/sec-server.properties" value="true" />
+        <available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true" />
+        <available property="test.properties.exists" file="${catalina.home}/shared/classes/server/test.properties" value="true" />
+        <available property="idc-topicnamespace.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicnamespace.xml" value="true" />
+        <available property="idc-topicset.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicset.xml" value="true" />
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
-            <fileset dir="${defaultKeys}/client" includes="axis2.xml, ssl-keystore.jks"/>
-            <fileset dir="${defaultKeys}/server" includes="sec-client.*"/>
+            <fileset dir="${defaultKeys}/client">
+                <include name="axis2.xml" unless="axis2.xml.exists" />
+                <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists" />
+            </fileset>
+            <fileset dir="${defaultKeys}/server">
+                <include name="sec-client.properties" unless="sec-client.properties.exists" />
+                <include name="sec-client.jks" unless="sec-client.jks.exists" />
+            </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
-            <fileset dir="${defaultKeys}/server/" includes="*key, sec-server.*, oscars.properties, test.properties"/>
+            <fileset dir="${defaultKeys}/server/">
+                <include name="sec-server.properties" unless="sec-server.properties.exists" />
+                <include name="sec-server.jks" unless="sec-server.jks.exists" />
+                <include name="oscars.properties" unless="oscars.properties.exists" />
+                <include name="test.properties" unless="test.properties.exists" />
+                <include name="idc-topicnamespace.xml" unless="idc-topicnamespace.xml.exists" />
+                <include name="idc-topicset.xml" unless="idc-topicset.xml.exists" />
+            </fileset>
         </copy>
     </target>
     <target name="setupServer" description="populate the shared/classes directory" depends="copydomain,copydefaults">
