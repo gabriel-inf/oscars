@@ -31,7 +31,6 @@ import net.es.oscars.notify.*;
  */
 public class ReservationManager {
     private Logger log;
-    private NotifyInitializer notifier;
     private PCEManager pceMgr;
     private PolicyManager policyMgr;
     private TypeConverter tc;
@@ -48,7 +47,6 @@ public class ReservationManager {
         this.tc = new TypeConverter();
         this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
-        this.notifier = this.core.getNotifier();
     }
 
     public void submitCreate(Reservation resv, String login, PathInfo pathInfo)

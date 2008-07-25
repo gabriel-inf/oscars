@@ -22,7 +22,6 @@ public class PathSetupManager{
     private Properties props;
     private PSS pss;
     private ReservationLogger rsvLogger;
-    private NotifyInitializer notifier;
     private OSCARSCore core;
     
     /** Constructor. */
@@ -30,7 +29,6 @@ public class PathSetupManager{
         PropHandler propHandler = new PropHandler("oscars.properties");
         PSSFactory pssFactory = new PSSFactory();
         this.core = OSCARSCore.getInstance();
-        this.notifier = this.core.getNotifier();
         this.props = propHandler.getPropertyGroup("pss", true);
         this.pss = pssFactory.createPSS(this.props.getProperty("method"), dbname);
         this.log = Logger.getLogger(this.getClass());
