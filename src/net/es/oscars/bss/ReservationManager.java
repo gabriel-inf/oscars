@@ -47,17 +47,8 @@ public class ReservationManager {
         this.policyMgr = new PolicyManager(dbname);
         this.tc = new TypeConverter();
         this.dbname = dbname;
-        this.notifier = new NotifyInitializer();
         this.core = OSCARSCore.getInstance();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored if NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
+        this.notifier = this.core.getNotifier();
     }
 
     public void submitCreate(Reservation resv, String login, PathInfo pathInfo)

@@ -7,6 +7,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
+import net.es.oscars.oscars.OSCARSCore;
 
 /**
  * PathSetupManager handles all direct interaction with the PSS module.
@@ -22,22 +23,14 @@ public class PathSetupManager{
     private PSS pss;
     private ReservationLogger rsvLogger;
     private NotifyInitializer notifier;
-
+    private OSCARSCore core;
+    
     /** Constructor. */
     public PathSetupManager(String dbname) {
         PropHandler propHandler = new PropHandler("oscars.properties");
         PSSFactory pssFactory = new PSSFactory();
-
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
+        this.core = OSCARSCore.getInstance();
+        this.notifier = this.core.getNotifier();
         this.props = propHandler.getPropertyGroup("pss", true);
         this.pss = pssFactory.createPSS(this.props.getProperty("method"), dbname);
         this.log = Logger.getLogger(this.getClass());
