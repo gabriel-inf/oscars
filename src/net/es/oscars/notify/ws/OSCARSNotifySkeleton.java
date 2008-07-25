@@ -1,8 +1,6 @@
 package net.es.oscars.notify.ws;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 
@@ -29,7 +27,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private UserManager userMgr;
     private Principal certIssuer;
     private Principal certSubject;
-    
+    private SubscriptionAdapter sa;
     /**
      * Called from the Axis2 framework during initialization of the service.
      *
@@ -47,13 +45,13 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         dbnames.add("notify");
         initializer.initDatabase(dbnames);
         this.userMgr = new UserManager("aaa");
+        this.sa = new SubscriptionAdapter();
         this.log.info("OSCARSNotify init.end");
     }
     
 	public void Notify(Notify request){
 	    this.log.debug("Received a notification message from publisher");
-	    SubscriptionAdapter sa = new SubscriptionAdapter();
-	    sa.notify(request);
+	    this.sa.notify(request);
 	    return;
 	}
 
@@ -68,9 +66,26 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                   InvalidFilterFault,NotifyMessageNotSupportedFault,
                   UnrecognizedPolicyRequestFault{
                   
-        String login = this.checkUser();          
-        SubscriptionAdapter sa = new SubscriptionAdapter();
-		SubscribeResponse response = sa.subscribe(request, login);
+        String login = this.checkUser();   
+        HashMap<String, String> permissionMap = new HashMap<String, String>();
+		
+		/* Get authorizations */
+		Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+		aaa.beginTransaction();
+		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to subscribe to notifications.");
+        }
+        if (authVal.equals(AuthValue.MYSITE)) {
+            String institution = this.userMgr.getInstitution(login);
+            permissionMap.put("institution", institution);
+        } else if (authVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("loginConstraint", login);
+        }
+        aaa.getTransaction().commit();
+		
+		/* Build subscription */
+		SubscribeResponse response = this.sa.subscribe(request, login, permissionMap);
 		
 		return response;
 	}

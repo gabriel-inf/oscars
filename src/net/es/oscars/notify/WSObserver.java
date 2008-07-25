@@ -1,35 +1,31 @@
 package net.es.oscars.notify;
 
-import java.util.*;
+import java.io.IOException;
+import java.io.File;
 import java.net.InetAddress;
-
-import org.apache.log4j.*;
-
+import java.util.*;
+import javax.xml.namespace.QName;
+import net.es.oscars.client.Client;
+import net.es.oscars.notify.OSCARSEvent;
 import net.es.oscars.PropHandler;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.notify.OSCARSEvent;
-import net.es.oscars.client.Client;
-
-import org.oasis_open.docs.wsn.b_2.*;
-import org.w3.www._2005._08.addressing.*;
+import org.apache.axis2.databinding.ADBException;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
-
+import org.apache.log4j.*;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMFactory;
+import org.oasis_open.docs.wsn.b_2.*;
 import org.jaxen.JaxenException;
-import org.apache.axis2.databinding.ADBException;
-import javax.xml.namespace.QName;
 import org.jaxen.SimpleNamespaceContext;
-import java.io.IOException;
-import java.io.File;
 import org.jdom.*;
 import org.jdom.xpath.*;
 import org.jdom.input.*;
 import org.jdom.output.*;
+import org.w3.www._2005._08.addressing.*;
 
 /**
  * WSObserver handles sending WS notification messages
