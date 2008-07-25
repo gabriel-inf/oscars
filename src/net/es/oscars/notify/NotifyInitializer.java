@@ -17,15 +17,32 @@ public class NotifyInitializer {
     public NotifyInitializer() {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("notify.observer", true);
+        this.props = propHandler.getPropertyGroup("notify", true);
         this.source = new NotifierSource();
         this.observers = new ArrayList<Observer>();
     }
 
     public void init() throws NotifyException {
- 
-        Observer o = new EmailObserver();
-        this.addObserver(o);
+        this.log.info("init.start");
+        String modules = this.props.getProperty("modules");
+        if(modules == null){
+            this.log.info("No notification module selected. It is recommended " +
+                          "you set the notify.modules property in oscars.properties" +
+                          " so that you can share notifications about IDC activity.");
+            return;
+        }
+        String[] moduleList = modules.split(",");
+        for(String module : moduleList){
+            module = module.trim();
+            if("email".equals(module.toLowerCase())){
+                this.log.info("Loading the email notification module");
+                this.addObserver(new EmailObserver());
+            }else if("ws".equals(module.toLowerCase())){
+                this.log.info("Loading the web service notification module");
+                this.addObserver(new WSObserver());
+            }
+        }
+        this.log.info("init.end");
         /* Tomcat can't find the class
         ClassLoader cl = ClassLoader.getSystemClassLoader();
         Integer i = 1;
