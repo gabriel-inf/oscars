@@ -164,6 +164,7 @@ public class AuthenticateUser extends HttpServlet {
         if (authVal != AuthValue.DENIED)  { 
             authorizedTabs.put("institutionsPane", Boolean.TRUE);
             authorizedTabs.put("authorizationsPane", Boolean.TRUE);
+            authorizedTabs.put("authDetailsPane", Boolean.TRUE);
         }
         outputMap.put("authorizedTabs", authorizedTabs);
         outputMap.put("selectableRows", selectableRows);

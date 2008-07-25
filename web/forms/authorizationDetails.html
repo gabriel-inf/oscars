@@ -1,0 +1,104 @@
+<html>
+<head>
+    <script type="text/javascript">
+        dojo.connect(dijit.byId("authDetailsPane"), "onLoad",
+                     oscars.AuthorizationDetails.init);
+    </script>
+</head>
+
+<body>
+<form id="authDetailsForm" dojoType="dijit.form.Form">
+<table>
+  <tbody>
+  <tr>
+    <td>
+      <button dojoType="dijit.form.Button" id="refreshAuthorization">
+        REFRESH
+      <script type="dojo/method" event="onClick">
+          oscars.AuthorizationDetails.postQuery();
+      </script>
+      </button>
+    </td>
+    <td>
+      <button dojoType="dijit.form.Button" id="modifyAuthorization">
+         MODIFY
+         <script type="dojo/method" event="onClick">
+             oscars.AuthorizationDetails.postModify();
+         </script>
+      </button>
+    </td>
+    <td>
+        <button dojoType="dijit.form.Button" id="deleteAuthorization">
+        DELETE
+         <script type="dojo/method" event="onClick">
+             oscars.AuthorizationDetails.postDelete();
+         </script>
+      </button>
+    </td>
+    <td>
+      <button dojoType="dijit.form.Button" id="cloneAuthorization">
+         CLONE
+         <script type="dojo/method" event="onClick">
+             oscars.AuthorizationDetails.cloneAuthorization();
+         </script>
+      </button>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<table width="50%">
+<tbody>
+  <tr>
+    <!-- setting once sets for all in column -->
+    <td width="12%">Attribute</td>
+    <td>
+        <div id="authAttrMenuReplace" />
+    </td>
+  </tr>
+  <tr>
+    <td>Resource</td>
+    <td>
+        <div id="resourceMenuReplace" />
+    </td>
+  </tr>
+  <tr>
+    <td>Permission</td>
+    <td>
+        <div id="permissionMenuReplace" />
+    </td>
+  </tr>
+  <!-- may replace with a menu -->
+  <tr>
+    <td>Constraint</td>
+    <td>
+      <input type="text" name="constraint" id="constraint"
+             dojoType="dijit.form.TextBox"
+             promptMessage="Enter the constraint name" />
+    </td>
+  </tr>
+  <tr>
+    <td>Constraint value</td>
+    <td>
+      <input type="text" name="constraintValue" id="constraintValue"
+             dojoType="dijit.form.TextBox"
+             promptMessage="Enter the constraint value" />
+    </td>
+  </tr>
+</tbody>
+</table>
+</form>
+<!-- tooltip section for buttons -->
+<div dojoType = "dijit.Tooltip" connectId="refreshAuthorization"
+     position="above">
+    Gets the current status of the authorization from the server.  Any
+    local modifications on the client are overwritten.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="modifyAuthorization" position="above">
+    Modifies the authorization, if there are valid arguments.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="deleteAuthorization" position="above">
+    Deletes the current authorization.
+</div>
+</body>
+</html>

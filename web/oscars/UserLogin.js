@@ -68,7 +68,6 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     }
     // add in reverse order
     // authorization details tab
-    /*
     if (responseObject.authorizedTabs.authDetailsPane) {
         var authDetailsPane = new dojox.layout.ContentPane(
               {title:'Authorization Details', id: 'authDetailsPane'},
@@ -77,7 +76,6 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
         mainTabContainer.addChild(authDetailsPane, 0);
         authDetailsPane.startup();
     }
-    */
     // authorizations list tab
     if (responseObject.authorizedTabs.authorizationsPane) {
         var authorizationsPane = new dojox.layout.ContentPane(
