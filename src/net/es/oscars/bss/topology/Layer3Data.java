@@ -130,19 +130,6 @@ public class Layer3Data extends HibernateBean implements Serializable {
         }
     }
     
-    public Layer3Data copy(){
-        Layer3Data l3DataCopy = new Layer3Data();
-        
-        l3DataCopy.setSrcHost(this.srcHost);
-        l3DataCopy.setDestHost(this.destHost);
-        l3DataCopy.setSrcIpPort(this.srcIpPort);
-        l3DataCopy.setDestIpPort(this.destIpPort);
-        l3DataCopy.setProtocol(this.protocol);
-        l3DataCopy.setDscp(this.dscp);
-        
-        return l3DataCopy;
-    }
-    
     public String toString() {
         return new ToStringBuilder(this)
             .append("start", this.getSrcHost())

@@ -54,17 +54,6 @@ public class Domain extends HibernateBean implements Serializable {
         this.setName("Unknown");
     }
 
-    /** copy constructor */
-    public Domain(Domain domain) {
-        this.name = domain.getName();
-        this.abbrev = domain.getAbbrev();
-        this.local = domain.isLocal();
-        this.nodes = domain.getNodes();
-        this.topologyIdent = domain.getTopologyIdent();
-        this.url = domain.getUrl();
-        this.paths = domain.getPaths();
-    }
-
     /**
      * @return topologyIdent a string with the topology domain id (currently
      * autonomous system number)

@@ -182,49 +182,4 @@ public class Path extends HibernateBean implements Serializable {
             .append("id", getId())
             .toString();
     }
-    
-    public Path copy(){
-        Path pathCopy = new Path();
-        PathElem pathElemCopy = null;
-        PathElem interPathElemCopy = null;
-        Domain nextDomainCopy = null;
-        Layer2Data layer2DataCopy = null;
-        Layer3Data layer3DataCopy = null;
-        MPLSData mplsDataCopy = null;
-        
-        pathCopy.setExplicit(this.explicit);
-        pathCopy.setPathSetupMode(this.pathSetupMode);
-        
-        if(this.pathElem != null){
-            pathElemCopy = this.pathElem.copy();
-        }
-        pathCopy.setPathElem(pathElemCopy);
-        
-        if(this.interPathElem != null){
-            interPathElemCopy = this.interPathElem.copy();
-        }
-        pathCopy.setInterPathElem(interPathElemCopy);
-        
-        if(this.nextDomain != null){
-            nextDomainCopy = this.nextDomain.copy();
-        }
-        pathCopy.setNextDomain(nextDomainCopy);
-        
-        if(this.layer2Data != null){
-            layer2DataCopy = this.layer2Data.copy();
-        }
-        pathCopy.setLayer2Data(layer2DataCopy);
-        
-        if(this.layer3Data != null){
-            layer3DataCopy = this.layer3Data.copy();
-        }
-        pathCopy.setLayer3Data(layer3DataCopy);
-        
-        if(this.mplsData != null){
-            mplsDataCopy = this.mplsData.copy();
-        }
-        pathCopy.setMplsData(mplsDataCopy);
-        
-        return pathCopy;
-    }
 }

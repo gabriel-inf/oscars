@@ -379,29 +379,6 @@ public class Link extends HibernateBean implements Serializable {
         }
     }
     
-    /**
-     * Copyies only information useful for detaching
-     * object from hibernate and passing to other processes.
-     *
-     * @return a copy of this link
-     **/
-    public Link topoCopy(){
-        Link linkCopy = new Link();
-        Port portCopy = null;
-        linkCopy.setTopologyIdent(this.topologyIdent);
-        Ipaddr ipaddr = this.getValidIpaddr();
-        if (ipaddr != null) {
-            Ipaddr ipaddrCopy = ipaddr.copy();
-            linkCopy.setIpaddrs(new HashSet());
-            linkCopy.addIpaddr(ipaddrCopy);
-        }
-        if(this.port != null){
-            portCopy = this.port.topoCopy();
-        }
-        linkCopy.setPort(portCopy);
-        return linkCopy;
-    }
-    
     public String toString() {
         return new ToStringBuilder(this).append("id", getId()).toString();
     }

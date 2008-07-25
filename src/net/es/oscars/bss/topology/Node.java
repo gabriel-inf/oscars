@@ -45,15 +45,6 @@ public class Node extends HibernateBean implements Serializable {
         this.setDomain(domDB);
     }
 
-    /** copy constructor */
-    public Node(Node node) {
-        this.valid = node.isValid();
-        this.topologyIdent = node.getTopologyIdent();
-        this.domain = node.getDomain();
-        this.ports = node.getPorts();
-    }
-
-
     /**
      * @return valid a boolean indicating whether this entry is still valid
      */
