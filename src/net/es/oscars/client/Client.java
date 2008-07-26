@@ -3,10 +3,10 @@ package net.es.oscars.client;
 import java.rmi.RemoteException;
 import javax.net.ssl.*;
 import java.security.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.log4j.*;
-
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.axis2.AxisFault;
@@ -14,7 +14,6 @@ import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
-
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
@@ -421,5 +420,12 @@ public class Client {
         query.setString(xpath);
         
         return query;
+    }
+    
+    public String generateDateTime(long seconds){
+        GregorianCalendar cal = new GregorianCalendar();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+        cal.setTimeInMillis(System.currentTimeMillis() + (seconds*1000));
+        return df.format(cal.getTime());
     }
 }

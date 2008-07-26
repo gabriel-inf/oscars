@@ -2,6 +2,9 @@ package net.es.oscars.notify.ws;
 
 import java.util.*;
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.w3.www._2005._08.addressing.*;
@@ -56,10 +59,12 @@ public class SubscriptionAdapter{
      * @throws InvalidTopicExpressionFault
      * @throws TopicExpressionDialectUnknownFault
      * @throws TopicNotSupportedFault
+     * @throws UnacceptableInitialTerminationTimeFault
      */
     public SubscribeResponse subscribe(Subscribe request, String userLogin, HashMap<String,String> permissionMap)
         throws TopicExpressionDialectUnknownFault, InvalidTopicExpressionFault,TopicNotSupportedFault,
-               InvalidProducerPropertiesExpressionFault,InvalidFilterFault,InvalidMessageContentExpressionFault{
+               InvalidProducerPropertiesExpressionFault,InvalidFilterFault,InvalidMessageContentExpressionFault,
+               UnacceptableInitialTerminationTimeFault{
         this.log.info("subscribe.start");
         SubscriptionManager sm = new SubscriptionManager();
         Subscription subscription = this.axis2Subscription(request, userLogin);
@@ -138,14 +143,46 @@ public class SubscriptionAdapter{
      * @param userLogin the login of the subscriber that sent the request
      * @return the Hibernate Bean generate from the original request
      */
-    private Subscription axis2Subscription(Subscribe request, String userLogin){
+    private Subscription axis2Subscription(Subscribe request, String userLogin)
+                                throws UnacceptableInitialTerminationTimeFault{
         Subscription subscription = new Subscription();
         AttributedURIType consumerAddress = 
             request.getConsumerReference().getAddress();
         URI consumerUri = consumerAddress.getAnyURI();
+        String initTermTime = request.getInitialTerminationTime();
         
         subscription.setUrl(consumerUri.toString());
         subscription.setUserLogin(userLogin);
+        
+        /* Parsing initial termination time since Axis2 does not like unions */
+        if(initTermTime == null){
+            this.log.debug("initTermTime=default");
+            subscription.setTerminationTime(0L);
+        }else if(initTermTime.startsWith("P")){
+            //duration
+            this.log.debug("initTermTime=xsd:duration");
+            try{
+                DatatypeFactory dtFactory = DatatypeFactory.newInstance();
+                Duration dur = dtFactory.newDuration(initTermTime);
+                GregorianCalendar cal = new GregorianCalendar();
+                dur.addTo(cal);
+                subscription.setTerminationTime(cal.getTimeInMillis()/1000L);
+            }catch(Exception e){
+                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
+                    "appears to be an invalid xsd:duration value.");
+            }
+        }else{
+            //datetime or invalid
+            this.log.debug("initTermTime=xsd:datetime");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+            try{
+                Date date = df.parse(initTermTime);
+                subscription.setTerminationTime(date.getTime()/1000L);
+            }catch(Exception e){
+                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
+                    "must be of type xsd:datetime or xsd:duration.");
+            }
+        }
         
         return subscription;
     }

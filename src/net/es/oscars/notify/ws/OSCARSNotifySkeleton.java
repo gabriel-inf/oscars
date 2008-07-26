@@ -28,6 +28,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private Principal certIssuer;
     private Principal certSubject;
     private SubscriptionAdapter sa;
+    
     /**
      * Called from the Axis2 framework during initialization of the service.
      *
@@ -56,15 +57,12 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 	}
 
 	public SubscribeResponse Subscribe(Subscribe request)
-           throws AAAFaultMessage, TopicNotSupportedFault,
-                  InvalidTopicExpressionFault, UnsupportedPolicyRequestFault,
-                  UnacceptableInitialTerminationTimeFault,
-                  InvalidMessageContentExpressionFault,
-                  InvalidProducerPropertiesExpressionFault,
-                  SubscribeCreationFailedFault,
-                  TopicExpressionDialectUnknownFault,
-                  InvalidFilterFault,NotifyMessageNotSupportedFault,
-                  UnrecognizedPolicyRequestFault{
+           throws AAAFaultMessage, InvalidFilterFault, InvalidMessageContentExpressionFault, 
+                  InvalidTopicExpressionFault, InvalidProducerPropertiesExpressionFault, 
+                  NotifyMessageNotSupportedFault, SubscribeCreationFailedFault,
+                  TopicExpressionDialectUnknownFault, TopicNotSupportedFault,
+                  UnacceptableInitialTerminationTimeFault, UnrecognizedPolicyRequestFault,
+                  UnsupportedPolicyRequestFault{
                   
         String login = this.checkUser();   
         HashMap<String, String> permissionMap = new HashMap<String, String>();

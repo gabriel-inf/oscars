@@ -46,6 +46,9 @@ public class SubscribeClient extends Client{
                     requiredFields.put("producer", true);
                 }else if(args[i].equals("-message")){
                     msgFilter = this.generateQueryExpression(args[i+1]);
+                }else if(args[i].equals("-intitermtime")){
+                    String termTime = this.generateDateTime(Long.parseLong(args[i+1]));
+                    subscribe.setInitialTerminationTime(termTime);
                 }else if(args[i].equals("-help")){
                     this.printHelp();
                     System.exit(0);
@@ -82,8 +85,9 @@ public class SubscribeClient extends Client{
 		 System.out.println("\t-repo\t\t required. the location of the repo directory. (i.e. repo)");
 		 System.out.println("\t-consumer\t required. the URL where notifications should be sent back to you.  (i.e. https://my-local-machine.org/clientListener)");
 		 System.out.println("\t-producer\t required. a comma-delimited list of URLs of notification producers (i.e. an IDC) from which you'd like to receive notifications. (i.e. https://example.org:8443/axis2/services/OSCARS)");
-		  System.out.println("\t-topics\t\t optional. Comma delimited list of topics to which you'd like to subscribe (i.e. idc:INFO,idc:ERROR)");
+		 System.out.println("\t-topics\t\t optional. Comma delimited list of topics to which you'd like to subscribe (i.e. idc:INFO,idc:ERROR)");
 		 System.out.println("\t-message\t optional. XPath expression that can be used to further filter notifications received (i.e. /idc:event[idc:gri='example.org-1'])");
+	     System.out.println("\t-inittermtime\t\t optional. the 'initial termination time' that the subscriptions will expire. Specified in seconds (i.e. 3600).");
 	}
 	
     public String getUrl(){
