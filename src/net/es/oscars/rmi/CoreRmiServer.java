@@ -10,6 +10,7 @@ import java.rmi.*;
 import java.net.*;
 import java.net.UnknownHostException;
 
+import net.es.oscars.PropHandler;
 import net.es.oscars.notify.RemoteEventProducer;
 
 import org.apache.log4j.*;
@@ -42,10 +43,23 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      */
     public void init() throws RemoteException {
         this.log.debug("init.start");
-        this.registry = LocateRegistry.createRegistry(8091);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi", true);
+        int port = 1099;
+        if (props.getProperty("registryPort") != null) {
+            try {
+                port = Integer.decode(props.getProperty("registryPort"));
+            } catch (NumberFormatException e) { }
+        }
+        this.registry = LocateRegistry.createRegistry(port);
 
-        //this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, 0);
-        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, 8099);
+        port = 0;
+        if (props.getProperty("serverPort") != null) {
+            try {
+                port = Integer.decode(props.getProperty("serverPort"));
+            } catch (NumberFormatException e) { }
+        }
+        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, port);
         this.registry.rebind("IDCRMIServer", this.stub);
         this.createHandler = new CreateResRmiHandler();
         this.queryHandler = new QueryResRmiHandler();

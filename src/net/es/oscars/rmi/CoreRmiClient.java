@@ -6,6 +6,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
+import java.util.Properties;
+
+import net.es.oscars.PropHandler;
 
 import org.apache.log4j.Logger;
 
@@ -25,8 +28,16 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.remote = null;
         this.log.debug("init.start");
         this.connected = true;
+        int port = 1099;  // default rmi registry port
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi", true);
+        if (props.getProperty("registryPort") != null ) {
+            try {
+                port = Integer.decode(props.getProperty("registryPort"));
+            } catch (NumberFormatException e) { } 
+        }
         try {
-            Registry registry = LocateRegistry.getRegistry(8091);
+            Registry registry = LocateRegistry.getRegistry(port);
             this.remote = (CoreRmiInterface) registry.lookup("IDCRMIServer");
             this.connected = true;
             this.log.debug("Connected to IDC RMI server");
