@@ -59,5 +59,11 @@
         </meta>    
     </property>
     
+    <property name="status" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+    
 </class>
 </hibernate-mapping>

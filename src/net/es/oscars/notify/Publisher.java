@@ -38,7 +38,10 @@ public class Publisher extends HibernateBean implements Serializable {
     
     /** persistent field */
     private boolean demand;
-
+    
+    /** persistent field */
+    private int status;
+    
     /** default constructor */
     public Publisher() {}
 
@@ -118,12 +121,26 @@ public class Publisher extends HibernateBean implements Serializable {
     public boolean isDemand() {
         return this.demand;
     }
-
+    
     /**
      * @param demand a boolean indicating whether this is a demand publisher
      */
     public void setDemand(boolean demand) {
         this.demand = demand;
+    }
+    
+    /**
+     * @return an int with the status
+     */
+    public int getStatus() {
+        return this.status;
+    }
+
+    /**
+     * @param status an int with the status
+     */
+    public void setStatus(int status) {
+        this.status = status;
     }
     
     public String toString() {
