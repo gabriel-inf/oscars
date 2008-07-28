@@ -87,41 +87,28 @@ public class SubscriptionManager{
                                 throws UnacceptableInitialTerminationTimeFault{
         this.log.info("registerPublisher.start");
         Session sess = HibernateUtil.getSessionFactory(DBNAME).getCurrentSession();
-        this.log.info("registerPublisher.1");
         sess.beginTransaction();
-        this.log.info("registerPublisher.2");
         PublisherDAO dao = new PublisherDAO(DBNAME);
-        this.log.info("registerPublisher.3");
         long curTime = System.currentTimeMillis()/1000;
-        this.log.info("registerPublisher.4");
         
         /* calculate initial termination time */
         long maxTime = curTime + this.pubMaxExpTime;
-        this.log.info("registerPublisher.5");
         long expTime = publisher.getTerminationTime();
-        this.log.info("registerPublisher.6");
         if(expTime == 0){
             expTime = maxTime;
-            this.log.info("registerPublisher.7");
         }else if(expTime > maxTime){
-            this.log.info("registerPublisher.8");
             throw new UnacceptableInitialTerminationTimeFault("Requested " +
                     "initial termination time is too far in the future. " +
                     "The maximum is " + this.pubMaxExpTime + " seconds from the " +
                     "current time.");
         }
-        this.log.info("registerPublisher.9");
+        
         /* Save subscription */
         publisher.setReferenceId(this.generateId());
-        this.log.info("registerPublisher.10");
         publisher.setCreatedTime(new Long(curTime));
-        this.log.info("registerPublisher.11");
         publisher.setTerminationTime(new Long(expTime));
-        this.log.info("registerPublisher.12");
         publisher.setStatus(SubscriptionManager.ACTIVE_STATUS);
-        this.log.info("registerPublisher.13");
         dao.create(publisher);
-        this.log.info("registerPublisher.14");
         sess.getTransaction().commit();
         this.log.info("registerPublisher.finish");
         
