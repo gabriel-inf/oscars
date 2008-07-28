@@ -24,23 +24,30 @@ public class NotifyInitializer {
 
     public void init() throws NotifyException {
         this.log.info("init.start");
-        String modules = this.props.getProperty("modules");
-        if(modules == null){
-            this.log.info("No notification module selected. It is recommended " +
-                          "you set the notify.modules property in oscars.properties" +
-                          " so that you can share notifications about IDC activity.");
-            return;
-        }
-        String[] moduleList = modules.split(",");
-        for(String module : moduleList){
-            module = module.trim();
-            if("email".equals(module.toLowerCase())){
+        
+        int i = 1;
+        while (this.props.getProperty("observer." + i) != null) {
+            String className = this.props.getProperty("observer." + i);
+            className = className.trim();
+            if("net.es.oscars.notify.EmailObserver".equals(className)){
                 this.log.info("Loading the email notification module");
                 this.addObserver(new EmailObserver());
-            }else if("ws".equals(module.toLowerCase())){
+            }else if("net.es.oscars.notify.WSObserver".equals(className)){
                 this.log.info("Loading the web service notification module");
                 this.addObserver(new WSObserver());
+            }else if("net.es.oscars.notify.FileWriterObserver".equals(className)){
+                this.log.info("Loading the FileWriter notification module");
+                this.addObserver(new FileWriterObserver());
+            }else{
+                this.log.info("Unrecognized module " + className);
             }
+            i++;
+        }
+        
+        if(i == 0){
+            this.log.info("No notification module selected. It is recommended " +
+                          "you set the notify.observer.1 property in oscars.properties" +
+                          " so that you can share notifications about IDC activity.");
         }
         this.log.info("init.end");
         /* Tomcat can't find the class
