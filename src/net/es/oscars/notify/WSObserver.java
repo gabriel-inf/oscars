@@ -147,6 +147,7 @@ public class WSObserver implements Observer {
         }
         
         OSCARSEvent osEvent = (OSCARSEvent) arg;
+        OMElement omEvent = null;
         Client client = new Client();
         EndpointReferenceType prodRef = null;
         TopicExpressionType topicExpr = null;
@@ -158,6 +159,8 @@ public class WSObserver implements Observer {
             client.setUpNotify(true, this.notificationBroker, this.repo, this.axisConfig);
             prodRef = client.generateEndpointReference(this.producerURL);
             topicExpr = this.generateTopicExpression(event);
+            OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
+            omEvent = event.getOMElement(Event.MY_QNAME, omFactory);
         }catch(Exception e){
             this.log.error(e);
             return;
@@ -165,7 +168,8 @@ public class WSObserver implements Observer {
         //return if doesn't match any active topics
         if(topicExpr == null){ return; }
         
-        msg.addEvent(event);
+        
+        msg.addExtraElement(omEvent);
         msgHolder.setTopic(topicExpr);
         msgHolder.setProducerReference(prodRef);
         msgHolder.setMessage(msg);

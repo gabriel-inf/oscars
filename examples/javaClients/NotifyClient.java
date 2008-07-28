@@ -3,9 +3,13 @@ import net.es.oscars.wsdlTypes.*;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.w3.www._2005._08.addressing.*;
 import org.apache.axis2.databinding.types.URI;
+import org.apache.axis2.databinding.ADBException;
 import java.rmi.RemoteException;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMFactory;
 
 public class NotifyClient{
     public static void main(String[] args){
@@ -53,7 +57,9 @@ public class NotifyClient{
             event.setErrorCode("AUTHN_FAILED");
             event.setErrorMessage("Identity cannot be determined.");
             
-            msg.addEvent(event);
+            OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
+            OMElement omEvent = event.getOMElement(Event.MY_QNAME, omFactory);
+            msg.addExtraElement(omEvent);
             
             msgHolder.setSubscriptionReference(subRef);
             msgHolder.setTopic(topicExpr);
@@ -65,6 +71,8 @@ public class NotifyClient{
         }catch(RemoteException e){
             System.err.println(e);
         }catch(MalformedURIException e){
+            System.err.println(e);
+        }catch(ADBException e){
             System.err.println(e);
         }
     }

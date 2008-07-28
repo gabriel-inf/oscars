@@ -21,7 +21,6 @@ This document and the information contained herein is provided on an "AS IS" bas
   xmlns:wsa="http://www.w3.org/2005/08/addressing"
   xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns:idc="http://oscars.es.net/OSCARS"
   elementFormDefault="qualified"  attributeFormDefault="unqualified">
 
 <!-- ======================== Imports  ============================ -->
@@ -119,7 +118,9 @@ This document and the information contained herein is provided on an "AS IS" bas
   </xsd:complexType>
   <xsd:complexType name="MessageType">
     <xsd:sequence>
-        <xsd:element ref="idc:event" minOccurs="1" maxOccurs="unbounded"/>
+        <!-- <xsd:element ref="idc:event" minOccurs="1" maxOccurs="unbounded"/> -->
+        <xsd:any namespace="##other" processContents="lax"
+                 minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:element name="NotificationMessage"
