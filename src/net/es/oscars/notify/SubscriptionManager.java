@@ -115,7 +115,12 @@ public class SubscriptionManager{
         return publisher;
     }
     
+    /**
+     * Generates id conforming to RFC 4122 "A Universally Unique IDentifier (UUID) URN Namespace"
+     *
+     * @return the randomly generated UUID.
+     */
     public String generateId(){
-        return UUID.randomUUID().toString();
+        return "urn:uuid:" + UUID.randomUUID().toString();
     }
 }
