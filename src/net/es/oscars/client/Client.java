@@ -20,6 +20,8 @@ import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
 import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
 import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.oscars.OSCARSStub;
@@ -364,6 +366,16 @@ public class Client {
                   UnrecognizedPolicyRequestFault,
                   net.es.oscars.notify.ws.AAAFaultMessage{
        return this.notifyStub.Subscribe(request);
+    }
+    
+    public RegisterPublisherResponse registerPublisher(RegisterPublisher request) 
+                  throws TopicNotSupportedFault,
+                         InvalidTopicExpressionFault,
+                         PublisherRegistrationFailedFault,
+                         UnacceptableInitialTerminationTimeFault,
+                         PublisherRegistrationRejectedFault,
+                         RemoteException{
+       return this.notifyStub.RegisterPublisher(request);
     }
     
     public EndpointReferenceType generateEndpointReference(String address)

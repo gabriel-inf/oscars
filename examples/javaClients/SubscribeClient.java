@@ -46,7 +46,7 @@ public class SubscribeClient extends Client{
                     requiredFields.put("producer", true);
                 }else if(args[i].equals("-message")){
                     msgFilter = this.generateQueryExpression(args[i+1]);
-                }else if(args[i].equals("-intitermtime")){
+                }else if(args[i].equals("-inittermtime")){
                     String termTime = this.generateDateTime(Long.parseLong(args[i+1]));
                     subscribe.setInitialTerminationTime(termTime);
                 }else if(args[i].equals("-help")){

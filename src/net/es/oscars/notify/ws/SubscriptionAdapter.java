@@ -7,6 +7,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.*;
+import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.*;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axiom.om.xpath.AXIOMXPath;
@@ -136,6 +137,47 @@ public class SubscriptionAdapter{
         this.log.info("notify.end");
     }
     
+    /**
+     * Registers a publisher in the database using the given registration parameters
+     *
+     * @param request the registration request
+     * @param login the login of the user that send the registration
+     * @return an Axis2 RegisterPublisherResponse withthe result of the registration
+     * @throws UnacceptableInitialTerminationTimeFault
+     * @throws PublisherRegistrationFailedFault
+     */
+    public RegisterPublisherResponse registerPublisher(RegisterPublisher request, String login)
+                                throws UnacceptableInitialTerminationTimeFault,
+                                       PublisherRegistrationFailedFault{
+        this.log.info("registerPublisher.start");
+        SubscriptionManager sm = new SubscriptionManager();
+        RegisterPublisherResponse response = null;
+        Publisher publisher = new Publisher();
+        String publisherAddress = this.parseEPR(request.getPublisherReference());
+        Calendar initTermTime = request.getInitialTerminationTime();
+        boolean demand = request.getDemand();
+        
+        publisher.setUserLogin(login);
+        publisher.setUrl(publisherAddress);
+        if(initTermTime != null){
+            publisher.setTerminationTime(initTermTime.getTimeInMillis()/1000L);
+        }else{
+            publisher.setTerminationTime(0L);
+        }
+        
+        //TODO:Support demand based publishing
+        if(demand){
+            throw new PublisherRegistrationFailedFault("Demand publishing is not supported by this implementation.");
+        }
+        publisher.setDemand(demand);
+        
+        publisher = sm.registerPublisher(publisher);
+        response = this.publisher2Axis(publisher);
+        this.log.info("registerPublisher.end");
+        
+        return response;
+    }
+    
     /** 
      * Converts and Axis2 Subscribe object to a Subsciption Hibernate bean
      *
@@ -146,43 +188,13 @@ public class SubscriptionAdapter{
     private Subscription axis2Subscription(Subscribe request, String userLogin)
                                 throws UnacceptableInitialTerminationTimeFault{
         Subscription subscription = new Subscription();
-        AttributedURIType consumerAddress = 
-            request.getConsumerReference().getAddress();
-        URI consumerUri = consumerAddress.getAnyURI();
-        String initTermTime = request.getInitialTerminationTime();
+        String consumerAddress = this.parseEPR(request.getConsumerReference());
+        long initTermTime = 
+                this.parseInitTermTime(request.getInitialTerminationTime());
         
-        subscription.setUrl(consumerUri.toString());
+        subscription.setUrl(consumerAddress);
         subscription.setUserLogin(userLogin);
-        
-        /* Parsing initial termination time since Axis2 does not like unions */
-        if(initTermTime == null){
-            this.log.debug("initTermTime=default");
-            subscription.setTerminationTime(0L);
-        }else if(initTermTime.startsWith("P")){
-            //duration
-            this.log.debug("initTermTime=xsd:duration");
-            try{
-                DatatypeFactory dtFactory = DatatypeFactory.newInstance();
-                Duration dur = dtFactory.newDuration(initTermTime);
-                GregorianCalendar cal = new GregorianCalendar();
-                dur.addTo(cal);
-                subscription.setTerminationTime(cal.getTimeInMillis()/1000L);
-            }catch(Exception e){
-                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
-                    "appears to be an invalid xsd:duration value.");
-            }
-        }else{
-            //datetime or invalid
-            this.log.debug("initTermTime=xsd:datetime");
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
-            try{
-                Date date = df.parse(initTermTime);
-                subscription.setTerminationTime(date.getTime()/1000L);
-            }catch(Exception e){
-                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
-                    "must be of type xsd:datetime or xsd:duration.");
-            }
-        }
+        subscription.setTerminationTime(initTermTime);
         
         return subscription;
     }
@@ -219,6 +231,43 @@ public class SubscriptionAdapter{
 		response.setCurrentTime(createCal);
 		response.setTerminationTime(termCal);
 		
+		return response;
+    }
+    
+    /**
+     * Converts a complete Publisher Hibernate bean to an Axis2 object
+     *
+     * @param publisher the Publisher Hibernate bean to convert
+     * @return the Axis2 RegisterPublisherResponse converted from the Publisher object
+     */
+    private RegisterPublisherResponse publisher2Axis(Publisher publisher){
+        RegisterPublisherResponse response = new RegisterPublisherResponse();
+        
+        /* Set publisher reference */
+		EndpointReferenceType pubRef = new EndpointReferenceType();
+        AttributedURIType pubAttrUri = new AttributedURIType();
+        try{
+            URI pubRefUri = new URI(this.subscriptionManagerURL);
+            pubAttrUri.setAnyURI(pubRefUri);
+        }catch(Exception e){}
+        pubRef.setAddress(pubAttrUri);
+        //set ReferenceParameters
+        ReferenceParametersType pubRefParams = new ReferenceParametersType();
+        pubRefParams.setPublisherRegistrationId(publisher.getReferenceId());
+        pubRef.setReferenceParameters(pubRefParams);
+		
+		/* Set consumer reference */
+		EndpointReferenceType conRef = new EndpointReferenceType();
+        AttributedURIType conAttrUri = new AttributedURIType();
+        try{
+            URI conRefUri = new URI(this.subscriptionManagerURL);
+            conAttrUri.setAnyURI(conRefUri);
+        }catch(Exception e){}
+        conRef.setAddress(conAttrUri);
+        
+		response.setPublisherRegistrationReference(pubRef);
+        response.setConsumerReference(conRef);
+        
 		return response;
     }
     
@@ -303,5 +352,59 @@ public class SubscriptionAdapter{
         }
         
         return true;
+    }
+    
+    /**
+     *  Utility function that extracts the address from an EndpointReference
+     *
+     * @param epr the Endpoint Reference to parse
+     * @return the address of the parsed EndpointReference
+     */
+    private String parseEPR(EndpointReferenceType epr){
+        AttributedURIType address = epr.getAddress();
+        URI uri = address.getAnyURI();
+        return uri.toString();
+    }
+    
+    /**
+     *  Utility function that extracts an xsd:datetime or xsd:duration from a string
+     *
+     * @param initTermTime the string to parse
+     * @return a timestamp in seconds equivalent to the given string
+     * @throws UnacceptableInitialTerminationTimeFault
+     */
+    private long parseInitTermTime(String initTermTime) 
+                                throws UnacceptableInitialTerminationTimeFault{
+        /* Parsing initial termination time since Axis2 does not like unions */
+        long timestamp = 0L;
+        if(initTermTime == null){
+            this.log.debug("initTermTime=default");
+        }else if(initTermTime.startsWith("P")){
+            //duration
+            this.log.debug("initTermTime=xsd:duration");
+            try{
+                DatatypeFactory dtFactory = DatatypeFactory.newInstance();
+                Duration dur = dtFactory.newDuration(initTermTime);
+                GregorianCalendar cal = new GregorianCalendar();
+                dur.addTo(cal);
+                timestamp = (cal.getTimeInMillis()/1000L);
+            }catch(Exception e){
+                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
+                    "appears to be an invalid xsd:duration value.");
+            }
+        }else{
+            //datetime or invalid
+            this.log.debug("initTermTime=xsd:datetime");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+            try{
+                Date date = df.parse(initTermTime);
+                timestamp = (date.getTime()/1000L);
+            }catch(Exception e){
+                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
+                    "must be of type xsd:datetime or xsd:duration.");
+            }
+        }
+        
+        return timestamp;
     }
 }

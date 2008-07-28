@@ -118,8 +118,26 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                 PublisherRegistrationFailedFault,
                 UnacceptableInitialTerminationTimeFault,
                 PublisherRegistrationRejectedFault{
-        //TODO : fill this with the necessary business logic
-        throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#RegisterPublisher");
+                
+        String login = "";
+        try{
+            login = this.checkUser();
+        }catch(AAAFaultMessage e){
+            throw new PublisherRegistrationRejectedFault(e.getMessage());
+        }
+		/* Get authorizations */
+		Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+		aaa.beginTransaction();
+		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Notifications", "publish");
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new PublisherRegistrationRejectedFault("You do not have permission to publish notifications.");
+        }
+        aaa.getTransaction().commit();
+		
+		/* Build subscription */
+		RegisterPublisherResponse response = this.sa.registerPublisher(request, login);
+		
+		return response;
     }
 
     public DestroyRegistrationResponse DestroyRegistration(DestroyRegistration request)
