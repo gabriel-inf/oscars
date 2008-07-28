@@ -45,6 +45,10 @@
             <fileset dir="src" includes="**/*.hbm.xml"/>
             <fileset dir="conf/server" includes="*.cfg.xml, log4j.properties"/>
         </copy>
+        <!-- Copy to prevent non-fatal warning on Tomcat start-up -->
+        <copy todir="conf/notify-server" overwrite="true">
+            <fileset dir="conf/server" includes="OSCARS.xsd,nmtopo-ctrlp.xsd" />
+        </copy>
     </target>
     <target name="initMaven">
         <path id="maven.classpath">

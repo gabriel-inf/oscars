@@ -22,7 +22,7 @@
             elementFormDefault="qualified"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:tns="http://oscars.es.net/OSCARS">
-            <xsd:include schemaLocation="../server/OSCARS.xsd" />
+            <xsd:include schemaLocation="OSCARS.xsd" />
         </xsd:schema>
         <xsd:schema>
             <xsd:import
