@@ -347,6 +347,12 @@ public class Client {
         return freply;
     }
     
+    /**
+     * Sends notification of event to a subscriber or NotificationBroker
+     *
+     * @param msgHolder the notification message to send
+     * @throws RemoteException
+     */
     public void notify(NotificationMessageHolderType msgHolder) 
                         throws RemoteException{
         Notify notification = new Notify();
@@ -354,6 +360,24 @@ public class Client {
         this.notifyStub.Notify(notification);
     }
     
+    /**
+     * Subscribes to notifications that match request parameters from an I
+     * DC or other service.
+     *
+     * @param request the Subscribe message to send
+     * @throws AAAFaultMessage
+     * @throws InvalidFilterFault
+     * @throws InvalidMessageContentExpressionFault
+     * @throws InvalidProducerPropertiesExpressionFault
+     * @throws InvalidTopicExpressionFault
+     * @throws NotifyMessageNotSupportedFault
+     * @throws RemoteException
+     * @throws SubscribeCreationFailedFault
+     * @throws TopicExpressionDialectUnknownFault
+     * @throws TopicNotSupportedFault
+     * @throws UnacceptableInitialTerminationTimeFault
+     * @throws UnrecognizedPolicyRequestFault
+     */
     public SubscribeResponse subscribe(Subscribe request) 
                   throws RemoteException, TopicNotSupportedFault,
                   InvalidTopicExpressionFault, UnsupportedPolicyRequestFault,
@@ -368,6 +392,20 @@ public class Client {
        return this.notifyStub.Subscribe(request);
     }
     
+    /**
+     * Registers a publisher with a notification broker. This should be
+     * used by services that produce notifications they would like to share
+     * with other groups.
+     *
+     * @param request the registration message
+     * @return the restult of the registration
+     * @throws InvalidTopicExpressionFault
+     * @throws PublisherRegistrationFailedFault
+     * @throws PublisherRegistrationRejectedFault
+     * @throws RemoteException
+     * @throws TopicNotSupportedFault
+     * @throws UnacceptableInitialTerminationTimeFault
+     */
     public RegisterPublisherResponse registerPublisher(RegisterPublisher request) 
                   throws TopicNotSupportedFault,
                          InvalidTopicExpressionFault,
@@ -378,11 +416,30 @@ public class Client {
        return this.notifyStub.RegisterPublisher(request);
     }
     
+    /**
+     * Utility function for generating WS-Addressing endpoint references. This
+     * function is useful when formatting ConsumerReference in a Subscribe 
+     * message.
+     *
+     * @param address the URI to go in the Address field of the EndpointReference
+     * @return the generated Endpoint Reference
+     * @throws MalformedURIException
+     */
     public EndpointReferenceType generateEndpointReference(String address)
             throws MalformedURIException{
         return this.generateEndpointReference(address, null);
     }
     
+    /**
+     * Utility function for generating WS-Addressing endpoint references. This
+     * function is useful when requests and responses that require an address 
+     * and a subscriptionId
+     *
+     * @param address the URI to go in the Address field of the EndpointReference
+     * @param subscriptionId the UUID of a subscription
+     * @return the generated Endpoint Reference
+     * @throws MalformedURIException
+     */
     public EndpointReferenceType generateEndpointReference(
         String address, String subscriptionId) throws MalformedURIException{
         EndpointReferenceType epr = new EndpointReferenceType();
@@ -400,6 +457,12 @@ public class Client {
         return epr;
     }
     
+    /** 
+     * Utility function for generating a topic expression
+     *
+     * @param topics a string adhering to the Full expression dialect of WS-Topic
+     * @return the generated topic expression
+     */
     public TopicExpressionType generateTopicExpression(String topics){
         TopicExpressionType topicExpr = new TopicExpressionType();
         //dialect is a constant so there should be no malformed exception
@@ -411,6 +474,13 @@ public class Client {
         return topicExpr;
     }
     
+    /** 
+     * Utility function for generating a ProducerProperties filter given a
+     * list of producer URLs. The list is converted to an XPath OR expression.
+     *
+     * @param urls a list of URLs that idenitfy producers from which the subscriber would like to receieve notifications
+     * @return the generated query
+     */
     public QueryExpressionType generateProducerProperties(String[] urls){
         boolean multiple = false;
         String xpath = "";
@@ -422,6 +492,12 @@ public class Client {
         return this.generateQueryExpression(xpath);
     }
     
+    /** 
+     * Utility function for generating a query expression using XPath
+     *
+     * @param xpath an Xpath expression used to match producers
+     * @return the generated query
+     */
     public QueryExpressionType generateQueryExpression(String xpath){
         QueryExpressionType query = new QueryExpressionType();
         //dialect is a constant so there should be no malformed exception
@@ -434,6 +510,14 @@ public class Client {
         return query;
     }
     
+    /**
+     * Generates an xsd:datetime String that is X number of seconds in the future
+     * where X is a supplied parameter.
+     *
+     * @param seconds the number of seconds in the fututre the xsd:datetime should represent
+     * @return an xsd:datetime string that is the requeted number of seconds in the future
+     *
+     */
     public String generateDateTime(long seconds){
         GregorianCalendar cal = new GregorianCalendar();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
