@@ -53,6 +53,22 @@ CREATE TABLE `subscriptions` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
+-- Table structure for table `subscriptions`
+--
+
+DROP TABLE IF EXISTS `publishers`;
+CREATE TABLE `publishers` (
+  `id` int(11) NOT NULL auto_increment,
+  `referenceId` text NOT NULL,
+  `userLogin` text NOT NULL,
+  `url` text NOT NULL,
+  `createdTime` bigint(20) NOT NULL default '0',
+  `terminationTime` bigint(20) NOT NULL default '0',
+  `demand` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
 -- Dumping data for table `subscriptions`
 --
 
