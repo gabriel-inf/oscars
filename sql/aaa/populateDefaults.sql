@@ -64,7 +64,10 @@ INSERT INTO resources VALUES(NULL, "Domains",
 INSERT INTO resources VALUES(NULL, "AAA",
                         "Information about Institutions, Attributes and Authorizations",
                         NULL);
-
+INSERT INTO resources VALUES(NULL, "Notifications",
+                        "Information about events or status",
+                        NULL);
+                        
 -- populate attributes table
 
 CREATE TABLE IF NOT EXISTS attributes (
@@ -97,7 +100,10 @@ INSERT INTO attributes VALUES(NULL, "OSCARS-operator", "group", "view all reserv
 -- Site Administrator - Can manage all reservations starting or terminating at a site
 INSERT INTO attributes VALUES(NULL, "OSCARS-siteAdmin", "group", "manage all reservations starting or ending at site");
 
-
+-- Publisher - for use by IDCs and other services that want to publish notifications
+INSERT INTO attributes VALUES(NULL, "OSCARS-publisher", "group",
+                        "publish events to external services");
+                        
 -- populate userAttributes table by selecting attributes in tool/utils/idc-adduser
 
 CREATE TABLE IF NOT EXISTS userAttributes (
@@ -128,7 +134,9 @@ INSERT INTO permissions VALUES(NULL, "create",
             "create a user or reservation", NULL);
 INSERT INTO permissions VALUES(NULL, "signal",
             "signal a previously placed reservation", NULL);
-
+INSERT INTO permissions VALUES(NULL, "publish",
+                        "post events or status information",
+                        NULL);
 
 -- populate authorizations table
         
@@ -388,3 +396,11 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
      "my-site",1);
+
+    -- Publisher
+    -- Publish notifications    
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-publisher"),
+     (select id from resources where name="Notifications"),
+     (select id from permissions where name="publish"),
+     NULL,NULL);

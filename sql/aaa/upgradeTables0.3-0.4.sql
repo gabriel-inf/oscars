@@ -30,3 +30,20 @@ UPDATE  attributes SET description="manage all reservations starting or ending a
 UPDATE  attributes SET description="make reservations and view topology" WHERE name="OSCARS-service";
 UPDATE  attributes SET description="manage all users" WHERE name="OSCARS-administrator";
 
+-- Add items to allow for publishing of events to a NotificationBroker
+INSERT INTO attributes VALUES(NULL, "OSCARS-publisher", "group",
+                        "publish events to external services");
+                        
+INSERT INTO permissions VALUES(NULL, "publish",
+                        "post events or status information",
+                        NULL);
+                        
+INSERT INTO resources VALUES(NULL, "Notifications",
+                        "Information about events or status",
+                        NULL);
+ 
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-publisher"),
+     (select id from resources where name="Notifications"),
+     (select id from permissions where name="publish"),
+     NULL,NULL);
