@@ -27,7 +27,6 @@ public class VendorCheckStatusJob implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
-        EventProducer eventProducer = new EventProducer();
         String jobName = context.getJobDetail().getFullName();
         this.log.debug("checkStatusJob.start "+jobName);
 
@@ -119,7 +118,6 @@ public class VendorCheckStatusJob implements Job {
                 }
             }
         }
-        StateEngine se = new StateEngine();
         ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
 
 
@@ -133,22 +131,7 @@ public class VendorCheckStatusJob implements Job {
             String newStatus = resvsToUpdate.get(gri);
             try {
                 Reservation resv = resvDAO.query(gri);
-                se.updateStatus(resv, newStatus);
-
-                if (operation.equals("PATH_SETUP")) {
-                    if (newStatus.equals(StateEngine.FAILED)) {
-                        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv);
-                    } else {
-                        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", "JOB", resv);
-                    }
-                } else if (operation.equals("PATH_TEARDOWN")) {
-                    if (newStatus.equals(StateEngine.FAILED)) {
-                        eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv);
-                    } else {
-                        eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "JOB", resv);
-                    }
-                }
-
+                this.sendNotification(resv, newStatus, operation);
 
             } catch (BSSException ex) {
                 this.log.error(ex);
@@ -159,5 +142,30 @@ public class VendorCheckStatusJob implements Job {
 
         this.log.debug("checkStatusJob.end "+jobName);
     }
+
+    private synchronized void sendNotification(Reservation resv, String newStatus, String operation) throws BSSException {
+        EventProducer eventProducer = new EventProducer();
+        StateEngine se = new StateEngine();
+        String status = StateEngine.getStatus(resv);
+        se.updateStatus(resv, newStatus);
+
+        if (operation.equals("PATH_SETUP")) {
+            if (newStatus.equals(StateEngine.FAILED)) {
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv);
+            } else if (status.equals(newStatus)) {
+                // this will only happen the second time this function is run
+                // for a specific reservation
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", "JOB", resv);
+            }
+        } else if (operation.equals("PATH_TEARDOWN")) {
+            if (newStatus.equals(StateEngine.FAILED)) {
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv);
+            } else if (status.equals(newStatus)) {
+                // this will only happen the second time this function is run
+                // for a specific reservation
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "JOB", resv);
+            }
+        }
+   }
 
 }
