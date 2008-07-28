@@ -318,7 +318,7 @@ public class VendorPSS implements PSS {
         if (!this.allowLSP) {
             PropHandler propHandler = new PropHandler("oscars.properties");
             Properties commonProps = propHandler.getPropertyGroup("pss", true);
-            return commonProps.getProperty("defaultVendor", "cisco");
+            return commonProps.getProperty("defaultVendor", "Cisco");
         }
 
         String sysDescr = null;
