@@ -72,13 +72,13 @@ public class SubscriptionAdapter{
         SubscribeResponse response = null;
         ArrayList<SubscriptionFilter> filters = new ArrayList<SubscriptionFilter>();
         FilterType requestFilter = request.getFilter();
-        QueryExpressionType producerPropsFilter = null;
-        QueryExpressionType messageContentFilter = null;
-        TopicExpressionType topicFilter = null;
+        QueryExpressionType[] producerPropsFilters = null;
+        QueryExpressionType[] messageContentFilters =  null;
+        TopicExpressionType[] topicFilters = null;
         if(requestFilter != null){
-            producerPropsFilter = requestFilter.getProducerProperties();
-            messageContentFilter = requestFilter.getMessageContent();
-            topicFilter = requestFilter.getTopicExpression();
+            producerPropsFilters = requestFilter.getProducerProperties();
+            messageContentFilters = requestFilter.getMessageContent();
+            topicFilters = requestFilter.getTopicExpression();
         }
         
         /* Add filters */
@@ -97,18 +97,23 @@ public class SubscriptionAdapter{
         /* TODO: Add constraint on which producers can be seen. It should be 
            handled in a similar way as above where a producer or list of 
            producers is passed in a HashMap */
-        
-        if(this.validateQueryExpression(producerPropsFilter, true)){
-            String xpath = producerPropsFilter.getString();
-            filters.add(new SubscriptionFilter("PRODXPATH", xpath));    
+        producerPropsFilters = (producerPropsFilters == null) ? new QueryExpressionType[0] : producerPropsFilters;
+        for(QueryExpressionType producerPropsFilter : producerPropsFilters){
+            if(this.validateQueryExpression(producerPropsFilter, true)){
+                String xpath = producerPropsFilter.getString();
+                filters.add(new SubscriptionFilter("PRODXPATH", xpath));    
+            }
         }
         
-        if(this.validateQueryExpression(messageContentFilter, false)){
-            String xpath = messageContentFilter.getString();
-            filters.add(new SubscriptionFilter("MSGXPATH", xpath));    
+        messageContentFilters = (messageContentFilters == null) ? new QueryExpressionType[0] : messageContentFilters;
+        for(QueryExpressionType messageContentFilter : messageContentFilters){
+            if(this.validateQueryExpression(messageContentFilter, false)){
+                String xpath = messageContentFilter.getString();
+                filters.add(new SubscriptionFilter("MSGXPATH", xpath));    
+            }
         }
         
-        String[] topics = this.parseTopics(topicFilter);
+        ArrayList<String> topics = this.parseTopics(topicFilters);
         boolean explicitTopics = false;
         for(String topic : topics){
              filters.add(new SubscriptionFilter("TOPIC", topic.trim()));
@@ -282,36 +287,46 @@ public class SubscriptionAdapter{
      * @throws InvalidTopicExpressionFault
      * @throws TopicExpressionDialectUnknownFault
      */
-    private String[] parseTopics(TopicExpressionType topicFilter) 
+    private ArrayList<String> parseTopics(TopicExpressionType[] topicFilters) 
             throws TopicExpressionDialectUnknownFault,
                    InvalidTopicExpressionFault{
-        if(topicFilter == null){
-            return new String[0];
-        }
-        String dialect = topicFilter.getDialect().toString();
-        String topicString = topicFilter.getString();
-        
-        //check dialect
-        if(Client.XPATH_URI.equals(dialect)){
-             throw new TopicExpressionDialectUnknownFault("The XPath Topic " +
-                        "Expression dialect is not supported at this time.");
-        }else if(!(Client.WS_TOPIC_SIMPLE.equals(dialect) || 
-                   Client.WS_TOPIC_CONCRETE.equals(dialect) || 
-                   Client.WS_TOPIC_FULL.equals(dialect))){
-            throw new TopicExpressionDialectUnknownFault("Unknown Topic dialect '" + dialect + "'");
+        if(topicFilters == null || topicFilters.length < 1){
+            return new ArrayList<String>(0);
         }
         
-        if(topicString == null || "".equals(topicString)){
-            throw new InvalidTopicExpressionFault("Empty topic expression given.");
+        ArrayList<String> topics = new ArrayList<String>();
+        for(TopicExpressionType topicFilter : topicFilters){
+            if(topicFilter == null){
+                continue;
+            }
+            String dialect = topicFilter.getDialect().toString();
+            String topicString = topicFilter.getString();
+            
+            //check dialect
+            if(Client.XPATH_URI.equals(dialect)){
+                 throw new TopicExpressionDialectUnknownFault("The XPath Topic " +
+                            "Expression dialect is not supported at this time.");
+            }else if(!(Client.WS_TOPIC_SIMPLE.equals(dialect) || 
+                       Client.WS_TOPIC_CONCRETE.equals(dialect) || 
+                       Client.WS_TOPIC_FULL.equals(dialect))){
+                throw new TopicExpressionDialectUnknownFault("Unknown Topic dialect '" + dialect + "'");
+            }
+            
+            if(topicString == null || "".equals(topicString)){
+                throw new InvalidTopicExpressionFault("Empty topic expression given.");
+            }
+            String[] topicTokens = topicString.split("\\|");
+            for(String topicToken : topicTokens){
+                topics.add(topicToken);
+            }
+            /* NOTE: Currently the notification broker is neutral as to the 
+               type of topics is sends/receives so there is no check to see 
+               if a topic is supported. This provides the greatest flexibility
+               but doesn't allow the broker to return an error if it knows it
+               can never send a notification for a particular topic. As we gain
+               more experience we can revisit this fact */
         }
-        String[] topics = topicString.split("\\|");
-        /* NOTE: Currently the notification broker is neutral as to the 
-           type of topics is sends/receives so there is no check to see 
-           if a topic is supported. This provides the greatest flexibility
-           but doesn't allow the broker to return an error if it knows it
-           can never send a notification for a particular topic. As we gain
-           more experience we can revisit this fact */
-           
+        
         return topics;
     }
     

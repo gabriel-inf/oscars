@@ -69,9 +69,9 @@ public class SubscribeClient extends Client{
         }
         
         this.setUpNotify(true, this.url, this.repo, null);
-        filter.setTopicExpression(topicExpr);
-        filter.setProducerProperties(producerProps);
-        filter.setMessageContent(msgFilter);
+        filter.addTopicExpression(topicExpr);
+        filter.addProducerProperties(producerProps);
+        filter.addMessageContent(msgFilter);
         subscribe.setConsumerReference(consumerRef);
         subscribe.setFilter(filter);
         
