@@ -282,7 +282,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
-            <fileset dir="${domain.home}/client" includes="axis2.xml, ssl-keystore.jks"/>
+            <fileset dir="${domain.home}/client" includes="axis2.xml,axis2-norampart.xml, ssl-keystore.jks"/>
             <fileset dir="${domain.home}/server" includes="sec-client.*"/>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
@@ -292,6 +292,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true" />
+        <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true" />
         <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true" />
         <available property="sec-client.properties.exists" file="${catalina.home}/shared/classes/repo/sec-client.properties" value="true" />
         <available property="sec-client.jks.exists" file="${catalina.home}/shared/classes/repo/sec-client.jks" value="true" />
@@ -305,6 +306,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${defaultKeys}/client">
                 <include name="axis2.xml" unless="axis2.xml.exists" />
+                <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists" />
                 <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists" />
             </fileset>
             <fileset dir="${defaultKeys}/server">
