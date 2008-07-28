@@ -53,7 +53,7 @@ CREATE TABLE `subscriptions` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
--- Table structure for table `subscriptions`
+-- Table structure for table `publishers`
 --
 
 DROP TABLE IF EXISTS `publishers`;
@@ -65,6 +65,7 @@ CREATE TABLE `publishers` (
   `createdTime` bigint(20) NOT NULL default '0',
   `terminationTime` bigint(20) NOT NULL default '0',
   `demand` tinyint(1) NOT NULL default '0',
+  `status` int(11) NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
