@@ -51,12 +51,15 @@ CREATE TABLE IF NOT EXISTS permissions (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
--- cross reference table
-CREATE TABLE IF NOT EXISTS resourcePermissions (
-    resourceId          INT NOT NULL,    -- foreign key
-    permissionId        INT NOT NULL,    -- foreign key
-    PRIMARY KEY (resourceId, permissionId)
+-- Create resource, permission, constraint (RPC) table which contains a list of the meaningful RPC tuples
+CREATE TABLE IF NOT EXISTS rpc (
+   id              		INT NOT NULL AUTO_INCREMENT,
+   resourceId			INT NOT NULL,
+   permissionId			INT NOT NULL,
+   constraintId			INT NOT NULL,
+   PRIMARY KEY (id)
 ) type=MyISAM;
+CREATE UNIQUE INDEX const ON rpc(resourceId,permissionId,constraintId); 
 
 CREATE TABLE IF NOT EXISTS authorizations (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -69,6 +72,7 @@ CREATE TABLE IF NOT EXISTS authorizations (
     constraintValue     INT,
     PRIMARY KEY (id)
 ) type=MyISAM;
+-- allows duplicate rows if constraint is null 
 CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintName(9));
 
 CREATE TABLE IF NOT EXISTS attributes (
@@ -87,4 +91,4 @@ CREATE TABLE IF NOT EXISTS userAttributes (
     attributeId         INT NOT NULL,    -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
-
+CREATE UNIQUE INDEX userAttr ON (userId,attributeId);
