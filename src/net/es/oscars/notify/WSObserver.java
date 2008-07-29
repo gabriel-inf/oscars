@@ -19,6 +19,9 @@ import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMFactory;
 import org.oasis_open.docs.wsn.b_2.*;
+import org.ogf.schema.network.topology.ctrlplane._20070626.Path;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.jaxen.JaxenException;
 import org.jaxen.SimpleNamespaceContext;
 import org.jdom.*;
@@ -193,9 +196,12 @@ public class WSObserver implements Observer {
      */
     private EventContent oscarsEventToWSEvent(OSCARSEvent osEvent){
         EventContent event = new EventContent();
+        HashMap<String, String[]> map = osEvent.getReservationParams();
         TypeConverter tc = new TypeConverter();
         ResDetails resDetails = tc.hashMaptoResDetails(osEvent.getReservationParams());
-        HashMap<String, String[]> map = osEvent.getReservationParams();
+        LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"));
+        Path path = new Path();
+        
         for(String key: map.keySet()){
             String[] val = map.get(key);
             System.out.print(key + ": ");
@@ -215,10 +221,41 @@ public class WSObserver implements Observer {
         event.setErrorCode(osEvent.getErrorCode());
         event.setErrorMessage(osEvent.getErrorMessage());
         event.setResDetails(resDetails);
-        //TODO: Set pathDetailLevel
+        event.setLocalDetails(localDetails);
         //TODO: Set msgDetails
         
         return event;
+    }
+    
+    /**
+     * Creates a LocalDetails element containing the local path
+     *
+     * @param path an array of hops to add to the local path
+     * @return a Axis2 LocalDetails object containing the local path
+     */
+    private LocalDetails getLocalDetails(String[] path){
+        if(path == null || path.length < 1){ return null; }
+        LocalDetails localDetails = new LocalDetails();
+        CtrlPlanePathContent wsPath = new CtrlPlanePathContent();
+        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
+        OMElement omPath = null;
+        
+        //Build path
+        wsPath.setId("localPath");
+        for(int i = 0; i < path.length; i++){
+            CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+            hop.setId("hop-" + (i+1));
+            hop.setLinkIdRef(path[i]);
+            wsPath.addHop(hop);
+        }
+        try{
+            omPath = wsPath.getOMElement(Path.MY_QNAME, omFactory);
+         }catch(ADBException e){
+            this.log.error(e + "Ignoring error setting local details.");
+            return null;
+        }
+        localDetails.addExtraElement(omPath);
+        return localDetails;
     }
     
     /**
