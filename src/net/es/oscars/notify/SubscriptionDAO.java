@@ -47,7 +47,7 @@ public class SubscriptionDAO
         //Add PEP specific parameters.
         firstKey = true;
         for(String key: permissionMap.keySet()){
-            sql += (!firstKey ? " OR " : " AND ");
+            sql += (!firstKey ? " OR " : " AND (");
             sql += "(sf2.type=? AND (";
             queryParams.add(key);
             boolean firstValue = true;
@@ -61,6 +61,8 @@ public class SubscriptionDAO
             sql += "))";
             firstKey = false;
         }
+        sql += ")";
+        
         //Apply parameters to prepared statement to avoid SQL injection
         query = this.getSession().createSQLQuery(sql)
                                  .addEntity(Subscription.class);

@@ -16,13 +16,16 @@ import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
+import org.hibernate.*;
 import org.jaxen.JaxenException;
 import org.jaxen.SimpleNamespaceContext;
+import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
-import  net.es.oscars.notify.ws.policy.*;
+import net.es.oscars.notify.ws.policy.*;
+
 /** 
  * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
  * It is intended to provide a gateway for Axis2 into more general core functionality
@@ -34,10 +37,12 @@ public class SubscriptionAdapter{
     private Logger log;
     private String subscriptionManagerURL;
     private HashMap<String,String> namespaces;
+    private String dbname;
     
     /** Default constructor */
-    public SubscriptionAdapter(){
+    public SubscriptionAdapter(String dbname){
         this.log = Logger.getLogger(this.getClass());
+        this.dbname = dbname;
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notifybroker", true); 
         this.subscriptionManagerURL = props.getProperty("url");
@@ -56,6 +61,7 @@ public class SubscriptionAdapter{
         this.namespaces = new HashMap<String,String>();
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
         this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20070626/");
+        this.namespaces.put("wsa", "http://www.w3.org/2005/08/addressing");
     }
     
     /**
@@ -80,7 +86,7 @@ public class SubscriptionAdapter{
                InvalidProducerPropertiesExpressionFault,InvalidFilterFault,InvalidMessageContentExpressionFault,
                UnacceptableInitialTerminationTimeFault{
         this.log.info("subscribe.start");
-        SubscriptionManager sm = new SubscriptionManager();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         Subscription subscription = this.axis2Subscription(request, userLogin);
         SubscribeResponse response = null;
         ArrayList<SubscriptionFilter> filters = new ArrayList<SubscriptionFilter>();
@@ -136,8 +142,16 @@ public class SubscriptionAdapter{
              filters.add(new SubscriptionFilter("TOPIC", "ALL"));
         }
         
-        subscription = sm.subscribe(subscription, filters);
-        response = this.subscription2Axis(subscription);
+        Session sess = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        sess.beginTransaction();
+        try{
+            subscription = sm.subscribe(subscription, filters);
+            response = this.subscription2Axis(subscription);
+        }catch(UnacceptableInitialTerminationTimeFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }
+        sess.getTransaction().commit();
         
         this.log.info("subscribe.end");
         return response;
@@ -150,15 +164,26 @@ public class SubscriptionAdapter{
      */
     public void notify(NotificationMessageHolderType holder,
                        HashMap<String, ArrayList<String>> permissionMap)
-                       throws AAAFaultMessage,ADBException,
-                              InvalidTopicExpressionFault, 
+                       throws ADBException,
+                              InvalidTopicExpressionFault,
+                              JaxenException,
                               TopicExpressionDialectUnknownFault{
         this.log.info("notify.start");
-        SubscriptionManager sm = new SubscriptionManager();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         TopicExpressionType topicExpr = holder.getTopic();
         TopicExpressionType[] topicExprs = {topicExpr};
         ArrayList<String>topics = this.parseTopics(topicExprs);
         ArrayList<String> parentTopics = new ArrayList<String>();
+        List<Subscription> authSubscriptions = null;
+        EndpointReferenceType producerRef = holder.getProducerReference();
+        MessageType message = holder.getMessage();
+        SimpleNamespaceContext nsContext= new SimpleNamespaceContext(this.namespaces);
+        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
+        OMElement omProducerRef = null;
+        OMElement omMessage = message.getOMElement(NotificationMessage.MY_QNAME, omFactory);
+        if(producerRef != null){
+            omProducerRef = producerRef.getOMElement(NotificationMessage.MY_QNAME, omFactory);
+        }
         
         //add all parent topics
         for(String topic : topics){
@@ -173,11 +198,51 @@ public class SubscriptionAdapter{
         topics.addAll(parentTopics);
         topics.add("ALL");
         permissionMap.put("TOPIC", topics);
-        List<Subscription> subscriptions = sm.findSubscriptions(permissionMap);
         
-        //3.For each user apply filters
-
+        Session sess = HibernateUtil.getSessionFactory("notify").getCurrentSession();
+        sess.beginTransaction();
+        //find all subscriptions that match this topic and havethe necessaru authorizations
+        authSubscriptions = sm.findSubscriptions(permissionMap);
+        //apply producer and message XPATH filters
+        for(Subscription authSubscription : authSubscriptions){
+            this.log.debug("Applying filters for " + authSubscription.getReferenceId());
+            Set filters = authSubscription.getFilters();
+            Iterator i = filters.iterator();
+            boolean matches = true;
+            while(i.hasNext() && matches){
+                SubscriptionFilter filter = (SubscriptionFilter) i.next();
+                String type = filter.getType();
+                try{
+                    if("PRODXPATH".equals(type) && omProducerRef != null){
+                        this.log.debug("Found producer filter: " + filter.getValue());
+                        AXIOMXPath xpath = new AXIOMXPath(filter.getValue());
+                        xpath.setNamespaceContext(nsContext);
+                        matches = xpath.booleanValueOf(omProducerRef);
+                        this.log.debug(matches ? "Filter matches." : "No Match");
+                    }else if("MSGXPATH".equals(type)){
+                        this.log.debug("Found message filter: " + filter.getValue());
+                        AXIOMXPath xpath = new AXIOMXPath(filter.getValue());
+                        xpath.setNamespaceContext(nsContext);
+                        matches = xpath.booleanValueOf(omMessage);
+                        this.log.debug(matches ? "Filter matches." : "No Match");
+                    }
+                }catch(JaxenException e){
+                    sess.getTransaction().rollback();
+                    throw e;
+                }
+            }
+            if(!matches){
+                continue;
+            } 
+        }
+        sess.getTransaction().commit();
         this.log.info("notify.end");
+    }
+    
+    public void sendNotify(){
+        this.log.debug("sendNotify.start");
+        this.log.debug("sendNotify.end");
+        return;
     }
     
     /**
@@ -193,7 +258,7 @@ public class SubscriptionAdapter{
                                 throws UnacceptableInitialTerminationTimeFault,
                                        PublisherRegistrationFailedFault{
         this.log.info("registerPublisher.start");
-        SubscriptionManager sm = new SubscriptionManager();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         RegisterPublisherResponse response = null;
         Publisher publisher = new Publisher();
         String publisherAddress = this.parseEPR(request.getPublisherReference());
@@ -214,9 +279,17 @@ public class SubscriptionAdapter{
         }
         publisher.setDemand(demand);
         
-        publisher = sm.registerPublisher(publisher);
-        response = this.publisher2Axis(publisher);
+        Session sess = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        sess.beginTransaction();
+        try{
+            publisher = sm.registerPublisher(publisher);
+            response = this.publisher2Axis(publisher);
+        }catch(UnacceptableInitialTerminationTimeFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }
         this.log.info("registerPublisher.end");
+        sess.getTransaction().commit();
         
         return response;
     }

@@ -35,6 +35,8 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private SubscriptionAdapter sa;
     private ArrayList<NotifyPEP> notifyPEPs;
     
+    final private String aaaDbName = "aaa";
+    final private String notifyDbName = "notify";
     /**
      * Called from the Axis2 framework during initialization of the service.
      *
@@ -48,12 +50,12 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         this.log.info("OSCARSNotify init.start");
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
-        dbnames.add("aaa");
-        dbnames.add("notify");
+        dbnames.add(aaaDbName);
+        dbnames.add(notifyDbName);
         initializer.initDatabase(dbnames);
-        this.userMgr = new UserManager("aaa");
-        this.sa = new SubscriptionAdapter();
-        this.notifyPEPs = NotifyPEPFactory.createPEPs("aaa");
+        this.userMgr = new UserManager(aaaDbName);
+        this.sa = new SubscriptionAdapter(notifyDbName);
+        this.notifyPEPs = NotifyPEPFactory.createPEPs(aaaDbName);
         this.log.info("OSCARSNotify init.end");
     }
     
@@ -61,11 +63,12 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 	    this.log.debug("Received a notification message from publisher");
 	    
 	    try{
-	        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-		    aaa.beginTransaction();
 	        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
             NotificationMessageHolderType[] holders = request.getNotificationMessage();
             for(NotificationMessageHolderType holder : holders){
+                //open session here to keep aa lookups completely separated from SubscriptionAdapter
+                Session aaa = HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
+		        aaa.beginTransaction();
                 HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
                 OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
                 for(NotifyPEP notifyPep : this.notifyPEPs){
@@ -74,9 +77,9 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                         break;
                     }
                 }
+                aaa.getTransaction().commit();
                 this.sa.notify(holder, permissionMap);
             }
-            aaa.getTransaction().commit();  
 	    }catch(Exception e){
 	        this.log.error(e.getMessage());
 	        e.printStackTrace();
@@ -96,7 +99,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         HashMap<String, String> permissionMap = new HashMap<String, String>();
 		
 		/* Get authorizations */
-		Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+		Session aaa = HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
 		aaa.beginTransaction();
 		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
         if (authVal.equals(AuthValue.DENIED)) {
@@ -154,7 +157,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             throw new PublisherRegistrationRejectedFault(e.getMessage());
         }
 		/* Get authorizations */
-		Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+		Session aaa = HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
 		aaa.beginTransaction();
 		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Notifications", "publish");
         if (authVal.equals(AuthValue.DENIED)) {
@@ -261,7 +264,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         }
 
         Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
         aaa.beginTransaction();
 
         // lookup up using input DN first

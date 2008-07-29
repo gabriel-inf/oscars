@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.log4j.*;
-import org.hibernate.*;
-import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault;
 
@@ -15,15 +13,17 @@ public class SubscriptionManager{
     private Logger log;
     private long subMaxExpTime;
     private long pubMaxExpTime;
-     
+    private String dbname;
+    
     //Constants
     public static int PAUSED_STATUS = 0;
     public static int ACTIVE_STATUS = 1;
     
-    final private String DBNAME = "notify";
     
-    public SubscriptionManager(){
+    
+    public SubscriptionManager(String dbname){
         this.log = Logger.getLogger(this.getClass());
+        this.dbname = dbname;
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notifybroker", true); 
         try{
@@ -48,10 +48,8 @@ public class SubscriptionManager{
                                   ArrayList<SubscriptionFilter> filters)
                                   throws UnacceptableInitialTerminationTimeFault{
         this.log.info("subscribe.start");
-        Session sess = HibernateUtil.getSessionFactory(DBNAME).getCurrentSession();
-        sess.beginTransaction();
-        SubscriptionDAO dao = new SubscriptionDAO(DBNAME);
-        SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(DBNAME);
+        SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
+        SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
         
         /* calculate initial termination time */
@@ -79,7 +77,6 @@ public class SubscriptionManager{
             filterDAO.create(filter);
         }
         
-        sess.getTransaction().commit();
         this.log.info("subscribe.finish");
         
         return subscription;
@@ -88,9 +85,7 @@ public class SubscriptionManager{
     public Publisher registerPublisher(Publisher publisher) 
                                 throws UnacceptableInitialTerminationTimeFault{
         this.log.info("registerPublisher.start");
-        Session sess = HibernateUtil.getSessionFactory(DBNAME).getCurrentSession();
-        sess.beginTransaction();
-        PublisherDAO dao = new PublisherDAO(DBNAME);
+        PublisherDAO dao = new PublisherDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
         
         /* calculate initial termination time */
@@ -111,7 +106,6 @@ public class SubscriptionManager{
         publisher.setTerminationTime(new Long(expTime));
         publisher.setStatus(SubscriptionManager.ACTIVE_STATUS);
         dao.create(publisher);
-        sess.getTransaction().commit();
         this.log.info("registerPublisher.finish");
         
         return publisher;
@@ -119,9 +113,8 @@ public class SubscriptionManager{
     
     public List<Subscription> findSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
         this.log.info("findSubscriptions.start");
-        Session sess = HibernateUtil.getSessionFactory(DBNAME).getCurrentSession();
-        sess.beginTransaction();
-        SubscriptionDAO dao = new SubscriptionDAO(DBNAME);
+        
+        SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         List<Subscription> subscriptions = dao.getAuthorizedSubscriptions(permissionMap);
         if(subscriptions == null || subscriptions.isEmpty()){
             this.log.info("No matching subscriptions found");
@@ -131,7 +124,6 @@ public class SubscriptionManager{
                 this.log.debug("Matched subscription: " + subscription.getReferenceId());
             }
         }
-        sess.getTransaction().commit();
         
         return subscriptions;
     }
