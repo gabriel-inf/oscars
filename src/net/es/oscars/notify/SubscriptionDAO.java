@@ -25,26 +25,51 @@ public class SubscriptionDAO
     public List<Subscription> getAuthorizedSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
         String sql = "SELECT DISTINCT s.* FROM subscriptions s INNER JOIN " +
                      "subscriptionFilters sf ON s.id = sf.subscriptionId " + 
-                     "WHERE ";
-        boolean firstKey = true;           
+                     "INNER JOIN subscriptionFilters sf2 ON sf.subscriptionId = sf2.subscriptionId " + 
+                     "WHERE (sf.type='TOPIC' AND (";
+        ArrayList<String> queryParams = new ArrayList<String>();
+        SQLQuery query = null;
+        List<Subscription> subscriptions = null;
+        boolean firstKey = true;
+        boolean firstTopic = true;
+        ArrayList<String> topics = permissionMap.remove("TOPIC");
+        
+        //Parse topics. Will always have at least one TOPIC (ALL).
+        for(String topic : topics){
+            sql += (!firstTopic ? " OR " : "");
+            sql += "sf.value=?";
+            queryParams.add(topic);
+            this.log.debug("TOPIC=" + topic);
+            firstTopic = false;
+        }
+        sql += "))";
+        
+        //Add PEP specific parameters.
+        firstKey = true;
         for(String key: permissionMap.keySet()){
-            sql += (!firstKey ? "AND " : "");
-            sql += "(sf.type='" + key + "' AND (";
+            sql += (!firstKey ? " OR " : " AND ");
+            sql += "(sf2.type=? AND (";
+            queryParams.add(key);
             boolean firstValue = true;
             for(String value : permissionMap.get(key)){
                 sql += (!firstValue ? " OR " : "");
-                sql += " sf.value='" + value + "'";
+                sql += "sf2.value=?";
+                queryParams.add(value);
+                this.log.debug(key + "=" + value);
                 firstValue = false;
             }
-            sql += ")) ";
+            sql += "))";
             firstKey = false;
         }
-        this.log.info(sql);
+        //Apply parameters to prepared statement to avoid SQL injection
+        query = this.getSession().createSQLQuery(sql)
+                                 .addEntity(Subscription.class);
+        for(int i = 0; i < queryParams.size(); i++){
+            query = (SQLQuery) query.setString(i, queryParams.get(i));
+        }
+        this.log.debug(sql);
         
-        List<Subscription> subscriptions =
-              (List<Subscription>) this.getSession().createSQLQuery(sql)
-                                            .addEntity(Subscription.class)
-                                            .list();
+        subscriptions = (List<Subscription>) query.list();
         return subscriptions;
     }
 }

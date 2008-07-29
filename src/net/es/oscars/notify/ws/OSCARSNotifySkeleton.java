@@ -5,9 +5,13 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 
 import org.apache.axis2.context.*;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMFactory;
 import org.apache.ws.security.handler.*;
 import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSConstants;
+
 import org.apache.log4j.*;
 import org.hibernate.*;
 
@@ -18,6 +22,7 @@ import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.notify.ws.policy.*;
 
 /**
  *  OSCARSNotifySkeleton java skeleton for the axisService
@@ -28,6 +33,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private Principal certIssuer;
     private Principal certSubject;
     private SubscriptionAdapter sa;
+    private ArrayList<NotifyPEP> notifyPEPs;
     
     /**
      * Called from the Axis2 framework during initialization of the service.
@@ -47,13 +53,30 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         initializer.initDatabase(dbnames);
         this.userMgr = new UserManager("aaa");
         this.sa = new SubscriptionAdapter();
+        this.notifyPEPs = NotifyPEPFactory.createPEPs("aaa");
         this.log.info("OSCARSNotify init.end");
     }
     
 	public void Notify(Notify request){
 	    this.log.debug("Received a notification message from publisher");
+	    
 	    try{
-	        this.sa.notify(request);
+	        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+		    aaa.beginTransaction();
+	        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
+            NotificationMessageHolderType[] holders = request.getNotificationMessage();
+            for(NotificationMessageHolderType holder : holders){
+                HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
+                OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
+                for(NotifyPEP notifyPep : this.notifyPEPs){
+                    if(notifyPep.matches(omMessage)){
+                        permissionMap = notifyPep.enforce(omMessage);
+                        break;
+                    }
+                }
+                this.sa.notify(holder, permissionMap);
+            }
+            aaa.getTransaction().commit();  
 	    }catch(Exception e){
 	        this.log.error(e.getMessage());
 	        e.printStackTrace();

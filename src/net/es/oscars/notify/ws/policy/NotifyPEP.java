@@ -11,7 +11,9 @@ import net.es.oscars.notify.ws.AAAFaultMessage;
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public interface NotificationBrokerPEP{
+public interface NotifyPEP{
+    
+    public void init(String dbname);
     
     public boolean matches(OMElement message);
     
