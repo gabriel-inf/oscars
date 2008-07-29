@@ -889,10 +889,13 @@ public class TypeConverter {
         pathInfo.setPathSetupMode(this.extractHashVal(map.get("pathSetupMode")));
         pathInfo.setPathType(this.extractHashVal(map.get("pathType")));
 
-        //Set Path
-        //TODO: add fields for intra and interdomain path
-        //use intradomain path for now since its never null
-        String[] path = map.get("intradomainPath");
+        /*Set Path
+           use interdomain path if available otherwise just use the
+           intradomain path. If this will be used in an idc:event
+           object then the intradomain path will also be included in
+           /idc:event/idc:localDetails */
+        String[] path = map.get("interdomainPath");
+        if(path == null){ path = map.get("intradomainPath"); }
         if(path != null){
             CtrlPlanePathContent wsPath = new CtrlPlanePathContent();
             wsPath.setId("resvPath");
