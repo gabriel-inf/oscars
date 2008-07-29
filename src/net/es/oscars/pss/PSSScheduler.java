@@ -42,10 +42,10 @@ public class PSSScheduler {
                 String pathSetupMode = resv.getPath().getPathSetupMode();
                 this.log.info("pendingReservation: " + resv.getGlobalReservationId());
                 if (pathSetupMode.equals("timer-automatic")) {
+                    eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "SCHEDULER", resv);
                     // resv must be set to proper status inside PSS
                     this.pathSetupManager.create(resv, true);
                 }
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "SCHEDULER", resv);
             } catch (Exception ex) {
                 StateEngine stateEngine = new StateEngine();
                 try {
