@@ -43,8 +43,9 @@ oscars.UserList.handleReply = function (responseObject, ioArgs) {
         var userGrid = dijit.byId("userGrid");
         var model = userGrid.model;
         model.setData(responseObject.userData);
+        userGrid.update();
         userGrid.resize();
-        userGrid.render();
+        userGrid.resize();
         oscarsState.userGridInitialized = true;
     }
 };

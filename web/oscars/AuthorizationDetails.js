@@ -79,12 +79,17 @@ oscars.AuthorizationDetails.clone = function () {
 
 // handles all servlet replies
 oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
-        return;
-    }
     var mainTabContainer = dijit.byId("mainTabContainer");
     if (responseObject.method == "AuthorizationForm") {
+        if (!oscars.Form.resetStatus(responseObject, false)) {
+            return;
+        }
         // set parameter values in form from responseObject
+        oscars.Form.applyParams(responseObject);
+    } else {
+        if (!oscars.Form.resetStatus(responseObject, true)) {
+            return;
+        }
         oscars.Form.applyParams(responseObject);
     }
 };

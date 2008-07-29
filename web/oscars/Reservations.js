@@ -47,8 +47,10 @@ oscars.Reservations.handleReply = function (responseObject, ioArgs) {
     // convert seconds to datetime format before displaying
     oscars.Reservations.convertReservationTimes(responseObject.resvData);
     model.setData(responseObject.resvData);
+    resvGrid.update();
+    // as of 1.1.1, Dojo comment said to call twice
     resvGrid.resize();
-    resvGrid.render();
+    resvGrid.resize();
     oscarsState.resvGridInitialized = true;
     var oscarsStatus = dojo.byId("oscarsStatus");
     oscarsStatus.className = "success";

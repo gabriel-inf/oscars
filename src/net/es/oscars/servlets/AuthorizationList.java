@@ -63,6 +63,9 @@ public class AuthorizationList extends HttpServlet {
 
         List<Authorization> auths = null;
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+        AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
+        ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
+        PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
         UserManager mgr = new UserManager(Utils.getDbName());
         int id = -1;
         
@@ -75,11 +78,50 @@ public class AuthorizationList extends HttpServlet {
         ArrayList authList = new ArrayList();
         for (Authorization auth: auths) {
             ArrayList authEntry = new ArrayList();
-            authEntry.add(auth.getAttrId());
-            authEntry.add(auth.getResourceId());
-            authEntry.add(auth.getPermissionId());
-            authEntry.add(auth.getConstraintName());
-            authEntry.add(auth.getConstraintValue());
+            Attribute attr = attrDAO.findById(auth.getAttrId(), false);
+            if (attr != null) {
+                authEntry.add(attr.getName());
+            } else {
+                authEntry.add("illegal id: " + auth.getAttrId());
+            }
+            Resource resource = resourceDAO.findById(auth.getResourceId(),
+                                                     false);
+            if (resource != null) {
+                authEntry.add(resource.getName());
+            } else {
+                authEntry.add("illegal id: " + auth.getResourceId());
+            }
+            Permission perm = permissionDAO.findById(auth.getPermissionId(),
+                                                     false);
+            if (perm != null) {
+                authEntry.add(perm.getName());
+            } else {
+                authEntry.add("illegal id: " + auth.getPermissionId());
+            }
+            String constraintName = auth.getConstraintName();
+            if (constraintName != null) {
+                authEntry.add(constraintName);
+            } else {
+                authEntry.add("");
+            }
+            // handle special cases
+            Integer constraintValue = auth.getConstraintValue();
+            if (constraintValue != null) {
+                if ((constraintName != null) &&
+                    (constraintName.equals("all-users") ||
+                     constraintName.equals("specify-gri") ||
+                     constraintName.equals("specify-path-elements"))) {
+                    if (constraintValue == 1) {
+                        authEntry.add("true");
+                    } else {
+                        authEntry.add("false");
+                    }
+                } else {
+                    authEntry.add(constraintValue);
+                }
+            } else {
+                authEntry.add("");
+            }
             authList.add(authEntry);
         }
         outputMap.put("authData", authList);
