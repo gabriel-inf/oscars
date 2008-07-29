@@ -110,6 +110,7 @@ public class AuthorizationList extends HttpServlet {
                 if ((constraintName != null) &&
                     (constraintName.equals("all-users") ||
                      constraintName.equals("specify-gri") ||
+                     constraintName.equals("my-site") ||
                      constraintName.equals("specify-path-elements"))) {
                     if (constraintValue == 1) {
                         authEntry.add("true");
