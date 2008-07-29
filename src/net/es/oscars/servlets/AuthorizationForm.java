@@ -44,6 +44,7 @@ public class AuthorizationForm extends HttpServlet {
         this.outputAttributeMenu(outputMap);
         this.outputResourceMenu(outputMap);
         this.outputPermissionMenu(outputMap);
+        this.outputConstraintMenu(outputMap);
         outputMap.put("status", "Authorization");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
@@ -128,4 +129,23 @@ public class AuthorizationForm extends HttpServlet {
         // and add form if go that route
         outputMap.put("permissionMenuReplace", sb.toString());
     }
+
+    public void
+        outputConstraintMenu(Map outputMap) {
+
+        ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
+        List<Constraint> constraints = constraintDAO.list();
+        StringBuffer sb = new StringBuffer();
+        sb.append("<select name='constraintName'>");
+        sb.append("<option value='None' selected='selected'>None</option>");
+        for (Constraint constraint: constraints) {
+            sb.append("<option value='" + constraint.getName() + "' ");
+            sb.append(">" + constraint.getName() + "</option>" );
+        }
+        sb.append("</select>");
+        // TODO:  will need hidden parameter to distinguish between details
+        // and add form if go that route
+        outputMap.put("constraintMenuReplace", sb.toString());
+    }
+
 }

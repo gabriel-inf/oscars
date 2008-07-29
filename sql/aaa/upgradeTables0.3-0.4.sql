@@ -43,91 +43,91 @@ INSERT INTO constraints VALUES (NULL, "specify-gri", "allows a gri to be specifi
 DROP TABLE resourcePermissions;
 
 -- Create resource, permission, constraint (RPC) table which contains a list of the meaningful RPC tuples
-CREATE TABLE IF NOT EXISTS rpc (
+CREATE TABLE IF NOT EXISTS rpcs (
    id              		INT NOT NULL AUTO_INCREMENT,
    resourceId			INT NOT NULL,
    permissionId			INT NOT NULL,
    constraintId			INT NOT NULL,
    PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX const ON rpc(resourceId,permissionId,constraintId); 
+CREATE UNIQUE INDEX const ON rpcs(resourceId,permissionId,constraintId); 
 
 -- all-users constraint
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="users"),
 	(select id from permissions where name="list"),
 	(select id from constraints where name="all-users"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="users"),
 	(select id from permissions where name="query"),
 	(select id from constraints where name="all-users"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="users"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="all-users"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="list"),
 	(select id from constraints where name="all-users"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="query"),
 	(select id from constraints where name="all-users"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="all-users"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="signal"),
 	(select id from constraints where name="all-users"));
 	
 --  my-site constraint
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="list"),
 	(select id from constraints where name="my-site"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="query"),
 	(select id from constraints where name="my-site"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="my-site"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="signal"),
 	(select id from constraints where name="my-site"));
 -- max-bandwidth	
- INSERT INTO rpc VALUES (NULL,
+ INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="create"),
 	(select id from constraints where name="max-bandwidth"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="max-bandwidth"));
 -- max-duration
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="create"),
 	(select id from constraints where name="max-duration"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="max-duration"));	
 -- specify-path-elements
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="create"),
 	(select id from constraints where name="specify-path-elements"));
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="specify-path-elements"));
 -- specify-gri
-INSERT INTO rpc VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="create"),
 	(select id from constraints where name="specify-gri"));
