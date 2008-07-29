@@ -1,6 +1,8 @@
 package net.es.oscars.notify;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.log4j.*;
@@ -113,6 +115,25 @@ public class SubscriptionManager{
         this.log.info("registerPublisher.finish");
         
         return publisher;
+    }
+    
+    public List<Subscription> findSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
+        this.log.info("findSubscriptions.start");
+        Session sess = HibernateUtil.getSessionFactory(DBNAME).getCurrentSession();
+        sess.beginTransaction();
+        SubscriptionDAO dao = new SubscriptionDAO(DBNAME);
+        List<Subscription> subscriptions = dao.getAuthorizedSubscriptions(permissionMap);
+        if(subscriptions == null || subscriptions.isEmpty()){
+            this.log.info("No matching subscriptions found");
+        }else{
+            this.log.info("Matching subscriptions found");
+            for(Subscription subscription : subscriptions){
+                this.log.debug("Matched subscription: " + subscription.getReferenceId());
+            }
+        }
+        sess.getTransaction().commit();
+        
+        return subscriptions;
     }
     
     /**

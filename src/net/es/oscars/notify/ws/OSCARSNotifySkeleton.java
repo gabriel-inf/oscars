@@ -52,7 +52,12 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     
 	public void Notify(Notify request){
 	    this.log.debug("Received a notification message from publisher");
-	    this.sa.notify(request);
+	    try{
+	        this.sa.notify(request);
+	    }catch(Exception e){
+	        this.log.error(e.getMessage());
+	        e.printStackTrace();
+	    }
 	    return;
 	}
 

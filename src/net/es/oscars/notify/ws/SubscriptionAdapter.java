@@ -5,17 +5,24 @@ import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.namespace.QName;
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.*;
+import org.apache.axis2.databinding.ADBException;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axiom.om.xpath.AXIOMXPath;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMFactory;
+import org.jaxen.JaxenException;
+import org.jaxen.SimpleNamespaceContext;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
-
+import  net.es.oscars.notify.ws.policy.*;
 /** 
  * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
  * It is intended to provide a gateway for Axis2 into more general core functionality
@@ -26,6 +33,8 @@ import net.es.oscars.PropHandler;
 public class SubscriptionAdapter{
     private Logger log;
     private String subscriptionManagerURL;
+    private HashMap<String,String> namespaces;
+    private ArrayList<NotificationBrokerPEP> peps;
     
     /** Default constructor */
     public SubscriptionAdapter(){
@@ -43,6 +52,22 @@ public class SubscriptionAdapter{
             this.subscriptionManagerURL = "https://" + localhost + ":8443/axis2/services/OSCARSNotify";
         }
         this.log.info("OSCARSNotify.url=" + this.subscriptionManagerURL);
+        
+        /* Load policy enforcement point */
+        this.peps = new ArrayList<NotificationBrokerPEP>();
+        int i = 1;
+        while(props.getProperty("pep." + i) != null){
+            String pep = props.getProperty("pep." + i);
+            if("net.es.oscars.notify.ws.policy.IDCEventPEP".equals(pep)){
+                this.peps.add(new IDCEventPEP());
+            }
+            i++;
+        }
+        
+        //TODO: Loads namespace prefixes from properties file
+        this.namespaces = new HashMap<String,String>();
+        this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
+        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20070626/");
     }
     
     /**
@@ -135,10 +160,41 @@ public class SubscriptionAdapter{
      *
      * @param request the notify message to forward
      */
-    public void notify(Notify request){
-        SubscriptionManager sm = new SubscriptionManager();
+    public void notify(Notify request) throws AAAFaultMessage,ADBException,InvalidTopicExpressionFault, TopicExpressionDialectUnknownFault{
         this.log.info("notify.start");
-        System.out.println("This should really do something");
+        SubscriptionManager sm = new SubscriptionManager();
+        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
+        NotificationMessageHolderType[] holders = request.getNotificationMessage();
+        for(NotificationMessageHolderType holder : holders){
+            HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
+            OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
+            for(NotificationBrokerPEP pep : this.peps){
+                if(pep.matches(omMessage)){
+                    permissionMap = pep.enforce(omMessage);
+                    break;
+                }
+            }
+            /* TopicExpressionType topicExpr = holder.getTopic();
+            TopicExpressionType[] topicExprs = {topicExpr};
+            ArrayList<String>topics = this.parseTopics(topicExprs);
+            ArrayList<String> parentTopics = new ArrayList<String>();
+            //add all parent topics
+            for(String topic : topics){
+                String[] topicParts = topic.split("\\/");
+                String topicString = "";
+                for(int i = 0; i < (topicParts.length - 1); i++){
+                    topicString += topicParts[i];
+                    parentTopics.add(topicString);
+                    topicString += "/";
+                }
+            }
+            topics.addAll(parentTopics);
+            topics.add("ALL");
+            permissionMap.put("TOPIC", topics); */
+            List<Subscription> subscriptions = sm.findSubscriptions(permissionMap);
+            
+            //3.For each user apply filters
+        }
         this.log.info("notify.end");
     }
     
