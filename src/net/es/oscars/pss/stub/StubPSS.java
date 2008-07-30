@@ -39,8 +39,9 @@ public class StubPSS implements PSS{
      */
     public String createPath(Reservation resv) throws PSSException{
         this.log.info("stub.create.start");
-        resv.setStatus("ACTIVE");
+        StateEngine se = new StateEngine();
         try {
+            se.updateStatus(resv, StateEngine.INSETUP);
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "pathsetup-"+gri;
@@ -52,8 +53,10 @@ public class StubPSS implements PSS{
             jobDetail.setJobDataMap(jobDataMap);
             sched.addJob(jobDetail, false);
 
-        } catch (SchedulerException ex) {
+        }catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
+        }catch (BSSException ex) {
+            this.log.error("State engine exception", ex);
         }
 
         this.log.info("stub.create.end");
@@ -82,7 +85,9 @@ public class StubPSS implements PSS{
      */
     public String teardownPath(Reservation resv, String newStatus) throws PSSException{
         this.log.info("stub.teardown.start");
+        StateEngine se = new StateEngine();
         try {
+            se.updateStatus(resv, StateEngine.INTEARDOWN);
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "teardown-"+gri;
@@ -94,22 +99,12 @@ public class StubPSS implements PSS{
             jobDetail.setJobDataMap(jobDataMap);
             sched.addJob(jobDetail, false);
 
-        } catch (SchedulerException ex) {
+        }catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
+        }catch(BSSException ex){
+            this.log.error("State engine exception: " + ex);
         }
-
-        String prevStatus = resv.getStatus();
-        long currTime = System.currentTimeMillis()/1000;
-
-        /* Set the status of reservation */
-        if(prevStatus.equals("PRECANCEL")){
-            resv.setStatus("CANCELLED");
-        }else if(currTime >= resv.getEndTime()){
-            resv.setStatus("FINISHED");
-        }else{
-            resv.setStatus("PENDING");
-        }
-
+        
         this.log.info("stub.teardown.end");
 
         return resv.getStatus();
