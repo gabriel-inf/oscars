@@ -51,15 +51,24 @@ CREATE TABLE IF NOT EXISTS permissions (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+-- Create constraints table for use of the AAA web interface
+CREATE TABLE IF NOT EXISTS constraints (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    name                TEXT NOT NULL,
+    description			TEXT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
+CREATE UNIQUE INDEX constraintName ON constraints(name(9)); 
+
 -- Create resource, permission, constraint (RPC) table which contains a list of the meaningful RPC tuples
-CREATE TABLE IF NOT EXISTS rpc (
+CREATE TABLE IF NOT EXISTS rpcs (
    id              		INT NOT NULL AUTO_INCREMENT,
    resourceId			INT NOT NULL,
    permissionId			INT NOT NULL,
    constraintId			INT NOT NULL,
    PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX const ON rpc(resourceId,permissionId,constraintId); 
+CREATE UNIQUE INDEX const ON rpcs(resourceId,permissionId,constraintId); 
 
 CREATE TABLE IF NOT EXISTS authorizations (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -68,12 +77,12 @@ CREATE TABLE IF NOT EXISTS authorizations (
     attrId              INT NOT NULL,    -- foreign key
     resourceId          INT NOT NULL,    -- foreign key
     permissionId        INT NOT NULL,    -- foreign key
-    constraintName      TEXT,
+    constraintId        INT,             -- foreign key
     constraintValue     INT,
     PRIMARY KEY (id)
 ) type=MyISAM;
 -- allows duplicate rows if constraint is null 
-CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintName(9));
+CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintId);
 
 CREATE TABLE IF NOT EXISTS attributes (
     id                  INT NOT NULL AUTO_INCREMENT,
