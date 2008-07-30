@@ -30,7 +30,7 @@ public class Authorization extends HibernateBean implements Serializable {
     private int permissionId;
     
     /** nullable persistent field */
-    private String constraintName;
+    private Integer constraintId;
     
     /** nullable persistent field */
     private Integer constraintValue;
@@ -99,14 +99,14 @@ public class Authorization extends HibernateBean implements Serializable {
     }
 
     /**
-     * @return constraintName A String corresponding to a constraint for this authorization
+     * @return constraintId an Integer corresponding to a constraint for this authorization
      */ 
-    public String getConstraintName() { return this.constraintName; }
+    public Integer getConstraintId() { return this.constraintId; }
 
     /**
-     * @param constraintName A String corresponding to a constraint value for this authorization
+     * @param constraintId an Integer corresponding to a constraint value for this authorization
      */ 
-    public void setConstraintName(String constraintName ) { this.constraintName = constraintName; }
+    public void setConstraintId(Integer constraintId ) { this.constraintId = constraintId; }
 
     /**
      * @return constraintValue A String corresponding to a constraintValue for this authorization
@@ -125,7 +125,7 @@ public class Authorization extends HibernateBean implements Serializable {
             .append("attrId", getAttrId())
             .append("resourceId",getResourceId())
             .append("permissionId", getPermissionId())
-            .append("ConstraintName",getConstraintName())
+            .append("ConstraintId",getConstraintId())
             .append("ConstraintValue",getConstraintValue())
             .toString();
     }

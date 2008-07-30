@@ -66,6 +66,7 @@ public class AuthorizationList extends HttpServlet {
         AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
+        ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
         UserManager mgr = new UserManager(Utils.getDbName());
         int id = -1;
         
@@ -98,7 +99,8 @@ public class AuthorizationList extends HttpServlet {
             } else {
                 authEntry.add("illegal id: " + auth.getPermissionId());
             }
-            String constraintName = auth.getConstraintName();
+ 
+            String constraintName = authDAO.getConstraintName(auth);
             if (constraintName != null) {
                 authEntry.add(constraintName);
             } else {

@@ -45,7 +45,7 @@
         </meta>    
     </property>
     
-    <property name="constraintName"/> 
+    <property name="constraintId"/> 
     
     <property name="constraintValue"/> 
 
