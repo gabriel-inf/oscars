@@ -3,16 +3,7 @@
     targetNamespace="http://oscars.es.net/OSCARS"  
     xmlns:idc="http://oscars.es.net/OSCARS"
     xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"> 
-    <!--
-        This files defines Topics according to the WS-Topic specification for use
-        with the interdomain contoller (IDC) protocol. It defines the set of patterns that
-        determine which messages belong in each Topic. NOTE: when referencing elements 
-        from the IDC namespace in XPath you MUST always use the prefix 'idc'. Likewise
-        you MUST use the prefix 'nmwg-ctrlp' for elements in the NMWG control plane schema.
-        Failing to do so could lead for unexpected results. This limitation only applies to
-        the actual XPath string and the XML message to which the XPath is applied may 
-        contain any namespace prefixes it desires.
-    -->
+
     <wstop:Topic wstop:name="DEBUG" wstop:final="true"> 
         <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
             /idc:event[idc:type='RESERVATION_CREATE_RECEIVED' or 
@@ -23,12 +14,12 @@
                        idc:type='PATH_SETUP_RETURNED' or
                        idc:type='PATH_TEARDOWN_RECEIVED' or
                        idc:type='PATH_TEARDOWN_RETURNED' or
-                       idc:type='LIST_RESERVATION_RECEIVED' or
-                       idc:type='LIST_RESERVATION_RETURNED' or
-                       idc:type='QUERY_RESERVATION_RECEIVED' or
-                       idc:type='QUERY_RESERVATION_RETURNED' or
-                       idc:type='MODIFY_RESERVATION_RECEIVED' or
-                       idc:type='MODIFY_RESERVATION_RETURNED' or
+                       idc:type='RESERVATION_LIST_RECEIVED' or
+                       idc:type='RESERVATION_LIST_RETURNED' or
+                       idc:type='RESERVATION_QUERY_RECEIVED' or
+                       idc:type='RESERVATION_QUERY_RETURNED' or
+                       idc:type='RESERVATION_MODIFY_RECEIVED' or
+                       idc:type='RESERVATION_MODIFY_RETURNED' or
                        idc:type='RESERVATION_CREATE_FORWARD_STARTED' or
                        idc:type='RESERVATION_CREATE_FORWARD_COMPLETED' or
                        idc:type='RESERVATION_CANCEL_FORWARD_STARTED' or
@@ -37,31 +28,34 @@
                        idc:type='PATH_SETUP_FORWARD_COMPLETED' or
                        idc:type='PATH_TEARDOWN_FORWARD_STARTED' or
                        idc:type='PATH_TEARDOWN_FORWARD_COMPLETED' or
-                       idc:type='LIST_RESERVATION_FORWARD_STARTED' or
-                       idc:type='LIST_RESERVATION_FORWARD_COMPLETED' or
-                       idc:type='QUERY_RESERVATION_FORWARD_STARTED' or
-                       idc:type='QUERY_RESERVATION_FORWARD_COMPLETED' or
-                       idc:type='MODIFY_RESERVATION_FORWARD_STARTED' or
-                       idc:type='MODIFY_RESERVATION_FORWARD_COMPLETED']
+                       idc:type='RESERVATION_LIST_FORWARD_STARTED' or
+                       idc:type='RESERVATION_LIST_FORWARD_COMPLETED' or
+                       idc:type='RESERVATION_QUERY_FORWARD_STARTED' or
+                       idc:type='RESERVATION_QUERY_FORWARD_COMPLETED' or
+                       idc:type='RESERVATION_MODIFY_FORWARD_STARTED' or
+                       idc:type='RESERVATION_MODIFY_FORWARD_COMPLETED']
         </wstop:MessagePattern>
     </wstop:Topic>
     
     <wstop:Topic wstop:name="INFO" wstop:final="true"> 
         <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
             /idc:event[idc:type='RESERVATION_CREATE_STARTED' or
+                       idc:type='RESERVATION_CREATE_ACCEPTED' or
                        idc:type='RESERVATION_CREATE_COMPLETED' or
                        idc:type='RESERVATION_CANCEL_STARTED' or
+                       idc:type='RESERVATION_CANCEL_ACCEPTED' or
                        idc:type='RESERVATION_CANCEL_COMPLETED' or
                        idc:type='PATH_SETUP_STARTED' or
                        idc:type='PATH_SETUP_COMPLETED' or
                        idc:type='PATH_TEARDOWN_STARTED' or
                        idc:type='PATH_TEARDOWN_COMPLETED' or
-                       idc:type='LIST_RESERVATION_STARTED' or
-                       idc:type='LIST_RESERVATION_COMPLETED' or
-                       idc:type='QUERY_RESERVATION_STARTED' or
-                       idc:type='QUERY_RESERVATION_COMPLETED' or
-                       idc:type='MODIFY_RESERVATION_STARTED' or
-                       idc:type='MODIFY_RESERVATION_COMPLETED' or
+                       idc:type='RESERVATION_LIST_STARTED' or
+                       idc:type='RESERVATION_LIST_COMPLETED' or
+                       idc:type='RESERVATION_QUERY_STARTED' or
+                       idc:type='RESERVATION_QUERY_COMPLETED' or
+                       idc:type='RESERVATION_MODIFY_STARTED' or
+                       idc:type='RESERVATION_MODIFY_ACCEPTED' or
+                       idc:type='RESERVATION_MODIFY_COMPLETED' or
                        idc:type='RESERVATION_EXPIRES_IN_1DAY' or
                        idc:type='RESERVATION_EXPIRES_IN_7DAYS' or
                        idc:type='RESERVATION_EXPIRES_IN_30DAYS' or
@@ -86,9 +80,9 @@
                        idc:type='DOWNSTREAM_LIST_RESERVATION_COMPLETE' or
                        idc:type='UPSTREAM_LIST_RESERVATION_COMPLETE' or
                        idc:type='INTERDOMAIN_LIST_RESERVATION_COMPLETE' or
-                       idc:type='DOWNSTREAM_MODIFY_CREATE_COMPLETE' or
-                       idc:type='UPSTREAM_MODIFY_CREATE_COMPLETE' or
-                       idc:type='INTERDOMAIN_MODIFY_CREATE_COMPLETE' or
+                       idc:type='DOWNSTREAM_RESERVATION_MODIFY_COMPLETE' or
+                       idc:type='UPSTREAM_RESERVATION_MODIFY_COMPLETE' or
+                       idc:type='INTERDOMAIN_RESERVATION_MODIFY_COMPLETE' or
                        idc:type='PATH_SETUP_RECOVERED' or
                        idc:type='PATH_TEARDOWN_RECOVERED' or
                        idc:type='IDC_RECOVERED']
@@ -103,7 +97,7 @@
                        idc:type='RESERVATION_CANCEL_FAILED' or
                        idc:type='LIST_RESERVATION_FAILED' or
                        idc:type='QUERY_RESERVATION_FAILED' or
-                       idc:type='MODIFY_RESERVATION_FAILED' or
+                       idc:type='RESERVATION_MODIFY_FAILED' or
                        idc:type='IDC_FAILED' or
                        idc:type='FORWARDING_FAILED' or
                        idc:type='UPSTREAM_PATH_SETUP_FAILED' or
@@ -115,11 +109,11 @@
                        idc:type='UPSTREAM_RESERVATION_CANCEL_FAILED' or
                        idc:type='DOWNSTREAM_RESERVATION_CANCEL_FAILED' or
                        idc:type='UPSTREAM_LIST_RESERVATION_FAILED' or
-                       idc:type='DOWNSTREAM_LIST_RESERVATION_FAILED' or
-                       idc:type='UPSTREAM_QUERY_RESERVATION_FAILED' or
+                       idc:type='DOWNSTREAM_RESERVATION_LIST_FAILED' or
+                       idc:type='UPSTREAM_RESERVATION_QUERY_FAILED' or
                        idc:type='DOWNSTREAM_QUERY_RESERVATION_FAILED' or
-                       idc:type='UPSTREAM_MODIFY_RESERVATION_FAILED' or
-                       idc:type='DOWNSTREAM_MODIFY_RESERVATION_FAILED' or
+                       idc:type='UPSTREAM_RESERVATION_MODIFY_FAILED' or
+                       idc:type='DOWNSTREAM_RESERVATION_MODIFY_FAILED' or
                        idc:type='UPSTREAM_IDC_FAILED' or
                        idc:type='DOWNSTREAM_IDC_FAILED' or
                        idc:type='UPSTREAM_FORWWARD_FAILED' or

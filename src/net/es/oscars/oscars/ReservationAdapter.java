@@ -77,8 +77,7 @@ public class ReservationAdapter {
         try {
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "API", resv);
             this.rm.submitCreate(resv, login, pathInfo);
-
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "API", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, login, "API", resv);
 
             this.log.debug("create, to toReply");
             reply = this.tc.reservationToReply(resv);
