@@ -66,22 +66,21 @@ public class AuthorizationForm extends HttpServlet {
 
         AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
         List<Attribute> attributes = attributeDAO.list();
-        StringBuffer sb = new StringBuffer();
-        sb.append("<select class='required' name='authAttributeName'>");
+        List<String> attributeList = new ArrayList<String>();
         // default is just first in list
         int ctr = 0;
         for (Attribute attr: attributes) {
-            sb.append("<option value='" + attr.getName() + "' ");
+            attributeList.add(attr.getName());
             if (ctr == 0) {
-                sb.append("selected='selected'" );
+                attributeList.add("true");
+            } else {
+                attributeList.add("false");
             }
-            sb.append(">" + attr.getName() + "</option>" );
             ctr++;
         }
-        sb.append("</select>");
         // TODO:  will need hidden parameter to distinguish between details
         // and add form if go that route
-        outputMap.put("authAttrMenuReplace", sb.toString());
+        outputMap.put("authAttributeNameMenu", attributeList);
     }
 
     public void
@@ -89,22 +88,21 @@ public class AuthorizationForm extends HttpServlet {
 
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         List<Resource> resources = resourceDAO.list();
-        StringBuffer sb = new StringBuffer();
-        sb.append("<select class='required' name='resourceName'>");
+        List<String> resourceList = new ArrayList<String>();
         // default is just first in list
         int ctr = 0;
         for (Resource resource: resources) {
-            sb.append("<option value='" + resource.getName() + "' ");
+            resourceList.add(resource.getName());
             if (ctr == 0) {
-                sb.append("selected='selected'" );
+                resourceList.add("true");
+            } else {
+                resourceList.add("false");
             }
-            sb.append(">" + resource.getName() + "</option>" );
             ctr++;
         }
-        sb.append("</select>");
         // TODO:  will need hidden parameter to distinguish between details
         // and add form if go that route
-        outputMap.put("resourceMenuReplace", sb.toString());
+        outputMap.put("resourceNameMenu", resourceList);
     }
 
     public void
@@ -112,22 +110,21 @@ public class AuthorizationForm extends HttpServlet {
 
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
         List<Permission> permissions = permissionDAO.list();
-        StringBuffer sb = new StringBuffer();
-        sb.append("<select class='required' name='permissionName'>");
+        List<String> permissionList = new ArrayList<String>();
         // default is just first in list
         int ctr = 0;
         for (Permission permission: permissions) {
-            sb.append("<option value='" + permission.getName() + "' ");
+            permissionList.add(permission.getName());
             if (ctr == 0) {
-                sb.append("selected='selected'" );
+                permissionList.add("true");
+            } else {
+                permissionList.add("false");
             }
-            sb.append(">" + permission.getName() + "</option>" );
             ctr++;
         }
-        sb.append("</select>");
         // TODO:  will need hidden parameter to distinguish between details
         // and add form if go that route
-        outputMap.put("permissionMenuReplace", sb.toString());
+        outputMap.put("permissionNameMenu", permissionList);
     }
 
     public void
@@ -135,17 +132,13 @@ public class AuthorizationForm extends HttpServlet {
 
         ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
         List<Constraint> constraints = constraintDAO.list();
-        StringBuffer sb = new StringBuffer();
-        sb.append("<select name='constraintName'>");
-        sb.append("<option value='None' selected='selected'>None</option>");
+        List<String> constraintList = new ArrayList<String>();
+        constraintList.add("None");
+        constraintList.add("true");
         for (Constraint constraint: constraints) {
-            sb.append("<option value='" + constraint.getName() + "' ");
-            sb.append(">" + constraint.getName() + "</option>" );
+            constraintList.add(constraint.getName());
+            constraintList.add("false");
         }
-        sb.append("</select>");
-        // TODO:  will need hidden parameter to distinguish between details
-        // and add form if go that route
-        outputMap.put("constraintMenuReplace", sb.toString());
+        outputMap.put("constraintNameMenu", constraintList);
     }
-
 }

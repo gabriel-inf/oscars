@@ -61,18 +61,15 @@ public class UserListForm extends HttpServlet {
     public void
         outputAttributeMenu(Map outputMap) {
 
-        StringBuffer sb = new StringBuffer();
         AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
         List<Attribute> attributes = attributeDAO.list();
-
-        sb.append("Attributes ->");
-        sb.append("<select name='attributeName'>");
-        sb.append("<option value='Any' selected='selected'>Any</option>");
+        List<String> attrList = new ArrayList<String>();
+        attrList.add("Any");
+        attrList.add("true");
         for (Attribute attr: attributes) {
-            sb.append("<option value='" + attr.getName() + "' ");
-            sb.append(">" + attr.getName() + "</option>" );
+            attrList.add(attr.getName());
+            attrList.add("false");
         }
-        sb.append("</select>");
-        outputMap.put("attributeMenuReplace", sb.toString());
+        outputMap.put("attributeMenu", attrList);
     }
 }

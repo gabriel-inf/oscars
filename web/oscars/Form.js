@@ -68,6 +68,8 @@ oscars.Form.applyParams = function (responseObject) {
     for (var param in responseObject) {
         var n = dojo.byId(param);
         var cb = null;
+        var opt = null;
+        var selected = null;
         // if info for a group of checkboxes
         if (param.match(/Checkboxes$/i) != null) {
             var disabled = false;
@@ -91,6 +93,27 @@ oscars.Form.applyParams = function (responseObject) {
                         w.setAttribute('checked', false);
                     }
                     w.setAttribute('disabled', disabled);
+                }
+            }
+        // if info for a group of menu options
+        } else if ((result = param.match(/(\w+)Menu$/i)) != null) {
+            var newMenu = dojo.byId(result[1]);
+            if (newMenu != null) {
+                if (responseObject[param] instanceof Array) {
+                    newMenu.options.length = 0;
+                    for (var i=0; i < responseObject[param].length; i += 2) {
+                        if (responseObject[param][i+1] == "true") {
+                            selected = true;
+                        } else {
+                            selected = false;
+                        }
+                        console.log(responseObject[param][i]);
+                        console.log(selected);
+                        opt = new Option(responseObject[param][i],
+                                         responseObject[param][i],
+                                         selected, selected);
+                        newMenu.add(opt, null);
+                    }
                 }
             }
         } else if (param.match(/Display$/i) != null) {

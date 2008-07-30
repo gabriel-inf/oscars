@@ -66,20 +66,17 @@ public class UserAddForm extends HttpServlet {
     public void
         outputInstitutionMenu(Map outputMap, List<Institution> insts) {
 
-        String institutionName = "";
-        StringBuffer sb = new StringBuffer();
-
-        sb.append("<select class='required' name='institutionName'>");
         // use default
-        institutionName = "Energy Sciences Network";
+        String defaultName = "Energy Sciences Network";
+        List<String> institutionList = new ArrayList<String>();
         for (Institution i: insts) {
-            sb.append("<option value='" + i.getName() + "' ");
-            if (i.getName().equals(institutionName)) {
-                sb.append("selected='selected'" );
+            institutionList.add(i.getName());
+            if (i.getName().equals(defaultName)) {
+                institutionList.add("true");
+            } else {
+                institutionList.add("false");
             }
-            sb.append(">" + i.getName() + "</option>" );
         }
-        sb.append("</select>");
-        outputMap.put("newInstitutionMenuReplace", sb.toString());
+        outputMap.put("newInstitutionMenu", institutionList);
     }
 }

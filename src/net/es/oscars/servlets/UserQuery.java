@@ -201,9 +201,7 @@ public class UserQuery extends HttpServlet {
 
         Institution userInstitution = null;
         String institutionName = "";
-        StringBuffer sb = new StringBuffer();
 
-        sb.append("<select class='required' name='institutionName'>");
         userInstitution = user.getInstitution();
         if (userInstitution != null) {
             institutionName = userInstitution.getName();
@@ -211,15 +209,16 @@ public class UserQuery extends HttpServlet {
             // use default
             institutionName = "Energy Sciences Network";
         }
+        List<String> institutionList = new ArrayList<String>();
         for (Institution i: insts) {
-            sb.append("<option value='" + i.getName() + "' ");
+            institutionList.add(i.getName());
             if (i.getName().equals(institutionName)) {
-                sb.append("selected='selected'" );
+                institutionList.add("true");
+            } else {
+                institutionList.add("false");
             }
-            sb.append(">" + i.getName() + "</option>" );
         }
-        sb.append("</select>");
-        outputMap.put("institutionMenuReplace", sb.toString());
+        outputMap.put("institutionMenu", institutionList);
     }
     
     public void outputRoleMap(Map outputMap, List<String> attrNames,
