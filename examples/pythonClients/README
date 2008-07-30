@@ -1,3 +1,0 @@
-Call the application like this:
-
-python client.py -c cert.cer -k key.pem

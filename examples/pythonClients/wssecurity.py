@@ -48,7 +48,7 @@ class SignatureHandler(object):
 
         wsseSecurityElement = soapWriter._header.createAppendElement(OASIS.WSSE, 'Security')
         wsseSecurityElement.setNamespaceAttribute('wsse', OASIS.WSSE)
-        wsseSecurityElement.node.setAttribute('SOAP-ENV:mustUnderstand', 'true')
+        #wsseSecurityElement.node.setAttribute('SOAP-ENV:mustUnderstand', 'true')
 
         # Add references to the message body
         soapWriter.body.setNamespaceAttribute('wsu', OASIS.UTILITY)
