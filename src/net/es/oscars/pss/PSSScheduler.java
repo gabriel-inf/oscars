@@ -82,10 +82,17 @@ public class PSSScheduler {
 
             try {
                 // call PSS to schedule LSP teardown(s)
+                String status = resv.getStatus();
                 this.log.info("expiredReservation: " + resv.getGlobalReservationId());
                 eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_FINISHED, "", "SCHEDULER", resv);
-                this.pathSetupManager.teardown(resv, StateEngine.FINISHED, false);
-                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_STARTED, "", "SCHEDULER", resv);
+                if(status.equals(StateEngine.ACTIVE)){
+                    this.pathSetupManager.teardown(resv, StateEngine.FINISHED, false);
+                    eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_STARTED, "", "SCHEDULER", resv);
+                 }else{
+                    //if still in RESERVED state
+                    StateEngine stateEngine = new StateEngine();
+                    stateEngine.updateStatus(resv, StateEngine.FINISHED);
+                 }
             } catch (Exception ex) {
                 StateEngine stateEngine = new StateEngine();
                 try {

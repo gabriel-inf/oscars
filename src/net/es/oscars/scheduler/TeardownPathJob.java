@@ -31,7 +31,7 @@ public class TeardownPathJob extends ChainingJob implements Job {
             se.updateStatus(resv, newStatus);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "SCHEDULER", resv);
         }catch (BSSException ex) {
-            this.log.error("Could not create reservation "+ gri);
+            this.log.error("Could not teardown reservation "+ gri);
             this.log.error(ex);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", 
                                    "SCHEDULER", resv, "", ex.getMessage());
