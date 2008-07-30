@@ -49,10 +49,9 @@ public class StubPSS implements PSS{
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("reservation", resv);
+            jobDataMap.put("gri", gri);
             jobDetail.setJobDataMap(jobDataMap);
             sched.addJob(jobDetail, false);
-
         }catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
         }catch (BSSException ex) {
@@ -95,16 +94,15 @@ public class StubPSS implements PSS{
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("reservation", resv);
+            jobDataMap.put("gri", gri);
+            jobDataMap.put("newStatus", newStatus);
             jobDetail.setJobDataMap(jobDataMap);
             sched.addJob(jobDetail, false);
-
         }catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
         }catch(BSSException ex){
             this.log.error("State engine exception: " + ex);
         }
-        
         this.log.info("stub.teardown.end");
 
         return resv.getStatus();

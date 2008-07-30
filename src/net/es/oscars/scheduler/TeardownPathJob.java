@@ -1,26 +1,52 @@
 package net.es.oscars.scheduler;
-import net.es.oscars.bss.Reservation;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 import org.quartz.*;
+import net.es.oscars.bss.*;
+import net.es.oscars.notify.*;
+import net.es.oscars.oscars.OSCARSCore;
 
 public class TeardownPathJob extends ChainingJob implements Job {
     private Logger log;
-
+    private OSCARSCore core;
+    
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("TeardownPathJob.start name:"+context.getJobDetail().getFullName());
+        this.core = OSCARSCore.getInstance();
+        StateEngine se = new StateEngine();
+        EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        Reservation resv = (Reservation) dataMap.get("reservation");
-        String gri;
-        if (resv != null) {
-            gri = (String) resv.getGlobalReservationId();
-        } else {
-            gri = "unknown gri!";
+        String gri = (String) dataMap.get("gri");
+        String newStatus = (String) dataMap.get("newStatus");
+        String bssDbName = core.getBssDbName();
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
+        ReservationDAO resvDAO = new ReservationDAO(bssDbName);
+        Reservation resv = null;
+        try {
+            resv = resvDAO.query(gri);
+            Thread.sleep(10000);//simulate setup time
+            se.updateStatus(resv, newStatus);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "SCHEDULER", resv);
+        }catch (BSSException ex) {
+            this.log.error("Could not create reservation "+ gri);
+            this.log.error(ex);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", 
+                                   "SCHEDULER", resv, "", ex.getMessage());
+        }catch (InterruptedException ex) {
+            this.log.error("Interrupted", ex);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", 
+                                   "SCHEDULER", resv, "", ex.getMessage());
+        }catch (Exception ex) {
+            this.log.error("Exception", ex);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", 
+                                   "SCHEDULER", resv, "", ex.getMessage());
+        }finally{
+            this.runNextJob(context);
+            bss.getTransaction().commit();
         }
-        this.log.debug("gri is: "+gri);
-        this.runNextJob(context);
-        this.log.info("TeardownPathJob.end");
     }
 
 }

@@ -42,10 +42,13 @@ public class PSSScheduler {
                 String pathSetupMode = resv.getPath().getPathSetupMode();
                 this.log.info("pendingReservation: " + resv.getGlobalReservationId());
                 if (pathSetupMode.equals("timer-automatic")) {
-                    eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "SCHEDULER", resv);
                     // resv must be set to proper status inside PSS
+                    //TODO: Throw RESV_PERIOD_STARTED for signal-xml only once
+                    eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_STARTED, "", "SCHEDULER", resv);
                     this.pathSetupManager.create(resv, true);
+                    eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "SCHEDULER", resv);
                 }
+                
             } catch (Exception ex) {
                 StateEngine stateEngine = new StateEngine();
                 try {
@@ -80,6 +83,7 @@ public class PSSScheduler {
             try {
                 // call PSS to schedule LSP teardown(s)
                 this.log.info("expiredReservation: " + resv.getGlobalReservationId());
+                eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_FINISHED, "", "SCHEDULER", resv);
                 this.pathSetupManager.teardown(resv, StateEngine.FINISHED, false);
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_STARTED, "", "SCHEDULER", resv);
             } catch (Exception ex) {
