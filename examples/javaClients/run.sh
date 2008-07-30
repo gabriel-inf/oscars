@@ -31,6 +31,9 @@ elif [ $1 == "list"  ]
 elif [ $1 == "cancel"  ]
  then    
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CancelReservationCLI $*
+elif [ $1 == "subscribe"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true SubscribeClient $*
 else
     echo "Please specify 'createReservation', 'signal', 'list', 'query', or 'cancel'"
 fi
