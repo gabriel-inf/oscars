@@ -15,7 +15,7 @@ public class NotifyClient{
     public static void main(String[] args){
         String url = "http://anna-lab3.internet2.edu:8080/axis2/services/OSCARSNotify";
         String subMgrUrl = "http://anna-lab3.internet2.edu:8080/axis2/services/OSCARSNotify";
-        String notifProdUrl = "http://anna-lab3.internet2.edu:8080/axis2/services/OSCARSNotify";
+        String notifProdUrl = "https://anna-lab3.internet2.edu:8443/axis2/services/OSCARS";
         String subscriptionId = "dcn.internet2.edu-1";
         
         try{
@@ -34,7 +34,7 @@ public class NotifyClient{
             subRef.setReferenceParameters(subRefParams);
             
             TopicExpressionType topicExpr = new TopicExpressionType();
-            topicExpr.setString("INFO");
+            topicExpr.setString("idc:INFO|idc:ERROR");
             URI topicDialectUri = new URI("http://docs.oasis-open.org/wsn/t-1/TopicExpression/Simple");
             topicExpr.setDialect(topicDialectUri);
             
@@ -47,13 +47,9 @@ public class NotifyClient{
             MessageType msg = new MessageType();
             EventContent event = new EventContent();
             event.setId("event-101");
-            event.setType("RESERVATION_CREATE_FAILED");
-            PathDetailLevel pathDetailLvl = new PathDetailLevel();
-            pathDetailLvl.setString("interdomain");
-            pathDetailLvl.setPathIdRef("path-1");
-            event.addPathDetailLevel(pathDetailLvl);
+            event.setType("RESERVATION_CREATE_STARTED");
             event.setTimestamp(System.currentTimeMillis()/1000L);
-            event.setUserLogin("batman");
+            event.setUserLogin("mike");
             event.setErrorCode("AUTHN_FAILED");
             event.setErrorMessage("Identity cannot be determined.");
             
