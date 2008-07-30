@@ -26,6 +26,10 @@ import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notify.ws.policy.*;
 
+import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
 /** 
  * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
  * It is intended to provide a gateway for Axis2 into more general core functionality
@@ -38,11 +42,18 @@ public class SubscriptionAdapter{
     private String subscriptionManagerURL;
     private HashMap<String,String> namespaces;
     private String dbname;
+    private String repo;
     
     /** Default constructor */
     public SubscriptionAdapter(String dbname){
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
+        String catalinaHome = System.getProperty("catalina.home");
+        // check for trailing slash
+        if (!catalinaHome.endsWith("/")) {
+            catalinaHome += "/";
+        }
+        this.repo = catalinaHome + "shared/classes/repo/";
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notifybroker", true); 
         this.subscriptionManagerURL = props.getProperty("url");
@@ -231,18 +242,33 @@ public class SubscriptionAdapter{
                     throw e;
                 }
             }
-            if(!matches){
-                continue;
+            if(matches){
+                this.sendNotify(holder, authSubscription);
             } 
         }
         sess.getTransaction().commit();
         this.log.info("notify.end");
     }
     
-    public void sendNotify(){
+    public void sendNotify(NotificationMessageHolderType holder, Subscription subscription){
         this.log.debug("sendNotify.start");
+        Client client = new Client();
+        String url = subscription.getUrl();
+        
+        try{
+            EndpointReferenceType subRef = client.generateEndpointReference(
+                   this.subscriptionManagerURL, subscription.getReferenceId());
+            holder.setSubscriptionReference(subRef);
+            client.setUpNotify(true, url, this.repo, this.repo + "axis2-norampart.xml");
+            /* XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(System.out);
+            MTOMAwareXMLSerializer mtom = new MTOMAwareXMLSerializer(writer);
+            holder.serialize(Notify.MY_QNAME, OMAbstractFactory.getOMFactory(), mtom);
+            mtom.flush(); */
+            client.notify(holder);
+        }catch(Exception e){
+            this.log.info("Error sending notification: " + e);
+        }
         this.log.debug("sendNotify.end");
-        return;
     }
     
     /**
