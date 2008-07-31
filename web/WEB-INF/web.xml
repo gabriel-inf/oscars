@@ -50,18 +50,6 @@
         <servlet-class>net.es.oscars.servlets.PathTeardownReservation</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>OverrideStatusReservation</servlet-name>
-        <servlet-class>net.es.oscars.servlets.OverrideStatusReservation</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>PathSetupReservation</servlet-name>
-        <servlet-class>net.es.oscars.servlets.PathSetupReservation</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>PathTeardownReservation</servlet-name>
-        <servlet-class>net.es.oscars.servlets.PathTeardownReservation</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>ListReservations</servlet-name>
         <servlet-class>net.es.oscars.servlets.ListReservations</servlet-class>
     </servlet>
@@ -148,6 +136,18 @@
     <servlet-mapping>
         <servlet-name>CancelReservation</servlet-name>
         <url-pattern>/servlet/CancelReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OverrideStatusReservation</servlet-name>
+        <url-pattern>/servlet/OverrideStatusReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PathSetupReservation</servlet-name>
+        <url-pattern>/servlet/PathSetupReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PathTeardownReservation</servlet-name>
+        <url-pattern>/servlet/PathTeardownReservation</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ListReservations</servlet-name>
