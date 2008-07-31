@@ -418,6 +418,12 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         this.log.debug("checking if "+src.getFQTI()+" and "+dst.getFQTI()+" are directly connected");
         boolean linked = false;
+        if (!src.isValid()) {
+            throw new PathfinderException("Link with id: "+src.getFQTI()+" is no longer valid");
+        } else if (!dst.isValid()) {
+            throw new PathfinderException("Link with id: "+dst.getFQTI()+" is no longer valid");
+        }
+
         // Special case: if links are in same node
         if (src.getPort().getNode().equals(dst.getPort().getNode())) {
             linked = true;
