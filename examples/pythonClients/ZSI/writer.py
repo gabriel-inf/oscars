@@ -68,10 +68,10 @@ class SoapWriter:
         kw['unique'] = True
         soap_env = _reserved_ns['SOAP-ENV']
         #header = self.dom.getElement(soap_env, 'Header')
-        header = self._header
+        header = self.getSOAPHeader()
         if header is None:
-            header = self._header = self.dom.createAppendElement(soap_env, 
-                                                                 'Header')
+            header = self.header = self.dom.createAppendElement(soap_env, 
+                                                                'Header')
 
         typecode = getattr(pyobj, 'typecode', typecode)
         if typecode is None:

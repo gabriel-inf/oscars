@@ -148,12 +148,14 @@ class Fault(ZSIException):
         if self.detail is not None: 
             detail = Detail()
             detail.any = self.detail
-
-        pyobj = FaultType(self.code, self.string, self.actor, detail)
-        sw.serialize(pyobj, typed=False)
+        pyobj = {
+            'Code': { 'Value': self.code },
+            'Reason': { 'Text': self.string },
+            'Detail': detail
+        }
+        sw.serialize(pyobj, typecode=FaultTypeTC)
 
     def AsSOAP(self, **kw):
-
         header = self.DataForSOAPHeader() 
         sw = SoapWriter(**kw)
         self.serialize(sw)
