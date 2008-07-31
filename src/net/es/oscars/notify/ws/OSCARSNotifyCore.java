@@ -75,7 +75,7 @@ public class OSCARSNotifyCore{
     }
     
     public void initScheduler(){
-        this.log.info("initScheduler.start");
+        this.log.debug("initScheduler.start");
         try {
             SchedulerFactory schedFact = new StdSchedulerFactory();
             this.scheduler = schedFact.getScheduler();
@@ -84,13 +84,13 @@ public class OSCARSNotifyCore{
         } catch (SchedulerException ex) {
             this.log.error("Scheduler init exception", ex);
         }
-        this.log.info("initScheduler.end");
+        this.log.debug("initScheduler.end");
     }
     
     public void initSubscriptionAdapter(){
-        this.log.info("initSubscriptionAdapter.start");
+        this.log.debug("initSubscriptionAdapter.start");
         this.sa = new SubscriptionAdapter(notifyDbName);
-        this.log.info("initSubscriptionAdapter.end");
+        this.log.debug("initSubscriptionAdapter.end");
     }
     
     public void initUserManager() {
