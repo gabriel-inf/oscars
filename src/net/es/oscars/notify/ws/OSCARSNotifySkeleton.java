@@ -34,9 +34,8 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private Principal certSubject;
     private SubscriptionAdapter sa;
     private ArrayList<NotifyPEP> notifyPEPs;
+    private OSCARSNotifyCore core;
     
-    final private String aaaDbName = "aaa";
-    final private String notifyDbName = "notify";
     /**
      * Called from the Axis2 framework during initialization of the service.
      *
@@ -48,14 +47,10 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     public void init(ServiceContext sc) {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("OSCARSNotify init.start");
-        Initializer initializer = new Initializer();
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add(aaaDbName);
-        dbnames.add(notifyDbName);
-        initializer.initDatabase(dbnames);
-        this.userMgr = new UserManager(aaaDbName);
-        this.sa = new SubscriptionAdapter(notifyDbName);
-        this.notifyPEPs = NotifyPEPFactory.createPEPs(aaaDbName);
+        this.core = OSCARSNotifyCore.init();
+        this.userMgr = this.core.getUserManager();
+        this.sa = this.core.getSubscriptionAdapter();
+        this.notifyPEPs = this.core.getNotifyPEPs();
         this.log.info("OSCARSNotify init.end");
     }
     
@@ -67,7 +62,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             NotificationMessageHolderType[] holders = request.getNotificationMessage();
             for(NotificationMessageHolderType holder : holders){
                 //open session here to keep aa lookups completely separated from SubscriptionAdapter
-                Session aaa = HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
+                Session aaa = this.core.getAAASession();
 		        aaa.beginTransaction();
                 HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
                 OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
@@ -78,7 +73,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                     }
                 }
                 aaa.getTransaction().commit();
-                this.sa.notify(holder, permissionMap);
+                this.sa.schedProcessNotify(holder, permissionMap);
             }
 	    }catch(Exception e){
 	        this.log.error(e.getMessage());
@@ -99,7 +94,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         HashMap<String, String> permissionMap = new HashMap<String, String>();
 		
 		/* Get authorizations */
-		Session aaa = HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
+		Session aaa = this.core.getAAASession();
 		aaa.beginTransaction();
 		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
         if (authVal.equals(AuthValue.DENIED)) {
@@ -157,7 +152,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             throw new PublisherRegistrationRejectedFault(e.getMessage());
         }
 		/* Get authorizations */
-		Session aaa = HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
+		Session aaa = this.core.getAAASession();
 		aaa.beginTransaction();
 		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Notifications", "publish");
         if (authVal.equals(AuthValue.DENIED)) {
@@ -263,8 +258,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             throw AAAErrorEx;
         }
 
-        Session aaa =
-            HibernateUtil.getSessionFactory(aaaDbName).getCurrentSession();
+        Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
 
         // lookup up using input DN first

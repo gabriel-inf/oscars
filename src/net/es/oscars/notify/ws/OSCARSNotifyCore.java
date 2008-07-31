@@ -1,0 +1,144 @@
+package net.es.oscars.notify.ws;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import org.hibernate.*;
+import org.apache.log4j.*;
+import org.quartz.*;
+import org.quartz.impl.*;
+import net.es.oscars.aaa.UserManager;
+import net.es.oscars.database.Initializer;
+import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.notify.ws.policy.*;
+
+/**
+ * Initializes and allows access to core NotificatioNBroker
+ * functionality. This includes initializing databases,
+ * managing the scheduler, and loading PEPs.
+ *
+ * @author Andew Lake (alake@internet2.edu)
+ */
+public class OSCARSNotifyCore{
+    private Logger log;
+    private Scheduler scheduler;
+    private SubscriptionAdapter sa;
+    private UserManager userManager = null;
+    private ArrayList<NotifyPEP> notifyPEPs;
+    
+    public boolean initialized = false;
+    private static OSCARSNotifyCore instance = null;
+    final private String aaaDbName = "aaa";
+    final private String notifyDbName = "notify";
+    
+    private OSCARSNotifyCore() {
+        this.log = Logger.getLogger(this.getClass());
+    }
+
+    public static OSCARSNotifyCore getInstance() {
+        if (OSCARSNotifyCore.instance == null) {
+            OSCARSNotifyCore.instance = new OSCARSNotifyCore();
+        }
+        return OSCARSNotifyCore.instance;
+    }
+    
+    public static OSCARSNotifyCore init() {
+        if (OSCARSNotifyCore.instance == null) {
+            OSCARSNotifyCore.instance = new OSCARSNotifyCore();
+        }
+        OSCARSNotifyCore instance = OSCARSNotifyCore.instance;
+        instance.initDatabases();
+        instance.initNotifyPEPs();
+        instance.initScheduler();
+        instance.initSubscriptionAdapter();
+        instance.initUserManager();
+        
+        return instance;
+    }
+    
+    public void initDatabases(){
+        this.log.debug("initDatabases.start");
+        Initializer initializer = new Initializer();
+        List<String> dbnames = new ArrayList<String>();
+        dbnames.add(aaaDbName);
+        dbnames.add(notifyDbName);
+        initializer.initDatabase(dbnames);
+        this.getAAASession();
+        this.getNotifySession();
+        this.log.debug("initDatabases.end");
+    }
+    
+    public void initNotifyPEPs(){
+        this.log.debug("initNotifyPEPs.start");
+        this.notifyPEPs = NotifyPEPFactory.createPEPs(aaaDbName);
+        this.log.debug("initNotifyPEPs.end");
+    }
+    
+    public void initScheduler(){
+        this.log.info("initScheduler.start");
+        try {
+            SchedulerFactory schedFact = new StdSchedulerFactory();
+            this.scheduler = schedFact.getScheduler();
+            //TODO: Add lookup service job
+            this.scheduler.start();
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler init exception", ex);
+        }
+        this.log.info("initScheduler.end");
+    }
+    
+    public void initSubscriptionAdapter(){
+        this.log.info("initSubscriptionAdapter.start");
+        this.sa = new SubscriptionAdapter(notifyDbName);
+        this.log.info("initSubscriptionAdapter.end");
+    }
+    
+    public void initUserManager() {
+        this.log.debug("initUserManager.start");
+        this.userManager = new UserManager(this.aaaDbName);
+        this.log.debug("initUserManager.end");
+    }
+    
+    public Session getAAASession() {
+        Session aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        if (aaa == null || !aaa.isOpen()) {
+            this.log.debug("opening AAA session");
+            HibernateUtil.getSessionFactory(this.aaaDbName).openSession();
+            aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        }
+        if (aaa == null || !aaa.isOpen()) {
+            this.log.error("AAA session is still closed!");
+        }
+
+        return aaa;
+    }
+
+    public Session getNotifySession() {
+        Session notify = HibernateUtil.getSessionFactory(this.notifyDbName).getCurrentSession();
+        if (notify == null || !notify.isOpen()) {
+            this.log.debug("opening BSS session");
+            notify = HibernateUtil.getSessionFactory(this.notifyDbName).openSession();
+            notify = HibernateUtil.getSessionFactory(this.notifyDbName).getCurrentSession();
+        }
+        if (notify == null || !notify.isOpen()) {
+            this.log.error("BSS session is still closed!");
+        }
+        return notify;
+    }
+    
+    public ArrayList<NotifyPEP> getNotifyPEPs() {
+        return this.notifyPEPs;
+    }
+    
+    public Scheduler getScheduler(){
+        return this.scheduler;
+    }
+    
+    public SubscriptionAdapter getSubscriptionAdapter(){
+        return this.sa;
+    }
+    
+    public UserManager getUserManager(){
+        return this.userManager;
+    }
+}

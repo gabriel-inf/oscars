@@ -19,11 +19,17 @@ import org.apache.axiom.om.OMFactory;
 import org.hibernate.*;
 import org.jaxen.JaxenException;
 import org.jaxen.SimpleNamespaceContext;
+import org.quartz.JobDetail;
+import org.quartz.JobDataMap;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
+import net.es.oscars.notify.ws.jobs.*;
 import net.es.oscars.notify.ws.policy.*;
 
 import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
@@ -43,10 +49,12 @@ public class SubscriptionAdapter{
     private HashMap<String,String> namespaces;
     private String dbname;
     private String repo;
+    private OSCARSNotifyCore core;
     
     /** Default constructor */
     public SubscriptionAdapter(String dbname){
         this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSNotifyCore.getInstance();
         this.dbname = dbname;
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
@@ -81,8 +89,8 @@ public class SubscriptionAdapter{
      * authorized to see. 
      * 
      * @param request the Axis2 object with the Subscribe request information
-     * @userLogin the login of the subscriber
-     * @permissionMap A hash containing certain authorization constraints for the subscriber
+     * @param userLogin the login of the subscriber
+     * @param permissionMap A hash containing certain authorization constraints for the subscriber
      * @return an Axis2 object with the result of the subscription creation
      * @throws InvalidFilterFault
      * @throws InvalidMessageContentExpressionFault
@@ -153,7 +161,7 @@ public class SubscriptionAdapter{
              filters.add(new SubscriptionFilter("TOPIC", "ALL"));
         }
         
-        Session sess = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
             subscription = sm.subscribe(subscription, filters);
@@ -169,9 +177,43 @@ public class SubscriptionAdapter{
     }
     
     /**
+     * Adds a ProcessNotifyJob to the scheduler so that the caller is free to return
+     * an HTTP 200 response to publisher of this notifcation without waiting for
+     * all the send messages to be sent to subscribers.
+     *
+     * @param holder the notification message to send
+     * @param permissionMap a map of the permissions required to view this notification
+     */
+    public void schedProcessNotify(NotificationMessageHolderType holder,
+                            HashMap<String, ArrayList<String>> permissionMap){
+        this.log.info("schedProcessNotify.start");
+        Scheduler sched = this.core.getScheduler();
+        String triggerName = "processNotifyTrig-" + holder.hashCode();
+        String jobName = "processNotify-" + holder.hashCode();
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  new Date(), null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "PROCESS_NOTIFY",
+                                            ProcessNotifyJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("permissionMap", permissionMap);
+        dataMap.put("message", holder);
+        jobDetail.setJobDataMap(dataMap);
+        
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);    
+        }
+        this.log.info("schedProcessNotify.end");
+    }
+    
+    /**
      * Forwards notfications to appropriate subscribers.
      *
-     * @param request the notify message to forward
+     * @param holder the notification message to send
+     * @param permissionMap a map of the permissions required to view this notification
      */
     public void notify(NotificationMessageHolderType holder,
                        HashMap<String, ArrayList<String>> permissionMap)
@@ -210,7 +252,7 @@ public class SubscriptionAdapter{
         topics.add("ALL");
         permissionMap.put("TOPIC", topics);
         
-        Session sess = HibernateUtil.getSessionFactory("notify").getCurrentSession();
+        Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         //find all subscriptions that match this topic and havethe necessaru authorizations
         authSubscriptions = sm.findSubscriptions(permissionMap);
@@ -243,27 +285,68 @@ public class SubscriptionAdapter{
                 }
             }
             if(matches){
-                this.sendNotify(holder, authSubscription);
+                this.schedSendNotify(holder, authSubscription);
             } 
         }
         sess.getTransaction().commit();
         this.log.info("notify.end");
     }
     
-    public void sendNotify(NotificationMessageHolderType holder, Subscription subscription){
+    /**
+     * Adds a SendNotifyJob to the scheduler so that notification sending
+     * is threaded rather than doing each serially. This is desirable because
+     * one send action is taking a long amount of time it will not hold-up 
+     * other messages from sending.
+     *
+     * @param holder the message to send
+     * @param subscription a subscription containing information needed to send the notification
+     */
+    public void schedSendNotify(NotificationMessageHolderType holder,
+                                Subscription subscription){
+        this.log.info("schedSendNotify.start");
+        Scheduler sched = this.core.getScheduler();
+        String triggerName = "sendNotifyTrig-" + holder.hashCode();
+        String jobName = "sendNotify-" + holder.hashCode();
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  new Date(), null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "SEND_NOTIFY",
+                                            SendNotifyJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("url", subscription.getUrl());
+        dataMap.put("subRefId", subscription.getReferenceId());
+        dataMap.put("message", holder);
+        jobDetail.setJobDataMap(dataMap);
+        
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);    
+        }
+        this.log.info("schedSendNotify.end");
+    }
+    
+    /**
+     * Sends a Notify message to a subscriber
+     *
+     * @param holder the message to send
+     * @param url a URL indication where to send the message
+     * @param subRefId the ID of the subscription to which the message belongs
+     */
+    public void sendNotify(NotificationMessageHolderType holder, String url, String subRefId){
         this.log.debug("sendNotify.start");
         Client client = new Client();
-        String url = subscription.getUrl();
         
         try{
             EndpointReferenceType subRef = client.generateEndpointReference(
-                   this.subscriptionManagerURL, subscription.getReferenceId());
+                   this.subscriptionManagerURL, subRefId);
             holder.setSubscriptionReference(subRef);
             client.setUpNotify(true, url, this.repo, this.repo + "axis2-norampart.xml");
             /* XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(System.out);
             MTOMAwareXMLSerializer mtom = new MTOMAwareXMLSerializer(writer);
             holder.serialize(Notify.MY_QNAME, OMAbstractFactory.getOMFactory(), mtom);
-            mtom.flush(); */
+            mtom.flush();*/
             client.notify(holder);
         }catch(Exception e){
             this.log.info("Error sending notification: " + e);
@@ -305,7 +388,7 @@ public class SubscriptionAdapter{
         }
         publisher.setDemand(demand);
         
-        Session sess = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
             publisher = sm.registerPublisher(publisher);
