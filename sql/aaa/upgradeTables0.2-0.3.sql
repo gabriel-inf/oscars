@@ -10,7 +10,7 @@ CREATE UNIQUE INDEX instName ON institutions(name(9));
 
 -- Add Site Administrator attribute- Can manage all reservations starting or terminating at a site
 CREATE UNIQUE INDEX attrName ON attributes(name(9));
-INSERT IGNORE INTO attributes VALUES(NULL, "OSCARS-siteAdmin", "group");
+INSERT IGNORE INTO attributes VALUES(NULL, "OSCARS-siteAdmin", "group", "manage all reservations starting or ending at site");
 
 -- Add authorizations for Site Administrator
 CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintName(9));
