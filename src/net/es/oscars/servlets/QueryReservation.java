@@ -32,44 +32,43 @@ public class QueryReservation extends HttpServlet {
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.log.info("QueryReservation.start");
-        
         String methodName = "QueryReservation";
+        this.log.info("servlet.start");
+        
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
+        String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) { 
-            this.log.info("QueryReservation.end: no user session");
-            return; }
-        
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
         HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
 
         String[] paramValues = request.getParameterValues("gri");
         inputMap.put("gri", paramValues);
 
-
         try {
             CoreRmiInterface rmiClient = new CoreRmiClient();
             rmiClient.init();
             outputMap = rmiClient.queryReservation(inputMap, userName);
         } catch (Exception ex) {
-            Utils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(),
-                                      methodName, null);
-            this.log.info("QueryReservation.end: " + ex.getMessage());
+            this.log.error("rmiClient failed: " + ex.getMessage());
+            Utils.handleFailure(out, "failed to query Reservations: " +
+                                ex.getMessage(), methodName, null);
         }
         String errorMsg = (String) outputMap.get("error");
         if (errorMsg != null) {
+            this.log.error(errorMsg);
             Utils.handleFailure(out, errorMsg, methodName, null);
-            this.log.info("QueryReservation.end: " + errorMsg);
             return;
         }
 
        
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
-        this.log.info("QueryReservation.end - success");
+        this.log.info("servlet.end");
         return;
 
     }

@@ -7,6 +7,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
 import net.sf.json.*;
+import org.apache.log4j.Logger;
 
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.User;
@@ -21,12 +22,14 @@ public class UserRemove extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
+        Logger log = Logger.getLogger(this.getClass());
+        log.info("servlet.start");
         String methodName = "UserRemove";
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager(Utils.getDbName());
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
+        String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) { return; }
 
         String profileName = request.getParameter("profileName");
@@ -38,6 +41,7 @@ public class UserRemove extends HttpServlet {
         try {
             // cannot remove oneself
             if (profileName == userName) { 
+                log.error("may not remove yourself");
                 Utils.handleFailure(out, "may not remove yourself",
                                     methodName, aaa);
                 return;
@@ -45,17 +49,20 @@ public class UserRemove extends HttpServlet {
             if (authVal == AuthValue.ALLUSERS) {
                 mgr.remove(profileName);
             } else {
+                log.error("no permission to modify users");
                 Utils.handleFailure(out,"no permission modify users",
                                     methodName, aaa);
                 return;
             }
         } catch (AAAException e) {
+            log.error(e.getMessage());
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
         authVal = mgr.checkAccess(userName, "Users", "list");
         // shouldn't be able to get to this point, but just in case
         if (!(authVal == AuthValue.ALLUSERS)) {
+            log.error("no permission to list users");
             Utils.handleFailure(out, "no permission to list users",
                                 methodName, aaa);
             return;
@@ -68,6 +75,7 @@ public class UserRemove extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
+        log.info("servlet.end");
     }
 
     public void doPost(HttpServletRequest request,

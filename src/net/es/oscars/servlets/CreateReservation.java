@@ -28,14 +28,16 @@ public class CreateReservation extends HttpServlet {
         throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.log.info("CreateReservation.start");
+        String methodName= "CreateReservation";
+        this.log.info("servlet.start");
 
         PrintWriter out = response.getWriter();
         UserSession userSession = new UserSession();
-        String methodName= "CreateReservation";
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
-
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
         response.setContentType("text/json-comment-filtered");
 
         HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
@@ -47,26 +49,25 @@ public class CreateReservation extends HttpServlet {
             String[] paramValues = request.getParameterValues(paramName);
             inputMap.put(paramName, paramValues);
         }
-
         try {
             CoreRmiInterface rmiClient = new CoreRmiClient();
             rmiClient.init();
             outputMap = rmiClient.createReservation(inputMap, userName);
         } catch (Exception ex) {
+            this.log.error("rmiClient failed with " + ex.getMessage());
             Utils.handleFailure(out, "CreateReservation not completed: " +
                     ex.getMessage(), methodName, null);
-            this.log.error("Error calling rmiClient for CreateReservation", ex);
             return;
         }
         String errorMsg = (String)outputMap.get("error");
         if (errorMsg != null) {
-            Utils.handleFailure(out, errorMsg, methodName, null);
             this.log.error(errorMsg);
+            Utils.handleFailure(out, errorMsg, methodName, null);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
-        this.log.info("CreateReservation.end - success");
+        this.log.info("servlet.end");
         return;
     }
 

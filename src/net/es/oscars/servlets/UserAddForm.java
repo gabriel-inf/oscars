@@ -26,19 +26,22 @@ public class UserAddForm extends HttpServlet {
         UserManager mgr = new UserManager(Utils.getDbName());
         List<Institution> institutions = null;
         Logger log = Logger.getLogger(this.getClass());
-        log.debug("UserAddForm: start");
+        log.debug("servlet.start");
 
         String methodName = "UserAddForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
-
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            log.error("No user session: cookies invalid");
+            return;
+        }
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (authVal != AuthValue.ALLUSERS) {
+            log.error("Not allowed to add a new user");
             Utils.handleFailure(out, "not allowed to add a new user",
                                 methodName, aaa);
             return;
@@ -53,7 +56,7 @@ public class UserAddForm extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        log.debug("UserAddForm: finish");      
+        log.debug("servlet.end");      
     }
 
     public void

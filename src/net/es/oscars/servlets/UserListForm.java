@@ -23,7 +23,7 @@ public class UserListForm extends HttpServlet {
         String methodName = "UserListForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
+        String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) { return; }
         UserManager mgr = new UserManager(Utils.getDbName());
         Session aaa = 

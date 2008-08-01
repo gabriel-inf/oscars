@@ -26,9 +26,9 @@ public class UserQuery extends HttpServlet {
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.log.debug("userQuery:start");
-
         String methodName = "UserQuery";
+        this.log.debug("servlet.start");
+
         User targetUser = null;
         boolean self =  false; // is query about the current user
         boolean modifyAllowed = false;
@@ -40,8 +40,11 @@ public class UserQuery extends HttpServlet {
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
 
         String profileName = request.getParameter("profileName");
         Session aaa = 
@@ -100,7 +103,7 @@ public class UserQuery extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.debug("userQuery:finish");
+        this.log.debug("servlet.end");
     }
 
     public void doPost(HttpServletRequest request,

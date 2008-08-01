@@ -23,14 +23,16 @@ public class AuthorizationList extends HttpServlet {
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.log.debug("authorizationList:start");
-
         String methodName = "AuthorizationList";
+        this.log.debug("servlet.start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();     
@@ -40,6 +42,7 @@ public class AuthorizationList extends HttpServlet {
         try {
             this.outputAuthorizations(outputMap, userName);
         } catch (AAAException e) {
+            this.log.error(e.getMessage());
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
@@ -48,7 +51,7 @@ public class AuthorizationList extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.debug("authorizationList:finish");
+        this.log.debug("servlet.end");
     }
 
     /**

@@ -24,23 +24,26 @@ public class UserAdd extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-        this.log = Logger.getLogger(this.getClass());
-        String methodName = "UserAdd";
-        this.log.debug("userAdd:start");
-
+        User newUser = null;
         String newRole = null;
+        Session aaa;
         ArrayList <Integer> addRoles = null;
 
-        Session aaa;
+        this.log = Logger.getLogger(this.getClass());
+        String methodName = "UserAdd";
+        this.log.info("servlet.start");
+
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager(Utils.getDbName());
-        User newUser = null;
         AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
         String profileName = request.getParameter("profileName");
         aaa = HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
@@ -52,7 +55,7 @@ public class UserAdd extends HttpServlet {
                 newUser = this.toUser(out, profileName, request);
                 String roles[] = request.getParameterValues("roles");
                 if (roles == null ) { 
-                    this.log.debug("AddUser: roles = null");
+                    this.log.debug("roles = null");
                     addRoles = new ArrayList<Integer>();
                 } else {
                     this.log.debug("number of roles input is "+roles.length);
@@ -66,7 +69,7 @@ public class UserAdd extends HttpServlet {
                     try {
                         addRoles.add(attrDAO.getAttributeId(newRole));
                     } catch (AAAException ex) {
-                        this.log.error("oops,no id was assigned by create");
+                        this.log.error("error: no attribute id was assigned by create");
                     }
                 }
                 mgr.create(newUser, request.getParameter("institutionName"),
@@ -74,12 +77,13 @@ public class UserAdd extends HttpServlet {
             }  else {
                 // this also makes sure won't list users either if don't
                 // have permission
+                this.log.error("Not allowed to add a new user");
                 Utils.handleFailure(out, "not allowed to add a new user",
                                     methodName, aaa);
                 return;
             }
         } catch (AAAException e) {
-            log.error("UserAdd caught exception: "+ e.getMessage());
+            this.log.error(e.getMessage());
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
@@ -91,7 +95,7 @@ public class UserAdd extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.debug("UserAdd: finish");
+        this.log.info("servlet.end");
     }
 
     public void doPost(HttpServletRequest request,

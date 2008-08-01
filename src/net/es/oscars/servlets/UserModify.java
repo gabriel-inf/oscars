@@ -23,9 +23,9 @@ public class UserModify extends HttpServlet {
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        this.log.info("userModify:start");
-
         String methodName = "UserModify";
+        this.log.info("servlet.start");
+
         UserManager mgr = null;
         User user = null;
         int userId;
@@ -38,8 +38,11 @@ public class UserModify extends HttpServlet {
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
 
         mgr = new UserManager(Utils.getDbName());
         String profileName = request.getParameter("profileName");
@@ -145,7 +148,7 @@ public class UserModify extends HttpServlet {
                          this.addUserAttribute(attrDAO.getAttributeId(newRole),
                                                userId);
                      } catch (AAAException ex) {
-                         this.log.error("oops,no id was assigned by create");
+                         this.log.error("error: no attribute id was assigned by create");
                      }
                  }
              }             
@@ -164,7 +167,7 @@ public class UserModify extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.info("UserModify: finish");
+        this.log.info("serrvlet.end");
     }
 
     public void doPost(HttpServletRequest request,

@@ -24,8 +24,10 @@ public class CreateReservationForm extends HttpServlet {
         String methodName = "CreateReservationForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            return;
+        }
         UserManager mgr = new UserManager(Utils.getDbName());
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();

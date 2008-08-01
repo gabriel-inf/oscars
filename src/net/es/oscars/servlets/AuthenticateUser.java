@@ -48,6 +48,7 @@ public class AuthenticateUser extends HttpServlet {
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager(Utils.getDbName());
         Logger log = Logger.getLogger(this.getClass());
+        log.info("servlet.start");
 
         out = response.getWriter();
         String userName = request.getParameter("userName");
@@ -72,6 +73,7 @@ public class AuthenticateUser extends HttpServlet {
                                 request.getParameter("initialPassword"),
                                 sessionName);
         } catch (AAAException e) {
+            log.error(e.getMessage());
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
@@ -86,6 +88,7 @@ public class AuthenticateUser extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
+        log.info("servlet.end: user " + userName + " logged in");
     }
 
     public void doPost(HttpServletRequest request,

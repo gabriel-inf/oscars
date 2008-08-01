@@ -24,21 +24,24 @@ public class Institutions extends HttpServlet {
 
 
         this.log = Logger.getLogger(this.getClass());
-        this.log.debug("Institutions:start");
         String methodName = "Institutions";
+        this.log.debug("servlet.start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         String[] ops = request.getQueryString().split("=");
         if (ops.length != 2) {
+            this.log.error("Incorrect input from Institutions page");
             Utils.handleFailure(out, "incorrect input from Institutions page",
                                 methodName, null);
         }
         String opName = ops[1];
-        this.log.info("op is " + opName);
 
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            this.log.error("No user session: cookies invalid");
+            return;
+        }
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();     
@@ -46,6 +49,7 @@ public class Institutions extends HttpServlet {
         
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (authVal != AuthValue.ALLUSERS) {
+            this.log.error("No permission to modify Institutions table.");
             Utils.handleFailure(out, "no permission to modify Institutions table",
                                 methodName, aaa);
         }
@@ -59,7 +63,7 @@ public class Institutions extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.debug("Institutions:finish");
+        this.log.debug("servlet.end");
     }
 
     /**

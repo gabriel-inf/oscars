@@ -30,13 +30,16 @@ public class UserSession {
 
     }
 
-    public String checkSession(PrintWriter out, HttpServletRequest request) {
+    public String checkSession(PrintWriter out, HttpServletRequest request,
+                               String methodName) {
         String userName = this.getCookie(this.userCookieName, request);
         String sessionName = this.getCookie(this.sessionCookieName, request);
         if ((userName == null) || (sessionName == null)) {
             Map errorMap = new HashMap();
+            errorMap.put("method", methodName);
             errorMap.put("success", Boolean.FALSE);
-            errorMap.put("status", "No session has been established");
+            errorMap.put("status", "No session has been established: " +
+                                   "cookies are null");
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
             out.println("/* " + jsonObject + " */");
             return null;
@@ -52,8 +55,10 @@ public class UserSession {
         // servlet returns immediately in this case
         if (userName == null) {
             Map errorMap = new HashMap();
+            errorMap.put("method", methodName);
             errorMap.put("success", Boolean.FALSE);
-            errorMap.put("status", "No session has been established");
+            errorMap.put("status", "No session has been established: " +
+                                   "cookies are invalid");
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
             out.println("/* " + jsonObject + " */");
         }

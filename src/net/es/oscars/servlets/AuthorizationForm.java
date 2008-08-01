@@ -23,21 +23,26 @@ public class AuthorizationForm extends HttpServlet {
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager(Utils.getDbName());
         Logger log = Logger.getLogger(this.getClass());
-        log.debug("AuthorizationForm: start");
-
         String methodName = "AuthorizationForm";
+        log.debug("servlet.start");
+
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
-        String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        String userName = userSession.checkSession(out, request, methodName);
+        if (userName == null) {
+            log.error("No user session: cookies invalid");
+            return;
+        }
 
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
         if (authVal == AuthValue.DENIED) {
-            Utils.handleFailure(out, "not authorized to perform admin operations",
-                                methodName, aaa);
+            log.error("Not authorized to perform admin operations");
+            Utils.handleFailure(out,
+                    "not authorized to perform admin operations",
+                    methodName, aaa);
             return;
         }
         Map outputMap = new HashMap();
@@ -51,7 +56,7 @@ public class AuthorizationForm extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        log.debug("AuthorizationForm: finish");      
+        log.debug("servlet.end");      
     }
 
     public void
