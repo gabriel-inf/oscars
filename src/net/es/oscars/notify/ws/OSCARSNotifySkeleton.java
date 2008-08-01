@@ -122,39 +122,8 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     
 	public RenewResponse Renew(Renew request)
 	    throws AAAFaultMessage, UnacceptableTerminationTimeFault{
-	    String login = this.checkUser();   
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-		
-		/* Get authorizations */
-		Session aaa = this.core.getAAASession();
-		aaa.beginTransaction();
-		UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-        if (modifyAuthVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-        }
-        if (modifyAuthVal.equals(AuthValue.MYSITE)) {
-            String institution = this.userMgr.getInstitution(login);
-            permissionMap.put("modifyInstitution", institution);
-        } else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-            permissionMap.put("modifyLoginConstraint", login);
-        }
-        UserManager.AuthValue notAuthVal = this.userMgr.checkAccess(login, "Notifications", "query");
-		//TODO: Don't assume subscriber and consumer are the same
-		notifyAuthVal = this.userMgr.checkAccess(login, "Notifications", "query");
-        if (notifyAuthVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("You do not have permission to view notifications.");
-        }
-        if (notifyAuthVal.equals(AuthValue.MYSITE)) {
-            String institution = this.userMgr.getInstitution(login);
-            permissionMap.put("institution", institution);
-        } else if (notifyAuthVal.equals(AuthValue.SELFONLY)){
-            permissionMap.put("loginConstraint", login);
-        }
-        aaa.getTransaction().commit();
-		
-		RenewResponse response = this.sa.renew(request, login, permissionMap);
-		
-		return response;
+	    //TODO : fill this with the necessary business logic
+		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#Renew");
 	}
 
 	public UnsubscribeResponse Unsubscribe(Unsubscribe request)
