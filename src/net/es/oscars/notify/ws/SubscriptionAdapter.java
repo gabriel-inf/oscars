@@ -32,10 +32,6 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.notify.ws.jobs.*;
 import net.es.oscars.notify.ws.policy.*;
 
-import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-
 /** 
  * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
  * It is intended to provide a gateway for Axis2 into more general core functionality
@@ -185,7 +181,8 @@ public class SubscriptionAdapter{
      * @param permissionMap a map of the permissions required to view this notification
      */
     public void schedProcessNotify(NotificationMessageHolderType holder,
-                            HashMap<String, ArrayList<String>> permissionMap){
+                            HashMap<String, ArrayList<String>> permissionMap,
+                            ArrayList<NotifyPEP> notifyPEPs){ 
         this.log.info("schedProcessNotify.start");
         Scheduler sched = this.core.getScheduler();
         String triggerName = "processNotifyTrig-" + holder.hashCode();
@@ -197,6 +194,7 @@ public class SubscriptionAdapter{
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("permissionMap", permissionMap);
         dataMap.put("message", holder);
+        dataMap.put("notifyPEPs", notifyPEPs);
         jobDetail.setJobDataMap(dataMap);
         
         try{
@@ -216,7 +214,8 @@ public class SubscriptionAdapter{
      * @param permissionMap a map of the permissions required to view this notification
      */
     public void notify(NotificationMessageHolderType holder,
-                       HashMap<String, ArrayList<String>> permissionMap)
+                       HashMap<String, ArrayList<String>> permissionMap,
+                       ArrayList<NotifyPEP> notifyPEPs)
                        throws ADBException,
                               InvalidTopicExpressionFault,
                               JaxenException,
@@ -252,12 +251,23 @@ public class SubscriptionAdapter{
         topics.add("ALL");
         permissionMap.put("TOPIC", topics);
         
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        //find all subscriptions that match this topic and havethe necessaru authorizations
+        /* find all subscriptions that match this topic and have the necessary authorizations
+           on the Notification resource */
         authSubscriptions = sm.findSubscriptions(permissionMap);
-        //apply producer and message XPATH filters
+        //apply resource-specific policy and subscriber defined XPATH filters
         for(Subscription authSubscription : authSubscriptions){
+            //make sure that the subscriber has permssions to view the resource in this notification
+            String subscriberLogin = authSubscription.getUserLogin();     
+            try{
+                for(NotifyPEP notifyPEP : notifyPEPs){
+                    notifyPEP.enforce(subscriberLogin, omMessage);
+                }
+            }catch(AAAFaultMessage ex){
+                this.log.debug(ex.getMessage());
+                continue;
+            }
+            
+            //apply subscriber specified filters
             this.log.debug("Applying filters for " + authSubscription.getReferenceId());
             Set filters = authSubscription.getFilters();
             Iterator i = filters.iterator();
@@ -280,7 +290,6 @@ public class SubscriptionAdapter{
                         this.log.debug(matches ? "Filter matches." : "No Match");
                     }
                 }catch(JaxenException e){
-                    sess.getTransaction().rollback();
                     throw e;
                 }
             }
@@ -288,7 +297,6 @@ public class SubscriptionAdapter{
                 this.schedSendNotify(holder, authSubscription);
             } 
         }
-        sess.getTransaction().commit();
         this.log.info("notify.end");
     }
     
@@ -305,8 +313,10 @@ public class SubscriptionAdapter{
                                 Subscription subscription){
         this.log.info("schedSendNotify.start");
         Scheduler sched = this.core.getScheduler();
-        String triggerName = "sendNotifyTrig-" + holder.hashCode();
-        String jobName = "sendNotify-" + holder.hashCode();
+        String triggerName = "sendNotifyTrig-" + holder.hashCode() +
+                             ":" + subscription.hashCode();
+        String jobName = "sendNotify-" + holder.hashCode() +
+                         ":" + subscription.hashCode();
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
                                                   new Date(), null, 0, 0L);
         JobDetail jobDetail = new JobDetail(jobName, "SEND_NOTIFY",
@@ -324,7 +334,43 @@ public class SubscriptionAdapter{
         }catch(SchedulerException ex){
             this.log.error("Scheduler exception: " + ex);    
         }
-        this.log.info("schedSendNotify.end");
+        
+        this.log.info("schedSendNotify.end: subscription=" + 
+                       subscription.getReferenceId());
+    }
+    
+    /**
+     * Renew a  subscription based on the parameters of the request. It also updates
+     * entries in its database to make sure the subscriber only gets notifications it is
+     * authorized to see.
+     * 
+     * @param request the Axis2 object with the Renew request information
+     * @param userLogin the login of the renewer
+     * @param permissionMap a hash containing certain authorization constraints for the renewer
+     * @return an Axis2 object with the result of the renewal
+     * @throws UnacceptableInitialTerminationTimeFault
+     */
+    public RenewResponse renew(Renew request, String userLogin, HashMap<String,String> permissionMap)
+                               throws AAAFaultMessage, UnacceptableTerminationTimeFault{
+        RenewResponse response = new RenewResponse();
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String address = this.parseEPR(subRef);
+        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
+        if(refParams == null){ return null;}
+        String subscriptionId = refParams.getSubscriptionId();
+        if(subscriptionId == null){ return null; }
+        
+        if(!this.subscriptionManagerURL.equals(address)){
+            return null;
+        }
+        
+        //query reservation
+        //check user can change subscription
+        //check termination time
+        //update USERLOGIN and INSTITUTION
+        //update termination time
+        
+        return response;
     }
     
     /**
@@ -343,10 +389,6 @@ public class SubscriptionAdapter{
                    this.subscriptionManagerURL, subRefId);
             holder.setSubscriptionReference(subRef);
             client.setUpNotify(true, url, this.repo, this.repo + "axis2-norampart.xml");
-            /* XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(System.out);
-            MTOMAwareXMLSerializer mtom = new MTOMAwareXMLSerializer(writer);
-            holder.serialize(Notify.MY_QNAME, OMAbstractFactory.getOMFactory(), mtom);
-            mtom.flush();*/
             client.notify(holder);
         }catch(Exception e){
             this.log.info("Error sending notification: " + e);
@@ -358,7 +400,7 @@ public class SubscriptionAdapter{
      * Registers a publisher in the database using the given registration parameters
      *
      * @param request the registration request
-     * @param login the login of the user that send the registration
+     * @param login the login of the user that sent the registration
      * @return an Axis2 RegisterPublisherResponse withthe result of the registration
      * @throws UnacceptableInitialTerminationTimeFault
      * @throws PublisherRegistrationFailedFault

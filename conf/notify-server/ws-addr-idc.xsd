@@ -32,7 +32,7 @@
 			<xs:element name="Address" type="tns:AttributedURIType"/>
 			<xs:element name="ReferenceParameters" type="tns:ReferenceParametersType" minOccurs="0"/>
 			<xs:element ref="tns:Metadata" minOccurs="0"/>
-			<!-- <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> -->
+			<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<!-- <xs:anyAttribute namespace="##other" processContents="lax"/> -->
 	</xs:complexType>
@@ -47,7 +47,7 @@
 	<xs:element name="Metadata" type="tns:MetadataType"/>
 	<xs:complexType name="MetadataType" mixed="false">
 		<xs:sequence>
-			<!-- <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> -->
+			<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<!-- <xs:anyAttribute namespace="##other" processContents="lax"/> -->
 	</xs:complexType>
@@ -132,7 +132,7 @@
 	<xs:element name="ProblemHeader" type="tns:AttributedAnyType"/>
 	<xs:complexType name="AttributedAnyType" mixed="false">
 		<xs:sequence>
-			<!-- <xs:any namespace="##any" processContents="lax" minOccurs="1" maxOccurs="1"/> -->
+			<xs:any namespace="##any" processContents="lax" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 		<!-- <xs:anyAttribute namespace="##other" processContents="lax"/> -->
 	</xs:complexType>

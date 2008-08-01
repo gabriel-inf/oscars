@@ -48,10 +48,10 @@ public class OSCARSNotifyCore{
         }
         OSCARSNotifyCore instance = OSCARSNotifyCore.instance;
         instance.initDatabases();
-        instance.initNotifyPEPs();
         instance.initScheduler();
-        instance.initSubscriptionAdapter();
         instance.initUserManager();
+        instance.initNotifyPEPs();
+        instance.initSubscriptionAdapter();
         
         return instance;
     }

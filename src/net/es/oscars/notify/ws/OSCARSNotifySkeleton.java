@@ -64,16 +64,18 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                 //open session here to keep aa lookups completely separated from SubscriptionAdapter
                 Session aaa = this.core.getAAASession();
 		        aaa.beginTransaction();
+		        ArrayList<NotifyPEP> matchingNotifyPEPs = new ArrayList<NotifyPEP>();
                 HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
                 OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
                 for(NotifyPEP notifyPep : this.notifyPEPs){
                     if(notifyPep.matches(omMessage)){
-                        permissionMap = notifyPep.enforce(omMessage);
+                        permissionMap = notifyPep.prepare(omMessage);
+                        matchingNotifyPEPs.add(notifyPep);
                         break;
                     }
                 }
                 aaa.getTransaction().commit();
-                this.sa.schedProcessNotify(holder, permissionMap);
+                this.sa.schedProcessNotify(holder, permissionMap, matchingNotifyPEPs);
             }
 	    }catch(Exception e){
 	        this.log.error(e.getMessage());
@@ -96,9 +98,14 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 		/* Get authorizations */
 		Session aaa = this.core.getAAASession();
 		aaa.beginTransaction();
-		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
+		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Subscriptions", "create");
         if (authVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("You do not have permission to subscribe to notifications.");
+            throw new AAAFaultMessage("You do not have permission to create subscriptions.");
+        }
+		//TODO: Don't assume subscriber and consumer are the same
+		authVal = this.userMgr.checkAccess(login, "Notifications", "query");
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to view notifications.");
         }
         if (authVal.equals(AuthValue.MYSITE)) {
             String institution = this.userMgr.getInstitution(login);
@@ -115,26 +122,26 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 	}
     
 	public RenewResponse Renew(Renew request)
-	    throws UnacceptableTerminationTimeFault{
-		//TODO : fill this with the necessary business logic
+	    throws AAAFaultMessage, UnacceptableTerminationTimeFault{
+	    //TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#Renew");
 	}
 
 	public UnsubscribeResponse Unsubscribe(Unsubscribe request)
-	    throws UnableToDestroySubscriptionFault{
+	    throws AAAFaultMessage, UnableToDestroySubscriptionFault{
 		//TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#Unsubscribe");
 	}
 
 	public PauseSubscriptionResponse PauseSubscription(
-	       PauseSubscription request) throws PauseFailedFault{
+	       PauseSubscription request) throws AAAFaultMessage, PauseFailedFault{
 		//TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#PauseSubscription");
 	}
 
 	public ResumeSubscriptionResponse ResumeSubscription(
 	       ResumeSubscription request)
-	       throws ResumeFailedFault{
+	       throws AAAFaultMessage, ResumeFailedFault{
 		//TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#ResumeSubscription");
 	}
@@ -154,7 +161,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 		/* Get authorizations */
 		Session aaa = this.core.getAAASession();
 		aaa.beginTransaction();
-		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Notifications", "publish");
+		UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "PublisherRegistrations", "create");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new PublisherRegistrationRejectedFault("You do not have permission to publish notifications.");
         }
