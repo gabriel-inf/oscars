@@ -80,14 +80,6 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="notifications"),
 	(select id from permissions where name="query"),
 	(select id from constraints where name="my-site"));
-INSERT INTO rpcs VALUES (NULL,
-	(select id from resources where name="subscriptions"),
-	(select id from permissions where name="modify"),
-	(select id from constraints where name="my-site"));
-INSERT INTO rpcs VALUES (NULL,
-	(select id from resources where name="publisherregistrations"),
-	(select id from permissions where name="modify"),
-	(select id from constraints where name="my-site")
 	
 -- max-bandwidth	
  INSERT INTO rpcs VALUES (NULL,
