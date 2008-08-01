@@ -100,4 +100,4 @@ CREATE TABLE IF NOT EXISTS userAttributes (
     attributeId         INT NOT NULL,    -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX userAttr ON (userId,attributeId);
+CREATE UNIQUE INDEX userAttr ON userAttributes(userId,attributeId);
