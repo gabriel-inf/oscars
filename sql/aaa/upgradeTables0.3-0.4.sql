@@ -19,6 +19,26 @@ INSERT INTO constraints VALUES (NULL, "my-site", "limits access to reservations 
 INSERT INTO constraints VALUES (NULL, "specify-path-elements", "allows path elements to be specified for reservations");
 INSERT INTO constraints VALUES (NULL, "specify-gri", "allows a gri to be specified on path creation");
 
+-- CHANGES TO TABLES
+
+-- RESOURCES TABLE
+-- Add a resource to control modification of attributes, authorizations and institutions
+INSERT INTO resources VALUES(NULL, "AAA",
+                        "Information about Institutions, Attributes and Authorizations",
+                        NULL);
+-- Add resource to control publishing
+INSERT INTO resources VALUES(NULL, "notifications",
+                        "Information an entity wishes to communicate to another entity",
+                        NULL);
+INSERT INTO resources VALUES(NULL, "subscriptions",
+                        "Information about the relationship between the producer and consumer of notifications",
+                        NULL);
+INSERT INTO resources VALUES(NULL, "publisherRegistrations",
+                        "Information about the relationship between a Publisher and a NotificationBroker",
+                        NULL);
+                        
+ CREATE UNIQUE INDEX resourceName ON resources(name(6));
+ 
 -- Create resource, permission, constraint (RPC) table which contains a list of the meaningful RPC tuples
 CREATE TABLE IF NOT EXISTS rpcs (
    id              		INT NOT NULL AUTO_INCREMENT,
@@ -118,25 +138,7 @@ INSERT INTO rpcs VALUES (NULL,
 -- resourcePermissions has been replaced by resource-permission-constraint table
 DROP TABLE resourcePermissions;
 	
--- CHANGES TO TABLES
 
--- RESOURCES TABLE
--- Add a resource to control modification of attributes, authorizations and institutions
-INSERT INTO resources VALUES(NULL, "AAA",
-                        "Information about Institutions, Attributes and Authorizations",
-                        NULL);
--- Add resource to control publishing
-INSERT INTO resources VALUES(NULL, "Notifications",
-                        "Information an entity wishes to communicate to another entity",
-                        NULL);
-INSERT INTO resources VALUES(NULL, "Subscriptions",
-                        "Information about the relationship between the producer and consumer of notifications",
-                        NULL);
-INSERT INTO resources VALUES(NULL, "PublisherRegistrations",
-                        "Information about the relationship between a Publisher and a NotificationBroker",
-                        NULL);
-                        
- CREATE UNIQUE INDEX resourceName ON resources(name(6));
 
 -- PERMISSIONS TABLE                  
 CREATE UNIQUE INDEX permName on permissions (name(6));
