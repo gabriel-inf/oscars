@@ -79,7 +79,9 @@ public class AuthenticateUser extends HttpServlet {
         }
         Map outputMap = new HashMap();
         this.handleDisplay(mgr, userName, outputMap);
+        log.info("setting cookie name to " + userName);
         userSession.setCookie("userName", userName, response);
+        log.info("setting session name to " + sessionName);
         userSession.setCookie("sessionName", sessionName, response);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);

@@ -38,8 +38,16 @@ public class UserSession {
             Map errorMap = new HashMap();
             errorMap.put("method", methodName);
             errorMap.put("success", Boolean.FALSE);
-            errorMap.put("status", "No session has been established: " +
-                                   "cookies are null");
+            if ((userName == null) && (sessionName == null)) {
+                errorMap.put("status", "No session has been established: " +
+                                       "cookies are null");
+            } else if (userName == null) {
+                errorMap.put("status", "No session has been established: " +
+                                       "user name cookie is null");
+            } else if (sessionName == null) {
+                errorMap.put("status", "No session has been established: " +
+                                       "session name cookie is null");
+            }
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
             out.println("/* " + jsonObject + " */");
             return null;
@@ -48,6 +56,7 @@ public class UserSession {
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
         UserManager userMgr = new UserManager("aaa");
+        String cookieUserName = userName;
         if (!userMgr.validSession(userName, sessionName)) {
             userName = null;
         }
@@ -58,7 +67,7 @@ public class UserSession {
             errorMap.put("method", methodName);
             errorMap.put("success", Boolean.FALSE);
             errorMap.put("status", "No session has been established: " +
-                                   "cookies are invalid");
+                         "cookie is invalid for user " + cookieUserName);
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
             out.println("/* " + jsonObject + " */");
         }

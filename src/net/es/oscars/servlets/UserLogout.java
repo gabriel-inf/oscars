@@ -18,7 +18,6 @@ public class UserLogout extends HttpServlet {
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         UserSession userSession = new UserSession();
-        String userName = userSession.checkSession(out, request, "UserLogout");
         Map outputMap = new HashMap();
         outputMap.put("method", "UserLogout");
         outputMap.put("success", Boolean.TRUE);
@@ -26,11 +25,7 @@ public class UserLogout extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         userSession.expireCookie("sessionName", "", response);
-        if (userName != null) {
-            log.info("servlet.end: user " + userName + " logged out");
-        } else {
-            log.info("servlet.end: unknown user logout, probably due to server restart");
-        }
+        log.info("servlet.end");
     }
 
     public void doPost(HttpServletRequest request,
