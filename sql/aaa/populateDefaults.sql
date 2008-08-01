@@ -618,12 +618,12 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-siteAdmin"),
      (select id from resources where name="subscriptions"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="my-site"),1);
+     NULL, NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-siteAdmin"),
      (select id from resources where name="subscriptions"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="my-site"),1);
+     NULL, NULL);
 
     -- Publisher
     -- Publish notifications    
