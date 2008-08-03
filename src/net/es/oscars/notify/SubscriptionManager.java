@@ -1,13 +1,11 @@
 package net.es.oscars.notify;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault;
+import net.es.oscars.notify.ws.UnacceptableTerminationTimeFault;
+import net.es.oscars.notify.ws.ResourceUnknownFault;
 
 public class SubscriptionManager{
     private Logger log;
@@ -51,18 +49,7 @@ public class SubscriptionManager{
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
-        
-        /* calculate initial termination time */
-        long maxTime = curTime + this.subMaxExpTime;
-        long expTime = subscription.getTerminationTime();
-        if(expTime == 0){
-            expTime = maxTime;
-        }else if(expTime > maxTime){
-            throw new UnacceptableInitialTerminationTimeFault("Requested " +
-                    "initial termination time is too far in the future. " +
-                    "The maximum is " + this.subMaxExpTime + " seconds from the " +
-                    "current time.");
-        }
+        long expTime = this.checkTermTime(curTime, subscription.getTerminationTime());
         
         /* Save subscription */
         subscription.setReferenceId(this.generateId());
@@ -87,18 +74,7 @@ public class SubscriptionManager{
         this.log.info("registerPublisher.start");
         PublisherDAO dao = new PublisherDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
-        
-        /* calculate initial termination time */
-        long maxTime = curTime + this.pubMaxExpTime;
-        long expTime = publisher.getTerminationTime();
-        if(expTime == 0){
-            expTime = maxTime;
-        }else if(expTime > maxTime){
-            throw new UnacceptableInitialTerminationTimeFault("Requested " +
-                    "initial termination time is too far in the future. " +
-                    "The maximum is " + this.pubMaxExpTime + " seconds from the " +
-                    "current time.");
-        }
+        long expTime = this.checkTermTime(curTime, publisher.getTerminationTime());
         
         /* Save subscription */
         publisher.setReferenceId(this.generateId());
@@ -126,6 +102,59 @@ public class SubscriptionManager{
         }
         
         return subscriptions;
+    }
+    
+    public long renew(String subRefId, long termTime, 
+                      HashMap<String, String> permissionMap)
+                      throws ResourceUnknownFault,
+                             UnacceptableTerminationTimeFault{
+        this.log.info("renew.start");
+        SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
+        String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
+        String loginConstraint = permissionMap.get("loginConstraint");
+        String institutionConstraint = permissionMap.get("institution");
+        Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
+        SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
+        long curTime = System.currentTimeMillis()/1000;
+        long expTime = 0L;
+        
+        // make sure matching subscription found
+        if(subscription == null){
+            this.log.error("Subscription not found: id=" + subRefId +
+                          ", user=" + modifyLoginConstraint);
+            throw new ResourceUnknownFault("Subscription " + subRefId + " not found.");
+        }
+        
+        //check time
+        try{
+            expTime = this.checkTermTime(curTime, termTime);
+            subscription.setTerminationTime(expTime);
+            dao.update(subscription);
+        }catch(UnacceptableInitialTerminationTimeFault ex){
+            throw new UnacceptableTerminationTimeFault(ex.getMessage());
+        }
+        
+        //TODO: update filters
+        
+        this.log.info("renew.end");
+        
+        return expTime;
+    }
+    
+    private long checkTermTime(long curTime, long expTime) 
+                                throws UnacceptableInitialTerminationTimeFault{
+        /* calculate initial termination time */
+        long maxTime = curTime + this.subMaxExpTime;
+        if(expTime == 0){
+            expTime = maxTime;
+        }else if(expTime > maxTime){
+            throw new UnacceptableInitialTerminationTimeFault("Requested " +
+                    "termination time is too far in the future. " +
+                    "The maximum is " + this.subMaxExpTime + " seconds from the " +
+                    "current time.");
+        }
+        
+        return expTime;
     }
     
     /**

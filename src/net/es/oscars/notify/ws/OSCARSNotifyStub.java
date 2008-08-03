@@ -137,21 +137,6 @@
          
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
                  "http://docs.oasis-open.org/wsn/b-2",
-                 "TopicNotSupportedFault"),
-                 "net.es.oscars.notify.ws.TopicNotSupportedFault"
-               );
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
-                "http://docs.oasis-open.org/wsn/b-2",
-                "TopicNotSupportedFault"),
-                "net.es.oscars.notify.ws.TopicNotSupportedFault");
-               faultMessageMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "TopicNotSupportedFault"),
-                 "org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault"
-               );
-           
-              faultExceptionNameMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
                  "InvalidTopicExpressionFault"),
                  "net.es.oscars.notify.ws.InvalidTopicExpressionFault"
                );
@@ -178,6 +163,96 @@
                  "http://oscars.es.net/OSCARS",
                  "AAAFault"),
                  "net.es.oscars.wsdlTypes.AAAFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "InvalidMessageContentExpressionFault"),
+                 "net.es.oscars.notify.ws.InvalidMessageContentExpressionFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "InvalidMessageContentExpressionFault"),
+                "net.es.oscars.notify.ws.InvalidMessageContentExpressionFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "InvalidMessageContentExpressionFault"),
+                 "org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "TopicExpressionDialectUnknownFault"),
+                 "net.es.oscars.notify.ws.TopicExpressionDialectUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "TopicExpressionDialectUnknownFault"),
+                "net.es.oscars.notify.ws.TopicExpressionDialectUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "TopicExpressionDialectUnknownFault"),
+                 "org.oasis_open.docs.wsn.b_2.TopicExpressionDialectUnknownFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "InvalidFilterFault"),
+                 "net.es.oscars.notify.ws.InvalidFilterFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "InvalidFilterFault"),
+                "net.es.oscars.notify.ws.InvalidFilterFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "InvalidFilterFault"),
+                 "org.oasis_open.docs.wsn.b_2.InvalidFilterFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "NotifyMessageNotSupportedFault"),
+                 "net.es.oscars.notify.ws.NotifyMessageNotSupportedFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "NotifyMessageNotSupportedFault"),
+                "net.es.oscars.notify.ws.NotifyMessageNotSupportedFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "NotifyMessageNotSupportedFault"),
+                 "org.oasis_open.docs.wsn.b_2.NotifyMessageNotSupportedFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "TopicNotSupportedFault"),
+                 "net.es.oscars.notify.ws.TopicNotSupportedFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsn/b-2",
+                "TopicNotSupportedFault"),
+                "net.es.oscars.notify.ws.TopicNotSupportedFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsn/b-2",
+                 "TopicNotSupportedFault"),
+                 "org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault"
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
@@ -212,21 +287,6 @@
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
                  "http://docs.oasis-open.org/wsn/b-2",
-                 "InvalidMessageContentExpressionFault"),
-                 "net.es.oscars.notify.ws.InvalidMessageContentExpressionFault"
-               );
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
-                "http://docs.oasis-open.org/wsn/b-2",
-                "InvalidMessageContentExpressionFault"),
-                "net.es.oscars.notify.ws.InvalidMessageContentExpressionFault");
-               faultMessageMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "InvalidMessageContentExpressionFault"),
-                 "org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFault"
-               );
-           
-              faultExceptionNameMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
                  "InvalidProducerPropertiesExpressionFault"),
                  "net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault"
                );
@@ -253,51 +313,6 @@
                  "http://docs.oasis-open.org/wsn/b-2",
                  "SubscribeCreationFailedFault"),
                  "org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault"
-               );
-           
-              faultExceptionNameMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "TopicExpressionDialectUnknownFault"),
-                 "net.es.oscars.notify.ws.TopicExpressionDialectUnknownFault"
-               );
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
-                "http://docs.oasis-open.org/wsn/b-2",
-                "TopicExpressionDialectUnknownFault"),
-                "net.es.oscars.notify.ws.TopicExpressionDialectUnknownFault");
-               faultMessageMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "TopicExpressionDialectUnknownFault"),
-                 "org.oasis_open.docs.wsn.b_2.TopicExpressionDialectUnknownFault"
-               );
-           
-              faultExceptionNameMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "InvalidFilterFault"),
-                 "net.es.oscars.notify.ws.InvalidFilterFault"
-               );
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
-                "http://docs.oasis-open.org/wsn/b-2",
-                "InvalidFilterFault"),
-                "net.es.oscars.notify.ws.InvalidFilterFault");
-               faultMessageMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "InvalidFilterFault"),
-                 "org.oasis_open.docs.wsn.b_2.InvalidFilterFault"
-               );
-           
-              faultExceptionNameMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "NotifyMessageNotSupportedFault"),
-                 "net.es.oscars.notify.ws.NotifyMessageNotSupportedFault"
-               );
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
-                "http://docs.oasis-open.org/wsn/b-2",
-                "NotifyMessageNotSupportedFault"),
-                "net.es.oscars.notify.ws.NotifyMessageNotSupportedFault");
-               faultMessageMap.put( new javax.xml.namespace.QName(
-                 "http://docs.oasis-open.org/wsn/b-2",
-                 "NotifyMessageNotSupportedFault"),
-                 "org.oasis_open.docs.wsn.b_2.NotifyMessageNotSupportedFault"
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
@@ -346,6 +361,21 @@
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
                  "http://oscars.es.net/OSCARS",
                  "AAAFault"),
                  "net.es.oscars.notify.ws.AAAFaultMessage"
@@ -373,6 +403,21 @@
                  "http://docs.oasis-open.org/wsn/b-2",
                  "UnableToDestroySubscriptionFault"),
                  "org.oasis_open.docs.wsn.b_2.UnableToDestroySubscriptionFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
@@ -406,6 +451,21 @@
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
                  "http://oscars.es.net/OSCARS",
                  "AAAFault"),
                  "net.es.oscars.notify.ws.AAAFaultMessage"
@@ -433,6 +493,21 @@
                  "http://docs.oasis-open.org/wsn/b-2",
                  "ResumeFailedFault"),
                  "org.oasis_open.docs.wsn.b_2.ResumeFailedFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
@@ -511,6 +586,21 @@
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
                  "http://docs.oasis-open.org/wsn/br-2",
                  "ResourceNotDestroyedFault"),
                  "net.es.oscars.notify.ws.ResourceNotDestroyedFault"
@@ -523,6 +613,21 @@
                  "http://docs.oasis-open.org/wsn/br-2",
                  "ResourceNotDestroyedFault"),
                  "org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "net.es.oscars.notify.ws.ResourceUnknownFault"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://docs.oasis-open.org/wsrf/r-2",
+                "ResourceUnknownFault"),
+                "net.es.oscars.notify.ws.ResourceUnknownFault");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://docs.oasis-open.org/wsrf/r-2",
+                 "ResourceUnknownFault"),
+                 "org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault"
                );
            
 
@@ -655,17 +760,18 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.notify.ws.TopicNotSupportedFault
                         ,net.es.oscars.notify.ws.InvalidTopicExpressionFault
                         ,net.es.oscars.notify.ws.AAAFaultMessage
-                        ,net.es.oscars.notify.ws.UnsupportedPolicyRequestFault
-                        ,net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault
                         ,net.es.oscars.notify.ws.InvalidMessageContentExpressionFault
-                        ,net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault
-                        ,net.es.oscars.notify.ws.SubscribeCreationFailedFault
                         ,net.es.oscars.notify.ws.TopicExpressionDialectUnknownFault
                         ,net.es.oscars.notify.ws.InvalidFilterFault
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault
                         ,net.es.oscars.notify.ws.NotifyMessageNotSupportedFault
+                        ,net.es.oscars.notify.ws.TopicNotSupportedFault
+                        ,net.es.oscars.notify.ws.UnsupportedPolicyRequestFault
+                        ,net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault
+                        ,net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault
+                        ,net.es.oscars.notify.ws.SubscribeCreationFailedFault
                         ,net.es.oscars.notify.ws.UnrecognizedPolicyRequestFault{
 
               try{
@@ -736,10 +842,6 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.notify.ws.TopicNotSupportedFault){
-                          throw (net.es.oscars.notify.ws.TopicNotSupportedFault)ex;
-                        }
-                        
                         if (ex instanceof net.es.oscars.notify.ws.InvalidTopicExpressionFault){
                           throw (net.es.oscars.notify.ws.InvalidTopicExpressionFault)ex;
                         }
@@ -748,24 +850,8 @@
                           throw (net.es.oscars.notify.ws.AAAFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.notify.ws.UnsupportedPolicyRequestFault){
-                          throw (net.es.oscars.notify.ws.UnsupportedPolicyRequestFault)ex;
-                        }
-                        
-                        if (ex instanceof net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault){
-                          throw (net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault)ex;
-                        }
-                        
                         if (ex instanceof net.es.oscars.notify.ws.InvalidMessageContentExpressionFault){
                           throw (net.es.oscars.notify.ws.InvalidMessageContentExpressionFault)ex;
-                        }
-                        
-                        if (ex instanceof net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault){
-                          throw (net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault)ex;
-                        }
-                        
-                        if (ex instanceof net.es.oscars.notify.ws.SubscribeCreationFailedFault){
-                          throw (net.es.oscars.notify.ws.SubscribeCreationFailedFault)ex;
                         }
                         
                         if (ex instanceof net.es.oscars.notify.ws.TopicExpressionDialectUnknownFault){
@@ -776,8 +862,32 @@
                           throw (net.es.oscars.notify.ws.InvalidFilterFault)ex;
                         }
                         
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
+                        }
+                        
                         if (ex instanceof net.es.oscars.notify.ws.NotifyMessageNotSupportedFault){
                           throw (net.es.oscars.notify.ws.NotifyMessageNotSupportedFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.TopicNotSupportedFault){
+                          throw (net.es.oscars.notify.ws.TopicNotSupportedFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.UnsupportedPolicyRequestFault){
+                          throw (net.es.oscars.notify.ws.UnsupportedPolicyRequestFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault){
+                          throw (net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault){
+                          throw (net.es.oscars.notify.ws.InvalidProducerPropertiesExpressionFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.SubscribeCreationFailedFault){
+                          throw (net.es.oscars.notify.ws.SubscribeCreationFailedFault)ex;
                         }
                         
                         if (ex instanceof net.es.oscars.notify.ws.UnrecognizedPolicyRequestFault){
@@ -831,7 +941,8 @@
                     
                     
                         ,net.es.oscars.notify.ws.UnacceptableTerminationTimeFault
-                        ,net.es.oscars.notify.ws.AAAFaultMessage{
+                        ,net.es.oscars.notify.ws.AAAFaultMessage
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
@@ -909,6 +1020,10 @@
                           throw (net.es.oscars.notify.ws.AAAFaultMessage)ex;
                         }
                         
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
+                        }
+                        
 
                         throw new java.rmi.RemoteException(ex.getMessage(), ex);
                     }catch(java.lang.ClassCastException e){
@@ -956,7 +1071,8 @@
                     
                     
                         ,net.es.oscars.notify.ws.AAAFaultMessage
-                        ,net.es.oscars.notify.ws.UnableToDestroySubscriptionFault{
+                        ,net.es.oscars.notify.ws.UnableToDestroySubscriptionFault
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
@@ -1034,6 +1150,10 @@
                           throw (net.es.oscars.notify.ws.UnableToDestroySubscriptionFault)ex;
                         }
                         
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
+                        }
+                        
 
                         throw new java.rmi.RemoteException(ex.getMessage(), ex);
                     }catch(java.lang.ClassCastException e){
@@ -1081,7 +1201,8 @@
                     
                     
                         ,net.es.oscars.notify.ws.AAAFaultMessage
-                        ,net.es.oscars.notify.ws.PauseFailedFault{
+                        ,net.es.oscars.notify.ws.PauseFailedFault
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
@@ -1159,6 +1280,10 @@
                           throw (net.es.oscars.notify.ws.PauseFailedFault)ex;
                         }
                         
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
+                        }
+                        
 
                         throw new java.rmi.RemoteException(ex.getMessage(), ex);
                     }catch(java.lang.ClassCastException e){
@@ -1206,7 +1331,8 @@
                     
                     
                         ,net.es.oscars.notify.ws.AAAFaultMessage
-                        ,net.es.oscars.notify.ws.ResumeFailedFault{
+                        ,net.es.oscars.notify.ws.ResumeFailedFault
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
@@ -1284,6 +1410,10 @@
                           throw (net.es.oscars.notify.ws.ResumeFailedFault)ex;
                         }
                         
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
+                        }
+                        
 
                         throw new java.rmi.RemoteException(ex.getMessage(), ex);
                     }catch(java.lang.ClassCastException e){
@@ -1334,7 +1464,8 @@
                         ,net.es.oscars.notify.ws.InvalidTopicExpressionFault
                         ,net.es.oscars.notify.ws.PublisherRegistrationFailedFault
                         ,net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault
-                        ,net.es.oscars.notify.ws.PublisherRegistrationRejectedFault{
+                        ,net.es.oscars.notify.ws.PublisherRegistrationRejectedFault
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
@@ -1424,6 +1555,10 @@
                           throw (net.es.oscars.notify.ws.PublisherRegistrationRejectedFault)ex;
                         }
                         
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
+                        }
+                        
 
                         throw new java.rmi.RemoteException(ex.getMessage(), ex);
                     }catch(java.lang.ClassCastException e){
@@ -1470,7 +1605,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.notify.ws.ResourceNotDestroyedFault{
+                        ,net.es.oscars.notify.ws.ResourceNotDestroyedFault
+                        ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
@@ -1542,6 +1678,10 @@
                         
                         if (ex instanceof net.es.oscars.notify.ws.ResourceNotDestroyedFault){
                           throw (net.es.oscars.notify.ws.ResourceNotDestroyedFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
+                          throw (net.es.oscars.notify.ws.ResourceUnknownFault)ex;
                         }
                         
 
@@ -1654,6 +1794,20 @@
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.ResumeFailedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -1970,54 +2124,12 @@
 
             }
         
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
             private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFault param, boolean optimizeContent)
             throws org.apache.axis2.AxisFault {
 
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -2060,6 +2172,48 @@
             
                         try{
                              return param.getOMElement(org.oasis_open.docs.wsn.b_2.NotifyMessageNotSupportedFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
+            private  org.apache.axiom.om.OMElement  toOM(org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault.MY_QNAME,
                                           org.apache.axiom.om.OMAbstractFactory.getOMFactory());
                         } catch(org.apache.axis2.databinding.ADBException e){
                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -2295,6 +2449,13 @@
 
                 }
            
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsn.br_2.DestroyRegistration.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.br_2.DestroyRegistration.Factory.parse(param.getXMLStreamReaderWithoutCaching());
@@ -2312,6 +2473,13 @@
                 if (org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }
@@ -2340,6 +2508,13 @@
                 if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
                 
                            return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }
@@ -2393,6 +2568,13 @@
 
                 }
            
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsn.b_2.Unsubscribe.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.Unsubscribe.Factory.parse(param.getXMLStreamReaderWithoutCaching());
@@ -2417,6 +2599,13 @@
                 if (org.oasis_open.docs.wsn.b_2.UnableToDestroySubscriptionFault.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.UnableToDestroySubscriptionFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }
@@ -2456,6 +2645,13 @@
 
                 }
            
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsn.b_2.Subscribe.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.Subscribe.Factory.parse(param.getXMLStreamReaderWithoutCaching());
@@ -2466,13 +2662,6 @@
                 if (org.oasis_open.docs.wsn.b_2.SubscribeResponse.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.SubscribeResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.class.equals(type)){
-                
-                           return org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }
@@ -2491,37 +2680,9 @@
 
                 }
            
-                if (org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.class.equals(type)){
-                
-                           return org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.class.equals(type)){
-                
-                           return org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
                 if (org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFault.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault.class.equals(type)){
-                
-                           return org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault.class.equals(type)){
-                
-                           return org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }
@@ -2540,9 +2701,51 @@
 
                 }
            
+                if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsn.b_2.NotifyMessageNotSupportedFault.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.b_2.NotifyMessageNotSupportedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.TopicNotSupportedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.UnsupportedPolicyRequestFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault.class.equals(type)){
+                
+                           return org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }

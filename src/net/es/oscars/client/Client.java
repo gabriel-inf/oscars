@@ -16,6 +16,8 @@ import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.Renew;
+import org.oasis_open.docs.wsn.b_2.RenewResponse;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
@@ -372,6 +374,7 @@ public class Client {
      * @throws InvalidTopicExpressionFault
      * @throws NotifyMessageNotSupportedFault
      * @throws RemoteException
+     * @throws ResourceUnknownFault
      * @throws SubscribeCreationFailedFault
      * @throws TopicExpressionDialectUnknownFault
      * @throws TopicNotSupportedFault
@@ -384,12 +387,37 @@ public class Client {
                   UnacceptableInitialTerminationTimeFault,
                   InvalidMessageContentExpressionFault,
                   InvalidProducerPropertiesExpressionFault,
+                  ResourceUnknownFault,
                   SubscribeCreationFailedFault,
                   TopicExpressionDialectUnknownFault,
                   InvalidFilterFault,NotifyMessageNotSupportedFault,
                   UnrecognizedPolicyRequestFault,
                   net.es.oscars.notify.ws.AAAFaultMessage{
        return this.notifyStub.Subscribe(request);
+    }
+    
+    /**
+     * Renews an existing suscription
+     *
+     * @param request the Subscribe message to send
+     * @throws AAAFaultMessage
+     * @throws InvalidFilterFault
+     * @throws InvalidMessageContentExpressionFault
+     * @throws InvalidProducerPropertiesExpressionFault
+     * @throws InvalidTopicExpressionFault
+     * @throws NotifyMessageNotSupportedFault
+     * @throws RemoteException
+     * @throws SubscribeCreationFailedFault
+     * @throws TopicExpressionDialectUnknownFault
+     * @throws TopicNotSupportedFault
+     * @throws UnacceptableInitialTerminationTimeFault
+     * @throws UnrecognizedPolicyRequestFault
+     */
+    public RenewResponse renew(Renew request) 
+                  throws RemoteException, ResourceUnknownFault,
+                  UnacceptableTerminationTimeFault,
+                  net.es.oscars.notify.ws.AAAFaultMessage{
+       return this.notifyStub.Renew(request);
     }
     
     /**
@@ -403,6 +431,7 @@ public class Client {
      * @throws PublisherRegistrationFailedFault
      * @throws PublisherRegistrationRejectedFault
      * @throws RemoteException
+     * @throws ResourceUnknownFault
      * @throws TopicNotSupportedFault
      * @throws UnacceptableInitialTerminationTimeFault
      */
@@ -410,6 +439,7 @@ public class Client {
                   throws TopicNotSupportedFault,
                          InvalidTopicExpressionFault,
                          PublisherRegistrationFailedFault,
+                         ResourceUnknownFault,
                          UnacceptableInitialTerminationTimeFault,
                          PublisherRegistrationRejectedFault,
                          RemoteException{

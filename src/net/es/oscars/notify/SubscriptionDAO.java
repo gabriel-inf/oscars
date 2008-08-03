@@ -74,4 +74,19 @@ public class SubscriptionDAO
         subscriptions = (List<Subscription>) query.list();
         return subscriptions;
     }
+    
+   public Subscription queryByRefId(String referenceId, String login){
+        String sql = "SELECT * FROM subscriptions WHERE referenceId=?";
+        if(login != null){
+            sql += " AND userLogin=?";
+        }
+        SQLQuery query = (SQLQuery) this.getSession().createSQLQuery(sql)
+                                 .addEntity(Subscription.class)
+                                 .setString(0, referenceId);
+        if(login != null){
+            query = (SQLQuery) query.setString(1, login);
+        }
+        
+        return (Subscription) query.uniqueResult();
+   }
 }

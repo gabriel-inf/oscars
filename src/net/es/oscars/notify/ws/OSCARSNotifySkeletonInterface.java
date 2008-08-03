@@ -37,7 +37,7 @@
                 (
                   org.oasis_open.docs.wsn.b_2.Subscribe subscribe
                  )
-            throws TopicNotSupportedFault,InvalidTopicExpressionFault,AAAFaultMessage,UnsupportedPolicyRequestFault,UnacceptableInitialTerminationTimeFault,InvalidMessageContentExpressionFault,InvalidProducerPropertiesExpressionFault,SubscribeCreationFailedFault,TopicExpressionDialectUnknownFault,InvalidFilterFault,NotifyMessageNotSupportedFault,UnrecognizedPolicyRequestFault;
+            throws InvalidTopicExpressionFault,AAAFaultMessage,InvalidMessageContentExpressionFault,TopicExpressionDialectUnknownFault,InvalidFilterFault,ResourceUnknownFault,NotifyMessageNotSupportedFault,TopicNotSupportedFault,UnsupportedPolicyRequestFault,UnacceptableInitialTerminationTimeFault,InvalidProducerPropertiesExpressionFault,SubscribeCreationFailedFault,UnrecognizedPolicyRequestFault;
         
          
         /**
@@ -51,7 +51,7 @@
                 (
                   org.oasis_open.docs.wsn.b_2.Renew renew
                  )
-            throws UnacceptableTerminationTimeFault,AAAFaultMessage;
+            throws UnacceptableTerminationTimeFault,AAAFaultMessage,ResourceUnknownFault;
         
          
         /**
@@ -65,7 +65,7 @@
                 (
                   org.oasis_open.docs.wsn.b_2.Unsubscribe unsubscribe
                  )
-            throws AAAFaultMessage,UnableToDestroySubscriptionFault;
+            throws AAAFaultMessage,UnableToDestroySubscriptionFault,ResourceUnknownFault;
         
          
         /**
@@ -79,7 +79,7 @@
                 (
                   org.oasis_open.docs.wsn.b_2.PauseSubscription pauseSubscription
                  )
-            throws AAAFaultMessage,PauseFailedFault;
+            throws AAAFaultMessage,PauseFailedFault,ResourceUnknownFault;
         
          
         /**
@@ -93,7 +93,7 @@
                 (
                   org.oasis_open.docs.wsn.b_2.ResumeSubscription resumeSubscription
                  )
-            throws AAAFaultMessage,ResumeFailedFault;
+            throws AAAFaultMessage,ResumeFailedFault,ResourceUnknownFault;
         
          
         /**
@@ -107,7 +107,7 @@
                 (
                   org.oasis_open.docs.wsn.br_2.RegisterPublisher registerPublisher
                  )
-            throws TopicNotSupportedFault,InvalidTopicExpressionFault,PublisherRegistrationFailedFault,UnacceptableInitialTerminationTimeFault,PublisherRegistrationRejectedFault;
+            throws TopicNotSupportedFault,InvalidTopicExpressionFault,PublisherRegistrationFailedFault,UnacceptableInitialTerminationTimeFault,PublisherRegistrationRejectedFault,ResourceUnknownFault;
         
          
         /**
@@ -121,7 +121,7 @@
                 (
                   org.oasis_open.docs.wsn.br_2.DestroyRegistration destroyRegistration
                  )
-            throws ResourceNotDestroyedFault;
+            throws ResourceNotDestroyedFault,ResourceUnknownFault;
         
          }
     

@@ -5,11 +5,12 @@
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/"
     xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
-    xmlns:wsnt-br="http://docs.oasis-open.org/wsn/br-2" 
+    xmlns:wsnt-br="http://docs.oasis-open.org/wsn/br-2"
+    xmlns:wsrf-r="http://docs.oasis-open.org/wsrf/r-2"
     xmlns:tns="http://oscars.es.net/OSCARS">
 
     <wsdl:documentation>
-        This is WSDL for the OSCARS public reservation interface. These
+        This is WSDL for the OSCARS Notification Broker interface. These
         messages must be signed using the following WS-secuirty
         standards. The message is time stamped and includes the X.509
         certificate of the signing entity. The timestamp, certificate
@@ -33,6 +34,11 @@
             <xsd:import
                 namespace="http://docs.oasis-open.org/wsn/br-2" 
                 schemaLocation="br-2-idc.xsd"/>
+        </xsd:schema>
+        <xsd:schema>
+            <xsd:import
+                namespace="http://docs.oasis-open.org/wsrf/r-2" 
+                schemaLocation="r-2-idc.xsd"/>
         </xsd:schema>
     </wsdl:types>
 
@@ -238,8 +244,13 @@
             element="wsnt-br:ResourceNotDestroyedFault"/>
    </wsdl:message> 
 
+   <!-- ================= WS-Resource faults ========================= -->
+   <wsdl:message name="ResourceUnknownFault">
+    <wsdl:part name="ResourceUnknownFault"
+           element="wsrf-r:ResourceUnknownFault" />
+  </wsdl:message> 
     
-    <wsdl:portType name="OSCARSNotify">
+  <wsdl:portType name="OSCARSNotify">
         <wsdl:operation name="Notify">
             <wsdl:input message="tns:Notify" />
         </wsdl:operation>
@@ -247,6 +258,8 @@
         <wsdl:operation name="Subscribe">
             <wsdl:input  message="tns:SubscribeRequest" />
             <wsdl:output message="tns:SubscribeResponse" />
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="InvalidFilterFault" 
                       message="tns:InvalidFilterFault"/>
             <wsdl:fault  name="TopicExpressionDialectUnknownFault" 
@@ -278,6 +291,8 @@
                       message="tns:RenewRequest" />
             <wsdl:output name="RenewResponse" 
                       message="tns:RenewResponse" />
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="UnacceptableTerminationTimeFault" 
                       message=
                       "tns:UnacceptableTerminationTimeFault" />    
@@ -290,6 +305,8 @@
                       message="tns:UnsubscribeRequest" />
             <wsdl:output name="UnsubscribeResponse" 
                       message="tns:UnsubscribeResponse" />
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="UnableToDestroySubscriptionFault" 
                       message=
                       "tns:UnableToDestroySubscriptionFault" />
@@ -300,6 +317,8 @@
         <wsdl:operation name="PauseSubscription">
             <wsdl:input  message="tns:PauseSubscriptionRequest"/>
             <wsdl:output message="tns:PauseSubscriptionResponse"/>
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="PauseFailedFault"
                       message="tns:PauseFailedFault" />     
             <wsdl:fault name="AAAErrorException"
@@ -309,6 +328,8 @@
         <wsdl:operation name="ResumeSubscription">
             <wsdl:input  message="tns:ResumeSubscriptionRequest"/>
             <wsdl:output message="tns:ResumeSubscriptionResponse"/>
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="ResumeFailedFault"
                       message="tns:ResumeFailedFault" />   
             <wsdl:fault name="AAAErrorException"
@@ -318,6 +339,8 @@
         <wsdl:operation name="RegisterPublisher">
             <wsdl:input  message="tns:RegisterPublisherRequest"/>
             <wsdl:output message="tns:RegisterPublisherResponse"/>
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="InvalidTopicExpressionFault" 
                          message="tns:InvalidTopicExpressionFault"/>
             <wsdl:fault  name="TopicNotSupportedFault" 
@@ -335,6 +358,8 @@
                           message="tns:DestroyRegistrationRequest" />
             <wsdl:output name="DestroyRegistrationResponse" 
                           message="tns:DestroyRegistrationResponse" />
+            <wsdl:fault  name="ResourceUnknownFault" 
+                      message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="ResourceNotDestroyedFault" 
                           message="tns:ResourceNotDestroyedFault" />
         </wsdl:operation>
@@ -363,6 +388,9 @@
                 <soap:body use="literal"
                     parts="SubscribeResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="InvalidFilterFault">
                 <soap:fault name="InvalidFilterFault" use="literal" />
             </wsdl:fault>
@@ -411,6 +439,9 @@
                 <soap:body use="literal"
                     parts="RenewResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="UnacceptableTerminationTimeFault">
                 <soap:fault name="UnacceptableTerminationTimeFault" use="literal" />
             </wsdl:fault>
@@ -429,6 +460,9 @@
                 <soap:body use="literal"
                     parts="UnsubscribeResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="UnableToDestroySubscriptionFault">
                 <soap:fault name="UnableToDestroySubscriptionFault" use="literal" />
             </wsdl:fault>
@@ -447,6 +481,9 @@
                 <soap:body use="literal"
                     parts="PauseSubscriptionResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="PauseFailedFault">
                 <soap:fault name="PauseFailedFault" use="literal" />
             </wsdl:fault>
@@ -465,6 +502,9 @@
                 <soap:body use="literal"
                     parts="ResumeSubscriptionResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="ResumeFailedFault">
                 <soap:fault name="ResumeFailedFault" use="literal" />
             </wsdl:fault>
@@ -483,6 +523,9 @@
                 <soap:body use="literal"
                     parts="RegisterPublisherResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="InvalidTopicExpressionFault">
                 <soap:fault name="InvalidTopicExpressionFault" use="literal" />
             </wsdl:fault>
@@ -510,6 +553,9 @@
                 <soap:body use="literal"
                     parts="DestroyRegistrationResponse" />
             </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault name="ResourceUnknownFault" use="literal" />
+            </wsdl:fault>
             <wsdl:fault name="ResourceNotDestroyedFault">
                 <soap:fault name="ResourceNotDestroyedFault" use="literal" />
             </wsdl:fault>

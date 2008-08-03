@@ -87,7 +87,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 	public SubscribeResponse Subscribe(Subscribe request)
            throws AAAFaultMessage, InvalidFilterFault, InvalidMessageContentExpressionFault, 
                   InvalidTopicExpressionFault, InvalidProducerPropertiesExpressionFault, 
-                  NotifyMessageNotSupportedFault, SubscribeCreationFailedFault,
+                  NotifyMessageNotSupportedFault, ResourceUnknownFault, SubscribeCreationFailedFault,
                   TopicExpressionDialectUnknownFault, TopicNotSupportedFault,
                   UnacceptableInitialTerminationTimeFault, UnrecognizedPolicyRequestFault,
                   UnsupportedPolicyRequestFault{
@@ -121,32 +121,59 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 	}
     
 	public RenewResponse Renew(Renew request)
-	    throws AAAFaultMessage, UnacceptableTerminationTimeFault{
-	    //TODO : fill this with the necessary business logic
-		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#Renew");
+	    throws AAAFaultMessage, ResourceUnknownFault, UnacceptableTerminationTimeFault{
+	    String login = this.checkUser();
+        HashMap<String, String> permissionMap = new HashMap<String, String>();
+		
+		/* Get authorizations */
+		Session aaa = this.core.getAAASession();
+		aaa.beginTransaction();
+		UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+        if (modifyAuthVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("modifyLoginConstraint", login);
+        }
+        
+		//TODO: Don't assume subscriber and consumer are the same
+		UserManager.AuthValue notifyAuthVal = this.userMgr.checkAccess(login, "Notifications", "query");
+        if (notifyAuthVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to view notifications.");
+        }
+        if (notifyAuthVal.equals(AuthValue.MYSITE)) {
+            String institution = this.userMgr.getInstitution(login);
+            permissionMap.put("institution", institution);
+        } else if (notifyAuthVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("loginConstraint", login);
+        }
+        aaa.getTransaction().commit();
+		
+		RenewResponse response = this.sa.renew(request, permissionMap);
+		
+		return response;
 	}
 
 	public UnsubscribeResponse Unsubscribe(Unsubscribe request)
-	    throws AAAFaultMessage, UnableToDestroySubscriptionFault{
+	    throws AAAFaultMessage, ResourceUnknownFault, UnableToDestroySubscriptionFault{
 		//TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#Unsubscribe");
 	}
 
 	public PauseSubscriptionResponse PauseSubscription(
-	       PauseSubscription request) throws AAAFaultMessage, PauseFailedFault{
+	       PauseSubscription request) throws AAAFaultMessage, PauseFailedFault, ResourceUnknownFault{
 		//TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#PauseSubscription");
 	}
 
 	public ResumeSubscriptionResponse ResumeSubscription(
 	       ResumeSubscription request)
-	       throws AAAFaultMessage, ResumeFailedFault{
+	       throws AAAFaultMessage, ResourceUnknownFault, ResumeFailedFault{
 		//TODO : fill this with the necessary business logic
 		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#ResumeSubscription");
 	}
 	
 	public RegisterPublisherResponse RegisterPublisher(RegisterPublisher request)
-            throws TopicNotSupportedFault,InvalidTopicExpressionFault,
+            throws ResourceUnknownFault, TopicNotSupportedFault,InvalidTopicExpressionFault,
                 PublisherRegistrationFailedFault,
                 UnacceptableInitialTerminationTimeFault,
                 PublisherRegistrationRejectedFault{
@@ -173,7 +200,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     }
 
     public DestroyRegistrationResponse DestroyRegistration(DestroyRegistration request)
-            throws ResourceNotDestroyedFault{
+            throws ResourceNotDestroyedFault, ResourceUnknownFault{
         //TODO : fill this with the necessary business logic
         throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#DestroyRegistration");
     }

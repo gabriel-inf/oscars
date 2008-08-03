@@ -345,31 +345,64 @@ public class SubscriptionAdapter{
      * authorized to see.
      * 
      * @param request the Axis2 object with the Renew request information
-     * @param userLogin the login of the renewer
      * @param permissionMap a hash containing certain authorization constraints for the renewer
      * @return an Axis2 object with the result of the renewal
      * @throws UnacceptableInitialTerminationTimeFault
      */
-    public RenewResponse renew(Renew request, String userLogin, HashMap<String,String> permissionMap)
-                               throws AAAFaultMessage, UnacceptableTerminationTimeFault{
+    public RenewResponse renew(Renew request, HashMap<String,String> permissionMap)
+                               throws AAAFaultMessage, 
+                                      ResourceUnknownFault,
+                                      UnacceptableTerminationTimeFault{
+        this.log.info("renew.start");
         RenewResponse response = new RenewResponse();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
+        Subscription subscription = null;
+        long termTime = this.parseTermTime(request.getTerminationTime());
+        long newTermTime = 0L;
         EndpointReferenceType subRef = request.getSubscriptionReference();
         String address = this.parseEPR(subRef);
         ReferenceParametersType refParams = subRef.getReferenceParameters(); 
-        if(refParams == null){ return null;}
+        if(refParams == null){ 
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                        "No subscription reference provided.");
+        }
         String subscriptionId = refParams.getSubscriptionId();
-        if(subscriptionId == null){ return null; }
-        
+        if(subscriptionId == null){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                           "No subscription ID provided.");
+        }
         if(!this.subscriptionManagerURL.equals(address)){
-            return null;
+            throw new ResourceUnknownFault("Could not find subscription." +
+                  "Invalid subcription manager address. This notification" +
+                  " broker requires you to use address " + 
+                   this.subscriptionManagerURL);
+        }
+
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            newTermTime = sm.renew(subscriptionId, termTime, permissionMap);
+        }catch(UnacceptableTerminationTimeFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }catch(ResourceUnknownFault e){
+            sess.getTransaction().rollback();
+            throw e;
         }
         
-        //query reservation
-        //check user can change subscription
-        //check termination time
-        //update USERLOGIN and INSTITUTION
-        //update termination time
+        sess.getTransaction().commit();
         
+        /* Convert creation and termination time to Calendar object */
+		GregorianCalendar currCal = new GregorianCalendar();
+		GregorianCalendar termCal = new GregorianCalendar();
+		currCal.setTimeInMillis(System.currentTimeMillis());
+		termCal.setTimeInMillis(newTermTime * 1000);
+		
+        response.setSubscriptionReference(subRef);
+        response.setCurrentTime(currCal);
+        response.setTerminationTime(termCal);
+        
+        this.log.info("renew.end");
         return response;
     }
     
@@ -456,8 +489,12 @@ public class SubscriptionAdapter{
                                 throws UnacceptableInitialTerminationTimeFault{
         Subscription subscription = new Subscription();
         String consumerAddress = this.parseEPR(request.getConsumerReference());
-        long initTermTime = 
-                this.parseInitTermTime(request.getInitialTerminationTime());
+        long initTermTime = 0L;
+        try{
+            initTermTime = this.parseTermTime(request.getInitialTerminationTime());
+        }catch(UnacceptableTerminationTimeFault ex){
+            throw new UnacceptableInitialTerminationTimeFault(ex.getMessage());
+        }
         
         subscription.setUrl(consumerAddress);
         subscription.setUserLogin(userLogin);
@@ -646,38 +683,38 @@ public class SubscriptionAdapter{
     /**
      *  Utility function that extracts an xsd:datetime or xsd:duration from a string
      *
-     * @param initTermTime the string to parse
+     * @param termTime the string to parse
      * @return a timestamp in seconds equivalent to the given string
      * @throws UnacceptableInitialTerminationTimeFault
      */
-    private long parseInitTermTime(String initTermTime) 
-                                throws UnacceptableInitialTerminationTimeFault{
+    private long parseTermTime(String termTime) 
+                                throws UnacceptableTerminationTimeFault{
         /* Parsing initial termination time since Axis2 does not like unions */
         long timestamp = 0L;
-        if(initTermTime == null){
-            this.log.debug("initTermTime=default");
-        }else if(initTermTime.startsWith("P")){
+        if(termTime == null){
+            this.log.debug("termTime=default");
+        }else if(termTime.startsWith("P")){
             //duration
-            this.log.debug("initTermTime=xsd:duration");
+            this.log.debug("termTime=xsd:duration");
             try{
                 DatatypeFactory dtFactory = DatatypeFactory.newInstance();
-                Duration dur = dtFactory.newDuration(initTermTime);
+                Duration dur = dtFactory.newDuration(termTime);
                 GregorianCalendar cal = new GregorianCalendar();
                 dur.addTo(cal);
                 timestamp = (cal.getTimeInMillis()/1000L);
             }catch(Exception e){
-                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
+                throw new UnacceptableTerminationTimeFault("InitialTerminationTime " +
                     "appears to be an invalid xsd:duration value.");
             }
         }else{
             //datetime or invalid
-            this.log.debug("initTermTime=xsd:datetime");
+            this.log.debug("termTime=xsd:datetime");
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
             try{
-                Date date = df.parse(initTermTime);
+                Date date = df.parse(termTime);
                 timestamp = (date.getTime()/1000L);
             }catch(Exception e){
-                throw new UnacceptableInitialTerminationTimeFault("InitialTerminationTime " +
+                throw new UnacceptableTerminationTimeFault("InitialTerminationTime " +
                     "must be of type xsd:datetime or xsd:duration.");
             }
         }
