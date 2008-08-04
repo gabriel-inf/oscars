@@ -16,14 +16,22 @@ import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.Unsubscribe;
+import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
 import org.oasis_open.docs.wsn.b_2.Renew;
 import org.oasis_open.docs.wsn.b_2.RenewResponse;
+import org.oasis_open.docs.wsn.b_2.PauseSubscription;
+import org.oasis_open.docs.wsn.b_2.PauseSubscriptionResponse;
+import org.oasis_open.docs.wsn.b_2.ResumeSubscription;
+import org.oasis_open.docs.wsn.b_2.ResumeSubscriptionResponse;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
 import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
+import org.oasis_open.docs.wsn.br_2.DestroyRegistration;
+import org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse;
 import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.oscars.OSCARSStub;
@@ -397,21 +405,14 @@ public class Client {
     }
     
     /**
-     * Renews an existing suscription
+     * Renews an existing subscription
      *
-     * @param request the Subscribe message to send
+     * @param request the Renew message to send
+     * @return the response of the Renew request
      * @throws AAAFaultMessage
-     * @throws InvalidFilterFault
-     * @throws InvalidMessageContentExpressionFault
-     * @throws InvalidProducerPropertiesExpressionFault
-     * @throws InvalidTopicExpressionFault
-     * @throws NotifyMessageNotSupportedFault
      * @throws RemoteException
-     * @throws SubscribeCreationFailedFault
-     * @throws TopicExpressionDialectUnknownFault
-     * @throws TopicNotSupportedFault
-     * @throws UnacceptableInitialTerminationTimeFault
-     * @throws UnrecognizedPolicyRequestFault
+     * @throws ResourceUnknownFault
+     * @throws UnacceptableTerminationTimeFault
      */
     public RenewResponse renew(Renew request) 
                   throws RemoteException, ResourceUnknownFault,
@@ -421,12 +422,63 @@ public class Client {
     }
     
     /**
+     * Cancels an existing subscription
+     *
+     * @param request the Unsubscribe message to send
+     * @return the response of the Unsubscribe request
+     * @throws AAAFaultMessage
+     * @throws RemoteException
+     * @throws ResourceUnknownFault
+     * @throws UnableToDestroySubscriptionFault
+     */
+    public UnsubscribeResponse unsubscribe(Unsubscribe request) 
+                  throws RemoteException, ResourceUnknownFault,
+                  UnableToDestroySubscriptionFault,
+                  net.es.oscars.notify.ws.AAAFaultMessage{
+       return this.notifyStub.Unsubscribe(request);
+    }
+    
+    /**
+     * Pauses an existing suscription
+     *
+     * @param request the Pause message to send
+     * @return the response of the Pause request
+     * @throws AAAFaultMessage
+     * @throws RemoteException
+     * @throws ResourceUnknownFault
+     * @throws PauseFailedFault
+     */
+    public PauseSubscriptionResponse pauseSubscription(PauseSubscription request) 
+                  throws RemoteException, ResourceUnknownFault,
+                  PauseFailedFault,
+                  net.es.oscars.notify.ws.AAAFaultMessage{
+       return this.notifyStub.PauseSubscription(request);
+    }
+    
+    /**
+     * Pauses a paused suscription
+     *
+     * @param request the Unsubscribe message to send
+     * @return the response of the Unsubscribe request
+     * @throws AAAFaultMessage
+     * @throws RemoteException
+     * @throws ResourceUnknownFault
+     * @throws ResumeFailedFault
+     */
+    public ResumeSubscriptionResponse resumeSubscription(ResumeSubscription request) 
+                  throws RemoteException, ResourceUnknownFault,
+                  ResumeFailedFault,
+                  net.es.oscars.notify.ws.AAAFaultMessage{
+       return this.notifyStub.ResumeSubscription(request);
+    }
+    
+    /**
      * Registers a publisher with a notification broker. This should be
      * used by services that produce notifications they would like to share
      * with other groups.
      *
      * @param request the registration message
-     * @return the restult of the registration
+     * @return the result of the registration
      * @throws InvalidTopicExpressionFault
      * @throws PublisherRegistrationFailedFault
      * @throws PublisherRegistrationRejectedFault
@@ -444,6 +496,23 @@ public class Client {
                          PublisherRegistrationRejectedFault,
                          RemoteException{
        return this.notifyStub.RegisterPublisher(request);
+    }
+    
+    /**
+     * Destroys an existing PublisherRegistration. This should be use by
+     * publishers that want to invalid a PublisherRegistration ID prior
+     * to its set expiration time. 
+     *
+     * @param request the request with the id of the registration to destroy
+     * @return the result of the DestroyRegistration request
+     * @throws RemoteException
+     * @throws ResourceNotDestroyedFault
+     * @throws ResourceUnknownFault
+     */
+    public DestroyRegistrationResponse destroyRegistration(DestroyRegistration request) 
+                  throws ResourceNotDestroyedFault, ResourceUnknownFault,
+                         RemoteException{
+       return this.notifyStub.DestroyRegistration(request);
     }
     
     /**
@@ -481,6 +550,27 @@ public class Client {
         if(subscriptionId != null){
             ReferenceParametersType refParams = new ReferenceParametersType();
             refParams.setSubscriptionId(subscriptionId);
+            epr.setReferenceParameters(refParams); 
+        }
+        
+        return epr;
+    }
+    
+    /**
+     * Utility function for generating a PublisherRegistration EPR.
+     *
+     * @param address the URI to go in the Address field of the EndpointReference
+     * @param pubRegistrationId the UUID of a PublisherRegistration
+     * @return the generated Endpoint Reference
+     * @throws MalformedURIException
+     */
+    public EndpointReferenceType generatePublisherRegistrationRef(
+        String address, String pubRegistrationId) throws MalformedURIException{
+        EndpointReferenceType epr = this.generateEndpointReference(address, null);
+        //set ReferenceParameters
+        if(pubRegistrationId != null){
+            ReferenceParametersType refParams = new ReferenceParametersType();
+            refParams.setPublisherRegistrationId(pubRegistrationId);
             epr.setReferenceParameters(refParams); 
         }
         
