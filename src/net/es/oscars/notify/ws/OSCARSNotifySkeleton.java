@@ -17,6 +17,7 @@ import org.hibernate.*;
 
 import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;
+import org.w3.www._2005._08.addressing.EndpointReferenceType;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.UserManager.AuthValue;
@@ -56,12 +57,17 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     
 	public void Notify(Notify request){
 	    this.log.debug("Received a notification message from publisher");
-	    
 	    try{
 	        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
             NotificationMessageHolderType[] holders = request.getNotificationMessage();
             for(NotificationMessageHolderType holder : holders){
-                //open session here to keep aa lookups completely separated from SubscriptionAdapter
+                EndpointReferenceType producerRef = holder.getProducerReference();
+                if(!this.sa.validatePublisherRegistration(producerRef)){ 
+                //    continue; 
+                }
+                //clear out publisherRegistrationId
+                //producerRef.getReferenceParameters().setPublisherRegistrationId(null);
+                
                 Session aaa = this.core.getAAASession();
 		        aaa.beginTransaction();
 		        ArrayList<NotifyPEP> matchingNotifyPEPs = new ArrayList<NotifyPEP>();

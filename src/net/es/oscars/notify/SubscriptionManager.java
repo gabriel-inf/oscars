@@ -38,8 +38,8 @@ public class SubscriptionManager{
         }catch(Exception e){}
         //set to default to one hour if not set
         if(this.pubMaxExpTime <= 0){
-            this.log.info("Defaulting to 1 hour expiration for subscriptions.");
-            this.pubMaxExpTime = 3600;
+            this.log.info("Defaulting to 12 hour expiration for publisher registrations.");
+            this.pubMaxExpTime = 3600*12;
         }
     }
     
@@ -113,6 +113,19 @@ public class SubscriptionManager{
         this.log.debug("destroyRegistration.end");
     }
     
+    public void queryPublisher(String pubRefId) 
+                                throws ResourceUnknownFault{
+        this.log.info("queryPublisher.start");
+        PublisherDAO dao = new PublisherDAO(this.dbname);
+        Publisher publisher = dao.queryByRefId(pubRefId, null, true);
+        if(publisher == null){
+            this.log.error("Publisher registration not found: id=" + pubRefId);
+            throw new ResourceUnknownFault("PublisherRegistration " + 
+                                            pubRefId + " not found.");
+        }
+        this.log.debug("queryPublisher.end");
+    }
+    
     public List<Subscription> findSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
         this.log.info("findSubscriptions.start");
         
@@ -166,7 +179,7 @@ public class SubscriptionManager{
         return expTime;
     }
     
-    public void updateStatus(int newStatus, String subRefId, 
+    public synchronized void updateStatus(int newStatus, String subRefId, 
                       HashMap<String, String> permissionMap) 
                       throws Exception, ResourceUnknownFault{
         this.log.debug("updateStatus.start");

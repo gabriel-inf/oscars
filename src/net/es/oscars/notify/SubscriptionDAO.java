@@ -26,7 +26,8 @@ public class SubscriptionDAO
         String sql = "SELECT DISTINCT s.* FROM subscriptions s INNER JOIN " +
                      "subscriptionFilters sf ON s.id = sf.subscriptionId " + 
                      "INNER JOIN subscriptionFilters sf2 ON sf.subscriptionId = sf2.subscriptionId " + 
-                     "WHERE (sf.type='TOPIC' AND (";
+                     "WHERE s.status=1 AND s.terminationTime > UNIX_TIMESTAMP(NOW()) AND " +
+                     "(sf.type='TOPIC' AND (";
         ArrayList<String> queryParams = new ArrayList<String>();
         SQLQuery query = null;
         List<Subscription> subscriptions = null;

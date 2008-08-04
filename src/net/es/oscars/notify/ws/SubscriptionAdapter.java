@@ -46,6 +46,7 @@ public class SubscriptionAdapter{
     private String dbname;
     private String repo;
     private OSCARSNotifyCore core;
+    private SubscriptionManager sm;
     
     /** Default constructor */
     public SubscriptionAdapter(String dbname){
@@ -61,6 +62,7 @@ public class SubscriptionAdapter{
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notifybroker", true); 
         this.subscriptionManagerURL = props.getProperty("url");
+        this.sm = new SubscriptionManager(this.dbname);
         if(this.subscriptionManagerURL == null){
             String localhost = null;
             try{
@@ -101,7 +103,6 @@ public class SubscriptionAdapter{
                InvalidProducerPropertiesExpressionFault,InvalidFilterFault,InvalidMessageContentExpressionFault,
                UnacceptableInitialTerminationTimeFault{
         this.log.info("subscribe.start");
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         Subscription subscription = this.axis2Subscription(request, userLogin);
         SubscribeResponse response = null;
         ArrayList<SubscriptionFilter> filters = new ArrayList<SubscriptionFilter>();
@@ -160,7 +161,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            subscription = sm.subscribe(subscription, filters);
+            subscription = this.sm.subscribe(subscription, filters);
             response = this.subscription2Axis(subscription);
         }catch(UnacceptableInitialTerminationTimeFault e){
             sess.getTransaction().rollback();
@@ -221,7 +222,6 @@ public class SubscriptionAdapter{
                               JaxenException,
                               TopicExpressionDialectUnknownFault{
         this.log.info("notify.start");
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         TopicExpressionType topicExpr = holder.getTopic();
         TopicExpressionType[] topicExprs = {topicExpr};
         ArrayList<String>topics = this.parseTopics(topicExprs);
@@ -253,7 +253,7 @@ public class SubscriptionAdapter{
         
         /* find all subscriptions that match this topic and have the necessary authorizations
            on the Notification resource */
-        authSubscriptions = sm.findSubscriptions(permissionMap);
+        authSubscriptions = this.sm.findSubscriptions(permissionMap);
         //apply resource-specific policy and subscriber defined XPATH filters
         for(Subscription authSubscription : authSubscriptions){
             //make sure that the subscriber has permssions to view the resource in this notification
@@ -357,7 +357,6 @@ public class SubscriptionAdapter{
                                       UnacceptableTerminationTimeFault{
         this.log.info("renew.start");
         RenewResponse response = new RenewResponse();
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         Subscription subscription = null;
         long termTime = this.parseTermTime(request.getTerminationTime());
         long newTermTime = 0L;
@@ -383,7 +382,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            newTermTime = sm.renew(subscriptionId, termTime, permissionMap);
+            newTermTime = this.sm.renew(subscriptionId, termTime, permissionMap);
         }catch(UnacceptableTerminationTimeFault e){
             sess.getTransaction().rollback();
             throw e;
@@ -425,7 +424,6 @@ public class SubscriptionAdapter{
                                       UnableToDestroySubscriptionFault{
         this.log.info("unsubscribe.start");
         UnsubscribeResponse response = new UnsubscribeResponse();
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         Subscription subscription = null;
         EndpointReferenceType subRef = request.getSubscriptionReference();
         String address = this.parseEPR(subRef);
@@ -449,7 +447,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, permissionMap);
+            this.sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, permissionMap);
         }catch(ResourceUnknownFault e){
             sess.getTransaction().rollback();
             throw e;
@@ -482,7 +480,6 @@ public class SubscriptionAdapter{
                                       PauseFailedFault{
         this.log.info("pause.start");
         PauseSubscriptionResponse response = new PauseSubscriptionResponse();
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         Subscription subscription = null;
         EndpointReferenceType subRef = request.getSubscriptionReference();
         String address = this.parseEPR(subRef);
@@ -506,7 +503,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            sm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, permissionMap);
+            this.sm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, permissionMap);
         }catch(ResourceUnknownFault e){
             sess.getTransaction().rollback();
             throw e;
@@ -538,7 +535,6 @@ public class SubscriptionAdapter{
                                       ResumeFailedFault{
         this.log.info("resume.start");
         ResumeSubscriptionResponse response = new ResumeSubscriptionResponse();
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         Subscription subscription = null;
         EndpointReferenceType subRef = request.getSubscriptionReference();
         String address = this.parseEPR(subRef);
@@ -562,7 +558,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            sm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, permissionMap);
+            this.sm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, permissionMap);
         }catch(ResourceUnknownFault e){
             sess.getTransaction().rollback();
             throw e;
@@ -592,7 +588,6 @@ public class SubscriptionAdapter{
                                       ResourceNotDestroyedFault{
         this.log.info("destroyRegistration.start");
         DestroyRegistrationResponse response = new DestroyRegistrationResponse();
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         EndpointReferenceType pubRef = request.getPublisherRegistrationReference();
         String address = this.parseEPR(pubRef);
         ReferenceParametersType refParams = pubRef.getReferenceParameters(); 
@@ -615,7 +610,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            sm.destroyRegistration(pubId, permissionMap);
+            this.sm.destroyRegistration(pubId, permissionMap);
         }catch(ResourceUnknownFault e){
             sess.getTransaction().rollback();
             throw e;
@@ -631,6 +626,49 @@ public class SubscriptionAdapter{
         response.setPublisherRegistrationReference(pubRef);
         this.log.info("destroyRegistration.end");
         return response;
+    }
+    
+    /**
+     * Validates a publisher given a registration ID
+     * 
+     * @param epr the endpoint reference containing the publisherRegistrationId
+     * @return true if PublisherRegistration is valid, false otherwise
+     * @throws ResourceUnknownFault
+     */
+    public boolean validatePublisherRegistration(EndpointReferenceType epr){
+        this.log.info("validatePublisherRegistration.start");
+        if(epr == null){
+            this.log.error("Could not find registration. No producer reference provided.");
+            return false;
+        }
+        ReferenceParametersType refParams = epr.getReferenceParameters(); 
+        if(refParams == null){ 
+            this.log.error("Could not find registration. No registration reference provided.");
+            return false;
+        }
+        String pubId = refParams.getPublisherRegistrationId();
+        if(pubId == null){
+            this.log.error("Could not find registration. No registration ID provided.");
+            return false;
+        }
+
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            this.sm.queryPublisher(pubId);
+        }catch(ResourceUnknownFault e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            return false;
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+        sess.getTransaction().commit();
+        this.log.info("validatePublisherRegistration.end");
+        return true;
     }
     
     /**
@@ -669,7 +707,6 @@ public class SubscriptionAdapter{
                                 throws UnacceptableInitialTerminationTimeFault,
                                        PublisherRegistrationFailedFault{
         this.log.info("registerPublisher.start");
-        SubscriptionManager sm = new SubscriptionManager(this.dbname);
         RegisterPublisherResponse response = null;
         Publisher publisher = new Publisher();
         String publisherAddress = this.parseEPR(request.getPublisherReference());
@@ -693,7 +730,7 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            publisher = sm.registerPublisher(publisher);
+            publisher = this.sm.registerPublisher(publisher);
             response = this.publisher2Axis(publisher);
         }catch(UnacceptableInitialTerminationTimeFault e){
             sess.getTransaction().rollback();
