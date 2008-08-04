@@ -102,17 +102,21 @@ public class VendorCheckStatusJob implements Job {
                 } else if (isPathUp) {
                     if (!desiredStatus.equals(StateEngine.ACTIVE)) {
                         // path is still up even though we wanted to tear it down
+                        this.log.debug("failing gri "+gri+" because path is up but desired status is "+desiredStatus);
                         resvsToUpdate.put(gri, StateEngine.FAILED);
                     } else {
                         // path is up as desired
+                        this.log.debug("making gri "+gri+" "+desiredStatus+" because path is up");
                         resvsToUpdate.put(gri, StateEngine.ACTIVE);
                     }
                 } else {
                     if (desiredStatus.equals(StateEngine.ACTIVE)) {
                         // path is down even though we wanted to set it up
+                        this.log.debug("failing gri "+gri+" because path is down but desired status is "+desiredStatus);
                         resvsToUpdate.put(gri, StateEngine.FAILED);
                     } else {
                         // path is down as desired
+                        this.log.debug("making gri "+gri+" "+desiredStatus+" because path is down");
                         resvsToUpdate.put(gri, desiredStatus);
                     }
                 }
