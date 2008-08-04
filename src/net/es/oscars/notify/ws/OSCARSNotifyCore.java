@@ -25,12 +25,12 @@ public class OSCARSNotifyCore{
     private SubscriptionAdapter sa;
     private UserManager userManager = null;
     private ArrayList<NotifyPEP> notifyPEPs;
-    
+
     public boolean initialized = false;
     private static OSCARSNotifyCore instance = null;
     final private String aaaDbName = "aaa";
     final private String notifyDbName = "notify";
-    
+
     private OSCARSNotifyCore() {
         this.log = Logger.getLogger(this.getClass());
     }
@@ -41,7 +41,7 @@ public class OSCARSNotifyCore{
         }
         return OSCARSNotifyCore.instance;
     }
-    
+
     public static OSCARSNotifyCore init() {
         if (OSCARSNotifyCore.instance == null) {
             OSCARSNotifyCore.instance = new OSCARSNotifyCore();
@@ -52,10 +52,24 @@ public class OSCARSNotifyCore{
         instance.initUserManager();
         instance.initNotifyPEPs();
         instance.initSubscriptionAdapter();
-        
+
         return instance;
     }
-    
+
+
+    public void shutdown() {
+        this.log.info("shutdown.start");
+        try {
+            this.scheduler.shutdown(false);
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler error shutting down", ex);
+        }
+        HibernateUtil.closeSessionFactory(this.aaaDbName);
+        HibernateUtil.closeSessionFactory(this.notifyDbName);
+        this.log.info("shutdown.end");
+    }
+
+
     public void initDatabases(){
         this.log.debug("initDatabases.start");
         Initializer initializer = new Initializer();
@@ -67,13 +81,13 @@ public class OSCARSNotifyCore{
         this.getNotifySession();
         this.log.debug("initDatabases.end");
     }
-    
+
     public void initNotifyPEPs(){
         this.log.debug("initNotifyPEPs.start");
         this.notifyPEPs = NotifyPEPFactory.createPEPs(aaaDbName);
         this.log.debug("initNotifyPEPs.end");
     }
-    
+
     public void initScheduler(){
         this.log.debug("initScheduler.start");
         try {
@@ -86,19 +100,19 @@ public class OSCARSNotifyCore{
         }
         this.log.debug("initScheduler.end");
     }
-    
+
     public void initSubscriptionAdapter(){
         this.log.debug("initSubscriptionAdapter.start");
         this.sa = new SubscriptionAdapter(notifyDbName);
         this.log.debug("initSubscriptionAdapter.end");
     }
-    
+
     public void initUserManager() {
         this.log.debug("initUserManager.start");
         this.userManager = new UserManager(this.aaaDbName);
         this.log.debug("initUserManager.end");
     }
-    
+
     public Session getAAASession() {
         Session aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
         if (aaa == null || !aaa.isOpen()) {
@@ -125,19 +139,19 @@ public class OSCARSNotifyCore{
         }
         return notify;
     }
-    
+
     public ArrayList<NotifyPEP> getNotifyPEPs() {
         return this.notifyPEPs;
     }
-    
+
     public Scheduler getScheduler(){
         return this.scheduler;
     }
-    
+
     public SubscriptionAdapter getSubscriptionAdapter(){
         return this.sa;
     }
-    
+
     public UserManager getUserManager(){
         return this.userManager;
     }
