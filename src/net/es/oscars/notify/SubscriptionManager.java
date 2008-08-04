@@ -14,9 +14,9 @@ public class SubscriptionManager{
     private String dbname;
     
     //Constants
-    public static int PAUSED_STATUS = 0;
+    public static int INACTIVE_STATUS = 0;
     public static int ACTIVE_STATUS = 1;
-    
+    public static int PAUSED_STATUS = 2;
     
     
     public SubscriptionManager(String dbname){
@@ -112,7 +112,6 @@ public class SubscriptionManager{
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
         String loginConstraint = permissionMap.get("loginConstraint");
-        String institutionConstraint = permissionMap.get("institution");
         Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
         SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
@@ -139,6 +138,34 @@ public class SubscriptionManager{
         this.log.info("renew.end");
         
         return expTime;
+    }
+    
+    public void updateStatus(int newStatus, String subRefId, 
+                      HashMap<String, String> permissionMap) 
+                      throws Exception, ResourceUnknownFault{
+        this.log.debug("updateStatus.start");
+        SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
+        String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
+        Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
+        if(subscription == null){
+            this.log.error("Subscription not found: id=" + subRefId +
+                          ", user=" + modifyLoginConstraint);
+            throw new ResourceUnknownFault("Subscription " + subRefId + " not found.");
+        }
+        int curStatus = subscription.getStatus();
+        
+        if(newStatus == SubscriptionManager.ACTIVE_STATUS && curStatus != PAUSED_STATUS){
+            throw new Exception("Trying to resume a subscription that is not paused");
+        }else if(newStatus == SubscriptionManager.PAUSED_STATUS && curStatus != ACTIVE_STATUS){
+            throw new Exception("Trying to pause a subscription that is not active");
+        }else if(newStatus == SubscriptionManager.INACTIVE_STATUS && curStatus == INACTIVE_STATUS){
+            //Unsubscribe any state that is not already unsubscribed
+            throw new Exception("Trying to unsubscribe a reservation " +
+                                        "that is already cancelled");
+        }
+        subscription.setStatus(newStatus);
+        dao.update(subscription);
+        this.log.debug("updateStatus.end=" + newStatus);
     }
     
     private long checkTermTime(long curTime, long expTime) 

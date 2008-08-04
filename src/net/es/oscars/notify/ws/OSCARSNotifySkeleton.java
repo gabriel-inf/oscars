@@ -155,21 +155,63 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 
 	public UnsubscribeResponse Unsubscribe(Unsubscribe request)
 	    throws AAAFaultMessage, ResourceUnknownFault, UnableToDestroySubscriptionFault{
-		//TODO : fill this with the necessary business logic
-		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#Unsubscribe");
+		String login = this.checkUser();
+        HashMap<String, String> permissionMap = new HashMap<String, String>();
+		
+		/* Get authorizations */
+		Session aaa = this.core.getAAASession();
+		aaa.beginTransaction();
+		UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+        if (modifyAuthVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("modifyLoginConstraint", login);
+        }
+        
+        UnsubscribeResponse response = this.sa.unsubscribe(request, permissionMap);
+        
+        return response;
 	}
 
 	public PauseSubscriptionResponse PauseSubscription(
 	       PauseSubscription request) throws AAAFaultMessage, PauseFailedFault, ResourceUnknownFault{
-		//TODO : fill this with the necessary business logic
-		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#PauseSubscription");
+		String login = this.checkUser();
+        HashMap<String, String> permissionMap = new HashMap<String, String>();
+		
+		/* Get authorizations */
+		Session aaa = this.core.getAAASession();
+		aaa.beginTransaction();
+		UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+        if (modifyAuthVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("modifyLoginConstraint", login);
+        }
+        
+        PauseSubscriptionResponse response = this.sa.pause(request, permissionMap);
+        
+        return response;
 	}
 
 	public ResumeSubscriptionResponse ResumeSubscription(
 	       ResumeSubscription request)
 	       throws AAAFaultMessage, ResourceUnknownFault, ResumeFailedFault{
-		//TODO : fill this with the necessary business logic
-		throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#ResumeSubscription");
+		String login = this.checkUser();
+        HashMap<String, String> permissionMap = new HashMap<String, String>();
+		
+		/* Get authorizations */
+		Session aaa = this.core.getAAASession();
+		aaa.beginTransaction();
+		UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+        if (modifyAuthVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("modifyLoginConstraint", login);
+        }
+        
+        ResumeSubscriptionResponse response = this.sa.resume(request, permissionMap);
+        
+        return response;
 	}
 	
 	public RegisterPublisherResponse RegisterPublisher(RegisterPublisher request)

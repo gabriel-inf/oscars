@@ -347,6 +347,8 @@ public class SubscriptionAdapter{
      * @param request the Axis2 object with the Renew request information
      * @param permissionMap a hash containing certain authorization constraints for the renewer
      * @return an Axis2 object with the result of the renewal
+     * @throws AAAFaultMessage
+     * @throws ResourceUnknownFault
      * @throws UnacceptableInitialTerminationTimeFault
      */
     public RenewResponse renew(Renew request, HashMap<String,String> permissionMap)
@@ -403,6 +405,175 @@ public class SubscriptionAdapter{
         response.setTerminationTime(termCal);
         
         this.log.info("renew.end");
+        return response;
+    }
+    
+     /**
+     * Cancel a subscription based on the parameters of the request. 
+     * 
+     * @param request the Axis2 object with the Unsubscribe request information
+     * @param permissionMap a hash containing authorization constraints
+     * @return an Axis2 object with the result of the unsubscribe
+     * @throws AAAFaultMessage
+     * @throws ResourceUnknownFault
+     * @throws UnableToDestroySubscriptionFault
+     */
+    public UnsubscribeResponse unsubscribe(Unsubscribe request, 
+                               HashMap<String,String> permissionMap)
+                               throws AAAFaultMessage, 
+                                      ResourceUnknownFault,
+                                      UnableToDestroySubscriptionFault{
+        this.log.info("unsubscribe.start");
+        UnsubscribeResponse response = new UnsubscribeResponse();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
+        Subscription subscription = null;
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String address = this.parseEPR(subRef);
+        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
+        if(refParams == null){ 
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                        "No subscription reference provided.");
+        }
+        String subscriptionId = refParams.getSubscriptionId();
+        if(subscriptionId == null){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                           "No subscription ID provided.");
+        }
+        if(!this.subscriptionManagerURL.equals(address)){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                  "Invalid subcription manager address. This notification" +
+                  " broker requires you to use address " + 
+                   this.subscriptionManagerURL);
+        }
+
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, permissionMap);
+        }catch(ResourceUnknownFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            throw new UnableToDestroySubscriptionFault(e.getMessage());
+        }
+        sess.getTransaction().commit();
+		
+        response.setSubscriptionReference(subRef);
+        this.log.info("unsubscribe.end");
+        return response;
+    }
+    
+    /**
+     * Pause a subscription based on the parameters of the request. Pausing
+     * suspends the sending of notifications until the subscription is resumed.
+     * 
+     * @param request the Axis2 object with the Pause request information
+     * @param permissionMap a hash containing authorization constraints
+     * @return an Axis2 object with the result of the pause
+     * @throws AAAFaultMessage
+     * @throws ResourceUnknownFault
+     * @throws PauseFailedFault
+     */
+    public PauseSubscriptionResponse pause(PauseSubscription request, 
+                               HashMap<String,String> permissionMap)
+                               throws AAAFaultMessage, 
+                                      ResourceUnknownFault,
+                                      PauseFailedFault{
+        this.log.info("pause.start");
+        PauseSubscriptionResponse response = new PauseSubscriptionResponse();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
+        Subscription subscription = null;
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String address = this.parseEPR(subRef);
+        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
+        if(refParams == null){ 
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                        "No subscription reference provided.");
+        }
+        String subscriptionId = refParams.getSubscriptionId();
+        if(subscriptionId == null){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                           "No subscription ID provided.");
+        }
+        if(!this.subscriptionManagerURL.equals(address)){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                  "Invalid subcription manager address. This notification" +
+                  " broker requires you to use address " + 
+                   this.subscriptionManagerURL);
+        }
+
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            sm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, permissionMap);
+        }catch(ResourceUnknownFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            throw new PauseFailedFault(e.getMessage());
+        }
+        sess.getTransaction().commit();
+		
+        response.setSubscriptionReference(subRef);
+        this.log.info("pause.end");
+        return response;
+    }
+    
+    /**
+     * Resume a paused subscription.
+     * 
+     * @param request the Axis2 object with the Resume request information
+     * @param permissionMap a hash containing authorization constraints
+     * @return an Axis2 object with the result of the resume
+     * @throws AAAFaultMessage
+     * @throws ResourceUnknownFault
+     * @throws ResumeFailedFault
+     */
+    public ResumeSubscriptionResponse resume(ResumeSubscription request, 
+                               HashMap<String,String> permissionMap)
+                               throws AAAFaultMessage, 
+                                      ResourceUnknownFault,
+                                      ResumeFailedFault{
+        this.log.info("resume.start");
+        ResumeSubscriptionResponse response = new ResumeSubscriptionResponse();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
+        Subscription subscription = null;
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String address = this.parseEPR(subRef);
+        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
+        if(refParams == null){ 
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                        "No subscription reference provided.");
+        }
+        String subscriptionId = refParams.getSubscriptionId();
+        if(subscriptionId == null){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                           "No subscription ID provided.");
+        }
+        if(!this.subscriptionManagerURL.equals(address)){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                  "Invalid subcription manager address. This notification" +
+                  " broker requires you to use address " + 
+                   this.subscriptionManagerURL);
+        }
+
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            sm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, permissionMap);
+        }catch(ResourceUnknownFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            throw new ResumeFailedFault(e.getMessage());
+        }
+        sess.getTransaction().commit();
+		
+        response.setSubscriptionReference(subRef);
+        this.log.info("resume.end");
         return response;
     }
     
