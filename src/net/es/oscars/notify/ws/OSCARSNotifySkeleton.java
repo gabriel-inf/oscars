@@ -63,10 +63,10 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             for(NotificationMessageHolderType holder : holders){
                 EndpointReferenceType producerRef = holder.getProducerReference();
                 if(!this.sa.validatePublisherRegistration(producerRef)){ 
-                //    continue; 
+                    continue; 
                 }
                 //clear out publisherRegistrationId
-                //producerRef.getReferenceParameters().setPublisherRegistrationId(null);
+                producerRef.getReferenceParameters().setPublisherRegistrationId(null);
                 
                 Session aaa = this.core.getAAASession();
 		        aaa.beginTransaction();

@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import javax.xml.namespace.QName;
 import net.es.oscars.client.Client;
 import net.es.oscars.notify.OSCARSEvent;
 import net.es.oscars.PropHandler;
-import net.es.oscars.oscars.TypeConverter;
+import net.es.oscars.oscars.*;
 import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.scheduler.*;
 import org.apache.axis2.databinding.ADBException;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
@@ -28,6 +30,7 @@ import org.jdom.*;
 import org.jdom.xpath.*;
 import org.jdom.input.*;
 import org.jdom.output.*;
+import org.quartz.*;
 import org.w3.www._2005._08.addressing.*;
 
 /**
@@ -35,7 +38,8 @@ import org.w3.www._2005._08.addressing.*;
  */
 public class WSObserver implements Observer {
     private Logger log;
-    private String notificationBroker;
+    private OSCARSCore core;
+    private String brokerPublisherRegMgrURL;
     private String producerURL;
     private String repo;
     private String axisConfig;
@@ -43,6 +47,9 @@ public class WSObserver implements Observer {
     private HashMap<String, String> topics;
     private HashMap<String,String> namespaces;
     private HashMap<String,String> prefixes;
+    private ArrayBlockingQueue<OSCARSEvent> retryQueue;
+    private static String publisherRegistrationId = null;
+    private static String brokerConsumerURL = null;
     
     /* Constants */
     private final String TOPIC_EXPR_FULL = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full";
@@ -50,6 +57,7 @@ public class WSObserver implements Observer {
     /** Constructor */
     public WSObserver() {
         this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSCore.getInstance();
         /* Set global constants */
         this.namespaces = new HashMap<String,String>();
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
@@ -70,8 +78,10 @@ public class WSObserver implements Observer {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties wsNotifyProps = propHandler.getPropertyGroup("notify.ws", true); 
         Properties idcProps = propHandler.getPropertyGroup("idc", true); 
-        this.notificationBroker = wsNotifyProps.getProperty("broker.url");
+        this.brokerPublisherRegMgrURL = wsNotifyProps.getProperty("broker.url");
         this.producerURL = idcProps.getProperty("url");
+        String strRetryQueueSize = wsNotifyProps.getProperty("retryQueueSize");
+        int retryQueueSize = 100; //default to 100
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
         if (!catalinaHome.endsWith("/")) {
@@ -79,6 +89,14 @@ public class WSObserver implements Observer {
         }
         String topicNsFile = catalinaHome + "shared/classes/server/idc-topicnamespace.xml";
         String topicSetFile = catalinaHome + "shared/classes/server/idc-topicset.xml";
+        /* Set default urls. Lots of logging so its clear what's going on to users. */
+        String localhost = null;
+        
+        try{
+            localhost = InetAddress.getLocalHost().getHostName();
+        }catch(Exception e){
+            this.log.error("Unable to determine localhost.");
+        }
         
         /* Set client files */
         this.repo = catalinaHome + "shared/classes/repo/";
@@ -94,37 +112,84 @@ public class WSObserver implements Observer {
             return this.initialized;
         }
         
-        /* If both properties set, then done */
-        if(this.notificationBroker != null && this.producerURL != null){
-            this.initialized = true;
-            return this.initialized;
-        }
-        
-        /* Set default urls. Lots of logging so its clear what's going on to users. */
-        String localhost = null;
-        try{
-            localhost = InetAddress.getLocalHost().getHostName();
-            this.initialized = true;
-        }catch(Exception e){
-            this.initialized = false;
-            this.log.warn("Unable to determine localhost.");
-        }
-        
-        if(this.notificationBroker == null && localhost == null){
+        if(this.brokerPublisherRegMgrURL == null && localhost == null){
             this.log.error("You need to set notify.ws.broker.url in oscars.properties!");
-        }else if(this.notificationBroker == null){
-            this.notificationBroker = "https://" + localhost + ":8443/axis2/services/OSCARSNotify";
-            this.log.info("notify.ws.broker not set in oscars.properties. Defaulting to " + this.notificationBroker);
+            this.initialized = false;
+            return this.initialized;
+        }else if(this.brokerPublisherRegMgrURL == null){
+            this.brokerPublisherRegMgrURL = "https://" + localhost + ":8443/axis2/services/OSCARSNotify";
+            this.log.info("notify.ws.broker not set in oscars.properties. Defaulting to " + this.brokerPublisherRegMgrURL);
         }
         
         if(this.producerURL == null && localhost == null){
             this.log.error("You need to set idc.url in oscars.properties!");
+            this.initialized = false;
+            return this.initialized;
         }else if(this.producerURL == null){
             this.producerURL = "https://" + localhost + ":8443/axis2/services/OSCARS";
             this.log.info("idc.url not set in oscars.properties. Defaulting to " + this.producerURL);
         }
         
+        /* Initialize retryQueue */
+        if(strRetryQueueSize == null){
+            this.log.info("Building default retry queue of size 100");
+        }else{
+            try{
+                retryQueueSize = Integer.parseInt(strRetryQueueSize);
+            }catch(Exception e){
+                this.log.warn("Invalid retryQueue of size. Defaulting to 100.");
+            }
+        }
+        this.retryQueue = new ArrayBlockingQueue<OSCARSEvent>(retryQueueSize);
+        
+        /* Register publisher */
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String triggerName = "pubRegTrig-" + idcProps.hashCode();
+        String jobName = "pubReg-" + idcProps.hashCode();
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  new Date(), 
+                                                  null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "REGISTER_PUBLISHER",
+                                            RegisterPublisherJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("url", this.brokerPublisherRegMgrURL);
+        dataMap.put("repo", this.repo);
+        dataMap.put("publisher", this.producerURL);
+        jobDetail.setJobDataMap(dataMap);
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);
+            //don't set uninitialized because job will try again on its own
+        }
+        
+        this.initialized = true;
         return this.initialized;
+    }
+    
+    /**
+     * Sets the publisherRegistrationId to use in the ProducerReference of all
+     * Notify messages and empties any queued notifications. If set to null 
+     * then it will be interpreted as no PublisherRegistration exists and that
+     * Notify messages can't be sent. While null, notification messages will either 
+     * be queued or discarded depending on the value of notify.ws.queueOnFailure.
+     *
+     * @param id the publisherRegistrationId to set
+     */
+    public synchronized static void registered(String id, String url){
+        WSObserver.publisherRegistrationId = id;
+        WSObserver.brokerConsumerURL = url;
+        //this.log.debug("registered.start=" + id + ", " + url);
+        //Empty queue if been waiting for reguster to succeed
+      /*  OSCARSEvent queuedEvent = retryQueue.poll();
+        while(queuedEvent != null){
+            //todo: reschedule
+            this.log.debug("retrying notification...");
+            queuedEvent = retryQueue.poll();
+        } */
+      //  this.log.debug("registered.end");
     }
 
     /**
@@ -150,6 +215,19 @@ public class WSObserver implements Observer {
         }
         
         OSCARSEvent osEvent = (OSCARSEvent) arg;
+        //if not registered with broker, then add to queue
+        if(this.publisherRegistrationId == null){
+            try{
+                retryQueue.add(osEvent);
+            }catch(Exception e){
+                this.log.info("Discarding notification because not registered " +
+                          "with a notification broker and no available slots" +
+                          " in the retry queue");
+            }
+            this.log.debug("Not registered so exiting!");
+            return;
+        }
+        
         OMElement omEvent = null;
         Client client = new Client();
         EndpointReferenceType prodRef = null;
@@ -159,7 +237,7 @@ public class WSObserver implements Observer {
         MessageType msg = new MessageType();
         
         try{
-            client.setUpNotify(true, this.notificationBroker, this.repo, this.axisConfig);
+            client.setUpNotify(true, this.brokerConsumerURL, this.repo, this.axisConfig);
             prodRef = client.generateEndpointReference(this.producerURL);
             topicExpr = this.generateTopicExpression(event);
             OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
@@ -170,7 +248,14 @@ public class WSObserver implements Observer {
         }
         //return if doesn't match any active topics
         if(topicExpr == null){ return; }
-        
+        /* Set publisherRegistrationId
+           Note: Empty string means broker does not require ID
+         */
+        if(!"".equals(publisherRegistrationId)){
+            ReferenceParametersType refParams = new ReferenceParametersType();
+            refParams.setPublisherRegistrationId(publisherRegistrationId);
+            prodRef.setReferenceParameters(refParams); 
+        }
         
         msg.addExtraElement(omEvent);
         msgHolder.setTopic(topicExpr);
@@ -183,6 +268,7 @@ public class WSObserver implements Observer {
         }catch(Exception e){
             this.log.error(e);
             e.printStackTrace();
+            //TODO: on connectionf ailure add to retry queue?
         }finally{
             client.cleanUp();
         }

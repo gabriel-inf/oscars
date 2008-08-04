@@ -75,7 +75,9 @@ public class SubscriptionManager{
         this.log.info("registerPublisher.start");
         PublisherDAO dao = new PublisherDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
-        long expTime = this.checkTermTime(curTime, publisher.getTerminationTime());
+        long expTime = curTime + 3600L;
+        //ignoring expiration for now since no good way to put it in response.
+        //this.checkTermTime(curTime, publisher.getTerminationTime());
         
         /* Save subscription */
         publisher.setReferenceId(this.generateId());
@@ -100,9 +102,9 @@ public class SubscriptionManager{
             this.log.error("Publisher not found: id=" + pubRefId +
                           ", user=" + modifyLoginConstraint);
             throw new ResourceUnknownFault("Publisher " + pubRefId + " not found.");
-        }else if(publisher.getTerminationTime() <= curTime){
+        }/*else if(publisher.getTerminationTime() <= curTime){
             throw new ResourceNotDestroyedFault("Registration is already expired.");
-        }
+        }*/
         
         if(publisher.getStatus() != SubscriptionManager.ACTIVE_STATUS){
             throw new ResourceNotDestroyedFault("Registration has already been destroyed.");

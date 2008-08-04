@@ -28,7 +28,7 @@ public class PublisherDAO
             sql += " AND userLogin=?";
         }
         if(onlyValid){
-            sql += " AND status=1 AND terminationTime > UNIX_TIMESTAMP(NOW())";
+            sql += " AND status=1";
         }
         SQLQuery query = (SQLQuery) this.getSession().createSQLQuery(sql)
                                  .addEntity(Publisher.class)
