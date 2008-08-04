@@ -142,8 +142,6 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         this.log.info("dest=" + dest);
         repo += (repo.endsWith("/") ? "" :"/");
         repo += "shared/classes/terce.conf/repo/";
-        System.setProperty("axis2.xml", repo + "axis2.xml");
-        
         
         /* Calculate path */
         try {
