@@ -740,11 +740,14 @@ public class TypeConverter {
 
         while(pathElem != null){
             //might be no interdomain path
-
-            String linkId = pathElem.getLink().getFQTI();
-
-            intraPath.add(linkId);
-            map.putAll(this.vlanToHashMap(pathElem, src, dest, layer2Data));
+            Link link = pathElem.getLink();
+            if (link != null) {
+                String linkId = link.getFQTI();
+                intraPath.add(linkId);
+                map.putAll(this.vlanToHashMap(pathElem, src, dest, layer2Data));
+            } else {
+                this.log.error("Could not locate a link for pathElem, id: "+pathElem.getId());
+            }
             pathElem = pathElem.getNextElem();
         }
         map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
