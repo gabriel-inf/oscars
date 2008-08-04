@@ -5,6 +5,7 @@ import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notify.ws.UnacceptableInitialTerminationTimeFault;
 import net.es.oscars.notify.ws.UnacceptableTerminationTimeFault;
+import net.es.oscars.notify.ws.ResourceNotDestroyedFault;
 import net.es.oscars.notify.ws.ResourceUnknownFault;
 
 public class SubscriptionManager{
@@ -87,6 +88,31 @@ public class SubscriptionManager{
         return publisher;
     }
     
+    public void destroyRegistration(String pubRefId, HashMap<String, String> permissionMap) 
+                                throws ResourceUnknownFault, ResourceNotDestroyedFault{
+        this.log.info("destroyRegistration.start");
+        PublisherDAO dao = new PublisherDAO(this.dbname);
+        String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
+        Publisher publisher = dao.queryByRefId(pubRefId, modifyLoginConstraint, false);
+        long curTime = System.currentTimeMillis()/1000;
+        
+        if(publisher == null){
+            this.log.error("Publisher not found: id=" + pubRefId +
+                          ", user=" + modifyLoginConstraint);
+            throw new ResourceUnknownFault("Publisher " + pubRefId + " not found.");
+        }else if(publisher.getTerminationTime() <= curTime){
+            throw new ResourceNotDestroyedFault("Registration is already expired.");
+        }
+        
+        if(publisher.getStatus() != SubscriptionManager.ACTIVE_STATUS){
+            throw new ResourceNotDestroyedFault("Registration has already been destroyed.");
+        }
+        
+        publisher.setStatus(SubscriptionManager.INACTIVE_STATUS);
+        dao.update(publisher);
+        this.log.debug("destroyRegistration.end");
+    }
+    
     public List<Subscription> findSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
         this.log.info("findSubscriptions.start");
         
@@ -147,10 +173,13 @@ public class SubscriptionManager{
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
         Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
+        long curTime = System.currentTimeMillis()/1000;
         if(subscription == null){
             this.log.error("Subscription not found: id=" + subRefId +
                           ", user=" + modifyLoginConstraint);
             throw new ResourceUnknownFault("Subscription " + subRefId + " not found.");
+        }else if(subscription.getTerminationTime() <= curTime){
+            throw new Exception("Subscription has expired and cannot be modified.");
         }
         int curStatus = subscription.getStatus();
         

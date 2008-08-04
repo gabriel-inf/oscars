@@ -718,6 +718,13 @@
 
                 }
            
+                if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
+                
+                           return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
                 if (org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.class.equals(type)){
                 
                            return org.oasis_open.docs.wsrf.r_2.ResourceUnknownFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());

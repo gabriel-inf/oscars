@@ -616,6 +616,21 @@
                );
            
               faultExceptionNameMap.put( new javax.xml.namespace.QName(
+                 "http://oscars.es.net/OSCARS",
+                 "AAAFault"),
+                 "net.es.oscars.notify.ws.AAAFaultMessage"
+               );
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName(
+                "http://oscars.es.net/OSCARS",
+                "AAAFault"),
+                "net.es.oscars.notify.ws.AAAFaultMessage");
+               faultMessageMap.put( new javax.xml.namespace.QName(
+                 "http://oscars.es.net/OSCARS",
+                 "AAAFault"),
+                 "net.es.oscars.wsdlTypes.AAAFault"
+               );
+           
+              faultExceptionNameMap.put( new javax.xml.namespace.QName(
                  "http://docs.oasis-open.org/wsrf/r-2",
                  "ResourceUnknownFault"),
                  "net.es.oscars.notify.ws.ResourceUnknownFault"
@@ -1606,6 +1621,7 @@
                     
                     
                         ,net.es.oscars.notify.ws.ResourceNotDestroyedFault
+                        ,net.es.oscars.notify.ws.AAAFaultMessage
                         ,net.es.oscars.notify.ws.ResourceUnknownFault{
 
               try{
@@ -1678,6 +1694,10 @@
                         
                         if (ex instanceof net.es.oscars.notify.ws.ResourceNotDestroyedFault){
                           throw (net.es.oscars.notify.ws.ResourceNotDestroyedFault)ex;
+                        }
+                        
+                        if (ex instanceof net.es.oscars.notify.ws.AAAFaultMessage){
+                          throw (net.es.oscars.notify.ws.AAAFaultMessage)ex;
                         }
                         
                         if (ex instanceof net.es.oscars.notify.ws.ResourceUnknownFault){
@@ -2473,6 +2493,13 @@
                 if (org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.class.equals(type)){
                 
                            return org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
+                
+                           return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }

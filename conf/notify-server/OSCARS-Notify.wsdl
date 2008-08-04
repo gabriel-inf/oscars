@@ -362,6 +362,8 @@
                       message="tns:ResourceUnknownFault" />
             <wsdl:fault  name="ResourceNotDestroyedFault" 
                           message="tns:ResourceNotDestroyedFault" />
+            <wsdl:fault name="AAAErrorException"
+                      message="tns:AAAFaultMessage" />
         </wsdl:operation>
         
     </wsdl:portType>
@@ -558,6 +560,9 @@
             </wsdl:fault>
             <wsdl:fault name="ResourceNotDestroyedFault">
                 <soap:fault name="ResourceNotDestroyedFault" use="literal" />
+            </wsdl:fault>
+            <wsdl:fault name="AAAErrorException">
+                <soap:fault name="AAAErrorException" use="literal" />
             </wsdl:fault>
         </wsdl:operation>
     </wsdl:binding>

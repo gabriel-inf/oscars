@@ -121,7 +121,7 @@
                 (
                   org.oasis_open.docs.wsn.br_2.DestroyRegistration destroyRegistration
                  )
-            throws ResourceNotDestroyedFault,ResourceUnknownFault;
+            throws ResourceNotDestroyedFault,AAAFaultMessage,ResourceUnknownFault;
         
          }
     

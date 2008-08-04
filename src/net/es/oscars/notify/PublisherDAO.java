@@ -21,4 +21,22 @@ public class PublisherDAO
         this.setDatabase(dbname);
         this.dbname = dbname;
     }
+    
+    public Publisher queryByRefId(String referenceId, String login, boolean onlyValid){
+        String sql = "SELECT * FROM publishers WHERE referenceId=?";
+        if(login != null){
+            sql += " AND userLogin=?";
+        }
+        if(onlyValid){
+            sql += " AND status=1 AND terminationTime < UNIX_TIMESTAMP(NOW())";
+        }
+        SQLQuery query = (SQLQuery) this.getSession().createSQLQuery(sql)
+                                 .addEntity(Publisher.class)
+                                 .setString(0, referenceId);
+        if(login != null){
+            query = (SQLQuery) query.setString(1, login);
+        }
+        
+        return (Publisher) query.uniqueResult();
+   }
 }

@@ -511,7 +511,7 @@ public class Client {
      */
     public DestroyRegistrationResponse destroyRegistration(DestroyRegistration request) 
                   throws ResourceNotDestroyedFault, ResourceUnknownFault,
-                         RemoteException{
+                         RemoteException, net.es.oscars.notify.ws.AAAFaultMessage{
        return this.notifyStub.DestroyRegistration(request);
     }
     

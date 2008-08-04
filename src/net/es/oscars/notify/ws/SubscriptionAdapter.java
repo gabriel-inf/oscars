@@ -578,6 +578,62 @@ public class SubscriptionAdapter{
     }
     
     /**
+     * Destroy a PublisherRegistration based on the parameters of the request. 
+     * 
+     * @param request the Axis2 object with the registration to destroy
+     * @param permissionMap a hash containing authorization constraints
+     * @return an Axis2 object with the result of the destroy
+     * @throws ResourceUnknownFault
+     * @throws ResourceNotDestroyedFault
+     */
+    public DestroyRegistrationResponse destroyRegistration(DestroyRegistration request, 
+                               HashMap<String,String> permissionMap)
+                               throws ResourceUnknownFault,
+                                      ResourceNotDestroyedFault{
+        this.log.info("destroyRegistration.start");
+        DestroyRegistrationResponse response = new DestroyRegistrationResponse();
+        SubscriptionManager sm = new SubscriptionManager(this.dbname);
+        EndpointReferenceType pubRef = request.getPublisherRegistrationReference();
+        String address = this.parseEPR(pubRef);
+        ReferenceParametersType refParams = pubRef.getReferenceParameters(); 
+        if(refParams == null){ 
+            throw new ResourceUnknownFault("Could not find registration." +
+                                        "No registration reference provided.");
+        }
+        String pubId = refParams.getPublisherRegistrationId();
+        if(pubId == null){
+            throw new ResourceUnknownFault("Could not find registration." +
+                                           "No registration ID provided.");
+        }
+        if(!this.subscriptionManagerURL.equals(address)){
+            throw new ResourceUnknownFault("Could not find registration." +
+                  "Invalid registration manager address. This notification" +
+                  " broker requires you to use address " + 
+                   this.subscriptionManagerURL);
+        }
+
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            sm.destroyRegistration(pubId, permissionMap);
+        }catch(ResourceUnknownFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }catch(ResourceNotDestroyedFault e){
+            sess.getTransaction().rollback();
+            throw e;
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            throw new ResourceNotDestroyedFault(e.getMessage());
+        }
+        sess.getTransaction().commit();
+		
+        response.setPublisherRegistrationReference(pubRef);
+        this.log.info("destroyRegistration.end");
+        return response;
+    }
+    
+    /**
      * Sends a Notify message to a subscriber
      *
      * @param holder the message to send

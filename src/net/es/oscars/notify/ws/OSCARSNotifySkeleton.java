@@ -242,9 +242,23 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     }
 
     public DestroyRegistrationResponse DestroyRegistration(DestroyRegistration request)
-            throws ResourceNotDestroyedFault, ResourceUnknownFault{
-        //TODO : fill this with the necessary business logic
-        throw new  java.lang.UnsupportedOperationException("Please implement " + this.getClass().getName() + "#DestroyRegistration");
+            throws AAAFaultMessage, ResourceNotDestroyedFault, ResourceUnknownFault{
+        String login = this.checkUser();
+        HashMap<String, String> permissionMap = new HashMap<String, String>();
+		
+		/* Get authorizations */
+		Session aaa = this.core.getAAASession();
+		aaa.beginTransaction();
+		UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "PublisherRegistrations", "modify");
+        if (modifyAuthVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("modifyLoginConstraint", login);
+        }
+        
+        DestroyRegistrationResponse response = this.sa.destroyRegistration(request, permissionMap);
+        
+        return response;
     }
     
 	/**
