@@ -130,6 +130,7 @@ public class UserSession {
             sentCookieName = cookieName;
         }
         Cookie cookie = new Cookie(sentCookieName, cookieValue);
+        cookie.setVersion(1);
         // whether has to go over SSL
         cookie.setSecure(this.secureCookie);
         return cookie;
