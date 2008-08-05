@@ -30,6 +30,7 @@ public class RegisterPublisherJob implements Job{
         String repo = dataMap.getString("repo");
         String publisherURL = dataMap.getString("publisher");
         String consumerURL = url;
+        String axisConfig = repo + "axis2.xml";
         Client client = new Client();
         RegisterPublisher request = new RegisterPublisher();
         EndpointReferenceType publisherRef = null;
@@ -40,7 +41,7 @@ public class RegisterPublisherJob implements Job{
         try{
             publisherRef = client.generateEndpointReference(publisherURL);
             request.setPublisherReference(publisherRef);
-            client.setUpNotify(true, url, repo, null);
+            client.setUpNotify(true, url, repo, axisConfig);
             //send registration
             response = client.registerPublisher(request);
         }catch(MalformedURIException e){
@@ -77,6 +78,29 @@ public class RegisterPublisherJob implements Job{
      
     private void reschedule(JobDataMap dataMap){
         this.log.info("reschedule.start");
+        int retryAttempts = dataMap.getInt("retryAttempts");
+        if(retryAttempts == 0){
+            this.log.error("Unable to register with NotificationBroker after" +
+                           " maximum number of attempts. OSCARS WILL NOT BE " +
+                           " ABLE TO SEND WS-NOTIFICATIONS WHICH ARE " +
+                           "REQUIRED FOR INTERDOMAIN CIRCUIT CREATION AND " + 
+                           "INTERACTION WITH SOME MONITORING SERVICES. If " +
+                           "you are only creating intradomain circuits and " +
+                           "do not have any such monitoring services running" +
+                           " you may ignore this message.\n\nTIPS: Please " +
+                           "verify that the notification broker is running at " + 
+                           dataMap.getString("url") + ". If this URL is not " +
+                           "correct then please set notify.ws.broker.url to " +
+                           "the correct value in oscars.properties. " +
+                           "Additionally, you should verify that you have "+
+                           "created a user for the local IDC that is " +
+                           "associated with the certificate in " +
+                           "$CATALINA_HOME/shared/classes/repo/sec-client.jks.");
+            return;
+        }else if(retryAttempts > 0){
+            retryAttempts--;
+            dataMap.put("retryAttempts", retryAttempts);
+        }
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notify.ws.broker", true);
         String retryWaitStr = props.getProperty("secondsBetweenRegistrationRetries");

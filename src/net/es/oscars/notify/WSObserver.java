@@ -79,6 +79,7 @@ public class WSObserver implements Observer {
         Properties idcProps = propHandler.getPropertyGroup("idc", true); 
         this.brokerPublisherRegMgrURL = wsNotifyProps.getProperty("broker.url");
         this.producerURL = idcProps.getProperty("url");
+        String registerRetryAttempts = wsNotifyProps.getProperty("broker.registerRetryAttempts");
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
         if (!catalinaHome.endsWith("/")) {
@@ -128,6 +129,14 @@ public class WSObserver implements Observer {
         }
         
         /* Register publisher */
+        int registerRetries = 2;//default
+        if("unlimited".equals(registerRetryAttempts)){
+            registerRetries = -1;
+        }else if(registerRetryAttempts != null && 
+                 registerRetryAttempts.matches("\\d+")){
+            registerRetries = Integer.parseInt(registerRetryAttempts);
+        }
+        
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String triggerName = "pubRegTrig-" + idcProps.hashCode();
         String jobName = "pubReg-" + idcProps.hashCode();
@@ -140,6 +149,7 @@ public class WSObserver implements Observer {
         dataMap.put("url", this.brokerPublisherRegMgrURL);
         dataMap.put("repo", this.repo);
         dataMap.put("publisher", this.producerURL);
+        dataMap.put("retryAttempts", registerRetries);
         jobDetail.setJobDataMap(dataMap);
         try{
             this.log.debug("Adding job " + jobName);
