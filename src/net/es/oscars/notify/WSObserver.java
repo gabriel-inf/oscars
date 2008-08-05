@@ -47,7 +47,6 @@ public class WSObserver implements Observer {
     private HashMap<String, String> topics;
     private HashMap<String,String> namespaces;
     private HashMap<String,String> prefixes;
-    private ArrayBlockingQueue<OSCARSEvent> retryQueue;
     private static String publisherRegistrationId = null;
     private static String brokerConsumerURL = null;
     
@@ -80,8 +79,6 @@ public class WSObserver implements Observer {
         Properties idcProps = propHandler.getPropertyGroup("idc", true); 
         this.brokerPublisherRegMgrURL = wsNotifyProps.getProperty("broker.url");
         this.producerURL = idcProps.getProperty("url");
-        String strRetryQueueSize = wsNotifyProps.getProperty("retryQueueSize");
-        int retryQueueSize = 100; //default to 100
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
         if (!catalinaHome.endsWith("/")) {
@@ -130,18 +127,6 @@ public class WSObserver implements Observer {
             this.log.info("idc.url not set in oscars.properties. Defaulting to " + this.producerURL);
         }
         
-        /* Initialize retryQueue */
-        if(strRetryQueueSize == null){
-            this.log.info("Building default retry queue of size 100");
-        }else{
-            try{
-                retryQueueSize = Integer.parseInt(strRetryQueueSize);
-            }catch(Exception e){
-                this.log.warn("Invalid retryQueue of size. Defaulting to 100.");
-            }
-        }
-        this.retryQueue = new ArrayBlockingQueue<OSCARSEvent>(retryQueueSize);
-        
         /* Register publisher */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String triggerName = "pubRegTrig-" + idcProps.hashCode();
@@ -181,15 +166,6 @@ public class WSObserver implements Observer {
     public synchronized static void registered(String id, String url){
         WSObserver.publisherRegistrationId = id;
         WSObserver.brokerConsumerURL = url;
-        //this.log.debug("registered.start=" + id + ", " + url);
-        //Empty queue if been waiting for reguster to succeed
-      /*  OSCARSEvent queuedEvent = retryQueue.poll();
-        while(queuedEvent != null){
-            //todo: reschedule
-            this.log.debug("retrying notification...");
-            queuedEvent = retryQueue.poll();
-        } */
-      //  this.log.debug("registered.end");
     }
 
     /**
@@ -201,6 +177,13 @@ public class WSObserver implements Observer {
      * @param arg the event that ocurred
      */
     public void update (Observable obj, Object arg) {
+         // Observer interface requires second argument to be Object
+        if(!(arg instanceof OSCARSEvent)){
+            this.log.error("[ALERT] Wrong argument passed to WSObserver");
+            return;
+        }
+        OSCARSEvent osEvent = (OSCARSEvent) arg;
+        
         /* if not initialized then try to initialize so user does not need to 
             restart IDC to change URLS in oscars.properties. */
         if((!this.initialized) && (!this.initialize())){
@@ -208,22 +191,9 @@ public class WSObserver implements Observer {
                            "errors. See previous error messages for details.");
             return;
         }
-        // Observer interface requires second argument to be Object
-        if(!(arg instanceof OSCARSEvent)){
-            this.log.error("[ALERT] Wrong argument passed to WSObserver");
-            return;
-        }
-        
-        OSCARSEvent osEvent = (OSCARSEvent) arg;
-        //if not registered with broker, then add to queue
+       
+        //if not registered with broker, then retry later
         if(this.publisherRegistrationId == null){
-            try{
-                retryQueue.add(osEvent);
-            }catch(Exception e){
-                this.log.info("Discarding notification because not registered " +
-                          "with a notification broker and no available slots" +
-                          " in the retry queue");
-            }
             this.log.debug("Not registered so exiting!");
             return;
         }
@@ -268,7 +238,6 @@ public class WSObserver implements Observer {
         }catch(Exception e){
             this.log.error(e);
             e.printStackTrace();
-            //TODO: on connectionf ailure add to retry queue?
         }finally{
             client.cleanUp();
         }
