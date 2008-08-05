@@ -16,6 +16,7 @@
     <servlet>
         <servlet-name>AuthenticateUser</servlet-name>
         <servlet-class>net.es.oscars.servlets.AuthenticateUser</servlet-class>
+	<load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
         <servlet-name>CreateReservationForm</servlet-name>

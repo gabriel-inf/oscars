@@ -38,16 +38,17 @@ public class UserSession {
             Map errorMap = new HashMap();
             errorMap.put("method", methodName);
             errorMap.put("success", Boolean.FALSE);
+            String status = "";
             if ((userName == null) && (sessionName == null)) {
-                errorMap.put("status", "No session has been established: " +
-                                       "cookies are null");
+                status = "Login cookies are not set. ";
             } else if (userName == null) {
-                errorMap.put("status", "No session has been established: " +
-                                       "user name cookie is null");
+                status = "The user name cookie is not set. ";
             } else if (sessionName == null) {
-                errorMap.put("status", "No session has been established: " +
-                                       "session name cookie is null");
+                status = "The session name cookie is not set. ";
             }
+            status += "Your login session has expired. " +
+                      "Please try logging in again.";
+            errorMap.put("status", status);
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
             out.println("/* " + jsonObject + " */");
             return null;
@@ -66,8 +67,9 @@ public class UserSession {
             Map errorMap = new HashMap();
             errorMap.put("method", methodName);
             errorMap.put("success", Boolean.FALSE);
-            errorMap.put("status", "No session has been established: " +
-                         "cookie is invalid for user " + cookieUserName);
+            errorMap.put("status", "There is a problem with the login " +
+                         "for user " + cookieUserName + ".  Please check " +
+                         "with a system administrator.");
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
             out.println("/* " + jsonObject + " */");
         }

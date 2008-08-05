@@ -24,6 +24,7 @@ public class UserLogout extends HttpServlet {
         outputMap.put("status", "User logged out.");
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
+        userSession.expireCookie("userName", "", response);
         userSession.expireCookie("sessionName", "", response);
         log.info("servlet.end");
     }
