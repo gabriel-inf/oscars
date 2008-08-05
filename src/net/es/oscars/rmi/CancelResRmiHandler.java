@@ -60,7 +60,7 @@ public class CancelResRmiHandler {
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to cancel Reservations");
             aaa.getTransaction().rollback();
-            this.log.debug("queryReservation failed permission denied");
+            this.log.debug("cancelReservation failed: permission denied");
             return result;
         }
         if (authVal.equals(AuthValue.MYSITE)){
@@ -94,7 +94,7 @@ public class CancelResRmiHandler {
                 if (reservation != null){
                     eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "WBUI", reservation, "", errMessage);
                 }
-                this.log.debug("queryReservation failed: " + errMessage);
+                this.log.debug("cancelReservation failed: " + errMessage);
                 return result;
             }
         }

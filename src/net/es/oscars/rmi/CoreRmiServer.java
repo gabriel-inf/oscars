@@ -11,7 +11,6 @@ import java.net.*;
 import java.net.UnknownHostException;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.notify.RemoteEventProducer;
 
 import org.apache.log4j.*;
 
@@ -27,6 +26,9 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     private ListResRmiHandler listHandler;
     private CancelResRmiHandler cancelHandler;
     private ModifyResRmiHandler modifyHandler;
+    private UnsafeCreatePathRmiHandler unsafeCreatePathHandler;
+    private UnsafeTeardownPathRmiHandler unsafeTeardownPathHandler;
+    private UnsafeModifyStatusRmiHandler unsafeModifyStatusHandler;
 
     /**
      * CoreRmiServer constructor
@@ -66,6 +68,9 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         this.listHandler = new ListResRmiHandler();
         this.cancelHandler = new CancelResRmiHandler();
         this.modifyHandler = new ModifyResRmiHandler();
+        this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
+        this.unsafeCreatePathHandler = new UnsafeCreatePathRmiHandler();
+        this.unsafeModifyStatusHandler = new UnsafeModifyStatusRmiHandler();
         this.log.debug("init.end");
     }
 
@@ -137,7 +142,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   cancelReservation
+     *   cancelReservationOverride
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
      *   @return HashMap<String, Object> - out values to pour into json Object.
@@ -173,7 +178,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      *   createPath
      *
      *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
+     *   @param String userNaOverrideme - authenticated login name of user
      *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
@@ -182,8 +187,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
-        // TODO: fix this
-        return null;
+        return this.unsafeCreatePathHandler.createPath(inputMap, userName);
     }
 
     /**
@@ -199,8 +203,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
-        // TODO: fix this
-        return null;
+        return this.unsafeTeardownPathHandler.teardownPath(inputMap, userName);
     }
 
     /**
@@ -216,8 +219,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
-        // TODO: fix this
-        return null;
+        return this.unsafeModifyStatusHandler.modifyStatus(inputMap, userName);
     }
 
     /**
