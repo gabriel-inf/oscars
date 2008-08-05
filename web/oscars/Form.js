@@ -107,8 +107,8 @@ oscars.Form.applyParams = function (responseObject) {
                         } else {
                             selected = false;
                         }
-                        console.log(responseObject[param][i]);
-                        console.log(selected);
+                        //console.log(responseObject[param][i]);
+                        //console.log(selected);
                         opt = new Option(responseObject[param][i],
                                          responseObject[param][i],
                                          selected, selected);
