@@ -107,28 +107,15 @@ public class SubscriptionAdapter{
         SubscribeResponse response = null;
         ArrayList<SubscriptionFilter> filters = new ArrayList<SubscriptionFilter>();
         FilterType requestFilter = request.getFilter();
-        QueryExpressionType[] producerPropsFilters = null;
-        QueryExpressionType[] messageContentFilters =  null;
-        TopicExpressionType[] topicFilters = null;
-        if(requestFilter != null){
-            producerPropsFilters = requestFilter.getProducerProperties();
-            messageContentFilters = requestFilter.getMessageContent();
-            topicFilters = requestFilter.getTopicExpression();
-        }
+        QueryExpressionType[] producerPropsFilters = requestFilter.getProducerProperties();
+        QueryExpressionType[] messageContentFilters =  requestFilter.getMessageContent();
+        TopicExpressionType[] topicFilters = requestFilter.getTopicExpression();
         
         /* Add filters */
-        if(permissionMap.containsKey("loginConstraint")){
-            String constraint = permissionMap.get("loginConstraint");
-            filters.add(new SubscriptionFilter("USERLOGIN", constraint));
-        }else{
-            filters.add(new SubscriptionFilter("USERLOGIN", "ALL"));
+        for(String permission : permissionMap.keySet()){
+            filters.add(new SubscriptionFilter(permission, permissionMap.get(permission)));
         }
-        
-        if(permissionMap.containsKey("institution")){
-            String constraint = permissionMap.get("institution");
-            filters.add(new SubscriptionFilter("INSTITUTION", constraint));
-        }
-        
+
         /* TODO: Add constraint on which producers can be seen. It should be 
            handled in a similar way as above where a producer or list of 
            producers is passed in a HashMap */
@@ -149,13 +136,8 @@ public class SubscriptionAdapter{
         }
         
         ArrayList<String> topics = this.parseTopics(topicFilters);
-        boolean explicitTopics = false;
         for(String topic : topics){
              filters.add(new SubscriptionFilter("TOPIC", topic.trim()));
-             explicitTopics = true;
-        }
-        if(!explicitTopics){
-             filters.add(new SubscriptionFilter("TOPIC", "ALL"));
         }
         
         Session sess = this.core.getNotifySession();
@@ -182,8 +164,7 @@ public class SubscriptionAdapter{
      * @param permissionMap a map of the permissions required to view this notification
      */
     public void schedProcessNotify(NotificationMessageHolderType holder,
-                            HashMap<String, ArrayList<String>> permissionMap,
-                            ArrayList<NotifyPEP> notifyPEPs){ 
+                            HashMap<String, ArrayList<String>> permissionMap){ 
         this.log.info("schedProcessNotify.start");
         Scheduler sched = this.core.getScheduler();
         String triggerName = "processNotifyTrig-" + holder.hashCode();
@@ -195,9 +176,7 @@ public class SubscriptionAdapter{
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("permissionMap", permissionMap);
         dataMap.put("message", holder);
-        dataMap.put("notifyPEPs", notifyPEPs);
-        jobDetail.setJobDataMap(dataMap);
-        
+        jobDetail.setJobDataMap(dataMap);   
         try{
             this.log.debug("Adding job " + jobName);
             sched.scheduleJob(jobDetail, trigger);
@@ -248,26 +227,13 @@ public class SubscriptionAdapter{
             }
         }
         topics.addAll(parentTopics);
-        topics.add("ALL");
         permissionMap.put("TOPIC", topics);
         
-        /* find all subscriptions that match this topic and have the necessary authorizations
-           on the Notification resource */
+        /* find all subscriptions that match this topic, have the necessary
+           authorizations on the Notification resource, and match user XPATH */
         authSubscriptions = this.sm.findSubscriptions(permissionMap);
-        //apply resource-specific policy and subscriber defined XPATH filters
-        for(Subscription authSubscription : authSubscriptions){
-            //make sure that the subscriber has permssions to view the resource in this notification
-            String subscriberLogin = authSubscription.getUserLogin();     
-            try{
-                for(NotifyPEP notifyPEP : notifyPEPs){
-                    notifyPEP.enforce(subscriberLogin, omMessage);
-                }
-            }catch(AAAFaultMessage ex){
-                this.log.debug(ex.getMessage());
-                continue;
-            }
-            
-            //apply subscriber specified filters
+        for(Subscription authSubscription : authSubscriptions){ 
+            //apply subscriber specified XPATH filters
             this.log.debug("Applying filters for " + authSubscription.getReferenceId());
             Set filters = authSubscription.getFilters();
             Iterator i = filters.iterator();
@@ -850,7 +816,7 @@ public class SubscriptionAdapter{
      * @throws InvalidTopicExpressionFault
      * @throws TopicExpressionDialectUnknownFault
      */
-    private ArrayList<String> parseTopics(TopicExpressionType[] topicFilters) 
+    public ArrayList<String> parseTopics(TopicExpressionType[] topicFilters) 
             throws TopicExpressionDialectUnknownFault,
                    InvalidTopicExpressionFault{
         if(topicFilters == null || topicFilters.length < 1){

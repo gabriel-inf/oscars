@@ -16,9 +16,10 @@ public interface NotifyPEP extends Serializable{
     
     public void init(String dbname);
     
-    public boolean matches(OMElement message);
+    public boolean matches(ArrayList<String> topics);
     
-    public HashMap<String, ArrayList<String>> prepare(OMElement message) throws AAAFaultMessage;
+    public HashMap<String, String> prepare(String subscriberLogin) throws AAAFaultMessage;
     
-    public void enforce(String subscriberLogin, OMElement message) throws AAAFaultMessage;
+    public HashMap<String, ArrayList<String>> enforce(OMElement message) throws AAAFaultMessage;
+    
 }

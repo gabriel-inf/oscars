@@ -27,8 +27,6 @@ public class IDCEventPEP implements NotifyPEP{
     private Logger log;
     private HashMap<String,String> namespaces;
     private UserManager userMgr;
-    private String resvLogin;
-    private String resvInstitution;
     private String dbname;
     
     final public String ROOT_XPATH = "/idc:event";
@@ -45,25 +43,36 @@ public class IDCEventPEP implements NotifyPEP{
     public void init(String dbname){
         this.userMgr = OSCARSNotifyCore.getInstance().getUserManager();
         this.dbname = dbname;
-        this.resvLogin = null;
-        this.resvInstitution = null;
     }
     
-    public boolean matches(OMElement message){
-        boolean retVal = false;
-        try{
-            AXIOMXPath xpathExpression = new AXIOMXPath(this.ROOT_XPATH); 
-            SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
-            xpathExpression.setNamespaceContext(nsContext);
-            retVal = xpathExpression.booleanValueOf(message);
-         }catch(Exception e){
-            this.log.error(e); 
-         }
-         
-         return retVal;
+    public boolean matches(ArrayList<String> topics){
+        for(String topic : topics){
+            if(topic.startsWith("idc:")){
+                return true;
+            }
+        }
+        return false;
     }
     
-    public HashMap<String, ArrayList<String>> prepare(OMElement omMessage) throws AAAFaultMessage{
+    public HashMap<String,String> prepare(String subscriberLogin) throws AAAFaultMessage{
+        HashMap<String,String> permissionMap = new HashMap<String,String>();
+        UserManager.AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("Subscriber " + subscriberLogin +
+                    "does not have permission to view this notification.");
+        }else if (authVal.equals(AuthValue.SELFONLY)){
+            permissionMap.put("IDC_RESV_USER", subscriberLogin);
+        }else if (authVal.equals(AuthValue.MYSITE)) {
+            String institution = this.userMgr.getInstitution(subscriberLogin);
+            permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institution);
+        }else{
+            permissionMap.put("IDC_RESV_USER", "ALL");
+        }
+        
+        return permissionMap;
+    }
+    
+    public HashMap<String, ArrayList<String>> enforce(OMElement omMessage) throws AAAFaultMessage{
         this.log.debug("prepare.start");
         HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
         ArrayList<String> userList = new ArrayList<String>();
@@ -73,7 +82,7 @@ public class IDCEventPEP implements NotifyPEP{
         OMElement userLogin = null;
         OMElement resvLoginElem = null;
         try{
-            AXIOMXPath xpathExpression = new AXIOMXPath(this.USERLOGIN_XPATH); 
+            AXIOMXPath xpathExpression = new AXIOMXPath(this.RESV_LOGIN_XPATH); 
             SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
             xpathExpression.setNamespaceContext(nsContext);
             userLogin = (OMElement) xpathExpression.selectSingleNode(omMessage);
@@ -86,78 +95,21 @@ public class IDCEventPEP implements NotifyPEP{
         userList.add("ALL");
         if(userLogin != null){
             String userString = userLogin.getText();
-            this.log.info("Adding user login '"+ userString + "'");
+            this.log.debug("Adding user login '"+ userString + "'");
             userList.add(userString);
             user = dao.query(userString);
         }else{
             this.log.debug("Did not find user login in notify message!");
         }
-        permissionMap.put("USERLOGIN", userList);
+        permissionMap.put("IDC_RESV_USER", userList);
         
-        //Add institution
-        if(user != null){
+        //TODO: Parse endpoints and enforce institution
+        /*if(user != null){
             institutionList.add(user.getInstitution().getName());
-            permissionMap.put("INSTITUTION", institutionList);
-        }
-        
-        //pre-load reservation login
-        try{
-            AXIOMXPath xpathExpression = new AXIOMXPath(this.USERLOGIN_XPATH); 
-            SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
-            xpathExpression.setNamespaceContext(nsContext);
-            resvLoginElem = (OMElement) xpathExpression.selectSingleNode(omMessage);
-        }catch(Exception e){
-            e.printStackTrace();
-            throw new AAAFaultMessage(e.getMessage());
-        }
-        if(resvLoginElem != null && resvLoginElem.getText() != null){
-            this.resvLogin = resvLoginElem.getText();
-            this.log.info("Reservation login '"+ this.resvLogin + "'"); 
-        }else{
-            this.log.debug("Did not find reservation login in notify message!");
-            return permissionMap;
-        }
-        
-        User resvUser = dao.query(this.resvLogin);
-	    if(resvUser == null){
-	        this.log.debug("Did not find reservation user in database!");
-	    }else{
-	        this.resvInstitution = resvUser.getInstitution().getName();
-        }
+            permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
+        }*/
         
         this.log.debug("prepare.end");
         return permissionMap;
-    }
-    
-    public void enforce(String subscriberLogin, OMElement omMessage) throws AAAFaultMessage{
-        this.log.debug("enforce.start:subscriber=" + subscriberLogin);
-        UserDAO userDAO = new UserDAO(this.dbname);
-	    User user = userDAO.query(subscriberLogin);
-	    if(user == null){
-	        throw new AAAFaultMessage("Subscriber " + subscriberLogin +
-                    "not found in database.");
-	    }
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
-        if (authVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("Subscriber " + subscriberLogin +
-                    "does not have permission to view this notification.");
-        }
-        if(authVal.equals(AuthValue.ALLUSERS)){
-            this.log.debug("enforce.end: allusers=1");
-            return;
-        }
-        if(this.resvLogin != null && subscriberLogin.equals(this.resvLogin)){
-            this.log.debug("enforce.end: owner=1");
-            return;
-        }
-        String subInstitution = this.userMgr.getInstitution(subscriberLogin);
-        if (this.resvInstitution != null && authVal.equals(AuthValue.MYSITE)
-            && subInstitution.equals(this.resvInstitution)) {
-            this.log.debug("enforce.end: siteadmin=1");
-            return;
-        }
-        throw new AAAFaultMessage("Subscriber " + subscriberLogin +
-                    "does not have permission to view this notification.");
-        
     }
 }

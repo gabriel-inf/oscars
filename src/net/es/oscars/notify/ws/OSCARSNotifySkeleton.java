@@ -74,6 +74,8 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
             NotificationMessageHolderType[] holders = request.getNotificationMessage();
             for(NotificationMessageHolderType holder : holders){
+                TopicExpressionType[] topicExprs = {holder.getTopic()};
+                ArrayList<String>topics = this.sa.parseTopics(topicExprs);
                 EndpointReferenceType producerRef = holder.getProducerReference();
                 if(!this.sa.validatePublisherRegistration(producerRef)){
                     continue;
@@ -83,18 +85,19 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 
                 Session aaa = this.core.getAAASession();
                 aaa.beginTransaction();
-                ArrayList<NotifyPEP> matchingNotifyPEPs = new ArrayList<NotifyPEP>();
                 HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
                 OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
                 for(NotifyPEP notifyPep : this.notifyPEPs){
-                    if(notifyPep.matches(omMessage)){
-                        permissionMap = notifyPep.prepare(omMessage);
-                        matchingNotifyPEPs.add(notifyPep);
-                        break;
+                    if(!notifyPep.matches(topics)){
+                        continue;
+                    }
+                    HashMap<String, ArrayList<String>> pepMap = notifyPep.enforce(omMessage);
+                    if(pepMap != null){
+                        permissionMap.putAll(pepMap);
                     }
                 }
                 aaa.getTransaction().commit();
-                this.sa.schedProcessNotify(holder, permissionMap, matchingNotifyPEPs);
+                this.sa.schedProcessNotify(holder, permissionMap);
             }
         }catch(Exception e){
             this.log.error(e.getMessage());
@@ -113,7 +116,22 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 
         String login = this.checkUser();
         HashMap<String, String> permissionMap = new HashMap<String, String>();
-
+        /* NOTE: Requires a filter and topic to specified.
+         * Filter and TopicExpression are checked here and not in 
+         * schema because this is an optional behavior defined in the 
+         * WS-Notification spec. It also allows for a better error.
+         * See http://docs.oasis-open.org/wsn/wsn-ws_base_notification-1.3-spec-os.pdf line 544-545.
+         */
+        FilterType filter = request.getFilter();
+        if(filter == null || filter.getTopicExpression() == null){
+            throw new InvalidFilterFault("Invalid filter specified. This " +
+                                         "NotificationBroker implementation" +
+                                         " requires a filter containing at " +
+                                         "least one TopicExpression.");
+        }
+        TopicExpressionType[] topicFilters = filter.getTopicExpression();
+        ArrayList<String> topics = this.sa.parseTopics(topicFilters);
+        
         /* Get authorizations */
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
@@ -121,16 +139,16 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("You do not have permission to create subscriptions.");
         }
-        //TODO: Don't assume subscriber and consumer are the same
-        authVal = this.userMgr.checkAccess(login, "Notifications", "query");
-        if (authVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("You do not have permission to view notifications.");
-        }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            String institution = this.userMgr.getInstitution(login);
-            permissionMap.put("institution", institution);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            permissionMap.put("loginConstraint", login);
+        //TODO: Limit which topics someone can subscribe to?
+        //Set resource specific matching conditions
+        for(NotifyPEP notifyPep : this.notifyPEPs){
+            if(!notifyPep.matches(topics)){
+                continue;
+            }
+            HashMap<String,String> pepMap = notifyPep.prepare(login);
+            if(pepMap != null){
+                permissionMap.putAll(pepMap);
+            }
         }
         aaa.getTransaction().commit();
 
@@ -153,18 +171,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
             permissionMap.put("modifyLoginConstraint", login);
         }
-
-        //TODO: Don't assume subscriber and consumer are the same
-        UserManager.AuthValue notifyAuthVal = this.userMgr.checkAccess(login, "Notifications", "query");
-        if (notifyAuthVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("You do not have permission to view notifications.");
-        }
-        if (notifyAuthVal.equals(AuthValue.MYSITE)) {
-            String institution = this.userMgr.getInstitution(login);
-            permissionMap.put("institution", institution);
-        } else if (notifyAuthVal.equals(AuthValue.SELFONLY)){
-            permissionMap.put("loginConstraint", login);
-        }
+        //TODO: Re-run notifyPEP
         aaa.getTransaction().commit();
 
         RenewResponse response = this.sa.renew(request, permissionMap);
