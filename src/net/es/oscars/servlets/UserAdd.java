@@ -50,7 +50,7 @@ public class UserAdd extends HttpServlet {
         try {
             RoleUtils roleUtils = new RoleUtils();
             AuthValue authVal = mgr.checkAccess(userName, "Users", "create");
-            if ((authVal == AuthValue.ALLUSERS) && 
+            if ((authVal != AuthValue.DENIED) && 
                         (profileName != userName)) {
                 newUser = this.toUser(out, profileName, request);
                 String roles[] = request.getParameterValues("roles");

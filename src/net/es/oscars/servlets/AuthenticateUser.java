@@ -159,7 +159,7 @@ public class AuthenticateUser extends HttpServlet {
             outputMap.put("unAuthUsersDisplay", Boolean.FALSE);
         }
         authVal = mgr.checkAccess(userName, "Users", "create");
-        if (authVal == AuthValue.ALLUSERS)  { 
+        if (authVal != AuthValue.DENIED)  { 
             authorizedTabs.put("userAddPane", Boolean.TRUE);
             outputMap.put("addUserDisplay", Boolean.TRUE);
         } else {

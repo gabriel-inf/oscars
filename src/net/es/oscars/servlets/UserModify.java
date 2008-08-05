@@ -159,15 +159,15 @@ public class UserModify extends HttpServlet {
         outputMap.put("status", "Profile for user " +
                                 profileName + " successfully modified");
         // user may have changed his own attributes
-        authVal = mgr.checkAccess(userName, "Users", "modify");
+        //authVal = mgr.checkAccess(userName, "Users", "modify");
         // or user may  have changed a target users attributes
-        attrNames =  mgr.getAttrNames(profileName); 
+        //attrNames =  mgr.getAttrNames(profileName); 
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        this.log.info("serrvlet.end");
+        this.log.info("servlet.end");
     }
 
     public void doPost(HttpServletRequest request,

@@ -48,7 +48,7 @@ public class Institutions extends HttpServlet {
         UserManager mgr = new UserManager(Utils.getDbName());
         
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
-        if (authVal != AuthValue.ALLUSERS) {
+        if (authVal == AuthValue.DENIED) {
             this.log.error("No permission to modify Institutions table.");
             Utils.handleFailure(out, "no permission to modify Institutions table",
                                 methodName, aaa);
