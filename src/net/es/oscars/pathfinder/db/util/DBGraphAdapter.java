@@ -43,7 +43,7 @@ public class DBGraphAdapter {
 
     }
 
-    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime, Reservation reservationToIgnore) {
+    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime, Reservation reservationToIgnore, ArrayList<String> objectsToAvoid) {
         this.log.debug("dbToGraph.start");
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
@@ -100,12 +100,20 @@ public class DBGraphAdapter {
                     continue;
                 }
                 String nodeFQTI = node.getFQTI();
+                if (objectsToAvoid.contains(nodeFQTI)) {
+                    continue;
+                }
+
                 g.addVertex(nodeFQTI);
 
                 Iterator portIt = node.getPorts().iterator();
                 while (portIt.hasNext()) {
                     Port port = (Port) portIt.next();
                     if (!port.isValid()) {
+                        continue;
+                    }
+                    String portFQTI = port.getFQTI();
+                    if (objectsToAvoid.contains(portFQTI)) {
                         continue;
                     }
 
@@ -120,7 +128,6 @@ public class DBGraphAdapter {
                         continue;
                     }
 
-                    String portFQTI = port.getFQTI();
     //            	System.out.println(portFQTI);
 
 
@@ -141,7 +148,10 @@ public class DBGraphAdapter {
                         if (!link.isValid()) {
                             continue;
                         }
-                           String linkFQTI = link.getFQTI();
+                        String linkFQTI = link.getFQTI();
+                       if (objectsToAvoid.contains(linkFQTI)) {
+                           continue;
+                       }
     //                	System.out.println(linkFQTI);
 
                         g.addVertex(linkFQTI);

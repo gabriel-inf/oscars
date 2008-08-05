@@ -34,6 +34,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
     private Logger log;
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
+    private ArrayList<String> objectsToAvoid;
 
     public DBPathfinder(String dbname) {
         super(dbname);
@@ -41,6 +42,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.log = Logger.getLogger(this.getClass());
 
         this.dbga = new DBGraphAdapter(dbname);
+        this.objectsToAvoid = new ArrayList<String>();
         /*
 
         List<String> dbnames = new ArrayList<String>();
@@ -477,7 +479,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         Path path = new Path();
 
-        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime, reservation);
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime, reservation, this.objectsToAvoid);
         src = URNParser.parseTopoIdent(src).get("fqti");
         dst = URNParser.parseTopoIdent(dst).get("fqti");
 
@@ -547,6 +549,20 @@ public class DBPathfinder extends Pathfinder implements PCE {
     private Path removeLoops(Path path) {
         Path newPath = path;
         return newPath;
+    }
+
+    /**
+     * @return the objectsToAvoid
+     */
+    public ArrayList<String> getObjectsToAvoid() {
+        return objectsToAvoid;
+    }
+
+    /**
+     * @param objectsToAvoid the objectsToAvoid to set
+     */
+    public void setObjectsToAvoid(ArrayList<String> objectsToAvoid) {
+        this.objectsToAvoid = objectsToAvoid;
     }
 
 

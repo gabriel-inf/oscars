@@ -59,49 +59,51 @@ public class DBPFClient {
         // set up path
         PathInfo pathInfo = new PathInfo();
 
+
         // Layer 2 stuff
         Layer2Info layer2Info = new Layer2Info();
-        // layer2Info.setSrcEndpoint("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet2/3:*");
-        // layer2Info.setDestEndpoint("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet1/2:*");
-//        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/3:link=*");
-//        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=chic-vlsr:port=10.100.80.185-106:link=1");
 
-//       layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=wash-vlsr:port=10.100.80.133-101:link=1");
-
-        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=fnal-mr1:port=TenGigabitEthernet4/3:link=*");
-        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/4:link=*");
-        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=anl-mr1:port=TenGigabitEthernet3/3:link=*");
-        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=atla-cr1:port=xe-5/1/0:link=*");
+        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*");
+        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=seattle-sdn1:port=ge-2/0/0:link=*");
 
         VlanTag srcVtag = new VlanTag();
-        srcVtag.setString("3140");
+        srcVtag.setString("any");
         srcVtag.setTagged(true);
         layer2Info.setSrcVtag(srcVtag);
         VlanTag destVtag = new VlanTag();
-        destVtag.setString("3140");
+        destVtag.setString("any");
         destVtag.setTagged(true);
         layer2Info.setDestVtag(destVtag);
 
+
+
+        // L3 stuff
+        /*
+        Layer3Info layer3Info = new Layer3Info();
+        layer3Info.setDestHost("nettrash3.es.net");
+        layer3Info.setSrcHost("tera03.ultralight.org");
+        */
+
         pathInfo.setLayer2Info(layer2Info);
-
-
+//        pathInfo.setLayer3Info(layer3Info);
 
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         path.setId("userPath");
-        ArrayList<String> hops = new ArrayList<String>();
-        /*
-        hops.add("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet2/3:*");
-        hops.add("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet4/1:TenGigabitEthernet4/1.1816");
 
-        hops.add("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet7/1:TenGigabitEthernet7/1.1816");
-        hops.add("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet1/2:*");
-        */
-/*
-                urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
-                urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101
-                urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101
-                urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet1/3:link=*
-  */
+        ArrayList<String> hops = new ArrayList<String>();
+
+        hops.add("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*");
+        hops.add("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101");
+        hops.add("urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101");
+        hops.add("urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet7/3:link=TenGigabitEthernet7/3.2606");
+        hops.add("urn:ogf:network:domain=es.net:node=wash-sdn1:port=TenGigabitEthernet3/1:link=TenGigabitEthernet3/1.2606");
+        hops.add("urn:ogf:network:domain=es.net:node=wash-sdn1:port=TenGigabitEthernet7/1:link=TenGigabitEthernet7/1.0");
+        hops.add("urn:ogf:network:domain=es.net:node=atla-sdn1:port=xe-7/0/0:link=xe-7/0/0.0");
+        hops.add("urn:ogf:network:domain=es.net:node=atla-sdn1:port=xe-1/0/0:link=xe-1/0/0.0");
+        hops.add("urn:ogf:network:domain=es.net:node=atla-cr1:port=xe-5/1/0:link=xe-5/1/0.0");
+        hops.add("urn:ogf:network:domain=es.net:node=atla-cr1:port=xe-4/0/0:link=xe-4/0/0.0");
+        hops.add("urn:ogf:network:domain=es.net:node=albu-cr1:port=xe-3/0/0:link=xe-3/0/0.0");
+        hops.add("urn:ogf:network:domain=es.net:node=seattle-sdn1:port=ge-2/0/0:link=*");
 
         for (String hopId : hops) {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
@@ -111,19 +113,28 @@ public class DBPFClient {
         pathInfo.setPath(path);
         pathInfo.setPathType("");
 
+        ArrayList<String> objectsToAvoid = new ArrayList<String>();
+        objectsToAvoid.add("urn:ogf:network:domain=es.net:node=sunn-sdn2:port=xe-1/1/0:link=xe-1/1/0.0");
+        objectsToAvoid.add("urn:ogf:network:domain=es.net:node=seattle-sdn1:port=ge-0/1/0:link=ge-0/1/0.0");
+
+        objectsToAvoid.add("urn:ogf:network:domain=es.net:node=star-sdn1:port=xe-2/2/0:link=xe-2/2/0.0");
+        objectsToAvoid.add("urn:ogf:network:domain=es.net:node=seattle-sdn1:port=ge-4/1/0:link=ge-4/1/0.0");
+
+
+        dbpf.setObjectsToAvoid(objectsToAvoid);
 
         Path result = null;
         PathInfo piResult = null;
         try {
-            result = rm.getPath(reservation, pathInfo);
-             //piResult = dbpf.findPath(pathInfo, reservation);
+            // result = rm.getPath(reservation, pathInfo);
+             piResult = dbpf.findPath(pathInfo, reservation);
         } catch (Exception ex) {
             ex.printStackTrace(pw);
             System.out.println("Error: "+ex.getMessage());
             System.out.println(sw.toString());
         }
 
-        if (result == null) {
+        if (result == null && piResult == null) {
             System.out.println("No path");
         } else if (piResult != null) {
             CtrlPlanePathContent newPath = piResult.getPath();
@@ -148,8 +159,6 @@ public class DBPFClient {
             for (CtrlPlaneHopContent newHop : newHops) {
                 System.out.println(newHop.getLinkIdRef());
             }
-
-
         }
 
 
