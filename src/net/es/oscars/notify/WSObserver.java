@@ -129,7 +129,7 @@ public class WSObserver implements Observer {
         }
         
         /* Register publisher */
-        int registerRetries = 2;//default
+        int registerRetries = 10;//default
         if("unlimited".equals(registerRetryAttempts)){
             registerRetries = -1;
         }else if(registerRetryAttempts != null && 
