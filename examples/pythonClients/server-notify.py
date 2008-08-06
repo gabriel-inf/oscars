@@ -24,5 +24,5 @@ class SOAPServer:
 
 if __name__ == '__main__':
     cs = [OSCARSNotify()]
-    s = SOAPServer('localhost', 8080, cs, RHandlerClass=CustomSOAPRequestHandler)
+    s = SOAPServer('localhost', 8080, cs, reqHandlerClass=CustomSOAPRequestHandler)
     s.start()
