@@ -62,7 +62,7 @@ public class SubscriptionDAO
             sql += "))";
             firstKey = false;
         }
-        sql += ")";
+        sql += (!firstKey ? ")" : "");
         
         //Apply parameters to prepared statement to avoid SQL injection
         query = this.getSession().createSQLQuery(sql)
