@@ -78,8 +78,6 @@ public class CreateResRmiHandler {
                 specifyPath = true;
             }
         }
-
-
         AuthValue authVal = userMgr.checkModResAccess(userName, "Reservations",
                 "create", reqBandwidth, reqDuration, specifyPath, false);
 
@@ -89,11 +87,6 @@ public class CreateResRmiHandler {
             return result;
         }
         aaa.getTransaction().commit();
-
-
-
-
-
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -125,11 +118,6 @@ public class CreateResRmiHandler {
         return result;
     }
 
-
-
-
-
-
     private Reservation toReservation(String userName, HashMap<String, String[]> inputMap) {
         String[] arrayParam = null;
         String strParam = null;
@@ -150,7 +138,6 @@ public class CreateResRmiHandler {
         }
         resv.setStartTime(seconds);
 
-
         arrayParam = inputMap.get("endSeconds");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -159,7 +146,6 @@ public class CreateResRmiHandler {
             }
         }
         resv.setEndTime(seconds);
-
 
         arrayParam = inputMap.get("bandwidth");
         if (arrayParam != null) {
@@ -172,7 +158,6 @@ public class CreateResRmiHandler {
         } else {
             bandwidth = 0L;
         }
-
         resv.setBandwidth(bandwidth);
 
         String description = "";
@@ -216,7 +201,6 @@ public class CreateResRmiHandler {
         String defaultLayer = props.getProperty("defaultLayer");
 
         PathInfo pathInfo = new PathInfo();
-
         String explicitPath = "";
         arrayParam = inputMap.get("explicitPath");
         if (arrayParam != null) {
@@ -225,22 +209,17 @@ public class CreateResRmiHandler {
                 explicitPath = strParam;
             }
         }
-
-
         if ((explicitPath != null) && !explicitPath.trim().equals("")) {
             this.log.info("explicit path: " + explicitPath);
             path = new CtrlPlanePathContent();
             path.setId("userPath"); //id doesn't matter in this context
 
             String[] hops = explicitPath.split("\\s+");
-
             for (int i = 0; i < hops.length; i++) {
                 hops[i] = hops[i].trim();
-
                 if (hops[i].equals(" ") || hops[i].equals("")) {
                     continue;
                 }
-
                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
                 // these can currently be either topology identifiers
                 // or IP addresses
@@ -249,17 +228,14 @@ public class CreateResRmiHandler {
                 this.log.info("explicit path hop: " + hops[i]);
                 path.addHop(hop);
             }
-
             pathInfo.setPath(path);
         } else {
             // Add a path just composed of source and destination
             path = new CtrlPlanePathContent();
             path.setId("userPath"); //id doesn't matter in this context
-
             String[] hops = new String[2];
             hops[0] = inputMap.get("source")[0];
             hops[1] = inputMap.get("destination")[0];
-
             for (int i = 0; i < hops.length; i++) {
                 hops[i] = hops[i].trim();
                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
@@ -270,7 +246,6 @@ public class CreateResRmiHandler {
                 this.log.info("implicit path hop: " + hops[i]);
                 path.addHop(hop);
             }
-
             pathInfo.setPath(path);
         }
 
@@ -330,7 +305,6 @@ public class CreateResRmiHandler {
             } else {
                 strParam = "";
             }
-
             strParam = strParam.trim();
             layer2Info.setSrcEndpoint(strParam);
 
@@ -346,13 +320,10 @@ public class CreateResRmiHandler {
             layer2Info.setSrcVtag(srcVtagObject);
             layer2Info.setDestVtag(destVtagObject);
             pathInfo.setLayer2Info(layer2Info);
-
             return pathInfo;
         }
 
         Layer3Info layer3Info = new Layer3Info();
-
-
         arrayParam = inputMap.get("source");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -366,7 +337,6 @@ public class CreateResRmiHandler {
             throw new BSSException("VLAN tag not supplied for layer 2 reservation");
         }
         layer3Info.setSrcHost(strParam);
-
         arrayParam = inputMap.get("destination");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -376,14 +346,12 @@ public class CreateResRmiHandler {
         strParam = strParam.trim();
         layer3Info.setDestHost(strParam);
 
-
         arrayParam = inputMap.get("srcPort");
         if (arrayParam != null) {
             strParam = arrayParam[0];
         } else {
             strParam = "";
         }
-
         if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setSrcIpPort(Integer.valueOf(strParam));
         } else {
@@ -396,7 +364,6 @@ public class CreateResRmiHandler {
         } else {
             strParam = "";
         }
-
         if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setDestIpPort(Integer.valueOf(strParam));
         } else {
@@ -409,7 +376,6 @@ public class CreateResRmiHandler {
         } else {
             strParam = "";
         }
-
         if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setProtocol(strParam);
         }

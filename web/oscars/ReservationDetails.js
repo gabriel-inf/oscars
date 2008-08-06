@@ -154,6 +154,8 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         // applying results of query
         var node = dojo.byId("vlanReplace");
         node.innerHTML = "";
+        var refreshButton = dojo.byId("resvRefreshDisplay");
+        refreshButton.style.display = ""; 
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
         // for displaying only layer 2 or layer 3 fields

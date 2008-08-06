@@ -45,42 +45,34 @@
   </tbody>
 </table>
 <hr/>
-<table>
-  <tbody>
-  <tr>
-    <td>
+   <span id="resvRefreshDisplay" style="display:none">
       <button dojoType="dijit.form.Button" id="refreshReservation">
         REFRESH
       <script type="dojo/method" event="onClick">
           oscars.ReservationDetails.postQueryReservation(false);
       </script>
       </button>
-    </td>
-    <td>
+  </span>
+  <span id="resvModifyDisplay" style="display:none">
       <button dojoType="dijit.form.Button" id="modifyReservation">
          MODIFY
          <script type="dojo/method" event="onClick">
              oscars.ReservationDetails.postModify();
          </script>
       </button>
-    </td>
-    <td>
         <button dojoType="dijit.form.Button" id="cancelReservation"
                 onclick="dijit.byId('cancelDialog').show();">
         CANCEL 
       </button>
-    </td>
-    <td>
+  </span>
+  <span id="resvCloneDisplay" style="display:none">
       <button dojoType="dijit.form.Button" id="cloneReservation">
          CLONE
          <script type="dojo/method" event="onClick">
              oscars.ReservationDetails.cloneReservation();
          </script>
       </button>
-    </td>
-  </tr>
-  </tbody>
-</table>
+  </span>
 
 <table width="100%">
   <tbody>

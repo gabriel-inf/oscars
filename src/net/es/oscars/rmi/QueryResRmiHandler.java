@@ -74,6 +74,23 @@ public class QueryResRmiHandler {
         } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = userName;
         }
+        // check to see if user is allowed to see the buttons allowing 
+        // reservation modification
+        authVal = userMgr.checkAccess(userName, "Reservations", "modify");
+        if (authVal != AuthValue.DENIED) {
+            result.put("resvModifyDisplay", Boolean.TRUE);
+        } else {
+            result.put("resvModifyDisplay", Boolean.FALSE);
+        }
+        // check to see if user is allowed to see the clone button, which 
+        // requires generic reservation create authorization
+        authVal = userMgr.checkModResAccess(userName, "Reservations", "create",
+                                     0, 0, false, false);
+        if (authVal != AuthValue.DENIED) {
+            result.put("resvCloneDisplay", Boolean.TRUE);
+        } else {
+            result.put("resvCloneDisplay", Boolean.FALSE);
+        }
         // check to see if may look at internal intradomain path elements
         // if user can specify hops on create, he can look at them
         AuthValue authValHops = userMgr.checkModResAccess(userName,
@@ -82,7 +99,6 @@ public class QueryResRmiHandler {
             internalIntradomainHops = true;
         };
         aaa.getTransaction().commit();
-       
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -121,7 +137,6 @@ public class QueryResRmiHandler {
             internalIntradomainHops);
 
         result.put("success", Boolean.TRUE);
-
         bss.getTransaction().commit();
         this.log.debug("query.end");
         return result;

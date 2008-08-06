@@ -70,6 +70,7 @@ oscars.Form.applyParams = function (responseObject) {
         var cb = null;
         var opt = null;
         var selected = null;
+        var result = null;
         // if info for a group of checkboxes
         if (param.match(/Checkboxes$/i) != null) {
             var disabled = false;
