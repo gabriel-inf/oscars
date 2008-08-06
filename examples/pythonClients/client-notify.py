@@ -9,11 +9,15 @@ WSDL_URL = 'wsdl/OSCARS-Notify.wsdl'
 WS_URL = 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify'
 
 
-currentTimeSecs = lambda: int(time.time())
-
 signatureHandler = SignatureHandler('cert.cer', 'key.pem')
 
-sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler)
+sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler, tracefile=open('test', 'w'))
 
-sp.Subscribe({'ConsumerReference': {'Address': 'test'}})
+req = {
+    'ConsumerReference': {
+        'Address': 'http://test.campanel.la/'
+    }
+}
+
+sp.Subscribe(req)
 
