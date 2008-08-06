@@ -898,7 +898,17 @@ public class TypeConverter {
            object then the intradomain path will also be included in
            /idc:event/idc:localDetails */
         String[] path = map.get("interdomainPath");
-        if(path == null){ path = map.get("intradomainPath"); }
+        String[] intra = map.get("intradomainPath"); 
+        //if no interdomain path show the local ingress/egress
+        /* TODO: Conversion from intradomain to interdomain should be done
+            in domain-specific module like Pathfinder */
+        if(path == null && intra != null && intra.length == 1){
+            path = intra;
+        }else if(path == null && intra != null && intra.length > 1){
+            path = new String[2];
+            path[0] = intra[0];
+            path[1] = intra[intra.length-1];
+        }
         if(path != null){
             CtrlPlanePathContent wsPath = new CtrlPlanePathContent();
             wsPath.setId("resvPath");
