@@ -53,7 +53,7 @@ class NotificationHandler:
         return updateMethod is not None and callable(updateMethod)
 
 handler = NotificationHandler()
-handler.register(SampleObserver())
+handler.attach(SampleObserver())
 
 cherrypy.quickstart(handler)
 
