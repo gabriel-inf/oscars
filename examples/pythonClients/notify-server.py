@@ -9,7 +9,7 @@ NotifyTC = Struct(None,
                   minOccurs=1)
 
 class SampleObserver:
-    def update(notification):
+    def update(self, notification):
         pprint(notification)
 
 class NotificationHandler:
