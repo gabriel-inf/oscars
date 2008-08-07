@@ -4,24 +4,57 @@
     xmlns:idc="http://oscars.es.net/OSCARS"
     xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"> 
 
+    <!-- The minimum required set of messages users or IDCs need to see -->
+    <wstop:Topic wstop:name="INFO" wstop:final="true"> 
+        <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
+            /idc:event[idc:type='RESERVATION_CREATE_COMPLETED' or
+                       idc:type='RESERVATION_MODIFY_COMPLETED' or
+                       idc:type='RESERVATION_CANCEL_COMPLETED' or
+                       idc:type='PATH_SETUP_COMPLETED' or
+                       idc:type='PATH_REFRESH_COMPLETED' or
+                       idc:type='PATH_TEARDOWN_COMPLETED' or
+                       idc:type='RESERVATION_CREATE_FAILED' or
+                       idc:type='RESERVATION_MODIFY_FAILED' or
+                       idc:type='RESERVATION_CANCEL_FAILED' or
+                       idc:type='PATH_SETUP_FAILED' or
+                       idc:type='PATH_REFRESH_FAILED' or
+                       idc:type='PATH_TEARDOWN_FAILED']
+        </wstop:MessagePattern>
+    </wstop:Topic>
+    
+    <!-- Various events useful for debugging and monitoring -->
     <wstop:Topic wstop:name="DEBUG" wstop:final="true"> 
         <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
-            /idc:event[idc:type='RESERVATION_CREATE_RECEIVED' or 
-                       idc:type='RESERVATION_CREATE_RETURNED' or
+            /idc:event[idc:type='RESERVATION_CREATE_RECEIVED' or
+                       idc:type='RESERVATION_CREATE_ACCEPTED' or
+                       idc:type='RESERVATION_CREATE_STARTED' or
+                       idc:type='RESERVATION_MODIFY_RECEIVED' or
+                       idc:type='RESERVATION_MODIFY_ACCEPTED' or
+                       idc:type='RESERVATION_MODIFY_STARTED' or
                        idc:type='RESERVATION_CANCEL_RECEIVED' or
-                       idc:type='RESERVATION_CANCEL_RETURNED' or
+                       idc:type='RESERVATION_CANCEL_ACCEPTED' or
+                       idc:type='RESERVATION_CANCEL_STARTED' or
                        idc:type='PATH_SETUP_RECEIVED' or
-                       idc:type='PATH_SETUP_RETURNED' or
+                       idc:type='PATH_SETUP_ACCEPTED' or
+                       idc:type='PATH_SETUP_STARTED' or
+                       idc:type='PATH_REFRESH_RECEIVED' or
+                       idc:type='PATH_REFRESH_ACCEPTED' or
+                       idc:type='PATH_REFRESH_STARTED' or
                        idc:type='PATH_TEARDOWN_RECEIVED' or
-                       idc:type='PATH_TEARDOWN_RETURNED' or
+                       idc:type='PATH_TEARDOWN_ACCEPTED' or
+                       idc:type='PATH_TEARDOWN_STARTED' or
                        idc:type='RESERVATION_LIST_RECEIVED' or
+                       idc:type='RESERVATION_LIST_STARTED' or
+                       idc:type='RESERVATION_LIST_COMPLETED' or
                        idc:type='RESERVATION_LIST_RETURNED' or
                        idc:type='RESERVATION_QUERY_RECEIVED' or
+                       idc:type='RESERVATION_QUERY_STARTED' or
+                       idc:type='RESERVATION_QUERY_COMPLETED' or
                        idc:type='RESERVATION_QUERY_RETURNED' or
-                       idc:type='RESERVATION_MODIFY_RECEIVED' or
-                       idc:type='RESERVATION_MODIFY_RETURNED' or
                        idc:type='RESERVATION_CREATE_FORWARD_STARTED' or
                        idc:type='RESERVATION_CREATE_FORWARD_COMPLETED' or
+                       idc:type='RESERVATION_MODIFY_FORWARD_STARTED' or
+                       idc:type='RESERVATION_MODIFY_FORWARD_COMPLETED' or
                        idc:type='RESERVATION_CANCEL_FORWARD_STARTED' or
                        idc:type='RESERVATION_CANCEL_FORWARD_COMPLETED' or
                        idc:type='PATH_SETUP_FORWARD_STARTED' or
@@ -32,92 +65,39 @@
                        idc:type='RESERVATION_LIST_FORWARD_COMPLETED' or
                        idc:type='RESERVATION_QUERY_FORWARD_STARTED' or
                        idc:type='RESERVATION_QUERY_FORWARD_COMPLETED' or
-                       idc:type='RESERVATION_MODIFY_FORWARD_STARTED' or
-                       idc:type='RESERVATION_MODIFY_FORWARD_COMPLETED']
-        </wstop:MessagePattern>
-    </wstop:Topic>
-    
-    <wstop:Topic wstop:name="INFO" wstop:final="true"> 
-        <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
-            /idc:event[idc:type='RESERVATION_CREATE_STARTED' or
-                       idc:type='RESERVATION_CREATE_ACCEPTED' or
-                       idc:type='RESERVATION_CREATE_COMPLETED' or
-                       idc:type='RESERVATION_CANCEL_STARTED' or
-                       idc:type='RESERVATION_CANCEL_ACCEPTED' or
-                       idc:type='RESERVATION_CANCEL_COMPLETED' or
-                       idc:type='PATH_SETUP_STARTED' or
-                       idc:type='PATH_SETUP_COMPLETED' or
-                       idc:type='PATH_TEARDOWN_STARTED' or
-                       idc:type='PATH_TEARDOWN_COMPLETED' or
-                       idc:type='RESERVATION_LIST_STARTED' or
-                       idc:type='RESERVATION_LIST_COMPLETED' or
-                       idc:type='RESERVATION_QUERY_STARTED' or
-                       idc:type='RESERVATION_QUERY_COMPLETED' or
-                       idc:type='RESERVATION_MODIFY_STARTED' or
-                       idc:type='RESERVATION_MODIFY_ACCEPTED' or
-                       idc:type='RESERVATION_MODIFY_COMPLETED' or
                        idc:type='RESERVATION_EXPIRES_IN_1DAY' or
                        idc:type='RESERVATION_EXPIRES_IN_7DAYS' or
                        idc:type='RESERVATION_EXPIRES_IN_30DAYS' or
                        idc:type='RESERVATION_PERIOD_STARTED' or
                        idc:type='RESERVATION_PERIOD_FINISHED' or
-                       idc:type='RESERVATION_CANCELLED' or
-                       idc:type='DOWNSTREAM_RESERVATION_CREATE_COMPLETE' or
-                       idc:type='UPSTREAM_RESERVATION_CREATE_COMPLETE' or
-                       idc:type='INTERDOMAIN_RESERVATION_CREATE_COMPLETE' or
-                       idc:type='DOWNSTREAM_RESERVATION_CANCEL_COMPLETE' or
-                       idc:type='UPSTREAM_RESERVATION_CANCEL_COMPLETE' or
-                       idc:type='INTERDOMAIN_RESERVATION_CANCEL_COMPLETE' or
-                       idc:type='DOWNSTREAM_PATH_SETUP_COMPLETE' or
-                       idc:type='UPSTREAM_PATH_SETUP_COMPLETE' or
-                       idc:type='INTERDOMAIN_PATH_SETUP_COMPLETE' or
-                       idc:type='DOWNSTREAM_PATH_REFRESH_COMPLETE' or
-                       idc:type='UPSTREAM_PATH_REFRESH_COMPLETE' or
-                       idc:type='INTERDOMAIN_PATH_REFRESH_COMPLETE' or
-                       idc:type='DOWNSTREAM_PATH_TEARDOWN_COMPLETE' or
-                       idc:type='UPSTREAM_PATH_TEARDOWN_COMPLETE' or
-                       idc:type='INTERDOMAIN_PATH_TEARDOWN_COMPLETE' or
-                       idc:type='DOWNSTREAM_LIST_RESERVATION_COMPLETE' or
-                       idc:type='UPSTREAM_LIST_RESERVATION_COMPLETE' or
-                       idc:type='INTERDOMAIN_LIST_RESERVATION_COMPLETE' or
-                       idc:type='DOWNSTREAM_RESERVATION_MODIFY_COMPLETE' or
-                       idc:type='UPSTREAM_RESERVATION_MODIFY_COMPLETE' or
-                       idc:type='INTERDOMAIN_RESERVATION_MODIFY_COMPLETE' or
-                       idc:type='PATH_SETUP_RECOVERED' or
-                       idc:type='PATH_TEARDOWN_RECOVERED' or
-                       idc:type='IDC_RECOVERED']
+                       idc:type='IDC_STARTED']
         </wstop:MessagePattern>
     </wstop:Topic>
     
+    <!-- Information about the status of a circuit beyond direct neighbors -->
+    <wstop:Topic wstop:name="GLOBALPATH" wstop:final="true"> 
+        <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
+            /idc:event[idc:type='DOWNSTREAM_PATH_SETUP_COMPLETE' or
+                       idc:type='UPSTREAM_PATH_SETUP_COMPLETE' or
+                       idc:type='INTERDOMAIN_PATH_SETUP_COMPLETE' or
+                       idc:type='DOWNSTREAM_PATH_TEARDOWN_COMPLETE' or
+                       idc:type='UPSTREAM_PATH_TEARDOWN_COMPLETE' or
+                       idc:type='INTERDOMAIN_PATH_TEARDOWN_COMPLETE']
+        </wstop:MessagePattern>
+    </wstop:Topic>
+    
+    <!-- Aggregation of all the possible errors. Overlaps with IDC:INFO -->
     <wstop:Topic wstop:name="ERROR" wstop:final="true"> 
         <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
-            /idc:event[idc:type='PATH_SETUP_FAILED' or
-                       idc:type='PATH_TEARDOWN_FAILED' or
+            /idc:event[idc:type='IDC_FAILED' or 
                        idc:type='RESERVATION_CREATE_FAILED' or
-                       idc:type='RESERVATION_CANCEL_FAILED' or
-                       idc:type='LIST_RESERVATION_FAILED' or
-                       idc:type='QUERY_RESERVATION_FAILED' or
                        idc:type='RESERVATION_MODIFY_FAILED' or
-                       idc:type='IDC_FAILED' or
-                       idc:type='FORWARDING_FAILED' or
-                       idc:type='UPSTREAM_PATH_SETUP_FAILED' or
-                       idc:type='DOWNSTREAM_PATH_SETUP_FAILED' or
-                       idc:type='UPSTREAM_PATH_TEARDOWN_FAILED' or
-                       idc:type='DOWNSTREAM_PATH_SETUP_FAILED' or
-                       idc:type='UPSTREAM_RESERVATION_CREATE_FAILED' or
-                       idc:type='DOWNSTREAM_RESERVATION_CREATE_FAILED' or
-                       idc:type='UPSTREAM_RESERVATION_CANCEL_FAILED' or
-                       idc:type='DOWNSTREAM_RESERVATION_CANCEL_FAILED' or
-                       idc:type='UPSTREAM_LIST_RESERVATION_FAILED' or
-                       idc:type='DOWNSTREAM_RESERVATION_LIST_FAILED' or
-                       idc:type='UPSTREAM_RESERVATION_QUERY_FAILED' or
-                       idc:type='DOWNSTREAM_QUERY_RESERVATION_FAILED' or
-                       idc:type='UPSTREAM_RESERVATION_MODIFY_FAILED' or
-                       idc:type='DOWNSTREAM_RESERVATION_MODIFY_FAILED' or
-                       idc:type='UPSTREAM_IDC_FAILED' or
-                       idc:type='DOWNSTREAM_IDC_FAILED' or
-                       idc:type='UPSTREAM_FORWWARD_FAILED' or
-                       idc:type='DOWNSTREAM_FORWARD_FAILED']
+                       idc:type='RESERVATION_CANCEL_FAILED' or
+                       idc:type='PATH_SETUP_FAILED' or
+                       idc:type='PATH_REFRESH_FAILED' or
+                       idc:type='PATH_TEARDOWN_FAILED' or
+                       idc:type='LIST_RESERVATION_FAILED' or
+                       idc:type='QUERY_RESERVATION_FAILED']
         </wstop:MessagePattern>
     </wstop:Topic>
     

@@ -17,9 +17,10 @@ public class OSCARSEvent implements Serializable{
     private String errorMessage;
     private HashMap<String, String[]> reservationParams;
     private String source;
-
-    public static String RESV_CREATE_STARTED = "RESERVATION_CREATE_STARTED";
+    
+    public static String RESV_CREATE_RECEIVED = "RESERVATION_CREATE_RECEIVED";
     public static String RESV_CREATE_ACCEPTED = "RESERVATION_CREATE_ACCEPTED";
+    public static String RESV_CREATE_STARTED = "RESERVATION_CREATE_STARTED";
     public static String RESV_CREATE_COMPLETED = "RESERVATION_CREATE_COMPLETED";
     public static String RESV_CREATE_FAILED = "RESERVATION_CREATE_FAILED";
     public static String RESV_MODIFY_STARTED = "RESERVATION_MODIFTY_STARTED";

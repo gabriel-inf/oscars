@@ -11,6 +11,7 @@
     -->
     <tns:DEBUG wstop:topic="true" />
     <tns:INFO wstop:topic="true" />
+    <tns:GLOBALPATH wstop:topic="true" />
     <tns:ERROR wstop:topic="true" />
     
 </wstop:TopicSet>

@@ -94,7 +94,9 @@ public class CreateResRmiHandler {
         try {
             // url returned, if not null, indicates location of next domain
             // manager
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, userName, "RMI", resv);
             rm.submitCreate(resv, userName, pathInfo);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, userName, "RMI", resv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {
@@ -102,7 +104,7 @@ public class CreateResRmiHandler {
             errMessage = e.getMessage();
         } finally {
             if (errMessage != null) {
-                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "WBUI", resv, "", errMessage);
+                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "RMI", resv, "", errMessage);
                 result.put("error", errMessage);
                 this.log.debug("createReservation failed: " + errMessage);
                 return result;

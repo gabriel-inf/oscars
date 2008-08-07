@@ -29,18 +29,20 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         PathInfo pathInfo = (PathInfo) dataMap.get("pathInfo");
         String login = (String) dataMap.get("login");
-
+        
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
         String gri = (String) dataMap.get("gri");
         Reservation resv = null;
         try {
             resv = resvDAO.query(gri);
         } catch (BSSException ex) {
-            this.log.error("Could not locate reservation in DB for gri: "+gri);
+            String errMessage = "Could not locate reservation in DB for gri: "+gri;
+            this.log.error(errMessage);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "JOB", "", errMessage);
             this.runNextJob(context);
             return;
         }
-
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "JOB", resv);
 
         this.log.debug("GRI is: "+gri+"for job name: "+jobName);
 
@@ -48,6 +50,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             StateEngine.canUpdateStatus(resv, StateEngine.RESERVED);
         } catch (BSSException ex) {
             this.log.error(ex);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "JOB", "", ex.getMessage());
             this.runNextJob(context);
             return;
         }

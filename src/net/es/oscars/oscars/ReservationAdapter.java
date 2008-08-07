@@ -75,7 +75,7 @@ public class ReservationAdapter {
         EventProducer eventProducer = new EventProducer();
 
         try {
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "API", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, login, "API", resv);
             this.rm.submitCreate(resv, login, pathInfo);
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, login, "API", resv);
 
