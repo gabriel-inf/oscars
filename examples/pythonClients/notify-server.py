@@ -55,7 +55,11 @@ class NotificationHandler:
 handler = NotificationHandler()
 handler.attach(SampleObserver())
 
-cherrypy.server.ssl_certificate = 'server.crt'
-cherrypy.server.ssl_private_key = 'server.key'
+cherrypy.config.update({'server.socket_port': 8443,
+                        'environment': 'production',
+                        'log.screen': True,
+                        'server.ssl_certificate': 'server.crt',
+                        'server.ssl_private_key': 'server.key'})
+
 cherrypy.quickstart(handler)
 
