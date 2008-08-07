@@ -55,7 +55,7 @@ class NotificationHandler:
 handler = NotificationHandler()
 handler.attach(SampleObserver())
 
-cherrypy.server.ssl_certificate = 'cert.cer'
-cherrypy.server.ssl_private_key = 'key.pem'
+cherrypy.server.ssl_certificate = 'server.csr'
+cherrypy.server.ssl_private_key = 'server.key'
 cherrypy.quickstart(handler)
 
