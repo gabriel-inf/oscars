@@ -256,7 +256,10 @@ public class SubscriptionAdapter{
                         this.log.debug(matches ? "Filter matches." : "No Match");
                     }
                 }catch(JaxenException e){
-                    throw e;
+                    this.log.error(e);
+                    e.printStackTrace();
+                    matches = false;
+                    break;
                 }
             }
             if(matches){
