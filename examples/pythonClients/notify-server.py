@@ -8,16 +8,33 @@ NotifyTC = Struct(None,
                   pname='Notify',
                   minOccurs=1)
 
+class SampleObserver:
+    def update(notification):
+        pprint(notification)
+
 class NotificationHandler:
+    def __init__(self):
+        self._observers = []
+
+    def attach(self, observer):
+        if observer not in self._observers and self._isValidObserver(observer):
+            self._observers.append(observer)
+
+    def detach(self, observer):
+        try:
+            self._observers.remove(observer)
+        except ValueError:
+            pass
+
     @cherrypy.expose
     def index(self):
         body = cherrypy.request.body
         if body is None:
             raise cherrypy.HTTPError(message='Invalid request')
-        notification = self._process(cherrypy.request.body)
-        pprint(notification)
+        notification = self._processRequest(body)
+        self._notifyObservers(notification)
 
-    def _process(self, request):
+    def _processRequest(self, request):
         try:
             ps = ParsedSoap(request)
             notification = ps.Parse(NotifyTC)
@@ -27,5 +44,16 @@ class NotificationHandler:
         except EvaluateException, e:
             raise cherrypy.HTTPError(message=str(e))
 
-cherrypy.quickstart(NotificationHandler())
+    def _notifyObservers(self, notification):
+        for observer in self._observers:
+            observer.update(notification)
+
+    def _isValidObserver(self, observer):
+        updateMethod = getattr(observer, 'update', None) 
+        return updateMethod is not None and callable(updateMethod)
+
+handler = NotificationHandler()
+handler.register(SampleObserver())
+
+cherrypy.quickstart(handler)
 
