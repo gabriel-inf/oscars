@@ -12,23 +12,21 @@
     };
     var userLayout = [ userView ];
 </script>
-<script type="text/javascript">
-    dojo.connect(dijit.byId("userListPane"), "onLoad", oscars.UserList.init);
-</script>
 </head>
 
 <body>
 <form id="userListForm" dojoType="dijit.form.Form">
-  <div id="userRowSelectableDisplay" style="display:none">
+  <span id="userListHeaderDisplay" style="display:none">
+  <span id="userRowSelectableDisplay" style="display:none">
   <br />
   Click on a row to view detailed user information.
-  </div>
-  <div id="attributeInfoDisplay" style="display:none">
+  </span>
+  <span id="attributeInfoDisplay" style="display:none">
   Use the menu and click on REFRESH to select users with a given attribute.
-  </div>
+  </span>
   <br />
 
-  <table>
+  <table width="40%">
   <tr>
     <td width="7%">User List</td>
     <td width="7%">
@@ -39,15 +37,17 @@
        </script>
       </button>
     </td>
-    <td>
-        Attributes ->
-        <select name="attributeName" id="attribute">
-        </select>
-    </td>
   </tr>
   </table>
+  <div id="attributeMenuDisplay" style="display:none">
+    Attributes ->
+    <select name="attributeName" id="attribute">
+    </select>
+  </div>
+  </span>
 </form>
 
+<br />
 <div id="userGrid" dojoType="dojox.Grid" structure="userLayout">
 </div>
 </body>

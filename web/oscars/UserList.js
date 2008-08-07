@@ -14,31 +14,16 @@ onUserRowSelect(evt)
 
 dojo.provide("oscars.UserList");
 
-oscars.UserList.init = function () {
-    dojo.xhrPost({
-        url: 'servlet/UserListForm',
-        handleAs: "json-comment-filtered",
-        load: oscars.UserList.handleReply,
-        error: oscars.Form.handleError,
-        form: dijit.byId("userListForm").domNode
-    });
-};
-
 // handles all servlet replies
 oscars.UserList.handleReply = function (responseObject, ioArgs) {
-    if (responseObject.method == "UserListForm") {
-        // necessary for correct status message upon login
-        if (!oscars.Form.resetStatus(responseObject, false)) {
-            return;
-        }
-        // set parameter values in form from responseObject
-        oscars.Form.applyParams(responseObject);
-    } else if (responseObject.method == "UserList") {
+    if (responseObject.method == "UserList") {
         if (!oscars.Form.resetStatus(responseObject, true)) {
             return;
         }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
+        var userListHeaderNode = dojo.byId("userListHeaderDisplay");
+        userListHeaderNode.style.display = "";
         var mainTabContainer = dijit.byId("mainTabContainer");
         var userGrid = dijit.byId("userGrid");
         var model = userGrid.model;

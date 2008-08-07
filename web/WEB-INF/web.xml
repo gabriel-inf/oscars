@@ -75,10 +75,6 @@
         <servlet-class>net.es.oscars.servlets.UserRemove</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>UserListForm</servlet-name>
-        <servlet-class>net.es.oscars.servlets.UserListForm</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>UserList</servlet-name>
         <servlet-class>net.es.oscars.servlets.UserList</servlet-class>
     </servlet>
@@ -177,10 +173,6 @@
     <servlet-mapping>
         <servlet-name>UserList</servlet-name>
         <url-pattern>/servlet/UserList</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>UserListForm</servlet-name>
-        <url-pattern>/servlet/UserListForm</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UserLogout</servlet-name>

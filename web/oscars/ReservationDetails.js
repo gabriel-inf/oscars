@@ -161,6 +161,8 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         // for displaying only layer 2 or layer 3 fields
         oscars.ReservationDetails.hideParams(responseObject);
         oscars.ReservationDetails.setDateTimes();
+        var reservationDetailsNode = dojo.byId("reservationDetailsDisplay");
+        reservationDetailsNode.style.display = "";
     } else if (responseObject.method == "CancelReservation") {
         var statusN = dojo.byId("statusReplace");
         // table cell

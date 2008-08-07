@@ -37,12 +37,22 @@ public class UserList extends HttpServlet {
         String attributeName = request.getParameter("attributeName");
         if (attributeName != null) {
             attributeName = attributeName.trim();
+        } else {
+            attributeName = "";
         }
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();     
-    
+        UserManager mgr = new UserManager(Utils.getDbName());
         Map outputMap = new HashMap();
+        AuthValue authVal = mgr.checkAccess(userName, "Users", "query");
+        // if allowed to see all users, show help information on clicking on
+        // row to see user details
+        if  (authVal == AuthValue.ALLUSERS) {
+            outputMap.put("userRowSelectableDisplay", Boolean.TRUE);
+        } else {
+            outputMap.put("userRowSelectableDisplay", Boolean.FALSE);
+        }
         outputMap.put("status", "User list");
         try {
             this.outputUsers(outputMap, userName, attributeName);
@@ -76,12 +86,23 @@ public class UserList extends HttpServlet {
         UserManager mgr = new UserManager(Utils.getDbName());
         
         AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
+        AuthValue aaaVal = mgr.checkAccess(userName, "AAA", "list");
         if (authVal == AuthValue.ALLUSERS) {
-            if ((attributeName == null) || (attributeName.equals("Any"))) {
+            // check to see if need to display menu for first time
+            if (attributeName.equals("")) {
+                if (aaaVal != AuthValue.DENIED) {
+                    outputMap.put("attributeInfoDisplay", Boolean.TRUE);
+                    outputMap.put("attributeMenuDisplay", Boolean.TRUE);
+                    this.outputAttributeMenu(outputMap);
+                } else {
+                    outputMap.put("attributeInfoDisplay", Boolean.FALSE);
+                    outputMap.put("attributeMenuDisplay", Boolean.FALSE);
+                }
+            }
+            if (attributeName.equals("") || (attributeName.equals("Any"))) {
                 users = mgr.list();
             } else {
-                authVal = mgr.checkAccess(userName, "AAA", "list");
-                if (authVal == AuthValue.DENIED) {
+                if (aaaVal == AuthValue.DENIED) {
                    users = mgr.list();
                 } else {
                     UserAttributeDAO dao =
@@ -121,5 +142,20 @@ public class UserList extends HttpServlet {
             throws IOException, ServletException {
 
         this.doGet(request, response);
+    }
+
+    public void
+        outputAttributeMenu(Map outputMap) {
+
+        AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
+        List<Attribute> attributes = attributeDAO.list();
+        List<String> attrList = new ArrayList<String>();
+        attrList.add("Any");
+        attrList.add("true");
+        for (Attribute attr: attributes) {
+            attrList.add(attr.getName());
+            attrList.add("false");
+        }
+        outputMap.put("attributeMenu", attrList);
     }
 }
