@@ -384,24 +384,22 @@ public class UserManager {
         Iterator attrIter = this.userAttrs.iterator();
         while (attrIter.hasNext()) {
             currentAttr = (UserAttribute) attrIter.next();
-           
+          /* 
             this.log.debug("attrId: " + currentAttr.getAttributeId() +
                            ", resourceId: " + this.resourceId +
                            ", permissionId: " + this.permissionId);
-          
+         */ 
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) { 
-                this.log.debug("attrId:  no authorization" );
+               // this.log.debug("attrId:  no authorization" );
                 continue;
             } 
             Iterator authItr = auths.iterator();
             Authorization auth = null;
-            //ConstraintDAO constDAO = new ConstraintDAO(this.dbname);
             while (authItr.hasNext()){
                 auth = (Authorization) authItr.next();
                 String constraintName = authDAO.getConstraintName(auth);
-                //String constraintName = constDAO.getConstraintName(auth.getConstraintId());
                 if (constraintName == null) {
                     // found an authorization with no constraints,
                     // user is allowed for self only 
@@ -494,8 +492,10 @@ public class UserManager {
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) {                   
+		/*
                 this.log.debug("no authorization for attrId: " +
                                currentAttr.getAttributeId());
+		*/
                 continue;
             } 
             
@@ -504,24 +504,29 @@ public class UserManager {
                 Authorization auth = (Authorization) authItr.next();
                 retVal = AuthValue.SELFONLY;  // minimum authorization
                 String constraintName = authDAO.getConstraintName(auth);
+		/*
                 this.log.debug("constraint for attrId " + currentAttr.getAttributeId() +
                 	" is " + constraintName);
-                
+               */ 
                 if (constraintName == null) {
                     continue;
                 }
                 if (constraintName.equals("max-bandwidth")) {
+		/*
                     this.log.debug("Allowed bandwidth: " +
                                    auth.getConstraintValue() +
                                    ", requested bandwidth: " + reqBandwidth);
+		*/
                     if (reqBandwidth > auth.getConstraintValue() ) {
                         // found an authorization that limits the bandwidth
                         bandwidthAllowed = false;
                     }
                 } else if (constraintName.equals("max-duration")) {
+		/*
                     this.log.debug("Allowed duration: " +
                                    auth.getConstraintValue() +
                                    ", requested duration: " + reqDuration);
+		*/
                     if (reqDuration > auth.getConstraintValue()) {
                         // found an authorization that limits the duration
                         durationAllowed = false;
