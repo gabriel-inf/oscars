@@ -95,10 +95,6 @@
 	<servlet-class>net.es.oscars.servlets.AuthorizationForm</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>AuthorizationQuery</servlet-name>
-	<servlet-class>net.es.oscars.servlets.AuthorizationQuery</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>AuthorizationModify</servlet-name>
 	<servlet-class>net.es.oscars.servlets.AuthorizationModify</servlet-class>
     </servlet>
@@ -189,10 +185,6 @@
     <servlet-mapping>
         <servlet-name>AuthorizationForm</servlet-name>
         <url-pattern>/servlet/AuthorizationForm</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>AuthorizationQuery</servlet-name>
-        <url-pattern>/servlet/AuthorizationQuery</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>AuthorizationModify</servlet-name>

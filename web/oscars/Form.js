@@ -71,6 +71,7 @@ oscars.Form.applyParams = function (responseObject) {
         var opt = null;
         var selected = null;
         var result = null;
+        var i = 0;
         // if info for a group of checkboxes
         if (param.match(/Checkboxes$/i) != null) {
             var disabled = false;
@@ -102,7 +103,7 @@ oscars.Form.applyParams = function (responseObject) {
             if (newMenu != null) {
                 if (responseObject[param] instanceof Array) {
                     newMenu.options.length = 0;
-                    for (var i=0; i < responseObject[param].length; i += 2) {
+                    for (i=0; i < responseObject[param].length; i += 2) {
                         if (responseObject[param][i+1] == "true") {
                             selected = true;
                         } else {
@@ -185,6 +186,15 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     // selected login/logout tab
     } else if (contentPane.id == "sessionPane") {
         oscars.UserLogin.tabSelected(oscarsStatus, changeStatus);
+    }
+};
+
+oscars.Form.setMenuSelected = function (menu, optionName) {
+    for (var i=0; i < menu.options.length; i++) {
+        if (menu.options[i].value == optionName) {
+            menu.options[i].selected = true;
+            break;
+        }
     }
 };
 

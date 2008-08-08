@@ -72,19 +72,15 @@ public class AuthorizationForm extends HttpServlet {
         AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
         List<Attribute> attributes = attributeDAO.list();
         List<String> attributeList = new ArrayList<String>();
-        // default is just first in list
-        int ctr = 0;
+        // This menu option is only enabled when adding authorization
+        // and has to be changed by user.  Likewise for resources and
+        // permissions.
+        attributeList.add("None");
+        attributeList.add("true");
         for (Attribute attr: attributes) {
             attributeList.add(attr.getName());
-            if (ctr == 0) {
-                attributeList.add("true");
-            } else {
-                attributeList.add("false");
-            }
-            ctr++;
+            attributeList.add("false");
         }
-        // TODO:  will need hidden parameter to distinguish between details
-        // and add form if go that route
         outputMap.put("authAttributeNameMenu", attributeList);
     }
 
@@ -94,19 +90,12 @@ public class AuthorizationForm extends HttpServlet {
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         List<Resource> resources = resourceDAO.list();
         List<String> resourceList = new ArrayList<String>();
-        // default is just first in list
-        int ctr = 0;
+        resourceList.add("None");
+        resourceList.add("true");
         for (Resource resource: resources) {
             resourceList.add(resource.getName());
-            if (ctr == 0) {
-                resourceList.add("true");
-            } else {
-                resourceList.add("false");
-            }
-            ctr++;
+            resourceList.add("false");
         }
-        // TODO:  will need hidden parameter to distinguish between details
-        // and add form if go that route
         outputMap.put("resourceNameMenu", resourceList);
     }
 
@@ -116,19 +105,12 @@ public class AuthorizationForm extends HttpServlet {
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
         List<Permission> permissions = permissionDAO.list();
         List<String> permissionList = new ArrayList<String>();
-        // default is just first in list
-        int ctr = 0;
+        permissionList.add("None");
+        permissionList.add("true");
         for (Permission permission: permissions) {
             permissionList.add(permission.getName());
-            if (ctr == 0) {
-                permissionList.add("true");
-            } else {
-                permissionList.add("false");
-            }
-            ctr++;
+            permissionList.add("false");
         }
-        // TODO:  will need hidden parameter to distinguish between details
-        // and add form if go that route
         outputMap.put("permissionNameMenu", permissionList);
     }
 

@@ -8,44 +8,46 @@
 
 <body>
 <form id="authDetailsForm" dojoType="dijit.form.Form">
-<table>
-  <tbody>
-  <tr>
-    <td>
-      <button dojoType="dijit.form.Button" id="refreshAuthorization">
-        REFRESH
+  <span id="modifyAuthorizationDisplay" style="display:none">
+  <button dojoType="dijit.form.Button" id="modifyAuthorization">
+     MODIFY
+     <script type="dojo/method" event="onClick">
+         oscars.AuthorizationDetails.postModify();
+     </script>
+  </button>
+  <button dojoType="dijit.form.Button" id="cloneAuthorization">
+     CLONE
+     <script type="dojo/method" event="onClick">
+         oscars.AuthorizationDetails.clone();
+     </script>
+  </button>
+  <button dojoType="dijit.form.Button" id="deleteAuthorization">
+      DELETE
       <script type="dojo/method" event="onClick">
-          oscars.AuthorizationDetails.postQuery();
+         oscars.AuthorizationDetails.postDelete();
       </script>
-      </button>
-    </td>
-    <td>
-      <button dojoType="dijit.form.Button" id="modifyAuthorization">
-         MODIFY
-         <script type="dojo/method" event="onClick">
-             oscars.AuthorizationDetails.postModify();
-         </script>
-      </button>
-    </td>
-    <td>
-        <button dojoType="dijit.form.Button" id="deleteAuthorization">
-        DELETE
-         <script type="dojo/method" event="onClick">
-             oscars.AuthorizationDetails.postDelete();
-         </script>
-      </button>
-    </td>
-    <td>
-      <button dojoType="dijit.form.Button" id="cloneAuthorization">
-         CLONE
-         <script type="dojo/method" event="onClick">
-             oscars.AuthorizationDetails.cloneAuthorization();
-         </script>
-      </button>
-    </td>
-  </tr>
-  </tbody>
-</table>
+  </button>
+  <button dojoType="dijit.form.Button" id="resetOriginalAuthorization">
+     RESET TO ORIGINAL
+     <script type="dojo/method" event="onClick">
+         oscars.AuthorizationDetails.resetFields(true);
+     </script>
+  </button>
+  </span>
+  <span id="addAuthorizationDisplay">
+  <button dojoType="dijit.form.Button" id="addAuthorization">
+     ADD
+     <script type="dojo/method" event="onClick">
+         oscars.AuthorizationDetails.postAdd();
+     </script>
+  </button>
+  <button dojoType="dijit.form.Button" id="clearAuthorization">
+     CLEAR
+     <script type="dojo/method" event="onClick">
+         oscars.AuthorizationDetails.resetFields(false);
+     </script>
+  </button>
+  </span>
 
 <table width="50%">
 <tbody>
@@ -90,16 +92,21 @@
 </table>
 </form>
 <!-- tooltip section for buttons -->
-<div dojoType = "dijit.Tooltip" connectId="refreshAuthorization"
-     position="above">
-    Gets the current status of the authorization from the server.  Any
-    local modifications on the client are overwritten.
+<div dojoType = "dijit.Tooltip" connectId="addAuthorization" position="above">
+    Adds a new authorization with the current values.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="clearAuthorization" position="above">
+    Clears all parameters to none.
 </div>
 <div dojoType = "dijit.Tooltip" connectId="modifyAuthorization" position="above">
-    Modifies the authorization, if there are valid arguments.
+    Modifies the authorization.
 </div>
 <div dojoType = "dijit.Tooltip" connectId="deleteAuthorization" position="above">
-    Deletes the current authorization.
+    Deletes the selected authorization.
+</div>
+
+<div dojoType = "dijit.Tooltip" connectId="resetOriginalAuthorization" position="above">
+    Resets all authorization parameters to their original values.
 </div>
 </body>
 </html>

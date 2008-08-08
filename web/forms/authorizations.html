@@ -12,9 +12,6 @@
     };
     var authLayout = [ authView ];
 </script>
-<script type="text/javascript">
-    dojo.connect(dijit.byId("authListPane"), "onLoad", oscars.Authorizations.init);
-</script>
 </head>
 
 <body>
@@ -25,16 +22,20 @@
   <tr>
     <td>Authorizations List</td>
     <td>
-      <button dojoType="dijit.form.Button" id="authList">
-       REFRESH 
-       <script type="dojo/method" event="onClick">
-          oscars.Authorizations.refreshAuthGrid();
-       </script>
+        <button dojoType="dijit.form.Button" id="goToAuthorization">
+        ADD
+         <script type="dojo/method" event="onClick">
+             oscars.Authorizations.goToAdd();
+         </script>
       </button>
     </td>
   </tr>
   </table>
 </form>
+<!-- tooltip section for buttons -->
+<div dojoType = "dijit.Tooltip" connectId="addAuthorization" position="above">
+    Add a new authorization.
+</div>
 
 <div id="authGrid" dojoType="dojox.Grid" structure="authLayout">
 </div>

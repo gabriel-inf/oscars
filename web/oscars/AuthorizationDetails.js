@@ -1,16 +1,18 @@
 /*
 AuthorizationDetails.js:  Handles authorization details form.
-Last modified:  July 25, 2008
+Last modified:  August 8, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
 init()
-postQuery()
+postAdd()
 postModify()
 postDelete()
+close()
 handleReply(responseObject, ioArgs)
 tabSelected(contentPaneWidget)
+resetFields(useSaved)
 */
 
 dojo.provide("oscars.AuthorizationDetails");
@@ -25,11 +27,11 @@ oscars.AuthorizationDetails.init = function () {
     });
 };
 
-// posts authorization query to server
-oscars.AuthorizationDetails.postQuery = function (newWhat) {
+// posts authorization add to server
+oscars.AuthorizationDetails.postAdd = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
     dojo.xhrPost({
-        url: 'servlet/AuthorizationQuery',
+        url: 'servlet/AuthorizationAdd',
         handleAs: "json-comment-filtered",
         load: oscars.AuthorizationDetails.handleReply,
         error: oscars.Form.handleError,
@@ -38,10 +40,6 @@ oscars.AuthorizationDetails.postQuery = function (newWhat) {
 };
 
 oscars.AuthorizationDetails.postModify = function () {
-    valid = dijit.byId("authDetailsForm").validate();
-    if (!valid) {
-        return;
-    }
     var formNode = dijit.byId("authDetailsForm").domNode;
     dojo.xhrPost({
         url: 'servlet/AuthorizationModify',
@@ -55,6 +53,8 @@ oscars.AuthorizationDetails.postModify = function () {
 // posts delete request to server
 oscars.AuthorizationDetails.postDelete = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
+    var authGrid = dijit.byId("authGrid");
+    // TODO:  need to get selected row, and data from that
     dojo.xhrPost({
         url: 'servlet/AuthorizationRemove',
             handleAs: "json-comment-filtered",
@@ -64,17 +64,14 @@ oscars.AuthorizationDetails.postDelete = function () {
     });
 };
 
-// Clones current authorization, changing to the  add authorization page with
-// those parameters filled in.  This is a client-side only method.
+// Changes to the add version of the page with the current parameters.
+// This is a client-side only method.
 oscars.AuthorizationDetails.clone = function () {
-    var i = null;
-
-    oscars.AuthorizationAdd.resetFields();
-    // copy fields from authorization details form to add authorization form
-    var mainTabContainer = dijit.byId("mainTabContainer");
-    // set to authorization add tab
-    var authAddPane = dijit.byId("authorizationAddPane");
-    mainTabContainer.selectChild(authAddPane);
+    var modifyAuthorizationNode = dojo.byId("modifyAuthorizationDisplay");
+    modifyAuthorizationNode.style.display = "none";
+    var addAuthorizationNode = dojo.byId("addAuthorizationDisplay");
+    addAuthorizationNode.style.display = "";
+    oscars.AuthorizationDetails.resetFields(false);
 };
 
 // handles all servlet replies
@@ -97,4 +94,26 @@ oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
 // take action based on this tab's selection
 oscars.AuthorizationDetails.tabSelected = function (
         /* ContentPane widget */ contentPane) {
+};
+
+oscars.AuthorizationDetails.resetFields = function (useSaved) {
+    // TODO:  reset to original authorization if useSaved true
+    var formParam = dijit.byId("authDetailsForm").domNode;
+    var menu = null;
+    // clear everything
+    if (!useSaved) {
+        menu = formParam.authAttributeName;
+        menu.options[0].disabled = false;
+        oscars.Form.setMenuSelected(menu, "None");
+        menu = formParam.resourceName;
+        menu.options[0].disabled = false;
+        oscars.Form.setMenuSelected(menu, "None");
+        menu = formParam.permissionName;
+        menu.options[0].disabled = false;
+        oscars.Form.setMenuSelected(menu, "None");
+        menu = formParam.constraintName;
+        menu.options[0].disabled = false;
+        oscars.Form.setMenuSelected(menu, "None");
+        formParam.reset();
+    }
 };
