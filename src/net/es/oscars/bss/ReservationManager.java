@@ -531,7 +531,16 @@ public class ReservationManager {
         link = domainDAO.getFullyQualifiedLink(ingressLink);
         elem.setLink(link);
         path.setPathElem(elem);
-        path.setPathSetupMode(pathInfo.getPathSetupMode());
+        String pathSetupMode = pathInfo.getPathSetupMode();
+        if (pathSetupMode == null) {
+            pathSetupMode = "timer-automatic";
+        } 
+        if ( pathSetupMode.equals("timer-automatic")  || pathSetupMode.equals("signal-xml")) {
+            path.setPathSetupMode(pathSetupMode);
+        } else {
+                this.log.error("invalid pathSetupMode input: " + pathSetupMode);
+                path.setPathSetupMode("timer-automatic");
+        }
 
         //Convert layer2/layer3/mplsInfo to Hibernate beans
         path.setLayer2Data(this.tc.layer2InfoToData(layer2Info));

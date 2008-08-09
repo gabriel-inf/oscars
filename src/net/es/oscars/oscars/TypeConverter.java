@@ -222,7 +222,7 @@ public class TypeConverter {
      * @return pathInfo a filled in PathInfo Axis2 type
      */
     public PathInfo getPathInfo(Reservation resv) {
-        this.log.debug("getPathInfo.start");
+        //this.log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
         if (resv.getPath() != null) {
             pathInfo.setPathSetupMode(resv.getPath().getPathSetupMode());
@@ -235,10 +235,10 @@ public class TypeConverter {
             // allowed to be null
             MplsInfo mplsInfo = this.pathToMplsInfo(resv.getPath());
             pathInfo.setMplsInfo(mplsInfo);
-            this.log.debug("getPathInfo.end");
+            //this.log.debug("getPathInfo.end");
             return pathInfo;
         } else {
-            this.log.debug("getPathInfo.end");
+            //this.log.debug("getPathInfo.end");
             return null;
         }
     }
@@ -295,7 +295,7 @@ public class TypeConverter {
      * @return A CtrlPlanePathContent instance
      */
     public CtrlPlanePathContent pathToCtrlPlane(Path path) {
-        this.log.debug("pathToCtrlPlane.start");
+        // this.log.debug("pathToCtrlPlane.start");
 
         String hopId = null;
         Ipaddr ipaddr = null;
@@ -322,7 +322,7 @@ public class TypeConverter {
             pathElem = pathElem.getNextElem();
         }
         ctrlPlanePath.setId("unimplemented");
-        this.log.debug("pathToCtrlPlane.end");
+        //this.log.debug("pathToCtrlPlane.end");
         return ctrlPlanePath;
     }
 
@@ -331,7 +331,7 @@ public class TypeConverter {
      * for layer 2 information.
      */
     public Layer2Info pathToLayer2Info(Path path) {
-        this.log.debug("pathToLayer2Info.start");
+        //this.log.debug("pathToLayer2Info.start");
 
         Layer2DataDAO layer2DataDAO = new Layer2DataDAO("bss");
         // database type
@@ -368,7 +368,7 @@ public class TypeConverter {
 
             elem = elem.getNextElem();
         }
-        this.log.debug("pathToLayer2Info.end");
+        //this.log.debug("pathToLayer2Info.end");
         return layer2Info;
     }
 
@@ -377,7 +377,7 @@ public class TypeConverter {
      * for layer 3 information.
      */
     public Layer3Info pathToLayer3Info(Path path) {
-        this.log.debug("pathToLayer3Info.start");
+        // this.log.debug("pathToLayer3Info.start");
 
         Layer3DataDAO layer3DataDAO = new Layer3DataDAO("bss");
         // database type
@@ -399,7 +399,7 @@ public class TypeConverter {
         if (layer3Data.getDestIpPort() != null) {
             layer3Info.setDestIpPort(layer3Data.getDestIpPort());
         }
-        this.log.debug("pathToLayer3Info.end");
+        //this.log.debug("pathToLayer3Info.end");
 
         return layer3Info;
     }
@@ -409,7 +409,7 @@ public class TypeConverter {
      * for MPLS information.
      */
     public MplsInfo pathToMplsInfo(Path path) {
-        this.log.debug("pathToMplsInfo.start");
+        // this.log.debug("pathToMplsInfo.start");
 
         MPLSDataDAO MPLSDataDAO = new MPLSDataDAO("bss");
         // database type
@@ -422,7 +422,7 @@ public class TypeConverter {
         int burstLimit = mplsData.getBurstLimit().intValue();
         mplsInfo.setBurstLimit(burstLimit);
         mplsInfo.setLspClass(mplsData.getLspClass());
-        this.log.debug("pathToMplsInfo.end");
+        // this.log.debug("pathToMplsInfo.end");
         return mplsInfo;
     }
 
@@ -458,7 +458,7 @@ public class TypeConverter {
      * @param pathInfo a PathInfo instance
      */
     public void clientConvert(PathInfo pathInfo) {
-        this.log.debug("clientConvert.start");
+        // this.log.debug("clientConvert.start");
 
 
 
@@ -513,7 +513,7 @@ public class TypeConverter {
         }
         newPath.setId("unimplemented");
         pathInfo.setPath(newPath);
-        this.log.debug("clientConvert.end");
+        // this.log.debug("clientConvert.end");
         return;
     }
 
