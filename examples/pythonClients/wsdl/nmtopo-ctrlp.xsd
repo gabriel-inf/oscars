@@ -143,7 +143,7 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="capability" type="xs:string"/>
       <!-- <xs:group ref="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecficInfo_l2sc"/> -->
-      <xs:element  name="interfaceMTU" type="xs:int"/>
+      <xs:element  minOccurs="0" name="interfaceMTU" type="xs:int"/>
       <xs:element minOccurs="0" name="vlanRangeAvailability" type="xs:string"/>
     </xs:sequence>
   </xs:complexType>
