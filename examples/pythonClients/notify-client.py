@@ -17,20 +17,52 @@ req = {
         'Address': 'http://aeolus.lyranet.it:8080/'
     },
     'Filter': {
-        'TopicExpression': ['idc:INFO'],
-        'ProducerProperties': ["/wsa:Address='https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS'"]
+        'TopicExpression': [
+            [('Dialect', 'http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full'), 'idc:INFO']
+        ],
+        'ProducerProperties': [
+            [('Dialect', 'http://www.w3.org/TR/1999/REC-xpath-19991116'), "/wsa:Address='https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS'"]
+        ]
     }
 }
 
-"""
-<ns5:ConsumerReference>
-<Address xmlns="http://www.w3.org/2005/08/addressing">http://aeolus.lyranet.it:8080/</Address>
-</ns5:ConsumerReference>
-<ns5:Filter>
-<ns5:TopicExpression Dialect="http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full">idc:INFO</ns5:TopicExpression>
-<ns5:ProducerProperties Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">/wsa:Address='https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS'</ns5:ProducerProperties>
-</ns5:Filter>
-"""
+subscribeResult = sp.Subscribe(req)
+subscriptionId = subscribeResult['SubscriptionReference']['ReferenceParameters']['subscriptionId']
 
-sp.Subscribe(req)
+print 'Subscribed!'
+print 'Subscription Id:', subscriptionId
+print 'Termination time:', subscribeResult['TerminationTime']
+print
+
+print 'Sleeping for 10 seconds...'
+time.sleep(10)
+print
+
+renewResult = sp.Renew({
+    'TerminationTime': None,
+    'SubscriptionReference': {
+        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
+        'ReferenceParameters': {
+            'subscriptionId': subscriptionId
+        }
+    }
+})
+
+print 'Renewed!'
+print 'New termination time:', renewResult['TerminationTime']
+print
+
+print 'Sleeping for 5 seconds...'
+time.sleep(5)
+print
+
+sp.Unsubscribe({
+    'SubscriptionReference': {
+        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
+        'ReferenceParameters': {
+            'subscriptionId': subscriptionId
+        }
+    }
+})
+print 'Unsubscribed!'
 

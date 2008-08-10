@@ -246,6 +246,10 @@ class gDateTime(Gregorian):
     format_ms = format[:-1] + '.%(ms)03dZ'
     type = (SCHEMA.XSD3, 'dateTime')
 
+    def text_to_data(self, text, elt, ps):
+        dateTimeTuple = Gregorian.text_to_data(self, text, elt, ps)[:7]
+        return _datetime(*dateTimeTuple)
+
 class gDate(Gregorian):
     '''A date.
     '''

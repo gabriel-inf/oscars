@@ -307,15 +307,33 @@ class TypeCode:
             el -- MessageInterface representing the element
             pyobj -- 
         '''
-        if not hasattr(pyobj, self.attrs_aname):
-            return
+        # Turn 2-tuples into XML attributes for simple types
+        attribsHolder = None
+        if isinstance(pyobj, list):
+            class Holder:
+                def __init__(self):
+                    pass
+            attribsDict = {}
+            for element in pyobj:
+                if isinstance(element, tuple) and len(element) == 2:
+                    attribsDict[element[0]] = element[1]
+                    pyobj.remove(element)
+            if len(pyobj) != 1:
+                raise EvaluateException, 'Evaluation of attributes leaves more than one value for element'
+            attribsHolder = Holder()
+            setattr(attribsHolder, self.attrs_aname, attribsDict)
 
-        if not isinstance(getattr(pyobj, self.attrs_aname), dict):
+        attribsObj = attribsHolder or pyobj
+
+        if not hasattr(attribsObj, self.attrs_aname):
+            return attribsObj
+
+        if not isinstance(getattr(attribsObj, self.attrs_aname), dict):
             raise TypeError,\
                 'pyobj.%s must be a dictionary of names and values'\
                 % self.attrs_aname
 
-        for attr, value in getattr(pyobj, self.attrs_aname).items():
+        for attr, value in getattr(attribsObj, self.attrs_aname).items():
             namespaceURI,localName = None, attr
             if type(attr) in _seqtypes:
                 namespaceURI, localName = attr
@@ -346,6 +364,11 @@ class TypeCode:
                 value = what.get_formatted_content(value)
 
             el.setAttributeNS(namespaceURI, localName, value)
+
+        if attribsObj == attribsHolder:
+            # We checked before that only one element was left
+            return pyobj[0]
+        return attribsObj
 
     def set_attribute_xsi_type(self, el, **kw):
         '''if typed, set the xsi:type attribute 
@@ -417,7 +440,7 @@ class SimpleType(TypeCode):
                 # No content, no HREF, and is NIL...
                 if self.nillable is True: 
                     return Nilled
-                raise EvaluateException('Requiredstring missing',
+                raise EvaluateException('Required string missing',
                         ps.Backtrace(elt))
                         
             if href[0] != '#':
@@ -487,7 +510,7 @@ class SimpleType(TypeCode):
             return None
 
         # other attributes
-        self.set_attributes(el, pyobj)
+        pyobj = self.set_attributes(el, pyobj)
 
         # soap href attribute
         unique = self.unique or kw.get('unique', False)
@@ -1264,12 +1287,12 @@ class XML(TypeCode):
         xmlelt = elt.createAppendElement(ns, n)
 
         if type(pyobj) in _stringtypes:
-            self.set_attributes(xmlelt, pyobj)
+            pyobj = self.set_attributes(xmlelt, pyobj)
             self.set_attribute_href(xmlelt, objid)
         elif kw.get('inline', self.inline):
             self.cb(xmlelt, sw, pyobj, unsuppressedPrefixes)
         else:
-            self.set_attributes(xmlelt, pyobj)
+            pyobj = self.set_attributes(xmlelt, pyobj)
             self.set_attribute_href(xmlelt, objid)
             sw.AddCallback(self.cb, pyobj, unsuppressedPrefixes)
 
