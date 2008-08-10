@@ -277,7 +277,8 @@ class _Binding:
         request_uri = _get_postvalue_from_absoluteURI(url)
         self.h.putrequest("POST", request_uri)
         self.h.putheader("Content-Length", "%d" % len(soapdata))
-        self.h.putheader("Content-Type", 'application/soap+xml; charset=utf-8')
+        SOAPActionValue = '"%s"' % (soapaction or self.soapaction)
+        self.h.putheader("Content-Type", 'application/soap+xml; charset=utf-8; action=%s' % SOAPActionValue)
         self.__addcookies()
 
         for header,value in headers.items():

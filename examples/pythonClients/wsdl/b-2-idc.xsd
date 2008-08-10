@@ -20,42 +20,42 @@ This document and the information contained herein is provided on an "AS IS" bas
   xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
   xmlns:wsa="http://www.w3.org/2005/08/addressing"
   xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2"
-  xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
-  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   elementFormDefault="qualified"  attributeFormDefault="unqualified">
 
 <!-- ======================== Imports  ============================ -->
   
   <xsd:import namespace="http://www.w3.org/2005/08/addressing"
-              schemaLocation="http://www.w3.org/2005/08/addressing/ws-addr.xsd" 
+              schemaLocation="ws-addr-idc.xsd" 
   />
 
   <xsd:import namespace="http://docs.oasis-open.org/wsrf/bf-2"
-              schemaLocation="http://docs.oasis-open.org/wsrf/bf-2.xsd" 
-  />
-  <xsd:import namespace="http://docs.oasis-open.org/wsn/t-1"
-              schemaLocation="http://docs.oasis-open.org/wsn/t-1.xsd" 
+              schemaLocation="bf-2-idc.xsd" 
   />
   
 <!-- ===================== Misc. Helper Types ===================== -->
-
-  <xsd:complexType name="QueryExpressionType" mixed="true">
-    <xsd:sequence>
-      <xsd:any minOccurs="0" maxOccurs="1" processContents="lax" />
-    </xsd:sequence>
-    <xsd:attribute name="Dialect" type="xsd:anyURI" use="required"/>
+  <xsd:complexType name="QueryExpressionType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="Dialect" type="xsd:anyURI" use="required"/>
+      </xsd:extension>
+    </xsd:simpleContent>
   </xsd:complexType>
-
+  
+  <!-- simpleContent used for IDC case -->
   <xsd:complexType name="TopicExpressionType" mixed="true">
-    <xsd:sequence>
-      <xsd:any minOccurs="0" maxOccurs="1" processContents="lax" />
-    </xsd:sequence>
-    <xsd:attribute name="Dialect" type="xsd:anyURI" use="required" />
-    <xsd:anyAttribute/>
+    <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+            <xsd:attribute name="Dialect" type="xsd:anyURI" use="required" />
+        </xsd:extension>
+    </xsd:simpleContent>
   </xsd:complexType>
 
   <xsd:complexType name="FilterType">
     <xsd:sequence>
+      <xsd:element name="TopicExpression" type="wsnt:TopicExpressionType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="ProducerProperties" type="wsnt:QueryExpressionType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="MessageContent" type="wsnt:QueryExpressionType" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
@@ -71,21 +71,6 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="TopicExpression" type="wsnt:TopicExpressionType"/>
   <xsd:element name="FixedTopicSet" type="xsd:boolean" default="true"/>
   <xsd:element name="TopicExpressionDialect" type="xsd:anyURI"/>
-              
-  <xsd:element name="NotificationProducerRP">
-    <xsd:complexType>
-      <xsd:sequence>
-        <xsd:element ref="wsnt:TopicExpression"        
-                     minOccurs="0" maxOccurs="unbounded" />
-        <xsd:element ref="wsnt:FixedTopicSet"        
-                     minOccurs="0" maxOccurs="1" />
-        <xsd:element ref="wsnt:TopicExpressionDialect"
-                     minOccurs="0" maxOccurs="unbounded" />
-        <xsd:element ref="wstop:TopicSet"
-                     minOccurs="0" maxOccurs="1" />
-      </xsd:sequence>
-    </xsd:complexType>
-  </xsd:element>
 
 <!-- ======== Resource Properties for SubscriptionManager ========= -->       
   <xsd:element name="ConsumerReference" 
@@ -128,14 +113,13 @@ This document and the information contained herein is provided on an "AS IS" bas
                    minOccurs="0" maxOccurs="1" />
       <xsd:element ref="wsnt:ProducerReference" 
                    minOccurs="0" maxOccurs="1" />
-      <xsd:element name="Message">
-        <xsd:complexType>
-          <xsd:sequence>
-            <xsd:any namespace="##any" processContents="lax"
-                     minOccurs="1" maxOccurs="1"/>
-          </xsd:sequence>
-        </xsd:complexType>
-      </xsd:element>
+      <xsd:element name="Message" type="wsnt:MessageType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="MessageType">
+    <xsd:sequence>
+        <xsd:any namespace="##other" processContents="lax"
+                 minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:element name="NotificationMessage"
@@ -181,8 +165,9 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:element name="Filter" 
                      type="wsnt:FilterType" 
                      minOccurs="0" maxOccurs="1" />
+         <!-- CHANGE: Type was wsnt:AbsoluteOrRelativeTimeType"-->             
         <xsd:element name="InitialTerminationTime" 
-                     type="wsnt:AbsoluteOrRelativeTimeType"
+                     type="xsd:string"
                      nillable="true"
                      minOccurs="0" maxOccurs="1" />
         <xsd:element name="SubscriptionPolicy"
@@ -371,7 +356,7 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
-      <xsd:anyAttribute/>
+      <!-- <xsd:anyAttribute/> -->
     </xsd:complexType>
   </xsd:element>
 
@@ -383,7 +368,7 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
-      <xsd:anyAttribute/>
+      <!-- <xsd:anyAttribute/> -->
     </xsd:complexType>
   </xsd:element>
 
@@ -393,7 +378,7 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
-      <xsd:anyAttribute/>
+      <!-- <xsd:anyAttribute/> -->
     </xsd:complexType>
   </xsd:element>
 
@@ -403,7 +388,7 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
-      <xsd:anyAttribute/>
+      <!-- <xsd:anyAttribute/> -->
     </xsd:complexType>
   </xsd:element>
 
@@ -432,7 +417,7 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
-      <xsd:anyAttribute/>
+      <!-- <xsd:anyAttribute/> -->
     </xsd:complexType>
   </xsd:element>
 
@@ -444,7 +429,7 @@ This document and the information contained herein is provided on an "AS IS" bas
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
-      <xsd:anyAttribute/>
+      <!-- <xsd:anyAttribute/> -->
     </xsd:complexType>
   </xsd:element>
 
@@ -460,10 +445,13 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="Renew">
     <xsd:complexType>
       <xsd:sequence>
+        <!-- CHANGE: Type was wsnt:AbsoluteOrRelativeTimeType"--> 
         <xsd:element name="TerminationTime" 
-                     type="wsnt:AbsoluteOrRelativeTimeType"
+                     type="xsd:string"
                      nillable="true"
                      minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="1" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -477,6 +465,8 @@ This document and the information contained herein is provided on an "AS IS" bas
                       minOccurs="1" maxOccurs="1" />
         <xsd:element ref="wsnt:CurrentTime" 
                       minOccurs="0" maxOccurs="1" />
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="0" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -500,6 +490,8 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="Unsubscribe">
     <xsd:complexType>
       <xsd:sequence>
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="1" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -509,6 +501,8 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="UnsubscribeResponse">
     <xsd:complexType>
       <xsd:sequence>
+      <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="0" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -528,6 +522,8 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="PauseSubscription">
     <xsd:complexType>
       <xsd:sequence>
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="1" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -537,6 +533,8 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="PauseSubscriptionResponse" >
     <xsd:complexType>
       <xsd:sequence>
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="0" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -546,6 +544,8 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="ResumeSubscription">
     <xsd:complexType>
       <xsd:sequence>
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="1" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
@@ -555,6 +555,8 @@ This document and the information contained herein is provided on an "AS IS" bas
   <xsd:element name="ResumeSubscriptionResponse">
     <xsd:complexType>
       <xsd:sequence>
+        <xsd:element ref="wsnt:SubscriptionReference" 
+                   minOccurs="0" maxOccurs="1" />
         <xsd:any namespace="##other" processContents="lax"
                  minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>

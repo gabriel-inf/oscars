@@ -15,6 +15,14 @@ try:
 except ImportError:
     from sha import sha as sha1
 
+# Import Psyco if available
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+
+
 processorNamespaces = {
     'ds': DSIG.BASE,
     'wsu': OASIS.UTILITY,
