@@ -29,6 +29,15 @@ processorNamespaces = {
     'wsse': OASIS.WSSE
 }
 
+
+class SignatureGenerationException(Exception):
+    def __init__(self, signatureValue):
+        self.signatureValue = signatureValue
+
+    def __str__(self):
+        return repr(self.signatureValue)
+
+
 class SignatureHandler(object):
 
     def __init__(self, certFilePath, privateKeyFilePath,
@@ -214,7 +223,8 @@ class SignatureHandler(object):
 
         # This should give a signature length of 20 bytes, as mandated by the
         # XML-Signature specification
-        assert len(signatureValue) == 20
+        if len(signatureValue) != 20:
+            raise SignatureGenerationException(signatureValue)
 
         return signatureValue
 

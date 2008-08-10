@@ -10,7 +10,7 @@ WS_URL = 'http://anna-lab1.internet2.edu:8080/axis2/services/OSCARSNotify'
 
 signatureHandler = SignatureHandler('cert.cer', 'key.pem')
 
-sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler, tracefile=open('test', 'w'))
+sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler)
 
 req = {
     'ConsumerReference': {
@@ -50,6 +50,36 @@ renewResult = sp.Renew({
 
 print 'Renewed!'
 print 'New termination time:', renewResult['TerminationTime']
+print
+
+print 'Sleeping for 5 seconds...'
+time.sleep(5)
+print
+
+pauseResult = sp.PauseSubscription({
+    'SubscriptionReference': {
+        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
+        'ReferenceParameters': {
+            'subscriptionId': subscriptionId
+        }
+    }
+})
+print 'Paused!'
+print
+
+print 'Sleeping for 10 seconds...'
+time.sleep(10)
+print
+
+resumeResult = sp.ResumeSubscription({
+    'SubscriptionReference': {
+        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
+        'ReferenceParameters': {
+            'subscriptionId': subscriptionId
+        }
+    }
+})
+print 'Resumed!'
 print
 
 print 'Sleeping for 5 seconds...'
