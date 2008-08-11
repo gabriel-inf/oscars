@@ -1,6 +1,5 @@
 /*
 Institutions.js:     Handles form for institutions table.
-Last modified:  July 15, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -42,7 +41,7 @@ oscars.Institutions.tabSelected = function (
         oscarsStatus.innerHTML = "Institutions Management";
     }
     var institutionGrid = dijit.byId("institutionGrid");
-    if ((institutionGrid != null) && (!oscarsState.institutionGridInitialized)) {
+    if (institutionGrid && (!oscarsState.institutionGridInitialized)) {
         oscars.Institutions.createInstitutionGrid();
         oscarsState.institutionGridInitialized = true;
     }

@@ -36,16 +36,22 @@ public class AuthorizationList extends HttpServlet {
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();     
-    
-        Map outputMap = new HashMap();
-        outputMap.put("status", "Authorization list");
-        try {
-            this.outputAuthorizations(outputMap, userName);
-        } catch (AAAException e) {
-            this.log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+        UserManager mgr = new UserManager(Utils.getDbName());
+        AuthValue authVal = mgr.checkAccess(userName, "AAA", "list");
+        if (authVal == AuthValue.DENIED) {
+            this.log.error("no permission to list authorizations");
+            Utils.handleFailure(out, "no permission to list authorizations",
+                                methodName, aaa);
             return;
         }
+        Map outputMap = new HashMap();
+        // only do once
+        String rpcParam = request.getParameter("rpc");
+        if ((rpcParam == null) || rpcParam.trim().equals("")) {
+            this.outputRpcs(outputMap);
+        }
+        this.outputAuthorizations(outputMap);
+        outputMap.put("status", "Authorization list");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
@@ -54,31 +60,28 @@ public class AuthorizationList extends HttpServlet {
         this.log.debug("servlet.end");
     }
 
+    public void doPost(HttpServletRequest request,
+                       HttpServletResponse response)
+            throws IOException, ServletException {
+
+        this.doGet(request, response);
+    }
+
     /**
-     * Checks access and gets the list of authorizations if allowed.
+     * Sets the list of authorizations to display in a grid.
      *  
      * @param outputMap Map containing JSON data
-     * @param userName String containing name of user making request
-     * @throws AAAException
      */
-    public void outputAuthorizations(Map outputMap, String userName)
-            throws AAAException {
+    public void outputAuthorizations(Map outputMap) {
 
-        List<Authorization> auths = null;
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+        List<Authorization> auths = authDAO.list();
         AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
         ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
-        UserManager mgr = new UserManager(Utils.getDbName());
         int id = -1;
         
-        AuthValue authVal = mgr.checkAccess(userName, "AAA", "list");
-        if (authVal != AuthValue.DENIED) {
-            auths = authDAO.list();
-        } else {
-            throw new AAAException("no permission to list authorizations");
-        }
         ArrayList authList = new ArrayList();
         for (Authorization auth: auths) {
             ArrayList authEntry = new ArrayList();
@@ -133,10 +136,52 @@ public class AuthorizationList extends HttpServlet {
         outputMap.put("authData", authList);
     }
 
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response)
-            throws IOException, ServletException {
+    /**
+     * Outputs permitted resource/permission/constraint triplets.   Could
+     * eventually be used in a split container on the right side of the
+     * authorization details page, assuming the grid would display in
+     * such a case.
+     *  
+     * @param outputMap Map containing JSON data
+     */
+    public void outputRpcs(Map outputMap) {
 
-        this.doGet(request, response);
+        RpcDAO rpcDAO = new RpcDAO(Utils.getDbName());
+        List<Rpc> rpcs = rpcDAO.list();
+        ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
+        PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
+        ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
+        int id = -1;
+        
+        ArrayList rpcList = new ArrayList();
+        for (Rpc rpc: rpcs) {
+            ArrayList rpcEntry = new ArrayList();
+            // ignore illegal triplets
+            Resource resource = resourceDAO.findById(rpc.getResourceId(),
+                                                     false);
+            if (resource != null) {
+                rpcEntry.add(resource.getName());
+            } else {
+                continue;
+            }
+            Permission perm = permissionDAO.findById(rpc.getPermissionId(),
+                                                     false);
+            if (perm != null) {
+                rpcEntry.add(perm.getName());
+            } else {
+                continue;
+            }
+            // null constraints are added on the client side; rpc table
+            // has constraintId as not null, so one here would be an error.
+            Constraint constraint =
+                constraintDAO.findById(rpc.getConstraintId(), false);
+            if (constraint != null) {
+                rpcEntry.add(constraint.getName());
+            } else {
+                continue;
+            }
+            rpcList.add(rpcEntry);
+        }
+        outputMap.put("rpcData", rpcList);
     }
 }

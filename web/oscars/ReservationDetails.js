@@ -1,6 +1,5 @@
 /*
 ReservationDetails.js:  Handles reservation details form.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -76,7 +75,7 @@ oscars.ReservationDetails.postCancelReservation = function (dialogFields) {
 // client-side only method.
 oscars.ReservationDetails.cloneReservation = function () {
     var layer2Reservation = true;  // default is layer 2
-    var i = null;
+    var i;
 
     oscars.ReservationCreate.resetFields();
     // copy fields from reservation details form to reservation creation form
@@ -101,7 +100,7 @@ oscars.ReservationDetails.cloneReservation = function () {
             pathStr += trNodes[i].firstChild.firstChild.data + "\n";
         }
         // don't clone layer 3 if no longer valid
-        if (pathStr.match(/Out of date IP/) == null) {
+        if (!pathStr.match(/Out of date IP/)) {
             // set path text area on create reservation page
             var textareaWidget = dijit.byId("explicitPath");
             textareaWidget.setValue(pathStr);
@@ -178,7 +177,7 @@ oscars.ReservationDetails.setCurrentGri = function (formNode) {
 // check modified start and end date and times, and converts hidden form fields
 // to seconds
 oscars.ReservationDetails.checkDateTimes = function () {
-    var msg = null;
+    var msg;
     var startSeconds =
         oscars.DigitalClock.widgetsToSeconds("modifyStartDate",
                                              "modifyStartTime");
@@ -195,7 +194,7 @@ oscars.ReservationDetails.checkDateTimes = function () {
     } else if (startSeconds == endSeconds) {
         msg = "End time is the same as start time";
     }
-    if (msg != null) {
+    if (msg) {
         var oscarsStatus = dojo.byId("oscarsStatus");
         oscarsStatus.className = "failure";
         oscarsStatus.innerHTML = msg;

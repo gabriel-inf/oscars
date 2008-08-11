@@ -1,6 +1,5 @@
 /*
 Reservations.js:   Handles reservations list form, including grid.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -69,7 +68,7 @@ oscars.Reservations.tabSelected = function (
     }
     // refresh reservations grid
     var resvGrid = dijit.byId("resvGrid");
-    if ((resvGrid != null) && !oscarsState.resvGridInitialized) {
+    if (resvGrid && !oscarsState.resvGridInitialized) {
         dojo.connect(resvGrid, "onRowClick",
                      oscars.Reservations.onResvRowSelect);
         dojo.xhrPost({

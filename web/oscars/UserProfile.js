@@ -1,6 +1,5 @@
 /*
 UserProfile.js:  Handles user profile form.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 

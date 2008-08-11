@@ -1,6 +1,5 @@
 /*
 UserList.js:  Handles user list functionality.  Note that it uses a grid.
-Last modified:  July 21, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -46,7 +45,7 @@ oscars.UserList.tabSelected = function (
     var userGrid = dijit.byId("userGrid");
     // Creation apparently needs to be programmatic, after the ContentPane
     // has been selected and its style no longer display:none
-    if ((userGrid != null) && (!oscarsState.userGridInitialized)) {
+    if (userGrid && (!oscarsState.userGridInitialized)) {
         dojo.connect(userGrid, "onRowClick", oscars.UserList.onUserRowSelect);
         oscars.UserList.refreshUserGrid();
     }

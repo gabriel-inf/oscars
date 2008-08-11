@@ -2,7 +2,6 @@
 Form.js:        General form handling for browser interface.  Functionality
                 specific to a single form is in its own module.
                 Note that all security is enforced on the server side.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -26,19 +25,19 @@ oscars.Form.handleError = function (responseObject, ioArgs) {
 // handles resetting status message, and checking for valid reply 
 oscars.Form.resetStatus = function (responseObject, changeStatus) {
     var oscarsStatus = dojo.byId("oscarsStatus");
-    if (responseObject.method == null) {
+    if (!responseObject.method) {
         oscarsStatus.className = "failure";
         oscarsStatus.innerHTML = "Invalid servlet reply: no method returned; " +
                                  "contact administrator";
         return false;
     }
-    if (responseObject.success == null) {
+    if (!responseObject.success) {
         oscarsStatus.className = "failure";
         oscarsStatus.innerHTML = "Invalid servlet reply: no success status " +
                                  "returned; contact administrator";
         return false;
     }
-    if (responseObject.status == null) {
+    if (!responseObject.status) {
         oscarsStatus.className = "failure";
         oscarsStatus.innerHTML = "Invalid servlet reply: no status returned; " +
                                  "contact administrator";
@@ -66,14 +65,15 @@ oscars.Form.resetStatus = function (responseObject, changeStatus) {
 // they are parameter names used by handleReply.
 oscars.Form.applyParams = function (responseObject) {
     for (var param in responseObject) {
+      if (responseObject.hasOwnProperty(param)) {
         var n = dojo.byId(param);
-        var cb = null;
-        var opt = null;
-        var selected = null;
-        var result = null;
+        var cb;
+        var opt;
+        var selected;
+        var result;
         var i = 0;
         // if info for a group of checkboxes
-        if (param.match(/Checkboxes$/i) != null) {
+        if (param.match(/Checkboxes$/i)) {
             var disabled = false;
             // first search to see if checkboxes can be modified
             for (cb in responseObject[param]) {
@@ -86,21 +86,23 @@ oscars.Form.applyParams = function (responseObject) {
             }
             // set checkbox attributes
             for (cb in responseObject[param]) {
-                // get check box
-                var w = dijit.byId(cb);
-                if (w != null) {
-                    if (responseObject[param][cb]) {
-                        w.setAttribute('checked', true);
-                    } else {
-                        w.setAttribute('checked', false);
+                if (responseObject[param].hasOwnProperty(cb)) {
+                    // get check box
+                    var w = dijit.byId(cb);
+                    if (w) {
+                        if (responseObject[param][cb]) {
+                            w.setAttribute('checked', true);
+                        } else {
+                            w.setAttribute('checked', false);
+                        }
+                        w.setAttribute('disabled', disabled);
                     }
-                    w.setAttribute('disabled', disabled);
                 }
             }
         // if info for a group of menu options
-        } else if ((result = param.match(/(\w+)Menu$/i)) != null) {
+        } else if ((result = param.match(/(\w+)Menu$/i))) {
             var newMenu = dojo.byId(result[1]);
-            if (newMenu != null) {
+            if (newMenu) {
                 if (responseObject[param] instanceof Array) {
                     newMenu.options.length = 0;
                     for (i=0; i < responseObject[param].length; i += 2) {
@@ -118,31 +120,32 @@ oscars.Form.applyParams = function (responseObject) {
                     }
                 }
             }
-        } else if (param.match(/Display$/i) != null) {
-            if (n != null) {
+        } else if (param.match(/Display$/i)) {
+            if (n) {
                 n.style.display= responseObject[param] ? "" : "none";
             }
-        } else if (param.match(/TimeConvert$/i) != null) {
-            if (n != null) {
+        } else if (param.match(/TimeConvert$/i)) {
+            if (n) {
                 n.innerHTML = oscars.DigitalClock.convertFromSeconds(
                                                         responseObject[param]);
             }
-        } else if (n == null) {
+        } else if (!n) {
             continue;
         // if info to replace div section with; must be existing div with that
         // id
-        } else if (param.match(/Replace$/i) != null) {
+        } else if (param.match(/Replace$/i)) {
             n.innerHTML = responseObject[param];
         // set widget value
         } else {
             n.value = responseObject[param];
         }   
+      }
     }
 };
 
 // take action based on which tab was clicked on
 oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
-    var mainTabContainer = null;
+    var mainTabContainer;
     // start of back/forward button functionality
     var state = {
         back: function() {
@@ -153,7 +156,7 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
     var changeStatus = oscarsStatus.className == "success" ? true : false;
-    var n = null;
+    var n;
     // selected reservations tab
     if (contentPane.id == "reservationsPane") {
         oscars.Reservations.tabSelected(contentPane, oscarsStatus,
@@ -199,7 +202,7 @@ oscars.Form.setMenuSelected = function (menu, optionName) {
 };
 
 oscars.Form.initBackForwardState = function () {
-    var mainTabContainer = null;
+    var mainTabContainer;
     // callbacks handle back/forward button functionality
     var state = {
         back: function() { },

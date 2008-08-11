@@ -1,6 +1,5 @@
 /*
 Utils.js:       Miscellaneous utilities for browser interface.
-Last modified:  May 19, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -14,12 +13,12 @@ dojo.provide("oscars.Utils");
 
 // check to see if no parameter set
 oscars.Utils.isBlank = function (str) {
-    if (str == null) {
+    if (!str) {
         return true;
     }
     for (var i = 0; i < str.length; i++) {
         var c = str.charAt(i);
-        if ((c != ' ') && (c != '\n') && (c != '')) { return false; }
+        if ((c != ' ') && (c != '\n') && c) { return false; }
     }
     return true;
 };

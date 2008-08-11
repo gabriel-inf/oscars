@@ -1,7 +1,6 @@
 /*
 Authorizations.js:  Handles authorizations list functionality.
                     Note that it uses a grid.
-Last modified:  August 8, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -37,6 +36,9 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
         }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
+        oscarsState.authorizationState.setRpc(responseObject.rpcData);
+        var formNode = dijit.byId("authListForm").domNode;
+        formNode.rpc = "set";
         var mainTabContainer = dijit.byId("mainTabContainer");
         var authGrid = dijit.byId("authGrid");
         var model = authGrid.model;
@@ -61,7 +63,7 @@ oscars.Authorizations.tabSelected = function (
     var authGrid = dijit.byId("authGrid");
     // Creation apparently needs to be programmatic, after the ContentPane
     // has been selected and its style no longer display:none
-    if ((authGrid != null) && (!oscarsState.authGridInitialized)) {
+    if (authGrid && (!oscarsState.authGridInitialized)) {
         dojo.connect(authGrid, "onRowClick", oscars.Authorizations.onAuthRowSelect);
         oscars.Authorizations.refreshAuthGrid();
     }
@@ -109,7 +111,7 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     menu = formParam.constraintName;
     optionName = authGrid.model.getDatum(evt.rowIndex, 3);
     // constraint can be blank
-    if (optionName != "") {
+    if (optionName) {
         oscars.Form.setMenuSelected(menu, optionName);
     } else {
         oscars.Form.setMenuSelected(menu, "None");

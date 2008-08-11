@@ -1,7 +1,6 @@
 /*
 UserLogin.js:   Handles user login.  Displays all tabs if user authenticated.
                 Note that all security is enforced on the server side.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -50,14 +49,16 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     // Programmatically create all tabs that user is authorized for.
     // All tabs except Login/Logout require authorization.
     //
-    if (responseObject.authorizedTabs == null) {
+    if (!responseObject.authorizedTabs) {
         return;
     }
     var authorizedLength = 0;
     for (var tab in responseObject.authorizedTabs) {
-        authorizedLength++;
+        if (responseObject.authorizedTabs.hasOwnProperty(tab)) {
+            authorizedLength++;
+        }
     }
-    if (authorizedLength == 0) {
+    if (!authorizedLength) {
         var oscarsStatus = dojo.byId("oscarsStatus");
         oscarsStatus.innerHTML = "User " + oscarsState.login +
                                  " is not authorized to view any tabs.";

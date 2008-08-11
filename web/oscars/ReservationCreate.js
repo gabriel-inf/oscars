@@ -1,6 +1,5 @@
 /*
 ReservationCreate.js:   Handles reservation creation.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -140,7 +139,7 @@ oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
 // converts hidden form fields to seconds
 oscars.ReservationCreate.checkDateTimes = function () {
     var currentDate = new Date();
-    var msg = null;
+    var msg;
     var startSeconds =
         oscars.DigitalClock.convertDateTime(currentDate, "startDate",
                                             "startTime", true);
@@ -158,7 +157,7 @@ oscars.ReservationCreate.checkDateTimes = function () {
     } else if (startSeconds == endSeconds) {
         msg = "End time is the same as start time";
     }
-    if (msg != null) {
+    if (msg) {
         var oscarsStatus = dojo.byId("oscarsStatus");
         oscarsStatus.className = "failure";
         oscarsStatus.innerHTML = msg;

@@ -1,6 +1,5 @@
 /*
-Logout.js:        Handles user logout.
-Last modified:  May 30, 2008
+UserLogout.js:        Handles user logout.
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -39,35 +38,35 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     loginSection.style.display = ""; 
     var loggedInSection = dojo.byId("loggedInSection");
     loggedInSection.style.display = "none"; 
-    if (dijit.byId("cancelDialog") != null) {
+    if (dijit.byId("cancelDialog")) {
         dijit.byId("cancelDialog").destroy();
     }
     // destroy all other tabs
-    if (dijit.byId("reservationsPane") != null) {
+    if (dijit.byId("reservationsPane")) {
         mainTabContainer.closeChild(dijit.byId("reservationsPane"));
     }
-    if (dijit.byId("reservationCreatePane") != null) {
+    if (dijit.byId("reservationCreatePane")) {
         mainTabContainer.closeChild(dijit.byId("reservationCreatePane"));
     }
-    if (dijit.byId("reservationDetailsPane") != null) {
+    if (dijit.byId("reservationDetailsPane")) {
         mainTabContainer.closeChild(dijit.byId("reservationDetailsPane"));
     }
-    if (dijit.byId("userListPane") != null) {
+    if (dijit.byId("userListPane")) {
         mainTabContainer.closeChild(dijit.byId("userListPane"));
     }
-    if (dijit.byId("userAddPane") != null) {
+    if (dijit.byId("userAddPane")) {
         mainTabContainer.closeChild(dijit.byId("userAddPane"));
     }
-    if (dijit.byId("userProfilePane") != null) {
+    if (dijit.byId("userProfilePane")) {
         mainTabContainer.closeChild(dijit.byId("userProfilePane"));
     }
-    if (dijit.byId("institutionsPane") != null) {
+    if (dijit.byId("institutionsPane")) {
         mainTabContainer.closeChild(dijit.byId("institutionsPane"));
     }
-    if (dijit.byId("authorizationsPane") != null) {
+    if (dijit.byId("authorizationsPane")) {
         mainTabContainer.closeChild(dijit.byId("authorizationsPane"));
     }
-    if (dijit.byId("authDetailsPane") != null) {
+    if (dijit.byId("authDetailsPane")) {
         mainTabContainer.closeChild(dijit.byId("authDetailsPane"));
     }
     // reset global state

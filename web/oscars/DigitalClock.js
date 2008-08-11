@@ -2,7 +2,6 @@
 DigitalClock.js:  Handles date and time conversions, as well as the main
                   clock display in the status bar, and the clock displays
                   on the create reservation form.
-Last modified:  May 19, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -38,7 +37,7 @@ oscars.DigitalClock.updateClocks = function (clock) {
     // update default times on create reservation form
     var startDateDefault = dojo.byId('startDateDefault');
     // page not loaded yet
-    if (startDateDefault == null) {
+    if (!startDateDefault) {
         return;
     }
     var startTimeDefault = dojo.byId('startTimeDefault');
@@ -139,7 +138,7 @@ oscars.DigitalClock.convertDateTime = function (jsDate, dateId, timeId,
     var dateFields = oscars.DigitalClock.convertDateWidget(jsDate, dateId);
     var timeFields = oscars.DigitalClock.convertTimeWidget(jsDate, timeId, 
                                                            useCurrent);
-    var seconds = null;
+    var seconds;
     //console.log("year: " + dateFields.year + ", month: " + dateFields.month + ", day: " + dateFields.day + ", hour: " + timeFields.hour + ", minute: " + timeFields.minute);
     var finalDate =
         new Date(dateFields.year, dateFields.month, dateFields.day,

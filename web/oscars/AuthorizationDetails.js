@@ -1,6 +1,5 @@
 /*
 AuthorizationDetails.js:  Handles authorization details form.
-Last modified:  August 8, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 

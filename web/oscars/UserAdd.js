@@ -1,6 +1,5 @@
 /*
 UserAdd.js:     Handles add user form.
-Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -63,7 +62,7 @@ oscars.UserAdd.tabSelected = function (
     if (changeStatus) {
         oscarsStatus.innerHTML = "Add a user";
     }
-    if (contentPane.href == "") {
+    if (!contentPane.href) {
         contentPane.setHref("forms/userAdd.html");
     }
 };
