@@ -12,7 +12,7 @@ url=$2
 
 if [  $# -lt 2  ]
  then
-    echo "run.sh createReservation|signal|list|query|cancel [url] [request-specific-params]"
+    echo "run.sh createReservation|signal|list|query|cancel|subscribe|renew|pause|ressume|unsubscribe|regpublisher|destroyreg|notifylistener [request-specific-params]"
 elif [ $1 == "createReservation" ] && [ $2 == "-pf" ]
  then
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationClient $*
@@ -34,7 +34,29 @@ elif [ $1 == "cancel"  ]
 elif [ $1 == "subscribe"  ]
  then
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true SubscribeClient $*
+elif [ $1 == "renew"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true RenewClient $*
+elif [ $1 == "pause"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true PauseSubscriptionClient $*
+elif [ $1 == "resume"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true ResumeSubscriptionClient $*
+elif [ $1 == "unsubscribe"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true UnsubscribeClient $*
+elif [ $1 == "regpublisher"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true RegisterPublisherClient $*
+elif [ $1 == "destroyreg"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true DestroyRegistrationClient $*
+elif [ $1 == "notfiylistener"  ]
+ then
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true -Djavax.net.ssl.keyStore=repo/sec-client.jks -Djavax.net.ssl.keyStorePassword=password NotifyEchoHandler $*
 else
-    echo "Please specify 'createReservation', 'signal', 'list', 'query', or 'cancel'"
+    echo "Invalid operation specified. Usage: "
+    echo "run.sh createReservation|signal|list|query|cancel|subscribe|renew|pause|ressume|unsubscribe|regpublisher|dstroyreg|notifylistener [request-specific-params]"
 fi
 
