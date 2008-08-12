@@ -294,4 +294,21 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
                      link.getTopologyIdent();
         return fqn;
     }
+    
+    /**
+     * Returns a list of the local domain's direct neighbors
+     *
+     * @return a list of the local domain's direct neighbors
+     */
+    public List<Domain> getNeighbors(){
+         String sql = "SELECT DISTINCT rd.* FROM domains AS d INNER JOIN " +
+                      "nodes AS n ON d.id=n.domainId INNER JOIN ports AS p " +
+                      "ON n.id=p.nodeId INNER JOIN links AS l ON " +
+                      "p.id=l.portId INNER JOIN links AS rl ON " +
+                      "l.id=rl.remoteLinkId INNER JOIN ports AS rp ON " +
+                      "rp.id=rl.portId INNER JOIN nodes AS rn ON " +
+                      "rn.id=rp.nodeID INNER JOIN domains AS rd ON " +
+                      "rd.id=rn.domainId WHERE d.local=1 AND rd.local!=1";
+          return (List<Domain>) this.getSession().createSQLQuery(sql).addEntity(Domain.class).list();           
+    }
 }

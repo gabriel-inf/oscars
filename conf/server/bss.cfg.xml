@@ -45,6 +45,7 @@
         <mapping resource="net/es/oscars/bss/IdSequence.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/Token.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Domain.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/DomainService.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Node.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Port.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Link.hbm.xml"/>

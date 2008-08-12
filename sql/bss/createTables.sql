@@ -351,3 +351,13 @@ INSERT IGNORE INTO sites VALUES (4, "Fermilab",
 INSERT IGNORE INTO sites VALUES (5, "DANTE",
       (select id from domains where topologyIdent="geant2.net")); 
 
+--
+-- Table to lookup external servcies associated with a domain
+-- Used as a backup to the perfSONAR LS
+CREATE TABLE IF NOT EXISTS domainServices (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    domainId            INT NOT NULL,
+    type                TEXT NOT NULL,
+    url                 TEXT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;

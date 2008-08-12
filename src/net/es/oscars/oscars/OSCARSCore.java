@@ -50,7 +50,8 @@ public class OSCARSCore {
     private TypeConverter typeConverter = null;
     private Forwarder forwarder = null;
     private ScheduleManager scheduleManager = null;
-
+    private ServiceManager serviceManager = null;
+    
     private CoreRmiServer rmiServer = null;
 
 
@@ -98,6 +99,7 @@ public class OSCARSCore {
         this.initTypeConverter();
         this.initForwarder();
         this.initRMIServer();
+        this.initServiceManager();
         this.initialized = true;
 
         this.log.debug("initAll.end");
@@ -238,6 +240,12 @@ public class OSCARSCore {
             this.rmiServer = null;
         }
         this.log.debug("initRMIServer.end");
+    }
+    
+    public void initServiceManager() {
+        this.log.debug("initServiceManager.start");
+        this.serviceManager = new ServiceManager();
+        this.log.debug("initServiceManager.end");
     }
 
 
@@ -571,7 +579,19 @@ public class OSCARSCore {
     public void setRmiServer(CoreRmiServer rmiServer) {
         this.rmiServer = rmiServer;
     }
-
-
+    
+    /**
+     * @return the ServiceManager
+     */
+    public ServiceManager getServiceManager(){
+        return this.serviceManager;
+    }
+    
+    /**
+     * @param sm the ServiceManager to set
+     */
+    public void setServiceManager(ServiceManager sm){
+        this.serviceManager = sm;
+    }
 
 }
