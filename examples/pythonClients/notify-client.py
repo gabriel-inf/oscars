@@ -1,98 +1,58 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
-import time
+from optparse import OptionParser
+from OSCARS import ClientFactory, WrappedFunctionFactory
 from pprint import pprint
-from ZSI import FaultException
-from ZSI.ServiceProxy import ServiceProxy
-from wssecurity import SignatureHandler
 
-WSDL_URL = 'wsdl/OSCARS-Notify.wsdl'
-WS_URL = 'http://anna-lab1.internet2.edu:8080/axis2/services/OSCARSNotify'
 
-signatureHandler = SignatureHandler('cert.cer', 'key.pem')
-
-sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler)
-
-req = {
-    'ConsumerReference': {
-        'Address': 'http://aeolus.lyranet.it:8080/'
-    },
-    'Filter': {
-        'TopicExpression': [
-            [('Dialect', 'http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full'), 'idc:INFO']
-        ],
-        'ProducerProperties': [
-            [('Dialect', 'http://www.w3.org/TR/1999/REC-xpath-19991116'), "/wsa:Address='https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS'"]
-        ]
+def getOperationFromScriptName(name):
+    operations = {
+        'subscribe.py': 'Subscribe',
+        'renew.py': 'Renew',
+        'pauseSubscription.py': 'PauseSubscription',
+        'resumeSubscription.py': 'ResumeSubscription',
+        'unsubscribe.py': 'Unsubscribe'
     }
-}
+    for scriptName, operation in operations.iteritems():
+        if scriptName in sys.argv[0]:
+            return operation
+    return None
 
-subscribeResult = sp.Subscribe(req)
-subscriptionId = subscribeResult['SubscriptionReference']['ReferenceParameters']['subscriptionId']
 
-print 'Subscribed!'
-print 'Subscription Id:', subscriptionId
-print 'Termination time:', subscribeResult['TerminationTime']
-print
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-u', '--url', dest='url', help='Web service URL')
+    parser.add_option('-c', '--cert', dest='cert', help='Path to the certificate file')
+    parser.add_option('-k', '--key', dest='key', help='Path to the private key file')
+    parser.add_option('-p', '--password', dest='password', help='Private key password (if any)')
 
-print 'Sleeping for 10 seconds...'
-time.sleep(10)
-print
+    operation = getOperationFromScriptName(sys.argv[0])
+    if operation is None:
+        print >> sys.stderr, "Please don't call this script directly"
+        sys.exit(1)
 
-renewResult = sp.Renew({
-    'TerminationTime': None,
-    'SubscriptionReference': {
-        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
-        'ReferenceParameters': {
-            'subscriptionId': subscriptionId
-        }
-    }
-})
+    functionArgs = WrappedFunctionFactory.getArguments(operation)
+    for arg, defaultValue in functionArgs:
+        parser.add_option('--%s' % arg, dest=arg, default=defaultValue)
 
-print 'Renewed!'
-print 'New termination time:', renewResult['TerminationTime']
-print
+    options, args = parser.parse_args()
 
-print 'Sleeping for 5 seconds...'
-time.sleep(5)
-print
+    requiredArgs = ['url', 'cert', 'key'] +\
+                   [ arg[0] for arg in args if arg[1] is None ]
+    for arg in requiredArgs:
+        if getattr(options, arg) is None:
+            parser.print_help(sys.stderr)
+            print >> sys.stderr, '\nMissing argument "%s"' % arg
+            sys.exit(1)
 
-pauseResult = sp.PauseSubscription({
-    'SubscriptionReference': {
-        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
-        'ReferenceParameters': {
-            'subscriptionId': subscriptionId
-        }
-    }
-})
-print 'Paused!'
-print
+    client = ClientFactory.instantiateOSCARSNotifyClient(options.url,
+                                                         options.cert,
+                                                         options.key,
+                                                         options.password)
 
-print 'Sleeping for 10 seconds...'
-time.sleep(10)
-print
-
-resumeResult = sp.ResumeSubscription({
-    'SubscriptionReference': {
-        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
-        'ReferenceParameters': {
-            'subscriptionId': subscriptionId
-        }
-    }
-})
-print 'Resumed!'
-print
-
-print 'Sleeping for 5 seconds...'
-time.sleep(5)
-print
-
-sp.Unsubscribe({
-    'SubscriptionReference': {
-        'Address': 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
-        'ReferenceParameters': {
-            'subscriptionId': subscriptionId
-        }
-    }
-})
-print 'Unsubscribed!'
+    function = getattr(client, operation)
+    callingArgsValues = [ getattr(options, arg[0]) for arg in functionArgs ]
+    pprint(function(*callingArgsValues))
 

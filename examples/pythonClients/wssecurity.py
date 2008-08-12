@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import base64
 import re
@@ -41,7 +41,7 @@ class SignatureHandler(object):
 
 
     def _loadCertificate(self):
-        """Loads the X509 certificate as a string"""
+        '''Loads the X509 certificate as a string'''
 
         x509Cert = X509.load_cert(self._certFilePath)
         x509CertPart = re.compile(r'-----BEGIN CERTIFICATE-----\n?(.*?)\n?-----END CERTIFICATE-----', re.S)
@@ -49,7 +49,7 @@ class SignatureHandler(object):
 
 
     def _appendSecurityElement(self, soapWriter):
-        """Creates and appends the <Security> element"""
+        '''Creates and appends the <Security> element'''
 
         # Set namespace attributes in the SOAP header
         soapWriter._header.setNamespaceAttribute('wsse', OASIS.WSSE)
@@ -70,8 +70,8 @@ class SignatureHandler(object):
 
 
     def _appendBinarySecurityTokenElement(self, wsseSecurityElement):
-        """Creates and appends the <BinarySecurityToken> element, loading the
-           certificate from file"""
+        '''Creates and appends the <BinarySecurityToken> element, loading the
+           certificate from file'''
 
         x509Cert = self._loadCertificate()
         binarySecurityTokenElement = wsseSecurityElement.createAppendElement(OASIS.WSSE, 'BinarySecurityToken')
@@ -83,8 +83,8 @@ class SignatureHandler(object):
 
 
     def _appendTimestampElement(self, wsseSecurityElement, validity=5):
-        """Creates and appends the <Timestamp> element with the given validity
-           (in minutes)"""
+        '''Creates and appends the <Timestamp> element with the given validity
+           (in minutes)'''
 
         timestampElement = wsseSecurityElement.createAppendElement(OASIS.UTILITY, 'Timestamp')
         timestampElement.setNamespaceAttribute('wsu', OASIS.UTILITY)
@@ -96,7 +96,7 @@ class SignatureHandler(object):
 
 
     def _appendAndComputeSignatureElement(self, soapWriter, wsseSecurityElement):
-        """Creates and appends the <Signature> element and its children"""
+        '''Creates and appends the <Signature> element and its children'''
 
         # Signature
         signatureElement = wsseSecurityElement.createAppendElement(DSIG.BASE, 'Signature')
@@ -145,7 +145,7 @@ class SignatureHandler(object):
         referenceElement.node.setAttribute('ValueType', OASIS.X509TOKEN.X509 + 'v3')
 
     def _getReferencedNodes(self, soapWriter):
-        """Looks for nodes to be signed"""
+        '''Looks for nodes to be signed'''
 
         # Evaluate the whole document and find nodes with references
         document = Reader().fromString(str(soapWriter))
@@ -154,8 +154,8 @@ class SignatureHandler(object):
 
 
     def _appendReferenceElement(self, signedInfoElement, uri, digestValue):
-        """Creates and appends a <Reference> element for the given URI,
-           with the given digest value"""
+        '''Creates and appends a <Reference> element for the given URI,
+           with the given digest value'''
 
         referenceElement = signedInfoElement.createAppendElement(DSIG.BASE, 'Reference')
         referenceElement.node.setAttribute('URI', uri)
@@ -169,7 +169,7 @@ class SignatureHandler(object):
 
 
     def _computeAndStoreSignature(self, soapWriter, signatureValueElement):
-        """Computes and stores the message signature in the <SignatureValue> node"""
+        '''Computes and stores the message signature in the <SignatureValue> node'''
 
         # Evaluate the whole document and find the <SignedInfo> element
         document = Reader().fromString(str(soapWriter))
@@ -186,7 +186,7 @@ class SignatureHandler(object):
 
 
     def _getDigestValueSignature(self, digestValue):
-        """Computes the signature value for the given digest"""
+        '''Computes the signature value for the given digest'''
 
         # Load the private key from file, providing its password (if needed)
         privateKeyFile = BIO.File(open(self._privateKeyFilePath))
@@ -203,7 +203,7 @@ class SignatureHandler(object):
 
 
     def _i2osp(self, signatureValue):
-        """Converts a OpenSSL/M2Crypto DSA signature to WS-Security format"""
+        '''Converts a OpenSSL/M2Crypto DSA signature to WS-Security format'''
 
         # Remove leading zeros
         signatureValue = signatureValue.lstrip('\x00')
@@ -223,16 +223,13 @@ class SignatureHandler(object):
 
 
     def sign(self, soapWriter):
-        """Signs outgoing requests"""
+        '''Signs outgoing requests'''
 
         self._appendSecurityElement(soapWriter)
 
-        # DEBUG: print the message before sending it
-        #print str(soapWriter)
-
 
     def verify(self, parsedSoap):
-        """Verifies incoming responses"""
+        '''Verifies incoming responses'''
 
         # No verification has to be performed
         pass

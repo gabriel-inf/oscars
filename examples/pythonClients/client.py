@@ -1,94 +1,56 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
-import time
+from optparse import OptionParser
+from OSCARS import ClientFactory, WrappedFunctionFactory
 from pprint import pprint
-from ZSI import FaultException
-from ZSI.ServiceProxy import ServiceProxy
-from wssecurity import SignatureHandler
-
-WSDL_URL = 'wsdl/OSCARS.wsdl'
-WS_URL = 'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS'
-
-currentTimeSecs = lambda: int(time.time())
-
-signatureHandler = SignatureHandler('cert.cer', 'key.pem')
-
-sp = ServiceProxy(WSDL_URL, url=WS_URL, sig_handler=signatureHandler)
 
 
-#print 'Sending faulty request'
-#faultyReq = {
-#    'startTime': currentTimeSecs(),
-#    'endTime': currentTimeSecs() + 60**2,
-#    'bandwidth': 100,
-#    'description': "Gianluca's test",
-#    'pathInfo': {
-#        'pathSetupMode': 'user-xml'
-#    }
-#}
-#print 'IDC reply:'
-#try:
-#    sp.createReservation(faultyReq)
-#except FaultException, reason:
-#    print reason
-#print
-
-#print 'Sleeping for 5 seconds...'
-#time.sleep(5)
-#print
-
-print 'Sending correct request'
-req = {
-    'startTime': currentTimeSecs(),
-    'endTime': currentTimeSecs() + 60**2,
-    'bandwidth': 100,
-    'description': "Gianluca's test",
-    'pathInfo': {
-        'pathSetupMode': 'user-xml',
-        'layer2Info': {
-            'srcEndpoint': 'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr1:port=1-1-1:link=1',
-            'destEndpoint': 'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr2:port=1-1-1:link=1'
-        }
+def getOperationFromScriptName(name):
+    operations = {
+        'createReservation.py': 'createReservation',
+        'queryReservation.py': 'queryReservation',
+        'cancelReservation.py': 'cancelReservation'
     }
-}
-response = sp.createReservation(req)
-print 'IDC reply:'
+    for scriptName, operation in operations.iteritems():
+        if scriptName in sys.argv[0]:
+            return operation
+    return None
 
-pprint(response)
-print
 
-"""
-hops = ( hop['linkIdRef'] for hop in response['pathInfo']['path']['hop'] )
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-u', '--url', dest='url', help='Web service URL')
+    parser.add_option('-c', '--cert', dest='cert', help='Path to the certificate file')
+    parser.add_option('-k', '--key', dest='key', help='Path to the private key file')
+    parser.add_option('-p', '--password', dest='password', help='Private key password (if any)')
 
-print 'Global reservation ID:', response['globalReservationId']
-print 'Status:', response['status']
-print
+    operation = getOperationFromScriptName(sys.argv[0])
+    if operation is None:
+        print >> sys.stderr, "Please don't call this script directly"
+        sys.exit(1)
 
-print 'Hops:'
-for hop in hops:
-    print '    ', hop
-print
+    functionArgs = WrappedFunctionFactory.getArguments(operation)
+    for arg, defaultValue in functionArgs:
+        parser.add_option('--%s' % arg, dest=arg, default=defaultValue)
 
-print 'Layer 2 Info:'
-print '    Source endpoint:', response['pathInfo']['layer2Info']['srcEndpoint']
-print '    Source VTAG:', response['pathInfo']['layer2Info']['srcVtag']
-print '    Destination endpoint:', response['pathInfo']['layer2Info']['destEndpoint']
-print '    Destination VTAG:', response['pathInfo']['layer2Info']['destVtag']
-print
-"""
+    options, args = parser.parse_args()
 
-print 'Going to sleep for 30 seconds...'
-time.sleep(30)
-print
+    requiredArgs = ['url', 'cert', 'key'] +\
+                   [ arg[0] for arg in args if arg[1] is None ]
+    for arg in requiredArgs:
+        if getattr(options, arg) is None:
+            parser.print_help(sys.stderr)
+            print >> sys.stderr, '\nMissing argument "%s"' % arg
+            sys.exit(1)
 
-print 'Reservation status:'
-pprint(sp.queryReservation({'gri': response['globalReservationId']}))
-print
+    client = ClientFactory.instantiateOSCARSClient(options.url,
+                                                   options.cert,
+                                                   options.key,
+                                                   options.password)
 
-print 'Sleeping another 5 seconds...'
-time.sleep(5)
-print
-
-print 'Canceling reservation:'
-pprint(sp.cancelReservation({'gri': response['globalReservationId']}))
-print
+    function = getattr(client, operation)
+    callingArgsValues = [ getattr(options, arg[0]) for arg in functionArgs ]
+    pprint(function(*callingArgsValues))
 
