@@ -25,9 +25,13 @@ public class UserSession {
         this.userCookieName = props.getProperty("userName");
         this.sessionCookieName = props.getProperty("sessionName");
         this.guestLogin = props.getProperty("guestLogin");
-        this.secureCookie =
-            props.getProperty("secureCookie").equals("1") ? true : false;
-
+        String secureCookieProp = props.getProperty("secureCookie");
+        if (secureCookieProp != null) {
+            this.secureCookie = secureCookieProp.equals("1") ? true : false;
+        } else {
+            // TODO:  some sort of warning logging
+            this.secureCookie = false;
+        }
     }
 
     public String checkSession(PrintWriter out, HttpServletRequest request,
