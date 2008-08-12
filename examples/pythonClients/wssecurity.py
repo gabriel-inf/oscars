@@ -4,9 +4,16 @@ import base64
 import re
 from datetime import datetime, timedelta
 from M2Crypto import BIO, DSA, X509
+
+# Fixes https://launchpad.net/ubuntu/hardy/+source/python-xml/0.8.4-10ubuntu1
+# in Ubuntu Hardy
+import sys
+sys.path.append('/usr/lib/python%s/site-packages/oldxml' % sys.version[:3])
+
 from xml.dom.ext.reader.PyExpat import Reader
 from xml import xpath
 from xml.xpath.Context import Context
+
 from ZSI.wstools.c14n import Canonicalize
 from ZSI.wstools.Namespaces import DSIG, OASIS
 
