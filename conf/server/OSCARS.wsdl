@@ -4,6 +4,7 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/"
+    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
     xmlns:tns="http://oscars.es.net/OSCARS">
 
     <wsdl:documentation>
@@ -21,6 +22,16 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:tns="http://oscars.es.net/OSCARS">
             <xsd:include schemaLocation="OSCARS.xsd" />
+        </xsd:schema>
+        <xsd:schema>
+            <xsd:import
+                namespace="http://docs.oasis-open.org/wsn/b-2" 
+                schemaLocation="b-2-idc.xsd"/>
+        </xsd:schema>
+        <xsd:schema>
+            <xsd:import
+                namespace="http://docs.oasis-open.org/wsrf/r-2" 
+                schemaLocation="r-2-idc.xsd"/>
         </xsd:schema>
     </wsdl:types>
 
@@ -133,7 +144,11 @@
             element="tns:forwardResponse">
         </wsdl:part>
     </wsdl:message>
-
+    
+    <wsdl:message name="Notify">
+        <wsdl:part name="Notify" element="wsnt:Notify"/>
+    </wsdl:message>
+    
     <wsdl:message name="AAAFaultMessage">
         <wsdl:part name="fault" element="tns:AAAFault" />
     </wsdl:message>
@@ -244,7 +259,9 @@
                 message="tns:BSSFaultMessage" />
         </wsdl:operation>
 
-
+        <wsdl:operation name="Notify">
+            <wsdl:input message="tns:Notify" />
+        </wsdl:operation>
 
     </wsdl:portType>
 
@@ -449,7 +466,14 @@
                 <soap:fault name="BSSErrorException" use="literal" />
             </wsdl:fault>
         </wsdl:operation>
-
+        
+        <wsdl:operation name="Notify">
+            <soap:operation
+                soapAction="http://oscars.es.net/OSCARS/Notify" />
+            <wsdl:input>
+                <soap:body use="literal" parts="Notify" />
+            </wsdl:input>
+        </wsdl:operation>
     </wsdl:binding>
 
     <wsdl:service name="OSCARS">

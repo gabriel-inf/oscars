@@ -1,6 +1,7 @@
 
+
 /**
- * OSCARSMessageReceiverInOut.java
+ * OSCARSMessageReceiverInOnly.java
  *
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.3  Built on : Aug 10, 2007 (04:45:47 LKT)
@@ -8,25 +9,23 @@
         package net.es.oscars.oscars;
 
         /**
-        *  OSCARSMessageReceiverInOut message receiver
+        *  OSCARSMessageReceiverInOnly message receiver
         */
 
-        public class OSCARSMessageReceiverInOut extends org.apache.axis2.receivers.AbstractInOutMessageReceiver{
+        public class OSCARSMessageReceiverInOnly extends org.apache.axis2.receivers.AbstractInMessageReceiver{
 
-
-        public void invokeBusinessLogic(org.apache.axis2.context.MessageContext msgContext, org.apache.axis2.context.MessageContext newMsgContext)
-        throws org.apache.axis2.AxisFault{
+        public void invokeBusinessLogic(org.apache.axis2.context.MessageContext inMessage) throws org.apache.axis2.AxisFault{
 
         try {
 
         // get the implementation class for the Web Service
-        Object obj = getTheImplementationObject(msgContext);
+        Object obj = getTheImplementationObject(inMessage);
 
         OSCARSSkeletonInterface skel = (OSCARSSkeletonInterface)obj;
         //Out Envelop
         org.apache.axiom.soap.SOAPEnvelope envelope = null;
         //Find the axisOperation that has been set by the Dispatch phase.
-        org.apache.axis2.description.AxisOperation op = msgContext.getOperationContext().getAxisOperation();
+        org.apache.axis2.description.AxisOperation op = inMessage.getOperationContext().getAxisOperation();
         if (op == null) {
         throw new org.apache.axis2.AxisFault("Operation is not located, if this is doclit style the SOAP-ACTION should specified via the SOAP Action to use the RawXMLProvider");
         }
@@ -35,234 +34,27 @@
         if((op.getName() != null) && ((methodName = org.apache.axis2.util.JavaUtils.xmlNameToJava(op.getName().getLocalPart())) != null)){
 
         
-
-            if("createReservation".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.CreateReservationResponse createReservationResponse48 = null;
-	                        net.es.oscars.wsdlTypes.CreateReservation wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.CreateReservation)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.CreateReservation.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               createReservationResponse48 =
-                                                   
-                                                   
-                                                         skel.createReservation(wrappedParam)
-                                                    ;
+            if("Notify".equals(methodName)){
+            
+            org.oasis_open.docs.wsn.b_2.Notify wrappedParam = (org.oasis_open.docs.wsn.b_2.Notify)fromOM(
+                                                        inMessage.getEnvelope().getBody().getFirstElement(),
+                                                        org.oasis_open.docs.wsn.b_2.Notify.class,
+                                                        getEnvelopeNamespaces(inMessage.getEnvelope()));
                                             
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), createReservationResponse48, false);
-                                    } else 
-
-            if("cancelReservation".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.CancelReservationResponse cancelReservationResponse50 = null;
-	                        net.es.oscars.wsdlTypes.CancelReservation wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.CancelReservation)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.CancelReservation.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
+                                                     skel.Notify(wrappedParam);
                                                 
-                                               cancelReservationResponse50 =
-                                                   
-                                                   
-                                                         skel.cancelReservation(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), cancelReservationResponse50, false);
-                                    } else 
+                } else {
+                  throw new java.lang.RuntimeException("method not found");
+                }
+            
 
-            if("queryReservation".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.QueryReservationResponse queryReservationResponse52 = null;
-	                        net.es.oscars.wsdlTypes.QueryReservation wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.QueryReservation)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.QueryReservation.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               queryReservationResponse52 =
-                                                   
-                                                   
-                                                         skel.queryReservation(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), queryReservationResponse52, false);
-                                    } else 
-
-            if("modifyReservation".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.ModifyReservationResponse modifyReservationResponse54 = null;
-	                        net.es.oscars.wsdlTypes.ModifyReservation wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.ModifyReservation)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.ModifyReservation.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               modifyReservationResponse54 =
-                                                   
-                                                   
-                                                         skel.modifyReservation(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), modifyReservationResponse54, false);
-                                    } else 
-
-            if("listReservations".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.ListReservationsResponse listReservationsResponse56 = null;
-	                        net.es.oscars.wsdlTypes.ListReservations wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.ListReservations)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.ListReservations.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               listReservationsResponse56 =
-                                                   
-                                                   
-                                                         skel.listReservations(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), listReservationsResponse56, false);
-                                    } else 
-
-            if("getNetworkTopology".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.GetNetworkTopologyResponse getNetworkTopologyResponse58 = null;
-	                        net.es.oscars.wsdlTypes.GetNetworkTopology wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.GetNetworkTopology)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.GetNetworkTopology.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               getNetworkTopologyResponse58 =
-                                                   
-                                                   
-                                                         skel.getNetworkTopology(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), getNetworkTopologyResponse58, false);
-                                    } else 
-
-            if("initiateTopologyPull".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.InitiateTopologyPullResponse initiateTopologyPullResponse60 = null;
-	                        net.es.oscars.wsdlTypes.InitiateTopologyPull wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.InitiateTopologyPull)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.InitiateTopologyPull.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               initiateTopologyPullResponse60 =
-                                                   
-                                                   
-                                                         skel.initiateTopologyPull(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), initiateTopologyPullResponse60, false);
-                                    } else 
-
-            if("createPath".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.CreatePathResponse createPathResponse62 = null;
-	                        net.es.oscars.wsdlTypes.CreatePath wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.CreatePath)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.CreatePath.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               createPathResponse62 =
-                                                   
-                                                   
-                                                         skel.createPath(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), createPathResponse62, false);
-                                    } else 
-
-            if("refreshPath".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.RefreshPathResponse refreshPathResponse64 = null;
-	                        net.es.oscars.wsdlTypes.RefreshPath wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.RefreshPath)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.RefreshPath.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               refreshPathResponse64 =
-                                                   
-                                                   
-                                                         skel.refreshPath(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), refreshPathResponse64, false);
-                                    } else 
-
-            if("teardownPath".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.TeardownPathResponse teardownPathResponse66 = null;
-	                        net.es.oscars.wsdlTypes.TeardownPath wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.TeardownPath)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.TeardownPath.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               teardownPathResponse66 =
-                                                   
-                                                   
-                                                         skel.teardownPath(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), teardownPathResponse66, false);
-                                    } else 
-
-            if("forward".equals(methodName)){
-                
-                net.es.oscars.wsdlTypes.ForwardResponse forwardResponse68 = null;
-	                        net.es.oscars.wsdlTypes.Forward wrappedParam =
-                                                             (net.es.oscars.wsdlTypes.Forward)fromOM(
-                                    msgContext.getEnvelope().getBody().getFirstElement(),
-                                    net.es.oscars.wsdlTypes.Forward.class,
-                                    getEnvelopeNamespaces(msgContext.getEnvelope()));
-                                                
-                                               forwardResponse68 =
-                                                   
-                                                   
-                                                         skel.forward(wrappedParam)
-                                                    ;
-                                            
-                                        envelope = toEnvelope(getSOAPFactory(msgContext), forwardResponse68, false);
-                                    
-            } else {
-              throw new java.lang.RuntimeException("method not found");
-            }
-        
-
-        newMsgContext.setEnvelope(envelope);
         }
-        } catch (AAAFaultMessage e) {
-
-            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"AAAFault");
-            org.apache.axis2.AxisFault f = createAxisFault(e);
-            if (e.getFaultMessage() != null){
-                f.setDetail(toOM(e.getFaultMessage(),false));
-            }
-            throw f;
-            }
-         catch (BSSFaultMessage e) {
-
-            msgContext.setProperty(org.apache.axis2.Constants.FAULT_NAME,"BSSFault");
-            org.apache.axis2.AxisFault f = createAxisFault(e);
-            if (e.getFaultMessage() != null){
-                f.setDetail(toOM(e.getFaultMessage(),false));
-            }
-            throw f;
-            }
-        
-        catch (java.lang.Exception e) {
+        } catch (java.lang.Exception e) {
         throw org.apache.axis2.AxisFault.makeFault(e);
         }
         }
+
+
         
         //
             private  org.apache.axiom.om.OMElement  toOM(net.es.oscars.wsdlTypes.QueryReservation param, boolean optimizeContent)
@@ -1111,6 +903,8 @@
 
     
 
+
+
         /**
         *  A utility method that copies the namepaces from the SOAPEnvelope
         */
@@ -1124,17 +918,8 @@
         return returnMap;
         }
 
-        private org.apache.axis2.AxisFault createAxisFault(java.lang.Exception e) {
-        org.apache.axis2.AxisFault f;
-        Throwable cause = e.getCause();
-        if (cause != null) {
-            f = new org.apache.axis2.AxisFault(e.getMessage(), cause);
-        } else {
-            f = new org.apache.axis2.AxisFault(e.getMessage());
-        }
 
-        return f;
-    }
 
         }//end of class
+
     

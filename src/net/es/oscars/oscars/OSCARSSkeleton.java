@@ -22,7 +22,9 @@ import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSConstants;
 
 import org.apache.log4j.*;
+import org.apache.axiom.om.OMElement;
 import org.hibernate.*;
+import org.oasis_open.docs.wsn.b_2.*;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.aaa.UserManager;
@@ -652,6 +654,30 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         forwardResponse.setForwardResponse(forwardReply);
         return forwardResponse;
+    }
+    
+    /**
+     * The Notify message is passed from other IDCs to indicate status changes.
+     * Used by resource scheduling and signaling.
+     *
+     * @param request the Notify message
+     */
+    public void Notify(Notify request){
+        this.log.info("Received Notify");
+        NotificationMessageHolderType[] holders = request.getNotificationMessage();
+        for(NotificationMessageHolderType holder : holders){
+             MessageType message = holder.getMessage();
+             OMElement[] omEvents = message.getExtraElement();
+             for(OMElement omEvent : omEvents){
+                try{
+                    EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
+                    System.out.println(event.getType());
+                }catch(Exception e){ 
+                   //Just skip if not an idc:event
+                    continue;
+                }
+             }
+        } 
     }
 
     /**

@@ -49,6 +49,9 @@
         <copy todir="conf/notify-server">
             <fileset dir="conf/server" includes="OSCARS.xsd,nmtopo-ctrlp.xsd" />
         </copy>
+        <copy todir="conf/server">
+            <fileset dir="conf/notify-server" includes="b-2-idc.xsd,bf-2-idc.xsd,r-2-idc.xsd,ws-addr-idc.xsd"/>
+        </copy>
     </target>
     <target name="initMaven">
         <path id="maven.classpath">
