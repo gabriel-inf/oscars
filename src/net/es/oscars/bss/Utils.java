@@ -71,8 +71,8 @@ public class Utils {
         if (interDomain && (ctr == 2)) {
             return "";
         // internal path has not been set up
-        // NOTE:  this depends on the current implementation having one
-        //        hop in the path from when the reservation has been in
+        // NOTE:  this depends on the current implementation sometimes having
+        //        one hop in the path from when the reservation has been in
         //        the ACCEPTED state, but the path has not been or may never
         //        be set up.
         } else if (!interDomain && (ctr == 1)) {
