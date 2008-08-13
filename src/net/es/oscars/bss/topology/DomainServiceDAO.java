@@ -8,7 +8,7 @@ import net.es.oscars.database.GenericHibernateDAO;
  * DomainServiceDAO is the data access object for the bss.domainServices table.
  *
  */
-public class DomainServiceDAO extends GenericHibernateDAO<Node, Integer> {
+public class DomainServiceDAO extends GenericHibernateDAO<DomainService, Integer> {
 
     public DomainServiceDAO(String dbname) {
         this.setDatabase(dbname);
@@ -20,7 +20,7 @@ public class DomainServiceDAO extends GenericHibernateDAO<Node, Integer> {
      *
      * @param domain Domain of the service to lookup
      * @param type the type of service to lookup
-     * @return A Node instance.
+     * @return a URL for the service belonging to the given domain and having the given type
      */
     public String getUrl(Domain domain, String type){
         String sql = "SELECT ds.* FROM domainServices AS ds INNER JOIN domains " +
