@@ -79,8 +79,10 @@ public class QueryResRmiHandler {
         authVal = userMgr.checkAccess(userName, "Reservations", "modify");
         if (authVal != AuthValue.DENIED) {
             result.put("resvModifyDisplay", Boolean.TRUE);
+            result.put("resvCautionDisplay", Boolean.TRUE);
         } else {
             result.put("resvModifyDisplay", Boolean.FALSE);
+            result.put("resvCautionDisplay", Boolean.FALSE);
         }
         // check to see if user is allowed to see the clone button, which 
         // requires generic reservation create authorization

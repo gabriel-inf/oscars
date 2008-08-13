@@ -6,6 +6,9 @@ David Robertson (dwrobertson@lbl.gov)
 /* Functions:
 postQueryReservation()
 postCancelReservation(dialogFields)
+postCreatePath(dialogFields)
+postTeardownPath(dialogFields)
+postOverrideStatuus(dialogFields)
 handleReply(responseObject, ioArgs)
 hideParams(responseObject)
 tabSelected(contentPaneWidget)
@@ -68,6 +71,52 @@ oscars.ReservationDetails.postCancelReservation = function (dialogFields) {
             error: oscars.Form.handleError,
             form: formNode
     });
+};
+
+// posts create path request to server
+oscars.ReservationDetails.postCreatePath = function (dialogFields) {
+    var formNode = dijit.byId("reservationDetailsForm").domNode;
+    oscars.ReservationDetails.setCurrentGri(formNode);
+    dojo.xhrPost({
+        url: 'servlet/PathSetupReservation',
+            handleAs: "json-comment-filtered",
+            load: oscars.ReservationDetails.handleReply,
+            error: oscars.Form.handleError,
+            form: formNode
+    });
+};
+
+// posts teardown path request to server
+oscars.ReservationDetails.postTeardownPath = function (dialogFields) {
+    var formNode = dijit.byId("reservationDetailsForm").domNode;
+    oscars.ReservationDetails.setCurrentGri(formNode);
+    dojo.xhrPost({
+        url: 'servlet/PathTeardownReservation',
+            handleAs: "json-comment-filtered",
+            load: oscars.ReservationDetails.handleReply,
+            error: oscars.Form.handleError,
+            form: formNode
+    });
+};
+
+// posts override status request to server
+oscars.ReservationDetails.postOverrideStatus = function (dialogFields) {
+    var formNode = dijit.byId("reservationDetailsForm").domNode;
+    oscars.ReservationDetails.setCurrentGri(formNode);
+    dojo.xhrPost({
+        url: 'servlet/OverrideStatusReservation',
+            handleAs: "json-comment-filtered",
+            load: oscars.ReservationDetails.handleReply,
+            error: oscars.Form.handleError,
+            form: formNode
+    });
+};
+
+oscars.ReservationDetails.forcedStatus = function () {
+    var formNode = dijit.byId("reservationDetailsForm").domNode;
+    var menu = dojo.byId("forcedStatusMenu");
+    var selectedChoice = menu.selectedIndex;
+    formNode.forcedStatus = menu.options[selectedChoice].value;
 };
 
 // Clones current reservation except for date/times, changing to the

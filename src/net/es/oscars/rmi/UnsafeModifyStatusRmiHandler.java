@@ -31,7 +31,6 @@ public class UnsafeModifyStatusRmiHandler {
         Reservation reservation = null;
         result.put("method", methodName);
 
-        // OK not sure what to put here
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
@@ -42,19 +41,16 @@ public class UnsafeModifyStatusRmiHandler {
             return result;
         }
         aaa.getTransaction().commit();
-
-
-
-
-        String []paramValues = inputMap.get("gri");
+        String[] paramValues = inputMap.get("gri");
         String gri = paramValues[0];
 
-        paramValues = inputMap.get("status");
+        paramValues = inputMap.get("forcedStatus");
         String status = paramValues[0];
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
+        /* UNCOMMENT THIS BLOCK TO TEST
         try {
             ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
             Reservation resv = resvDAO.query(gri);
@@ -71,6 +67,9 @@ public class UnsafeModifyStatusRmiHandler {
         }
         result.put("gri", reservation.getGlobalReservationId());
         result.put("status", "Overrode status for reservation with GRI " + reservation.getGlobalReservationId());
+        */
+        /* REMOVE THIS LINE FOR TESTING */
+        result.put("status", "Not implemented yet");
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 
@@ -78,5 +77,4 @@ public class UnsafeModifyStatusRmiHandler {
         this.log.debug("overrideStatus.end");
         return result;
     }
-
 }

@@ -29,6 +29,7 @@ oscars.AuthorizationDetails.init = function () {
 // posts authorization add to server
 oscars.AuthorizationDetails.postAdd = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
+    oscarsState.authorizationState.clearAuthState();
     dojo.xhrPost({
         url: 'servlet/AuthorizationAdd',
         handleAs: "json-comment-filtered",
@@ -53,6 +54,7 @@ oscars.AuthorizationDetails.postModify = function () {
 oscars.AuthorizationDetails.postDelete = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
     var authGrid = dijit.byId("authGrid");
+    oscarsState.authorizationState.clearAuthState();
     // TODO:  need to get selected row, and data from that
     dojo.xhrPost({
         url: 'servlet/AuthorizationRemove',
@@ -70,7 +72,7 @@ oscars.AuthorizationDetails.clone = function () {
     modifyAuthorizationNode.style.display = "none";
     var addAuthorizationNode = dojo.byId("addAuthorizationDisplay");
     addAuthorizationNode.style.display = "";
-    oscars.AuthorizationDetails.resetFields(false);
+    oscars.AuthorizationDetails.resetFields(true);
 };
 
 // handles all servlet replies
@@ -114,5 +116,7 @@ oscars.AuthorizationDetails.resetFields = function (useSaved) {
         menu.options[0].disabled = false;
         oscars.Form.setMenuSelected(menu, "None");
         formParam.reset();
+    } else {
+        oscarsState.authorizationState.recoverAuthState(formParam);
     }
 };

@@ -9,6 +9,18 @@
 <body>
 <form id="authDetailsForm" dojoType="dijit.form.Form">
   <span id="modifyAuthorizationDisplay" style="display:none">
+<p>Any legal authorization can be added to any attribute.  Note that if you
+change the attribute associated with an existing authorization, you are
+deleting the authorization associated with the old attribute.
+The best way to modify an
+authorization is to start from the resources menu and
+work down.  What resource is chosen determines which permissions can be
+chosen, and so on down to constraints.  Constraints are optional for all
+combinations of resources and permissions.  If a permission is changed before
+a resource, it may be reset to None if it is not valid for that resource.
+You can click on RESET TO ORIGINAL at any time to restore the original
+attribute/authorization combination.
+</p>
   <button dojoType="dijit.form.Button" id="modifyAuthorization">
      MODIFY
      <script type="dojo/method" event="onClick">
@@ -35,6 +47,14 @@
   </button>
   </span>
   <span id="addAuthorizationDisplay">
+<p>Any legal authorization can be added to any attribute.  An attribute can
+be chosen at any time.  For the other options, the best way to add an
+authorization is to start from the resources menu and
+work down.  What resource is chosen determines which permissions can be
+chosen, and so on down to constraints.  Constraints are optional for all
+combinations of resources and permissions.  If a permission is chosen before
+a resource, it may be reset to None if it is not valid for that resource.
+</p>
   <button dojoType="dijit.form.Button" id="addAuthorization">
      ADD
      <script type="dojo/method" event="onClick">
@@ -54,29 +74,32 @@
   <tr>
     <!-- setting once sets for all in column -->
     <td width="12%">Attribute</td>
-    <td>
+    <td colspan="2">
         <select name="authAttributeName" id="authAttributeName">
         </select>
     </td>
   </tr>
   <tr>
     <td>Resource</td>
-    <td>
-        <select name="resourceName" id="resourceName">
+    <td colspan="2">
+        <select name="resourceName" id="resourceName"
+            onChange="oscarsState.authorizationState.constrainChoices('resourceName');return false;">
         </select>
     </td>
   </tr>
   <tr>
     <td>Permission</td>
-    <td>
-        <select name="permissionName" id="permissionName">
+    <td colspan="2">
+        <select name="permissionName" id="permissionName"
+            onChange="oscarsState.authorizationState.constrainChoices('permissionName');return false;">
         </select>
     </td>
   </tr>
   <tr>
     <td>Constraint</td>
-    <td>
-        <select name="constraintName" id="constraintName">
+    <td colspan="2">
+        <select name="constraintName" id="constraintName"
+            onChange="oscarsState.authorizationState.constrainChoices('constraintName');return false;">
         </select>
     </td>
   </tr>
@@ -86,6 +109,8 @@
       <input type="text" name="constraintValue" id="constraintValue"
              dojoType="dijit.form.TextBox"
              promptMessage="Enter the constraint value" />
+    </td>
+    <td id="constraintValueChoice">
     </td>
   </tr>
 </tbody>

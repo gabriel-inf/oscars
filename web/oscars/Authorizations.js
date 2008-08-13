@@ -98,25 +98,28 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     // dijit.byId doesn't seem to work outside form and tab
     var menu = formParam.authAttributeName;
     menu.options[0].disabled = true;
-    var optionName = authGrid.model.getDatum(evt.rowIndex, 0);
-    oscars.Form.setMenuSelected(menu, optionName);
+    var attributeName = authGrid.model.getDatum(evt.rowIndex, 0);
+    oscars.Form.setMenuSelected(menu, attributeName);
     menu = formParam.resourceName;
     menu.options[0].disabled = true;
-    optionName = authGrid.model.getDatum(evt.rowIndex, 1);
-    oscars.Form.setMenuSelected(menu, optionName);
+    var resourceName = authGrid.model.getDatum(evt.rowIndex, 1);
+    oscars.Form.setMenuSelected(menu, resourceName);
     menu = formParam.permissionName;
     menu.options[0].disabled = true;
-    optionName = authGrid.model.getDatum(evt.rowIndex, 2);
-    oscars.Form.setMenuSelected(menu, optionName);
+    var permissionName = authGrid.model.getDatum(evt.rowIndex, 2);
+    oscars.Form.setMenuSelected(menu, permissionName);
     menu = formParam.constraintName;
-    optionName = authGrid.model.getDatum(evt.rowIndex, 3);
+    var constraintName = authGrid.model.getDatum(evt.rowIndex, 3);
     // constraint can be blank
-    if (optionName) {
-        oscars.Form.setMenuSelected(menu, optionName);
+    if (constraintName) {
+        oscars.Form.setMenuSelected(menu, constraintName);
     } else {
         oscars.Form.setMenuSelected(menu, "None");
     }
     formParam.constraintValue.value = authGrid.model.getDatum(evt.rowIndex, 4);
+    oscarsState.authorizationState.saveAuthState(attributeName,
+            resourceName, permissionName, constraintName,
+            formParam.constraintValue.value);
     // No need to query server; grid already contains all information.
     // Can't set up menus in grid; different fields may require different
     // subsets of values of other fields.

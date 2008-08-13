@@ -24,38 +24,36 @@ public class UnsafeCreatePathRmiHandler {
         this.core = OSCARSCore.getInstance();
     }
 
-    public HashMap<String, Object> createPath(HashMap<String, String[]> inputMap, String userName)
-        throws IOException {
+    public
+        HashMap<String, Object> createPath(HashMap<String, String[]> inputMap,
+                                           String userName)
+            throws IOException {
+
          this.log.debug("createPath.start");
          HashMap<String, Object> result = new HashMap<String, Object>();
          String methodName = "CreatePath";
-
-
          UserManager userMgr =  new UserManager("aaa");
          EventProducer eventProducer = new EventProducer();
          Reservation reservation = null;
          result.put("method", methodName);
 
-         // TODO: what to put here?
          Session aaa = core.getAaaSession();
          aaa.beginTransaction();
          AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
          if (authVal == AuthValue.DENIED) {
-             result.put("error", "no permission to create path");
+             result.put("error", "no permission to force path creation");
              aaa.getTransaction().rollback();
              this.log.debug("createPath failed: permission denied");
              return result;
          }
          aaa.getTransaction().commit();
 
-         String []paramValues = inputMap.get("gri");
+         String[] paramValues = inputMap.get("gri");
          String gri = paramValues[0];
-
-
-
          Session bss = core.getBssSession();
          bss.beginTransaction();
          String errMessage = null;
+         /* UNCOMMENT THIS BLOCK TO TEST
          try {
              ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
              Reservation resv = resvDAO.query(gri);
@@ -81,6 +79,9 @@ public class UnsafeCreatePathRmiHandler {
          }
          result.put("gri", reservation.getGlobalReservationId());
          result.put("status", "Manually set up path for GRI " + reservation.getGlobalReservationId());
+         */
+         /* REMOVE THIS LINE FOR TESTING */
+         result.put("status", "Not implemented yet");
          result.put("method", methodName);
          result.put("success", Boolean.TRUE);
 

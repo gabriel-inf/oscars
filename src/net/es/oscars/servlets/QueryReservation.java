@@ -48,7 +48,8 @@ public class QueryReservation extends HttpServlet {
 
         String[] paramValues = request.getParameterValues("gri");
         inputMap.put("gri", paramValues);
-
+        // which sections of the page to display are controlled on the
+        // RMI server side in the rmi module
         try {
             CoreRmiInterface rmiClient = new CoreRmiClient();
             rmiClient.init();

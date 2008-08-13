@@ -41,6 +41,15 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     if (dijit.byId("cancelDialog")) {
         dijit.byId("cancelDialog").destroy();
     }
+    if (dijit.byId("createPathDialog")) {
+        dijit.byId("createPathDialog").destroy();
+    }
+    if (dijit.byId("teardownPathDialog")) {
+        dijit.byId("teardownPathDialog").destroy();
+    }
+    if (dijit.byId("overrideStatusDialog")) {
+        dijit.byId("overrideStatusDialog").destroy();
+    }
     // destroy all other tabs
     if (dijit.byId("reservationsPane")) {
         mainTabContainer.closeChild(dijit.byId("reservationsPane"));

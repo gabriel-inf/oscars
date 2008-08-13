@@ -24,6 +24,7 @@
      be modifiable if the user had the proper authorization -->
 <input type="hidden" name="modifyBandwidth" id="modifyBandwidth" />
 <input type="hidden" name="modifyDescription" id="modifyDescription" />
+<input type="hidden" name="forcedStatus" id="forcedStatus" />
 <table>
   <tbody>
   <tr>
@@ -72,6 +73,23 @@
          <script type="dojo/method" event="onClick">
              oscars.ReservationDetails.cloneReservation();
          </script>
+      </button>
+  </span>
+  <span id="resvCautionDisplay" style="display:none">
+       <button dojoType="dijit.form.Button" id="createPath"
+           onclick="dijit.byId('createPathDialog').show();"
+           style="color:#FF0000">
+        CREATE PATH
+       </button>
+       <button dojoType="dijit.form.Button" id="teardownPath"
+           onclick="dijit.byId('teardownPathDialog').show();"
+           style="color:#FF0000">
+        TEAR DOWN PATH
+      </button>
+       <button dojoType="dijit.form.Button" id="overrideStatus"
+           onclick="dijit.byId('overrideStatusDialog').show();"
+           style="color:#FF0000">
+        OVERRIDE STATUS
       </button>
   </span>
 
@@ -159,6 +177,15 @@
 <div dojoType = "dijit.Tooltip" connectId="cancelReservation" position="above">
     Cancels the current reservation if it is pending or active.
 </div>
+<div dojoType = "dijit.Tooltip" connectId="createPath" position="below">
+    Forces the recreation of a circuit.  Use with caution.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="teardownPath" position="below">
+    Forces the teardown of a circuit.  Use with caution.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="overrideStatus" position="below">
+    Immediately changes the status of a reservation.  Use with caution.
+</div>
 <!-- cancel dialog; note that doesn't seem to work inside a form -->
 <div dojoType="dijit.Dialog" id="cancelDialog"
     style="display:none;" title="Are you sure you want to cancel?"
@@ -170,6 +197,67 @@
         </button>
       </td>
     </tr>
+  </table>
+</div>
+<!-- dialogs for buttons to use with extreme caution --L>
+<div dojoType="dijit.Dialog" id="createPathDialog"
+    style="display:none;" title="Are you sure you want to force path creation?"
+    execute="oscars.ReservationDetails.postCreatePath(arguments[0]);">
+  <p>
+  WARNING: This function will send out the configuration directives to your network equipment to create this circuit, regardless of the reservation's state (which will NOT change). This may result in existing circuits becoming degraded, torn down, or other network misconfiguration. Unless your reservation's status is already ACTIVE, newly created circuits may override the configuration sent out by this function. USE OF THIS FUNCTION MAY RESULT IN SERIOUS INCONSISTENCIES IN THE DATABASE AND IN THE MANAGED NETWORK. EXTREME CAUTION AS WELL AS  EXTENSIVE UNDERSTANDING OF THE SOFTWARE SUITE IS ADVISED.
+  </p>
+  <table>
+    <tr>
+      <td>
+        <button dojoType="dijit.form.Button" type="submit">YES
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>
+<div dojoType="dijit.Dialog" id="teardownPathDialog"
+    style="display:none;" title="Are you sure you want to force path teardown?"
+    execute="oscars.ReservationDetails.postTeardownPath(arguments[0]);">
+  <p>
+  WARNING: This function will send out the configuration directives to your network equipment to tear down this circuit, regardless of the reservation's state (which will NOT change). This may result in existing circuits getting accidentally torn down, or other network misconfiguration. USE OF THIS FUNCTION MAY RESULT IN SERIOUS INCONSISTENCIES IN THE DATABASE AND IN THE MANAGED NETWORK. EXTREME CAUTION AS WELL AS  EXTENSIVE UNDERSTANDING OF THE SOFTWARE SUITE IS ADVISED.
+  </p>
+  <table>
+    <tr>
+      <td>
+        <button dojoType="dijit.form.Button" type="submit">YES
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>
+<div dojoType="dijit.Dialog" id="overrideStatusDialog"
+    style="display:none;" title="Are you sure you want to force status change?"
+    execute="oscars.ReservationDetails.postOverrideStatus(arguments[0]);">
+  <p>
+  WARNING: This function will immediately update this reservation's status without ay guarantees as to correctness. Note that this CAN and probably WILL result in starting some of the several automated network configuration tasks that are triggered by certain reservation states. This may result in circuits getting accidentally torn down, overwritten by others, or experiencing reduced performance. USE OF THIS FUNCTION MAY RESULT IN SERIOUS INCONSISTENCIES IN THE DATABASE AND IN THE MANAGED NETWORK. EXTREME CAUTION AS WELL AS  EXTENSIVE UNDERSTANDING OF THE SOFTWARE SUITE IS ADVISED.
+  </p>
+  <table>
+  <tr>
+  <td>New status:
+      <select name="forcedStatusMenu" id="forcedStatusMenu"
+          onChange="oscars.ReservationDetails.forcedStatus();return false;">
+      <option value="FAILED" selected="selected">FAILED</option>
+      <option value="ACTIVE">ACTIVE</option>
+      <option value="PENDING">PENDING</option>
+      <option value="FINISHED">FINISHED</option>
+      <option value="CANCELLED">CANCELLED</option>
+      <option value="ACCEPTED">ACCEPTED</option>
+      <option value="SUBMITTED">SUBMITTED</option>
+      <option value="INSETUP">INSETUP</option>
+      <option value="INTEARDOWN">INTEARDOWN</option>
+      <option value="INMODIFY">INMODIFY</option>
+  </select>
+  </td>
+  <td>
+      <button dojoType="dijit.form.Button" type="submit">FORCE
+      </button>
+  </td>
+  </tr>
   </table>
 </div>
 </body>
