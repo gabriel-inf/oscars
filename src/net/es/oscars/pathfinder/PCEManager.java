@@ -42,7 +42,7 @@ public class PCEManager {
 
         List<String> pathMethods = this.getPathMethods();
 
-        if (pathMethods == null) {
+        if (pathMethods != null) {
             for( String method : pathMethods ) {
                 try {
                     this.log.info("PCEManager.findPath."+method+".start");
