@@ -55,8 +55,14 @@ class MessageBuilder(object):
         if len(topics) == 0:
             raise InvalidRequestException('Must specify at least one topic')
 
+        if isinstance(topics, str):
+            topics = topics.split('|')
+
         if len(producers) == 0:
             raise InvalidRequestException('Must specify at least one producer')
+
+        if isinstance(producers, str):
+            producers = producers.split('|')
 
         topicsAttribs = [('Dialect',
                           'http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full')]
@@ -64,7 +70,7 @@ class MessageBuilder(object):
 
         producerAttribs = [('Dialect',
                             'http://www.w3.org/TR/1999/REC-xpath-19991116')]
-        producerProps = [ topicsAttribs +
+        producerProps = [ producerAttribs +
                           ["/wsa:Address='%s'" % producer] for producer in producers ]
 
         message = {

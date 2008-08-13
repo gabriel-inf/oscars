@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 from optparse import OptionParser
 from OSCARS import ClientFactory, WrappedFunctionFactory
@@ -16,7 +17,7 @@ def getOperationFromScriptName(name):
         'unsubscribe.py': 'Unsubscribe'
     }
     for scriptName, operation in operations.iteritems():
-        if scriptName in sys.argv[0]:
+        if scriptName == os.path.basename(sys.argv[0]):
             return operation
     return None
 
