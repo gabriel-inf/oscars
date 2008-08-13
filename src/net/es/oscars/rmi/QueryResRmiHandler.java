@@ -192,8 +192,12 @@ public class QueryResRmiHandler {
                 outputMap.put("taggedReplace", "false");
             }
         } else {
-            outputMap.put("vlanReplace",
-                          "Warning: No VLAN tag present");
+            if (status.equals("SUBMITTED") || status.equals("ACCEPTED")) {
+                outputMap.put("vlanReplace", "VLAN setup in progress");
+            } else {
+                outputMap.put("vlanReplace",
+                              "No VLAN tag was ever set up");
+            }
         }
     } else if (layer3Data != null) {
         strParam = layer3Data.getSrcHost();
@@ -239,6 +243,11 @@ public class QueryResRmiHandler {
         }
     }
     String pathStr = utils.pathToString(path, false);
+    // in this case, path has not been set up yet, or an error has occurred
+    // and the path will never be set up
+    if ((pathStr != null) && pathStr.equals("")) {
+        return;
+    }
     // don't allow non-authorized user to see internal hops
     if ((pathStr != null) && !internalIntradomainHops) {
         String[] hops = pathStr.trim().split("\n");
