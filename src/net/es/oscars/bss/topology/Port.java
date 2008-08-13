@@ -282,6 +282,32 @@ public class Port extends HibernateBean implements Serializable {
         return (parentFqti + ":port=" + topoId);
     }
 
+    /**
+     * Checks if the given identifier refers to this element or one of its
+     * children.
+     * @return The element corresponding to the passed id or null if not found.
+     */
+    public Object lookupElement(String id) {
+        if (this.getFQTI().equals(id)) {
+            return this;
+        }
+
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(id);
+	String linkFQID = parseResults.get("linkFQID");
+	if (linkFQID == null) {
+            return null;
+	}
+
+        Iterator linkIt = this.links.iterator();
+        while (linkIt.hasNext()) {
+            Link l = (Link) linkIt.next();
+            if (linkFQID.equals(l.getFQTI()))
+                return l.lookupElement(id);
+        }
+
+        return null;
+    }
+
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
@@ -320,4 +346,5 @@ public class Port extends HibernateBean implements Serializable {
     public String toString() {
         return new ToStringBuilder(this).append("id", getId()).toString();
     }
+
 }

@@ -343,6 +343,18 @@ public class Link extends HibernateBean implements Serializable {
         return (parentFqti + ":link=" + topoId);
     }
 
+    /**
+     * Checks if the given identifier refers to this element or one of its
+     * children.
+     * @return The element corresponding to the passed id or null if not found.
+     */
+    public Object lookupElement(String id) {
+        if (this.getFQTI().equals(id)) {
+            return this;
+        }
+
+        return null;
+    }
 
     // need to override superclass because dealing with transient
     // instances as well

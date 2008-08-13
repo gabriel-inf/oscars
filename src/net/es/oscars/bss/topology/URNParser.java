@@ -116,47 +116,64 @@ public class URNParser {
                  }
              }
         }else if (matched.equals("domain")) {
-            fqti = "urn:ogf:network:domain="+domainId;
+            String domainFqti = "urn:ogf:network:domain="+domainId;
             compactForm = "urn:ogf:network:"+domainId;
             realCompactForm = domainId;
             result.put("realcompact", realCompactForm);
             result.put("compact", compactForm);
             result.put("type", "domain");
-            result.put("fqti", fqti);
+            result.put("fqti", domainFqti);
             result.put("domainId", domainId);
+            result.put("domainFQID", domainFqti);
         } else if (matched.equals("node")) {
-            fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId;
+            String domainFqti = "urn:ogf:network:domain="+domainId;
+            String nodeFqti = domainFqti+":node="+nodeId;
             compactForm = "urn:ogf:network:"+domainId+":"+nodeId;
             realCompactForm = domainId+":"+nodeId;
             result.put("realcompact", realCompactForm);
             result.put("compact", compactForm);
             result.put("type", "node");
-            result.put("fqti", fqti);
+            result.put("fqti", nodeFqti);
             result.put("domainId", domainId);
             result.put("nodeId", nodeId);
+            result.put("nodeFQID", nodeFqti);
+            result.put("domainFQID", domainFqti);
         } else if (matched.equals("port")) {
-            fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId;
+            String domainFqti = "urn:ogf:network:domain="+domainId;
+            String nodeFqti = domainFqti+":node="+nodeId;
+            String portFqti = nodeFqti+":port="+portId;
             compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId;
             realCompactForm = domainId+":"+nodeId+":"+portId;
             result.put("realcompact", realCompactForm);
             result.put("compact", compactForm);
             result.put("type", "port");
-            result.put("fqti", fqti);
+            result.put("fqti", portFqti);
             result.put("domainId", domainId);
             result.put("nodeId", nodeId);
             result.put("portId", portId);
+            result.put("portFQID", portFqti);
+            result.put("nodeFQID", nodeFqti);
+            result.put("domainFQID", domainFqti);
         } else if (matched.equals("link")) {
+            String domainFqti = "urn:ogf:network:domain="+domainId;
+            String nodeFqti = domainFqti+":node="+nodeId;
+            String portFqti = nodeFqti+":port="+portId;
+            String linkFqti = portFqti+":link="+linkId;
             fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId+":link="+linkId;
             compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId+":"+linkId;
             realCompactForm = domainId+":"+nodeId+":"+portId+":"+linkId;
             result.put("realcompact", realCompactForm);
             result.put("compact", compactForm);
             result.put("type", "link");
-            result.put("fqti", fqti);
+            result.put("fqti", linkFqti);
             result.put("domainId", domainId);
             result.put("nodeId", nodeId);
             result.put("portId", portId);
             result.put("linkId", linkId);
+            result.put("linkFQID", linkFqti);
+            result.put("portFQID", portFqti);
+            result.put("nodeFQID", nodeFqti);
+            result.put("domainFQID", domainFqti);
         }
          return result;
     }

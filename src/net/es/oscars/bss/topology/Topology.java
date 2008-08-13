@@ -37,4 +37,22 @@ public class Topology {
         }
     }
 
+    /**
+     * Checks if the given identifier is available in this topology
+     * @return The element corresponding to the passed id or null if not found.
+     */
+    public Object lookupElement(String id) {
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(id);
+	String domFQID = parseResults.get("domFQID");
+	if (domFQID == null) {
+            return null;
+	}
+
+        for (Domain d : this.domains) {
+            if (domFQID.equals(d.getFQTI()))
+                return d.lookupElement(id);
+        }
+
+        return null;
+    }
 }

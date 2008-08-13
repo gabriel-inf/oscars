@@ -265,4 +265,30 @@ public class Domain extends HibernateBean implements Serializable {
             .append("id", getId())
             .toString();
     }
+
+    /**
+     * Checks if the given identifier refers to this element or one of its
+     * children.
+     * @return The element corresponding to the passed id or null if not found.
+     */
+    public Object lookupElement(String id) {
+        if (this.getFQTI().equals(id)) {
+            return this;
+        }
+
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(id);
+	String nodeFQID = parseResults.get("nodeFQID");
+	if (nodeFQID == null) {
+            return null;
+	}
+
+        Iterator nodeIt = this.nodes.iterator();
+        while (nodeIt.hasNext()) {
+            Node n = (Node) nodeIt.next();
+            if (nodeFQID.equals(n.getFQTI()))
+                return n.lookupElement(id);
+        }
+
+        return null;
+    }
 }

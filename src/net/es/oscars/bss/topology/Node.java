@@ -168,6 +168,32 @@ public class Node extends HibernateBean implements Serializable {
         return nodeCopy;
     }
 
+    /**
+     * Checks if the given identifier refers to this element or one of its
+     * children.
+     * @return The element corresponding to the passed id or null if not found.
+     */
+    public Object lookupElement(String id) {
+        if (this.getFQTI().equals(id)) {
+            return this;
+        }
+
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(id);
+	String portFQID = parseResults.get("portFQID");
+	if (portFQID == null) {
+            return null;
+	}
+
+        Iterator portIt = this.ports.iterator();
+        while (portIt.hasNext()) {
+            Port p = (Port) portIt.next();
+            if (portFQID.equals(p.getFQTI()))
+                return p.lookupElement(id);
+        }
+
+        return null;
+    }
+
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {

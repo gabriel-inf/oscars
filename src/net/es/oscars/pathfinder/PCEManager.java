@@ -36,16 +36,30 @@ public class PCEManager {
      */
     public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
 
+	PathInfo intraPath = null;
+
         this.log.info("PCEManager.findPath.start");
-        String pathMethod = this.getPathMethod();
-        this.log.info("pathfinder method is " + pathMethod);
-        if (pathMethod == null) {
-            return null;
+
+        List<String> pathMethods = this.getPathMethods();
+
+        if (pathMethods == null) {
+            for( String method : pathMethods ) {
+                try {
+                    this.log.info("PCEManager.findPath."+method+".start");
+                    this.pathfinder = new PathfinderFactory().createPathfinder(method, this.dbname);
+                    intraPath = this.pathfinder.findPath(pathInfo, reservation);
+                    this.log.info("PCEManager.findPath."+method+".end");
+                 } catch (Exception ex) {
+                    this.log.error("Exception caught finding path using method "+method+": "+ex.getMessage());
+                 }
+
+                 if (intraPath != null)
+                     break;
+            }
         }
-        this.pathfinder =
-            new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
-        PathInfo intraPath = this.pathfinder.findPath(pathInfo, reservation);
+
         this.log.info("PCEManager.findPath.end");
+
         return intraPath;
     }
     
@@ -58,16 +72,31 @@ public class PCEManager {
      */
     public String findIngress(PathInfo pathInfo) throws PathfinderException {
 
+	String ingress = null;
+
         this.log.info("PCEManager.findIngress.start");
-        String pathMethod = this.getPathMethod();
-        this.log.info("pathfinder method is " + pathMethod);
-        if (pathMethod == null) {
-            return null;
+
+        List<String> pathMethods = this.getPathMethods();
+
+        if (pathMethods != null) {
+            for( String method : pathMethods ) {
+                try {
+                    this.log.info("PCEManager.findIngress."+method+".start");
+                    this.pathfinder = new PathfinderFactory().createPathfinder(method, this.dbname);
+                    ingress = this.pathfinder.findIngress(pathInfo);
+                    this.log.info("PCEManager.findIngress."+method+".end");
+                    break;
+                 } catch (Exception ex) {
+                    this.log.error("Exception caught finding ingress point using method "+method+": "+ex.getMessage());
+                 }
+
+                 if (ingress != null)
+                     break;
+            }
         }
-        this.pathfinder =
-            new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
-        String ingress = this.pathfinder.findIngress(pathInfo);
+
         this.log.info("PCEManager.findIngress.end");
+
         return ingress;
     }
 
@@ -75,10 +104,10 @@ public class PCEManager {
      * Does error checking to make sure method of pathfinding is set,
      * and that it is set correctly.
      *
-     * @return string with name of pathfinding component to use.
+     * @return Ordered list of strings containing which pathfinding components to try.
      * @throws PathfinderException
      */
-    public String getPathMethod() throws PathfinderException {
+    public List<String> getPathMethods() throws PathfinderException {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("pathfinder", true);
 
@@ -94,11 +123,22 @@ public class PCEManager {
             throw new PathfinderException(
                 "No path computation method specified in oscars.properties.");
         }
-        if (!pathMethod.equals("terce") && !pathMethod.equals("database")) {
-            throw new PathfinderException(
-                "Path computation method specified in oscars.properties " +
-                "must be either terce or database.");
+
+	String [] methods = pathMethod.split(",");
+
+	ArrayList <String> retMethods = new ArrayList<String>();
+
+	for( String method : methods) {
+	    String newMethod = method.trim();
+
+            if (!newMethod.equals("traceroute") && !newMethod.equals("terce") && !newMethod.equals("database") && !newMethod.equals("perfsonar"))
+                throw new PathfinderException(
+                    "Path computation method specified in oscars.properties " +
+                    "must be either traceroute, terce, database or perfsonar.");
+
+            retMethods.add(newMethod);
         }
-        return pathMethod;
+
+        return retMethods;
     }
 }
