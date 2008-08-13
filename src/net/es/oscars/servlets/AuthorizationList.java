@@ -105,26 +105,19 @@ public class AuthorizationList extends HttpServlet {
             } else {
                 authEntry.add("illegal id: " + auth.getPermissionId());
             }
- 
-            //  TODO fix the following code
-            //  With updated tables authorizations table constraintName will never be null
             String constraintName = authDAO.getConstraintName(auth);
-            if (constraintName != null) {
-                authEntry.add(constraintName);
-            } else {
-                authEntry.add("");
-            }
-            // handle special cases
+            authEntry.add(constraintName);
             String constraintValue = auth.getConstraintValue();
             String constraintType = constraintDAO.getConstraintType(constraintName);
-            if (constraintValue ==  null) {
-                if (constraintType.equals("boolean")) {
+            if (constraintValue == null) {
+                if (constraintType.equals("boolean") &&
+                    !constraintName.equals("none")) {
                     authEntry.add("true");
                 } else {
                     authEntry.add("");
                 }
             } else {
-                    authEntry.add(constraintValue);
+                authEntry.add(constraintValue);
             }
             authList.add(authEntry);
         }
