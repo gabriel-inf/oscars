@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS permissions (
 CREATE TABLE IF NOT EXISTS constraints (
     id                  INT NOT NULL AUTO_INCREMENT,
     name                TEXT NOT NULL,
+    type				TEXT NOT NULL,
     description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
@@ -77,11 +78,10 @@ CREATE TABLE IF NOT EXISTS authorizations (
     attrId              INT NOT NULL,    -- foreign key
     resourceId          INT NOT NULL,    -- foreign key
     permissionId        INT NOT NULL,    -- foreign key
-    constraintId        INT,             -- foreign key
-    constraintValue     INT,
+    constraintId        INT NOT NULL,    -- foreign key
+    constraintValue     TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;
--- allows duplicate rows if constraint is null 
 CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintId);
 
 CREATE TABLE IF NOT EXISTS attributes (

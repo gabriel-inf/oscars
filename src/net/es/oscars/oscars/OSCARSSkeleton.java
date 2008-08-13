@@ -791,8 +791,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     /**
      *  Called from each of the messages to check that the user who signed the
      *  message is entered in the user table.
-     *  Also checks to see if there was a certificate in the message, which
-     *  should never happen unless the axis2/rampart configuration is incorrect.
+     *  First checks that there is a certificate in the message. This check
+     *  should never fail unless the axis2/rampart configuration is incorrect.
      *
      * @return login A string with the login associated with the certSubject
      * @throws AAAFaultMessage
@@ -812,7 +812,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
 
         Session aaa = core.getAaaSession();
-//        Session aaa = HibernateUtil.getSessionFactory(core.getAaaDbName()).getCurrentSession();
         aaa.beginTransaction();
 
         // lookup up using input DN first

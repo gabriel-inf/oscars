@@ -400,29 +400,30 @@ public class UserManager {
             while (authItr.hasNext()){
                 auth = (Authorization) authItr.next();
                 String constraintName = authDAO.getConstraintName(auth);
-                if (constraintName == null) {
+                if (constraintName.equals("none")) {
                     // found an authorization with no constraints,
                     // user is allowed for self only 
                     // this.log.debug("attrId: authorized for SELFONLY");
                     self=true;
                 } else if (constraintName.equals("my-site")) {
-                    if (auth.getConstraintValue().intValue() == 1) {
+                    //if (auth.getConstraintValue().equals("true") {
                         // found a constrained authorization, remember it
                         site=true;
                         // this.log.debug("checkAccess MYSITE access");
-                    }
+                    //}
                 }
                 else if (constraintName.equals("all-users")) {
-                    if (auth.getConstraintValue().intValue() == 1) {
+                    // leave this test in for historic reasons, the value should always be true
+                    if (auth.getConstraintValue().equals("true")) {
                         // found an authorization with allUsers allowed,
                         // highest level access, so return it
                         this.log.info("checkAccess:finish ALLUSERS access for "
                                 + permissionName + " on " + resourceName);
                         return AuthValue.ALLUSERS;
-                    } else {
+                   } else {
                         // found a self-only constrained authorization, remember it
                         self=true;
-                    }
+                    } 
                 }
             } // end of all authorizations for this attribute
         } // end of all attributes
@@ -508,7 +509,7 @@ public class UserManager {
                 this.log.debug("constraint for attrId " + currentAttr.getAttributeId() +
                 	" is " + constraintName);
                */ 
-                if (constraintName == null) {
+                if (constraintName.equals("none")) {
                     continue;
                 }
                 if (constraintName.equals("max-bandwidth")) {
@@ -517,7 +518,7 @@ public class UserManager {
                                    auth.getConstraintValue() +
                                    ", requested bandwidth: " + reqBandwidth);
 		*/
-                    if (reqBandwidth > auth.getConstraintValue() ) {
+                    if (reqBandwidth > Integer.parseInt(auth.getConstraintValue()) ) {
                         // found an authorization that limits the bandwidth
                         bandwidthAllowed = false;
                     }
@@ -527,21 +528,22 @@ public class UserManager {
                                    auth.getConstraintValue() +
                                    ", requested duration: " + reqDuration);
 		*/
-                    if (reqDuration > auth.getConstraintValue()) {
+                    if (reqDuration > Integer.parseInt(auth.getConstraintValue()) ) {
                         // found an authorization that limits the duration
                         durationAllowed = false;
                     }
                 } else if (constraintName.equals(
                                                     "specify-path-elements")) {
-                    if (auth.getConstraintValue() == 1) {
+                    //if (auth.getConstraintValue().equals("true")) {
                         specifyPE = true;
-                    }
+                    //}
                 } else if (constraintName.equals("specify-gri")){
-                    if (auth.getConstraintValue() == 1) {
+                    //if (auth.getConstraintValue().equals("true")) {
                         specifyGRI = true;
-                    }
+                    //}
                 } else if (constraintName.equals("all-users")){
-                    if (auth.getConstraintValue() == 1) {
+                    // leave test for historic reasons, value should always be true
+                    if (auth.getConstraintValue().equals("true")) {
                      retVal = AuthValue.ALLUSERS; 
                     }
                 } // end of looking at constraint

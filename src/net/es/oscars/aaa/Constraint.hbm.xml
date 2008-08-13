@@ -23,6 +23,12 @@
         </meta>    
     </property>
 
+    <property name="type" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+    
     <property name="description" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"

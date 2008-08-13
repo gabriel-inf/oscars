@@ -16,6 +16,9 @@ public class Constraint extends HibernateBean implements Serializable {
     /** persistent field */
     private String name;
 
+    /** persistent field */ 
+    private String type;
+    
     /** persistent field */
     private String description;
 
@@ -31,6 +34,16 @@ public class Constraint extends HibernateBean implements Serializable {
      * @param name A String with the name of this constraint
      */ 
     public void setName(String name) { this.name = name; }
+
+    /**
+     * @return type A String with the type of this constraint
+     */ 
+    public String getType() { return this.type; }
+
+    /**
+     * @param type A String with the type of this constraint
+     */ 
+    public void setType(String type) { this.type =type; }
 
 
     /**

@@ -106,6 +106,8 @@ public class AuthorizationList extends HttpServlet {
                 authEntry.add("illegal id: " + auth.getPermissionId());
             }
  
+            //  TODO fix the following code
+            //  With updated tables authorizations table constraintName will never be null
             String constraintName = authDAO.getConstraintName(auth);
             if (constraintName != null) {
                 authEntry.add(constraintName);
@@ -113,23 +115,16 @@ public class AuthorizationList extends HttpServlet {
                 authEntry.add("");
             }
             // handle special cases
-            Integer constraintValue = auth.getConstraintValue();
-            if (constraintValue != null) {
-                if ((constraintName != null) &&
-                    (constraintName.equals("all-users") ||
-                     constraintName.equals("specify-gri") ||
-                     constraintName.equals("my-site") ||
-                     constraintName.equals("specify-path-elements"))) {
-                    if (constraintValue == 1) {
-                        authEntry.add("true");
-                    } else {
-                        authEntry.add("false");
-                    }
+            String constraintValue = auth.getConstraintValue();
+            String constraintType = constraintDAO.getConstraintType(constraintName);
+            if (constraintValue ==  null) {
+                if (constraintType.equals("boolean")) {
+                    authEntry.add("true");
                 } else {
-                    authEntry.add(constraintValue);
+                    authEntry.add("");
                 }
             } else {
-                authEntry.add("");
+                    authEntry.add(constraintValue);
             }
             authList.add(authEntry);
         }
@@ -150,7 +145,7 @@ public class AuthorizationList extends HttpServlet {
         List<Rpc> rpcs = rpcDAO.list();
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
-        ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
+        ConstraintDAO constraintDAO= new ConstraintDAO(Utils.getDbName());
         int id = -1;
         
         ArrayList rpcList = new ArrayList();

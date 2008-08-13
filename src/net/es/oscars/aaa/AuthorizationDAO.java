@@ -25,15 +25,16 @@ public class AuthorizationDAO
     }
 
     /**
-     * Deletes a row containing an authorization triple.
+     * Deletes a row containing an authorization four-tuple.
      *
      * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
-     * @param permissionId Integer with primary key of permission (can be null)
+     * @param permissionId int with primary key of permission 
+     * @param constraintId int with primary key of constraint 
      * @throws AAAException.
      */
     public void remove(int attrId, int resourceId, int permissionId,
-                       Integer constraintId)
+                       int constraintId)
             throws AAAException {
         
         /* not called yet - designed for use by Web interface to manage
@@ -171,66 +172,43 @@ public class AuthorizationDAO
      * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
-     * @param constraintId - Integer with primary key of constraint, could be null
+     * @param constraintId - int with primary key of constraint
      * @return auths - list of the associated authorization instances, if any
      */
     public Authorization query(int attrId, int resourceId, int permissionId,
-                               Integer constraintId) {
+                               int constraintId) {
 
         Authorization auth = null;
-        if (constraintId == 0){
-            String hsql = "from Authorization where attrId = :attrId and " +
-                "resourceId = :resourceId and " +
-                "permissionId = :permissionId" +
-                "constraintId IS NULL";
-            auth = (Authorization) this.getSession().createQuery(hsql)
-             .setInteger("attrId", attrId)
-             .setInteger("resourceId", resourceId)
-             .setInteger("permissionId", permissionId)
-             .setMaxResults(1)
-             .uniqueResult();
-        } else {
-            String hsql = "from Authorization where attrId = :attrId and " +
-                "resourceId = :resourceId and " +
-                "permissionId = :permissionId" +
-                "constraintId = :constraintId";
-            auth = (Authorization) this.getSession().createQuery(hsql)
-                 .setInteger("attrId", attrId)
-                 .setInteger("resourceId", resourceId)
-                 .setInteger("permissionId", permissionId)
-                 .setInteger("constraintId", constraintId)
-                 .setMaxResults(1)
-                 .uniqueResult(); 
-        }
+        
+        String hsql = "from Authorization where attrId = :attrId and " +
+            "resourceId = :resourceId and " +
+            "permissionId = :permissionId" +
+            "constraintId = :constraintId";
+        auth = (Authorization) this.getSession().createQuery(hsql)
+            .setInteger("attrId", attrId)
+            .setInteger("resourceId", resourceId)
+            .setInteger("permissionId", permissionId)
+            .setInteger("constraintId", constraintId)
+            .setMaxResults(1)
+            .uniqueResult(); 
+        
         return auth;
     }
     
-    /**
-     * Add a new authorization, given the attrId, resourceId, permissionId 
-     * 
-     * @param attrId int with primary key of attribute
-     * @param resourceId int with primary key of resource
-     * @param permissionId int with primary key of permission
-     */
-    
-    public void create(int attrId, int resourceId, int permissionId) 
-        throws AAAException {
-       
-        this.create(attrId,resourceId,permissionId,0,0);
-    }
     
     /**
-     * Add a new authorization, given the attrId, resourceId, permissionId 
+     * Add a new authorization, given the attrId, resourceId, permissionId,
+     *    constraintId and constraintValue
      * 
      * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
      * @param constraintId - int with primary key of constraint, could be null
-     * @param constaintValue - int with value of constraint, could be null
+     * @param constaintValue - String with value of constraint, could be null
      */
     
     public void create(int attrId, int resourceId, int permissionId,
-                       int constraintId, int constraintValue) throws AAAException {
+                       int constraintId, String constraintValue) throws AAAException {
         
         // check for an already existing authorization
         Authorization auth = this.query(attrId,resourceId, permissionId, constraintId);
@@ -241,10 +219,8 @@ public class AuthorizationDAO
         auth.setAttrId(attrId);
         auth.setAttrId(resourceId);
         auth.setAttrId(permissionId);
-        if (constraintId != 0) {
-            auth.setAttrId(constraintId);
-        }
-        if (constraintValue != 0) {
+        auth.setAttrId(constraintId);
+        if (constraintValue != null) {
             auth.setConstraintValue(constraintValue);
         }
         super.create(auth);
@@ -261,8 +237,8 @@ public class AuthorizationDAO
     public String getConstraintName(Authorization auth) {
         
         ConstraintDAO constDAO = new ConstraintDAO(this.dbname);
-        Integer test = auth.getConstraintId();
-        return constDAO.getConstraintName(test);
-        //return constDAO.getConstraintName(auth.getConstraintId());
+        //int test = auth.getConstraintId();
+        //return constDAO.getConstraintName(test);
+        return constDAO.getConstraintName(auth.getConstraintId());
     }
 }

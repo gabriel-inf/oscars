@@ -27,4 +27,38 @@ public class ConstraintDAO extends GenericHibernateDAO<Constraint, Integer> {
         }
     }
     
+    public String getConstraintType(String constraintName) {
+        
+        if (constraintName == null) {
+            return null;
+        }
+        String hsql = "from Constraint where name = :name"; 
+        Constraint constraint =  (Constraint) this.getSession().createQuery(hsql)
+         .setString("name", constraintName)
+         .setMaxResults(1)
+         .uniqueResult(); 
+        if (constraint != null) {
+            return constraint.getType();
+        } else {
+            return null;
+        }        
+    }
+   public Integer getConstraintId(String constraintName) {
+        
+       if (constraintName == null) {
+          // TODO maybe change it "none"
+           return null;
+       }
+       String hsql = "from Constraint where name = :name"; 
+       Constraint constraint =  (Constraint) this.getSession().createQuery(hsql)
+        .setString("name", constraintName)
+        .setMaxResults(1)
+        .uniqueResult(); 
+       if (constraint != null) {
+           return constraint.getId();
+       } else {
+           return null;
+       }        
+    }
+    
 }
