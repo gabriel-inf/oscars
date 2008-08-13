@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-c', '--create', dest='create', action='store_true', default=False)
     parser.add_option('-r', '--remove', dest='remove', action='store_true', default=False)
-    parser.add_option('-x', '--executable', dest='executable', action='store_true', default=True)
+    parser.add_option('-x', '--executable', dest='executable', action='store_true', default=False)
     parser.add_option('--client-path', dest='clientPath', default=os.getcwd(),
                       help='directory containing the OSCARS client files')
     parser.add_option('--symlinks-path', dest='symlinksPath', default=os.getcwd(),
