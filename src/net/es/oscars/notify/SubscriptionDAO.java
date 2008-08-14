@@ -90,4 +90,15 @@ public class SubscriptionDAO
         
         return (Subscription) query.uniqueResult();
    }
+   
+   public List<Subscription> getAllActiveForUser(String login){
+        String sql = "SELECT * FROM subscriptions WHERE userLogin=? AND " + 
+                     "status=1 AND terminationTime > UNIX_TIMESTAMP(NOW())";
+        
+
+        return (List<Subscription>) this.getSession().createSQLQuery(sql)
+                                 .addEntity(Subscription.class)
+                                 .setString(0, login)
+                                 .list();
+   }
 }

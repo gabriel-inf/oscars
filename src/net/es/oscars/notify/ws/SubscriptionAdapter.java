@@ -386,7 +386,7 @@ public class SubscriptionAdapter{
      * @throws ResourceUnknownFault
      * @throws UnableToDestroySubscriptionFault
      */
-    public UnsubscribeResponse unsubscribe(Unsubscribe request, 
+    public UnsubscribeResponse unsubscribe(Unsubscribe request, String userLogin,
                                HashMap<String,String> permissionMap)
                                throws AAAFaultMessage, 
                                       ResourceUnknownFault,
@@ -416,7 +416,11 @@ public class SubscriptionAdapter{
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, permissionMap);
+            if(subscriptionId.equals("ALL")){
+                 this.sm.updateStatusAll(SubscriptionManager.INACTIVE_STATUS, subscriptionId, userLogin);
+            }else{
+                this.sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, permissionMap);
+            }
         }catch(ResourceUnknownFault e){
             sess.getTransaction().rollback();
             throw e;

@@ -194,7 +194,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             permissionMap.put("modifyLoginConstraint", login);
         }
 
-        UnsubscribeResponse response = this.sa.unsubscribe(request, permissionMap);
+        UnsubscribeResponse response = this.sa.unsubscribe(request, login, permissionMap);
 
         return response;
     }

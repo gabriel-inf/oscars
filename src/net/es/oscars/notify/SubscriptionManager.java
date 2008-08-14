@@ -212,6 +212,22 @@ public class SubscriptionManager{
         this.log.debug("updateStatus.end=" + newStatus);
     }
     
+    public synchronized void updateStatusAll(int newStatus, String subRefId, 
+                      String userLogin) throws Exception, ResourceUnknownFault{
+        this.log.debug("updateStatusAll.start");
+        SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
+        List<Subscription> subscriptions = dao.getAllActiveForUser(userLogin);
+        if(subscriptions == null){
+            //if not found just exit
+            return;
+        }
+        for(Subscription subscription : subscriptions){
+            subscription.setStatus(newStatus);
+            dao.update(subscription);
+        }
+        this.log.debug("updateStatusAll.end=" + newStatus);
+    }
+    
     private long checkTermTime(long curTime, long expTime) 
                                 throws UnacceptableInitialTerminationTimeFault{
         /* calculate initial termination time */
