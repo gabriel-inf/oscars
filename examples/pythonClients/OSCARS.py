@@ -170,7 +170,7 @@ class WrappedFunctionFactory(object):
 
     def _getServiceProxyFunction(self, name):
         spFunction = getattr(self._sp, name, None)
-        if not inspect.isfunction(spFunction):
+        if not callable(spFunction):
             raise AttributeError
         return spFunction
 
@@ -180,7 +180,7 @@ class WrappedFunctionFactory(object):
             raise AttributeError
         builderFunctionName = 'build%sMessage' % (name[0].upper() + name[1:])
         builderFunction = getattr(MessageBuilder, builderFunctionName, None)
-        if not inspect.isfunction(builderFunction):
+        if not callable(builderFunction):
             raise AttributeError
         return builderFunction
 
