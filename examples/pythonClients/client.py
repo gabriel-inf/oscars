@@ -32,7 +32,7 @@ if __name__ == '__main__':
         print >> sys.stderr, "Please don't call this script directly"
         sys.exit(1)
 
-    functionArgs = WrappedFunctionFactory.getArguments(operation)
+    functionArgs = WrappedFunctionFactory._getArguments(operation)
     for arg, defaultValue in functionArgs:
         parser.add_option('--%s' % arg, dest=arg, default=defaultValue)
 

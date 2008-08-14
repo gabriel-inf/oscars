@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import inspect
 from time import time
 from wssecurity import SignatureHandler
-from ZSI.ServiceProxy import ServiceProxy
+from ZSI.ServiceProxy import MethodProxy, ServiceProxy
 
 
 OSCARS_WSDL_PATH = 'wsdl/OSCARS.wsdl'
@@ -135,25 +136,41 @@ class WrappedFunctionFactory(object):
 
         return wrappedFunction
 
+    def getMethods(self):
+        methods = []
+        for name, value in inspect.getmembers(self._sp):
+            if isinstance(value, MethodProxy):
+               try:
+                   WrappedFunctionFactory._getMessageBuilderFunction(name)
+                   methods.append(name)
+               except AttributeError:
+                   pass
+        return methods
+
+    def getArguments(self, name):
+        return WrappedFunctionFactory._getArguments(name)
+
     @staticmethod
-    def getArguments(name):
+    def _getArguments(name):
         builderFunction = WrappedFunctionFactory._getMessageBuilderFunction(name)
-        code = builderFunction.func_code
+        argSpec = inspect.getargspec(builderFunction)
+        argNames, defaultValues = argSpec[0], argSpec[3]
+        argCount = len(argNames)
 
         def getDefaultValue(i):
-            if builderFunction.func_defaults is None:
+            if defaultValues is None:
                 return None
             try:
-                return builderFunction.func_defaults[code.co_argcount - i - 1]
+                return defaultValues[argCount - i - 1]
             except IndexError:
                 return None
 
-        args = [ (code.co_varnames[i], getDefaultValue(i)) for i in range(code.co_argcount) ]
+        args = [ (argNames[i], getDefaultValue(i)) for i in range(argCount) ]
         return args
 
     def _getServiceProxyFunction(self, name):
         spFunction = getattr(self._sp, name, None)
-        if not callable(spFunction):
+        if not inspect.isfunction(spFunction):
             raise AttributeError
         return spFunction
 
@@ -163,7 +180,7 @@ class WrappedFunctionFactory(object):
             raise AttributeError
         builderFunctionName = 'build%sMessage' % (name[0].upper() + name[1:])
         builderFunction = getattr(MessageBuilder, builderFunctionName, None)
-        if not callable(builderFunction):
+        if not inspect.isfunction(builderFunction):
             raise AttributeError
         return builderFunction
 
