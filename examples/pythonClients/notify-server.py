@@ -50,7 +50,7 @@ class NotificationHandler:
 
     def _isValidObserver(self, observer):
         updateMethod = getattr(observer, 'update', None) 
-        return updateMethod is not None and callable(updateMethod)
+        return callable(updateMethod)
 
 handler = NotificationHandler()
 handler.attach(SampleObserver())
