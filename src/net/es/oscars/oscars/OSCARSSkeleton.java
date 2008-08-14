@@ -25,6 +25,7 @@ import org.apache.log4j.*;
 import org.apache.axiom.om.OMElement;
 import org.hibernate.*;
 import org.oasis_open.docs.wsn.b_2.*;
+import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.aaa.UserManager;
@@ -33,8 +34,10 @@ import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.tss.TSSException;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.interdomain.InterdomainException;
 import net.es.oscars.lookup.LookupException;
+import net.es.oscars.bss.topology.*;
 
 
 /**
@@ -666,17 +669,43 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.log.info("Received Notify");
         NotificationMessageHolderType[] holders = request.getNotificationMessage();
         for(NotificationMessageHolderType holder : holders){
-             MessageType message = holder.getMessage();
-             OMElement[] omEvents = message.getExtraElement();
-             for(OMElement omEvent : omEvents){
+            EndpointReferenceType prodRef = holder.getProducerReference();
+            String address = prodRef.getAddress().toString();
+            Session bss = core.getBssSession();
+            bss.beginTransaction();
+            String producerId = this.checkSubscriptionId(address,
+                                holder.getSubscriptionReference());
+            if(producerId == null){
+                return;
+            }
+            this.log.info("Found subscription for " + address);
+            MessageType message = holder.getMessage();
+            OMElement[] omEvents = message.getExtraElement();
+            for(OMElement omEvent : omEvents){
                 try{
                     EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
-                    System.out.println(event.getType());
+                    String eventType = event.getType();
+                    if(eventType.startsWith("RESERVATION_CREATE")){
+                        this.adapter.handleCreateEvent(event, producerId);
+                    }else if(eventType.startsWith("RESERVATION_MODIFY")){
+                    
+                    }else if(eventType.startsWith("RESERVATION_CANCEL")){
+                    
+                    }else if(eventType.contains("PATH_SETUP")){
+                    
+                    }else if(eventType.contains("PATH_REFRESH")){
+                    
+                    }else if(eventType.contains("PATH_TEARDOWN")){
+                    
+                    }else{
+                        this.log.debug("Received unkown event " + eventType);
+                    }
                 }catch(Exception e){ 
-                   //Just skip if not an idc:event
+                    e.printStackTrace();
                     continue;
                 }
              }
+             bss.getTransaction().commit();
         } 
     }
 
@@ -850,5 +879,41 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.log.debug("checkUser.end");
         return login;
     }
+    
+    /** 
+     * Checks subscription ID in Notify message
+     *
+     * @param address the producer URL
+     * @param msgSubRef the SubscriptionReference in the Notify message
+     * @return the domain ID of the producer, or null if subscription not found
+     */
+     public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef){
+        ServiceManager sm = this.core.getServiceManager();
+        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+        Domain producer = domainDAO.queryByParam("url", address);
+        if(producer == null){
+            this.log.error("Event producer not found in Notify message.");
+            return null;
+        }
+        EndpointReferenceType subRef = (EndpointReferenceType) sm.getServiceMapData("NB", producer.getTopologyIdent());
+        if(subRef == null){
+            this.log.error("Subscription in Notify message not found.");
+            return null;
+        }
+        ReferenceParametersType refParams = subRef.getReferenceParameters();
+        ReferenceParametersType msgSubRefParams = msgSubRef.getReferenceParameters();
+        if(refParams == null || msgSubRefParams == null){
+            this.log.error("No reference parameters for Notify message.");
+            return null;
+        }
+        String subId = refParams.getSubscriptionId();
+        String msgSubId = msgSubRefParams.getSubscriptionId();
+        if(subId == null || msgSubId == null || (!subId.equals(msgSubId))){
+            this.log.error("Subscription ID in Notify message invalid.");
+            return null;
+        }
+        
+        return producer.getTopologyIdent();
+     }
 
 }

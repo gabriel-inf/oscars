@@ -11,12 +11,13 @@ public class StateEngine {
 
     public final static String SUBMITTED = "SUBMITTED";
     public final static String ACCEPTED = "ACCEPTED";
+    public final static String INCREATE = "INCREATE";
     public final static String RESERVED = "PENDING";
-    public final static String PENDING = "PENDING"; // to be removed..
     public final static String ACTIVE = "ACTIVE";
     public final static String INSETUP = "INSETUP";
     public final static String INTEARDOWN = "INTEARDOWN";
     public final static String FINISHED = "FINISHED";
+    public final static String INCANCEL = "INCANCEL";
     public final static String CANCELLED = "CANCELLED";
     public final static String FAILED = "FAILED";
     public final static String INMODIFY = "INMODIFY";
@@ -74,8 +75,12 @@ public class StateEngine {
             if (!status.equals(SUBMITTED)) {
                 allowed = false;
             }
+        } else if (newStatus.equals(INCREATE)) {
+            if (!status.equals(ACCEPTED)) {
+                allowed = false;
+            }
         } else if (newStatus.equals(RESERVED)) {
-            if (!status.equals(ACCEPTED) && !status.equals(INTEARDOWN) && !status.equals(INMODIFY)) {
+            if (!status.equals(INCREATE) && !status.equals(INTEARDOWN) && !status.equals(INMODIFY)) {
                 allowed = false;
             }
         } else if (newStatus.equals(INMODIFY)) {
@@ -99,6 +104,7 @@ public class StateEngine {
                 allowed = false;
             }
         } else if (newStatus.equals(CANCELLED)) {
+            //TODO: Change RESERVED to INCANCEL
             if (!status.equals(ACCEPTED) && !status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
                 allowed = false;
             }

@@ -34,10 +34,12 @@ public class ReservationManager {
     private PCEManager pceMgr;
     private PolicyManager policyMgr;
     private TypeConverter tc;
+    private StateEngine se;
     private String dbname;
     private ReservationLogger rsvLogger;
     private OSCARSCore core;
-
+   
+    
     /** Constructor. */
     public ReservationManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
@@ -45,6 +47,7 @@ public class ReservationManager {
         this.pceMgr = new PCEManager(dbname);
         this.policyMgr = new PolicyManager(dbname);
         this.tc = new TypeConverter();
+        this.se = new StateEngine();
         this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
     }
@@ -78,19 +81,14 @@ public class ReservationManager {
 
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
-
-        // This is a pretty bad misuse of this function
-        // TODO: Test if this actually works
-        //Path tempPath = this.convertPath(pathInfo, pathInfo, null, false);
         Path tempPath = this.buildInitialPath(pathInfo);
         resv.setPath(tempPath);
 
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);
-        StateEngine se = new StateEngine();
         try {
             // Assume AAA has been performed before this.
-            se.updateStatus(resv, StateEngine.ACCEPTED);
+            this.se.updateStatus(resv, StateEngine.ACCEPTED);
         } catch (BSSException ex) {
             this.log.error(ex);
         }
@@ -107,6 +105,7 @@ public class ReservationManager {
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("start", true);
         jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
         jobDataMap.put("pathInfo", pathInfo);
@@ -151,10 +150,80 @@ public class ReservationManager {
             pathCopy = this.copyPath(pathInfo, true);
         }
         pathInfo.setPath(pathCopy);
+        //chose resources not put INCREATE
+        this.se.updateStatus(resv, StateEngine.INCREATE);
         this.log.info("create.finish");
         this.rsvLogger.stop();
     }
-
+    
+    /**
+     * Verifies a RESERATION_CREATE_CONFIRMED event is valid and then 
+     * schedules it for execution.
+     *
+     * @param gri the GRI of the reservation being confirmed
+     * @param pathInfo the confirmed path
+     * @param producerID the URN of the domain that produced this event
+     */
+    public void submitCreateConfirm(String gri, PathInfo pathInfo, 
+                                    String producerID) throws BSSException{
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        Reservation resv = dao.query(gri);
+        if(resv == null){
+            this.log.error("Reservation " + gri + " not found");
+            return;
+        }
+        
+        if(pathInfo.getPath() == null){
+            this.log.error("Recieved confirm event from " + producerID + 
+                          " with no path element.");
+             return;
+        }else if(pathInfo.getPath().getHop() == null){
+            this.log.error("Recieved confirm event from " + producerID + 
+                          " witha path element containing no hops");
+             return;
+        }
+        
+        CtrlPlaneHopContent nextHop = this.getNextExternalHop(pathInfo);
+        if(nextHop == null){
+            this.log.error("Recieved confirm event from " + producerID + 
+                          " for a reservation with no hop past the local" +
+                          " domain");
+             return;
+        }
+        
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        Domain nextDomain = domainDAO.getNextDomain(nextHop);
+        if(nextDomain == null){
+            this.log.error("The next hop in the given path is an unknown neighbor.");
+            return;
+        }else if(!nextDomain.getTopologyIdent().equals(producerID)){
+            this.log.debug("The event is from " + producerID + " not the " +
+                           "next domain " + nextDomain.getTopologyIdent() + 
+                           " so discarding");
+            return;
+        }
+        
+        /* Submitting a job to the resource scheduling queue 
+           so there aren't any resource conflicts */
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String jobName = "confirm-"+resv.hashCode();
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", CreateReservationJob.class);
+        this.log.debug("Adding job "+jobName);
+        jobDetail.setDurability(true);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("confirm", true);
+        jobDataMap.put("gri", gri);
+        jobDataMap.put("pathInfo", pathInfo);
+        jobDataMap.put("nextDomain", producerID);
+        jobDetail.setJobDataMap(jobDataMap);
+        try {
+            sched.addJob(jobDetail, false);
+        } catch (SchedulerException ex) {
+            this.log.error("Unable to schedule confirm job");
+            ex.printStackTrace();
+        }
+    }
+    
     /**
      * Stores the reservation in the database.
      *
@@ -212,7 +281,6 @@ public class ReservationManager {
         Reservation resv = getConstrainedResv(gri,login,institution);
 
         // See if we can cancel at all; this logic is DIFFERENT from the StateEngine
-        StateEngine se = new StateEngine();
         String status = StateEngine.getStatus(resv);
 
         if (status.equals(StateEngine.CANCELLED)) {
@@ -232,7 +300,7 @@ public class ReservationManager {
         // remove all pending jobs in the scheduler related to this reservation
         this.core.getScheduleManager().processCancel(resv, newStatus);
 
-        se.updateStatus(resv, newStatus);
+        this.se.updateStatus(resv, newStatus);
         if (newStatus.equals(StateEngine.INTEARDOWN)) {
             // add the teardown jobs
             try {
@@ -1002,26 +1070,24 @@ public class ReservationManager {
      * @param resv reservation to be stored in database
      * @param pathInfo reservation path information
      */
-    public void finalizeResv(CreateReply forwardReply, Reservation resv,
-                             PathInfo pathInfo) throws BSSException{
+    public void finalizeResv(Reservation resv, PathInfo pathInfo, 
+                            PathInfo fwdPathInfo) throws BSSException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
         Path path = resv.getPath();
 
         // if user signaled and last domain create token, otherwise store
         // token returned in forwardReply
-        if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
+        /* if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
             this.generateToken(forwardReply, resv);
-        }
-        if (layer2Info != null && forwardReply != null &&
-            forwardReply.getPathInfo() != null &&
-            forwardReply.getPathInfo().getLayer2Info() != null) {
+        } */
+        if (layer2Info != null && fwdPathInfo != null && 
+            fwdPathInfo.getLayer2Info() != null) {
 
             this.log.info("setting up vtags");
             DomainDAO domainDAO = new DomainDAO(this.dbname);
             Link srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
             Link destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
-            PathInfo fwdPathInfo = forwardReply.getPathInfo();
             VlanTag srcVtag = fwdPathInfo.getLayer2Info().getSrcVtag();
             VlanTag destVtag = fwdPathInfo.getLayer2Info().getDestVtag();
             this.log.info("src vtag: " + srcVtag);
@@ -1060,12 +1126,10 @@ public class ReservationManager {
             if (layer2Info == null) {
                 this.log.info("because no layer 2 info");
             }
-            if (forwardReply == null) {
-                this.log.info("because no forwardReply");
-            } else if (forwardReply.getPathInfo() == null) {
-                this.log.info("because no forwardReply.getPathInfo");
-            } else if (forwardReply.getPathInfo().getLayer2Info() == null) {
-                this.log.info("because no forwardReply.getPathInfo().getLayer2Info()");
+            if (fwdPathInfo == null) {
+                this.log.info("because no fwdPathInfo");
+            } else if (fwdPathInfo.getLayer2Info() == null) {
+                this.log.info("because no fwdPathInfo.getLayer2Info()");
             } else {
                 this.log.info("unknown error");
             }
@@ -1194,4 +1258,15 @@ public class ReservationManager {
        }
        return resv;
    }
+   
+   /**
+    * Sets a state using the StateEngine. Allows synchronized to work
+    * since all functions work on the same StateEngine instance.
+    * @param newState the new state to set
+    * @param resv the reservation to update
+    * @throws BSSException
+    */
+    public void updateStatus(Reservation resv, String newState) throws BSSException{
+         this.se.updateStatus(resv, newState);
+    }
 }

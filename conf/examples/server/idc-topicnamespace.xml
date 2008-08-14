@@ -4,7 +4,34 @@
     xmlns:idc="http://oscars.es.net/OSCARS"
     xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"> 
 
-    <!-- The minimum required set of messages users or IDCs need to see -->
+    <!-- The minimum required set of messages IDCs need to see -->
+    <wstop:Topic wstop:name="IDC" wstop:final="true"> 
+        <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
+            /idc:event[idc:type='RESERVATION_CREATE_CONFIRMED' or
+                       idc:type='RESERVATION_MODIFY_CONFIRMED' or
+                       idc:type='RESERVATION_CANCEL_CONFIRMED' or
+                       idc:type='DOWNSTREAM_PATH_SETUP_CONFIRMED' or
+                       idc:type='UPSTREAM_PATH_SETUP_CONFIRMED' or
+                       idc:type='DOWNSTREAM_PATH_REFRESH_CONFIRMED' or
+                       idc:type='UPSTREAM_PATH_REFRESH_CONFIRMED' or
+                       idc:type='DOWNSTREAM_PATH_TEARDOWN_CONFIRMED' or
+                       idc:type='UPSTREAM_PATH_TEARDOWN_CONFIRMED' or
+                       idc:type='RESERVATION_CREATE_COMPLETED' or
+                       idc:type='RESERVATION_MODIFY_COMPLETED' or
+                       idc:type='RESERVATION_CANCEL_COMPLETED' or
+                       idc:type='PATH_SETUP_COMPLETED' or
+                       idc:type='PATH_REFRESH_COMPLETED' or
+                       idc:type='PATH_TEARDOWN_COMPLETED' or
+                       idc:type='RESERVATION_CREATE_FAILED' or
+                       idc:type='RESERVATION_MODIFY_FAILED' or
+                       idc:type='RESERVATION_CANCEL_FAILED' or
+                       idc:type='PATH_SETUP_FAILED' or
+                       idc:type='PATH_REFRESH_FAILED' or
+                       idc:type='PATH_TEARDOWN_FAILED']
+        </wstop:MessagePattern>
+    </wstop:Topic>
+    
+    <!-- The minimum required set of messages end-users need to see -->
     <wstop:Topic wstop:name="INFO" wstop:final="true"> 
         <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
             /idc:event[idc:type='RESERVATION_CREATE_COMPLETED' or
@@ -52,15 +79,17 @@
                        idc:type='RESERVATION_QUERY_COMPLETED' or
                        idc:type='RESERVATION_QUERY_RETURNED' or
                        idc:type='RESERVATION_CREATE_FORWARD_STARTED' or
-                       idc:type='RESERVATION_CREATE_FORWARD_COMPLETED' or
+                       idc:type='RESERVATION_CREATE_FORWARD_ACCEPTED' or
                        idc:type='RESERVATION_MODIFY_FORWARD_STARTED' or
-                       idc:type='RESERVATION_MODIFY_FORWARD_COMPLETED' or
+                       idc:type='RESERVATION_MODIFY_FORWARD_ACCEPTED' or
                        idc:type='RESERVATION_CANCEL_FORWARD_STARTED' or
-                       idc:type='RESERVATION_CANCEL_FORWARD_COMPLETED' or
+                       idc:type='RESERVATION_CANCEL_FORWARD_ACCEPTED' or
                        idc:type='PATH_SETUP_FORWARD_STARTED' or
-                       idc:type='PATH_SETUP_FORWARD_COMPLETED' or
+                       idc:type='PATH_SETUP_FORWARD_ACCEPTED' or
+                       idc:type='PATH_REFRESH_FORWARD_STARTED' or
+                       idc:type='PATH_REFRESH_FORWARD_ACCEPTED' or
                        idc:type='PATH_TEARDOWN_FORWARD_STARTED' or
-                       idc:type='PATH_TEARDOWN_FORWARD_COMPLETED' or
+                       idc:type='PATH_TEARDOWN_FORWARD_ACCEPTED' or
                        idc:type='RESERVATION_LIST_FORWARD_STARTED' or
                        idc:type='RESERVATION_LIST_FORWARD_COMPLETED' or
                        idc:type='RESERVATION_QUERY_FORWARD_STARTED' or
@@ -71,18 +100,6 @@
                        idc:type='RESERVATION_PERIOD_STARTED' or
                        idc:type='RESERVATION_PERIOD_FINISHED' or
                        idc:type='IDC_STARTED']
-        </wstop:MessagePattern>
-    </wstop:Topic>
-    
-    <!-- Information about the status of a circuit beyond direct neighbors -->
-    <wstop:Topic wstop:name="GLOBALPATH" wstop:final="true"> 
-        <wstop:MessagePattern wstop:Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
-            /idc:event[idc:type='DOWNSTREAM_PATH_SETUP_COMPLETE' or
-                       idc:type='UPSTREAM_PATH_SETUP_COMPLETE' or
-                       idc:type='INTERDOMAIN_PATH_SETUP_COMPLETE' or
-                       idc:type='DOWNSTREAM_PATH_TEARDOWN_COMPLETE' or
-                       idc:type='UPSTREAM_PATH_TEARDOWN_COMPLETE' or
-                       idc:type='INTERDOMAIN_PATH_TEARDOWN_COMPLETE']
         </wstop:MessagePattern>
     </wstop:Topic>
     

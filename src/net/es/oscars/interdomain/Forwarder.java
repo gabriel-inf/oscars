@@ -15,6 +15,8 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.*;
+import net.es.oscars.notify.EventProducer;
+import net.es.oscars.notify.OSCARSEvent;
 
 /**
  * Forwarding client.
@@ -54,6 +56,7 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         CreateReply createReply = null;
+        String login = resv.getLogin();
         Path path = resv.getPath();
         if (path == null) {
            throw new InterdomainException(
@@ -63,7 +66,10 @@ public class Forwarder extends Client {
         if (nextDomain == null) { return null; }
         String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
+        EventProducer eventProducer = new EventProducer();
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_STARTED, login, "JOB", resv);
         ForwardReply reply = this.forward("createReservation", resv, pathInfo, url);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_ACCEPTED, login, "JOB", resv);
         createReply = reply.getCreateReservation();
         this.log.info("create.finish GRI is: " +
                       createReply.getGlobalReservationId());

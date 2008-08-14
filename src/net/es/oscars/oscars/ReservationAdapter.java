@@ -95,6 +95,31 @@ public class ReservationAdapter {
 
         return reply;
     }
+    
+    public void handleCreateEvent(EventContent event, String producerId){
+        String eventType = event.getType();
+        ResDetails resDetails = event.getResDetails();
+        if(resDetails == null){
+            this.log.error("No revservation details provided for event " + 
+                           eventType + " from " + producerId);
+        }
+        String gri = resDetails.getGlobalReservationId();
+        PathInfo pathInfo = resDetails.getPathInfo();
+        
+        try{
+            if(eventType.equals(OSCARSEvent.RESV_CREATE_CONFIRMED)){
+                this.rm.submitCreateConfirm(gri, pathInfo, producerId);
+            }else if(eventType.equals(OSCARSEvent.RESV_CREATE_COMPLETED)){
+            
+            }else if(eventType.equals(OSCARSEvent.RESV_CREATE_FAILED)){
+            
+            }else{
+                this.log.debug("Discarding event " + eventType);
+            }
+        }catch(BSSException e){
+            this.log.error(e.getMessage());
+        }
+    }
 
     /**
      * Modifies some pieces of a SCHEDULED reservation. For now only
