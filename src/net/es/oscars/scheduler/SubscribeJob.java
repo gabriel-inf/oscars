@@ -198,7 +198,8 @@ public class SubscribeJob implements Job{
     }
     
     /** 
-     * Sends the subscribe message and returns the response.
+     * Sends the subscribe message and returns the response. This will only
+     * be called on initialization or after a renew fails.
      *
      * @param subscribeURL whereto send the request
      * @param neighborURL the IDC whose notifications are wanted
@@ -215,6 +216,15 @@ public class SubscribeJob implements Job{
         }
         this.log.debug("sendSubscribe.start");
         Client client = new Client();
+        client.setUpNotify(true, subscribeURL, this.repo, this.axisConfig);
+        //Clear out any old Subscriptions, ignore failures
+        try{
+            Unsubscribe unsubscribe = new Unsubscribe();
+            EndpointReferenceType subRef = client.generateEndpointReference(subscribeURL, "ALL");
+            unsubscribe.setSubscriptionReference(subRef);
+            client.unsubscribe(unsubscribe);
+        }catch(Exception e){}
+        //Create new subscription
         Subscribe subscribe = new Subscribe();
         String[] neighborURLArr = new String[1];
         neighborURLArr[0] =neighborURL;
@@ -222,12 +232,12 @@ public class SubscribeJob implements Job{
         TopicExpressionType topicExpr = client.generateTopicExpression(SubscribeJob.TOPICS);
         QueryExpressionType producerProps = client.generateProducerProperties(neighborURLArr);
         EndpointReferenceType consumerRef = client.generateEndpointReference(this.idcURL);
-        client.setUpNotify(true, subscribeURL, this.repo, this.axisConfig);
         filter.addTopicExpression(topicExpr);
         filter.addProducerProperties(producerProps);
         subscribe.setConsumerReference(consumerRef);
         subscribe.setFilter(filter);
         SubscribeResponse response = client.subscribe(subscribe);
+        
         this.log.debug("sendSubscribe.end");
         return response;
     }
