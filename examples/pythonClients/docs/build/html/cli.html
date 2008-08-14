@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Command line interface &mdash; PyOSCARS v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '',
+          VERSION:     '1.0',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: ''
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/interface.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="contents" title="Global table of contents" href="contents.html" />
+    <link rel="index" title="Global index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyOSCARS v1.0 documentation" href="index.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Requirements" href="requirements.html" />
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="api.html" title="API"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyOSCARS v1.0 documentation</a> &raquo;</li>
+      </ul>
+    </div>
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="command-line-interface">
+<span id="cli"></span><h1 id="command-line-interface"><span id="cli"></span>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h1>
+<p>PyOSCARS comes with a series of scripts you can use from the command line.
+You can use them to issue any OSCARS and OSCARSNotify command.</p>
+<div class="section" id="setup">
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<p>The command line interface is made up by:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">client.py</span></tt>, which handles OSCARS messages;</li>
+<li><tt class="docutils literal"><span class="pre">notify-client.py</span></tt> which is used for OSCARSNotify.</li>
+</ul>
+<p>Since both scripts rely on the file name they were called as to determine the
+operation they need to perform, it is necessary to set up a number of symbolic
+links and use these instead.</p>
+<p>To do that, you can use the provided <tt class="docutils literal"><span class="pre">symlinks_setup.py</span></tt> utility:</p>
+<pre>oscars@pyoscars-dev:~/PyOSCARS$ ./symlinks_setup.py --help
+
+Usage: symlinks_setup.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -c, --create
+  -r, --remove
+  -x, --executable
+  --client-path=CLIENTPATH
+                        directory containing the OSCARS client files
+  --symlinks-path=SYMLINKSPATH
+                        directory where the symlinks will be created</pre>
+<p>The usage is simple: you need to specify if you want the script to create the
+symbolic links (<tt class="docutils literal"><span class="pre">--create</span></tt>), or remove them (<tt class="docutils literal"><span class="pre">--remove</span></tt>).
+If you are creating them, you can also specify that they should be set
+executable (<tt class="docutils literal"><span class="pre">--executable</span></tt>).
+Furthermore, you can specify the path where the two client files reside, and
+where the symbolic links should be created. Both these options default to the
+current working directory.</p>
+</div>
+<div class="section" id="usage">
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Now that symbolic links are in place, we can start using the command line
+interface to interact with the IDC.
+All commands can be called with the <tt class="docutils literal"><span class="pre">--help</span></tt> argument to get a list of the
+arguments they need.</p>
+<div class="section" id="oscars">
+<h3 id="oscars">OSCARS<a class="headerlink" href="#oscars" title="Permalink to this headline">¶</a></h3>
+<p>For example, if we want to create a reservation, but do not remember the
+arguments needed, we may issue the following command:</p>
+<pre>oscars@pyoscars-dev:~/PyOSCARS$ ./createReservation.py  --help
+
+Usage: createReservation.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -u URL, --url=URL     Web service URL
+  -c CERT, --cert=CERT  Path to the certificate file
+  -k KEY, --key=KEY     Path to the private key file
+  -p PASSWORD, --password=PASSWORD
+                    Private key password (if any)
+  --durationSecs=DURATIONSECS
+  --bandwidth=BANDWIDTH
+  --desc=DESC
+  --srcEndpoint=SRCENDPOINT
+  --destEndpoint=DESTENDPOINT</pre>
+<p>Once we have gathered the required information, we can ask the client to create
+the reservation, getting back the server response:</p>
+<pre>oscars@pyoscars-dev:~/PyOSCARS$ ./createReservation.py -u https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS -c cert.cer -k key.pem \
+--durationSecs=60 --bandwidth=100 --desc="Test" --srcEndpoint="urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr1:port=1-1-1:link=1" \
+--destEndpoint="urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr2:port=1-1-1:link=1"
+
+{'globalReservationId': u'anna.internet2.edu-92',
+ 'pathInfo': {'layer2Info': {'destEndpoint': u'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr2:port=1-1-1:link=1',
+                             'srcEndpoint': u'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr1:port=1-1-1:link=1'},
+              'pathSetupMode': u'user-xml'},
+ 'status': u'ACCEPTED',
+ 'token': u'none'}</pre>
+<p>After a while, we might for example want to query the reservation we have just
+created:</p>
+<pre>oscars@pyoscars-dev:~/PyOSCARS$ ./queryReservation.py -u https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS -c cert.cer -k key.pem \
+--globalReservationId=anna.internet2.edu-92
+
+{'bandwidth': 100,
+ 'createTime': 1218627710,
+ 'description': u'Test',
+ 'endTime': 1218627768,
+ 'globalReservationId': u'anna.internet2.edu-92',
+ 'login': u'pythontest',
+ 'pathInfo': {'layer2Info': {'destEndpoint': u'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr2:port=1-1-1:link=1',
+                             'srcEndpoint': u'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr1:port=1-1-1:link=1'},
+              'path': {'_attrs': {'id': u'unimplemented'},
+                       'hop': [{'_attrs': {'id': u'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr1:port=1-1-1:link=1'},
+                                'linkIdRef': u'urn:ogf:network:domain=anna.internet2.edu:node=anna-vlsr1:port=1-1-1:link=1'}]},
+              'pathSetupMode': u'timer-automatic'},
+ 'startTime': 1218627708,
+ 'status': u'FAILED'}</pre>
+</div>
+<div class="section" id="oscarsnotify">
+<h3 id="oscarsnotify">OSCARSNotify<a class="headerlink" href="#oscarsnotify" title="Permalink to this headline">¶</a></h3>
+<p>Another common task is to subscribe to the OSCARSNotify service, in order to get
+callbacks from the IDC.
+Once again, we can easily do that using the command line interface.</p>
+<p>For example, if we want to get called every time the IDC produces a message at
+the <tt class="docutils literal"><span class="pre">INFO</span></tt> level <a class="footnote-reference" href="#id2" id="id1">[1]</a>, we can call the client like this:</p>
+<pre>oscars@pyoscars-dev:~/PyOSCARS$ ./subscribe.py -u https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify -c cert.cer -k key.pem \
+--consumer=https://consumer.example.com:8443/ --topics="idc:INFO" --producers=https://anna-lab1.internet2.edu:8443/axis2/services/OSCARS
+
+{'CurrentTime': datetime.datetime(2008, 8, 13, 11, 55, 30),
+ 'SubscriptionReference': {'Address': u'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
+                           'ReferenceParameters': {'subscriptionId': u'urn:uuid:3bf5bedb-9535-4b7f-bd4d-fb97d082e43b'},
+                           'any': []},
+ 'TerminationTime': datetime.datetime(2008, 8, 13, 12, 55, 30),
+ 'any': []}</pre>
+<p>After a while, we may also decide to unsubscribe:</p>
+<pre>oscars@pyoscars-dev:~/PyOSCARS$ ./unsubscribe.py -u https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify -c cert.cer -k key.pem \
+--producer=https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify --subscriptionId=urn:uuid:3bf5bedb-9535-4b7f-bd4d-fb97d082e43b
+
+{'SubscriptionReference': {'Address': u'https://anna-lab1.internet2.edu:8443/axis2/services/OSCARSNotify',
+                           'ReferenceParameters': {'subscriptionId': u'urn:uuid:3bf5bedb-9535-4b7f-bd4d-fb97d082e43b'},
+                           'any': []},
+ 'any': []}</pre>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>We could also specify more topics, by separating them with the <tt class="docutils literal"><span class="pre">|</span></tt>
+symbol.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="final-remarks">
+<h2 id="final-remarks">Final remarks<a class="headerlink" href="#final-remarks" title="Permalink to this headline">¶</a></h2>
+<p>I focused on the main commands you may want to send to an IDC, but had to leave
+out many others.</p>
+<p>The commands share a predictable interface, though, so you should be able to use
+them without problems after the first few tries.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3>Table Of Contents</h3>
+            <ul>
+<li><a class="reference external" href="">Command line interface</a><ul>
+<li><a class="reference external" href="#setup">Setup</a></li>
+<li><a class="reference external" href="#usage">Usage</a><ul>
+<li><a class="reference external" href="#oscars">OSCARS</a></li>
+<li><a class="reference external" href="#oscarsnotify">OSCARSNotify</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#final-remarks">Final remarks</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="requirements.html" title="previous chapter">Requirements</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="api.html" title="next chapter">API</a></p>
+            <h3>Quick search</h3>
+            <form class="search" action="search.html" method="get">
+              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="api.html" title="API"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyOSCARS v1.0 documentation</a> &raquo;</li>
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright Gianluca Campanella.
+      Last updated on Aug 14, 2008.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+    </div>
+  </body>
+</html>
