@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import cherrypy
 from pprint import pprint
 from ZSI import ParsedSoap, ParseException, EvaluateException
