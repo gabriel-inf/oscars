@@ -255,7 +255,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         /* Get authorizations */
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "PublisherRegistrations", "create");
+        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Publishers", "create");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new PublisherRegistrationRejectedFault("You do not have permission to publish notifications.");
         }
@@ -275,7 +275,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         /* Get authorizations */
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
-        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "PublisherRegistrations", "modify");
+        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Publishers", "modify");
         if (modifyAuthVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
         }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){

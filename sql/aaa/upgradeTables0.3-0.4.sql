@@ -30,10 +30,10 @@ INSERT INTO resources VALUES(NULL, "AAA",
                         "Information about Institutions, Attributes and Authorizations",
                         NULL);
 -- Add resources to control publishing
-INSERT INTO resources VALUES(NULL, "subscriptions",
+INSERT INTO resources VALUES(NULL, "Subscriptions",
                         "Information about the relationship between the producer and consumer of notifications",
                         NULL);
-INSERT INTO resources VALUES(NULL, "publisherRegistrations",
+INSERT INTO resources VALUES(NULL, "Publishers",
                         "Information about the relationship between a Publisher and a NotificationBroker",
                         NULL);
                         
@@ -79,11 +79,11 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from permissions where name="signal"),
 	(select id from constraints where name="none"));
 INSERT INTO rpcs VALUES (NULL,
-	(select id from resources where name="subscriptions"),
+	(select id from resources where name="Subscriptions"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="none"));
 INSERT INTO rpcs VALUES (NULL,
-	(select id from resources where name="publisherregistrations"),
+	(select id from resources where name="Publishers"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="none"));
 
@@ -235,84 +235,84 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
     
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-publisher"),
-     (select id from resources where name="PublisherRegistrations"),
+     (select id from resources where name="Publishers"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-publisher"),
-     (select id from resources where name="PublisherRegistrations"),
+     (select id from resources where name="Publishers"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL); 
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL); 
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="all-users"), "true");
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
-     (select id from resources where name="PublisherRegistrations"),
+     (select id from resources where name="Publishers"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="all-users"), "true");
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL); 
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-siteAdmin"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-siteAdmin"),
-     (select id from resources where name="subscriptions"),
+     (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
      
