@@ -20,8 +20,10 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 
 import net.es.oscars.pathfinder.perfsonar.util.TopologyGraphAdapter;
-import net.es.oscars.pathfinder.perfsonar.util.PSTopoClient;
+import net.es.oscars.perfsonar.PSTopologyClient;
 import net.es.oscars.bss.topology.URNParser;
+
+import net.es.oscars.bss.topology.*;
 
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
@@ -47,7 +49,7 @@ import org.jgrapht.alg.*;
  */
 public class PSPathfinder extends Pathfinder implements PCE {
     private Logger log;
-    private PSTopoClient TSClient;
+    private PSTopologyClient TSClient;
     private String localDomain;
     private DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> cachedGraph;
     private Reservation cachedReservation;
@@ -71,7 +73,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
         this.props = propHandler.getPropertyGroup("perfsonar", true);
         String TSUrl = this.props.getProperty("topology_url");
 
-        this.TSClient = new PSTopoClient(TSUrl);
+        this.TSClient = new PSTopologyClient(TSUrl);
         this.tga = new TopologyGraphAdapter(dbname);
     }
 
@@ -182,8 +184,15 @@ public class PSPathfinder extends Pathfinder implements PCE {
     public List<String> lookupPath(String src, String dst, Reservation reservation)
                                                         throws PathfinderException {
         if (this.cachedReservation != reservation) {
-            this.cachedGraph = this.tga.genGraph(this.TSClient.getTopology(), reservation.getBandwidth(), reservation.getStartTime(), reservation.getEndTime(), reservation);
-            this.cachedReservation = reservation;
+            Topology topology = this.TSClient.getTopology();
+
+            if (topology == null) {
+                this.log.error("Couldn't obtain topology from topology service");
+                return null;
+            }
+
+            this.cachedGraph = this.tga.genGraph(topology, reservation.getBandwidth(), reservation.getStartTime(), reservation.getEndTime(), reservation);
+             this.cachedReservation = reservation;
         }
 
 	this.log.debug("Looking up path between "+src+" and "+dst);

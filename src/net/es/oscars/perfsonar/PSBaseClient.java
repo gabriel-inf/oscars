@@ -1,7 +1,8 @@
-package net.es.oscars.pathfinder.perfsonar.util;
+package net.es.oscars.perfsonar;
 
 import net.es.oscars.PropHandler;
 
+import net.es.oscars.perfsonar.*;
 import java.util.*;
 import java.io.*;
 
@@ -26,15 +27,20 @@ import org.xml.sax.SAXException;
 import java.lang.Exception;
 import org.jdom.xpath.XPath;
 
-public class PSTopoClient {
+public class PSBaseClient {
     String url;
-    Topology topology;
     Namespace nmwgNs;
-    Namespace topoNs;
 
     private Logger log;
-    private Properties props;
-    private String request_str = 
+
+    public PSBaseClient(String url) {
+        this.url = url;
+        this.log = Logger.getLogger(this.getClass());
+        this.nmwgNs = Namespace.getNamespace("nmwg", "http://ggf.org/ns/nmwg/base/2.0/");
+    }
+
+    private String addSoapEnvelope(String request) {
+        String ret_request =
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<SOAP-ENV:Envelope xmlns:SOAP-ENC=\"http://schemas.xmlsoap.org/soap/encoding/\" " +
             "     xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" " +
@@ -42,48 +48,29 @@ public class PSTopoClient {
             "     xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"> " +
             "    <SOAP-ENV:Header/> "+
             "    <SOAP-ENV:Body> "+
-            "<nmwg:message type=\"SetupDataRequest\" "+
-               "xmlns:nmwg=\"http://ggf.org/ns/nmwg/base/2.0/\"> "+
-               " <nmwg:metadata id=\"meta1\">" +
-               "   <nmwg:eventType>http://ggf.org/ns/nmwg/topology/query/all/20070809</nmwg:eventType>" +
-               "</nmwg:metadata>" +
-               "<nmwg:data id=\"data1\" metadataIdRef=\"meta1\"/> "+
-            "</nmwg:message>" +
+            request +
             "</SOAP-ENV:Body>" +
             "</SOAP-ENV:Envelope>";
 
-    public PSTopoClient(String ts_url) {
-        this.url = ts_url;
-        this.log = Logger.getLogger(this.getClass());
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("topo_client", true);
-        this.nmwgNs = Namespace.getNamespace("nmwg", "http://ggf.org/ns/nmwg/base/2.0/");
-        this.topoNs = Namespace.getNamespace("nmtopo", "http://ogf.org/schema/network/topology/base/20070828/");
+        return ret_request;
     }
 
-    public List<Domain> getDomains() {
-        if (this.topology == null) {
-            lookupTopology();
-        }
+    public void sendMessage_CB(String request, PSMessageEventHandler ev, Object arg) {
+        Element message = null;
 
-        if (this.topology == null) {
-            return null;
-        }
-
-        return topology.getDomains();
+        message = this.sendMessage(request);
+        if (message != null)
+            this.parseMessage(message, ev, arg);
     }
 
-    public Topology getTopology() {
-        if (this.topology == null) {
-            lookupTopology();
+    public Element sendMessage(String request) {
+        Element message = null;
+
+	this.log.info("Sending request: "+request);
+
+        if (request.indexOf("SOAP-ENV") == -1) {
+            request = this.addSoapEnvelope(request);
         }
-
-        return this.topology;
-    }
-
-    private void lookupTopology() {
-        String urn = null;
-        Document responseMessage = null;
 
         //Generate and send response
         try {
@@ -91,7 +78,7 @@ public class PSTopoClient {
 
             this.log.info("Connecting to "+this.url);
             PostMethod postMethod = new PostMethod(this.url);
-            StringRequestEntity entity = new StringRequestEntity(request_str, "text/xml",null);
+            StringRequestEntity entity = new StringRequestEntity(request, "text/xml",null);
             postMethod.setRequestEntity(entity);
 
             HttpClient client = new HttpClient();
@@ -102,72 +89,61 @@ public class PSTopoClient {
 
             String response = postMethod.getResponseBodyAsString();
             ByteArrayInputStream in = new ByteArrayInputStream(response.getBytes());
+	    this.log.info("Received response: "+response);
             this.log.info("Parsing start");
-            responseMessage = xmlParser.build(in);
+            Document responseMessage = xmlParser.build(in);
             this.log.info("Parsing done");
 
-            this.parseResponseMessage(responseMessage);
-        } catch (Exception e) {
-            this.log.error("Error: " + e.getMessage());
-        }
-    }
-
-    private void parseResponseMessage(Document doc) {
-        Element root = doc.getRootElement();
-        Element message = null;
-
-        try {
             this.log.info("Looking for message");
             XPath xpath = XPath.newInstance("//nmwg:message");
             xpath.addNamespace(this.nmwgNs.getPrefix(), this.nmwgNs.getURI());
 
-            message = (Element) xpath.selectSingleNode(root);
-        } catch (org.jdom.JDOMException ex) {
-            this.log.info("DOM Exception: "+ex.getMessage());
+            message = (Element) xpath.selectSingleNode(responseMessage.getRootElement());
+        } catch (Exception e) {
+            this.log.error("Error: " + e.getMessage());
         }
 
         if (message == null) {
             this.log.info("No message in response");
-            return;
         }
 
-        this.log.info("Message found");
+        return message;
+    }
 
+    public void parseMessage(Element message, PSMessageEventHandler ev, Object arg) {
         this.log.info("Looking for metadata");
+
+        String messageType = message.getAttributeValue("type");
+        if (messageType == null) {
+            messageType = "";
+        }
+
+        HashMap <String, Element> metadataMap = new HashMap<String, Element>();
+
         List<Element> metadata_elms = message.getChildren("metadata", nmwgNs);
         for (Element metadata : metadata_elms) {
             String md_id = metadata.getAttributeValue("id");
-            Element eventType_elm = metadata.getChild("eventType", nmwgNs);
-
-            this.log.info("Found metadata "+md_id);
-
-            if (eventType_elm == null)
+            if (md_id == null)
                 continue;
 
-            String eventType = eventType_elm.getValue();
+            metadataMap.put(md_id, metadata);
+        }
 
-            this.log.info("Found eventType: "+eventType);
-
-            if (eventType.equals("http://ggf.org/ns/nmwg/topology/query/all/20070809") == false)
+        for (Element metadata : metadata_elms) {
+            String md_id = metadata.getAttributeValue("id");
+            if (md_id == null)
                 continue;
 
             List<Element> data_elms = message.getChildren("data", nmwgNs);
             for (Element data : data_elms) {
                 String md_idRef = data.getAttributeValue("metadataIdRef");
 
-                this.log.info("Found data -> "+md_idRef);
                 if (md_idRef.equals(md_id) == false) {
+                    this.log.info("metadata: "+md_id+" data_mdIdref: "+md_idRef);
                     continue;
                 }
 
-                Element topo = data.getChild("topology", topoNs);
-
-                if (topo == null)
-                    continue;
-
-                TopologyXMLParser parser = new TopologyXMLParser(null);
-
-                this.topology = parser.parse(topo, null);
+                ev.handleMetadataDataPair(metadata, data, metadataMap, messageType, arg);
             }
         }
     }
