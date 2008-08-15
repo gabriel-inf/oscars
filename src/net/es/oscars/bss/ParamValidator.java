@@ -9,6 +9,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.lookup.*;
+import net.es.oscars.oscars.TypeConverter;
 
 /**
  * Class that performs server side validation for reservation parameters.
@@ -141,7 +142,7 @@ public class ParamValidator {
      *     or an ingress and egress (layer 3)
      * @param isLayer2 true if this is a layer 2 reservation, false otherwise
      */
-    private String checkPath(CtrlPlanePathContent path, boolean isLayer2) {
+    private String checkPath(CtrlPlanePathContent path, boolean isLayer2){
         // for now, just check length
         if (path == null) {
             return "";
@@ -154,17 +155,21 @@ public class ParamValidator {
             return "";
         }
         //lookup hops in lookup service if not URNs
+        TypeConverter tc = new TypeConverter();
         for(CtrlPlaneHopContent hop:hops){
             /* If URN do no further checking */
-            String linkId = hop.getLinkIdRef();
-            if(linkId == null || (linkId.matches("^urn:ogf:network:.*"))){
+            String child = tc.hopToURN(hop);
+            if(child == null){
+                return "No domain,node,port, or link specified in " +
+                       "hop (directly or by reference";
+            }else if(child.matches("^urn:ogf:network:.*")){
                 continue;
             }
             /* Lookup name via perfSONAR Lookup Service */
             LookupFactory lookupFactory = new LookupFactory();
             PSLookupClient lsClient = lookupFactory.getPSLookupClient();
             try {
-                String urn = lsClient.lookup(linkId);
+                String urn = lsClient.lookup(child);
                 hop.setLinkIdRef(urn);
             } catch(LookupException e){
                 return e.getMessage();
