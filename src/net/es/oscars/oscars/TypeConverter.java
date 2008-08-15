@@ -645,9 +645,10 @@ public class TypeConverter {
      * Converts Reservation Hibernate bean to a HashMap
      *
      * @param resv the Reservation to convert
+     * @param pathInfo the pathInfo to use in place of the resv path if provided
      * @return the converted HashMap
      */
-    public HashMap<String, String[]> reservationToHashMap(Reservation resv){
+    public HashMap<String, String[]> reservationToHashMap(Reservation resv, PathInfo pathInfo){
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         if(resv == null){
             return map;
@@ -670,7 +671,7 @@ public class TypeConverter {
         }
 
         //set path
-        map.putAll(this.pathToHashMap(resv.getPath()));
+        map.putAll(this.pathToHashMap(resv.getPath(), pathInfo));
 
         return map;
     }
@@ -681,7 +682,7 @@ public class TypeConverter {
      * @param path the Path to convert
      * @return the converted HashMap
      */
-    public HashMap<String, String[]> pathToHashMap(Path path){
+    public HashMap<String, String[]> pathToHashMap(Path path, PathInfo pathInfo){
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         ArrayList<String> layers = new ArrayList<String>();
         if(path == null){
@@ -734,17 +735,43 @@ public class TypeConverter {
             map.put("burstLimit", this.genHashVal(mplsData.getBurstLimit() + ""));
             map.put("lspClass", this.genHashVal(mplsData.getLspClass()));
         }
-
-        while(interPathElem != null){
-            String linkId = interPathElem.getLink().getFQTI();
-            interPath.add(linkId);
-            map.putAll(this.vlanToHashMap(interPathElem, src, dest, layer2Data));
-            interPathElem = interPathElem.getNextElem();
+        
+         
+        if(pathInfo != null){
+            String pathType = pathInfo.getPathType() == null ? "strict" : pathInfo.getPathType();
+            map.put("pathType", this.genHashVal(pathType));
         }
+        
+        Layer2Info l2Info = null;
+        boolean usePathInfo = false;
+        if(pathInfo != null && pathInfo.getPath() != null 
+           && pathInfo.getPath().getHop() != null){
+            for(CtrlPlaneHopContent hop :  pathInfo.getPath().getHop()){
+                interPath.add(hop.getLinkIdRef());
+            }
+            l2Info = pathInfo.getLayer2Info();
+            usePathInfo = true;
+        }
+        if(!usePathInfo){
+            while(interPathElem != null){
+                String linkId = interPathElem.getLink().getFQTI();
+                interPath.add(linkId);
+                map.putAll(this.vlanToHashMap(interPathElem, src, dest, layer2Data));
+                interPathElem = interPathElem.getNextElem();
+            }
+        }else if(l2Info != null){
+            if(l2Info.getSrcVtag() != null){
+                map.put("vlanTag", this.genHashVal(l2Info.getSrcVtag().getString()));
+                map.put("tagSrcPort", this.genHashVal(l2Info.getSrcVtag().getTagged() + ""));
+            }
+            if(l2Info.getDestVtag() != null){
+                map.put("tagDestPort", this.genHashVal(l2Info.getDestVtag().getTagged() + ""));
+            }
+        }
+        
         map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
 
         while(pathElem != null){
-            //might be no interdomain path
             Link link = pathElem.getLink();
             if (link != null) {
                 String linkId = link.getFQTI();

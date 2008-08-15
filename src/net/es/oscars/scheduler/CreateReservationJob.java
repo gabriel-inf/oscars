@@ -164,7 +164,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             rm.store(resv);
         }
         this.se.updateLocalStatus(resv, 1);
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv, pathInfo);
         
         DomainDAO domainDAO = new DomainDAO(bssDbName);
         //getNextDomain is a misnomer. return hop domain
@@ -189,6 +189,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String bssDbName = this.core.getBssDbName();
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
         String gri = (String) dataMap.get("gri");
+        PathInfo pathInfo = (PathInfo) dataMap.get("pathInfo");
         Reservation resv = null;
         try {
             resv = resvDAO.query(gri);
@@ -214,7 +215,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             this.log.debug("createReservation.complete failed: " + ex.getMessage());
             return;
         }
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv, pathInfo);
         
         // just in case this is an immediate reservation, check pending & add setup actions
         PSSScheduler sched = new PSSScheduler(core.getBssDbName());

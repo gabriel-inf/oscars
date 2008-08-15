@@ -136,17 +136,19 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         ConfigurationContext configContext = null;
         String errMessage = "";
         String repo = System.getenv("CATALINA_HOME");
+        String axis2Config = "";
         
         this.log.info("terce.start");
         this.log.info("src=" + src);
         this.log.info("dest=" + dest);
         repo += (repo.endsWith("/") ? "" :"/");
         repo += "shared/classes/terce.conf/repo/";
+        axis2Config = repo + "axis2.xml";
         
         /* Calculate path */
         try {
             configContext = ConfigurationContextFactory
-                .createConfigurationContextFromFileSystem(repo, null);
+                .createConfigurationContextFromFileSystem(repo, axis2Config);
             terce = new TERCEStub(configContext, terceURL);
 
             /* Format Request */

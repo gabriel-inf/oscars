@@ -233,6 +233,7 @@ public class CreateResRmiHandler {
             pathInfo.setPath(path);
         } else {
             // Add a path just composed of source and destination
+            pathInfo.setPathType("loose");
             path = new CtrlPlanePathContent();
             path.setId("userPath"); //id doesn't matter in this context
             String[] hops = new String[2];

@@ -10,6 +10,7 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.scheduler.NotifyJob;
+import net.es.oscars.wsdlTypes.PathInfo;
 
 /**
  * EventProducer is used by the entity generating events to schedule
@@ -38,7 +39,21 @@ public class EventProducer{
      */
     public void addEvent(String type, String userLogin, String source,
             Reservation resv){
-        this.addEvent(type, userLogin, source, resv, null, null);
+        this.addEvent(type, userLogin, source, resv, null, null, null);
+    }
+    
+    /**
+     * Schedules an event notification
+     *
+     * @param type the type of event.
+     * @param userLogin the login of the user that triggered the event
+     * @param source the entity that caused the event (API, WBUI, or SCHEDULER)
+     * @param resv the reservation affected by this event
+     * @param pathInfo the reservation pathInfo
+     */
+    public void addEvent(String type, String userLogin, String source,
+            Reservation resv, PathInfo pathInfo){
+        this.addEvent(type, userLogin, source, resv, pathInfo, null, null);
     }
     
     /**
@@ -49,7 +64,7 @@ public class EventProducer{
      * @param source the entity that caused the event (API, WBUI, or SCHEDULER)
      */
     public void addEvent(String type, String userLogin, String source){
-        this.addEvent(type, userLogin, source, null, null, null);
+        this.addEvent(type, userLogin, source, null, null, null, null);
     }
     
     /**
@@ -63,7 +78,23 @@ public class EventProducer{
      */
     public void addEvent(String type, String userLogin, String source,
             String errorCode, String errorMessage){
-        this.addEvent(type, userLogin, source, null, errorCode, errorMessage);
+        this.addEvent(type, userLogin, source, null, null, errorCode, errorMessage);
+    }
+    
+    /**
+     * Schedules an event notification
+     *
+     * @param type the type of event.
+     * @param userLogin the login of the user that triggered the event
+     * @param source the entity that caused the event (API, WBUI, or SCHEDULER)
+     * @param resv the reservation affected by this event
+     * @param errorCode the error code of the event. null if no error.
+     * @param errorMessage a message describing an error. null if no error.
+     */
+    public void addEvent(String type, String userLogin, String source, 
+                         Reservation resv, String errorCode, 
+                         String errorMessage){
+        this.addEvent(type, userLogin, source, resv, null, errorCode, errorMessage);
     }
 
     /**
@@ -77,10 +108,11 @@ public class EventProducer{
      * @param errorMessage a message describing an error. null if no error.
      */
     public void addEvent(String type, String userLogin, String source,
-            Reservation resv, String errorCode, String errorMessage){
+                         Reservation resv, PathInfo pathInfo, 
+                         String errorCode, String errorMessage){
         OSCARSEvent event = new OSCARSEvent();
         TypeConverter tc = new TypeConverter();
-        HashMap<String, String[]> resvParams = tc.reservationToHashMap(resv);
+        HashMap<String, String[]> resvParams = tc.reservationToHashMap(resv, pathInfo);
         event.setType(type);
         event.setTimestamp(System.currentTimeMillis());
         event.setUserLogin(userLogin);

@@ -3,7 +3,7 @@ package net.es.oscars.bss.topology;
 import java.util.*;
 import org.apache.log4j.*;
 import net.es.oscars.bss.BSSException;
-import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import net.es.oscars.database.GenericHibernateDAO;
 
 /**
@@ -42,10 +42,10 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
         
         Port srcPort = srcLink.getPort();
         Node srcNode = srcPort.getNode();
-        Query query = this.createQuery(TopologyUtil.LINK_URN, destURN);
-        return (List<InterdomainRoute>) query.setEntity(0, srcNode)
-                                             .setEntity(1, srcPort)
-                                             .setEntity(2, srcLink)
+        SQLQuery query = this.createQuery(TopologyUtil.LINK_URN, destURN);
+        return (List<InterdomainRoute>) query.setInteger(0, srcNode.getId())
+                                             .setInteger(1, srcPort.getId())
+                                             .setInteger(2, srcLink.getId())
                                              .list();
     }
     
@@ -65,9 +65,9 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
         throws BSSException{
         
         Node srcNode = srcPort.getNode();
-        Query query = this.createQuery(TopologyUtil.PORT_URN, destURN);
-        return (List<InterdomainRoute>) query.setEntity(0, srcNode)
-                                             .setEntity(1, srcPort)
+        SQLQuery query = this.createQuery(TopologyUtil.PORT_URN, destURN);
+        return (List<InterdomainRoute>) query.setInteger(0, srcNode.getId())
+                                             .setInteger(1, srcPort.getId())
                                              .list();
     }
     
@@ -86,8 +86,8 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
     public List<InterdomainRoute> lookupRoute(Node srcNode, String destURN)
         throws BSSException{
         
-        Query query = this.createQuery(TopologyUtil.NODE_URN, destURN);
-        return (List<InterdomainRoute>) query.setEntity(0, srcNode).list();
+        SQLQuery query = this.createQuery(TopologyUtil.NODE_URN, destURN);
+        return (List<InterdomainRoute>) query.setInteger(0, srcNode.getId()).list();
     }
     
     /**
@@ -98,7 +98,7 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
      * @return the generated query with the src* entities not set
      * @throws BSSException
      */
-    private Query createQuery(int srcURNType, String destURN) 
+    private SQLQuery createQuery(int srcURNType, String destURN) 
         throws BSSException{
         
         String[] componentList = destURN.split(":");
@@ -106,23 +106,23 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
         Node destNode = null;
         Port destPort = null;
         Link destLink = null;
-        Query query = null;
+        SQLQuery query = null;
         int offset = srcURNType - 4;
-        String hsql = "from InterdomainRoute where defaultRoute=1 ";
-        String orderByClause = " order by srcLink DESC, srcPort DESC, " +
-            "srcNode DESC, destLink DESC, destPort DESC, destNode DESC, " +
-            "destDomain DESC, preference ASC, defaultRoute ASC";
+        String sql = "SELECT * FROM interdomainRoutes WHERE defaultRoute=1 ";
+        String orderByClause = " order by srcLinkId DESC, srcPortId DESC, " +
+            "srcNodeId DESC, destLinkId DESC, destPortId DESC, destNodeId DESC, " +
+            "destDomainId DESC, preference ASC, defaultRoute ASC";
         String whereClause = "OR (";
         
         /* Match against given source */   
         if(srcURNType >= TopologyUtil.NODE_URN){
-            whereClause += "(srcNode=? OR srcNode=NULL)";
+            whereClause += "(srcNodeId=? OR srcNodeId IS NULL)";
         } 
         if(srcURNType >= TopologyUtil.PORT_URN){
-            whereClause += " OR (srcPort=? OR srcPort=NULL)";
+            whereClause += " OR (srcPortId=? OR srcPortId IS NULL)";
         }
         if(srcURNType >= TopologyUtil.LINK_URN){
-            whereClause += " OR (srcLink=? OR srcLink=NULL)";   
+            whereClause += " OR (srcLinkId=? OR srcLinkId IS NULL)";   
         } 
          
          whereClause += ") AND ";
@@ -133,14 +133,15 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
                 destPort = destLink.getPort();
                 destNode = destPort.getNode();
                 destDomain = destNode.getDomain();
-                whereClause += "(destDomain=? OR destNode=? OR destPort=? OR " +
-                                "destLink=?)";
-                hsql += (whereClause + orderByClause);
-                query = this.getSession().createQuery(hsql);
-                query.setEntity(offset, destDomain);
-                query.setEntity(offset + 1, destNode);
-                query.setEntity(offset + 2, destPort);
-                query.setEntity(offset + 3, destLink);
+                whereClause += "(destDomainId=? OR destNodeId=? OR destPortId=? OR " +
+                                "destLinkId=?)";
+                sql += (whereClause + orderByClause);
+                query = this.getSession().createSQLQuery(sql)
+                               .addEntity(InterdomainRoute.class);
+                query.setInteger(offset, destDomain.getId());
+                query.setInteger(offset + 1, destNode.getId());
+                query.setInteger(offset + 2, destPort.getId());
+                query.setInteger(offset + 3, destLink.getId());
             }catch(BSSException e){}
         }
         
@@ -153,12 +154,13 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
                 destPort = TopologyUtil.getPort(urn, dbname);
                 destNode = destPort.getNode();
                 destDomain = destNode.getDomain();
-                whereClause += "(destDomain=? OR destNode=? OR destPort=?)";
-                hsql += (whereClause + orderByClause);
-                query = this.getSession().createQuery(hsql);
-                query.setEntity(offset, destDomain);
-                query.setEntity(offset + 1, destNode);
-                query.setEntity(offset + 2, destPort);
+                whereClause += "(destDomainId=? OR destNodeId=? OR destPortId=?)";
+                sql += (whereClause + orderByClause);
+                query = this.getSession().createSQLQuery(sql)
+                            .addEntity(InterdomainRoute.class);
+                query.setInteger(offset, destDomain.getId());
+                query.setInteger(offset + 1, destNode.getId());
+                query.setInteger(offset + 2, destPort.getId());
              }catch(BSSException e){}
         }
         
@@ -170,11 +172,12 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
             try{
                 destNode = TopologyUtil.getNode(urn, dbname);
                 destDomain = destNode.getDomain();
-                whereClause += "(destDomain=? OR destNode=?)";
-                hsql += (whereClause + orderByClause);
-                query = this.getSession().createQuery(hsql);
-                query.setEntity(offset, destDomain);
-                query.setEntity(offset + 1, destNode);
+                whereClause += "(destDomainId=? OR destNodeId=?)";
+                sql += (whereClause + orderByClause);
+                query = this.getSession().createSQLQuery(sql)
+                            .addEntity(InterdomainRoute.class);
+                query.setInteger(offset, destDomain.getId());
+                query.setInteger(offset + 1, destNode.getId());
             }catch(BSSException e){}
         }
         
@@ -183,10 +186,11 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
             
             String urn = "urn:ogf:network:" + componentList[3];
             destDomain = TopologyUtil.getDomain(urn, dbname);
-            whereClause += "destDomain=?";
-            hsql += (whereClause + orderByClause);
-            query = this.getSession().createQuery(hsql);
-            query.setEntity(offset, destDomain);
+            whereClause += "destDomainId=?";
+            sql += (whereClause + orderByClause);
+            query = this.getSession().createSQLQuery(sql)
+                        .addEntity(InterdomainRoute.class);
+            query.setInteger(offset, destDomain.getId());
         }
         
         /* Not sure if will ever reach this, but if give funny urn this will 
@@ -195,7 +199,7 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
             throw new BSSException("Unable to identify destination " 
                 + destURN);
         }
-        this.log.info(hsql);
+        this.log.info(sql);
         
         return query;
     }
@@ -206,7 +210,8 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
      * @return list of interdomain routes
      */
     public List<InterdomainRoute> list(){
-        String hsql = "from InterdomainRoute";
-        return this.getSession().createQuery(hsql).list();
+        String sql = "SELECT * FROM interdomainRoutes";
+        return this.getSession().createSQLQuery(sql)
+                   .addEntity(InterdomainRoute.class).list();
     }
 }

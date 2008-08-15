@@ -34,7 +34,7 @@ public class SubscribeJob implements Job{
     
     private final double DEFAULT_TERM_TIME_WINDOW = .2;
     private final long DEFAULT_RETRY_INTERVAL = 1800;//30 minutes
-    private final String DEFAULT_TOPICS = "idc:INFO";
+    private final String DEFAULT_TOPICS = "idc:IDC";
     
     /**
      * Detects whether this is an initial call where it needs to subscribe to 
