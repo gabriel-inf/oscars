@@ -36,7 +36,7 @@ public class Reservation extends HibernateBean implements Serializable {
     private String status;
     
     /** persistent field */
-    private int localStatus;
+    private Integer localStatus;
 
     /** nullable persistent field */
     private String description;
@@ -124,14 +124,14 @@ public class Reservation extends HibernateBean implements Serializable {
     public void setStatus(String status) { this.status = status; }
 
     /**
-     * @return status an int with the reservation's local status
+     * @return status an Integer with the reservation's local status
      */
-    public int getLocalStatus() { return this.localStatus; }
+    public Integer getLocalStatus() { return this.localStatus; }
 
     /**
-     * @param status an int with the reservation's local status
+     * @param status an Integer with the reservation's local status
      */
-    public void setLocalStatus(int status) { this.localStatus = status; }
+    public void setLocalStatus(Integer status) { this.localStatus = status; }
 
     /**
      * @return description A String with the reservation's description
