@@ -82,7 +82,7 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="Subscriptions"),
 	(select id from permissions where name="create"),
 	(select id from constraints where name="none"));
-NSERT INTO rpcs VALUES (NULL,
+INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="Subscriptions"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="none"));
