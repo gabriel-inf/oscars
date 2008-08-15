@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS constraints (
 ) type=MyISAM;
 CREATE UNIQUE INDEX constraintName ON constraints(name(9)); 
 
-INSERT INTO constraints VALUES (NULL, "none", "boolean", "place holder for no constraint");
+INSERT INTO constraints VALUES (NULL, "none", "", "");
 INSERT INTO constraints VALUES (NULL, "all-users", "boolean","allows access to reservations or details of all users");
 INSERT INTO constraints VALUES (NULL, "max-bandwidth", "numeric", "limits reservations to specified bandwidth");
 INSERT INTO constraints VALUES (NULL, "max-duration", "numeric","limits reservations to specified duration");
@@ -205,10 +205,34 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from constraints where name="none"));
 INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="Subscriptions"),
+	(select id from permissions where name="create"),
+	(select id from constraints where name="none"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="Subscriptions"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="none"));
 INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="Publishers"),
+	(select id from permissions where name="create"),
+	(select id from constraints where name="none"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="Publishers"),
+	(select id from permissions where name="modify"),
+	(select id from constraints where name="none"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="AAA"),
+	(select id from permissions where name="list"),
+	(select id from constraints where name="none"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="AAA"),
+	(select id from permissions where name="modify"),
+	(select id from constraints where name="none"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="Domains"),
+	(select id from permissions where name="query"),
+	(select id from constraints where name="none"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="Domains"),
 	(select id from permissions where name="modify"),
 	(select id from constraints where name="none"));
 
