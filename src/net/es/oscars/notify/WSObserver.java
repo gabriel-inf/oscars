@@ -60,10 +60,10 @@ public class WSObserver implements Observer {
         /* Set global constants */
         this.namespaces = new HashMap<String,String>();
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
-        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20070626/");
+        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
         this.prefixes = new HashMap<String,String>();
         this.prefixes.put("http://oscars.es.net/OSCARS", "idc");
-        this.prefixes.put("http://ogf.org/schema/network/topology/ctrlPlane/20070626/", "nmwg-ctrlp");
+        this.prefixes.put("http://ogf.org/schema/network/topology/ctrlPlane/20080828/", "nmwg-ctrlp");
         /* initialize */
         this.initialize();
     }

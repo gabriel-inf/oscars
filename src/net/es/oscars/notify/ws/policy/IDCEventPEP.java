@@ -37,7 +37,7 @@ public class IDCEventPEP implements NotifyPEP{
         this.log = Logger.getLogger(this.getClass());
         this.namespaces = new HashMap<String,String>();
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
-        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20070626/");
+        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
     }
     
     public void init(String dbname){

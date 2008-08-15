@@ -466,7 +466,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <arg value="-package"/>
             <arg value="net.es.oscars.notify.ws"/>
             <arg value="--namespace2package"/>
-            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes"/>
+            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane._20070626"/>
         </java>
         <echo>
   ***

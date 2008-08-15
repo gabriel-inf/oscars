@@ -190,22 +190,7 @@ public class OSCARSDatabase implements TEDB {
                 port.addLink(link);
                 link.setId(linkXML.getAttributeValue("id"));
                 this.log.info("link:"+link.getId());
-
-                Element remDomXML = linkXML.getChild("remoteDomainId", ns);
-                if (remDomXML != null) {
-                  String remDomainId = remDomXML.getValue();
-                  link.setRemoteDomainId(remDomainId);
-                }
-                Element remNodeXML = linkXML.getChild("remoteNodeId", ns);
-                if (remNodeXML != null) {
-                  String remNodeId = remNodeXML.getValue();
-                  link.setRemoteNodeId(remNodeId);
-                }
-                Element remPortXML = linkXML.getChild("remotePortId", ns);
-                if (remPortXML != null) {
-                  String remPortId = remPortXML.getValue();
-                  link.setRemotePortId(remPortId);
-                }
+                
                 Element remLinkXML = linkXML.getChild("remoteLinkId", ns);
                 if (remLinkXML != null) {
                   String remLinkId = remLinkXML.getValue();
@@ -307,18 +292,6 @@ public class OSCARSDatabase implements TEDB {
                                         Element linkXML = new Element("link", ns);
                                         Attribute linkId = new Attribute("id", l.getId(), ns);
                                         linkXML.setAttribute(linkId);
-
-                                        Element linkRemDom = new Element("remoteDomainId", ns);
-                                        linkRemDom.setText(l.getRemoteDomainId());
-                                        linkXML.addContent(linkRemDom);
-
-                                        Element linkRemNode = new Element("remoteNodeId", ns);
-                                        linkRemNode.setText(l.getRemoteNodeId());
-                                        linkXML.addContent(linkRemNode);
-
-                                        Element linkRemPort = new Element("remotePortId", ns);
-                                        linkRemPort.setText(l.getRemotePortId());
-                                        linkXML.addContent(linkRemPort);
 
                                         Element linkRemLink = new Element("remoteLinkId", ns);
                                         linkRemLink.setText(l.getRemoteLinkId());

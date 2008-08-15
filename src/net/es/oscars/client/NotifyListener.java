@@ -28,7 +28,7 @@ public class NotifyListener extends Thread{
     public final static Namespace IDC_NS = Namespace.getNamespace("http://oscars.es.net/OSCARS");
     public final static Namespace WSA_NS = Namespace.getNamespace("http://www.w3.org/2005/08/addressing");
     public final static Namespace WSN_NS = Namespace.getNamespace("http://docs.oasis-open.org/wsn/b-2");
-    public final static Namespace NMWG_CP_NS = Namespace.getNamespace("http://ogf.org/schema/network/topology/ctrlPlane/20070626/");
+    public final static Namespace NMWG_CP_NS = Namespace.getNamespace("http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
     
     /**
      * Constructor that accepts the port on which to listen, the handler to use

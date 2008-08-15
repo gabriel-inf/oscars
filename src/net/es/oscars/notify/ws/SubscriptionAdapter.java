@@ -77,7 +77,7 @@ public class SubscriptionAdapter{
         //TODO: Loads namespace prefixes from properties file
         this.namespaces = new HashMap<String,String>();
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
-        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20070626/");
+        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
         this.namespaces.put("wsa", "http://www.w3.org/2005/08/addressing");
     }
     
