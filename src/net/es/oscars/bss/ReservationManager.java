@@ -173,20 +173,13 @@ public class ReservationManager {
             this.log.error("Reservation " + gri + " not found");
             return;
         }
-        String status = this.se.getStatus(resv);
-        if(!StateEngine.INCREATE.equals(status)){
-            this.log.info("Trying to confirm a reservation that doesn't" + 
-                          " have status " + StateEngine.INCREATE);
-        }
-        this.se.canUpdateLocalStatus(resv, 1);
-        
         if(pathInfo.getPath() == null){
             this.log.error("Recieved confirm event from " + producerID + 
                           " with no path element.");
              return;
         }else if(pathInfo.getPath().getHop() == null){
             this.log.error("Recieved confirm event from " + producerID + 
-                          " witha path element containing no hops");
+                          " with a path element containing no hops");
              return;
         }
         
@@ -209,6 +202,13 @@ public class ReservationManager {
                            " so discarding");
             return;
         }
+        
+        String status = this.se.getStatus(resv);
+        if(!StateEngine.INCREATE.equals(status)){
+            this.log.info("Trying to confirm a reservation that doesn't" + 
+                          " have status " + StateEngine.INCREATE);
+        }
+        this.se.canUpdateLocalStatus(resv, 1);
         
         /* Submitting a job to the resource scheduling queue 
            so there aren't any resource conflicts */
