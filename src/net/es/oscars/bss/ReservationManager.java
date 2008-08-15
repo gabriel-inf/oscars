@@ -47,9 +47,9 @@ public class ReservationManager {
         this.pceMgr = new PCEManager(dbname);
         this.policyMgr = new PolicyManager(dbname);
         this.tc = new TypeConverter();
-        this.se = new StateEngine();
         this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
+        this.se = this.core.getStateEngine();
     }
 
     public void submitCreate(Reservation resv, String login, PathInfo pathInfo)
@@ -86,6 +86,7 @@ public class ReservationManager {
 
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);
+        resv.setLocalStatus(0);
         try {
             // Assume AAA has been performed before this.
             this.se.updateStatus(resv, StateEngine.ACCEPTED);
@@ -172,6 +173,12 @@ public class ReservationManager {
             this.log.error("Reservation " + gri + " not found");
             return;
         }
+        String status = this.se.getStatus(resv);
+        if(!StateEngine.INCREATE.equals(status)){
+            this.log.info("Trying to confirm a reservation that doesn't" + 
+                          " have status " + StateEngine.INCREATE);
+        }
+        this.se.canUpdateLocalStatus(resv, 1);
         
         if(pathInfo.getPath() == null){
             this.log.error("Recieved confirm event from " + producerID + 
@@ -1258,15 +1265,4 @@ public class ReservationManager {
        }
        return resv;
    }
-   
-   /**
-    * Sets a state using the StateEngine. Allows synchronized to work
-    * since all functions work on the same StateEngine instance.
-    * @param newState the new state to set
-    * @param resv the reservation to update
-    * @throws BSSException
-    */
-    public void updateStatus(Reservation resv, String newState) throws BSSException{
-         this.se.updateStatus(resv, newState);
-    }
 }

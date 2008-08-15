@@ -24,6 +24,7 @@ public class StateEngine {
 
     private String dbname;
     private static HashMap<String, String> statusMap = new HashMap<String, String>();
+    private static HashMap<String, Integer> localStatusMap = new HashMap<String, Integer>();
     private Logger log;
 
     public StateEngine() {
@@ -113,8 +114,69 @@ public class StateEngine {
             throw new BSSException("Current status is "+status+"; cannot change to "+newStatus);
         }
     }
+    
+    public static void canUpdateLocalStatus(Reservation resv, int newLocalStatus) throws BSSException{
+        boolean allowed = true;
+        String status = resv.getStatus();
+        int localStatus = resv.getLocalStatus();
+        if(status.equals(INCREATE) || status.equals(INMODIFY) || status.equals(RESERVED)){
+            if((localStatus ^ newLocalStatus) != 1){
+                allowed = false;
+            }
+        }else if(status.equals(INSETUP) || status.equals(INTEARDOWN)){
+            if(newLocalStatus > 7 || newLocalStatus < localStatus){
+                allowed = false;
+            }
+        }else if(newLocalStatus != 0){
+            allowed = false;
+        }
+        
+        if (!allowed) {
+            throw new BSSException("Current local status is "+localStatus+";" +
+                                   "cannot change to "+newLocalStatus);
+        }
+    }
+    
+    public synchronized int updateLocalStatus(Reservation resv, int newLocalStatus) throws BSSException {
+        return this.updateLocalStatus(resv, newLocalStatus, true);
+    }
 
+    public synchronized int updateLocalStatus(Reservation resv, int newLocalStatus, boolean persist) throws BSSException {
+        String gri = resv.getGlobalReservationId();
 
+        // initialize this if this is the first time
+        if (StateEngine.localStatusMap.get(gri) == null) {
+            StateEngine.localStatusMap.put(gri, resv.getLocalStatus());
+        }
+        int status = StateEngine.localStatusMap.get(gri);
+
+        StateEngine.canUpdateLocalStatus(resv, newLocalStatus);
+
+        status = newLocalStatus;
+        resv.setLocalStatus(status);
+        if (persist) {
+            ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+            resvDAO.update(resv);
+        }
+        StateEngine.localStatusMap.put(gri, status);
+        return status;
+    }
+    
+    /**
+     * @return the local status
+     */
+    public static int getLocalStatus(Reservation resv) {
+        String gri = resv.getGlobalReservationId();
+        int status = 0;
+        // if the state engine has not been initialized, return what is in the Reservation object
+        if (StateEngine.localStatusMap.get(gri) != null) {
+            status = StateEngine.localStatusMap.get(gri);
+        } else {
+            status = resv.getLocalStatus();
+        }
+
+        return status;
+    }
 
     /**
      * @return the status

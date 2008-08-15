@@ -13,6 +13,7 @@ import net.es.oscars.pss.*;
 public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
     private Logger log;
     private OSCARSCore core;
+    private StateEngine se;
     
     /**
      * Assigns the job to the start, confirm or complete method
@@ -24,6 +25,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("CreateReservationJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
+        this.se = this.core.getStateEngine();
         Session bss = core.getBssSession();
         bss.beginTransaction();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
@@ -122,7 +124,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         } finally {
             forwarder.cleanUp();
             if (error != null) {
-                rm.updateStatus(resv, StateEngine.FAILED);
+                this.se.updateStatus(resv, StateEngine.FAILED);
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "JOB", resv, "", error.getMessage());
                 throw error;
             }
@@ -161,6 +163,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             rm.finalizeResv(resv, pathInfo, pathInfo);
             rm.store(resv);
         }
+        this.se.updateLocalStatus(resv, 1);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);
         
         DomainDAO domainDAO = new DomainDAO(bssDbName);
@@ -203,9 +206,10 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         }
         
         try{
-            rm.updateStatus(resv, StateEngine.RESERVED);
+            this.se.updateLocalStatus(resv, 0);
+            this.se.updateStatus(resv, StateEngine.RESERVED);
         }catch(BSSException ex){
-            rm.updateStatus(resv, StateEngine.FAILED);
+            this.se.updateStatus(resv, StateEngine.FAILED);
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "JOB", resv, "", ex.getMessage());
             this.log.debug("createReservation.complete failed: " + ex.getMessage());
             return;

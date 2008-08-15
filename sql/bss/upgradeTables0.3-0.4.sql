@@ -14,3 +14,5 @@ CREATE TABLE IF NOT EXISTS domainServices (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+
+ALTER TABLE reservations ADD localStatus TINYINT(1) DEFAULT 0 AFTER status;

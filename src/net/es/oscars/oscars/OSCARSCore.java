@@ -32,7 +32,8 @@ public class OSCARSCore {
     // Hardcoded but one can set them for tests etc
     private String bssDbName = "bss";
     private String aaaDbName = "aaa";
-
+    
+    private StateEngine stateEngine = null;
     private ReservationManager reservationManager = null;
     private TopologyManager topologyManager = null;
     private TopologyExchangeManager topologyExchangeManager = null;
@@ -81,6 +82,7 @@ public class OSCARSCore {
         this.log.debug("initAll.start");
 
         this.initDatabases();
+        this.initStateEngine();
         this.initReservationManager();
         this.initPathSetupManager();
         this.initTopologyManager();
@@ -133,7 +135,13 @@ public class OSCARSCore {
         this.log.debug("initDatabases.end");
     }
 
-
+    
+    public void initStateEngine() {
+        this.log.debug("initStateEngine.start");
+        this.stateEngine = new StateEngine();
+        this.log.debug("initStateEngine.end");
+    }
+    
     public void initReservationManager() {
         this.log.debug("initReservationManager.start");
         this.reservationManager = new ReservationManager(this.bssDbName);
@@ -304,7 +312,18 @@ public class OSCARSCore {
     public void setAaaDbName(String aaaDbName) {
         this.aaaDbName = aaaDbName;
     }
+    
+    /**
+     * @return the stateEngine
+     */
+    public StateEngine getStateEngine() {
+        if (this.stateEngine == null) {
+            this.initStateEngine();
+        }
 
+        return this.stateEngine;
+    }
+    
     /**
      * @return the reservationManager
      */

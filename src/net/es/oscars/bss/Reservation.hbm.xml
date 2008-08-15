@@ -58,7 +58,9 @@
            @hibernate.property not-null="true"
         </meta>    
     </property>
-
+    
+    <property name="localStatus" />
+    
     <property name="description" />
     
     <property name="globalReservationId" />

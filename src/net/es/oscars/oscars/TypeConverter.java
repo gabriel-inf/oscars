@@ -16,7 +16,9 @@ import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
+import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.Token;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
@@ -29,9 +31,11 @@ import net.es.oscars.wsdlTypes.*;
 public class TypeConverter {
 
     private Logger log;
-
+    private OSCARSCore core;
+    
     public TypeConverter() {
         this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSCore.getInstance();
     }
 
     /**
@@ -648,12 +652,13 @@ public class TypeConverter {
         if(resv == null){
             return map;
         }
-
+        StateEngine se = this.core.getStateEngine();
+        
         map.put("startSeconds", this.genHashVal(resv.getStartTime() + ""));
         map.put("endSeconds", this.genHashVal(resv.getEndTime() + ""));
         map.put("createSeconds", this.genHashVal(resv.getCreatedTime() + ""));
         map.put("bandwidth", this.genHashVal(resv.getBandwidth() + ""));
-        map.put("status", this.genHashVal(resv.getStatus()));
+        map.put("status", this.genHashVal(se.getStatus(resv)));
         map.put("description", this.genHashVal(resv.getDescription()));
         map.put("gri", this.genHashVal(resv.getGlobalReservationId()));
         map.put("userLogin", this.genHashVal(resv.getLogin()));
