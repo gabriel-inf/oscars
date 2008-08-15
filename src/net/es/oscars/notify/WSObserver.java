@@ -224,6 +224,7 @@ public class WSObserver implements Observer {
             omEvent = event.getOMElement(Event.MY_QNAME, omFactory);
         }catch(Exception e){
             this.log.error(e);
+            client.cleanUp();
             return;
         }
         //return if doesn't match any active topics

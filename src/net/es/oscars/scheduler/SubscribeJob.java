@@ -30,6 +30,7 @@ public class SubscribeJob implements Job{
     private static double TERM_TIME_WINDOW;
     private static long RETRY_INTERVAL;
     private static String TOPICS;
+    private Client client;
     
     private final double DEFAULT_TERM_TIME_WINDOW = .2;
     private final long DEFAULT_RETRY_INTERVAL = 1800;//30 minutes
@@ -49,6 +50,7 @@ public class SubscribeJob implements Job{
         this.log.info("SubscribeJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
         this.serviceMgr = this.core.getServiceManager();
+        this.client = new Client();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         this.idcURL = dataMap.getString("idcURL");
         this.repo = dataMap.getString("repo");
@@ -71,6 +73,8 @@ public class SubscribeJob implements Job{
         }catch(Exception e){
             bss.getTransaction().rollback();
             e.printStackTrace();
+        }finally{
+            this.client.cleanUp();
         }
         this.log.info("SubscribeJob.end name:"+jobName);
     }
@@ -215,7 +219,6 @@ public class SubscribeJob implements Job{
             return null;
         }
         this.log.debug("sendSubscribe.start");
-        Client client = new Client();
         client.setUpNotify(true, subscribeURL, this.repo, this.axisConfig);
         //Clear out any old Subscriptions, ignore failures
         try{
@@ -322,7 +325,6 @@ public class SubscribeJob implements Job{
         if(url == null){
             return null;
         }
-        Client client = new Client();
         client.setUpNotify(true, url, this.repo, this.axisConfig);
         Renew request = new Renew();
         request.setSubscriptionReference(subRef);

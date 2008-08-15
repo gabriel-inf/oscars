@@ -38,25 +38,28 @@ public class RegisterPublisherJob implements Job{
         String publisherRegistrationId = "";
         
         //send message
+        boolean error = true;
         try{
             publisherRef = client.generateEndpointReference(publisherURL);
             request.setPublisherReference(publisherRef);
             client.setUpNotify(true, url, repo, axisConfig);
             //send registration
             response = client.registerPublisher(request);
+            error = false;
         }catch(MalformedURIException e){
             this.log.error("Cannot register with notification broker. The" +
                            " idc.url property in oscars.properties. is " +
                            "invalid. Please set that property to a valid" +
                            " URL and restart OSCARS.");
-             return;
         }catch(Exception e){
             this.log.error("Exception when trying to register with " +
                            "NotificationBroker: " + e);
             this.log.info("Scheduling another register attempt...");
             this.reschedule(dataMap);
             WSObserver.registered(null, consumerURL);
-            return;
+        }finally{
+            client.cleanUp();
+            if(error){ return; }
         }
         
         //parse results

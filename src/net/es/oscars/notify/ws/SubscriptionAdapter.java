@@ -663,6 +663,8 @@ public class SubscriptionAdapter{
             client.notify(holder);
         }catch(Exception e){
             this.log.info("Error sending notification: " + e);
+        }finally{
+            client.cleanUp();
         }
         this.log.debug("sendNotify.end");
     }
