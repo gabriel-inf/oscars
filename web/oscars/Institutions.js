@@ -13,19 +13,23 @@ createInstitutionGrid()
 dojo.provide("oscars.Institutions");
 
 oscars.Institutions.manage = function (opName) { 
+    var valid;
     var oscarsStatus = dojo.byId("oscarsStatus");
     var formNode = dijit.byId("institutionsForm").domNode;
     var choiceType = dojo.byId("institutionOpChoice");
+    var editWidget = dijit.byId("institutionEditName");
     if (opName == "add") {
+        editWidget.required = false;
+        valid = dijit.byId("institutionsForm").validate();
         formNode.institutionEditName.value = "";
         formNode.saveType.value = "add";
         choiceType.innerHTML = "Adding";
     } else if (opName == "delete") {
-        if (oscars.Utils.isBlank(formNode.institutionEditName.value)) {
-            oscarsStatus.innerHTML = "You must select a row before deleting it";
-            oscarsStatus.className = "failure";
+        editWidget.required = true;
+        valid = dijit.byId("institutionsForm").validate();
+        if (!valid) {
             return;
-        }
+        } 
         dojo.xhrPost({
             url: 'servlet/Institutions?op=delete',
             handleAs: "json-comment-filtered",
@@ -36,12 +40,12 @@ oscars.Institutions.manage = function (opName) {
         formNode.saveType.value = "";
         choiceType.innerHTML = "";
     } else if (opName == "save") {
+        editWidget.required = true;
+        valid = dijit.byId("institutionsForm").validate();
+        if (!valid) {
+            return;
+        } 
         if (formNode.saveType.value == "add") {
-            if (oscars.Utils.isBlank(formNode.institutionEditName.value)) {
-                oscarsStatus.innerHTML = "You cannot enter a blank name.";
-                oscarsStatus.className = "failure";
-                return;
-            }
             dojo.xhrPost({
                 url: 'servlet/Institutions?op=add',
                 handleAs: "json-comment-filtered",
@@ -50,11 +54,6 @@ oscars.Institutions.manage = function (opName) {
                 form: formNode
             });
         } else {
-            if (oscars.Utils.isBlank(formNode.institutionEditName.value)) {
-                oscarsStatus.innerHTML = "You cannot edit an institution to be a blank name.";
-                oscarsStatus.className = "failure";
-                return;
-            }
             dojo.xhrPost({
                 url: 'servlet/Institutions?op=modify',
                 handleAs: "json-comment-filtered",
