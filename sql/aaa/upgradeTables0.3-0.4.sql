@@ -351,4 +351,12 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
      (select id from constraints where name="specify-path-elements"), "true");  
+     
+ -- Update OSCARS-service query reservation to include a my-site constraint
+ UPDATE authorizations set constraintId = (select id from constraints where name="my-site"),
+    constraintValue="true" where attrId=(select id from attributes where name="OSCARS-service") and
+    resourceId=(select id from resources where name="reservations") and
+    permissionId=(select id from permissions where name="query") and
+    constraintId = (select id from constraints where name="none");
+   
   
