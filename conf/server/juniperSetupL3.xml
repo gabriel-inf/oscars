@@ -36,7 +36,7 @@
           element within a <path-list> element.  These elements are added
           programmatically. -->
           <path>
-             <name><user-var>name</user-var></name>
+             <name><user-var>resv-id</user-var></name>
              <!--
              <path-list>
                  <name><user-var>hop1-addr</user-var></name>
