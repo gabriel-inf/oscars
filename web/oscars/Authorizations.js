@@ -36,8 +36,11 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
         }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
-        oscarsState.authorizationState.setRpc(responseObject.rpcData);
+        if (responseObject.rpcData) {
+            oscarsState.authorizationState.setRpc(responseObject.rpcData);
+        }
         var formNode = dijit.byId("authListForm").domNode;
+        // ensure server won't send back rpcData again
         formNode.rpc = "set";
         var mainTabContainer = dijit.byId("mainTabContainer");
         var authGrid = dijit.byId("authGrid");
@@ -91,24 +94,24 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     addAuthorizationNode.style.display = "none";
     var authGrid = dijit.byId("authGrid");
     // clear constraint value if any
-    var formParam = dijit.byId("authDetailsForm").domNode;
-    formParam.reset();
+    var formNode = dijit.byId("authDetailsForm").domNode;
+    formNode.reset();
     // clear constraint value if any
     // set four parameters necessary to retrieve authorization
     // dijit.byId doesn't seem to work outside form and tab
-    var menu = formParam.authAttributeName;
+    var menu = formNode.authAttributeName;
     menu.options[0].disabled = true;
     var attributeName = authGrid.model.getDatum(evt.rowIndex, 0);
     oscars.Form.setMenuSelected(menu, attributeName);
-    menu = formParam.resourceName;
+    menu = formNode.resourceName;
     menu.options[0].disabled = true;
     var resourceName = authGrid.model.getDatum(evt.rowIndex, 1);
     oscars.Form.setMenuSelected(menu, resourceName);
-    menu = formParam.permissionName;
+    menu = formNode.permissionName;
     menu.options[0].disabled = true;
     var permissionName = authGrid.model.getDatum(evt.rowIndex, 2);
     oscars.Form.setMenuSelected(menu, permissionName);
-    menu = formParam.constraintName;
+    menu = formNode.constraintName;
     var constraintName = authGrid.model.getDatum(evt.rowIndex, 3);
     // constraint can be blank
     if (constraintName) {
@@ -116,10 +119,12 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     } else {
         oscars.Form.setMenuSelected(menu, "None");
     }
-    formParam.constraintValue.value = authGrid.model.getDatum(evt.rowIndex, 4);
+    formNode.constraintValue.value = authGrid.model.getDatum(evt.rowIndex, 4);
     oscarsState.authorizationState.saveAuthState(attributeName,
             resourceName, permissionName, constraintName,
-            formParam.constraintValue.value);
+            formNode.constraintValue.value);
+    // uses current authorization state
+    oscarsState.authorizationState.setConstraintType();
     // No need to query server; grid already contains all information.
     // Can't set up menus in grid; different fields may require different
     // subsets of values of other fields.

@@ -125,7 +125,8 @@ public class AuthorizationList extends HttpServlet {
     }
 
     /**
-     * Outputs permitted resource/permission/constraint triplets.   Could
+     * Outputs permitted resource/permission/constraint triplets, along
+     * with constraint type.   Could
      * eventually be used in a split container on the right side of the
      * authorization details page, assuming the grid would display in
      * such a case.
@@ -150,6 +151,7 @@ public class AuthorizationList extends HttpServlet {
             if (resource != null) {
                 rpcEntry.add(resource.getName());
             } else {
+                this.log("couldn't find resource: " + rpc.getResourceId());
                 continue;
             }
             Permission perm = permissionDAO.findById(rpc.getPermissionId(),
@@ -157,6 +159,7 @@ public class AuthorizationList extends HttpServlet {
             if (perm != null) {
                 rpcEntry.add(perm.getName());
             } else {
+                this.log("couldn't find permission: " + rpc.getPermissionId());
                 continue;
             }
             // null constraints are added on the client side; rpc table
@@ -165,7 +168,9 @@ public class AuthorizationList extends HttpServlet {
                 constraintDAO.findById(rpc.getConstraintId(), false);
             if (constraint != null) {
                 rpcEntry.add(constraint.getName());
+                rpcEntry.add(constraint.getType());
             } else {
+                this.log("couldn't find constraint: " + rpc.getConstraintId());
                 continue;
             }
             rpcList.add(rpcEntry);

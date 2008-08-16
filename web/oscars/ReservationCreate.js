@@ -65,8 +65,8 @@ oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
             return;
         }
         // transition to reservation details tab on successful creation
-        var formParam = dijit.byId("reservationDetailsForm").domNode;
-        formParam.gri.value = responseObject.gri;
+        var formNode = dijit.byId("reservationDetailsForm").domNode;
+        formNode.gri.value = responseObject.gri;
         dojo.xhrPost({
             url: 'servlet/QueryReservation',
             handleAs: "json-comment-filtered",
@@ -96,9 +96,9 @@ oscars.ReservationCreate.tabSelected = function (
 
 // resets all fields, including ones the standard reset doesn't catch
 oscars.ReservationCreate.resetFields = function () {
-    var formParam = dijit.byId("reservationCreateForm").domNode;
+    var formNode = dijit.byId("reservationCreateForm").domNode;
     // do the standard ones first
-    formParam.reset();
+    formNode.reset();
     // if layer 3 fields are displayed, display layer 2 ones again since
     // that button is rechecked on reset
     oscars.ReservationCreate.toggleLayer("layer2");

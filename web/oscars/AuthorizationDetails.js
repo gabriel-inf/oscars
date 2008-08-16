@@ -99,24 +99,24 @@ oscars.AuthorizationDetails.tabSelected = function (
 
 oscars.AuthorizationDetails.resetFields = function (useSaved) {
     // TODO:  reset to original authorization if useSaved true
-    var formParam = dijit.byId("authDetailsForm").domNode;
+    var formNode = dijit.byId("authDetailsForm").domNode;
     var menu = null;
     // clear everything
     if (!useSaved) {
-        menu = formParam.authAttributeName;
+        menu = formNode.authAttributeName;
         menu.options[0].disabled = false;
         oscars.Form.setMenuSelected(menu, "None");
-        menu = formParam.resourceName;
+        menu = formNode.resourceName;
         menu.options[0].disabled = false;
         oscars.Form.setMenuSelected(menu, "None");
-        menu = formParam.permissionName;
+        menu = formNode.permissionName;
         menu.options[0].disabled = false;
-        oscars.Form.setMenuSelected(menu, "None");
-        menu = formParam.constraintName;
+        oscars.Form.setMenuSelected(menu, "none");
+        menu = formNode.constraintName;
         menu.options[0].disabled = false;
-        oscars.Form.setMenuSelected(menu, "None");
-        formParam.reset();
+        oscars.Form.setMenuSelected(menu, "none");
+        formNode.reset();
     } else {
-        oscarsState.authorizationState.recoverAuthState(formParam);
+        oscarsState.authorizationState.recoverAuthState(formNode);
     }
 };

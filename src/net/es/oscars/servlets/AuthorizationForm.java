@@ -105,7 +105,7 @@ public class AuthorizationForm extends HttpServlet {
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
         List<Permission> permissions = permissionDAO.list();
         List<String> permissionList = new ArrayList<String>();
-        permissionList.add("None");
+        permissionList.add("none");
         permissionList.add("true");
         for (Permission permission: permissions) {
             permissionList.add(permission.getName());
@@ -120,8 +120,7 @@ public class AuthorizationForm extends HttpServlet {
         ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
         List<Constraint> constraints = constraintDAO.list();
         List<String> constraintList = new ArrayList<String>();
-        constraintList.add("None");
-        constraintList.add("true");
+        // 'none' is a row in the constraint table
         for (Constraint constraint: constraints) {
             constraintList.add(constraint.getName());
             constraintList.add("false");

@@ -23,17 +23,20 @@ dojo.declare("oscars.AuthorizationState", null, {
             var resource = rpcGrid[i][0];
             var permission = rpcGrid[i][1];
             var constraint = rpcGrid[i][2];
+            var constraintType = rpcGrid[i][3];
             if (!this.rpcData[resource]) {
                 this.rpcData[resource] = {};
                 this.rpcData[resource][permission] = {};
-                this.rpcData[resource][permission][constraint] = 1;
+                this.rpcData[resource][permission][constraint] = constraintType;
             } else if (!this.rpcData[resource][permission]) {
                 this.rpcData[resource][permission] = {};
-                this.rpcData[resource][permission][constraint] = 1;
+                this.rpcData[resource][permission][constraint] = constraintType;
             } else if (!this.rpcData[resource][permission][constraint]) {
-                this.rpcData[resource][permission][constraint] = 1;
+                this.rpcData[resource][permission][constraint] = 
+                    constraintType;
             }
         }
+        //console.dir(this.rpcData);
     },
 
     saveAuthState: function(attributeName, resourceName, permissionName,
@@ -45,28 +48,47 @@ dojo.declare("oscars.AuthorizationState", null, {
         this.constraintValue = constraintValue;
     }, 
 
-    recoverAuthState: function(formParam) {
-        var menu = formParam.authAttributeName;
+    recoverAuthState: function(formNode) {
+        var menu = formNode.authAttributeName;
         oscars.Form.setMenuSelected(menu, this.attributeName);
-        menu = formParam.resourceName;
+        menu = formNode.resourceName;
         oscars.Form.setMenuSelected(menu, this.resourceName);
-        menu = formParam.permissionName;
+        menu = formNode.permissionName;
         oscars.Form.setMenuSelected(menu, this.permissionName);
-        menu = formParam.constraintName;
+        menu = formNode.constraintName;
         oscars.Form.setMenuSelected(menu, this.constraintName);
-        formParam.constraintValue.value = this.constraintValue;
+        formNode.constraintValue.value = this.constraintValue;
+        this.setConstraintType();
     },
 
     clearAuthState: function() {
-        this.attributeName = null;
-        this.resourceName = null;
-        this.permissionName = null;
-        this.constraintName = null;
-        this.constraintValue = null;
+        this.attributeName = 'None';
+        this.resourceName = 'None';
+        this.permissionName = 'none';
+        this.constraintName = 'none';
+        this.constraintValue = '';
     },
 
     constrainChoices: function(menuName) {
         var formNode = dijit.byId("authDetailsForm").domNode;
         //console.log(formNode[menuName].selectedIndex);
+    },
+
+    setConstraintType: function() {
+        var constraintTypeNode = dojo.byId("constraintType");
+        // necessary at this time
+        if (!this.rpcData[this.resourceName] ||
+            !this.rpcData[this.resourceName][this.permissionName] ||
+            !this.rpcData[this.resourceName][this.permissionName][this.constraintName]) {
+            constraintTypeNode.innerHTML = "";
+            return;
+        } 
+        var constraintType =
+            this.rpcData[this.resourceName][this.permissionName][this.constraintName];
+        if (this.constraintName != 'none') {
+            constraintTypeNode.innerHTML = constraintType;
+        } else {
+            constraintTypeNode.innerHTML = "";
+        }
     }
 });

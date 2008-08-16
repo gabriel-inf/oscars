@@ -75,14 +75,13 @@ public class Institutions extends HttpServlet {
 
         InstitutionDAO institutionDAO = new InstitutionDAO(Utils.getDbName());
         List<Institution> institutions = institutionDAO.list();
-        ArrayList<HashMap<String,String>> institutionList =
-            new ArrayList<HashMap<String,String>>();
+        ArrayList institutionList = new ArrayList();
         for (Institution institution: institutions) {
-            HashMap<String,String> instMap = new HashMap<String,String>();
-            instMap.put("institutionName", institution.getName());
-            institutionList.add(instMap);
+            ArrayList institutionEntry = new ArrayList();
+            institutionEntry.add(institution.getName());
+            institutionList.add(institutionEntry);
         }
-        outputMap.put("items", institutionList);
+        outputMap.put("institutionData", institutionList);
     }
 
     public void doPost(HttpServletRequest request,

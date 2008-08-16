@@ -88,8 +88,8 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     var resvGrid = dijit.byId("resvGrid");
     // get reservation's GRI
     var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
-    var formParam = dijit.byId("reservationDetailsForm").domNode;
-    formParam.gri.value = gri;
+    var formNode = dijit.byId("reservationDetailsForm").domNode;
+    formNode.gri.value = gri;
     // get reservation details
     dojo.xhrPost({
         url: 'servlet/QueryReservation',

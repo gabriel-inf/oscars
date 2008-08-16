@@ -3,8 +3,7 @@
 <script type="text/javascript">
     var institutionView = {
       cells: [[
-         {name: 'Name', field: "institutionName", width: "30em",
-          editor: dojox.grid.editors.Input}
+         {name: 'Name', width: "30em"}
       ]]
     };
     var institutionLayout = [ institutionView ];
@@ -14,44 +13,53 @@
 
 <body>
 <p>Use this form to manage the institution table.
-Double-clicking on a row will allow you to change its value.  Clicking on ADD
-will add a new blank row locally.  Clicking on DELETE will delete the
-selected row locally.  SAVE saves the changes to the database.  REVERT
-undoes all local changes up to the last save.
+Clicking on ADD will clear the EDIT text field.  Add the row by adding
+text and clicking on SAVE.
+Clicking on a row will bring up its name in the EDIT text field and take you
+out of ADD mode.
+To then modify that name, edit the text and click on the SAVE button.
+To delete that row, click on the DELETE button.  This will not succeed unless
+there are no users belonging to that institution.
 </p>
 
 <form id="institutionsForm" dojoType="dijit.form.Form">
+    <input type="hidden" name="saveType" id="saveType" />
 
-<!-- This grid is associated with a ItemFileWriteStore, which is
-     set up programmatically -->
         Institutions ->
       <button dojoType="dijit.form.Button" id="institutionAddButton">
         ADD
         <script type="dojo/method" event="onClick">
-            oscars.Institutions.manage("institution", "add");
-        </script>
-      </button>
-      <button dojoType="dijit.form.Button" id="institutionDeleteButton">
-        DELETE
-        <script type="dojo/method" event="onClick">
-            oscars.Institutions.manage("institution", "delete");
+            oscars.Institutions.manage("add");
         </script>
       </button>
       <button dojoType="dijit.form.Button" id="institutionSaveButton">
         SAVE
         <script type="dojo/method" event="onClick">
-            oscars.Institutions.manage("institution", "save");
+            oscars.Institutions.manage("save");
         </script>
       </button>
-      <button dojoType="dijit.form.Button" id="institutionRevertButton">
-        REVERT
+      <button dojoType="dijit.form.Button" id="institutionDeleteButton">
+        DELETE
         <script type="dojo/method" event="onClick">
-            oscars.Institutions.manage("institution", "revert");
+            oscars.Institutions.manage("delete");
         </script>
       </button>
-      <div id="institutionGrid" dojoType="dojox.Grid" structure="institutionLayout">
-      </div>
-
+  <table width="80%">
+  <tbody>
+  <tr>
+    <td width="5%">EDIT</td>
+    <td width="40%">
+        <input type="text" name="institutionEditName" id="institutionEditName"
+               dojoType="dijit.form.ValidationTextBox"
+               promptMessage="Enter an institution name" />
+    </td>
+    <td width ="7%" id="institutionOpChoice">
+    </td>
+  </tr>
+  </tbody>
+  </table>
+  <div id="institutionGrid" dojoType="dojox.Grid" structure="institutionLayout">
+  </div>
 </form>
 </body>
 </html>
