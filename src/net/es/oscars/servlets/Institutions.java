@@ -33,6 +33,7 @@ public class Institutions extends HttpServlet {
             this.log.error("Incorrect input from Institutions page");
             Utils.handleFailure(out, "incorrect input from Institutions page",
                                 methodName, null);
+            return;
         }
         String opName = ops[1];
 
@@ -47,23 +48,55 @@ public class Institutions extends HttpServlet {
         aaa.beginTransaction();     
         UserManager mgr = new UserManager(Utils.getDbName());
         
-        AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
+        AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
         if (authVal == AuthValue.DENIED) {
             this.log.error("No permission to modify Institutions table.");
             Utils.handleFailure(out, "no permission to modify Institutions table",
                                 methodName, aaa);
+            return;
         }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Institutions management");
-        if (opName.equals("list")) {
-            this.outputInstitutions(outputMap);
+        String saveName = request.getParameter("saveName");
+        if (saveName != null) {
+            saveName = saveName.trim();
         }
+        String institutionEditName = request.getParameter("institutionEditName").trim();
+        try {
+            if (opName.equals("add")) {
+                this.addInstitution(institutionEditName);
+                outputMap.put("status", "Added institution: " +
+                                         institutionEditName);
+            } else if (opName.equals("modify")) {
+                this.modifyInstitution(saveName, institutionEditName);
+                outputMap.put("status", "Changed institution name from " +
+                                       saveName + " to " + institutionEditName);
+            } else if (opName.equals("delete")) {
+                this.deleteInstitution(institutionEditName);
+                outputMap.put("status", "Deleted institution: " +
+                                         institutionEditName);
+            } else {
+                outputMap.put("status", "Institutions management");
+            }
+        } catch (AAAException e) {
+            this.log.error(e.getMessage());
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+            return;
+        }
+        // always output latest list
+        this.outputInstitutions(outputMap);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
         this.log.debug("servlet.end");
+    }
+
+    public void doPost(HttpServletRequest request,
+                       HttpServletResponse response)
+            throws IOException, ServletException {
+
+        this.doGet(request, response);
     }
 
     /**
@@ -84,10 +117,74 @@ public class Institutions extends HttpServlet {
         outputMap.put("institutionData", institutionList);
     }
 
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response)
-            throws IOException, ServletException {
+    /**
+     * addInstitution - add an institution if it doesn't already exist.
+     *  
+     * @param String newName name of new institution
+     * @throws AAAException
+     */
+    public void addInstitution(String newName)
+           throws AAAException {
 
-        this.doGet(request, response);
+        InstitutionDAO dao = new InstitutionDAO(Utils.getDbName());
+        Institution oldInstitution = dao.queryByParam("name", newName);
+        if (oldInstitution != null) {
+            throw new AAAException("Institution " + newName +
+                                   " already exists");
+        }
+        Institution institution = new Institution();
+        institution.setName(newName);
+        dao.create(institution);
+    }
+
+    /**
+     * modifyInstitution - change an institution's name.
+     *  
+     * @param String oldName old name of institution
+     * @param String newName new name of institution
+     * @throws AAAException
+     */
+    public void modifyInstitution(String oldName, String newName)
+           throws AAAException {
+
+        InstitutionDAO dao = new InstitutionDAO(Utils.getDbName());
+        Institution institution = dao.queryByParam("name", oldName);
+        if (institution == null) {
+            throw new AAAException("Institution " + oldName +
+                                   " does not exist to be modified");
+        }
+        institution.setName(newName);
+        dao.update(institution);
+    }
+
+    /**
+     * deleteInstitution - delete an institution, but only if no users
+     *     currently belong to it
+     *  
+     * @param String institutionName name of institution to delete
+     * @throws AAAException
+     */
+    public void deleteInstitution(String institutionName)
+           throws AAAException {
+
+        UserManager mgr = new UserManager(Utils.getDbName());
+        InstitutionDAO dao = new InstitutionDAO(Utils.getDbName());
+        Institution institution = dao.queryByParam("name", institutionName);
+        if (institution == null) {
+            throw new AAAException("Institution " + institutionName +
+                                   " does not exist to be deleted");
+        }
+        Set<User> users = institution.getUsers();
+        StringBuilder sb = new StringBuilder();
+        if (users.size() != 0) {
+            sb.append(institutionName + " has existing users: ");
+            Iterator iter = users.iterator();
+            while (iter.hasNext()) {
+                User user = (User) iter.next();
+                sb.append(user.getLogin() + " ");
+            }
+            throw new AAAException(sb.toString());
+        }
+        dao.remove(institution);
     }
 }

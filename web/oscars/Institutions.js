@@ -18,11 +18,17 @@ oscars.Institutions.manage = function (opName) {
     var formNode = dijit.byId("institutionsForm").domNode;
     var choiceType = dojo.byId("institutionOpChoice");
     var editWidget = dijit.byId("institutionEditName");
+    var addButton = dijit.byId("institutionAddButton").domNode;
+    var saveButton = dijit.byId("institutionSaveButton").domNode;
+    var deleteButton = dijit.byId("institutionDeleteButton").domNode;
     if (opName == "add") {
+        addButton.style.color = "#FF0000";
+        saveButton.style.color = "#00FF00";
+        deleteButton.style.color = "#FF0000";
         editWidget.required = false;
         valid = dijit.byId("institutionsForm").validate();
+        formNode.saveName.value = "";
         formNode.institutionEditName.value = "";
-        formNode.saveType.value = "add";
         choiceType.innerHTML = "Adding";
     } else if (opName == "delete") {
         editWidget.required = true;
@@ -37,7 +43,7 @@ oscars.Institutions.manage = function (opName) {
             error: oscars.Form.handleError,
             form: formNode
         });
-        formNode.saveType.value = "";
+        formNode.saveName.value = "";
         choiceType.innerHTML = "";
     } else if (opName == "save") {
         editWidget.required = true;
@@ -45,7 +51,7 @@ oscars.Institutions.manage = function (opName) {
         if (!valid) {
             return;
         } 
-        if (formNode.saveType.value == "add") {
+        if (!formNode.saveName.value) {
             dojo.xhrPost({
                 url: 'servlet/Institutions?op=add',
                 handleAs: "json-comment-filtered",
@@ -62,7 +68,7 @@ oscars.Institutions.manage = function (opName) {
                 form: formNode
             });
         }
-        formNode.saveType.value = "";
+        formNode.saveName.value = "";
         choiceType.innerHTML = "";
     }
 };
@@ -75,12 +81,20 @@ oscars.Institutions.handleReply = function (responseObject, ioArgs) {
     var institutionGrid = dijit.byId("institutionGrid");
     var model = institutionGrid.model;
     model.setData(responseObject.institutionData);
+    institutionGrid.setSortIndex(0, true);
+    institutionGrid.sort();
     institutionGrid.update();
     institutionGrid.resize();
     institutionGrid.resize();
     oscarsState.institutionGridInitialized = true;
     var formNode = dijit.byId("institutionsForm").domNode;
     formNode.institutionEditName.value = "";
+    var addButton = dijit.byId("institutionAddButton").domNode;
+    var saveButton = dijit.byId("institutionSaveButton").domNode;
+    var deleteButton = dijit.byId("institutionDeleteButton").domNode;
+    addButton.style.color = "#000000";
+    saveButton.style.color = "#000000";
+    deleteButton.style.color = "#000000";
 };
 
 // take action based on this tab being selected
@@ -117,7 +131,13 @@ oscars.Institutions.onRowSelect = function (/*Event*/ evt) {
     var institutionName = institutionGrid.model.getDatum(evt.rowIndex, 0);
     var formNode = dijit.byId("institutionsForm").domNode;
     formNode.institutionEditName.value = institutionName;
-    formNode.saveType.value = "";
+    formNode.saveName.value = institutionName;
     var choiceType = dojo.byId("institutionOpChoice");
     choiceType.innerHTML = "Selected";
+    var addButton = dijit.byId("institutionAddButton").domNode;
+    var saveButton = dijit.byId("institutionSaveButton").domNode;
+    var deleteButton = dijit.byId("institutionDeleteButton").domNode;
+    addButton.style.color = "#FF0000";
+    saveButton.style.color = "#00FF00";
+    deleteButton.style.color = "#00FF00";
 };

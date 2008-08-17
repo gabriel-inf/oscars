@@ -31,7 +31,7 @@ oscars.Form.resetStatus = function (responseObject, changeStatus) {
                                  "contact administrator";
         return false;
     }
-    if (!responseObject.success) {
+    if (responseObject.success === undefined) {
         oscarsStatus.className = "failure";
         oscarsStatus.innerHTML = "Invalid servlet reply: no success status " +
                                  "returned; contact administrator";
