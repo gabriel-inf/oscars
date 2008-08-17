@@ -2,7 +2,7 @@ import net.es.oscars.client.*;
 import net.es.oscars.wsdlTypes.*;
 import java.rmi.RemoteException;
 import net.es.oscars.oscars.*;
-import org.ogf.schema.network.topology.ctrlplane._20070626.*;
+import org.ogf.schema.network.topology.ctrlplane.*;
 
 public class InitiateTopologyPullClient extends ExampleClient{
     public static void main(String[] args){

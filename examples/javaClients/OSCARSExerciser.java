@@ -1,6 +1,6 @@
 import net.es.oscars.client.Client;
 import net.es.oscars.wsdlTypes.*;
-import org.ogf.schema.network.topology.ctrlplane._20070626.*;
+import org.ogf.schema.network.topology.ctrlplane.*;
 import net.es.oscars.PropHandler;
 import java.util.*;
 import java.io.*;
@@ -374,9 +374,11 @@ public class OSCARSExerciser extends Client{
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         path.setId("userPath");//id doesn't matter in this context
         boolean hasEro = false;
-        int i= 0;
-        String propName = "ero_"+Integer.toString(i);
+        int i= 1;
+        String propName = resv + ".ero_" + i;
+        String useHopRefs = this.props.getProperty(resv + ".useHopRefs");
         String hopId = this.props.getProperty(propName);
+        System.out.println(hopId);
         while (hopId != null) {
             hopId = hopId.trim();
             int hopType = hopId.split(":").length;
@@ -384,17 +386,35 @@ public class OSCARSExerciser extends Client{
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
             hop.setId(i + "");
             if(hopType == 4){
-                 hop.setDomainIdRef(hopId);
+                hop.setDomainIdRef(hopId);
             }else if(hopType == 5){
-                 hop.setNodeIdRef(hopId);
+                hop.setNodeIdRef(hopId);
             }else if(hopType == 6){
-                 hop.setPortIdRef(hopId);
+                hop.setPortIdRef(hopId);
+            }else if("false".equals(useHopRefs)){
+                CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
+                link.setId(hopId);
+                link.setTrafficEngineeringMetric("10");
+                CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+                swcap.setSwitchingcapType("l2sc");
+                swcap.setEncodingType("ethernet");
+                CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecficInfo();
+                swcapInfo.setInterfaceMTU(9000);
+                String vlans = this.props.getProperty(resv + ".ero_vtags_"+ i).trim();
+                swcapInfo.setVlanRangeAvailability(vlans);
+                String sugVlans = this.props.getProperty(resv + ".ero_sug_vtags_"+ i);
+                if(sugVlans != null){
+                    swcapInfo.setSuggestedVLANRange(sugVlans.trim());
+                }
+                swcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
+                link.setSwitchingCapabilityDescriptors(swcap);
+                hop.setLink(link);
             }else{
                 hop.setLinkIdRef(hopId);
             }
             path.addHop(hop);
             i++;
-            propName = "ero_"+Integer.toString(i);
+            propName = resv + ".ero_" + i;
             hopId = this.props.getProperty(propName);
         }
         if (hasEro) {

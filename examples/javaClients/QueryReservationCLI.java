@@ -10,8 +10,8 @@ import net.es.oscars.wsdlTypes.PathInfo;
 import net.es.oscars.wsdlTypes.ResDetails;
 
 import org.apache.axis2.AxisFault;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 
 public class QueryReservationCLI {

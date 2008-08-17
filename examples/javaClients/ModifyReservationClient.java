@@ -9,8 +9,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 
 import org.apache.axis2.AxisFault;
 

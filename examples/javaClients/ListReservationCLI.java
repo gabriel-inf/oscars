@@ -8,8 +8,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.axis2.AxisFault;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.omg.CORBA_2_3.portable.InputStream;
 
 import net.es.oscars.bss.topology.URNParser;
