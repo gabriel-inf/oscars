@@ -20,8 +20,8 @@ import org.jgrapht.*;
 import org.jgrapht.alg.*;
 import org.jgrapht.graph.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import org.apache.log4j.*;
 

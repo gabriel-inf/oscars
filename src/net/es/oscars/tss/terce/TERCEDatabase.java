@@ -8,7 +8,7 @@ import net.es.oscars.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.tss.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneTopologyContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 
 import edu.internet2.hopi.dragon.terce.ws.types.tedb.*;
 import edu.internet2.hopi.dragon.terce.ws.service.*;
@@ -36,10 +36,10 @@ public class TERCEDatabase implements TEDB{
     /**
      * Retrieves topology from TERCE by issuing a selectNetworkTopology 
      * web service call. A type is provided but the only currently supported
-     * type is <i>all</I>. Inthe future other types will be supported.
+     * type is <i>all</I>. In the future other types will be supported.
      *
-     * @param type thetype of topology top retieve. Currently only <i>all</i>.
-     * @return the topology returned bythe TERCE
+     * @param type the type of topology top retrieve. Currently only <i>all</i>.
+     * @return the topology returned by the TERCE
      * @throws TSSException
      */
     public CtrlPlaneTopologyContent selectNetworkTopology(String type) 

@@ -27,8 +27,8 @@ package net.es.oscars.bss.topology;
 import java.io.*;
 import java.util.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.wsdlTypes.Layer2Info;

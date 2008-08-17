@@ -4,8 +4,8 @@ import java.util.Map;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.lookup.*;

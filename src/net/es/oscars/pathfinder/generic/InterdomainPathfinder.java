@@ -14,8 +14,8 @@ import net.es.oscars.bss.topology.TopologyUtil;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.wsdlTypes.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import java.util.List;
 import org.apache.log4j.*;

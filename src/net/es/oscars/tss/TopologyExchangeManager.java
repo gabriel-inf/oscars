@@ -5,7 +5,7 @@ import net.es.oscars.wsdlTypes.*;
 
 import org.apache.log4j.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneTopologyContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 
 import java.util.*;
 

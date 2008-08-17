@@ -47,7 +47,7 @@
         </copy>
         <!-- Copy to prevent non-fatal warning on Tomcat start-up -->
         <copy todir="conf/notify-server">
-            <fileset dir="conf/server" includes="OSCARS.xsd,nmtopo-ctrlp.xsd" />
+            <fileset dir="conf/server" includes="OSCARS.xsd,nmtopo-ctrlp.xsd"/>
         </copy>
         <copy todir="conf/server">
             <fileset dir="conf/notify-server" includes="b-2-idc.xsd,bf-2-idc.xsd,r-2-idc.xsd,ws-addr-idc.xsd"/>
@@ -294,37 +294,37 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </target>
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
         <!-- Copy default configs if they don't exist. -->
-        <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true" />
-        <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true" />
-        <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true" />
-        <available property="sec-client.properties.exists" file="${catalina.home}/shared/classes/repo/sec-client.properties" value="true" />
-        <available property="sec-client.jks.exists" file="${catalina.home}/shared/classes/repo/sec-client.jks" value="true" />
-        <available property="sec-server.jks.exists" file="${catalina.home}/shared/classes/server/sec-server.jks" value="true" />
-        <available property="sec-server.properties.exists" file="${catalina.home}/shared/classes/server/sec-server.properties" value="true" />
-        <available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true" />
-        <available property="test.properties.exists" file="${catalina.home}/shared/classes/server/test.properties" value="true" />
-        <available property="idc-topicnamespace.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicnamespace.xml" value="true" />
-        <available property="idc-topicset.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicset.xml" value="true" />
+        <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
+        <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true"/>
+        <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
+        <available property="sec-client.properties.exists" file="${catalina.home}/shared/classes/repo/sec-client.properties" value="true"/>
+        <available property="sec-client.jks.exists" file="${catalina.home}/shared/classes/repo/sec-client.jks" value="true"/>
+        <available property="sec-server.jks.exists" file="${catalina.home}/shared/classes/server/sec-server.jks" value="true"/>
+        <available property="sec-server.properties.exists" file="${catalina.home}/shared/classes/server/sec-server.properties" value="true"/>
+        <available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
+        <available property="test.properties.exists" file="${catalina.home}/shared/classes/server/test.properties" value="true"/>
+        <available property="idc-topicnamespace.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicnamespace.xml" value="true"/>
+        <available property="idc-topicset.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicset.xml" value="true"/>
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${defaultKeys}/client">
-                <include name="axis2.xml" unless="axis2.xml.exists" />
-                <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists" />
-                <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists" />
+                <include name="axis2.xml" unless="axis2.xml.exists"/>
+                <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists"/>
+                <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists"/>
             </fileset>
             <fileset dir="${defaultKeys}/server">
-                <include name="sec-client.properties" unless="sec-client.properties.exists" />
-                <include name="sec-client.jks" unless="sec-client.jks.exists" />
+                <include name="sec-client.properties" unless="sec-client.properties.exists"/>
+                <include name="sec-client.jks" unless="sec-client.jks.exists"/>
             </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${defaultKeys}/server/">
-                <include name="sec-server.properties" unless="sec-server.properties.exists" />
-                <include name="sec-server.jks" unless="sec-server.jks.exists" />
-                <include name="oscars.properties" unless="oscars.properties.exists" />
-                <include name="test.properties" unless="test.properties.exists" />
-                <include name="idc-topicnamespace.xml" unless="idc-topicnamespace.xml.exists" />
-                <include name="idc-topicset.xml" unless="idc-topicset.xml.exists" />
+                <include name="sec-server.properties" unless="sec-server.properties.exists"/>
+                <include name="sec-server.jks" unless="sec-server.jks.exists"/>
+                <include name="oscars.properties" unless="oscars.properties.exists"/>
+                <include name="test.properties" unless="test.properties.exists"/>
+                <include name="idc-topicnamespace.xml" unless="idc-topicnamespace.xml.exists"/>
+                <include name="idc-topicset.xml" unless="idc-topicset.xml.exists"/>
             </fileset>
         </copy>
     </target>
@@ -354,8 +354,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
     <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
-	<delete file="${catalina.home}/webapps/OSCARS.war"/>
-	<delete dir="${catalina.home}/webapps/OSCARS"/>
+        <delete file="${catalina.home}/webapps/OSCARS.war"/>
+        <delete dir="${catalina.home}/webapps/OSCARS"/>
         <copy file="OSCARS.war" todir="${webapp.home}"/>
     </target>
     <target name="deployall" description="deploy both aar and war files" depends="deployaar, deploywbui"/>
@@ -466,7 +466,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <arg value="-package"/>
             <arg value="net.es.oscars.notify.ws"/>
             <arg value="--namespace2package"/>
-            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane._20070626"/>
+            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
         </java>
         <echo>
   ***

@@ -1,6 +1,6 @@
 package net.es.oscars.tss;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneTopologyContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 
 /**
  * Interface for modules that access a traffic engineering database (TEDB)

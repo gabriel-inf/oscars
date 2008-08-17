@@ -3,8 +3,9 @@ package net.es.oscars.pathfinder;
 import java.util.*;
 
 import org.apache.log4j.*;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.lookup.*;
 

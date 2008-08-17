@@ -7,8 +7,8 @@ import org.apache.log4j.*;
 import org.aaaarch.gaaapi.tvs.TokenBuilder;
 import org.aaaarch.gaaapi.tvs.TokenKey;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.quartz.*;
 
 import net.es.oscars.PropHandler;

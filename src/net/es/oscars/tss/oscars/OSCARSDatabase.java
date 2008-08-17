@@ -11,7 +11,13 @@ import org.jdom.*;
 
 import org.apache.axiom.om.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.*;
+import org.ogf.schema.network.topology.ctrlplane.*;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneAddressContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 
 import java.sql.Time;
 import java.util.*;
