@@ -24,8 +24,6 @@ import net.es.oscars.pathfinder.*;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.notify.*;
 
-
-
 /**
  * ReservationManager handles all networking and data access object calls
  * necessary to create, update, delete, and modify reservations.
@@ -41,7 +39,9 @@ public class ReservationManager {
     private String dbname;
     private ReservationLogger rsvLogger;
     private OSCARSCore core;
-   
+    public String GEN_TOKEN;
+    public String DEFAULT_SWCAP_TYPE;
+    public String DEFAULT_ENC_TYPE;
     
     /** Constructor. */
     public ReservationManager(String dbname) {
@@ -53,6 +53,23 @@ public class ReservationManager {
         this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
         this.se = this.core.getStateEngine();
+        this.initGlobals();
+    }
+    
+    /** Initializes global variables */
+    private void initGlobals(){
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties topoProps = propHandler.getPropertyGroup("topo", true);
+        Properties aaaProps = propHandler.getPropertyGroup("aaa", true);
+        GEN_TOKEN = aaaProps.getProperty("useSignalTokens");
+        DEFAULT_SWCAP_TYPE = topoProps.getProperty("defaultSwcapType");
+        if(DEFAULT_SWCAP_TYPE == null){
+            DEFAULT_SWCAP_TYPE = "tdm";
+        }
+        DEFAULT_ENC_TYPE = topoProps.getProperty("defaultEncodingType");
+        if(DEFAULT_ENC_TYPE == null){
+            DEFAULT_ENC_TYPE = "sdh/sonet";
+        }
     }
 
     public void submitCreate(Reservation resv, String login, PathInfo pathInfo)
@@ -606,6 +623,7 @@ public class ReservationManager {
         if(hops == null || hops.length == 0 ){
             throw new BSSException("Cannot expand path because no hops given");
         }
+        
         for(CtrlPlaneHopContent hop : hops){
             String urn = this.tc.hopToURN(hop);
             //if not link then add to path
@@ -638,8 +656,8 @@ public class ReservationManager {
             }else{
                 //TODO: What does esnet use for internal links?
                 swcapInfo.setCapability("unimplemented");
-                swcap.setSwitchingcapType("sdh");
-                swcap.setEncodingType("sonet");
+                swcap.setSwitchingcapType(DEFAULT_SWCAP_TYPE);
+                swcap.setEncodingType(DEFAULT_ENC_TYPE);
             }
             swcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
             link.setId(urn);
@@ -1277,10 +1295,7 @@ public class ReservationManager {
      */
     private void generateToken(CreateReply forwardReply, Reservation resv)
                     throws BSSException{
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("aaa", true);
-        String doTokenGen = props.getProperty("useSignalTokens");
-        if (doTokenGen != null && doTokenGen.equals("0")) {
+        if (GEN_TOKEN != null && GEN_TOKEN.equals("0")) {
             return;
         }
         Token token = new Token();

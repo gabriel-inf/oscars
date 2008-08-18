@@ -837,7 +837,9 @@ public class TypeConverter {
         Link link = pathElem.getLink();
         L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
         String infoVal = link.getTrafficEngineeringMetric();
-        
+        OSCARSCore oc = OSCARSCore.getInstance();
+        String defaulSwcapType = oc.getReservationManager().DEFAULT_SWCAP_TYPE;
+        String defaulEncType = oc.getReservationManager().DEFAULT_ENC_TYPE;
         if(l2scData != null){
             //TEMetric;swcap;enc;MTU;VLANRangeAvail;SuggestedVLANRange
             infoVal += ";l2sc;ethernet";
@@ -846,7 +848,7 @@ public class TypeConverter {
             infoVal += ";null";
         }else{
             //TEMetric;swcap;enc;MTU;capbility
-            infoVal += ";sdh;sonet;unimplemented";
+            infoVal += ";" + defaulSwcapType + ";" + defaulEncType + ";unimplemented";
         }
         
         return infoVal;
@@ -1113,7 +1115,16 @@ public class TypeConverter {
                 linkSwcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
                 link.setSwitchingCapabilityDescriptors(linkSwcap);
                 hop.setLink(link);
+            }else if("port".equals(hopType)){
+                /* we don't define how port, node, and domain objects are used
+                   in path yet so just use idrefs */
+                hop.setPortIdRef(path[i]);
+            }else if("node".equals(hopType)){
+                hop.setNodeIdRef(path[i]);
+            }else if("domain".equals(hopType)){
+                hop.setDomainIdRef(path[i]);
             }
+            
             wsPath.addHop(hop);
         }
         return wsPath;
