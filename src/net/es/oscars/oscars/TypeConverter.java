@@ -1222,14 +1222,12 @@ public class TypeConverter {
             urn = linkIdRef;
             urnType = 1;
             childCount++;
-            this.log.debug("REF!");
         }
         CtrlPlaneLinkContent link = hop.getLink();
         if(link != null){
             urn = link.getId();
             urnType = 1;
             childCount++;
-            this.log.debug("OBJECT!");
         }
         if("link".equals(type)){
             return urn;

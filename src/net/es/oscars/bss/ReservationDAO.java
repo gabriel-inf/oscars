@@ -177,6 +177,7 @@ public class ReservationDAO
 
         ArrayList<String> states = new ArrayList<String>();
         states.add(StateEngine.RESERVED);
+        states.add(StateEngine.INCREATE);
         states.add(StateEngine.ACTIVE);
         states.add(StateEngine.INMODIFY);
         states.add(StateEngine.INSETUP);

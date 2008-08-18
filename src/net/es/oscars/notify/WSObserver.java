@@ -271,14 +271,14 @@ public class WSObserver implements Observer {
         
         for(String key: map.keySet()){
             String[] val = map.get(key);
-            System.out.print(key + ": ");
+            //System.out.print(key + ": ");
             if(val == null){
-                System.out.println("null");
+                //System.out.println("null");
                 continue;
             }
-            for(int i=0; i < val.length; i++){
+            /* for(int i=0; i < val.length; i++){
                 System.out.println(val[i]);
-            }
+            } */
         }
         System.out.println("ResDetails: " + resDetails);
         event.setId("event-" + event.hashCode());
