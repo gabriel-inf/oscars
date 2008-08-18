@@ -9,7 +9,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.database.GenericHibernateDAO;
 import net.es.oscars.bss.BSSException;
-
+import net.es.oscars.oscars.TypeConverter;
 
 /**
  * DomainDAO is the data access object for the bss.domains table.
@@ -87,12 +87,13 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
         EdgeInfoDAO edgeInfoDAO = new EdgeInfoDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Domain nextDomain = null;
-
-        this.log.info("getNextDomain.start: " + nextHop.getLinkIdRef());
-        String[] componentList = nextHop.getLinkIdRef().split(":");
+        TypeConverter tc = new TypeConverter();
+        
+        this.log.info("getNextDomain.start: " + tc.hopToURN(nextHop));
+        String[] componentList = tc.hopToURN(nextHop).split(":");
 
         if (componentList.length != 7) {
-            throw new BSSException("Hop " + nextHop.getLinkIdRef() + " must" +
+            throw new BSSException("Hop " + tc.hopToURN(nextHop) + " must" +
                 " be in format urn:ogf:network:domainId:nodeId:portId:linkId");
         }
 

@@ -77,9 +77,9 @@ public class ReservationAdapter {
         EventProducer eventProducer = new EventProducer();
 
         try {
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, login, "API", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, login, "API", resv, pathInfo);
             this.rm.submitCreate(resv, login, pathInfo);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, login, "API", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, login, "API", resv, pathInfo);
 
             this.log.debug("create, to toReply");
             reply = this.tc.reservationToReply(resv);
@@ -89,7 +89,7 @@ public class ReservationAdapter {
         } catch (BSSException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", resv, "", errMsg);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", resv, pathInfo, "", errMsg);
             throw new BSSException(e.getMessage());
         }
 
@@ -454,7 +454,7 @@ public class ReservationAdapter {
             this.log.info("using ERO");
             CtrlPlaneHopContent[] hops = path.getHop();
             for (int i=0; i < hops.length; i++) {
-                this.log.info("hop: " + hops[i].getLinkIdRef());
+                this.log.info("hop: " + this.tc.hopToURN(hops[i]));
             }
         }
         Layer2Info layer2Info = pathInfo.getLayer2Info();

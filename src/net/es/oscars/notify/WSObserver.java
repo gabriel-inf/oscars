@@ -265,7 +265,8 @@ public class WSObserver implements Observer {
         HashMap<String, String[]> map = osEvent.getReservationParams();
         TypeConverter tc = new TypeConverter();
         ResDetails resDetails = tc.hashMaptoResDetails(osEvent.getReservationParams());
-        LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"));
+        LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"), 
+                                                         map.get("intradomainHopInfo"));
         Path path = new Path();
         
         for(String key: map.keySet()){
@@ -297,23 +298,20 @@ public class WSObserver implements Observer {
      * Creates a LocalDetails element containing the local path
      *
      * @param path an array of hops to add to the local path
+     * @param hopInfo an array of details about each hop in the local path
      * @return a Axis2 LocalDetails object containing the local path
      */
-    private LocalDetails getLocalDetails(String[] path){
+    private LocalDetails getLocalDetails(String[] path, String[] hopInfo){
         if(path == null || path.length < 1){ return null; }
+        TypeConverter tc = new TypeConverter();
         LocalDetails localDetails = new LocalDetails();
-        CtrlPlanePathContent wsPath = new CtrlPlanePathContent();
         OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
         OMElement omPath = null;
         
         //Build path
+        
+        CtrlPlanePathContent wsPath = tc.arrayToCtrlPlanePath(path, hopInfo);
         wsPath.setId("localPath");
-        for(int i = 0; i < path.length; i++){
-            CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
-            hop.setId("hop-" + (i+1));
-            hop.setLinkIdRef(path[i]);
-            wsPath.addHop(hop);
-        }
         try{
             omPath = wsPath.getOMElement(Path.MY_QNAME, omFactory);
          }catch(ADBException e){

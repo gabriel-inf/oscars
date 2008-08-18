@@ -6,6 +6,7 @@ import java.util.*;
 import java.rmi.RemoteException;
 
 import net.es.oscars.*;
+import net.es.oscars.oscars.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.pathfinder.generic.*;
@@ -30,7 +31,8 @@ import edu.internet2.hopi.dragon.terce.ws.service.*;
 public class TERCEPathfinder extends Pathfinder implements PCE {
     private Properties props;
     private Logger log;
-
+    private TypeConverter tc;
+    
     /**
      * Constructor that initializes TERCE properties from oscars.properties file
      *
@@ -40,6 +42,7 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("terce", true);
+        this.tc = OSCARSCore.getInstance().getTypeConverter();
     }
 
     /**
@@ -58,8 +61,8 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
         boolean firstHop = true;
         for(int i = 0; i < (intraHops.length - 1); i++){
-            String src = intraHops[i].getLinkIdRef();
-            String dest = intraHops[i+1].getLinkIdRef();
+            String src = this.tc.hopToURN(intraHops[i]);
+            String dest = this.tc.hopToURN(intraHops[i+1]);
             Link srcLink = null;
             Link destLink = null;
             try{
@@ -83,7 +86,14 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
                 CtrlPlanePathContent tercePath = this.terce(src, dest);
                 CtrlPlaneHopContent[] terceHops = tercePath.getHop();
                 for(int j = 1; j < terceHops.length; j++){
-                    intraPath.addHop(terceHops[j]);
+                    //if statement maintains given objects
+                    if(this.tc.hopToURN(terceHops[j]).equals(src)){
+                         intraPath.addHop(intraHops[i]);
+                    }else if(this.tc.hopToURN(terceHops[j]).equals(dest)){
+                       intraPath.addHop(intraHops[i+1]);
+                    }else{
+                        intraPath.addHop(terceHops[j]);
+                    }
                 }
             }
             firstHop = false;
@@ -169,7 +179,7 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
 
             log.info("terce.path.start");
             for(int i = 0; i < hops.length; i++){
-                log.info("terce.path.hop=" + hops[i].getLinkIdRef());
+                log.info("terce.path.hop=" + this.tc.hopToURN(hops[i]));
             }
             log.info("terce.path.end");
             this.log.info("terce.end");

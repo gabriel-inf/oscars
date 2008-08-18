@@ -50,7 +50,54 @@ public class NotifyEchoHandler implements NotifyHandler{
             System.out.println("Inter-domain Path: ");
             List<Element> hops = path.getChildren("hop", NotifyListener.NMWG_CP_NS);
             for(Element hop : hops){
-                System.out.println("    " + hop.getChildText("linkIdRef", NotifyListener.NMWG_CP_NS));
+                String linkIdRef = hop.getChildText("linkIdRef", NotifyListener.NMWG_CP_NS);
+                if(linkIdRef != null){
+                    System.out.println("    " + linkIdRef + " (REF)");
+                    continue;
+                }
+                String portIdRef = hop.getChildText("portIdRef", NotifyListener.NMWG_CP_NS);
+                if(portIdRef != null){
+                    System.out.println("    " + portIdRef + " (REF)");
+                    continue;
+                }
+                String nodeIdRef = hop.getChildText("nodeIdRef", NotifyListener.NMWG_CP_NS);
+                if(nodeIdRef != null){
+                    System.out.println("    " + nodeIdRef + " (REF)");
+                    continue;
+                }
+                String domainIdRef = hop.getChildText("domainIdRef", NotifyListener.NMWG_CP_NS);
+                if(domainIdRef != null){
+                    System.out.println("    " + domainIdRef + " (REF)");
+                    continue;
+                }
+                Element link = hop.getChild("link", NotifyListener.NMWG_CP_NS);
+                if(link != null){
+                    System.out.print("    " + link.getAttributeValue("id"));
+                    Element swcap = link.getChild("SwitchingCapabilityDescriptors", NotifyListener.NMWG_CP_NS);
+                    String encodingType = swcap.getChildText("encodingType", NotifyListener.NMWG_CP_NS);
+                    System.out.print(" (" + encodingType);
+                    if("ethernet".equals(encodingType)){
+                        Element swcapInfo = swcap.getChild("switchingCapabilitySpecficInfo", NotifyListener.NMWG_CP_NS);
+                        String vlans = swcapInfo.getChildText("vlanRangeAvailability", NotifyListener.NMWG_CP_NS);
+                        System.out.print(": " + vlans);
+                    }
+                    System.out.print(")\n");
+                    continue;
+                }
+                Element port = hop.getChild("port", NotifyListener.NMWG_CP_NS);
+                if(port != null){
+                    System.out.println("    " + port.getChildText("id"));
+                    continue;
+                }
+                Element node = hop.getChild("node", NotifyListener.NMWG_CP_NS);
+                if(node != null){
+                    System.out.println("    " + node.getChildText("id"));
+                    continue;
+                }
+                Element domain = hop.getChild("domain", NotifyListener.NMWG_CP_NS);
+                if(domain != null){
+                    System.out.println("    " + domain.getChildText("id"));
+                }
             }
         }
         

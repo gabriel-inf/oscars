@@ -378,7 +378,6 @@ public class OSCARSExerciser extends Client{
         String propName = resv + ".ero_" + i;
         String useHopRefs = this.props.getProperty(resv + ".useHopRefs");
         String hopId = this.props.getProperty(propName);
-        System.out.println(hopId);
         while (hopId != null) {
             hopId = hopId.trim();
             int hopType = hopId.split(":").length;
@@ -534,7 +533,33 @@ public class OSCARSExerciser extends Client{
             if(hops != null){
                 output += "Path:\n";
                 for(CtrlPlaneHopContent hop : hops){
-                    output += "    " + hop.getLinkIdRef() + "\n";
+                    if( hop.getLinkIdRef() != null){
+                        output += "    " + hop.getLinkIdRef() + " (REF)\n";
+                    }else if( hop.getPortIdRef() != null){
+                        output += "    " + hop.getPortIdRef() + " (REF)\n";
+                    }else if( hop.getNodeIdRef() != null){
+                        output += "    " + hop.getNodeIdRef() + " (REF)\n";
+                    }else if( hop.getDomainIdRef() != null){
+                        output += "    " + hop.getDomainIdRef() + " (REF)\n";
+                    }else if( hop.getLink() != null){
+                        String id = hop.getLink().getId();
+                        CtrlPlaneSwcapContent swcap = hop.getLink().getSwitchingCapabilityDescriptors();
+                        CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = swcap.getSwitchingCapabilitySpecficInfo();
+                        output += "    " + id;
+                        output += ", " + swcap.getEncodingType();
+                        if("ethernet".equals(swcap.getEncodingType())){
+                            output += ", " + swcapInfo.getVlanRangeAvailability();
+                        }
+                        output += "\n";
+                    }else if( hop.getPort() != null){
+                        output += "    " + hop.getPort().getId() + "\n";
+                    }else if( hop.getNode() != null){
+                        output += "    " + hop.getNode().getId() + "\n";
+                    }else if( hop.getDomain() != null){
+                        output += "    " + hop.getDomain().getId() + "\n";
+                    }else{
+                        output += "    EMPTY HOP!\n";
+                    }
                 }
             }
         }

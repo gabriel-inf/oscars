@@ -36,7 +36,7 @@ public class PCEManager {
      */
     public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
 
-	PathInfo intraPath = null;
+	    PathInfo intraPath = null;
 
         this.log.info("PCEManager.findPath.start");
 
@@ -51,6 +51,7 @@ public class PCEManager {
                     this.log.info("PCEManager.findPath."+method+".end");
                  } catch (Exception ex) {
                     this.log.error("Exception caught finding path using method "+method+": "+ex.getMessage());
+                    ex.printStackTrace();
                  }
 
                  if (intraPath != null)

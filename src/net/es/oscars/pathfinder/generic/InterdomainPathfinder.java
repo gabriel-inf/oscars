@@ -11,6 +11,7 @@ import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.TopologyUtil;
+import net.es.oscars.oscars.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.wsdlTypes.*;
 
@@ -31,7 +32,8 @@ import org.apache.log4j.*;
  */
 public class InterdomainPathfinder extends Pathfinder{
     private Logger log;
-
+    private TypeConverter tc;
+    
     /**
      * Constructor
      *
@@ -40,6 +42,7 @@ public class InterdomainPathfinder extends Pathfinder{
     public InterdomainPathfinder(String dbname) {
         super(dbname);
         this.log = Logger.getLogger(this.getClass());
+        this.tc = OSCARSCore.getInstance().getTypeConverter();
     }
 
     /**
@@ -88,16 +91,20 @@ public class InterdomainPathfinder extends Pathfinder{
         }
 
         /* build new LIDP from existing LIDP */
+       
         try{
-            intraPath = this.buildNewPath(pathInfo);
+            PathInfo refPathInfo = this.tc.createRefPath(pathInfo);
+            intraPath = this.buildNewPath(refPathInfo);
             intraPathInfo.setPath(intraPath);
+            this.tc.mergePathInfo(pathInfo, intraPathInfo, true);
+            this.tc.mergePathInfo(pathInfo, refPathInfo, false);
         }catch(BSSException e){
             this.reportError(e.getMessage());
         }
 
         this.log.info("Path Type: " + pathInfo.getPathType());
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
-            this.log.info(pathInfo.getPath().getHop()[i].getLinkIdRef());
+            this.log.info(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
         }
         
         /* Remove strict pathType for backward compatibility */
@@ -439,12 +446,12 @@ public class InterdomainPathfinder extends Pathfinder{
         CtrlPlanePathContent interPath) throws PathfinderException{
 
         CtrlPlaneHopContent[] hops = interPath.getHop();
-        String firstHop = hops[0].getLinkIdRef();
-        String lastHop = hops[hops.length - 1].getLinkIdRef();
+        String firstHop = this.tc.hopToURN(hops[0], "link");
+        String lastHop = this.tc.hopToURN(hops[hops.length - 1], "link");
 
         if(firstHop == null || lastHop == null){
             this.reportError("The first and last hop of the given path must " +
-                "be a link ID reference.");
+                "be a link or link ID reference.");
         }else if(!firstHop.equals(src)){
             this.reportError("The first hop of the path must be the same as " +
             "the source. The source given was " + src + " and the first hop " +

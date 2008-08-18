@@ -7,8 +7,11 @@ import org.apache.log4j.*;
 import org.aaaarch.gaaapi.tvs.TokenBuilder;
 import org.aaaarch.gaaapi.tvs.TokenKey;
 
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecficInfo;
 import org.quartz.*;
 
 import net.es.oscars.PropHandler;
@@ -552,10 +555,18 @@ public class ReservationManager {
         if (intraPath == null || intraPath.getPath() == null) {
             throw new BSSException("Pathfinder could not find a path!");
         }
-
+        
+        //Convert any local hops that are still references to link objects
+        this.expandLocalHops(pathInfo);
+        this.expandLocalHops(intraPath);
+        
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, pathInfo, intraPath.getPath(), resv);
+        
+        //TODO: REMOVE THESE CONVERSIONS
+        PathInfo refPathInfo = this.tc.createRefPath(pathInfo);
+        PathInfo refIntraPath = this.tc.createRefPath(intraPath);
+        this.policyMgr.checkOversubscribed(reservations, refPathInfo, refIntraPath.getPath(), resv);
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get next external hop (first past egress) from the complete path
@@ -568,13 +579,81 @@ public class ReservationManager {
             } else {
                 this.log.warn(
                         "Can't find domain url for nextExternalHop. Hop is: " +
-                        nextExternalHop.getId());
+                        this.tc.hopToURN(nextExternalHop));
             }
         }
         // convert to form for db
         Path path = this.convertPath(intraPath, pathInfo, nextDomain, true);
         path.setExplicit(isExplicit);
         return path;
+    }
+    
+    /**
+     * Expands any local linkIdRef elements in a given path and 
+     * converts them to links
+     *
+     * @param pathInfo the pathInfo containg the path to expand
+     * @throws BSSException
+     */
+    public void expandLocalHops(PathInfo pathInfo) throws BSSException{
+        CtrlPlanePathContent path = pathInfo.getPath();
+        CtrlPlanePathContent expandedPath = new CtrlPlanePathContent();
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        if(path == null){
+            throw new BSSException("Cannot expand path because no path given");
+        }
+        CtrlPlaneHopContent[] hops = path.getHop();
+        if(hops == null || hops.length == 0 ){
+            throw new BSSException("Cannot expand path because no hops given");
+        }
+        for(CtrlPlaneHopContent hop : hops){
+            String urn = this.tc.hopToURN(hop);
+            //if not link then add to path
+            if(urn == null){
+                throw new BSSException("Cannot expand path because " +
+                                   "contains invalid hop.");
+            }
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+            String hopType = parseResults.get("type");
+            String domainId = parseResults.get("domainId");
+            boolean isLocal = domainDAO.isLocal(domainId);
+            if(!isLocal){
+                expandedPath.addHop(hop);
+                continue;
+            }else if(isLocal && (!"link".equals(hopType))){
+                throw new BSSException("Cannot expand hop because it contains " +
+                                   "a hop that's not a link: " + urn);
+            }
+            Link dbLink = domainDAO.getFullyQualifiedLink(urn);
+            CtrlPlaneHopContent expandedHop = new CtrlPlaneHopContent();
+            CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
+            L2SwitchingCapabilityData l2scData = dbLink.getL2SwitchingCapabilityData();
+            CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+            CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecficInfo();
+            if(l2scData != null){
+                swcapInfo.setInterfaceMTU(l2scData.getInterfaceMTU());
+                swcapInfo.setVlanRangeAvailability(l2scData.getVlanRangeAvailability());
+                swcap.setSwitchingcapType("l2sc");
+                swcap.setEncodingType("ethernet");
+            }else{
+                //TODO: What does esnet use for internal links?
+                swcapInfo.setCapability("unimplemented");
+                swcap.setSwitchingcapType("sdh");
+                swcap.setEncodingType("sonet");
+            }
+            swcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
+            link.setId(urn);
+            link.setTrafficEngineeringMetric(dbLink.getTrafficEngineeringMetric());
+            link.setSwitchingCapabilityDescriptors(swcap);
+                
+            expandedHop.setId(hop.getId());
+            expandedHop.setLink(link);
+            expandedPath.setId(path.getId());
+            expandedPath.addHop(expandedHop);
+            
+        }
+        
+        pathInfo.setPath(expandedPath);
     }
 
     /**
@@ -585,7 +664,7 @@ public class ReservationManager {
      * @param pathInfo the PathInfo element to analyze
      * @return the Path containing only the ingress link
      */
-     public Path buildInitialPath(PathInfo pathInfo) throws BSSException{
+    public Path buildInitialPath(PathInfo pathInfo) throws BSSException{
         this.log.debug("buildInitialPath.start");
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         Layer3Info layer3Info = pathInfo.getLayer3Info();
@@ -595,10 +674,12 @@ public class ReservationManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         String ingressLink = null;
         Link link = null;
-
+        this.log.debug("buildInitialPath.pathInfo=" + pathInfo.hashCode());
+        PathInfo refOnlyPathInfo = this.tc.createRefPath(pathInfo);
+        
         //Build path containing only the ingress link id
         try{
-            ingressLink = this.pceMgr.findIngress(pathInfo);
+            ingressLink = this.pceMgr.findIngress(refOnlyPathInfo);
         }catch(PathfinderException e){
             throw new BSSException(e.getMessage());
         }
@@ -624,7 +705,7 @@ public class ReservationManager {
 
         this.log.debug("buildInitialPath.end");
         return path;
-     }
+    }
 
     /**
      * Converts the intradomain and interdomain paths in Axis2 data structure into
@@ -689,7 +770,7 @@ public class ReservationManager {
         path.setPathSetupMode(pathSetupMode);
 
         for (int i = 0; i < hops.length; i++) {
-            String hopTopoId = hops[i].getLinkIdRef();
+            String hopTopoId = this.tc.hopToURN(hops[i]);
             this.log.debug("convertPath: converting link: "+hopTopoId);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
@@ -710,13 +791,13 @@ public class ReservationManager {
             }
             link = domainDAO.getFullyQualifiedLink(hopTopoId);
             if (link == null) {
-                this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
-                throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
+                this.log.error("Couldn't find link in db for: ["+this.tc.hopToURN(hops[i])+"]");
+                throw new BSSException("Couldn't find link in db for: ["+this.tc.hopToURN(hops[i])+"]");
             } else if (!link.isValid()) {
-                this.log.error("Link is invalid in db for: ["+hops[i].getLinkIdRef()+"]");
-                throw new BSSException("Link is invalid in db for: ["+hops[i].getLinkIdRef()+"]");
+                this.log.error("Link is invalid in db for: ["+this.tc.hopToURN(hops[i])+"]");
+                throw new BSSException("Link is invalid in db for: ["+this.tc.hopToURN(hops[i])+"]");
             } else {
-                this.log.debug("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
+                this.log.debug("Found link in db for: ["+this.tc.hopToURN(hops[i])+"]");
             }
             PathElem pathElem = new PathElem();
             if (!foundIngress) {
@@ -830,7 +911,7 @@ public class ReservationManager {
         PathElem currPathElem = null;
 
         for(int i = (hops.length - 1); i >= 0; i--){
-            String urn = hops[i].getLinkIdRef();
+            String urn = this.tc.hopToURN(hops[i]);
             Link link = TopologyUtil.getLink(urn, this.dbname);
             currPathElem = new PathElem();
             currPathElem.setLink(link);
@@ -869,12 +950,19 @@ public class ReservationManager {
         for (int i = 0; i < hops.length; i++) {
             CtrlPlaneHopContent hopCopy = new CtrlPlaneHopContent();
             if (!exclude) {
-                hopCopy.setId(hops[i].getLinkIdRef());
+                hopCopy.setId(hops[i].getId());
                 hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
+                hopCopy.setPortIdRef(hops[i].getPortIdRef());
+                hopCopy.setNodeIdRef(hops[i].getNodeIdRef());
+                hopCopy.setDomainIdRef(hops[i].getDomainIdRef());
+                hopCopy.setLink(hops[i].getLink());
+                hopCopy.setPort(hops[i].getPort());
+                hopCopy.setNode(hops[i].getNode());
+                hopCopy.setDomain(hops[i].getDomain());
                 pathCopy.addHop(hopCopy);
                 continue;
             }
-            String hopTopoId = hops[i].getLinkIdRef();
+            String hopTopoId = this.tc.hopToURN(hops[i]);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -882,8 +970,15 @@ public class ReservationManager {
             if (hopType.equals("link") &&  domainDAO.isLocal(domainId)) {
                 // add ingress
                 if (!edgeFound || i == (hops.length - 1)) {
-                    hopCopy.setId(hops[i].getLinkIdRef());
+                    hopCopy.setId(hops[i].getId());
                     hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
+                    hopCopy.setPortIdRef(hops[i].getPortIdRef());
+                    hopCopy.setNodeIdRef(hops[i].getNodeIdRef());
+                    hopCopy.setDomainIdRef(hops[i].getDomainIdRef());
+                    hopCopy.setLink(hops[i].getLink());
+                    hopCopy.setPort(hops[i].getPort());
+                    hopCopy.setNode(hops[i].getNode());
+                    hopCopy.setDomain(hops[i].getDomain());
                     pathCopy.addHop(hopCopy);
                     edgeFound = true;
                 }
@@ -892,13 +987,27 @@ public class ReservationManager {
             } else if (edgeFound) {
                 // add egress
                 CtrlPlaneHopContent hopCopy2 = new CtrlPlaneHopContent();
-                hopCopy2.setId(prevHop.getLinkIdRef());
+                hopCopy2.setId(prevHop.getId());
                 hopCopy2.setLinkIdRef(prevHop.getLinkIdRef());
+                hopCopy2.setPortIdRef(prevHop.getPortIdRef());
+                hopCopy2.setNodeIdRef(prevHop.getNodeIdRef());
+                hopCopy2.setDomainIdRef(prevHop.getDomainIdRef());
+                hopCopy2.setLink(prevHop.getLink());
+                hopCopy2.setPort(prevHop.getPort());
+                hopCopy2.setNode(prevHop.getNode());
+                hopCopy2.setDomain(prevHop.getDomain());
                 pathCopy.addHop(hopCopy2);
                 edgeFound = false;
             }
-            hopCopy.setId(hops[i].getLinkIdRef());
+            hopCopy.setId(hops[i].getId());
             hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
+            hopCopy.setPortIdRef(hops[i].getPortIdRef());
+            hopCopy.setNodeIdRef(hops[i].getNodeIdRef());
+            hopCopy.setDomainIdRef(hops[i].getDomainIdRef());
+            hopCopy.setLink(hops[i].getLink());
+            hopCopy.setPort(hops[i].getPort());
+            hopCopy.setNode(hops[i].getNode());
+            hopCopy.setDomain(hops[i].getDomain());
             pathCopy.addHop(hopCopy);
             prevHop = hops[i];
         }
@@ -922,7 +1031,7 @@ public class ReservationManager {
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
-            String hopTopoId = hops[i].getLinkIdRef();
+            String hopTopoId = this.tc.hopToURN(hops[i]);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");

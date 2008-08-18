@@ -19,7 +19,7 @@ public class PathfinderFactory {
      */
     public PCE createPathfinder(String pathMethod, String dbname) {
 
-        // only two choices at the moment
+        // only three choices at the moment
         if (pathMethod.equals("terce")) {
             return new TERCEPathfinder(dbname);
         } else if (pathMethod.equals("database")) {

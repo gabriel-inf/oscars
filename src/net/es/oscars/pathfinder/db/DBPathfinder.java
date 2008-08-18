@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 
 import net.es.oscars.*;
 import net.es.oscars.lookup.*;
+import net.es.oscars.oscars.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.pathfinder.db.util.*;
@@ -72,16 +73,24 @@ public class DBPathfinder extends Pathfinder implements PCE {
         // if an ERO, not just ingress and/or egress
 
         this.log.debug("handling explicit route object");
+        //Converts mixture of IDRefs and objects to all IDRefs
+        TypeConverter tc = OSCARSCore.getInstance().getTypeConverter();
+        PathInfo refPathInfo = tc.createRefPath(pathInfo);
         if (pathInfo.getLayer2Info() != null) {
-           this.handleLayer2ERO(pathInfo, reservation);
+           this.handleLayer2ERO(refPathInfo, reservation);
         } else if (pathInfo.getLayer3Info() != null) {
             // Falling through to traceroute for L3
-            this.handleLayer3ERO(pathInfo, reservation);
+            this.handleLayer3ERO(refPathInfo, reservation);
         } else {
             throw new PathfinderException("An ERO must have associated layer 2 or layer 3 info");
         }
-
-
+        //Restores any link objects in original path that were replaced by IDRefs
+        try{
+            tc.mergePathInfo(pathInfo, refPathInfo, false);
+        }catch(BSSException e){
+            throw new PathfinderException(e.getMessage());
+        }
+        
         this.log.debug("findPath.End");
         return pathInfo;
     }

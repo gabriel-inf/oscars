@@ -73,16 +73,19 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         } catch (BSSException ex) {
             String errMessage = "Could not locate reservation in DB for gri: "+gri;
             this.log.error(errMessage);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "JOB", "", errMessage);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, 
+                                   "JOB", "", errMessage);
             return;
         }
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "JOB", resv);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "JOB", 
+                               resv, pathInfo);
 
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INCREATE);
         } catch (BSSException ex) {
             this.log.error(ex);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "JOB", "", ex.getMessage());
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, 
+                                   "JOB", resv, pathInfo, "", ex.getMessage());
             return;
         }
 
@@ -95,7 +98,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             tc.ensureLocalIds(pathInfo);
 
             // FIXME: why does this sometimes get unset?
-            pathInfo.getPath().setId("unimplemented");
+            pathInfo.getPath().setId(resv.getGlobalReservationId());
 
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response

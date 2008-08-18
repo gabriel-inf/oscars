@@ -24,6 +24,7 @@ import net.es.oscars.perfsonar.PSTopologyClient;
 import net.es.oscars.bss.topology.URNParser;
 
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.oscars.*;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
@@ -55,7 +56,8 @@ public class PSPathfinder extends Pathfinder implements PCE {
     private Reservation cachedReservation;
     private TopologyGraphAdapter tga;
     private Properties props;
-
+    private TypeConverter tc;
+    
     /**
      * Constructor
      *
@@ -75,6 +77,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
 
         this.TSClient = new PSTopologyClient(TSUrl);
         this.tga = new TopologyGraphAdapter(dbname);
+        this.tc = OSCARSCore.getInstance().getTypeConverter();
     }
 
     /**
@@ -153,15 +156,20 @@ public class PSPathfinder extends Pathfinder implements PCE {
 
         /* build new LIDP from existing LIDP */
         try{
-            intraPath = this.buildNewPath(pathInfo, reservation);
+            //Convert to all references in path
+            PathInfo refPathInfo = this.tc.createRefPath(pathInfo);
+            intraPath = this.buildNewPath(refPathInfo, reservation);
             intraPathInfo.setPath(intraPath);
+            //restore any objects in path prior to conversion
+            this.tc.mergePathInfo(pathInfo, intraPathInfo, true);
+            this.tc.mergePathInfo(pathInfo, refPathInfo, false);
         }catch(BSSException e){
             this.reportError(e.getMessage());
         }
 
         this.log.debug("Path Type: " + pathInfo.getPathType());
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
-            this.log.debug(pathInfo.getPath().getHop()[i].getLinkIdRef());
+            this.log.debug(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
         }
 
         /* Remove strict pathType for backward compatibility */
@@ -498,12 +506,12 @@ public class PSPathfinder extends Pathfinder implements PCE {
         CtrlPlanePathContent interPath) throws PathfinderException{
 
         CtrlPlaneHopContent[] hops = interPath.getHop();
-        String firstHop = hops[0].getLinkIdRef();
-        String lastHop = hops[hops.length - 1].getLinkIdRef();
+        String firstHop = this.tc.hopToURN(hops[0], "link");
+        String lastHop = this.tc.hopToURN(hops[hops.length - 1], "link");
 
         if(firstHop == null || lastHop == null){
             this.reportError("The first and last hop of the given path must " +
-                "be a link ID reference.");
+                "be a link or link ID reference.");
         }else if(!firstHop.equals(src)){
             this.reportError("The first hop of the path must be the same as " +
             "the source. The source given was " + src + " and the first hop " +
