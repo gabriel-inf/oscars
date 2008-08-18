@@ -11,7 +11,7 @@ postTeardownPath(dialogFields)
 postOverrideStatuus(dialogFields)
 handleReply(responseObject, ioArgs)
 hideParams(responseObject)
-tabSelected(contentPaneWidget)
+tabSelected(contentPaneWidget, oscarsStatus)
 */
 
 dojo.provide("oscars.ReservationDetails");
@@ -193,7 +193,7 @@ oscars.ReservationDetails.cloneReservation = function () {
 
 // handles all servlet replies
 oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
@@ -291,5 +291,13 @@ oscars.ReservationDetails.hideParams = function (responseObject) {
 
 // take action based on this tab's selection
 oscars.ReservationDetails.tabSelected = function (
-        /* ContentPane widget */ contentPane) {
+        /* ContentPane widget */ contentPane,
+        /* domNode */ oscarsStatus) {
+    var formNode = dijit.byId("reservationDetailsForm").domNode;
+    oscarsStatus.className = "success";
+    if (formNode.gri && formNode.gri.value) {
+        oscarsStatus.innerHTML = "Reservation details for " + formNode.gri.value;
+    } else {
+        oscarsStatus.innerHTML = "Reservation details";
+    }
 };

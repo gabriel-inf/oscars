@@ -25,7 +25,7 @@ oscars.UserLogout.postLogout = function () {
 // Handles reply from UserLogout servlet.  Closes all tabs and returns
 // interface to original state.
 oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");

@@ -7,7 +7,7 @@ David Robertson (dwrobertson@lbl.gov)
 init()
 createReservation()
 handleReply(responseObject, ioArgs)
-tabSelected(contentPaneWidget, changeStatus)
+tabSelected(contentPaneWidget, oscarsStatus)
 resetFields()
 layerChooser(evt);
 checkDateTimes()
@@ -53,17 +53,13 @@ oscars.ReservationCreate.createReservation = function () {
 // handles replies from servlets having to do with reservation creation
 oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
     var mainTabContainer = dijit.byId("mainTabContainer");
+    if (!oscars.Form.resetStatus(responseObject)) {
+        return;
+    }
     if (responseObject.method == "CreateReservationForm") {
-        // necessary for correct status message upon login
-        if (!oscars.Form.resetStatus(responseObject, false)) {
-            return;
-        }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
     } else if (responseObject.method == "CreateReservation") {
-        if (!oscars.Form.resetStatus(responseObject, true)) {
-            return;
-        }
         // transition to reservation details tab on successful creation
         var formNode = dijit.byId("reservationDetailsForm").domNode;
         formNode.gri.value = responseObject.gri;
@@ -77,21 +73,14 @@ oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
         // set tab to reservation details
         var resvDetailsPane = dijit.byId("reservationDetailsPane");
         mainTabContainer.selectChild(resvDetailsPane);
-    } else {
-        if (!oscars.Form.resetStatus(responseObject, true)) {
-            return;
-        }
     }
 };
 
 // take action when this tab is clicked on
 oscars.ReservationCreate.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        oscarsStatus.innerHTML = "Reservation creation form";
-    }
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.innerHTML = "Reservation creation form";
 };
 
 // resets all fields, including ones the standard reset doesn't catch

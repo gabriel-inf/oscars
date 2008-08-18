@@ -6,7 +6,7 @@ David Robertson (dwrobertson@lbl.gov)
 /* Functions:
 postSearch()
 handleReply(responseObject, ioArgs)
-tabSelected(contentPaneWidget)
+tabSelected(contentPaneWidget, oscarsStatus)
 onResvRowSelect(evt)
 convertSearchTimes()
 convertReservationTimes()
@@ -36,7 +36,7 @@ oscars.Reservations.postSearch = function () {
 
 // handles reply from list reservations servlet
 oscars.Reservations.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     oscars.Form.applyParams(responseObject);
@@ -59,18 +59,15 @@ oscars.Reservations.handleReply = function (responseObject, ioArgs) {
 // takes action based on this tab being selected
 oscars.Reservations.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
+        /* domNode */ oscarsStatus) {
 
-    if (changeStatus) {
-        oscarsStatus.className = "inprocess";
-        oscarsStatus.innerHTML = "Retrieving reservations...";
-    }
     // refresh reservations grid
     var resvGrid = dijit.byId("resvGrid");
     if (resvGrid && !oscarsState.resvGridInitialized) {
         dojo.connect(resvGrid, "onRowClick",
                      oscars.Reservations.onResvRowSelect);
+        oscarsStatus.className = "inprocess";
+        oscarsStatus.innerHTML = "Retrieving reservations...";
         dojo.xhrPost({
             url: 'servlet/ListReservations',
             handleAs: "json-comment-filtered",
@@ -78,6 +75,9 @@ oscars.Reservations.tabSelected = function (
             error: oscars.Form.handleError,
             form: dijit.byId("reservationsForm").domNode
         });
+    } else {
+        oscarsStatus.className = "success";
+        oscarsStatus.innerHTML = "Reservations list";
     }
 };
 

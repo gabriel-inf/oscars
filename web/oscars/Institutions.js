@@ -6,7 +6,7 @@ David Robertson (dwrobertson@lbl.gov)
 /* Functions:
 manage(opName)
 handleReply(responseObject, ioArgs)
-tabSelected(contentPaneWidget)
+tabSelected(contentPaneWidget, oscarsStatus)
 createInstitutionGrid()
 */
 
@@ -75,7 +75,7 @@ oscars.Institutions.manage = function (opName) {
 
 // handles reply from request to server to operate on Institutions table
 oscars.Institutions.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     var institutionGrid = dijit.byId("institutionGrid");
@@ -95,16 +95,26 @@ oscars.Institutions.handleReply = function (responseObject, ioArgs) {
     addButton.style.color = "#000000";
     saveButton.style.color = "#000000";
     deleteButton.style.color = "#000000";
+    if (responseObject.method != "InstitutionList") {
+        formNode = dijit.byId("userProfileForm").domNode;
+        formNode.userInstsUpdated.value = "changed";
+        // doesn't exist until user add tab first clicked on
+        if (dijit.byId("userAddForm")) {
+            formNode = dijit.byId("userAddForm").domNode;
+            formNode.userAddInstsUpdated.value = "changed";
+        }
+    }
+    if (responseObject.method == "InstitutionModify") {
+        var listFormNode = dijit.byId("userListForm").domNode;
+        listFormNode.userListInstsUpdated.value = "changed";
+    }
 };
 
 // take action based on this tab being selected
 oscars.Institutions.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        oscarsStatus.innerHTML = "Institutions Management";
-    }
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.innerHTML = "Institutions Management";
     var institutionGrid = dijit.byId("institutionGrid");
     if (institutionGrid && (!oscarsState.institutionGridInitialized)) {
         dojo.connect(institutionGrid, "onRowClick",

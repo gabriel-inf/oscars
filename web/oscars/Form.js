@@ -7,7 +7,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 /* Functions:
 handleError(responseObject, ioArgs)
-resetStatus(responseObject, changeStatus);
+resetStatus(responseObject);
 applyParams(responseObject)
 selectedChanged(contentPaneWidget)
 initBackForwardState()
@@ -22,8 +22,8 @@ oscars.Form.handleError = function (responseObject, ioArgs) {
           ".  If it is a servlet problem, contact an admin to restart the Web server.";
 };
 
-// handles resetting status message, and checking for valid reply 
-oscars.Form.resetStatus = function (responseObject, changeStatus) {
+// handles resetting status message if any, and checking for valid reply 
+oscars.Form.resetStatus = function (responseObject) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     if (!responseObject.method) {
         oscarsStatus.className = "failure";
@@ -37,19 +37,12 @@ oscars.Form.resetStatus = function (responseObject, changeStatus) {
                                  "returned; contact administrator";
         return false;
     }
-    if (!responseObject.status) {
-        oscarsStatus.className = "failure";
-        oscarsStatus.innerHTML = "Invalid servlet reply: no status returned; " +
-                                 "contact administrator";
-        return false;
-    }
-    var status = responseObject.status;
-    if (responseObject.success) {
-        oscarsStatus.className = "success";
-    } else {
-        oscarsStatus.className = "failure";
-    }
-    if (changeStatus || !responseObject.success) {
+    if (responseObject.status) {
+        if (responseObject.success) {
+            oscarsStatus.className = "success";
+        } else {
+            oscarsStatus.className = "failure";
+        }
         oscarsStatus.innerHTML = responseObject.status;
     }
     if (!responseObject.success) {
@@ -154,41 +147,37 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
         }
     };
     var oscarsStatus = dojo.byId("oscarsStatus");
-    // if not currently in error state, change status to reflect current tab
-    var changeStatus = oscarsStatus.className == "success" ? true : false;
     var n;
     // selected reservations tab
     if (contentPane.id == "reservationsPane") {
-        oscars.Reservations.tabSelected(contentPane, oscarsStatus,
-                                        changeStatus);
+        oscars.Reservations.tabSelected(contentPane, oscarsStatus);
+    // selected reservation details tab
+    } else if (contentPane.id == "reservationDetailsPane") {
+        oscars.ReservationDetails.tabSelected(contentPane, oscarsStatus);
     // selected create reservation tab
     } else if (contentPane.id == "reservationCreatePane") {
-        oscars.ReservationCreate.tabSelected(contentPane, oscarsStatus,
-                                        changeStatus);
+        oscars.ReservationCreate.tabSelected(contentPane, oscarsStatus);
     // selected user details tab
     } else if (contentPane.id == "userProfilePane") {
-        oscars.UserProfile.tabSelected(contentPane, oscarsStatus, changeStatus);
+        oscars.UserProfile.tabSelected(contentPane, oscarsStatus);
     // selected user list tab
     } else if (contentPane.id == "userListPane") {
-        oscars.UserList.tabSelected(contentPane, oscarsStatus, changeStatus);
+        oscars.UserList.tabSelected(contentPane, oscarsStatus);
     // selected add user tab
     } else if (contentPane.id == "userAddPane") {
-        oscars.UserAdd.tabSelected(contentPane, oscarsStatus, changeStatus);
+        oscars.UserAdd.tabSelected(contentPane, oscarsStatus);
     // selected institutions management tab
     } else if (contentPane.id == "institutionsPane") {
-        oscars.Institutions.tabSelected(contentPane, oscarsStatus,
-                                        changeStatus);
+        oscars.Institutions.tabSelected(contentPane, oscarsStatus);
     // selected authorization list tab
     } else if (contentPane.id == "authorizationsPane") {
-        oscars.Authorizations.tabSelected(contentPane, oscarsStatus,
-                                          changeStatus);
+        oscars.Authorizations.tabSelected(contentPane, oscarsStatus);
     // selected authorization details tab
     } else if (contentPane.id == "authDetailsPane") {
-        oscars.AuthorizationDetails.tabSelected(contentPane, oscarsStatus,
-                                                changeStatus);
+        oscars.AuthorizationDetails.tabSelected(contentPane, oscarsStatus);
     // selected login/logout tab
     } else if (contentPane.id == "sessionPane") {
-        oscars.UserLogin.tabSelected(oscarsStatus, changeStatus);
+        oscars.UserLogin.tabSelected(contentPane, oscarsStatus);
     }
 };
 

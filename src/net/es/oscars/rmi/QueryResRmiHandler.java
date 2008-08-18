@@ -133,7 +133,7 @@ public class QueryResRmiHandler {
             this.log.debug("query failed: reservation does not exist");
             return result;  
         }
-        result.put("status", "Successfully got reservation details for " +
+        result.put("status", "Reservation details for " +
                 reservation.getGlobalReservationId());
         this.contentSection(result, reservation, userName,
             internalIntradomainHops);

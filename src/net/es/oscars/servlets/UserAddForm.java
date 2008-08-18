@@ -69,16 +69,17 @@ public class UserAddForm extends HttpServlet {
     public void
         outputInstitutionMenu(Map outputMap, List<Institution> insts) {
 
-        // use default
-        String defaultName = "Energy Sciences Network";
         List<String> institutionList = new ArrayList<String>();
+        int ctr = 0;
+        // default is first in list
         for (Institution i: insts) {
             institutionList.add(i.getName());
-            if (i.getName().equals(defaultName)) {
+            if (ctr == 0) {
                 institutionList.add("true");
             } else {
                 institutionList.add("false");
             }
+            ctr++;
         }
         outputMap.put("newInstitutionMenu", institutionList);
     }

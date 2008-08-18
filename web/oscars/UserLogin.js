@@ -7,7 +7,7 @@ David Robertson (dwrobertson@lbl.gov)
 /* Functions:
 authenticateUser()
 handleReply(responseObject, ioArgs)
-tabSelected(changeStatus)
+tabSelected(contentPaneWidget, oscarsStatus)
 */
 
 dojo.provide("oscars.UserLogin");
@@ -32,7 +32,7 @@ oscars.UserLogin.authenticateUser = function () {
 
 // handles reply from AuthenticateUser servlet
 oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     oscars.Form.applyParams(responseObject);
@@ -152,10 +152,7 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
 
 // action to take on initial tab select
 oscars.UserLogin.tabSelected = function (
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        oscarsStatus.innerHTML = "User " + oscarsState.login +
-                                 " logged in";
-    }
+        /* ContentPane widget */ contentPane,
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.innerHTML = "User " + oscarsState.login + " logged in";
 };

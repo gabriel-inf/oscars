@@ -208,18 +208,20 @@ public class UserQuery extends HttpServlet {
         userInstitution = user.getInstitution();
         if (userInstitution != null) {
             institutionName = userInstitution.getName();
-        } else {
-            // use default
-            institutionName = "Energy Sciences Network";
         }
         List<String> institutionList = new ArrayList<String>();
+        int ctr = 0;
         for (Institution i: insts) {
             institutionList.add(i.getName());
-            if (i.getName().equals(institutionName)) {
+            // use first in list if no institution associated with user
+            if ((ctr == 0) && institutionName.equals("")) {
+                institutionList.add("true");
+            } else if (i.getName().equals(institutionName)) {
                 institutionList.add("true");
             } else {
                 institutionList.add("false");
             }
+            ctr++;
         }
         outputMap.put("institutionMenu", institutionList);
     }

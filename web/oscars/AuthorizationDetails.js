@@ -10,7 +10,7 @@ postModify()
 postDelete()
 close()
 handleReply(responseObject, ioArgs)
-tabSelected(contentPaneWidget)
+tabSelected(contentPaneWidget, oscarsStatus)
 resetFields(useSaved)
 */
 
@@ -78,23 +78,19 @@ oscars.AuthorizationDetails.clone = function () {
 // handles all servlet replies
 oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
     var mainTabContainer = dijit.byId("mainTabContainer");
-    if (responseObject.method == "AuthorizationForm") {
-        if (!oscars.Form.resetStatus(responseObject, false)) {
-            return;
-        }
-        // set parameter values in form from responseObject
-        oscars.Form.applyParams(responseObject);
-    } else {
-        if (!oscars.Form.resetStatus(responseObject, true)) {
-            return;
-        }
-        oscars.Form.applyParams(responseObject);
+    if (!oscars.Form.resetStatus(responseObject)) {
+        return;
     }
+    // set parameter values in form from responseObject
+    oscars.Form.applyParams(responseObject);
 };
 
 // take action based on this tab's selection
 oscars.AuthorizationDetails.tabSelected = function (
-        /* ContentPane widget */ contentPane) {
+        /* ContentPane widget */ contentPane,
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.className = "success";
+    oscarsStatus.innerHTML = "Authorization details";
 };
 
 oscars.AuthorizationDetails.resetFields = function (useSaved) {

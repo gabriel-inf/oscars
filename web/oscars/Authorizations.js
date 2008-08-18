@@ -7,7 +7,7 @@ David Robertson (dwrobertson@lbl.gov)
 /* Functions:
 goToAdd()
 handleReply(responseObject, ioArgs)
-tabSelected(contentPane, changeStatus)
+tabSelected(contentPane, oscarsStatus)
 refreshAuthGrid()
 onAuthRowSelect(evt)
 */
@@ -26,12 +26,15 @@ oscars.Authorizations.goToAdd = function () {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var authDetailsPane = dijit.byId("authDetailsPane");
     mainTabContainer.selectChild(authDetailsPane);
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    oscarsStatus.className = "success";
+    oscarsStatus.innerHTML = "Adding authorization";
 };
 
 // handles all servlet replies
 oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
     if (responseObject.method == "AuthorizationList") {
-        if (!oscars.Form.resetStatus(responseObject, true)) {
+        if (!oscars.Form.resetStatus(responseObject)) {
             return;
         }
         // set parameter values in form from responseObject
@@ -58,11 +61,8 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
 // takes action based on this tab being clicked on
 oscars.Authorizations.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        oscarsStatus.innerHTML = "Authorizations list";
-    }
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.innerHTML = "Authorizations list";
     var authGrid = dijit.byId("authGrid");
     // Creation apparently needs to be programmatic, after the ContentPane
     // has been selected and its style no longer display:none
@@ -131,4 +131,7 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     // Set tab to authorization details, which allows authorization modification
     // and cloning.
     mainTabContainer.selectChild(authDetailsPane);
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    oscarsStatus.className = "success";
+    oscarsStatus.innerHTML = "Modifying authorization";
 };

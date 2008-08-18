@@ -7,7 +7,7 @@ David Robertson (dwrobertson@lbl.gov)
 init()
 postUserAdd()
 handleReply(responseObject, ioArgs)
-tabSelected(contentPaneWidget)
+tabSelected(contentPaneWidget, oscarsStatus)
 */
 
 dojo.provide("oscars.UserAdd");
@@ -38,12 +38,12 @@ oscars.UserAdd.postUserAdd = function () {
 
 // handles reply from request to server to add user
 oscars.UserAdd.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
     if (responseObject.method == "UserAddForm") {
-        // set parameter values in form from responseObject
+        // set institution menu values (TODO:  attributes)
         oscars.Form.applyParams(responseObject);
     } else if (responseObject.method == "UserAdd") {
         // after adding a user, refresh the user list and
@@ -57,12 +57,16 @@ oscars.UserAdd.handleReply = function (responseObject, ioArgs) {
 // take action based on this tab being selected
 oscars.UserAdd.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        oscarsStatus.innerHTML = "Add a user";
-    }
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.innerHTML = "Add a user";
     if (!contentPane.href) {
         contentPane.setHref("forms/userAdd.html");
+    } else {
+        var userAddFormNode = dijit.byId("userAddForm").domNode;
+        // institutions list has been changed, need to update
+        if (userAddFormNode.userAddInstsUpdated.value) {
+            oscars.UserAdd.init();
+            userAddFormNode.userAddInstsUpdated.value = "";
+        }
     }
 };

@@ -8,7 +8,7 @@ postUserQuery
 postUserModify
 postUserRemove
 handleReply(responseObject, ioArgs)
-tabSelected(contentPaneWidget)
+tabSelected(contentPaneWidget, oscarsStatus)
 */
 
 dojo.provide("oscars.UserProfile");
@@ -53,7 +53,7 @@ oscars.UserProfile.postUserRemove = function () {
 
 // handles servlet replies for user query, modify, and remove requests
 oscars.UserProfile.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject, true)) {
+    if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
@@ -73,18 +73,23 @@ oscars.UserProfile.handleReply = function (responseObject, ioArgs) {
 // take action based on which tab was clicked on
 oscars.UserProfile.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        var node = dijit.byId("userProfileForm").domNode;
-        // will only be blank if not coming in from user form,
-        // and this is the first time the tab has been selected
-        if (oscars.Utils.isBlank(node.profileName.value)) {
-            node.profileName.value = oscarsState.login;
+        /* domNode */ oscarsStatus) {
+    var node = dijit.byId("userProfileForm").domNode;
+    // will only be blank if not coming in from user form,
+    // and this is the first time the tab has been selected
+    if (oscars.Utils.isBlank(node.profileName.value)) {
+        node.userInstsUpdated.value = "";
+        node.profileName.value = oscarsState.login;
+        oscars.UserProfile.postUserQuery();
+    } else {
+        // if institutions list has been updated, need to update
+        // institutions menu
+        if (node.userInstsUpdated.value) {
+            node.userInstsUpdated.value = "";
             oscars.UserProfile.postUserQuery();
         } else {
             oscarsStatus.innerHTML = "Profile for user " +
-                                     node.profileName.value;
+                                      node.profileName.value;
         }
     }
 };

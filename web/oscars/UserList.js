@@ -6,7 +6,7 @@ David Robertson (dwrobertson@lbl.gov)
 /* Functions:
 init()
 handleReply(responseObject, ioArgs)
-tabSelected(contentPane, changeStatus)
+tabSelected(contentPane, oscarsStatus)
 refreshUserGrid()
 onUserRowSelect(evt)
 */
@@ -16,7 +16,7 @@ dojo.provide("oscars.UserList");
 // handles all servlet replies
 oscars.UserList.handleReply = function (responseObject, ioArgs) {
     if (responseObject.method == "UserList") {
-        if (!oscars.Form.resetStatus(responseObject, true)) {
+        if (!oscars.Form.resetStatus(responseObject)) {
             return;
         }
         // set parameter values in form from responseObject
@@ -37,17 +37,22 @@ oscars.UserList.handleReply = function (responseObject, ioArgs) {
 // takes action based on this tab being clicked on
 oscars.UserList.tabSelected = function (
         /* ContentPane widget */ contentPane,
-        /* Boolean */ oscarsStatus,
-        /* Boolean */ changeStatus) {
-    if (changeStatus) {
-        oscarsStatus.innerHTML = "Users list";
-    }
+        /* domNode */ oscarsStatus) {
+    oscarsStatus.innerHTML = "Users list";
     var userGrid = dijit.byId("userGrid");
     // Creation apparently needs to be programmatic, after the ContentPane
     // has been selected and its style no longer display:none
     if (userGrid && (!oscarsState.userGridInitialized)) {
         dojo.connect(userGrid, "onRowClick", oscars.UserList.onUserRowSelect);
         oscars.UserList.refreshUserGrid();
+    } else {
+        var listFormNode = dijit.byId("userListForm").domNode;
+        // if institutions list has been updated, organization names may
+        // have changed, so need to update
+        if (listFormNode.userListInstsUpdated.value) {
+            oscars.UserList.refreshUserGrid();
+            listFormNode.userListInstsUpdated.value = "";
+        }
     }
 };
 
@@ -75,6 +80,7 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     var formNode = dijit.byId("userProfileForm").domNode;
     formNode.reset();
     formNode.profileName.value = profileName;
+    formNode.userInstsUpdated.value = "";
     // get user details
     dojo.xhrPost({
         url: 'servlet/UserQuery',

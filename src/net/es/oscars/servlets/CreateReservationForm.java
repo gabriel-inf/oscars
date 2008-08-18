@@ -41,7 +41,7 @@ public class CreateReservationForm extends HttpServlet {
             return;
         }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Reservation creation form");
+        // this form does not reset status
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         this.contentSection(outputMap, userName);

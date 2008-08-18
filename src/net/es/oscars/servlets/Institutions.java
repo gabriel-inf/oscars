@@ -63,18 +63,22 @@ public class Institutions extends HttpServlet {
         String institutionEditName = request.getParameter("institutionEditName").trim();
         try {
             if (opName.equals("add")) {
+                methodName = "InstitutionAdd";
                 this.addInstitution(institutionEditName);
                 outputMap.put("status", "Added institution: " +
                                          institutionEditName);
             } else if (opName.equals("modify")) {
+                methodName = "InstitutionModify";
                 this.modifyInstitution(saveName, institutionEditName);
                 outputMap.put("status", "Changed institution name from " +
                                        saveName + " to " + institutionEditName);
             } else if (opName.equals("delete")) {
+                methodName = "InstitutionDelete";
                 this.deleteInstitution(institutionEditName);
                 outputMap.put("status", "Deleted institution: " +
                                          institutionEditName);
             } else {
+                methodName = "InstitutionList";
                 outputMap.put("status", "Institutions management");
             }
         } catch (AAAException e) {
