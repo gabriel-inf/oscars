@@ -195,18 +195,16 @@ public class ReservationDAO
         }
         String stateClause = sb.toString();
 
-
         // Get reservations with times overlapping that of the reservation
         // request.
         String hsql = "from Reservation r " +
             "where ((r.startTime <= :startTime and r.endTime >= :startTime) or " +
             "(r.startTime <= :endTime and r.endTime >= :endTime) or " +
             "(r.startTime >= :startTime and r.endTime <= :endTime)) " +
-            "and (r.status IN (:stateClause))";
+            "and (r.status IN (" + stateClause + "))";
         this.reservations = this.getSession().createQuery(hsql)
                                         .setLong("startTime", startTime)
                                         .setLong("endTime", endTime)
-                                        .setString("stateClause", stateClause)
                                         .list();
         return this.reservations;
     }
