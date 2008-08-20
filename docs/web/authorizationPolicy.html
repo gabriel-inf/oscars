@@ -8,6 +8,8 @@
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
 <body>
+<br>
+<br>
 <!--#include virtual="header.html" -->
 <div id="topBar" class="topBar">
 <div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
@@ -97,7 +99,8 @@ control with respect to the resources that OSCARS controls.<br>
   <li>list all reservations starting or terminating at a site<br>
   </li>
   <li>query any reservations starting or terminating at a site</li>
-  <li>cancel, modify any reservations starting or terminating at a site </li>
+  <li>cancel, modify any reservations starting or terminating at a site
+  </li>
   <li>list all reservations</li>
   <li>query any reservations</li>
   <li>cancel, modify any reservations</li>
@@ -191,6 +194,10 @@ possess<br>
   <li><span style="font-weight: bold;"> constraints</span> - The
 current constraints that are supported are: <br>
     <ul>
+      <li><span style="font-weight: bold;">none</span>&nbsp;
+applies to everything, place holder in tables indicating there is no
+constraint<br>
+        <span style="font-weight: bold;"></span></li>
       <li><span style="font-weight: bold;">max-bandwidth</span> (int),
 applies to create and modify reservation</li>
       <li> <span style="font-weight: bold;">max-duration</span>
@@ -210,8 +217,8 @@ reservation.</li>
 currently applies only to list, query, cancel and modify reservations</li>
       <li><span style="font-weight: bold;">unsafe-allowed </span>(boolean)
 allows state changes to a reservation regardless of whether it is an
-acceptable change. e.g. allows FINISHED-&gt;CANCELLED or ACTIVE
--&gt;FINISHED without going thru TEARDOWN. Intended for use by a
+acceptable change. e.g. allows FINISHED-&gt;CANCELLED rather than just
+ACTIVE or PENDING -&gt; CANCELLED. Intended for use by a
 network engineer trying to correct errors in the OSCARS tables.<br>
       </li>
     </ul>
@@ -223,8 +230,8 @@ id, a resource id, a permission id , a constraint id and value.<br>
   </li>
 </ul>
 <br>
-Users may have 1 or more attributes although the role attributese
-except for Administrator and publisher are designed to be used alone .
+Users may have one or more attributes although the role attributes,
+except for administrator and publisher, are designed to be used alone.
 Attributes are arbitrary strings,
 defined in the attributes table, e.g. OSCARS-engineer, and it is
 expected that sites may re-define or add new attributes to meet their
@@ -234,7 +241,7 @@ Using attributes to grant authorizations, rather than just the user
 identity, allows a set of authorizations
 to be crafted which can then be applied to a class of users. Otherwise,
 each time a new user registers, he must be given the correct and
-complete set of permissions for whatever he wants to do.e
+complete set of permissions for whatever he wants to do.
 Currently the OSCARS AA system registers users and assigns them
 attributes. In the future, user identities and attributes may be
 available from multiple external identity or attributes providers.<br>
@@ -265,8 +272,11 @@ information that is site specific is allowed.</li>
   <li>If specify-path-elements is not specified, the default is
 false and
 no routers or hops may be input.</li>
-  <li>If unsafe-allowed only reasonable reservation state changes will
-be accepted. e.g. PENDING or ACTIVE to CANCELLED (cancel reservation),
+  <li>If an unsafe-allowed constraint is specified any reservation
+state change will
+be accepted e.g. FINISHED -&gt; ACTIVE. Otherwise only reasonable state
+changes will be made, e.g. PENDING or ACTIVE to CANCELLED (cancel
+reservation),
 ACTIVE to PENDING (signal a teardown), PENDING to ACTIVE (signal a
 setup)</li>
   <li>If specify-gri is not specified, a GlobalResourceId may not
@@ -701,7 +711,6 @@ type</span> (int)</td>
 </table>
 <br>
 Defaults<br>
-Defaults<br>
 [1] manage and view only his own user info<br>
 [2] unlimited bandwidth and duration, only modify, list, query and
 signal own
@@ -789,7 +798,7 @@ bandwidthOK= true if&nbsp; reqBandwidth &lt; constraintValue<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if constraint is max-duration<br>
 &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; mark
 durationOK if reqDuration &lt; constraintValue<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if constraint is spec-path-element<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if constraint is specify-path-elements<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; mark
 specPathElemsOK = true<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if constraint is all-users<br>
