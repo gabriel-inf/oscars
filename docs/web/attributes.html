@@ -8,6 +8,8 @@
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
 <body>
+<br>
+<br>
 <!--#include virtual="header.html" -->
 <div id="topBar" class="topBar">
 <div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <span
@@ -29,37 +31,38 @@ attributes are:<br>
 <dl>
   <dt>OSCARS-user:</dt>
   <dd>A non-privileged user who can make and manage
-his own resesrvations.</dd>
+his own reservations.</dd>
   <dt>OSCARS-engineer:</dt>
   <dd>A privileged user who can make reservations,
 specifying&nbsp; path elements, manage all reservations, view and
 modify topology and perform un-safe modifications to reservations.</dd>
   <dt>OSCARS-siteAdmin:</dt>
-  <dd>A priviliged user who can manage all the reservations that start
+  <dd>A privileged user who can manage all the reservations that start
 or end at his site. Intended for the use of end site network
 administrator to be able to completely control traffic entering or
 leaving his site.</dd>
   <dt>OSCARS-operator:</dt>
-  <dd>A less privilged user who can see, but not modify all user
+  <dd>A less privileged user who can see, but not modify all user
 reservations. Intended for a NOC operator to be able to see what
 reservations are affected by a link outage at his site and be able to
 alert the owner of the reservation or an OSCARS-engineer at his site.</dd>
   <dt>OSCARS-service:</dt>
-  <dd>The role an IDC operatates under. Should not be assigned to human
+  <dd>The role an IDC operates under. Should not be assigned to human
 users.</dd>
   <dt>OSCARS-publisher:</dt>
   <dd>Is only allowed to publish events to the OSCARS Notification
 server. It is intended to be used&nbsp; by an non-OSCARS service, such
 as perfSONAR that should be able to publish events of interest to
 OSCARS users.</dd>
-  <dt>OSCARS-administator:</dt>
+  <dt>OSCARS-administrator:</dt>
   <dd>An administrative role that manages users and authorization
 policy.
 Can create and delete users and institutions, assigns attributes to
-users, can modify the authorizations that attributes have. Does not
+users, can modify the authorizations associated with attributes. Does
+not
 have any permission with respect to reservations.</dd>
 </dl>
-In general, only the OSCARS-adminstrator role should be
+In general, only the OSCARS-administrator role should be
 granted to someone who holds another role. If you only have one person
 to manage a site, the combination of OSCARS-engineer and
 OSCARS-administrator grants all privileges to the system.<br>
@@ -79,573 +82,632 @@ a research project that has special network requirements.<br>
 <br>
 <h2>Authorizations <br>
 </h2>
-The following lists the various actions with respect to the resources
-that OSCARS controls that require a specific authorization.<br>
+The following tables describe the possible actions
+and the authorizations that they require.<br>
 <h3>Permissions with respect to users and institutions<br>
 </h3>
-<ul>
-  <li>see own profile</li>
-  <li>modify own profile</li>
-  <li>list all users</li>
-  <li>see all user profiles</li>
-  <li>add/delete a user</li>
-  <li>modify any user profile</li>
-  <li>grant or remove authorizations for any user</li>
-  <li>add, edit or delete institutions<br>
-  </li>
-</ul>
+<table style="width: 668px; height: 251px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>see own profile</td>
+      <td>query users </td>
+    </tr>
+    <tr>
+      <td>modify own profile</td>
+      <td>modify users </td>
+    </tr>
+    <tr>
+      <td>list all users</td>
+      <td>list users </td>
+    </tr>
+    <tr>
+      <td>see all user profiles</td>
+      <td>query users, all-users </td>
+    </tr>
+    <tr>
+      <td>add a user</td>
+      <td>create users, all-users </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">delete a user<br>
+      </td>
+      <td style="vertical-align: top;">modify users, all-users</td>
+    </tr>
+    <tr>
+      <td>modify any user profile</td>
+      <td>modify users, all-users </td>
+    </tr>
+    <tr>
+      <td>grant or remove authorizations for any user</td>
+      <td>modify users, all-users </td>
+    </tr>
+    <tr>
+      <td>add, edit or delete institutions<br>
+      </td>
+      <td>modify AAA </td>
+    </tr>
+  </tbody>
+</table>
+<h3><br>
+</h3>
 <h3>Permissions with respect to bandwidth and reservations</h3>
-<ul>
-  <li>make unlimited reservation</li>
-  <li>make reservation with bandwidth constraint</li>
-  <li>make reservation with duration constraint</li>
-  <li>make reservation with topology constraint</li>
-  <li>list own reservations</li>
-  <li>query own reservations</li>
-  <li>cancel, modify own reservation</li>
-  <li>signal own reservation</li>
-  <li>list all reservations starting or teminating at a site<br>
-  </li>
-  <li>query any reservations starting or teminating at a site</li>
-  <li>cancel, modify any reservations starting or teminating at a site </li>
-  <li>list all reservations</li>
-  <li>query any reservations</li>
-  <li>cancel, modify any reservations</li>
-  <li>signal any reservations</li>
-  <li>cancel, modify and signal any reservations regardless of state<br>
-  </li>
-</ul>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>make unlimited reservation</td>
+      <td>create reservations </td>
+    </tr>
+    <tr>
+      <td>make reservation with bandwidth constraint</td>
+      <td>create reservations, max-bandwidth= &lt;upper-limit&gt;<br>
+      </td>
+    </tr>
+    <tr>
+      <td>make reservation with duration constraint</td>
+      <td>create reservations, max-duration=&lt;upper-limit&gt;<br>
+      </td>
+    </tr>
+    <tr>
+      <td>make reservation with topology constraint</td>
+      <td>create reservations, specify-path-elements<br>
+      </td>
+    </tr>
+    <tr>
+      <td>list own reservations</td>
+      <td>list reservations </td>
+    </tr>
+    <tr>
+      <td>query own reservations</td>
+      <td>query reservations </td>
+    </tr>
+    <tr>
+      <td>cancel, modify own reservation</td>
+      <td>modify reservations </td>
+    </tr>
+    <tr>
+      <td>signal own reservation</td>
+      <td>signal reservations </td>
+    </tr>
+    <tr>
+      <td>list all reservations starting or terminating at a site<br>
+      </td>
+      <td>list reservations, my-site </td>
+    </tr>
+    <tr>
+      <td>query any reservations starting or terminating at a site</td>
+      <td>query reservations, my-site </td>
+    </tr>
+    <tr>
+      <td>cancel, modify any reservations starting or terminating at a
+site </td>
+      <td>modify reservations, my-site </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">signal any reservations starting
+or terminating at a
+site</td>
+      <td style="vertical-align: top;">signal reservations, my-site</td>
+    </tr>
+    <tr>
+      <td>list all reservations</td>
+      <td>list reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>query any reservations</td>
+      <td>query reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>cancel, modify any reservations</td>
+      <td>modify reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>signal any reservations</td>
+      <td>signal reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>cancel, modify and signal any reservations regardless of state<br>
+      </td>
+      <td>signal reservations, unsafe-allowed </td>
+    </tr>
+  </tbody>
+</table>
 <span style="font-style: italic;">(signaling instantiates a reservation
 or tears down an established circuit by causing the appropriate
 commands to be sent to the routers involved)</span><br>
+<h3><br>
+</h3>
 <h3>Permissions with respect to topology <br>
 </h3>
-<ul>
-  <li>view abstract topology</li>
-  <li>view real topology</li>
-  <li>modify the topology</li>
-</ul>
+<table style="width: 668px; height: 84px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>view topology</td>
+      <td>query domains </td>
+    </tr>
+    <tr>
+      <td>modify the topology</td>
+      <td>modify domains </td>
+    </tr>
+  </tbody>
+</table>
+<h3><br>
+</h3>
 <h3>Permission with respect to authorizations</h3>
-<ul>
-  <li>view all attributes and authorizations</li>
-  <li>create new attributes<br>
-  </li>
-  <li>modify authorizations that attributes have<br>
-  </li>
-</ul>
+<table style="width: 672px; height: 99px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>view all attributes and authorizations</td>
+      <td>list AAA </td>
+    </tr>
+    <tr>
+      <td>create or delete attributes</td>
+      <td>modify AAA </td>
+    </tr>
+    <tr>
+      <td>add/modify authorizations associated with attributes <br>
+      </td>
+      <td>modify AAA </td>
+    </tr>
+  </tbody>
+</table>
+<h3><br>
+</h3>
 <h3>Permission with respect to notification server</h3>
-<ul>
-  <li>publish events</li>
-  <li>subscribe to events</li>
-</ul>
+<table style="width: 670px; height: 142px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>register to publish events</td>
+      <td>create publishers </td>
+    </tr>
+    <tr>
+      <td>remove publishers registration </td>
+      <td>modify publishers</td>
+    </tr>
+    <tr>
+      <td>subscribe to events</td>
+      <td>create subscriptions </td>
+    </tr>
+    <tr>
+      <td>renew or cancel a subscription</td>
+      <td>modify subscriptions</td>
+    </tr>
+  </tbody>
+</table>
+<h3><br>
+</h3>
 <h3>Default behaviors</h3>
-<ul>
-  <li>If a user has no entry in the user table or has no attributes in
+If a user has no entry in the user table or has no attributes in
 the userAttribute table, any attempted OSCARS
 access
 will be rejected immediately by Oscars:OscarsSkeleton:checkUser or
-Servlets:AuthenticateUser</li>
-  <li>If no attribute that the user possesses has an entry for the
+Servlets:AuthenticateUser <br>
+If no attribute that the user possesses has an entry for the
 resource/permission pair in the authorization table, the request is
-denied.</li>
-  <li>The constraint defaults are intended to be the most common cases,
-not
-the most restricted.</li>
-  <ul>
-    <li>If there is no max bandwidth constraint specified, there is
+denied.
+<ul>
+  <li>If there is no max bandwidth constraint specified, there is
 no limit
 on the bandwidth that may be requested.</li>
-    <li>If there is no duration constraint, unlimited duration and
+  <li>If there is no duration constraint, unlimited duration and
 persistent
 reservations are allowed.</li>
-    <li>If no all-users constraint is specified, the default is
+  <li>If no all-users constraint is specified, the default is
 false (only access to own information is allowed).</li>
-    <li>If a my-site constraint is specified access to&nbsp;
+  <li>If a my-site constraint is specified access to&nbsp;
 information that is site specific is allowed.<br>
-    </li>
-    <li>If specify-path-elements is not specified, the default is
+  </li>
+  <li>If specify-path-elements is not specified, the default is
 false and
 no routers or hops may be input.</li>
-    <li>If specify-gri is not specified, a GlobalResourceId may not
+  <li>If specify-gri is not specified, a GlobalResourceId may not
 be
 specified by the user, but will be automatically generated by the
 CreateReservation code.</li>
-    <br>
-  </ul>
+  <li>If an unsafe-allowed constraint is specified any reservation
+state change will
+be accepted. e.g. FINISHED -&gt; ACTIVE. Otherwise only reasonable
+state changes will
+be accepted. e.g. PENDING or ACTIVE to CANCELLED (cancel reservation),
+ACTIVE to PENDING (signal a teardown), PENDING to ACTIVE (signal a
+setup)</li>
+  <li>If specify-gri is not specified, a GlobalResourceId may not
+be
+specified by the user, but will be automatically generated by the
+CreateReservation code.</li>
 </ul>
 <br>
 <h3>Default Authorizations Table</h3>
-<table style="text-align: left; width: 616px; height: 892px;" border="1"
- cellpadding="2" cellspacing="0">
+<table style="" 1="" border="1" cellpadding="5" cellspacing="0">
   <tbody>
-    <tr>
-      <td style="vertical-align: top;">id (int) </td>
-      <td style="vertical-align: top;">attributeId&nbsp; (int) </td>
-      <td style="vertical-align: top;">resource </td>
-      <td style="vertical-align: top;">permission </td>
-      <td style="vertical-align: top;">constraint name <br>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">attributeId</span>&nbsp;
+(int) </td>
+      <td><span style="font-weight: bold;">resource</span> </td>
+      <td><span style="font-weight: bold;">permission</span> </td>
+      <td><span style="font-weight: bold;">constraint name </span>
 (string) </td>
-      <td style="vertical-align: top;">value (string)<br>
-      <br>
+      <td><span style="font-weight: bold;">value</span>
+(string)</td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-user&gt;</td>
+      <td>users</td>
+      <td>query</td>
+      <td>none [1]</td>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[2]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td>&lt;OSCARS-user&gt;</td>
+      <td>users</td>
+      <td>modify</td>
+      <td>none [1]</td>
+      <td><br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[2]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td>&lt;OSCARS-user&gt;</td>
+      <td>reservations</td>
+      <td>list</td>
+      <td>none [2]</td>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      <td>&lt;OSCARS-user&gt;</td>
+      <td>reservations</td>
+      <td>query </td>
+      <td>none [2]</td>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      <td>&lt;OSCARS-user&gt;</td>
+      <td>reservations</td>
+      <td>create </td>
+      <td>none [2]</td>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">create<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">specify-path-elements<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">signal<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">domains<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-eng&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">domains<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;OSCARS-op&gt;<br>
-      </td>
-      <td style="vertical-align: top;">users<br>
-      </td>
-      <td style="vertical-align: top;">query<br>
-      </td>
-      <td style="vertical-align: top;">none [1]<br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;OSCARS-op&gt;</td>
-      <td style="vertical-align: top;">users</td>
-      <td style="vertical-align: top;">modify<br>
-      </td>
-      <td style="vertical-align: top;">none [1]<br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;OSCARS-op&gt;</td>
-      <td style="vertical-align: top;">reservations<br>
-      </td>
-      <td style="vertical-align: top;">list<br>
-      </td>
-      <td style="vertical-align: top;">all-users</td>
-      <td style="vertical-align: top;">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;OSCARS-op&gt;</td>
-      <td style="vertical-align: top;">reservations</td>
-      <td style="vertical-align: top;">query<br>
-      </td>
-      <td style="vertical-align: top;">all-users</td>
-      <td style="vertical-align: top;">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[1]</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[1]</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[2]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
+      <td>&lt;OSCARS-user&gt;</td>
+      <td>reservations</td>
+      <td>modify </td>
+      <td>none
 [2]</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">create<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[2]</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td>&lt;OSCARS-user&gt; </td>
+      <td>reservations </td>
+      <td>signal </td>
+      <td>none
+[2] </td>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td>&lt;OSCARS-user&gt; </td>
+      <td>subscriptions</td>
+      <td>create</td>
+      <td><br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[2]</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td>&lt;OSCARS-user&gt; </td>
+      <td>subscriptions</td>
+      <td>modify</td>
+      <td><br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-user&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">signal<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">none
-[2]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td> <br>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;OSCARS-admin&gt;<br>
-      </td>
-      <td style="vertical-align: top;">users<br>
-      </td>
-      <td style="vertical-align: top;">list<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">true<br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">users</td>
+      <td style="background-color: rgb(255, 255, 204);">query </td>
+      <td style="background-color: rgb(255, 255, 204);">none
+[1] </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;OSCARS-admin&gt;</td>
-      <td style="vertical-align: top;">users</td>
-      <td style="vertical-align: top;">query<br>
-      </td>
-      <td style="vertical-align: top;">all-users</td>
-      <td style="vertical-align: top;">true<br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">users</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);">none
+[1] </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;"><br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations </td>
+      <td style="background-color: rgb(255, 255, 204);">list </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations</td>
+      <td style="background-color: rgb(255, 255, 204);">query </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations</td>
+      <td style="background-color: rgb(255, 255, 204);">create </td>
+      <td style="background-color: rgb(255, 255, 204);">specify-path-elements
       </td>
-      <td style="vertical-align: top;">&lt;OSCARS-admin&gt;</td>
-      <td style="vertical-align: top;">users</td>
-      <td style="vertical-align: top;">modify<br>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations </td>
+      <td style="background-color: rgb(255, 255, 204);">signal </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations </td>
+      <td style="background-color: rgb(255, 255, 204);">signal </td>
+      <td style="background-color: rgb(255, 255, 204);">unsafe-allowed </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;
       </td>
-      <td style="vertical-align: top;">all-users</td>
-      <td style="vertical-align: top;">true<br>
+      <td style="background-color: rgb(255, 255, 204);">subscriptions </td>
+      <td style="background-color: rgb(255, 255, 204);">create </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;"><br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;
       </td>
-      <td style="vertical-align: top;">&lt;OSCARS-admin&gt;</td>
-      <td style="vertical-align: top;">users<br>
+      <td style="background-color: rgb(255, 255, 204);">subscriptions </td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
-      <td style="vertical-align: top;">create<br>
-      </td>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;"><br>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;<br>
+      <td style="background-color: rgb(255, 255, 204);">domains </td>
+      <td style="background-color: rgb(255, 255, 204);">view </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">my-site<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
+      <td style="background-color: rgb(255, 255, 204);">domains </td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">my-site<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      <td>&lt;OSCARS-operator&gt; </td>
+      <td>users </td>
+      <td>query </td>
+      <td>none [1] </td>
+      <td> <br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-operator&gt;</td>
+      <td>users</td>
+      <td>modify </td>
+      <td>none [1] </td>
+      <td> <br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">my-site<br>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-operator&gt;</td>
+      <td>reservations </td>
+      <td>list </td>
+      <td>all-users</td>
+      <td>true </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-operator&gt;</td>
+      <td>reservations</td>
+      <td>query </td>
+      <td>all-users</td>
+      <td>true </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-operator&gt; </td>
+      <td>subscriptions</td>
+      <td>create</td>
+      <td><br>
       </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      <td> <br>
       </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-operator&gt; </td>
+      <td>subscriptions</td>
+      <td>modify</td>
+      <td><br>
+      </td>
+      <td> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 204);">reservations </td>
+      <td style="background-color: rgb(255, 255, 204);">list </td>
+      <td style="background-color: rgb(255, 255, 204);">my-site </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations</td>
+      <td style="background-color: rgb(255, 255, 204);">query </td>
+      <td style="background-color: rgb(255, 255, 204);">my-site </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">reservations</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);">my-site </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">subscriptions</td>
+      <td style="background-color: rgb(255, 255, 204);">create </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">subscriptions</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt; </td>
+      <td>users </td>
+      <td>list </td>
+      <td>all-users </td>
+      <td>true </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt;</td>
+      <td>users</td>
+      <td>query </td>
+      <td>all-users</td>
+      <td>true </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt;</td>
+      <td>users</td>
+      <td>modify </td>
+      <td>all-users</td>
+      <td>true </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt;</td>
+      <td>users </td>
+      <td>create </td>
+      <td> <br>
+      </td>
+      <td> <br>
+      </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt;</td>
+      <td>AAA </td>
+      <td>list </td>
+      <td> <br>
+      </td>
+      <td> <br>
+      </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt;</td>
+      <td>AAA</td>
+      <td>modify</td>
+      <td> <br>
+      </td>
+      <td> <br>
+      </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt; </td>
+      <td>subscriptions</td>
+      <td>modify</td>
+      <td><br>
+      </td>
+      <td> <br>
+      </td>
+    </tr>
+    <tr>
+      <td>&lt;OSCARS-administrator&gt; </td>
+      <td>publishers</td>
+      <td>modify</td>
+      <td><br>
+      </td>
+      <td> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-publisher&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">publishers</td>
+      <td style="background-color: rgb(255, 255, 204);">create </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-publisher&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">publishers</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
     </tr>
   </tbody>
 </table>
