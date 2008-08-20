@@ -77,7 +77,7 @@ public class NotifyEchoHandler implements NotifyHandler{
                     String encodingType = swcap.getChildText("encodingType", NotifyListener.NMWG_CP_NS);
                     System.out.print(" (" + encodingType);
                     if("ethernet".equals(encodingType)){
-                        Element swcapInfo = swcap.getChild("switchingCapabilitySpecficInfo", NotifyListener.NMWG_CP_NS);
+                        Element swcapInfo = swcap.getChild("switchingCapabilitySpecificInfo", NotifyListener.NMWG_CP_NS);
                         String vlans = swcapInfo.getChildText("vlanRangeAvailability", NotifyListener.NMWG_CP_NS);
                         System.out.print(": " + vlans);
                     }

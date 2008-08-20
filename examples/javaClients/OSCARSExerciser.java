@@ -397,7 +397,7 @@ public class OSCARSExerciser extends Client{
                 CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
                 swcap.setSwitchingcapType("l2sc");
                 swcap.setEncodingType("ethernet");
-                CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecficInfo();
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
                 swcapInfo.setInterfaceMTU(9000);
                 String vlans = this.props.getProperty(resv + ".ero_vtags_"+ i).trim();
                 swcapInfo.setVlanRangeAvailability(vlans);
@@ -405,7 +405,7 @@ public class OSCARSExerciser extends Client{
                 if(sugVlans != null){
                     swcapInfo.setSuggestedVLANRange(sugVlans.trim());
                 }
-                swcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
+                swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
                 link.setSwitchingCapabilityDescriptors(swcap);
                 hop.setLink(link);
             }else{
@@ -544,7 +544,7 @@ public class OSCARSExerciser extends Client{
                     }else if( hop.getLink() != null){
                         String id = hop.getLink().getId();
                         CtrlPlaneSwcapContent swcap = hop.getLink().getSwitchingCapabilityDescriptors();
-                        CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = swcap.getSwitchingCapabilitySpecficInfo();
+                        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = swcap.getSwitchingCapabilitySpecificInfo();
                         output += "    " + id;
                         output += ", " + swcap.getEncodingType();
                         if("ethernet".equals(swcap.getEncodingType())){

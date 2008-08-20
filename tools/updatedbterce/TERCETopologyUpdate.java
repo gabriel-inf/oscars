@@ -2,13 +2,13 @@ import java.rmi.RemoteException;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.*;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneTopologyContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneDomainContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneLinkContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneNodeContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePortContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneSwcapContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneSwitchingCapabilitySpecficInfo;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 import edu.internet2.hopi.dragon.terce.ws.service.*;
 import edu.internet2.hopi.dragon.terce.ws.types.tedb.*;
 import org.apache.log4j.*;
@@ -378,8 +378,8 @@ public class TERCETopologyUpdate{
      * @param bss the hibernate session to be used for this transaction
      */
     private void prepareSwcapforDB(CtrlPlaneSwcapContent swcap, Link parent,  Session bss){
-        CtrlPlaneSwitchingCapabilitySpecficInfo specInfo = 
-            swcap.getSwitchingCapabilitySpecficInfo();
+        CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = 
+            swcap.getSwitchingCapabilitySpecificInfo();
         String switchingcapType = swcap.getSwitchingcapType().toLowerCase();
         
         if(switchingcapType.equals("l2sc")){

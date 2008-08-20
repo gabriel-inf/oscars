@@ -180,8 +180,8 @@
     <xs:sequence>
       <xs:element name="switchingcapType" type="xs:string" />
       <xs:element name="encodingType" type="xs:string" />
-      <xs:element name="switchingCapabilitySpecficInfo" 
-        type="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecficInfo"/>
+      <xs:element name="switchingCapabilitySpecificInfo" 
+        type="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecificInfo"/>
     </xs:sequence>
   </xs:complexType>
   
@@ -192,10 +192,10 @@
     </xs:sequence>
   </xs:complexType>
    
-  <xs:complexType name="CtrlPlaneSwitchingCapabilitySpecficInfo">
+  <xs:complexType name="CtrlPlaneSwitchingCapabilitySpecificInfo">
     <xs:sequence>
       <xs:element minOccurs="0" name="capability" type="xs:string"/>
-      <!-- <xs:group ref="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecficInfo_l2sc"/> -->
+      <!-- <xs:group ref="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecificInfo_l2sc"/> -->
       <xs:element  minOccurs="0" name="interfaceMTU" type="xs:int"/>
       <xs:element minOccurs="0" name="vlanRangeAvailability" type="xs:string"/>
       <xs:element minOccurs="0" name="suggestedVLANRange" type="xs:string"/>
@@ -208,13 +208,13 @@
     <xs:sequence>
         <xs:element name="switchingcapType" type="xs:string" />
         <xs:element name="encodingType" type="xs:string" />
-        <xs:element name="switchingCapabilitySpecficInfo" 
-            type="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecficInfo"/>
+        <xs:element name="switchingCapabilitySpecificInfo" 
+            type="CtrlPlane:CtrlPlaneSwitchingCapabilitySpecificInfo"/>
     </xs:sequence>
   </xs:group> -->
   
   <!-- Axis2 does not support groups so remove for now
-  <xs:group name="CtrlPlaneSwitchingCapabilitySpecficInfo_l2sc">
+  <xs:group name="CtrlPlaneSwitchingCapabilitySpecificInfo_l2sc">
     <xs:sequence>
        <xs:element name="interfaceMTU" form="unqualified" type="xs:int"/>
        <xs:element name="vlanRangeAvailability" form="unqualified" type="xs:string"/>

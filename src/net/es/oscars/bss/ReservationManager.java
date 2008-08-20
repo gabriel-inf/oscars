@@ -11,7 +11,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecficInfo;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 import org.quartz.*;
 
 import net.es.oscars.PropHandler;
@@ -578,7 +578,7 @@ public class ReservationManager {
         for(CtrlPlaneHopContent hop : pathInfo.getPath().getHop()){
             if(hop.getLink() == null){ continue; }
             String vlans = hop.getLink().getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecficInfo()
+                                        .getSwitchingCapabilitySpecificInfo()
                                         .getVlanRangeAvailability();
             this.log.info(this.tc.hopToURN(hop) + "(" + vlans + ")");
         }
@@ -587,7 +587,7 @@ public class ReservationManager {
          for(CtrlPlaneHopContent hop : pathInfo.getPath().getHop()){
             if(hop.getLink() == null){ continue; }
             String vlans = hop.getLink().getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecficInfo()
+                                        .getSwitchingCapabilitySpecificInfo()
                                         .getVlanRangeAvailability();
             this.log.info(this.tc.hopToURN(hop) + "(" + vlans + ")");
         }
@@ -661,7 +661,7 @@ public class ReservationManager {
             CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
             L2SwitchingCapabilityData l2scData = dbLink.getL2SwitchingCapabilityData();
             CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
-            CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecficInfo();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
             if(l2scData != null){
                 swcapInfo.setInterfaceMTU(l2scData.getInterfaceMTU());
                 swcapInfo.setVlanRangeAvailability(l2scData.getVlanRangeAvailability());
@@ -673,7 +673,7 @@ public class ReservationManager {
                 swcap.setSwitchingcapType(DEFAULT_SWCAP_TYPE);
                 swcap.setEncodingType(DEFAULT_ENC_TYPE);
             }
-            swcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
+            swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
             link.setId(urn);
             link.setTrafficEngineeringMetric(dbLink.getTrafficEngineeringMetric());
             link.setSwitchingCapabilityDescriptors(swcap);
@@ -1161,9 +1161,9 @@ public class ReservationManager {
         if(link == null){
             return;
         }
-        CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = 
+        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
                                     link.getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecficInfo();
+                                        .getSwitchingCapabilitySpecificInfo();
         String vlanRange = swcapInfo.getVlanRangeAvailability();
         if("0".equals(vlanRange)){//untagged
             pathElem.setLinkDescr("0");

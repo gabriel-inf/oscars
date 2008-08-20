@@ -12,7 +12,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecficInfo;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
@@ -89,8 +89,8 @@ public class VlanMapFilter implements PolicyFilter{
             CtrlPlaneHopContent hop = hops[i];
             CtrlPlaneSwcapContent swcap = 
                             hop.getLink().getSwitchingCapabilityDescriptors();
-            CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = 
-                            swcap.getSwitchingCapabilitySpecficInfo();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                            swcap.getSwitchingCapabilitySpecificInfo();
             L2SwitchingCapabilityData l2scData = 
                             link.getL2SwitchingCapabilityData();
             if(l2scData == null && "l2sc".equals(swcap.getSwitchingcapType())){
@@ -150,7 +150,7 @@ public class VlanMapFilter implements PolicyFilter{
             String prevVlanString = 
                             prevInterHop.getLink()
                                         .getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecficInfo()
+                                        .getSwitchingCapabilitySpecificInfo()
                                         .getVlanRangeAvailability();
             prevVlanString = (prevVlanString == null ? "any" : prevVlanString);
             byte[] ingrVlans = vlanMap.get(k(ingrLink));
@@ -164,7 +164,7 @@ public class VlanMapFilter implements PolicyFilter{
             String nextVlanString = 
                             nextInterHop.getLink()
                                         .getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecficInfo()
+                                        .getSwitchingCapabilitySpecificInfo()
                                         .getVlanRangeAvailability();
             nextVlanString = (nextVlanString == null ? "any" : nextVlanString);
             byte[] egrVlans = vlanMap.get(k(egrLink));
@@ -264,9 +264,9 @@ public class VlanMapFilter implements PolicyFilter{
             }
             this.log.debug("Suggested VLAN: " + suggestedVlan);
             for(CtrlPlaneHopContent hop: segments.get(i)){
-                CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = hop.getLink()
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = hop.getLink()
                                               .getSwitchingCapabilityDescriptors()
-                                              .getSwitchingCapabilitySpecficInfo();
+                                              .getSwitchingCapabilitySpecificInfo();
                 swcapInfo.setVlanRangeAvailability(vlanRange);
                 swcapInfo.setSuggestedVLANRange(suggestedVlan);
                 this.log.info(this.tc.hopToURN(hop) + "(" + vlanRange + ")");
@@ -467,14 +467,14 @@ public class VlanMapFilter implements PolicyFilter{
         if(prevInterHop != null){
             sugVlan = prevInterHop.getLink()
                                   .getSwitchingCapabilityDescriptors()
-                                  .getSwitchingCapabilitySpecficInfo()
+                                  .getSwitchingCapabilitySpecificInfo()
                                    .getSuggestedVLANRange();
             
         }
         if(sugVlan == null && currHop != null){
             sugVlan = currHop.getLink()
                              .getSwitchingCapabilityDescriptors()
-                             .getSwitchingCapabilitySpecficInfo()
+                             .getSwitchingCapabilitySpecificInfo()
                              .getSuggestedVLANRange();
         }
         if(sugVlan != null){

@@ -20,7 +20,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecficInfo;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.bss.Reservation;
@@ -761,8 +761,8 @@ public class TypeConverter {
                 if(link != null){
                     String infoVal = link.getTrafficEngineeringMetric();
                     CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
-                    CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = 
-                        swcap.getSwitchingCapabilitySpecficInfo();
+                    CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                        swcap.getSwitchingCapabilitySpecificInfo();
                     infoVal += ";" + swcap.getSwitchingcapType();
                     infoVal += ";" + swcap.getEncodingType();
                     if(swcap.getSwitchingcapType().equals("l2sc")){
@@ -1104,7 +1104,7 @@ public class TypeConverter {
                 CtrlPlaneSwcapContent linkSwcap = new CtrlPlaneSwcapContent();
                 linkSwcap.setSwitchingcapType(infoVals[1]);
                 linkSwcap.setEncodingType(infoVals[2]);
-                CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecficInfo();
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
                 if("l2sc".equals(infoVals[1])){
                     swcapInfo.setInterfaceMTU("null".equals(infoVals[3]) ? 0 : Integer.parseInt(infoVals[3]));
                     swcapInfo.setVlanRangeAvailability("null".equals(infoVals[4]) ? null : infoVals[4]);
@@ -1112,7 +1112,7 @@ public class TypeConverter {
                 }else{
                    swcapInfo.setCapability("null".equals(infoVals[3]) ? null : infoVals[3]);
                 }
-                linkSwcap.setSwitchingCapabilitySpecficInfo(swcapInfo);
+                linkSwcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
                 link.setSwitchingCapabilityDescriptors(linkSwcap);
                 hop.setLink(link);
             }else if("port".equals(hopType)){
