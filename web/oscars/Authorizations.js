@@ -63,6 +63,7 @@ oscars.Authorizations.tabSelected = function (
         /* ContentPane widget */ contentPane,
         /* domNode */ oscarsStatus) {
     oscarsStatus.innerHTML = "Authorizations list";
+    oscarsStatus.className = "success";
     var authGrid = dijit.byId("authGrid");
     // Creation apparently needs to be programmatic, after the ContentPane
     // has been selected and its style no longer display:none
@@ -87,44 +88,32 @@ oscars.Authorizations.refreshAuthGrid = function () {
 oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var authDetailsPane = dijit.byId("authDetailsPane");
-    // TODO:  disable None options in menus
     var modifyAuthorizationNode = dojo.byId("modifyAuthorizationDisplay");
     modifyAuthorizationNode.style.display = "";
     var addAuthorizationNode = dojo.byId("addAuthorizationDisplay");
     addAuthorizationNode.style.display = "none";
     var authGrid = dijit.byId("authGrid");
-    // clear constraint value if any
     var formNode = dijit.byId("authDetailsForm").domNode;
-    formNode.reset();
     // clear constraint value if any
+    formNode.reset();
     // set four parameters necessary to retrieve authorization
     // dijit.byId doesn't seem to work outside form and tab
-    var menu = formNode.authAttributeName;
-    menu.options[0].disabled = true;
     var attributeName = authGrid.model.getDatum(evt.rowIndex, 0);
-    oscars.Form.setMenuSelected(menu, attributeName);
-    menu = formNode.resourceName;
-    menu.options[0].disabled = true;
+    oscars.Form.setMenuSelected(formNode.authAttributeName, attributeName);
     var resourceName = authGrid.model.getDatum(evt.rowIndex, 1);
-    oscars.Form.setMenuSelected(menu, resourceName);
-    menu = formNode.permissionName;
-    menu.options[0].disabled = true;
+    oscars.Form.setMenuSelected(formNode.resourceName, resourceName);
     var permissionName = authGrid.model.getDatum(evt.rowIndex, 2);
-    oscars.Form.setMenuSelected(menu, permissionName);
-    menu = formNode.constraintName;
+    oscars.Form.setMenuSelected(formNode.permissionName, permissionName);
+    var menu = formNode.constraintName;
     var constraintName = authGrid.model.getDatum(evt.rowIndex, 3);
-    // constraint can be blank
-    if (constraintName) {
-        oscars.Form.setMenuSelected(menu, constraintName);
-    } else {
-        oscars.Form.setMenuSelected(menu, "None");
-    }
+    oscars.Form.setMenuSelected(menu, constraintName);
     formNode.constraintValue.value = authGrid.model.getDatum(evt.rowIndex, 4);
     oscarsState.authorizationState.saveAuthState(attributeName,
             resourceName, permissionName, constraintName,
             formNode.constraintValue.value);
-    // uses current authorization state
-    oscarsState.authorizationState.setConstraintType();
+    // uses current rpc state
+    oscarsState.authorizationState.setConstraintType(resourceName,
+                                               permissionName, constraintName);
     // No need to query server; grid already contains all information.
     // Can't set up menus in grid; different fields may require different
     // subsets of values of other fields.

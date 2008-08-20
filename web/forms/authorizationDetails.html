@@ -78,21 +78,38 @@ a resource, it may be reset to None if it is not valid for that resource.
         <select name="authAttributeName" id="authAttributeName">
         </select>
     </td>
+    <td>
+        &nbsp;
+    </td>
   </tr>
   <tr>
     <td>Resource</td>
     <td colspan="2">
         <select name="resourceName" id="resourceName"
-            onChange="oscarsState.authorizationState.constrainChoices('resourceName');return false;">
         </select>
+    </td>
+    <td>
+      <button dojoType="dijit.form.Button" id="resourceOK">
+         RESOURCE OK
+         <script type="dojo/method" event="onClick">
+             oscarsState.authorizationState.constrainChoices('resourceName');
+         </script>
+      </button>
     </td>
   </tr>
   <tr>
     <td>Permission</td>
     <td colspan="2">
         <select name="permissionName" id="permissionName"
-            onChange="oscarsState.authorizationState.constrainChoices('permissionName');return false;">
         </select>
+    </td>
+    <td>
+      <button dojoType="dijit.form.Button" id="permissionOK">
+         PERMISSION OK
+         <script type="dojo/method" event="onClick">
+             oscarsState.authorizationState.constrainChoices('permissionName');
+         </script>
+      </button>
     </td>
   </tr>
   <tr>
@@ -101,6 +118,9 @@ a resource, it may be reset to None if it is not valid for that resource.
         <select name="constraintName" id="constraintName"
             onChange="oscarsState.authorizationState.constrainChoices('constraintName');return false;">
         </select>
+    </td>
+    <td>
+        &nbsp;
     </td>
   </tr>
   <tr>

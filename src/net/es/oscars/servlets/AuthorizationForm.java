@@ -72,14 +72,17 @@ public class AuthorizationForm extends HttpServlet {
         AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
         List<Attribute> attributes = attributeDAO.list();
         List<String> attributeList = new ArrayList<String>();
-        // This menu option is only enabled when adding authorization
-        // and has to be changed by user.  Likewise for resources and
-        // permissions.
-        attributeList.add("None");
-        attributeList.add("true");
+        RoleUtils utils = new RoleUtils();
+        int ctr = 0;
         for (Attribute attr: attributes) {
-            attributeList.add(attr.getName());
-            attributeList.add("false");
+            String attributeName = utils.convertAttributeName(attr.getName());
+            attributeList.add(attributeName + " -> " + attr.getDescription());
+            if (ctr == 0) {
+                attributeList.add("true");
+            } else {
+                attributeList.add("false");
+            }
+            ctr++;
         }
         outputMap.put("authAttributeNameMenu", attributeList);
     }
@@ -90,11 +93,20 @@ public class AuthorizationForm extends HttpServlet {
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         List<Resource> resources = resourceDAO.list();
         List<String> resourceList = new ArrayList<String>();
-        resourceList.add("None");
-        resourceList.add("true");
+        int ctr = 0;
         for (Resource resource: resources) {
-            resourceList.add(resource.getName());
-            resourceList.add("false");
+            if (resource.getDescription() != null) {
+                resourceList.add(resource.getName() + " -> " +
+                             resource.getDescription());
+            } else {
+                resourceList.add(resource.getName());
+            }
+            if (ctr == 0) {
+                resourceList.add("true");
+            } else {
+                resourceList.add("false");
+            }
+            ctr++;
         }
         outputMap.put("resourceNameMenu", resourceList);
     }
@@ -105,11 +117,20 @@ public class AuthorizationForm extends HttpServlet {
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
         List<Permission> permissions = permissionDAO.list();
         List<String> permissionList = new ArrayList<String>();
-        permissionList.add("none");
-        permissionList.add("true");
+        int ctr = 0;
         for (Permission permission: permissions) {
-            permissionList.add(permission.getName());
-            permissionList.add("false");
+            if (permission.getDescription() != null) {
+                permissionList.add(permission.getName() + " -> " +
+                               permission.getDescription());
+            } else {
+                permissionList.add(permission.getName());
+            }
+            if (ctr == 0) {
+                permissionList.add("true");
+            } else {
+                permissionList.add("false");
+            }
+            ctr++;
         }
         outputMap.put("permissionNameMenu", permissionList);
     }
@@ -120,9 +141,9 @@ public class AuthorizationForm extends HttpServlet {
         ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
         List<Constraint> constraints = constraintDAO.list();
         List<String> constraintList = new ArrayList<String>();
-        // 'none' is a row in the constraint table
         for (Constraint constraint: constraints) {
-            constraintList.add(constraint.getName());
+            constraintList.add(constraint.getName() + " -> " +
+                               constraint.getDescription());
             constraintList.add("false");
         }
         outputMap.put("constraintNameMenu", constraintList);

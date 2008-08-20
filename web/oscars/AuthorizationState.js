@@ -6,6 +6,12 @@ David Robertson (dwrobertson@lbl.gov)
 
 /* Functions:
 setRpc()
+saveAuthState(attributeName, resourceName, permissionName, constraintName,
+              constraintValue)
+recoverAuthState(formNode)
+clearAuthState()
+constraintChoices(menuName)
+setConstraintType(resourceName, permissionName, constraintName)
 */
 
 dojo.provide("oscars.AuthorizationState");
@@ -13,7 +19,15 @@ dojo.provide("oscars.AuthorizationState");
 dojo.declare("oscars.AuthorizationState", null, {
     constructor: function(){
         this.rpcData = {};
-        this.clearAuthState();
+        this.initialized = false;
+    },
+
+    setInitialized: function() {
+        if (!this.initialized) {
+            this.initialized = true;
+            // depends on form's existence
+            this.clearAuthState();
+        }
     },
 
     // Not all combinations of these triplets are permissible.  For example,
@@ -41,6 +55,7 @@ dojo.declare("oscars.AuthorizationState", null, {
 
     saveAuthState: function(attributeName, resourceName, permissionName,
                            constraintName, constraintValue) {
+        this.initialized = true;
         this.attributeName = attributeName;
         this.resourceName = resourceName;
         this.permissionName = permissionName;
@@ -58,34 +73,83 @@ dojo.declare("oscars.AuthorizationState", null, {
         menu = formNode.constraintName;
         oscars.Form.setMenuSelected(menu, this.constraintName);
         formNode.constraintValue.value = this.constraintValue;
-        this.setConstraintType();
+        this.setConstraintType(this.resourceName, this.permissionName,
+                               this.constraintName);
     },
 
     clearAuthState: function() {
-        this.attributeName = 'None';
-        this.resourceName = 'None';
-        this.permissionName = 'none';
+        var formNode = dijit.byId("authDetailsForm").domNode;
+        var menu = formNode.authAttributeName;
+        this.attributeName = menu.options[0].value;
+        menu = formNode.resourceName;
+        this.resourceName =  menu.options[0].value;
+        menu = formNode.permissionName;
+        this.permissionName = menu.options[0].value;
         this.constraintName = 'none';
         this.constraintValue = '';
     },
 
     constrainChoices: function(menuName) {
+        var i;
+        var j;
+        var val;
+        var illegalChoice;
         var formNode = dijit.byId("authDetailsForm").domNode;
-        //console.log(formNode[menuName].selectedIndex);
+        var resourceMenu = formNode.resourceName;
+        var permissionMenu = formNode.permissionName;
+        var constraintMenu = formNode.constraintName;
+        var resourceName = resourceMenu.options[resourceMenu.selectedIndex].value;
+        var permissionName =
+            permissionMenu.options[permissionMenu.selectedIndex].value;
+        var constraintName =
+            constraintMenu.options[constraintMenu.selectedIndex].value;
+        // constrain permissions menu
+        if (menuName == "resourceName") {
+            for (i=0; i < permissionMenu.options.length; i++) {
+                val = permissionMenu.options[i].value;
+                if (this.rpcData[resourceName][val]) {
+                    permissionMenu.options[i].disabled = false;
+                } else {
+                    permissionMenu.options[i].disabled = true;
+                }
+            }
+        }
+        // constrain constraints menu
+        else if (menuName == "permissionName") {
+        // constraint constraints value and type
+        } else if (menuName == "constraintName") {
+            var constraintValueNode = formNode.constraintValue;
+            var constraintTypeNode = dojo.byId("constraintType");
+            if (constraintName == 'none') {
+                constraintValueNode.disabled = true;
+                constraintTypeNode.disabled = true;
+                constraintTypeNode.innerHTML = "";
+            } else {
+                constraintValueNode.disabled = false;
+                this.setConstraintType(resourceName, permissionName, constraintName);
+            }
+        }
     },
 
-    setConstraintType: function() {
+    setConstraintType: function(resourceName, permissionName, constraintName) {
         var constraintTypeNode = dojo.byId("constraintType");
-        // necessary at this time
-        if (!this.rpcData[this.resourceName] ||
-            !this.rpcData[this.resourceName][this.permissionName] ||
-            !this.rpcData[this.resourceName][this.permissionName][this.constraintName]) {
+        // consistency check
+        if (!this.rpcData[resourceName] ||
+            !this.rpcData[resourceName][permissionName] ||
+            !this.rpcData[resourceName][permissionName].hasOwnProperty(constraintName)) {
+            var oscarsStatus = dojo.byId("oscarsStatus");
+            oscarsStatus.className = "failure";
+            oscarsStatus.innerHTML = "Triplet resource: " +
+                resourceName +
+                ", permission: " + permissionName +
+                ", constraint: " + constraintName + " not allowed." +
+                "Contact an admin.";
             constraintTypeNode.innerHTML = "";
             return;
         } 
         var constraintType =
-            this.rpcData[this.resourceName][this.permissionName][this.constraintName];
-        if (this.constraintName != 'none') {
+            this.rpcData[resourceName][permissionName][constraintName];
+        if (constraintName != 'none') {
             constraintTypeNode.innerHTML = constraintType;
         } else {
             constraintTypeNode.innerHTML = "";

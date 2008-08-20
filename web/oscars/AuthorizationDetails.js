@@ -29,6 +29,7 @@ oscars.AuthorizationDetails.init = function () {
 // posts authorization add to server
 oscars.AuthorizationDetails.postAdd = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
+    oscars.AuthorizationDetails.setMenuOptionsEnabled();
     oscarsState.authorizationState.clearAuthState();
     dojo.xhrPost({
         url: 'servlet/AuthorizationAdd',
@@ -54,6 +55,7 @@ oscars.AuthorizationDetails.postModify = function () {
 oscars.AuthorizationDetails.postDelete = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
     var authGrid = dijit.byId("authGrid");
+    oscars.AuthorizationDetails.setMenuOptionsEnabled();
     oscarsState.authorizationState.clearAuthState();
     // TODO:  need to get selected row, and data from that
     dojo.xhrPost({
@@ -72,7 +74,6 @@ oscars.AuthorizationDetails.clone = function () {
     modifyAuthorizationNode.style.display = "none";
     var addAuthorizationNode = dojo.byId("addAuthorizationDisplay");
     addAuthorizationNode.style.display = "";
-    oscars.AuthorizationDetails.resetFields(true);
 };
 
 // handles all servlet replies
@@ -91,28 +92,44 @@ oscars.AuthorizationDetails.tabSelected = function (
         /* domNode */ oscarsStatus) {
     oscarsStatus.className = "success";
     oscarsStatus.innerHTML = "Authorization details";
+    oscarsState.authorizationState.setInitialized();
 };
 
 oscars.AuthorizationDetails.resetFields = function (useSaved) {
     // TODO:  reset to original authorization if useSaved true
     var formNode = dijit.byId("authDetailsForm").domNode;
-    var menu = null;
+    var menu;
     // clear everything
     if (!useSaved) {
+        oscarsState.authorizationState.clearAuthState();
+        oscars.AuthorizationDetails.setMenuOptionsEnabled();
         menu = formNode.authAttributeName;
-        menu.options[0].disabled = false;
-        oscars.Form.setMenuSelected(menu, "None");
+        menu.options[0].selected = true;
         menu = formNode.resourceName;
-        menu.options[0].disabled = false;
-        oscars.Form.setMenuSelected(menu, "None");
+        menu.options[0].selected = true;
         menu = formNode.permissionName;
-        menu.options[0].disabled = false;
-        oscars.Form.setMenuSelected(menu, "none");
+        menu.options[0].selected = true;
         menu = formNode.constraintName;
-        menu.options[0].disabled = false;
         oscars.Form.setMenuSelected(menu, "none");
         formNode.reset();
     } else {
         oscarsState.authorizationState.recoverAuthState(formNode);
+    }
+};
+
+oscars.AuthorizationDetails.setMenuOptionsEnabled = function () {
+    var i;
+    var formNode = dijit.byId("authDetailsForm").domNode;
+    var menu = formNode.resourceName;
+    for (i=0; i < menu.options.length; i++) {
+        menu.options[i].disabled = false;
+    }
+    menu = formNode.permissionName;
+    for (i=0; i < menu.options.length; i++) {
+        menu.options[i].disabled = false;
+    }
+    menu = formNode.constraintName;
+    for (i=0; i < menu.options.length; i++) {
+        menu.options[i].disabled = false;
     }
 };

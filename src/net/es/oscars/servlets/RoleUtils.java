@@ -47,4 +47,27 @@ public class RoleUtils {
         }
         return addRoles;
     }
+
+    /* Converts an attribute name to a more human readable one.
+     *
+     * @param attributeName String with attribute name from table
+     * @return newName String with modified attribute name
+     */
+    public String convertAttributeName(String attributeName) {
+        // assumes attribute name starts with string followed by -
+        String[] namePortions = attributeName.split("-");
+        if (namePortions.length == 1) {
+            return attributeName;
+        }
+        StringBuilder sb = new StringBuilder();
+        String s = namePortions[1];
+        if (s.length() > 0) {
+            s = Character.toUpperCase(s.charAt(0)) + s.substring(1);
+        }
+        sb.append(s + " ");
+        for (int i=2; i < namePortions.length; i++) {
+            sb.append(namePortions[i] + " ");
+        }
+        return sb.toString().trim();
+    }
 }
