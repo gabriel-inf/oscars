@@ -16,3 +16,4 @@ CREATE TABLE IF NOT EXISTS domainServices (
 
 
 ALTER TABLE reservations ADD localStatus TINYINT(1) DEFAULT 0 AFTER status;
+ALTER TABLE l2SwitchingCapabilityData ADD vlanTranslation BOOLEAN NOT NULL;

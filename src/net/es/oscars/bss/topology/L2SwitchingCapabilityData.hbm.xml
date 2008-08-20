@@ -28,6 +28,12 @@
            @hibernate.property not-null="true"
         </meta>    
     </property>
+    
+    <property name="vlanTranslation" >
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
 
     <!-- Associations -->
 

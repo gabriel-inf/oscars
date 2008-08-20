@@ -12,6 +12,8 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.oscars.TypeConverter;
+import java.util.Properties;
+import net.es.oscars.PropHandler;
 
 /**
  * This class contains methods for handling reservation setup policy
@@ -21,10 +23,17 @@ import net.es.oscars.oscars.TypeConverter;
 public class PolicyManager {
     private Logger log;
     private String dbname;
-
+    private String vlanFilter;
+    
     public PolicyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("policy", true);
+        this.vlanFilter = props.getProperty("vlanFilter");
+        if(this.vlanFilter == null){
+            this.vlanFilter = "vlanMap";
+        }
     }
 
     /**
@@ -48,21 +57,15 @@ public class PolicyManager {
         List<Link> localLinks = this.getLocalLinksFromPath(intraPath);
 
         BandwidthFilter bwf = new BandwidthFilter();
-        bwf.applyFilter(pathInfo, localLinks, newReservation, activeReservations);
-
+        bwf.applyFilter(pathInfo, intraPath.getHop(), localLinks, newReservation, activeReservations);
+ 
         if (pathInfo.getLayer2Info() != null) {
-            VlanFilter vlf = new VlanFilter();
-            // TODO: make this configurable
-            vlf.setScope(VlanFilter.edgeNodeScope);
-            vlf.applyFilter(pathInfo, localLinks, newReservation, activeReservations);
+            PolicyFilter vlf = PolicyFilterFactory.create(this.vlanFilter);
+            vlf.applyFilter(pathInfo, intraPath.getHop(), localLinks, newReservation, activeReservations);
         }
 
         this.log.info("checkOversubscribed.end");
     }
-
-
-
-
 
      /**
      * Retrieves linkIntervals given a PathInfo instance.
@@ -79,7 +82,8 @@ public class PolicyManager {
 
         this.log.info("getLinksFromPath.start");
         ArrayList<Link> links= new ArrayList<Link>();
-
+        TypeConverter tc = new TypeConverter();
+        
         if (ctrlPlanePath == null) {
             throw new BSSException("no path provided to initlinkIntervals");
         }
@@ -87,8 +91,8 @@ public class PolicyManager {
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         for (int i = 0; i < hops.length; i++) {
-            this.log.info(hops[i].getLinkIdRef());
-            String hopTopoId = hops[i].getLinkIdRef();
+            String hopTopoId = tc.hopToURN(hops[i]);
+            this.log.info(hopTopoId);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -98,15 +102,16 @@ public class PolicyManager {
                     this.log.info("local: " + hopTopoId);
                     Link link = domainDAO.getFullyQualifiedLink(hopTopoId);
                     if (link == null) {
-                        throw new BSSException("unable to find link with id " + hops[i].getLinkIdRef());
+                        throw new BSSException("unable to find link with id " + hopTopoId);
                     }
                     links.add(link);
 
                 } else {
-                    this.log.info("not local: " + hops[i].getLinkIdRef());
+                    throw new BSSException("Non-local link in intradomain path: " + hopTopoId);
                 }
             } else {
-                this.log.info("unknown type: "+hopType+"for hop: " + hopTopoId);
+                throw new BSSException("Hops in intradomain path must be " +
+                                       "links but found "+hopType+" for hop: " + hopTopoId);
             }
         }
 

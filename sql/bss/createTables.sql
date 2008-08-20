@@ -226,6 +226,7 @@ CREATE TABLE IF NOT EXISTS l2SwitchingCapabilityData (
     linkId		INT NOT NULL UNIQUE,
     vlanRangeAvailability TEXT NOT NULL,
     interfaceMTU	INT NOT NULL,
+    vlanTranslation BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 ) type = MyISAM;
 

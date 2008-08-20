@@ -23,7 +23,10 @@ public class L2SwitchingCapabilityData
 
     /** persistent field */
     private int interfaceMTU;
-
+    
+    /** persistent field */
+    private boolean vlanTranslation;
+    
     /** default constructor */
     public L2SwitchingCapabilityData() { }
 
@@ -67,6 +70,20 @@ public class L2SwitchingCapabilityData
      */ 
     public void setInterfaceMTU(int interfaceMTU) {
         this.interfaceMTU = interfaceMTU;
+    }
+    
+    /**
+     * @return the vlanTranslation value
+     */ 
+    public boolean getVlanTranslation() {
+        return this.vlanTranslation;
+    }
+
+    /**
+     * @param vlanTranslation boolean indicating the ability to translate VLANs
+     */ 
+    public void setVlanTranslation(boolean vlanTranslation) {
+        this.vlanTranslation = vlanTranslation;
     }
 
 

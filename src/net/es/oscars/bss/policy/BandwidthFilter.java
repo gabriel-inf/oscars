@@ -7,6 +7,7 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 
 import org.apache.log4j.Logger;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 
 public class BandwidthFilter implements PolicyFilter {
     private Logger log;
@@ -16,6 +17,7 @@ public class BandwidthFilter implements PolicyFilter {
 	}
 	
 	public void applyFilter(PathInfo pathInfo, 
+	        CtrlPlaneHopContent[] hops,
 			List<Link> localLinks,
 			Reservation newReservation, 
 			List<Reservation> activeReservations) throws BSSException {

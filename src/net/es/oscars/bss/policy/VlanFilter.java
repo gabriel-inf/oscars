@@ -20,6 +20,7 @@ public class VlanFilter implements PolicyFilter {
 	// 
 	public static final String domainScope = "DOMAIN";
 	public static final String edgeNodeScope = "EDGENODE";
+	public static final String linkScope = "LINK";
 	private String scope = null;
     private Logger log;
 
@@ -28,12 +29,14 @@ public class VlanFilter implements PolicyFilter {
 	}
 
 	public void applyFilter(PathInfo pathInfo, 
+	        CtrlPlaneHopContent[] hops,
 			List<Link> localLinks,
 			Reservation newReservation, 
 			List<Reservation> activeReservations) throws BSSException {
 
 		if (this.scope == null) {
-			throw new BSSException("Scope not set.");
+			this.scope = edgeNodeScope;
+			//throw new BSSException("Scope not set.");
 		}
 		// TODO: add domain-wide VLAN scope
 		if (!this.scope.equals(edgeNodeScope)) {

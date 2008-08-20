@@ -183,28 +183,10 @@ public class ParamValidator {
      * @param layer2Info A Layer2Info instance (layer 2 specific)
      */
     private String checkVtag(Layer2Info layer2Info) {
-        /* Currently only accepts case where either both
-         or neither is specified. If specified, they must have the same value.
-         In the future these limits will be relaxed as support for VLAN mapping is added. */
-
         VlanTag srcVtag = layer2Info.getSrcVtag();
         VlanTag destVtag = layer2Info.getDestVtag();
         String vtag = null;
         boolean tagged = true;
-        
-        if(srcVtag != null && destVtag != null){
-            vtag = srcVtag.getString();
-            tagged = srcVtag.getTagged();
-            if(!vtag.equals(destVtag.getString()) ||
-               tagged != destVtag.getTagged()){
-                return "source and destination VLAN tag must be same. VLAN" +
-                " mapping not yet supported";
-            }
-        }else if(srcVtag != destVtag){
-            return "You must specify both the source and destination VLAN " +
-                    "tag or neither";
-
-        }
 
         // vlan tag can be either a single integer, a range of integers, or
         // "any"

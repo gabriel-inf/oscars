@@ -574,16 +574,29 @@ public class ReservationManager {
         }
         
         //Convert any local hops that are still references to link objects
+        this.log.info("PRE-EXPAND");
+        for(CtrlPlaneHopContent hop : pathInfo.getPath().getHop()){
+            if(hop.getLink() == null){ continue; }
+            String vlans = hop.getLink().getSwitchingCapabilityDescriptors()
+                                        .getSwitchingCapabilitySpecficInfo()
+                                        .getVlanRangeAvailability();
+            this.log.info(this.tc.hopToURN(hop) + "(" + vlans + ")");
+        }
         this.expandLocalHops(pathInfo);
+         this.log.info("POST-EXPAND");
+         for(CtrlPlaneHopContent hop : pathInfo.getPath().getHop()){
+            if(hop.getLink() == null){ continue; }
+            String vlans = hop.getLink().getSwitchingCapabilityDescriptors()
+                                        .getSwitchingCapabilitySpecficInfo()
+                                        .getVlanRangeAvailability();
+            this.log.info(this.tc.hopToURN(hop) + "(" + vlans + ")");
+        }
         this.expandLocalHops(intraPath);
         
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
+        this.policyMgr.checkOversubscribed(reservations, pathInfo, intraPath.getPath(), resv);
         
-        //TODO: REMOVE THESE CONVERSIONS
-        PathInfo refPathInfo = this.tc.createRefPath(pathInfo);
-        PathInfo refIntraPath = this.tc.createRefPath(intraPath);
-        this.policyMgr.checkOversubscribed(reservations, refPathInfo, refIntraPath.getPath(), resv);
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get next external hop (first past egress) from the complete path
@@ -600,7 +613,7 @@ public class ReservationManager {
             }
         }
         // convert to form for db
-        Path path = this.convertPath(intraPath, pathInfo, nextDomain, true);
+        Path path = this.convertPath(intraPath, pathInfo, nextDomain);
         path.setExplicit(isExplicit);
         return path;
     }
@@ -635,13 +648,14 @@ public class ReservationManager {
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
             boolean isLocal = domainDAO.isLocal(domainId);
-            if(!isLocal){
+            if((!isLocal) || (isLocal && hop.getLink() != null)){
                 expandedPath.addHop(hop);
                 continue;
             }else if(isLocal && (!"link".equals(hopType))){
                 throw new BSSException("Cannot expand hop because it contains " +
                                    "a hop that's not a link: " + urn);
             }
+            
             Link dbLink = domainDAO.getFullyQualifiedLink(urn);
             CtrlPlaneHopContent expandedHop = new CtrlPlaneHopContent();
             CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
@@ -735,7 +749,7 @@ public class ReservationManager {
      * @return path Path in database format
      */
     public Path convertPath(PathInfo intraPathInfo, PathInfo interPathInfo,
-        Domain nextDomain, boolean isPermanent) throws BSSException {
+        Domain nextDomain) throws BSSException {
 
         Link link = null;
         Link srcLink = null;
@@ -775,12 +789,7 @@ public class ReservationManager {
         }
 
         List<PathElem> pathElems = new ArrayList<PathElem>();
-
-        //  finalize information at layer 2 if last domain (and we're not just saving during submitCreate())
-        if (nextDomain == null && layer2Info != null && isPermanent) {
-            this.chooseVlanTag(layer2Info);
-        }
-
+        
         // set pathSetupMode, default to timer-automatic
         if (pathSetupMode == null) {
             pathSetupMode = "timer-automatic";
@@ -847,14 +856,10 @@ public class ReservationManager {
             }
             pathElem.setLink(link);
 
-            // set VLAN tag if layer2 request and l2sc link
-            // do not set if this comes from submitCreate()
-            // TODO: Set differently if VLAN mapping supported
             if(layer2Info != null &&
                 link.getL2SwitchingCapabilityData() != null &&
-                nextDomain == null &&
-                isPermanent) {
-                this.setL2LinkDescr(pathElem, srcLink, destLink, link,  layer2Info);
+                nextDomain == null) {
+                this.setL2LinkDescr(pathElem, hops[i]);
             } else if (nextDomain != null) {
                 this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
             } else if (link.getL2SwitchingCapabilityData() == null) {
@@ -1149,50 +1154,76 @@ public class ReservationManager {
      * Sets VLAN tag on a pathElemenet.
      *
      * @param pathElem path element to be updated
-     * @param srcLink source link of this request
-     * @param destLink destination link of this request
-     * @param link current link to be checked
-     * @param layer2Info of the request
+     * @param hop the hop with the link information
      */
-     public void setL2LinkDescr(PathElem pathElem, Link srcLink, Link destLink,
-                                    Link link, Layer2Info layer2Info){
-        VlanTag srcVtag = layer2Info.getSrcVtag();
-        int srcTagged = srcVtag.getTagged() ? 1 : -1;
-
-        int vtagValue = Integer.parseInt(srcVtag.getString());
-        pathElem.setLinkDescr((vtagValue * srcTagged) + "");
-        if (link == srcLink) {
-            this.log.info("linkId: " + link.getId() + ", srcLink: " + vtagValue * srcTagged);
-        } else if (link == destLink) {
-            this.log.info("linkId: " + link.getId() + ", destLink: " + vtagValue * srcTagged);
-        } else {
-            this.log.info("linkId: " + link.getId() + ", internalLink: " + vtagValue * srcTagged);
+    public void setL2LinkDescr(PathElem pathElem, CtrlPlaneHopContent hop){
+        CtrlPlaneLinkContent link = hop.getLink();
+        if(link == null){
+            return;
         }
-     }
-
+        CtrlPlaneSwitchingCapabilitySpecficInfo swcapInfo = 
+                                    link.getSwitchingCapabilityDescriptors()
+                                        .getSwitchingCapabilitySpecficInfo();
+        String vlanRange = swcapInfo.getVlanRangeAvailability();
+        if("0".equals(vlanRange)){//untagged
+            pathElem.setLinkDescr("0");
+        }else{
+            pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
+        }
+    }
+    
+    /**
+     * Picks a VLAN tag from a range of VLANS given a suggested VLAN Range
+     *
+     * @param mask the range to choose from
+     * @param suggested a suggested range to try first
+     * @return the chosen VLAN as a string
+     * @throws BSSException
+     */
+    public String chooseVlanTag(byte[] mask, byte[] suggested) throws BSSException{
+        //Never pick untagged
+        mask[0] &= (byte) 127;
+        suggested[0] &= (byte) 127;
+        //Try suggested
+        for(int i=0; i < suggested.length; i++){
+            suggested[i] &= mask[i];
+        }
+        String remaining = this.tc.maskToRangeString(suggested);
+        if(!"".equals(remaining)){
+            mask = suggested;
+        }
+        return this.chooseVlanTag(mask);
+    }
+    
     /**
      * Picks a VLAN tag from a range of VLANS
      *
-     * @param layer2Info the layer2Info containing the VLAN range
+     * @param mask the range to choose from
+     * @return the chosen VLAN as a string
      * @throws BSSException
      */
-    public void chooseVlanTag(Layer2Info layer2Info) throws BSSException{
-        String vtag = layer2Info.getSrcVtag().getString();
-        byte[] vtagMask = this.tc.rangeStringToMask(vtag);
-
-        /* Pick first available */
-        for (int i = 0;i < vtagMask.length; i++) {
-            for (int j = 0; vtagMask[i] != 0 && j < 8; j++) {
-                byte tag = (byte)(vtagMask[i] & (1 << (7 - j)));
-                if (tag != 0) {
-                    vtag = (i*8 + j) + "";
-                    this.log.info("chose VLAN " + vtag);
-                    layer2Info.getSrcVtag().setString(vtag);
-                    layer2Info.getDestVtag().setString(vtag);
-                    return;
+    public String chooseVlanTag(byte[] mask) throws BSSException{
+        //Never pick untagged
+        mask[0] &= (byte) 127;
+        
+        //pick one
+        ArrayList<Integer> vlanPool = new ArrayList<Integer>();
+        for(int i=0; i < mask.length; i++){
+            for(int j = 0; j < 8; j++){
+                int tag = i*8 + j;
+                if((mask[i] & (int)Math.pow(2, (7-j))) > 0){
+                    vlanPool.add(tag);
                 }
             }
         }
+        
+        int index = 0;
+        if(vlanPool.size() > 1){
+            Random rand = new Random();
+            index = rand.nextInt(vlanPool.size()-1);
+        }
+        
+        return vlanPool.get(index).toString();
     }
 
     /**
@@ -1235,8 +1266,8 @@ public class ReservationManager {
                 if (pathElem.getLink().getL2SwitchingCapabilityData() != null){
                     this.log.info(pathElem.getLink().getTopologyIdent());
                     //TODO: Support VLAN mapping
-                    this.setL2LinkDescr(pathElem, srcLink, destLink,
-                                            pathElem.getLink(), layer2Info);
+                    //this.setL2LinkDescr(pathElem, srcLink, destLink,
+                    //                       pathElem.getLink(), layer2Info);
                 } else {
                     this.log.info("no switching capability data for: " + pathElem.getLink().getTopologyIdent());
                 }

@@ -607,17 +607,17 @@ public class TypeConverter {
      * @return a range string representing the given bit mask
      */
     public String maskToRangeString(byte[] mask){
-        int start = 0;
+        int start = -2;//far away from 0
         String range = new String();
 
         for(int i = 0; i < mask.length; i++){
             for(int j = 0; j < 8; j++){
                 int tag = i*8 + j;
                 if((mask[i] & (int)Math.pow(2, (7-j))) > 0){
-                    if(start == 0){
+                    if(start == -2){
                         start = tag;
                     }
-                }else if(start != 0){
+                }else if(start != -2){
                     if(!range.equals("")){
                         range += ",";
                     }
@@ -625,7 +625,7 @@ public class TypeConverter {
                     if(start != (tag -1)){
                         range += "-" + (tag-1);
                     }
-                    start = 0;
+                    start = -2;
                 }
             }
         }
