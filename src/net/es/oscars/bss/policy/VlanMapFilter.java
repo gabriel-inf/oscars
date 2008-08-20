@@ -146,7 +146,7 @@ public class VlanMapFilter implements PolicyFilter{
         CtrlPlaneHopContent[] interHops = pathInfo.getPath().getHop();
         CtrlPlaneHopContent prevInterHop = this.getPrevExternalL2scHop(interHops);
         CtrlPlaneHopContent nextInterHop = this.getNextExternalL2scHop(interHops);
-        if(prevInterHop != null){
+        if(prevInterHop != null && prevInterHop.getLink() != null){
             String prevVlanString = 
                             prevInterHop.getLink()
                                         .getSwitchingCapabilityDescriptors()
@@ -160,7 +160,7 @@ public class VlanMapFilter implements PolicyFilter{
             }
             vlanMap.put(k(ingrLink), ingrVlans);
         }
-        if(nextInterHop != null){
+        if(nextInterHop != null && nextInterHop.getLink() != null){
             String nextVlanString = 
                             nextInterHop.getLink()
                                         .getSwitchingCapabilityDescriptors()

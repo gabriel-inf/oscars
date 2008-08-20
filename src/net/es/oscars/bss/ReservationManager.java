@@ -869,17 +869,11 @@ public class ReservationManager {
                 }
             }
             pathElem.setLink(link);
-
+            
+            /* Hold suggested VLAN tags */
             if(layer2Info != null &&
-                link.getL2SwitchingCapabilityData() != null &&
-                nextDomain == null) {
+                link.getL2SwitchingCapabilityData() != null) {
                 this.setL2LinkDescr(pathElem, hops[i]);
-            } else if (nextDomain != null) {
-                this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
-            } else if (link.getL2SwitchingCapabilityData() == null) {
-                this.log.info("L2 switching capability data is NULL, can't set up VLAN tags ");
-            } else if (layer2Info == null) {
-                this.log.info("layer 2 info is NULL");
             }
             pathElems.add(pathElem);
             lastElem = pathElem;
@@ -932,16 +926,17 @@ public class ReservationManager {
     }
 
     /**
-     * Stores the interdomain path. The interdomain path is stored primarily
-     * for reporting purpose so there are not quite as many requirements as
-     * for the intradomain path.
+     * Converts teh path in a pathInfo object to a PathElem bean. If an 
+     * existing pathElem object is then it is updated rather than creating 
+     * a new one from scratch. This is useful for storing the inter-domain 
+     * path and updating VLANs when a reservation completes.
      *
      * @param pathInfo the pathInfo element containing the interdomain path
-     * @param currPathElem if interdomain path already stored then this is the first elem
-     * @return first PathElem of interdomain path
+     * @param currPathElem if path already stored then this is the first elem
+     * @return first PathElem of converted path
      * @throws BSSException
      */
-    public PathElem convertInterPath(PathInfo pathInfo, PathElem currPathElem) 
+    public PathElem convertPathElem(PathInfo pathInfo, PathElem currPathElem) 
                 throws BSSException{
         CtrlPlanePathContent path = pathInfo.getPath();
         if(path == null){ return null; }
@@ -1338,7 +1333,7 @@ public class ReservationManager {
                 egrSuggestedVLAN = elem.getLinkDescr();
                 elem = elem.getNextElem();
             }
-            
+
             /* Find the next hop(if any) and see if it uses the suggested VLAN.
                If not then try to choose another by doing the oversubscription 
                check again. */
@@ -1349,6 +1344,7 @@ public class ReservationManager {
                                      .getSwitchingCapabilitySpecificInfo()
                                      .getVlanRangeAvailability();
             }
+            
             if(nextVlan != null && (!egrSuggestedVLAN.equals(nextVlan))){
                 ReservationDAO dao = new ReservationDAO(this.dbname);
                 List<Reservation> active = dao.overlappingReservations(
@@ -1364,12 +1360,13 @@ public class ReservationManager {
                 swcapInfo.setVlanRangeAvailability(sug);
                 swcapInfo.setSuggestedVLANRange(null);
             }
-            this.tc.mergePathInfo(intraPathInfo, pathInfo, true); 
+            this.tc.mergePathInfo(intraPathInfo, pathInfo, true);
+            this.convertPathElem(intraPathInfo, path.getPathElem());
         }
         
         /* Store or update interdomain path */
         try {
-            PathElem interPathElem = this.convertInterPath(pathInfo, 
+            PathElem interPathElem = this.convertPathElem(pathInfo, 
                                                     path.getInterPathElem());
             path.setInterPathElem(interPathElem);
         } catch(BSSException e) {

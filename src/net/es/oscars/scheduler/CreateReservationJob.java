@@ -36,7 +36,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             }else if(dataMap.containsKey("confirm")){
                 this.confirm(dataMap);
             }else if(dataMap.containsKey("complete")){
-                //this.confirm(context);
+                this.complete(dataMap);
             }else{
                 this.log.error("Unknown createReservation job cannot be executed");
             }
@@ -168,8 +168,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         DomainDAO domainDAO = new DomainDAO(bssDbName);
         //getNextDomain is a misnomer. return hop domain
         Domain firstDomain = domainDAO.getNextDomain(pathInfo.getPath().getHop()[0]);
-        if(firstDomain.isLocal()){
-            dataMap.put("firstDomain", true);
+        if(firstDomain.isLocal()){;
             this.complete(dataMap);
         }
         this.log.debug("confirm.end");
