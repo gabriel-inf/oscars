@@ -110,9 +110,9 @@ public class ReservationAdapter {
         
         try{
             if(eventType.equals(OSCARSEvent.RESV_CREATE_CONFIRMED)){
-                this.rm.submitCreateConfirm(gri, pathInfo, producerId);
+                this.rm.submitCreate(gri, pathInfo, producerId, true);
             }else if(eventType.equals(OSCARSEvent.RESV_CREATE_COMPLETED)){
-            
+                this.rm.submitCreate(gri, pathInfo, producerId, false);
             }else if(eventType.equals(OSCARSEvent.RESV_CREATE_FAILED)){
             
             }else{

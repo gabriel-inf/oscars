@@ -43,6 +43,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             bss.getTransaction().commit();
         }catch(Exception e){
             e.printStackTrace();
+            //TODO: In some cases we need to commit so FAILURE state gets updated
             bss.getTransaction().rollback();
         }finally{
             this.runNextJob(context);
@@ -106,10 +107,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             // FIXME: this bit right here makes CreateReservationJobs kinda slow
             // COUNTER-FIXME: Is this really that slow since the next domain is returning immediately?
             CreateReply forwardReply = forwarder.create(resv, pathInfo);
-            rm.finalizeResv(resv, pathInfo, null);
+            rm.finalizeResv(resv, pathInfo, false);
             rm.store(resv);
             if(forwardReply == null){
-                dataMap.put("lastDomain", true);
                 this.confirm(dataMap);      
             }
         } catch (BSSException ex) {
@@ -160,12 +160,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             return;
         }
         String login = resv.getLogin();
-        
-        if(!dataMap.containsKey("lastDomain")){
-            //TODO: Second option should be NULL or finalize needs to be split-up
-            rm.finalizeResv(resv, pathInfo, pathInfo);
-            rm.store(resv);
-        }
+        rm.finalizeResv(resv, pathInfo, true);
+        rm.store(resv);
         this.se.updateLocalStatus(resv, 1);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv, pathInfo);
         
@@ -205,9 +201,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         }
         String login = resv.getLogin();
         
-        if(!dataMap.containsKey("firstDomain")){
-            //TODO: whatever it is I need to do here
-        }
+        rm.finalizeResv(resv, pathInfo, false);
+        rm.store(resv);
         
         try{
             this.se.updateLocalStatus(resv, 0);

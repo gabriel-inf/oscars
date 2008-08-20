@@ -178,75 +178,89 @@ public class ReservationManager {
     }
     
     /**
-     * Verifies a RESERATION_CREATE_CONFIRMED event is valid and then 
-     * schedules it for execution.
+     * Verifies a RESERATION_CREATE_CONFIRMED and RESERATION_CREATE_COMPLETED 
+     * event is valid and then schedules it for execution.
      *
      * @param gri the GRI of the reservation being confirmed
      * @param pathInfo the confirmed path
      * @param producerID the URN of the domain that produced this event
+     * @param confirm true if confirmed event, false if completed event
+     * @throws BSSException
      */
-    public void submitCreateConfirm(String gri, PathInfo pathInfo, 
-                                    String producerID) throws BSSException{
+    public void submitCreate(String gri, PathInfo pathInfo, 
+                                    String producerID, boolean confirm) throws BSSException{
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
+        String op = "complete";
+        String targetNeighbor = "previous";
+        if(confirm){
+            op = "confirm";
+            targetNeighbor = "next";
+        }
+        
         if(resv == null){
             this.log.error("Reservation " + gri + " not found");
             return;
         }
         if(pathInfo.getPath() == null){
-            this.log.error("Recieved confirm event from " + producerID + 
+            this.log.error("Recieved " + op + " event from " + producerID + 
                           " with no path element.");
              return;
         }else if(pathInfo.getPath().getHop() == null){
-            this.log.error("Recieved confirm event from " + producerID + 
+            this.log.error("Recieved " + op + " event from " + producerID + 
                           " with a path element containing no hops");
              return;
         }
         
-        CtrlPlaneHopContent nextHop = this.getNextExternalHop(pathInfo);
-        if(nextHop == null){
-            this.log.error("Recieved confirm event from " + producerID + 
-                          " for a reservation with no hop past the local" +
-                          " domain");
+        CtrlPlaneHopContent neighborHop = null;
+        if(confirm){
+            neighborHop = this.getNextExternalHop(pathInfo);
+        }else{
+            neighborHop = this.getPrevExternalHop(pathInfo);
+        }
+        if(neighborHop == null){
+            this.log.error("Recieved " + op + " event from " + producerID + 
+                          " for a reservation with no " + targetNeighbor + 
+                          " domain in relation to the current domain");
              return;
         }
         
         DomainDAO domainDAO = new DomainDAO(this.dbname);
-        Domain nextDomain = domainDAO.getNextDomain(nextHop);
+        Domain nextDomain = domainDAO.getNextDomain(neighborHop);
         if(nextDomain == null){
-            this.log.error("The next hop in the given path is an unknown neighbor.");
+            this.log.error("The " + targetNeighbor + " hop in the given path" +
+                           " is an unknown neighbor.");
             return;
         }else if(!nextDomain.getTopologyIdent().equals(producerID)){
             this.log.debug("The event is from " + producerID + " not the " +
-                           "next domain " + nextDomain.getTopologyIdent() + 
-                           " so discarding");
+                           targetNeighbor + " domain " + 
+                           nextDomain.getTopologyIdent() + " so discarding");
             return;
         }
         
         String status = this.se.getStatus(resv);
         if(!StateEngine.INCREATE.equals(status)){
-            this.log.info("Trying to confirm a reservation that doesn't" + 
+            this.log.info("Trying to " + op + " a reservation that doesn't" + 
                           " have status " + StateEngine.INCREATE);
         }
-        this.se.canUpdateLocalStatus(resv, 1);
+        this.se.canUpdateLocalStatus(resv, (confirm?1:0));
         
         /* Submitting a job to the resource scheduling queue 
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = "confirm-"+resv.hashCode();
+        String jobName = op+"-"+resv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", CreateReservationJob.class);
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put("confirm", true);
+        jobDataMap.put(op, true);
         jobDataMap.put("gri", gri);
         jobDataMap.put("pathInfo", pathInfo);
-        jobDataMap.put("nextDomain", producerID);
         jobDetail.setJobDataMap(jobDataMap);
         try {
             sched.addJob(jobDetail, false);
         } catch (SchedulerException ex) {
-            this.log.error("Unable to schedule confirm job");
+            this.log.error("Unable to schedule " + op + " job");
             ex.printStackTrace();
         }
     }
@@ -551,7 +565,7 @@ public class ReservationManager {
      * it wouldn't violate policy, and then finds the next domain, if any.
      *
      * @param resv partially filled in reservation, use startTime, endTime, bandWidth,
-     * 	           GRI
+     *                GRI
      * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
      *                  information, may also include explicit path hops.
      * @return a Path structure with the intradomain path hops, nextDomain, and
@@ -923,22 +937,46 @@ public class ReservationManager {
      * for the intradomain path.
      *
      * @param pathInfo the pathInfo element containing the interdomain path
+     * @param currPathElem if interdomain path already stored then this is the first elem
      * @return first PathElem of interdomain path
      * @throws BSSException
      */
-    public PathElem convertInterPath(PathInfo pathInfo) throws BSSException{
+    public PathElem convertInterPath(PathInfo pathInfo, PathElem currPathElem) 
+                throws BSSException{
         CtrlPlanePathContent path = pathInfo.getPath();
         if(path == null){ return null; }
         CtrlPlaneHopContent[] hops = path.getHop();
         PathElem prevPathElem = null;
-        PathElem currPathElem = null;
-
+        HashMap<String, PathElem> savedElems = new HashMap<String, PathElem>();
+        
+        while(currPathElem != null){
+            Link link = currPathElem.getLink();
+            if(link != null){
+                savedElems.put(link.getFQTI(), currPathElem);
+            }
+            currPathElem = currPathElem.getNextElem();
+        }
+        
         for(int i = (hops.length - 1); i >= 0; i--){
             String urn = this.tc.hopToURN(hops[i]);
             Link link = TopologyUtil.getLink(urn, this.dbname);
-            currPathElem = new PathElem();
-            currPathElem.setLink(link);
-            currPathElem.setNextElem(prevPathElem);
+            if(savedElems.containsKey(urn)){
+                currPathElem = savedElems.get(urn);
+            }else{
+                currPathElem = new PathElem();
+                currPathElem.setLink(link);
+            }
+            if(currPathElem.getNextElem() == null && prevPathElem != null){
+                currPathElem.setNextElem(prevPathElem);
+            }
+            if(link.getL2SwitchingCapabilityData() != null && 
+                    hops[i].getLink() != null){
+                String vlan = hops[i].getLink()
+                                     .getSwitchingCapabilityDescriptors()
+                                     .getSwitchingCapabilitySpecificInfo()
+                                     .getVlanRangeAvailability();
+               currPathElem.setLinkDescr(vlan);
+            }
             prevPathElem = currPathElem;
         }
         return currPathElem;
@@ -1070,6 +1108,33 @@ public class ReservationManager {
         this.log.debug("getNextExternalHop.end");
         return nextHop;
     }
+    
+    /**
+     * Returns the last hop before the current domain
+     *
+     * @param pathInfo PathInfo instance containing path
+     * @return the last hop before the current domain
+     * @throws BSSException
+     */
+     public CtrlPlaneHopContent getPrevExternalHop(PathInfo pathInfo){
+        this.log.debug("getPrevExternalHop.start");
+        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
+        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
+        CtrlPlaneHopContent prevHop = null;
+        for(CtrlPlaneHopContent hop : hops){
+            String urn = this.tc.hopToURN(hop);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+            String domainId = parseResults.get("domainId");
+            if(domainDAO.isLocal(domainId)){
+                break;
+            }
+            prevHop = hop;
+        }
+        this.log.debug("getPrevExternalHop.start");
+        
+        return prevHop;
+     }
 
     /**
      * Returns IP address associated with host.
@@ -1231,89 +1296,89 @@ public class ReservationManager {
      * Stores token and vlan tags if they are returned by forwardReply
      * Stores the interdomain path elements returned by forwardReply
      *
-     * @param forwardReply response from forward request
      * @param resv reservation to be stored in database
      * @param pathInfo reservation path information
      */
-    public void finalizeResv(Reservation resv, PathInfo pathInfo, 
-                            PathInfo fwdPathInfo) throws BSSException{
+    public void finalizeResv(Reservation resv, PathInfo pathInfo, boolean confirm) 
+            throws BSSException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
         Path path = resv.getPath();
-
-        // if user signaled and last domain create token, otherwise store
-        // token returned in forwardReply
-        /* if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
-            this.generateToken(forwardReply, resv);
-        } */
-        if (layer2Info != null && fwdPathInfo != null && 
-            fwdPathInfo.getLayer2Info() != null) {
-
-            this.log.info("setting up vtags");
-            DomainDAO domainDAO = new DomainDAO(this.dbname);
-            Link srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
-            Link destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
-            VlanTag srcVtag = fwdPathInfo.getLayer2Info().getSrcVtag();
-            VlanTag destVtag = fwdPathInfo.getLayer2Info().getDestVtag();
-            this.log.info("src vtag: " + srcVtag);
-            this.log.info("dest vtag: " + destVtag);
-            layer2Info.setSrcVtag(srcVtag);
-            layer2Info.setDestVtag(destVtag);
-
-            /* update VLANs in intradomain path */
-            PathElem pathElem = path.getPathElem();
-            while (pathElem != null) {
-                if (pathElem.getLink().getL2SwitchingCapabilityData() != null){
-                    this.log.info(pathElem.getLink().getTopologyIdent());
-                    //TODO: Support VLAN mapping
-                    //this.setL2LinkDescr(pathElem, srcLink, destLink,
-                    //                       pathElem.getLink(), layer2Info);
-                } else {
-                    this.log.info("no switching capability data for: " + pathElem.getLink().getTopologyIdent());
+        int localStatus = this.se.getLocalStatus(resv);
+        CtrlPlaneHopContent nextExtHop = this.getNextExternalHop(pathInfo);
+        
+        /* if user signaled and last domain create token, otherwise store
+           token returned in confirm message */
+        if (confirm){
+            /* if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
+                this.generateToken(forwardReply, resv);
+            } */
+        }
+        if (confirm && layer2Info != null) {
+            this.log.info("finalizing VLAN tags");
+            //Retrieve the local path
+            PathInfo intraPathInfo = new PathInfo();
+            intraPathInfo.setPath(this.tc.pathToCtrlPlane(path));
+            this.expandLocalHops(intraPathInfo);
+            CtrlPlanePathContent intraPath = intraPathInfo.getPath();
+            CtrlPlaneHopContent[] hops = intraPath.getHop();
+            PathElem elem = path.getPathElem();
+            String egrSuggestedVLAN = "";
+            for(CtrlPlaneHopContent hop : hops){
+                if(elem == null){
+                    break;
                 }
-                pathElem = pathElem.getNextElem();
+                Link link = elem.getLink();
+                if(link==null || link.getL2SwitchingCapabilityData()==null){
+                    continue;
+                }
+                hop.getLink().getSwitchingCapabilityDescriptors()
+                             .getSwitchingCapabilitySpecificInfo()
+                             .setSuggestedVLANRange(elem.getLinkDescr());
+                egrSuggestedVLAN = elem.getLinkDescr();
+                elem = elem.getNextElem();
             }
-
-            /* Store interdomain path */
-            try {
-                PathElem interPathElem = this.convertInterPath(fwdPathInfo);
-                path.setInterPathElem(interPathElem);
-            } catch(BSSException e) {
-                /* Catch error when try to store path with links not in the
-                   database. Perhaps in the future this will be an error but
-                   until everyone shares topology we can relax this requirement
-                 */
-                this.log.info("Unable to store interdomain path. " +
-                    e.getMessage());
+            
+            /* Find the next hop(if any) and see if it uses the suggested VLAN.
+               If not then try to choose another by doing the oversubscription 
+               check again. */
+            String nextVlan = null;
+            if(nextExtHop != null && nextExtHop.getLink() != null){
+                nextVlan = nextExtHop.getLink()
+                                     .getSwitchingCapabilityDescriptors()
+                                     .getSwitchingCapabilitySpecificInfo()
+                                     .getVlanRangeAvailability();
             }
-        } else {
-            this.log.info("not setting up vtags");
-            if (layer2Info == null) {
-                this.log.info("because no layer 2 info");
+            if(nextVlan != null && (!egrSuggestedVLAN.equals(nextVlan))){
+                ReservationDAO dao = new ReservationDAO(this.dbname);
+                List<Reservation> active = dao.overlappingReservations(
+                                       resv.getStartTime(), resv.getEndTime());
+                this.policyMgr.checkOversubscribed(active, pathInfo, 
+                                                   intraPath, resv);
             }
-            if (fwdPathInfo == null) {
-                this.log.info("because no fwdPathInfo");
-            } else if (fwdPathInfo.getLayer2Info() == null) {
-                this.log.info("because no fwdPathInfo.getLayer2Info()");
-            } else {
-                this.log.info("unknown error");
+            for(CtrlPlaneHopContent hop : hops){
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                             hop.getLink().getSwitchingCapabilityDescriptors()
+                                          .getSwitchingCapabilitySpecificInfo();
+                String sug = swcapInfo.getSuggestedVLANRange();
+                swcapInfo.setVlanRangeAvailability(sug);
+                swcapInfo.setSuggestedVLANRange(null);
             }
-            /* Store version of path in terms of interdomain hops. Still want to do
-               this even if a local path because the intradomain version may be private.
-               For current implementations the intradomain URNs and interdomain URNs will
-               be the same but that won't be true in the future so we need two versions
-               of every path*/
-            try {
-                PathElem interPathElem = this.convertInterPath(pathInfo);
-                path.setInterPathElem(interPathElem);
-            } catch(BSSException e) {
-                /* Catch error when try to store path with links not in the
-                   database. Perhaps in the future this will be an error but
-                   until everyone shares topology we can relax this requirement
-                 */
-                this.log.info("Unable to store interdomain path. " +
-                    e.getMessage());
-            }
+            this.tc.mergePathInfo(intraPathInfo, pathInfo, true); 
+        }
+        
+        /* Store or update interdomain path */
+        try {
+            PathElem interPathElem = this.convertInterPath(pathInfo, 
+                                                    path.getInterPathElem());
+            path.setInterPathElem(interPathElem);
+        } catch(BSSException e) {
+            /* Catch error when try to store path with links not in the
+               database. Perhaps in the future this will be an error but
+               until everyone shares topology we can relax this requirement
+             */
+            this.log.info("Unable to store interdomain path. " +
+                e.getMessage());
         }
     }
 
