@@ -206,11 +206,12 @@ CREATE UNIQUE INDEX permName on permissions (name(6));
 -- Add description description for attributes
 ALTER IGNORE TABLE attributes ADD COLUMN description TEXT NOT NULL;
 UPDATE attributes SET attrType="role" WHERE attrType="group";
+UPDATE attributes SET name="OSCARS-site-administrator" where name="OSCARS-siteAdmin";
 
 UPDATE  attributes SET description="make reservations" WHERE name="OSCARS-user" ;
 UPDATE  attributes SET description="manage all reservations, view and update topology" WHERE name="OSCARS-engineer";
 UPDATE  attributes SET description="view all reservations" WHERE name="OSCARS-operator";
-UPDATE  attributes SET description="manage all reservations starting or ending at site" WHERE name="OSCARS-siteAdmin";
+UPDATE  attributes SET description="manage all reservations starting or ending at site" WHERE name="OSCARS-site-administrator";
 UPDATE  attributes SET description="make reservations and view topology" WHERE name="OSCARS-service";
 UPDATE  attributes SET description="manage all users" WHERE name="OSCARS-administrator";
 
@@ -329,13 +330,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL);
      
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);

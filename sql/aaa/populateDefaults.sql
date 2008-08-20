@@ -101,7 +101,7 @@ INSERT INTO attributes VALUES(NULL, "OSCARS-service", "role", "make reservations
 INSERT INTO attributes VALUES(NULL, "OSCARS-operator", "role", "view all reservations");
 
 -- Site Administrator - Can manage all reservations starting or terminating at a site
-INSERT INTO attributes VALUES(NULL, "OSCARS-siteAdmin", "role", "manage all reservations starting or ending at site");
+INSERT INTO attributes VALUES(NULL, "OSCARS-site-administrator", "role", "manage all reservations starting or ending at site");
 
 -- Publisher - for use by IDCs and other services that want to publish notifications
 INSERT INTO attributes VALUES(NULL, "OSCARS-publisher", "role",
@@ -612,37 +612,37 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
     -- List, query, modify, create and signal any reservation
     --   that starts or terminates at his site
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="query"),
      (select id from constraints where name="my-site"),"true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="my-site"),"true"); 
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="list"),
      (select id from constraints where name="my-site"),"true"); 
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
      (select id from constraints where name="my-site"),"true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
      (select id from constraints where name="my-site"),"true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     (select id from attributes where name="OSCARS-siteAdmin"),
+     (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
