@@ -29,7 +29,6 @@ oscars.AuthorizationDetails.init = function () {
 // posts authorization add to server
 oscars.AuthorizationDetails.postAdd = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
-    oscars.AuthorizationDetails.setMenuOptionsEnabled();
     dojo.xhrPost({
         url: 'servlet/AuthorizationAdd',
         handleAs: "json-comment-filtered",
@@ -54,13 +53,12 @@ oscars.AuthorizationDetails.postModify = function () {
 oscars.AuthorizationDetails.postDelete = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
     var authGrid = dijit.byId("authGrid");
-    // TODO:  need to get selected row, and data from that
     dojo.xhrPost({
         url: 'servlet/AuthorizationRemove',
-            handleAs: "json-comment-filtered",
-            load: oscars.AuthorizationDetails.handleReply,
-            error: oscars.Form.handleError,
-            form: formNode
+        handleAs: "json-comment-filtered",
+        load: oscars.AuthorizationDetails.handleReply,
+        error: oscars.Form.handleError,
+        form: formNode
     });
 };
 

@@ -51,6 +51,11 @@ dojo.declare("oscars.AuthorizationState", null, {
         this.permissionName = permissionName;
         this.constraintName = constraintName;
         this.constraintValue = constraintValue;
+        var formNode = dijit.byId("authDetailsForm").domNode;
+        formNode.oldAuthAttributeName = attributeName;
+        formNode.oldResourceName = resourceName;
+        formNode.oldPermissionName = permissionName;
+        formNode.oldConstraintName = constraintName;
     }, 
 
     recoverAuthState: function(formNode) {
@@ -80,6 +85,10 @@ dojo.declare("oscars.AuthorizationState", null, {
         formNode.constraintValue.value = "";
         var constraintTypeNode = dojo.byId("constraintType");
         constraintTypeNode.innerHTML = "";
+        formNode.oldAuthAttributeName = "";
+        formNode.oldResourceName = "";
+        formNode.oldPermissionName = "";
+        formNode.oldConstraintName = "";
     },
 
     constrainChoices: function(menuName) {

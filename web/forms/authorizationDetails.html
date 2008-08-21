@@ -8,7 +8,7 @@
 
 <body>
 <form id="authDetailsForm" dojoType="dijit.form.Form">
-  <span id="modifyAuthorizationDisplay" style="display:none">
+<span id="modifyAuthorizationDisplay" style="display:none">
 <p>Any legal authorization can be added to any attribute.  Note that if you
 change the attribute associated with an existing authorization, you are
 deleting the authorization associated with the old attribute.
@@ -68,6 +68,11 @@ a resource, it may be reset to None if it is not valid for that resource.
      </script>
   </button>
   </span>
+
+  <input type="hidden" name="oldAuthAttributeName" id="oldAuthAttributeName" />
+  <input type="hidden" name="oldResourceName" id="oldResourceName" />
+  <input type="hidden" name="oldPermissionName" id="oldPermissionName" />
+  <input type="hidden" name="oldConstraintName" id="oldConstraintName" />
 
 <table width="50%">
 <tbody>
