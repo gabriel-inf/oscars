@@ -248,8 +248,8 @@ public class Forwarder extends Client {
 
         /* default pathSetupMode between domains is signal-xml */
         String pathSetupMode = pathInfo.getPathSetupMode();
-        if (pathSetupMode == null || pathSetupMode.equals("timer-automatic")) {
-            pathInfo.setPathSetupMode("signal-xml");
+        if (pathSetupMode == null) {
+            pathInfo.setPathSetupMode("timer-automatic");
         }
 
         resCont.setStartTime(resv.getStartTime());
