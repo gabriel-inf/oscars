@@ -83,7 +83,14 @@ oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
     oscars.Form.applyParams(responseObject);
     oscars.AuthorizationDetails.setMenuOptionsEnabled();
     oscarsState.authorizationState.clearAuthState();
-    // TODO:  if not list, go back to authorization list
+    if (responseObject.method != "AuthorizationForm") {
+        // after adding, deleting, or modifying an authorization, refresh the
+        // authorizations list and display that tab
+        var pane = dijit.byId("authorizationsPane");
+        mainTabContainer.selectChild(pane);
+        // must refresh when visible
+        oscars.Authorizations.refreshAuthGrid();
+    }
 };
 
 // take action based on this tab's selection
