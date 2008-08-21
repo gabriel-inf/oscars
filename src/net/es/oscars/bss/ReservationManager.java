@@ -266,6 +266,50 @@ public class ReservationManager {
     }
     
     /**
+     * Verifies a RESERATION_CREATE_CONFIRMED and RESERATION_CREATE_COMPLETED 
+     * event is valid and then schedules it for execution.
+     *
+     * @param gri the GRI of the reservation being confirmed
+     * @param pathInfo the confirmed path
+     * @param producerID the URN of the domain that produced this event
+     * @param confirm true if confirmed event, false if completed event
+     * @throws BSSException
+     */
+    public void submitFailed(String gri, PathInfo pathInfo, 
+                             String errorSrc,  String errorCode, 
+                             String errorMsg, Class jobClass) 
+                             throws BSSException{
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        Reservation resv = dao.query(gri);
+        if(resv == null){
+            this.log.error("Reservation " + gri + " not found");
+            return;
+        }
+        
+        /* Submitting a job to the resource scheduling queue 
+           so there aren't any resource conflicts */
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String jobName = "failed-"+resv.hashCode();
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", jobClass);
+        this.log.debug("Adding job "+jobName);
+        jobDetail.setDurability(true);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("fail", true);
+        jobDataMap.put("gri", gri);
+        jobDataMap.put("pathInfo", pathInfo);
+        jobDataMap.put("errorSrc", errorSrc);
+        jobDataMap.put("errorCode", errorCode);
+        jobDataMap.put("errorMsg", errorMsg);
+        jobDetail.setJobDataMap(jobDataMap);
+        try {
+            sched.addJob(jobDetail, false);
+        } catch (SchedulerException ex) {
+            this.log.error("Unable to schedule failure job");
+            ex.printStackTrace();
+        }                       
+    }
+
+    /**
      * Stores the reservation in the database.
      *
      * @param resv Reservation instance to persist

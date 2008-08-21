@@ -355,6 +355,8 @@
             <xsd:element name="timestamp" type="xsd:long" />
             <xsd:element name="userLogin" type="xsd:string" 
                 maxOccurs="1" minOccurs="0" />
+            <xsd:element name="errorSource" type="xsd:string" 
+                maxOccurs="1" minOccurs="0" />
             <xsd:element name="errorCode" type="xsd:string" 
                 maxOccurs="1" minOccurs="0" />
             <xsd:element name="errorMessage" type="xsd:string" 

@@ -114,7 +114,11 @@ public class ReservationAdapter {
             }else if(eventType.equals(OSCARSEvent.RESV_CREATE_COMPLETED)){
                 this.rm.submitCreate(gri, pathInfo, producerId, false);
             }else if(eventType.equals(OSCARSEvent.RESV_CREATE_FAILED)){
-            
+                String src = event.getErrorSource();
+                String code = event.getErrorCode();
+                String msg = event.getErrorMessage();
+                this.rm.submitFailed(gri, pathInfo, src, code, msg, 
+                                     CreateReservationJob.class);
             }else{
                 this.log.debug("Discarding event " + eventType);
             }

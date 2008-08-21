@@ -3,6 +3,7 @@ package net.es.oscars.notify;
 import java.io.IOException;
 import java.io.File;
 import java.net.InetAddress;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.xml.namespace.QName;
@@ -129,6 +130,7 @@ public class WSObserver implements Observer {
         }
         
         /* Register publisher */
+        //TODO: Move this to ServiceManager
         int registerRetries = 10;//default
         if("unlimited".equals(registerRetryAttempts)){
             registerRetries = -1;
@@ -287,6 +289,14 @@ public class WSObserver implements Observer {
         event.setUserLogin(osEvent.getUserLogin());
         event.setErrorCode(osEvent.getErrorCode());
         event.setErrorMessage(osEvent.getErrorMessage());
+        if(osEvent.getErrorCode() != null && osEvent.getSource() != null){
+            try{
+                String errSrc = osEvent.getSource();
+                //test if URL
+                new URL(errSrc);
+                event.setErrorSource(errSrc);
+            }catch(Exception e){}
+        }
         event.setResDetails(resDetails);
         event.setLocalDetails(localDetails);
         //TODO: Set msgDetails

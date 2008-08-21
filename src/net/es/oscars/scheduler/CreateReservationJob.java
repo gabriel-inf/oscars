@@ -26,6 +26,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log.debug("CreateReservationJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
         this.se = this.core.getStateEngine();
+        String idcURL = this.core.getServiceManager().getIdcURL();
         EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri =  dataMap.getString("gri");
@@ -58,6 +59,13 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 this.confirm(resv, pathInfo);
             }else if(dataMap.containsKey("complete")){
                 this.complete(resv, pathInfo);
+            }else if(dataMap.containsKey("fail")){
+                String code = dataMap.getString("errorCode");
+                String msg = dataMap.getString("errorMsg");
+                String src = dataMap.getString("errorSource");
+                this.se.updateStatus(resv, StateEngine.FAILED);
+                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login,
+                                      src, resv, code, msg);
             }else{
                 this.log.error("Unknown createReservation job cannot be executed");
             }
@@ -72,7 +80,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 bss.beginTransaction();
                 this.se.updateStatus(resv, StateEngine.FAILED);
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, 
-                                      "JOB", resv, "", ex.getMessage());
+                                      idcURL, resv, "", ex.getMessage());
                 bss.getTransaction().commit();
             }catch(Exception ex2){
                 bss.getTransaction().rollback();
