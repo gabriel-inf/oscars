@@ -910,6 +910,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String msgSubId = msgSubRefParams.getSubscriptionId();
         if(subId == null || msgSubId == null || (!subId.equals(msgSubId))){
             this.log.error("Subscription ID in Notify message invalid.");
+            this.log.error("Found " +msgSubId+", expected " + subId);
             return null;
         }
         

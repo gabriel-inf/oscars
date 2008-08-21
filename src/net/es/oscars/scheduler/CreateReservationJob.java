@@ -1,4 +1,7 @@
 package net.es.oscars.scheduler;
+
+import java.util.Properties;
+import java.util.Date;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
@@ -9,11 +12,14 @@ import net.es.oscars.interdomain.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.*;
 import net.es.oscars.pss.*;
+import net.es.oscars.PropHandler;
 
 public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
     private Logger log;
     private OSCARSCore core;
     private StateEngine se;
+    private long CONFIRM_TIMEOUT = 600;//10min
+    private long COMPLETE_TIMEOUT = 600;//10min
     
     /**
      * Assigns the job to the start, confirm or complete method
@@ -32,6 +38,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String gri =  dataMap.getString("gri");
         PathInfo pathInfo = (PathInfo) dataMap.get("pathInfo");
         this.log.debug("GRI is: "+dataMap.get("gri")+"for job name: "+jobName);
+        this.init();
+
         Session bss = core.getBssSession();
         bss.beginTransaction();
         
@@ -51,7 +59,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         }
         String login = resv.getLogin();
         
-        /* Perform start, confirm or complete operation */
+        /* Perform start, confirm, complete, fail or statusCheck operation */
         try{
             if(dataMap.containsKey("start")){
                 this.start(resv, pathInfo);
@@ -64,8 +72,20 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 String msg = dataMap.getString("errorMsg");
                 String src = dataMap.getString("errorSource");
                 this.se.updateStatus(resv, StateEngine.FAILED);
+                this.se.updateLocalStatus(resv, 0);
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login,
                                       src, resv, code, msg);
+            }else if(dataMap.containsKey("statusCheck")){
+                String status = this.se.getStatus(resv);
+                int localStatus = this.se.getLocalStatus(resv);
+                if(status.equals(dataMap.getString("status")) && 
+                    localStatus == dataMap.getInt("localStatus")){
+                    String op = (localStatus == 1 ? 
+                                 OSCARSEvent.RESV_CREATE_COMPLETED : 
+                                 OSCARSEvent.RESV_CREATE_CONFIRMED);
+                    throw new BSSException("Create reservation timed-out " +
+                                           "while waiting for event " +  op);
+                }
             }else{
                 this.log.error("Unknown createReservation job cannot be executed");
             }
@@ -79,6 +99,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 bss = core.getBssSession();
                 bss.beginTransaction();
                 this.se.updateStatus(resv, StateEngine.FAILED);
+                this.se.updateLocalStatus(resv, 0);
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, 
                                       idcURL, resv, "", ex.getMessage());
                 bss.getTransaction().commit();
@@ -92,6 +113,49 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log.debug("CreateReservationJob.end name:"+jobName);
     }
     
+    /**
+     * Reads in timeout properties
+     */
+     public void init(){
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("timeout", true);
+        String defaultTimeoutStr = props.getProperty("default");
+        String confirmTimeoutStr = props.getProperty("createResv.confirm");
+        String completeTimeoutStr = props.getProperty("createResv.complete");
+        int defaultTimeout = 0;
+        if(defaultTimeoutStr != null){
+            try{
+                defaultTimeout = Integer.parseInt(defaultTimeoutStr);
+            }catch(Exception e){
+                this.log.error("Default timeout.default property invalid. " +
+                               "Defaulting to another value for timeout.");
+            }
+        }
+        
+        if(confirmTimeoutStr != null){
+            try{
+                CONFIRM_TIMEOUT = Integer.parseInt(confirmTimeoutStr);
+            }catch(Exception e){
+                this.log.error("timeout.createResv.confirm property invalid." +
+                               "Defaulting to another value for timeout.");
+            }
+        }else if(defaultTimeout > 0){
+            CONFIRM_TIMEOUT = defaultTimeout;
+        }
+        
+        if(completeTimeoutStr != null){
+            try{
+                COMPLETE_TIMEOUT = Integer.parseInt(completeTimeoutStr);
+            }catch(Exception e){
+                this.log.error("timeout.createResv.complete property invalid." +
+                               "Defaulting to another value for timeout.");
+            }
+        }else if(defaultTimeout > 0){
+            COMPLETE_TIMEOUT = defaultTimeout;
+        }
+     }
+     
+     
     /**
      * Processes an initial request
      *
@@ -123,6 +187,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             rm.store(resv);
             if(forwardReply == null){
                 this.confirm(resv, pathInfo);      
+            }else{
+                this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
             }
         } catch (Exception ex) {
             error = (Exception) ex;
@@ -159,6 +225,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         Domain firstDomain = domainDAO.getNextDomain(pathInfo.getPath().getHop()[0]);
         if(firstDomain.isLocal()){;
             this.complete(resv, pathInfo);
+        }else{
+            this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
         this.log.debug("confirm.end");
     }
@@ -189,4 +257,34 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         
         this.log.debug("complete.end");
     }
+    
+    /**
+     * Schedules a job to check if a request timed out
+     *
+     * @param resv the reservation to be check
+     */
+     public void scheduleStatusCheck(long timeout, Reservation resv){
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String triggerName = "createResvTimeoutTrig-" + resv.hashCode();
+        String jobName = "createResvTimeoutJob-" + resv.hashCode();
+        long time = System.currentTimeMillis() + timeout*1000;
+        Date date = new Date(time);
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  date, null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "REQ_TIMEOUT", 
+                                            CreateReservationJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("statusCheck", true);
+        dataMap.put("gri", resv.getGlobalReservationId());
+        dataMap.put("status", this.se.getStatus(resv));
+        dataMap.put("localStatus", this.se.getLocalStatus(resv));
+        jobDetail.setJobDataMap(dataMap);
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);    
+        }
+     }
 }
