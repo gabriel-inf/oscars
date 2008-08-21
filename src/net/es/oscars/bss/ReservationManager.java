@@ -1369,6 +1369,7 @@ public class ReservationManager {
                 }
                 Link link = elem.getLink();
                 if(link==null || link.getL2SwitchingCapabilityData()==null){
+                    elem = elem.getNextElem();
                     continue;
                 }
                 hop.getLink().getSwitchingCapabilityDescriptors()

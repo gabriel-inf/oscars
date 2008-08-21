@@ -364,8 +364,16 @@ public class VlanMapFilter implements PolicyFilter{
                  "range. If no VLAN range was specified then there are no " +
                  "available vlans along the path.");
             } 
+            //only add if not in use
             for(int i=0; i < vlanMask.length; i++){
-                vlanMask[i] ^= resvMask[i];
+                int newTags = 0;
+                for(int j = 0; j < 8; j++){
+                    if((resvMask[i] & (int)Math.pow(2, (7-j))) == 0 &&
+                       (vlanMask[i] & (int)Math.pow(2, (7-j))) > 0){
+                        newTags += (int)Math.pow(2, (7-j));
+                    }
+                }
+                vlanMask[i] =(byte) newTags;
             }
             String remainingVlans = this.tc.maskToRangeString(vlanMask);
             if("".equals(remainingVlans) && newLogin.equals(resv.getLogin())){
