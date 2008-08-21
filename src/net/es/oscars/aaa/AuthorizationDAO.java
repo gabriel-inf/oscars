@@ -233,33 +233,24 @@ public class AuthorizationDAO
      *    @param resourceName String name of resource
      *    @param permissionName String name of permission
      *    @param constraintName String name of constraint, may be  null
-     *    @param constraintValue Stirng value of constraint, if null map to "true"
+     *    @param constraintValue String value of constraint, if null map to "true"
      */
     
     public void create(String attrName, String resourceName, String permissionName,
             String constraintName, String constraintValue) throws AAAException {
-        Logger log = Logger.getLogger(this.getClass());
-        int attrId = 17;
-        int resourceId = 17;
-       int permId=17;
-       int constrId=17;
-        try {
+ 
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        attrId = attrDAO.getIdByName(attrName).intValue();
+        int attrId = attrDAO.getIdByName(attrName).intValue();
         ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
-        resourceId = resourceDAO.getIdByName(resourceName).intValue();
+        int resourceId = resourceDAO.getIdByName(resourceName).intValue();
         PermissionDAO permDAO = new PermissionDAO(this.dbname);
-        permId = permDAO.getIdByName(permissionName).intValue();
+        int permId = permDAO.getIdByName(permissionName).intValue();
         if (constraintName == null) {
             constraintName = "none";
         }
         ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
-        constrId = constrDAO.getIdByName(constraintName).intValue();
-        } catch (Exception e) {
-           log.debug("caught exception : " + e.getMessage());
-        }
-        log.debug("attrid: " + attrId + " permissionId: " + permId +
-                " resourceId: " + resourceId + "constrId: " + constrId);
+        int constrId = constrDAO.getIdByName(constraintName).intValue();
+ 
         this.create(attrId,resourceId,permId,constrId,constraintValue);
             
     }
@@ -285,9 +276,9 @@ public class AuthorizationDAO
         }
         auth = new Authorization();
         auth.setAttrId(attrId);
-        auth.setAttrId(resourceId);
-        auth.setAttrId(permissionId);
-        auth.setAttrId(constraintId);
+        auth.setResourceId(resourceId);
+        auth.setPermissionId(permissionId);
+        auth.setConstraintId(constraintId);
         if (constraintValue != null) {
             auth.setConstraintValue(constraintValue);
         }

@@ -45,14 +45,14 @@ public class AuthorizationAdd extends HttpServlet {
         }
         try {
         String attribute = request.getParameter("authAttributeName");
-        String permission = Utils.dropDescription(request.getParameter("permissionName"));
-        String resource = Utils.dropDescription(request.getParameter("resourceName"));
-        String constraintName = Utils.dropDescription(request.getParameter("constraintName"));
+        String permission = request.getParameter("permissionName");
+        String resource = request.getParameter("resourceName");
+        String constraintName = request.getParameter("constraintName");
         String constraintValue = null;
         if (constraintName != null) {
             constraintValue = request.getParameter("constraintValue");
         }
-        this.log.debug("attribute: " + attribute +" resource: " + resource + " permission: "
+        this.log.debug("Adding attribute: " + attribute +" resource: " + resource + " permission: "
                 + permission + " constraintName: " + constraintName + " constraintValue: " + constraintValue);
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
         try {

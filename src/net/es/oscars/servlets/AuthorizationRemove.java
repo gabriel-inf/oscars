@@ -48,7 +48,7 @@ public class AuthorizationRemove extends HttpServlet {
         String resource = request.getParameter("resourceName");
         String constraintName = request.getParameter("constraintName");
         
-        log.debug("attribute: " + attribute +" resource: " + resource + " permission: "
+        log.debug("Removing attribute: " + attribute +" resource: " + resource + " permission: "
                 + permission + " constraintName: " + constraintName );
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
         try {
