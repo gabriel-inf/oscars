@@ -70,6 +70,14 @@ oscars.Authorizations.tabSelected = function (
     if (authGrid && (!oscarsState.authGridInitialized)) {
         dojo.connect(authGrid, "onRowClick", oscars.Authorizations.onAuthRowSelect);
         oscars.Authorizations.refreshAuthGrid();
+    } else {
+        var authListFormNode = dijit.byId("authListForm").domNode;
+        // if authorizations have been added, list needs to be updated
+        // have changed, so need to update
+        if (authListFormNode.authsAdded.value) {
+            oscars.Authorizations.refreshAuthGrid();
+            authListFormNode.authsAdded.value = "";
+        }
     }
 };
 

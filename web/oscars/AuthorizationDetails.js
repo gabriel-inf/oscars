@@ -81,13 +81,17 @@ oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
     oscars.Form.applyParams(responseObject);
     oscars.AuthorizationDetails.setMenuOptionsEnabled();
     oscarsState.authorizationState.clearAuthState();
-    if (responseObject.method != "AuthorizationForm") {
+    if ((responseObject.method != "AuthorizationForm") &&
+        (responseObject.method != "AuthorizationAdd")) {
         // after adding, deleting, or modifying an authorization, refresh the
         // authorizations list and display that tab
         var pane = dijit.byId("authorizationsPane");
         mainTabContainer.selectChild(pane);
         // must refresh when visible
         oscars.Authorizations.refreshAuthGrid();
+    } else if (responseObject.method == "AuthorizationAdd") {
+        formNode = dijit.byId("authListForm").domNode;
+        formNode.authsAdded.value = "changed";
     }
 };
 
