@@ -6,6 +6,7 @@ import org.hibernate.*;
 import net.es.oscars.database.GenericHibernateDAO;
 import net.es.oscars.aaa.UserAttributeDAO;
 import net.es.oscars.aaa.UserManager.AuthValue;
+import org.apache.log4j.Logger;
 
 /**
  * AuthorizationDAO is the data access object for the aaa.authorizations
@@ -47,6 +48,35 @@ public class AuthorizationDAO
                     "Trying to remove non-existent authorization");
         }
         super.remove(auth);
+    }
+    
+    /**
+     * Remove an authorization given the attrName, resourceName, permisionName
+     *    constraintName and value.
+     *    
+     *    @param attrName String name of attribute
+     *    @param resourceName String name of resource
+     *    @param permissionName String name of permission
+     *    @param constraintName String name of constraint, may be  null
+     */
+    
+    public void remove(String attrName, String resourceName, String permissionName,
+            String constraintName) throws AAAException {
+        
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        int attrId = attrDAO.getIdByName(attrName);
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        int resourceId = resourceDAO.getIdByName(resourceName);
+        PermissionDAO permDAO = new PermissionDAO(this.dbname);
+        int permId = permDAO.getIdByName(permissionName);
+        if (constraintName == null) {
+            constraintName = "none";
+        }
+        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
+        int constrId = constrDAO.getIdByName(constraintName);
+        
+        this.remove(attrId,resourceId,permId,constrId);
+            
     }
     
     /**
@@ -182,7 +212,7 @@ public class AuthorizationDAO
         
         String hsql = "from Authorization where attrId = :attrId and " +
             "resourceId = :resourceId and " +
-            "permissionId = :permissionId" +
+            "permissionId = :permissionId and " +
             "constraintId = :constraintId";
         auth = (Authorization) this.getSession().createQuery(hsql)
             .setInteger("attrId", attrId)
@@ -195,6 +225,44 @@ public class AuthorizationDAO
         return auth;
     }
     
+    /**
+     * Add a new authorization given the attrName, resourceName, permisionName
+     *    constraintName and value.
+     *    
+     *    @param attrName String name of attribute
+     *    @param resourceName String name of resource
+     *    @param permissionName String name of permission
+     *    @param constraintName String name of constraint, may be  null
+     *    @param constraintValue Stirng value of constraint, if null map to "true"
+     */
+    
+    public void create(String attrName, String resourceName, String permissionName,
+            String constraintName, String constraintValue) throws AAAException {
+        Logger log = Logger.getLogger(this.getClass());
+        int attrId = 17;
+        int resourceId = 17;
+       int permId=17;
+       int constrId=17;
+        try {
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        attrId = attrDAO.getIdByName(attrName).intValue();
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        resourceId = resourceDAO.getIdByName(resourceName).intValue();
+        PermissionDAO permDAO = new PermissionDAO(this.dbname);
+        permId = permDAO.getIdByName(permissionName).intValue();
+        if (constraintName == null) {
+            constraintName = "none";
+        }
+        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
+        constrId = constrDAO.getIdByName(constraintName).intValue();
+        } catch (Exception e) {
+           log.debug("caught exception : " + e.getMessage());
+        }
+        log.debug("attrid: " + attrId + " permissionId: " + permId +
+                " resourceId: " + resourceId + "constrId: " + constrId);
+        this.create(attrId,resourceId,permId,constrId,constraintValue);
+            
+    }
     
     /**
      * Add a new authorization, given the attrId, resourceId, permissionId,

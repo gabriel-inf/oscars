@@ -36,7 +36,7 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
      * @param attrName string name of the attribute
      * @returns an Integer containing the attribute id
      */
-    public Integer getAttributeId(String attrName) throws AAAException {
+    public Integer getIdByName(String attrName) throws AAAException {
         Attribute attr = super.queryByParam("name", attrName);
         if (attr != null ) {
             return attr.getId();

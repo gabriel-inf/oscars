@@ -52,6 +52,7 @@ public class AuthorizationForm extends HttpServlet {
         this.outputConstraintMenu(outputMap);
         outputMap.put("method", methodName);
         // this form does not reset status
+        outputMap.put("status", "ok for now");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

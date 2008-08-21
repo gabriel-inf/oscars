@@ -15,22 +15,22 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 
 
 public class AuthorizationAdd extends HttpServlet {
-
+    private Logger log;
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager(Utils.getDbName());
-        Logger log = Logger.getLogger(this.getClass());
-        log.debug("servlet.start");
+        this.log = Logger.getLogger(this.getClass());
+        this.log.debug("servlet.start");
 
         String methodName = "AuthorizationAdd";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            log.error("No user session: cookies invalid");
+            this.log.error("No user session: cookies invalid");
             return;
         }
         Session aaa = 
@@ -38,19 +38,42 @@ public class AuthorizationAdd extends HttpServlet {
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
         if (authVal == AuthValue.DENIED)  { 
-            log.error("Not allowed to add an authorization");
+            this.log.error("Not allowed to add an authorization");
             Utils.handleFailure(out, "not allowed to add an authorization",
                                 methodName, aaa);
             return;
         }
+        try {
+        RoleUtils ru =  new RoleUtils();
+        String attribute = ru.convertAttributeField(request.getParameter("authAttributeName"));
+        String permission = Utils.dropDescription(request.getParameter("permissionName"));
+        String resource = Utils.dropDescription(request.getParameter("resourceName"));
+        String constraintName = Utils.dropDescription(request.getParameter("constraintName"));
+        String constraintValue = null;
+        if (constraintName != null) {
+            constraintValue = request.getParameter("constraintValue");
+        }
+        this.log.debug("attribute: " + attribute +" resource: " + resource + " permission: "
+                + permission + " constraintName: " + constraintName + " constraintValue: " + constraintValue);
+        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+        try {
+            authDAO.create(attribute, resource, permission, constraintName, constraintValue);
+        } catch ( AAAException e) {
+            this.log.error(e.getMessage());
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+            return;           
+        }
+        } catch (Exception e) {
+            this.log.error ("caught exception" + e.getMessage());
+        }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Unimplemented yet");
+        outputMap.put("status", "Added authorization");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-        log.debug("servlet.end");      
+        this.log.debug("servlet.end");      
     }
 
     public void

@@ -43,7 +43,7 @@ public class ConstraintDAO extends GenericHibernateDAO<Constraint, Integer> {
             return null;
         }        
     }
-   public Integer getConstraintId(String constraintName) {
+   public Integer getIdByName(String constraintName) {
         
        if (constraintName == null) {
           // TODO maybe change it "none"

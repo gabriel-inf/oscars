@@ -43,8 +43,23 @@ public class AuthorizationRemove extends HttpServlet {
                                 methodName, aaa);
             return;
         }
+        String attribute = request.getParameter("authAttributeName");
+        String permission = request.getParameter("permissionName");
+        String resource = request.getParameter("resourceName");
+        String constraintName = request.getParameter("constraintName");
+        
+        log.debug("attribute: " + attribute +" resource: " + resource + " permission: "
+                + permission + " constraintName: " + constraintName );
+        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+        try {
+            authDAO.remove(attribute, resource, permission, constraintName);
+        } catch ( AAAException e) {
+            log.error(e.getMessage());
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+            return;           
+        }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Unimplemented yet");
+        outputMap.put("status", "authorization deleted");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

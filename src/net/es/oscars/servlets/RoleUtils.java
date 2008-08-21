@@ -32,7 +32,7 @@ public class RoleUtils {
                 if (s != null && !s.trim().equals("")) {
                     st=s.trim();
                     try {
-                        Integer attrId = attrDAO.getAttributeId(st);
+                        Integer attrId = attrDAO.getIdByName(st);
                         if (!addRoles.contains(attrId)) {
                             log.info("adding "+ attrId);
                             addRoles.add(attrId);
@@ -70,4 +70,30 @@ public class RoleUtils {
         }
         return sb.toString().trim();
     }
+    
+    /* Converts the attribute field to an real attribute name.
+    *
+    * @param attributeField String with attribute name from a web form
+    * @return newName String with the actual attribute name
+    */
+   public String convertAttributeField(String attributeField) {
+       // assumes field name has an abbreviated attribute name followed by " -> description"
+       String[] namePortions = attributeField.split(" ->");
+       StringBuilder sb = new StringBuilder();
+       String s = namePortions[0];
+       if (s.length() > 0) {
+           s = Character.toLowerCase(s.charAt(0)) + s.substring(1);
+       }
+       sb.append("OSCARS " + s);
+       int fromIndex = 0;
+       int i;
+       while (fromIndex >= 0) {
+           i=sb.indexOf(" ", fromIndex);
+           if (i != -1) {
+            sb.replace(i,i+1,"-");
+           }
+           fromIndex=i;
+       }
+       return sb.toString().trim();
+   }
 }

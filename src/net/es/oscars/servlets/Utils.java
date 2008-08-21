@@ -89,4 +89,15 @@ public class Utils {
         dn = dn.substring(1);
         return dn;
     }
+    
+    /**
+     * removes the description part of the authorization input form fields
+     * @param inputField
+     * @return
+     */
+    public static String dropDescription(String inputField) {
+     // assumes field name has a name followed by " -> description"
+        String[] namePortions = inputField.split(" ->");
+        return namePortions[0];
+    }
 }
