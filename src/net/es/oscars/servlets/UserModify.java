@@ -115,7 +115,7 @@ public class UserModify extends HttpServlet {
                 }
                 ArrayList<Integer> curRoles = new ArrayList<Integer>();
                 for (String s : attrNames) {
-                    curRoles.add(attrDAO.getAttributeId(s));
+                    curRoles.add(attrDAO.getIdByName(s));
                 }
                 /*
                  * form only sets OSCARS-user, OSCARS-service, 
@@ -145,7 +145,7 @@ public class UserModify extends HttpServlet {
                      newAttr.setName(newRole);
                      attrDAO.create(newAttr);
                      try {
-                         this.addUserAttribute(attrDAO.getAttributeId(newRole),
+                         this.addUserAttribute(attrDAO.getIdByName(newRole),
                                                userId);
                      } catch (AAAException ex) {
                          this.log.error("error: no attribute id was assigned by create");

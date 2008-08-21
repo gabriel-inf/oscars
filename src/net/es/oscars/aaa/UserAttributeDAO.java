@@ -51,7 +51,7 @@ import  org.apache.log4j.*;;
         throws AAAException {
         
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        int attributeId = attrDAO.getAttributeId(attrName);
+        int attributeId = attrDAO.getIdByName(attrName);
         String hsql = "from UserAttribute "  +
                       "where attributeId = :attributeId" ; 
         List<UserAttribute> userAttrs = this.getSession().createQuery(hsql)

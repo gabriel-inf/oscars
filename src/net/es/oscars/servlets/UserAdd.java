@@ -67,7 +67,7 @@ public class UserAdd extends HttpServlet {
                     newAttr.setName(newRole);
                     attrDAO.create(newAttr); 
                     try {
-                        addRoles.add(attrDAO.getAttributeId(newRole));
+                        addRoles.add(attrDAO.getIdByName(newRole));
                     } catch (AAAException ex) {
                         this.log.error("error: no attribute id was assigned by create");
                     }
