@@ -52,7 +52,6 @@ public class AuthorizationForm extends HttpServlet {
         this.outputConstraintMenu(outputMap);
         outputMap.put("method", methodName);
         // this form does not reset status
-        outputMap.put("status", "ok for now");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
@@ -76,8 +75,7 @@ public class AuthorizationForm extends HttpServlet {
         RoleUtils utils = new RoleUtils();
         int ctr = 0;
         for (Attribute attr: attributes) {
-            String attributeName = utils.convertAttributeName(attr.getName());
-            attributeList.add(attributeName + " -> " + attr.getDescription());
+            attributeList.add(attr.getName());
             if (ctr == 0) {
                 attributeList.add("true");
             } else {
@@ -96,12 +94,7 @@ public class AuthorizationForm extends HttpServlet {
         List<String> resourceList = new ArrayList<String>();
         int ctr = 0;
         for (Resource resource: resources) {
-            if (resource.getDescription() != null) {
-                resourceList.add(resource.getName() + " -> " +
-                             resource.getDescription());
-            } else {
-                resourceList.add(resource.getName());
-            }
+            resourceList.add(resource.getName());
             if (ctr == 0) {
                 resourceList.add("true");
             } else {
@@ -120,12 +113,7 @@ public class AuthorizationForm extends HttpServlet {
         List<String> permissionList = new ArrayList<String>();
         int ctr = 0;
         for (Permission permission: permissions) {
-            if (permission.getDescription() != null) {
-                permissionList.add(permission.getName() + " -> " +
-                               permission.getDescription());
-            } else {
-                permissionList.add(permission.getName());
-            }
+            permissionList.add(permission.getName());
             if (ctr == 0) {
                 permissionList.add("true");
             } else {
@@ -143,8 +131,7 @@ public class AuthorizationForm extends HttpServlet {
         List<Constraint> constraints = constraintDAO.list();
         List<String> constraintList = new ArrayList<String>();
         for (Constraint constraint: constraints) {
-            constraintList.add(constraint.getName() + " -> " +
-                               constraint.getDescription());
+            constraintList.add(constraint.getName());
             constraintList.add("false");
         }
         outputMap.put("constraintNameMenu", constraintList);

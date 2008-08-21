@@ -19,15 +19,6 @@ dojo.provide("oscars.AuthorizationState");
 dojo.declare("oscars.AuthorizationState", null, {
     constructor: function(){
         this.rpcData = {};
-        this.initialized = false;
-    },
-
-    setInitialized: function() {
-        if (!this.initialized) {
-            this.initialized = true;
-            // depends on form's existence
-            this.clearAuthState();
-        }
     },
 
     // Not all combinations of these triplets are permissible.  For example,
@@ -55,7 +46,6 @@ dojo.declare("oscars.AuthorizationState", null, {
 
     saveAuthState: function(attributeName, resourceName, permissionName,
                            constraintName, constraintValue) {
-        this.initialized = true;
         this.attributeName = attributeName;
         this.resourceName = resourceName;
         this.permissionName = permissionName;
@@ -85,8 +75,11 @@ dojo.declare("oscars.AuthorizationState", null, {
         this.resourceName =  menu.options[0].value;
         menu = formNode.permissionName;
         this.permissionName = menu.options[0].value;
-        this.constraintName = 'none';
-        this.constraintValue = '';
+        menu = formNode.constraintName;
+        this.constraintName = menu.options[0].value;
+        formNode.constraintValue.value = "";
+        var constraintTypeNode = dojo.byId("constraintType");
+        constraintTypeNode.innerHTML = "";
     },
 
     constrainChoices: function(menuName) {

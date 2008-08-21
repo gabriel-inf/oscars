@@ -44,8 +44,7 @@ public class AuthorizationAdd extends HttpServlet {
             return;
         }
         try {
-        RoleUtils ru =  new RoleUtils();
-        String attribute = ru.convertAttributeField(request.getParameter("authAttributeName"));
+        String attribute = request.getParameter("authAttributeName");
         String permission = Utils.dropDescription(request.getParameter("permissionName"));
         String resource = Utils.dropDescription(request.getParameter("resourceName"));
         String constraintName = Utils.dropDescription(request.getParameter("constraintName"));
