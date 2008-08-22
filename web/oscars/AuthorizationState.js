@@ -8,7 +8,7 @@ David Robertson (dwrobertson@lbl.gov)
 setRpc()
 saveAuthState(attributeName, resourceName, permissionName, constraintName,
               constraintValue)
-recoverAuthState(formNode)
+recoverAuthState()
 clearAuthState()
 constraintChoices(menuName)
 setConstraintType(resourceName, permissionName, constraintName)
@@ -61,24 +61,17 @@ dojo.declare("oscars.AuthorizationState", null, {
         formNode.oldResourceName.value = resourceName;
         formNode.oldPermissionName.value = permissionName;
         formNode.oldConstraintName.value = constraintName;
+        this.setOptionChoices();
+        this.constrainChoices("resourceName", false);
     }, 
 
     // Resets authorization details form to initial state using saved values,
     // and resets other form state to the beginning.
-    recoverAuthState: function(formNode) {
+    recoverAuthState: function() {
         var deleteWidget = dijit.byId("deleteAuthorization");
         deleteWidget.setAttribute("disabled", false);
-        var menu = formNode.authAttributeName;
-        oscars.Form.setMenuSelected(menu, this.attributeName);
-        menu = formNode.resourceName;
-        oscars.Form.setMenuSelected(menu, this.resourceName);
-        menu = formNode.permissionName;
-        oscars.Form.setMenuSelected(menu, this.permissionName);
-        menu = formNode.constraintName;
-        oscars.Form.setMenuSelected(menu, this.constraintName);
-        formNode.constraintValue.value = this.constraintValue;
-        this.setConstraintType(this.resourceName, this.permissionName,
-                               this.constraintName);
+        this.setOptionChoices();
+        this.constrainChoices("resourceName", false);
     },
 
     // Clears all authorization state to default values,
@@ -89,39 +82,48 @@ dojo.declare("oscars.AuthorizationState", null, {
         var formNode = dijit.byId("authDetailsForm").domNode;
         var menu = formNode.authAttributeName;
         this.attributeName = menu.options[0].value;
-        oscars.Form.setMenuSelected(menu, this.attributeName);
         menu = formNode.resourceName;
         this.resourceName =  menu.options[0].value;
-        oscars.Form.setMenuSelected(menu, this.resourceName);
         menu = formNode.permissionName;
         this.permissionName = menu.options[0].value;
-        oscars.Form.setMenuSelected(menu, this.permissionName);
         menu = formNode.constraintName;
         this.constraintName = menu.options[0].value;
-        oscars.Form.setMenuSelected(menu, this.constraintName);
-        formNode.constraintValue.value = "";
-        var constraintTypeNode = dojo.byId("constraintType");
-        constraintTypeNode.innerHTML = "";
+        this.constraintValue = "";
         formNode.oldAuthAttributeName.value = "";
         formNode.oldResourceName.value = "";
         formNode.oldPermissionName.value = "";
         formNode.oldConstraintName.value = "";
+        this.setOptionChoices();
+        this.constrainChoices("resourceName", false);
+    },
+
+    setOptionChoices: function() {
+        var formNode = dijit.byId("authDetailsForm").domNode;
+        var menu = formNode.authAttributeName;
+        oscars.Form.setMenuSelected(menu, this.attributeName);
+        menu = formNode.resourceName;
+        oscars.Form.setMenuSelected(menu, this.resourceName);
+        menu = formNode.permissionName;
+        oscars.Form.setMenuSelected(menu, this.permissionName);
+        menu = formNode.constraintName;
+        oscars.Form.setMenuSelected(menu, this.constraintName);
+        formNode.constraintValue.value = this.constraintValue;
     },
 
     // Constrains menu and button choices based on current menu chosen.
-    constrainChoices: function(menuName) {
+    constrainChoices: function(menuName, modified) {
         var i;
-        var j;
         var val;
         var legalChoice;
         var illegalChoice;
-        var formNode = dijit.byId("authDetailsForm").domNode;
-        var attributeMenu = formNode.authAttributeName;
-        var deleteWidget = dijit.byId("deleteAuthorization");
-        deleteWidget.setAttribute("disabled", true);
+        if (modified) {
+            var deleteWidget = dijit.byId("deleteAuthorization");
+            deleteWidget.setAttribute("disabled", true);
+        }
         if (menuName == "authAttributeName") {
             return;
         }
+        var formNode = dijit.byId("authDetailsForm").domNode;
         var resourceMenu = formNode.resourceName;
         var permissionMenu = formNode.permissionName;
         var constraintMenu = formNode.constraintName;
@@ -151,6 +153,7 @@ dojo.declare("oscars.AuthorizationState", null, {
             // pick first legal value
             if (illegalChoice > -1) {
                 permissionMenu.selectedIndex = legalChoice;
+                permissionName = permissionMenu.options[legalChoice].value;
             }
             for (i=0; i < permissionMenu.options.length; i++) {
                 val = permissionMenu.options[i].value;
@@ -162,9 +165,39 @@ dojo.declare("oscars.AuthorizationState", null, {
             }
         }
         // constrain constraints menu
-        else if (menuName == "permissionName") {
+        if ((menuName == "resourceName") ||
+             (menuName == "permissionName")) {
+            legalChoice = -1;
+            illegalChoice = -1;
+            for (i=0; i < constraintMenu.options.length; i++) {
+                val = constraintMenu.options[i].value;
+                if (this.rpcData[resourceName][permissionName].hasOwnProperty(val)) {
+                    if (legalChoice < 0) {
+                        legalChoice = i;
+                    }
+                } else {
+                    if (constraintMenu.selectedIndex == i) {
+                        illegalChoice = i;
+                    }
+                }
+            }
+            if (illegalChoice > -1) {
+                constraintMenu.selectedIndex = legalChoice;
+                constraintName = constraintMenu.options[legalChoice].value;
+            }
+            for (i=0; i < constraintMenu.options.length; i++) {
+                val = constraintMenu.options[i].value;
+                if (this.rpcData[resourceName][permissionName].hasOwnProperty(val)) {
+                    constraintMenu.options[i].disabled = false;
+                } else {
+                    constraintMenu.options[i].disabled = true;
+                }
+            }
+        }
         // constraint constraints value and type
-        } else if (menuName == "constraintName") {
+        if ((menuName == "resourceName") ||
+             (menuName == "permissionName") ||
+             (menuName == "constraintName")) {
             var constraintValueNode = formNode.constraintValue;
             var constraintTypeNode = dojo.byId("constraintType");
             if (constraintName == 'none') {

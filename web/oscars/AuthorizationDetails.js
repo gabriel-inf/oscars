@@ -96,15 +96,16 @@ oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
     }
     if ((responseObject.method != "AuthorizationForm") &&
         (responseObject.method != "AuthorizationAdd")) {
-        oscars.AuthorizationDetails.setMenuOptionsEnabled();
-        oscarsState.authorizationState.clearAuthState();
         // after deleting or modifying an authorization, refresh the
         // authorizations list and display that tab
         var pane = dijit.byId("authorizationsPane");
         mainTabContainer.selectChild(pane);
         // must refresh when visible
         oscars.Authorizations.refreshAuthGrid();
-    } else if (responseObject.method == "AuthorizationAdd") {
+    }
+    if (responseObject.method != "AuthorizationAdd") {
+        oscarsState.authorizationState.clearAuthState();
+    } else {
         formNode = dijit.byId("authListForm").domNode;
         formNode.authsAdded.value = "changed";
     }
@@ -119,32 +120,11 @@ oscars.AuthorizationDetails.tabSelected = function (
 };
 
 oscars.AuthorizationDetails.resetFields = function (useSaved) {
-    // TODO:  reset to original authorization if useSaved true
-    var formNode = dijit.byId("authDetailsForm").domNode;
-    var menu;
     // clear everything
     if (!useSaved) {
-        oscars.AuthorizationDetails.setMenuOptionsEnabled();
         oscarsState.authorizationState.clearAuthState();
     } else {
-        oscarsState.authorizationState.recoverAuthState(formNode);
-    }
-};
-
-oscars.AuthorizationDetails.setMenuOptionsEnabled = function () {
-    var i;
-    var formNode = dijit.byId("authDetailsForm").domNode;
-    var menu = formNode.resourceName;
-    for (i=0; i < menu.options.length; i++) {
-        menu.options[i].disabled = false;
-    }
-    menu = formNode.permissionName;
-    for (i=0; i < menu.options.length; i++) {
-        menu.options[i].disabled = false;
-    }
-    menu = formNode.constraintName;
-    for (i=0; i < menu.options.length; i++) {
-        menu.options[i].disabled = false;
+        oscarsState.authorizationState.recoverAuthState();
     }
 };
 
@@ -153,15 +133,7 @@ oscars.AuthorizationDetails.validate = function (formNode) {
     var constraintName = menu.options[menu.selectedIndex].value;
     var oscarsStatus = dojo.byId("oscarsStatus");
     var constraintValue = formNode.constraintValue.value;
-    if (constraintName == 'none') {
-        // this will be unnecessary when constrainChoices is complete
-        if (constraintValue) {
-            oscarsStatus.className = "failure";
-            oscarsStatus.innerHTML = "Constraint value must be empty for " +
-                                     "the selected constraint option none";
-            return false;
-        }
-    } else {
+    if (constraintName != 'none') {
         if (!constraintValue) {
             oscarsStatus.className = "failure";
             oscarsStatus.innerHTML = "Constraint value must be filled in";

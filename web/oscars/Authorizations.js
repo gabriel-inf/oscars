@@ -29,6 +29,7 @@ oscars.Authorizations.goToAdd = function () {
     var oscarsStatus = dojo.byId("oscarsStatus");
     oscarsStatus.className = "success";
     oscarsStatus.innerHTML = "Adding authorization";
+    oscarsState.authorizationState.clearAuthState();
 };
 
 // handles all servlet replies
@@ -100,21 +101,12 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     // set four parameters necessary to retrieve authorization
     // dijit.byId doesn't seem to work outside form and tab
     var attributeName = authGrid.model.getDatum(evt.rowIndex, 0);
-    oscars.Form.setMenuSelected(formNode.authAttributeName, attributeName);
     var resourceName = authGrid.model.getDatum(evt.rowIndex, 1);
-    oscars.Form.setMenuSelected(formNode.resourceName, resourceName);
     var permissionName = authGrid.model.getDatum(evt.rowIndex, 2);
-    oscars.Form.setMenuSelected(formNode.permissionName, permissionName);
-    var menu = formNode.constraintName;
     var constraintName = authGrid.model.getDatum(evt.rowIndex, 3);
-    oscars.Form.setMenuSelected(menu, constraintName);
-    formNode.constraintValue.value = authGrid.model.getDatum(evt.rowIndex, 4);
+    var constraintValue = authGrid.model.getDatum(evt.rowIndex, 4);
     oscarsState.authorizationState.saveAuthState(attributeName,
-            resourceName, permissionName, constraintName,
-            formNode.constraintValue.value);
-    // uses current rpc state
-    oscarsState.authorizationState.setConstraintType(resourceName,
-                                               permissionName, constraintName);
+            resourceName, permissionName, constraintName, constraintValue);
     // No need to query server; grid already contains all information.
     // Can't set up menus in grid; different fields may require different
     // subsets of values of other fields.
