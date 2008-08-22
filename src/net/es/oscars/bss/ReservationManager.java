@@ -1452,6 +1452,7 @@ public class ReservationManager {
         if(!"".equals(remaining)){
             mask = suggested;
         }
+
         return this.chooseVlanTag(mask);
     }
     
@@ -1513,7 +1514,7 @@ public class ReservationManager {
             this.log.info("finalizing VLAN tags");
             //Retrieve the local path
             PathInfo intraPathInfo = new PathInfo();
-            intraPathInfo.setPath(this.tc.pathToCtrlPlane(path));
+            intraPathInfo.setPath(this.tc.pathToCtrlPlane(path, false));
             this.expandLocalHops(intraPathInfo);
             CtrlPlanePathContent intraPath = intraPathInfo.getPath();
             CtrlPlaneHopContent[] hops = intraPath.getHop();

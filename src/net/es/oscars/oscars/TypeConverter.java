@@ -236,7 +236,7 @@ public class TypeConverter {
         PathInfo pathInfo = new PathInfo();
         if (resv.getPath() != null) {
             pathInfo.setPathSetupMode(resv.getPath().getPathSetupMode());
-            pathInfo.setPath(this.pathToCtrlPlane(resv.getPath()));
+            pathInfo.setPath(this.pathToCtrlPlane(resv.getPath(), true));
             // one of these is allowed to be null
             Layer2Info layer2Info = this.pathToLayer2Info(resv.getPath());
             pathInfo.setLayer2Info(layer2Info);
@@ -302,9 +302,10 @@ public class TypeConverter {
      * internal path returned in response to a query.
      *
      * @param path a Path instance
+     * @param confirmed true if result path should be a confirmed path
      * @return A CtrlPlanePathContent instance
      */
-    public CtrlPlanePathContent pathToCtrlPlane(Path path) {
+    public CtrlPlanePathContent pathToCtrlPlane(Path path, boolean confirmed) {
         // this.log.debug("pathToCtrlPlane.start");
         String swcapType = this.core.getReservationManager().DEFAULT_SWCAP_TYPE;
         String encType = this.core.getReservationManager().DEFAULT_ENC_TYPE;
@@ -344,7 +345,12 @@ public class TypeConverter {
                 swcap.setSwitchingcapType("l2sc");
                 swcap.setEncodingType("ethernet");
                 swcapInfo.setInterfaceMTU(l2scData.getInterfaceMTU());
-                swcapInfo.setVlanRangeAvailability(pathElem.getLinkDescr());
+                if(confirmed){
+                    swcapInfo.setVlanRangeAvailability(pathElem.getLinkDescr());
+                }else{
+                    swcapInfo.setVlanRangeAvailability(l2scData.getVlanRangeAvailability());
+                    swcapInfo.setSuggestedVLANRange(pathElem.getLinkDescr());
+                }
             }
             swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
             cpLink.setId(linkId);

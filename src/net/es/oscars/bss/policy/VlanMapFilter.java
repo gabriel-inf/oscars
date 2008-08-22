@@ -158,6 +158,12 @@ public class VlanMapFilter implements PolicyFilter{
             for(int j = 0; j < ingrVlans.length; j++){
                 ingrVlans[j] &= prevVlans[j];
             }
+            String remaining = this.tc.maskToRangeString(ingrVlans);
+            if("".equals(remaining)){
+                throw new BSSException("No VLANs available in the range " +
+                                       "specified by the previous hop " + 
+                                       this.tc.hopToURN(prevInterHop));
+            }
             vlanMap.put(k(ingrLink), ingrVlans);
         }
         if(nextInterHop != null && nextInterHop.getLink() != null){
@@ -171,6 +177,12 @@ public class VlanMapFilter implements PolicyFilter{
             byte[] nextVlans = this.tc.rangeStringToMask(nextVlanString);
             for(int j = 0; j < egrVlans.length; j++){
                 egrVlans[j] &= nextVlans[j];
+            }
+            String remaining = this.tc.maskToRangeString(egrVlans);
+            if("".equals(remaining)){
+                throw new BSSException("No VLANs available in the range " +
+                                       "specified by the next hop " + 
+                                       this.tc.hopToURN(nextInterHop));
             }
             vlanMap.put(k(egrLink), egrVlans);
         }
@@ -187,6 +199,7 @@ public class VlanMapFilter implements PolicyFilter{
         for(int i=1;i < currSegmentMask.length; i++){
             globalMask[i] = currSegmentMask[i];
         }
+        
         for(int i=1; i < localLinks.size(); i++){
             Link currLink = localLinks.get(i);
             L2SwitchingCapabilityData l2scData = 
@@ -249,6 +262,8 @@ public class VlanMapFilter implements PolicyFilter{
         String globalVlan = null;
         if(suggested.length > 0 && (!"".equals(globalRange))){
             globalVlan = rm.chooseVlanTag(globalMask, suggested);
+        }else if(!"".equals(globalRange)){
+            globalVlan = rm.chooseVlanTag(globalMask);
         }
         
         ///update intradomain path
