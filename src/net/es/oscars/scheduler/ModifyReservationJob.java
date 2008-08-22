@@ -180,7 +180,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         Exception error = null;
         eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_STARTED, login, 
                                "JOB", persistentResv);
-        persistentResv = rm.modify(resv, persistentResv);
+        rm.modify(resv, persistentResv);
         
         try {
             forwardReply = forwarder.modify(resv, persistentResv, null);

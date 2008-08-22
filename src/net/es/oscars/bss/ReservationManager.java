@@ -203,9 +203,11 @@ public class ReservationManager {
         /* Find job type */
         Class jobClass = null;
         String prefix = "";
+        boolean requirePath = false;
         if(reqStatus.equals(StateEngine.INCREATE)){
             jobClass = CreateReservationJob.class;
             prefix = "createResv";
+            requirePath = true;
         }else if(reqStatus.equals(StateEngine.INMODIFY)){
             jobClass = ModifyReservationJob.class;
             prefix = "modifyResv";
@@ -223,11 +225,11 @@ public class ReservationManager {
         }
         String login = resv.getLogin();
         
-        if(pathInfo.getPath() == null){
+        if(requirePath && pathInfo.getPath() == null){
             this.log.error("Recieved " + op + " event from " + producerID + 
                           " with no path element.");
              return;
-        }else if(pathInfo.getPath().getHop() == null){
+        }else if(requirePath && pathInfo.getPath().getHop() == null){
             this.log.error("Recieved " + op + " event from " + producerID + 
                           " with a path element containing no hops");
              return;
@@ -601,7 +603,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation modify(Reservation resv, Reservation persistentResv) 
+    public void modify(Reservation resv, Reservation persistentResv) 
                               throws BSSException{
         Long now = System.currentTimeMillis()/1000;
         if (persistentResv.getStatus().equals(StateEngine.ACTIVE)) {
@@ -632,8 +634,6 @@ public class ReservationManager {
         // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
         this.log.info("modify.finish");
-        
-        return resv;
     }
 
     /**
