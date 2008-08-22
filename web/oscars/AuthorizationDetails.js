@@ -79,12 +79,21 @@ oscars.AuthorizationDetails.clone = function () {
 
 // handles all servlet replies
 oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
+    var formNode;
     var mainTabContainer = dijit.byId("mainTabContainer");
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
     // set parameter values in form from responseObject
     oscars.Form.applyParams(responseObject);
+    if (responseObject.method == "AuthorizationForm") {
+        if (responseObject.rpcData) {
+            oscarsState.authorizationState.setRpc(responseObject.rpcData);
+        }
+        formNode = dijit.byId("authDetailsForm").domNode;
+        // ensure server won't send back rpcData again
+        formNode.rpc.value = "set";
+    }
     if ((responseObject.method != "AuthorizationForm") &&
         (responseObject.method != "AuthorizationAdd")) {
         oscars.AuthorizationDetails.setMenuOptionsEnabled();

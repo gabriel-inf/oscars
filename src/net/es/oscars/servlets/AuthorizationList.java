@@ -45,11 +45,6 @@ public class AuthorizationList extends HttpServlet {
             return;
         }
         Map outputMap = new HashMap();
-        // only do once
-        String rpcParam = request.getParameter("rpc");
-        if ((rpcParam == null) || rpcParam.trim().equals("")) {
-            this.outputRpcs(outputMap);
-        }
         this.outputAuthorizations(outputMap);
         outputMap.put("status", "Authorization list");
         outputMap.put("method", methodName);
@@ -122,59 +117,5 @@ public class AuthorizationList extends HttpServlet {
             authList.add(authEntry);
         }
         outputMap.put("authData", authList);
-    }
-
-    /**
-     * Outputs permitted resource/permission/constraint triplets, along
-     * with constraint type.   Could
-     * eventually be used in a split container on the right side of the
-     * authorization details page, assuming the grid would display in
-     * such a case.
-     *  
-     * @param outputMap Map containing JSON data
-     */
-    public void outputRpcs(Map outputMap) {
-
-        RpcDAO rpcDAO = new RpcDAO(Utils.getDbName());
-        List<Rpc> rpcs = rpcDAO.list();
-        ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
-        PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
-        ConstraintDAO constraintDAO= new ConstraintDAO(Utils.getDbName());
-        int id = -1;
-        
-        ArrayList rpcList = new ArrayList();
-        for (Rpc rpc: rpcs) {
-            ArrayList rpcEntry = new ArrayList();
-            // ignore illegal triplets
-            Resource resource = resourceDAO.findById(rpc.getResourceId(),
-                                                     false);
-            if (resource != null) {
-                rpcEntry.add(resource.getName());
-            } else {
-                this.log("couldn't find resource: " + rpc.getResourceId());
-                continue;
-            }
-            Permission perm = permissionDAO.findById(rpc.getPermissionId(),
-                                                     false);
-            if (perm != null) {
-                rpcEntry.add(perm.getName());
-            } else {
-                this.log("couldn't find permission: " + rpc.getPermissionId());
-                continue;
-            }
-            // null constraints are added on the client side; rpc table
-            // has constraintId as not null, so one here would be an error.
-            Constraint constraint =
-                constraintDAO.findById(rpc.getConstraintId(), false);
-            if (constraint != null) {
-                rpcEntry.add(constraint.getName());
-                rpcEntry.add(constraint.getType());
-            } else {
-                this.log("couldn't find constraint: " + rpc.getConstraintId());
-                continue;
-            }
-            rpcList.add(rpcEntry);
-        }
-        outputMap.put("rpcData", rpcList);
     }
 }

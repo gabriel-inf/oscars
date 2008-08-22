@@ -39,12 +39,6 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
         }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
-        if (responseObject.rpcData) {
-            oscarsState.authorizationState.setRpc(responseObject.rpcData);
-        }
-        var formNode = dijit.byId("authListForm").domNode;
-        // ensure server won't send back rpcData again
-        formNode.rpc = "set";
         var mainTabContainer = dijit.byId("mainTabContainer");
         var authGrid = dijit.byId("authGrid");
         var model = authGrid.model;
