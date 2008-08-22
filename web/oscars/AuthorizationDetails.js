@@ -85,10 +85,10 @@ oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
     }
     // set parameter values in form from responseObject
     oscars.Form.applyParams(responseObject);
-    oscars.AuthorizationDetails.setMenuOptionsEnabled();
-    oscarsState.authorizationState.clearAuthState();
     if ((responseObject.method != "AuthorizationForm") &&
         (responseObject.method != "AuthorizationAdd")) {
+        oscars.AuthorizationDetails.setMenuOptionsEnabled();
+        oscarsState.authorizationState.clearAuthState();
         // after deleting or modifying an authorization, refresh the
         // authorizations list and display that tab
         var pane = dijit.byId("authorizationsPane");
@@ -137,6 +137,8 @@ oscars.AuthorizationDetails.setMenuOptionsEnabled = function () {
     for (i=0; i < menu.options.length; i++) {
         menu.options[i].disabled = false;
     }
+    menu.disabled = true;
+    menu.selectedIndex = 2;
 };
 
 oscars.AuthorizationDetails.validate = function (formNode) {
@@ -171,23 +173,19 @@ oscars.AuthorizationDetails.validate = function (formNode) {
             } else if (constraintValue == "false") {
                 constraintValue = false;
             } else {
-                // try converting string to number; this doesn't work
-                constraintValue += 0;
+                // try converting string to number
+                constraintValue = parseInt(constraintValue, 10);
             }
             var newConstraintType = typeof constraintValue;
             if (constraintType == "numeric") {
                 constraintType = "number";
             } 
-            /*
-            console.log("required: " + constraintType + " given: " +
-                    newConstraintType);
             if (newConstraintType != constraintType) {
                 oscarsStatus.className = "failure";
                 oscarsStatus.innerHTML = "Constraint value not of type " +
                                          constraintType;
                 return false;
             }
-            */
         }
     }
     return true;

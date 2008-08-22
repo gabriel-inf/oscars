@@ -44,8 +44,13 @@ dojo.declare("oscars.AuthorizationState", null, {
         //console.dir(this.rpcData);
     },
 
+    // Called when clicking on row in authorizations list; saves initial
+    // authorization state for possible recovery later.  Sets authorization
+    // details form state as well.
     saveAuthState: function(attributeName, resourceName, permissionName,
                            constraintName, constraintValue) {
+        var deleteWidget = dijit.byId("deleteAuthorization");
+        deleteWidget.setAttribute("disabled", false);
         this.attributeName = attributeName;
         this.resourceName = resourceName;
         this.permissionName = permissionName;
@@ -58,9 +63,11 @@ dojo.declare("oscars.AuthorizationState", null, {
         formNode.oldConstraintName.value = constraintName;
     }, 
 
+    // Resets authorization details form to initial state using saved values,
+    // and resets other form state to the beginning.
     recoverAuthState: function(formNode) {
-        var deleteButton = dijit.byId("deleteAuthorization").domNode;
-        deleteButton.disabled = false;
+        var deleteWidget = dijit.byId("deleteAuthorization");
+        deleteWidget.setAttribute("disabled", false);
         var menu = formNode.authAttributeName;
         oscars.Form.setMenuSelected(menu, this.attributeName);
         menu = formNode.resourceName;
@@ -74,18 +81,24 @@ dojo.declare("oscars.AuthorizationState", null, {
                                this.constraintName);
     },
 
+    // Clears all authorization state to default values,
+    // and resets other form state to the beginning.
     clearAuthState: function() {
-        var deleteButton = dijit.byId("deleteAuthorization").domNode;
-        deleteButton.disabled = false;
+        var deleteWidget = dijit.byId("deleteAuthorization");
+        deleteWidget.setAttribute("disabled", false);
         var formNode = dijit.byId("authDetailsForm").domNode;
         var menu = formNode.authAttributeName;
         this.attributeName = menu.options[0].value;
+        oscars.Form.setMenuSelected(menu, this.attributeName);
         menu = formNode.resourceName;
         this.resourceName =  menu.options[0].value;
+        oscars.Form.setMenuSelected(menu, this.resourceName);
         menu = formNode.permissionName;
         this.permissionName = menu.options[0].value;
+        oscars.Form.setMenuSelected(menu, this.permissionName);
         menu = formNode.constraintName;
         this.constraintName = menu.options[0].value;
+        oscars.Form.setMenuSelected(menu, this.constraintName);
         formNode.constraintValue.value = "";
         var constraintTypeNode = dojo.byId("constraintType");
         constraintTypeNode.innerHTML = "";
@@ -95,16 +108,17 @@ dojo.declare("oscars.AuthorizationState", null, {
         formNode.oldConstraintName.value = "";
     },
 
+    // Constrains menu and button choices based on current menu chosen.
     constrainChoices: function(menuName) {
         var i;
         var j;
         var val;
+        var legalChoice;
         var illegalChoice;
         var formNode = dijit.byId("authDetailsForm").domNode;
         var attributeMenu = formNode.authAttributeName;
-        var deleteButton = dijit.byId("deleteAuthorization").domNode;
-        // not currently working
-        deleteButton.disabled = true;
+        var deleteWidget = dijit.byId("deleteAuthorization");
+        deleteWidget.setAttribute("disabled", true);
         if (menuName == "authAttributeName") {
             return;
         }
@@ -118,6 +132,26 @@ dojo.declare("oscars.AuthorizationState", null, {
             constraintMenu.options[constraintMenu.selectedIndex].value;
         // constrain permissions menu
         if (menuName == "resourceName") {
+            legalChoice = -1;
+            illegalChoice = -1;
+            // can't disable selected index, so need to reset if the
+            // current one is no longer valid
+            for (i=0; i < permissionMenu.options.length; i++) {
+                val = permissionMenu.options[i].value;
+                if (this.rpcData[resourceName][val]) {
+                    if (legalChoice < 0) {
+                        legalChoice = i;
+                    }
+                } else {
+                    if (permissionMenu.selectedIndex == i) {
+                        illegalChoice = i;
+                    }
+                }
+            }
+            // pick first legal value
+            if (illegalChoice > -1) {
+                permissionMenu.selectedIndex = legalChoice;
+            }
             for (i=0; i < permissionMenu.options.length; i++) {
                 val = permissionMenu.options[i].value;
                 if (this.rpcData[resourceName][val]) {

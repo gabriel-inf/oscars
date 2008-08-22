@@ -80,7 +80,7 @@ a resource, it may be reset to None if it is not valid for that resource.
     <!-- setting once sets for all in column -->
     <td width="12%">Attribute</td>
     <td colspan="2">
-        <select name="authAttributeName" id="authAttributeName">
+        <select name="authAttributeName" id="authAttributeName"
             onChange="oscarsState.authorizationState.constrainChoices('authAttributeName');return false;">
         </select>
     </td>
@@ -122,11 +122,15 @@ a resource, it may be reset to None if it is not valid for that resource.
     <td>Constraint</td>
     <td colspan="2">
         <select name="constraintName" id="constraintName"
-            onChange="oscarsState.authorizationState.constrainChoices('constraintName');return false;">
         </select>
     </td>
     <td>
-        &nbsp;
+      <button dojoType="dijit.form.Button" id="constraintOK">
+         CONSTRAINT OK
+         <script type="dojo/method" event="onClick">
+             oscarsState.authorizationState.constrainChoices('constraintName');
+         </script>
+      </button>
     </td>
   </tr>
   <tr>
