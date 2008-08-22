@@ -37,6 +37,7 @@ import net.es.oscars.pss.PSSException;
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.interdomain.InterdomainException;
 import net.es.oscars.lookup.LookupException;
+import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.topology.*;
 
 
@@ -261,10 +262,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bss.getTransaction().rollback();
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
-        }   catch (InterdomainException e) {
-            bss.getTransaction().rollback();
-            this.log.error("modifyReservation interdomain error: " + e.getMessage());
-            throw new BSSFaultMessage("modifyReservation interdomain error " + e.getMessage());
         } catch (Exception e) {
             bss.getTransaction().rollback();
             StringWriter sw = new StringWriter();
@@ -686,11 +683,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
                     String eventType = event.getType();
                     if(eventType.startsWith("RESERVATION_CREATE")){
-                        this.adapter.handleCreateEvent(event, producerId);
+                        this.adapter.handleEvent(event, producerId, StateEngine.INCREATE);
                     }else if(eventType.startsWith("RESERVATION_MODIFY")){
-                    
+                        this.adapter.handleEvent(event, producerId, StateEngine.INMODIFY);
                     }else if(eventType.startsWith("RESERVATION_CANCEL")){
-                    
+                        this.adapter.handleEvent(event, producerId, StateEngine.INCANCEL);
                     }else if(eventType.contains("PATH_SETUP")){
                     
                     }else if(eventType.contains("PATH_REFRESH")){

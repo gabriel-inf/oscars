@@ -55,10 +55,8 @@ public class ModifyResRmiHandler {
         String loginConstraint = null;
  
         TypeConverter tc = core.getTypeConverter();
-        Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-        
         
         Session aaa = core.getAaaSession();  
         aaa.beginTransaction();
@@ -90,42 +88,18 @@ public class ModifyResRmiHandler {
         }
 
         Reservation resv = this.toReservation(simpleInputMap);
-
-        // for now, path cannot be modified
-        PathInfo pathInfo = null;
-        String errMessage = null;
-        Reservation persistentResv = null;
-        ModifyResReply forwardReply = null;
-        try {
-            persistentResv = rm.modify(resv, loginConstraint, institution,
-                                                   pathInfo);
-            tc.ensureLocalIds(pathInfo);
-            // checks whether next domain should be contacted, forwards to
-            // the next domain if necessary, and handles the response
-            this.log.debug("modify, to forward");
-            InterdomainException interException = null;
-            forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
-            persistentResv = rm.finalizeModifyResv(forwardReply, resv);
-            Map<String,String> messageInfo = new HashMap<String,String>();
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_COMPLETED, userName, 
-                "WBUI", persistentResv);
-        } catch (BSSException e) {
-            errMessage = e.getMessage();
-        } catch (InterdomainException e) {
-            errMessage = e.getMessage();
+        try {   
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, userName, "RMI", resv);
+            Reservation persistentResv = rm.submitModify(resv, loginConstraint, institution);
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, userName, "RMI", resv);
         } catch (Exception e) {
-            // use this so we can find NullExceptions
-            errMessage = e.getMessage();
-        } finally {
-            forwarder.cleanUp();
-            if (errMessage != null) {
-                this.log.debug("Modify  failed: " + errMessage);
-                eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, userName, 
-                    "WBUI", resv, "", errMessage);
-                result.put("error", errMessage);
-                bss.getTransaction().rollback();
-                return result;
-            }
+            String errMessage = e.getMessage();
+            this.log.debug("Modify  failed: " + errMessage);
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, loginConstraint, 
+                "RMI", resv, "", errMessage);
+            result.put("error", errMessage);
+            bss.getTransaction().rollback();
+            return result;
         }
  
         result.put("status", "modified reservation with GRI " + resv.getGlobalReservationId());

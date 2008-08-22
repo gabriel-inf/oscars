@@ -98,7 +98,15 @@ public class ReservationAdapter {
         return reply;
     }
     
-    public void handleCreateEvent(EventContent event, String producerId){
+    /**
+     * Extracts important information from Notify messages related to
+     * creating a reservation and schedules them for execution.
+     *
+     * @param event the event that occurred
+     * @param producerId the URL of the event producer
+     * @param reqStatus the required status of the reservation
+     */
+    public void handleEvent(EventContent event, String producerId, String reqStatus){
         String eventType = event.getType();
         ResDetails resDetails = event.getResDetails();
         if(resDetails == null){
@@ -107,18 +115,35 @@ public class ReservationAdapter {
         }
         String gri = resDetails.getGlobalReservationId();
         PathInfo pathInfo = resDetails.getPathInfo();
+        String confirmed = "";
+        String completed = "";
+        String failed = "";
+        
+        if(reqStatus.equals(StateEngine.INCREATE)){
+            confirmed = OSCARSEvent.RESV_CREATE_CONFIRMED;
+            completed = OSCARSEvent.RESV_CREATE_COMPLETED;
+            failed = OSCARSEvent.RESV_CREATE_FAILED;
+        }else if(reqStatus.equals(StateEngine.INMODIFY)){
+            confirmed = OSCARSEvent.RESV_MODIFY_CONFIRMED;
+            completed = OSCARSEvent.RESV_MODIFY_COMPLETED;
+            failed = OSCARSEvent.RESV_MODIFY_FAILED;
+        }else if(reqStatus.equals(StateEngine.INCANCEL)){
+            confirmed = OSCARSEvent.RESV_CANCEL_CONFIRMED;
+            completed = OSCARSEvent.RESV_CANCEL_COMPLETED;
+            failed = OSCARSEvent.RESV_CANCEL_FAILED;
+        }
         
         try{
-            if(eventType.equals(OSCARSEvent.RESV_CREATE_CONFIRMED)){
-                this.rm.submitCreate(gri, pathInfo, producerId, true);
-            }else if(eventType.equals(OSCARSEvent.RESV_CREATE_COMPLETED)){
-                this.rm.submitCreate(gri, pathInfo, producerId, false);
-            }else if(eventType.equals(OSCARSEvent.RESV_CREATE_FAILED)){
+            if(eventType.equals(confirmed)){
+                this.rm.submitResvJob(gri, pathInfo, producerId, reqStatus, true);
+            }else if(eventType.equals(completed)){
+                this.rm.submitResvJob(gri, pathInfo, producerId, reqStatus, false);
+            }else if(eventType.equals(failed)){
                 String src = event.getErrorSource();
                 String code = event.getErrorCode();
                 String msg = event.getErrorMessage();
-                this.rm.submitFailed(gri, pathInfo, src, code, msg, 
-                                     CreateReservationJob.class);
+                this.rm.submitFailed(gri, pathInfo, producerId,
+                                     src, code, msg, reqStatus);
             }else{
                 this.log.debug("Discarding event " + eventType);
             }
@@ -140,65 +165,31 @@ public class ReservationAdapter {
      * @throws BSSException
      */
     public ModifyResReply modify(ModifyResContent params, String login, String institution)
-            throws BSSException, InterdomainException {
+            throws BSSException{
 
         this.log.info("modify.start");
         EventProducer eventProducer = new EventProducer();
         Reservation resv = this.tc.contentToReservation(params);
         this.log.debug("Reservation was: "+resv.getGlobalReservationId());
 
-        Forwarder forwarder = this.core.getForwarder();
-        PathInfo pathInfo = params.getPathInfo();
-
-        // for now, do NOT change the path no matter what the user specified
-        pathInfo = null;
-
-        ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            Reservation persistentResv = this.rm.modify(resv, login, institution, pathInfo);
-            this.tc.ensureLocalIds(pathInfo);
-            // checks whether next domain should be contacted, forwards to
-            // the next domain if necessary, and handles the response
-            this.log.debug("modify, to forward");
-            InterdomainException interException = null;
-            try {
-                forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
-            } catch(InterdomainException e) {
-                interException = e;
-            } finally {
-                forwarder.cleanUp();
-                if (interException != null) {
-                    throw interException;
-                }
-            }
-            persistentResv = this.rm.finalizeModifyResv(forwardReply, resv);
-
-            this.log.debug("modify, to toModifyReply");
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, login, "API", resv);
+            Reservation persistentResv = this.rm.submitModify(resv, login, institution);
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, login, "API", resv);
             reply = this.tc.reservationToModifyReply(persistentResv);
-
-            // set to input argument, which possibly has been modified during
-            // reservation creation
-            //PATHINFO always null so comment out for now
-            /* if (pathInfo != null && pathInfo.getPath() != null) {
-                pathInfo.getPath().setId("unimplemented");
-                this.tc.clientConvert(pathInfo);
-            }
-            reply.getReservation().setPathInfo(pathInfo); */
-
         } catch (BSSException e) {
-            // send notification in all cases
+            String errMsg = this.generateErrorMsg(resv, e.getMessage());
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
+                resv, "", errMsg);
+            throw e;
+        } catch (Exception e) {
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
                 resv, "", errMsg);
             throw new BSSException(e.getMessage());
-        } catch (InterdomainException e) {
-            // send notification in all cases
-            String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
-                resv, "", errMsg);
-            throw new InterdomainException(e.getMessage());
         }
+
         this.log.info("modify.finish");
         return reply;
     }

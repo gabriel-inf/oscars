@@ -178,17 +178,19 @@ public class ReservationManager {
     }
     
     /**
-     * Verifies a RESERATION_CREATE_CONFIRMED and RESERATION_CREATE_COMPLETED 
+     * Verifies a RESERATION_*_CONFIRMED and RESERATION_*_COMPLETED 
      * event is valid and then schedules it for execution.
      *
      * @param gri the GRI of the reservation being confirmed
      * @param pathInfo the confirmed path
      * @param producerID the URN of the domain that produced this event
+     * @reqStatus the required status of the reservation to perform this operation
      * @param confirm true if confirmed event, false if completed event
      * @throws BSSException
      */
-    public void submitCreate(String gri, PathInfo pathInfo, 
-                                    String producerID, boolean confirm) throws BSSException{
+    public void submitResvJob(String gri, PathInfo pathInfo, 
+                              String producerID, String reqStatus,
+                              boolean confirm) throws BSSException{
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
         String op = "complete";
@@ -198,10 +200,29 @@ public class ReservationManager {
             targetNeighbor = "next";
         }
         
+        /* Find job type */
+        Class jobClass = null;
+        String prefix = "";
+        if(reqStatus.equals(StateEngine.INCREATE)){
+            jobClass = CreateReservationJob.class;
+            prefix = "createResv";
+        }else if(reqStatus.equals(StateEngine.INMODIFY)){
+            jobClass = ModifyReservationJob.class;
+            prefix = "modifyResv";
+        }else if(reqStatus.equals(StateEngine.RESERVED)){
+            jobClass = CancelReservationJob.class;
+            prefix = "cancelResv";
+        }else{
+            this.log.error("Unknown job type");
+            return;
+        }
+        
         if(resv == null){
             this.log.error("Reservation " + gri + " not found");
             return;
         }
+        String login = resv.getLogin();
+        
         if(pathInfo.getPath() == null){
             this.log.error("Recieved " + op + " event from " + producerID + 
                           " with no path element.");
@@ -212,49 +233,59 @@ public class ReservationManager {
              return;
         }
         
-        CtrlPlaneHopContent neighborHop = null;
-        if(confirm){
-            neighborHop = this.getNextExternalHop(pathInfo);
-        }else{
-            neighborHop = this.getPrevExternalHop(pathInfo);
+        String status = this.se.getStatus(resv);
+        if(!reqStatus.equals(status)){
+            this.log.info("Trying to " + op + " a reservation that doesn't" + 
+                          " have status " + reqStatus);
         }
-        if(neighborHop == null){
-            this.log.error("Recieved " + op + " event from " + producerID + 
-                          " for a reservation with no " + targetNeighbor + 
-                          " domain in relation to the current domain");
-             return;
+        if(confirm){
+            int newLocalStatus = this.se.getLocalStatus(resv) + 1;
+            this.se.canUpdateLocalStatus(resv, newLocalStatus);
         }
         
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        Domain nextDomain = domainDAO.getNextDomain(neighborHop);
-        if(nextDomain == null){
-            this.log.error("The " + targetNeighbor + " hop in the given path" +
-                           " is an unknown neighbor.");
+        Domain neighborDomain = this.endPointDomain(resv, !confirm);
+        if(neighborDomain == null || neighborDomain.isLocal()){
+            this.log.error("Could not identify " + targetNeighbor + 
+                           " domain in path.");
             return;
-        }else if(!nextDomain.getTopologyIdent().equals(producerID)){
+        }else if(!neighborDomain.getTopologyIdent().equals(producerID)){
             this.log.debug("The event is from " + producerID + " not the " +
                            targetNeighbor + " domain " + 
-                           nextDomain.getTopologyIdent() + " so discarding");
+                           neighborDomain.getTopologyIdent() + " so discarding");
             return;
         }
         
-        String status = this.se.getStatus(resv);
-        if(!StateEngine.INCREATE.equals(status)){
-            this.log.info("Trying to " + op + " a reservation that doesn't" + 
-                          " have status " + StateEngine.INCREATE);
+        /* Get the institution */
+        Site site = neighborDomain.getSite();
+        if(site == null){
+            this.log.error("No site associated with domain " +  
+                           neighborDomain.getTopologyIdent() + ". Please specify" +
+                           " institution associated with domain in your " +
+                           "bss.sites table.");
+            return;
         }
-        this.se.canUpdateLocalStatus(resv, (confirm?1:0));
+        
+        String institution = site.getName();
+        if(institution == null){
+            this.log.error("No institution associated with domain " +  
+                           neighborDomain.getTopologyIdent() + ". Please specify" +
+                           " institution associated with domain in your " +
+                           "aaa.institution and bss.sites table.");
+            return;
+        }
         
         /* Submitting a job to the resource scheduling queue 
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = op+"-"+resv.hashCode();
-        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", CreateReservationJob.class);
+        String jobName = prefix+"-"+op+"-"+resv.hashCode();
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", jobClass);
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put(op, true);
         jobDataMap.put("gri", gri);
+        jobDataMap.put("login", login);
+        jobDataMap.put("institution", institution);
         jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
         try {
@@ -266,19 +297,38 @@ public class ReservationManager {
     }
     
     /**
-     * Verifies a RESERATION_CREATE_CONFIRMED and RESERATION_CREATE_COMPLETED 
-     * event is valid and then schedules it for execution.
+     * Handles a RESERVATION_*_FAILED event
      *
-     * @param gri the GRI of the reservation being confirmed
-     * @param pathInfo the confirmed path
+     * @param gri the GRI of the reservation that failed
+     * @param pathInfo the path
      * @param producerID the URN of the domain that produced this event
-     * @param confirm true if confirmed event, false if completed event
+     * @param errorSrc the IDC the originated the error
+     * @param errorCode the error code of this event
+     * @param errorMessahe the error message describing the event
+     * @param reqStatus the requried status of the reservation for this to be valid
      * @throws BSSException
      */
-    public void submitFailed(String gri, PathInfo pathInfo, 
-                             String errorSrc,  String errorCode, 
-                             String errorMsg, Class jobClass) 
+    public void submitFailed(String gri, PathInfo pathInfo, String producerID, 
+                             String errorSrc, String errorCode, 
+                             String errorMsg, String reqStatus) 
                              throws BSSException{
+        /* Find job type */
+        Class jobClass = null;
+        String prefix = "";
+        if(reqStatus.equals(StateEngine.INCREATE)){
+            jobClass = CreateReservationJob.class;
+            prefix = "createResv";
+        }else if(reqStatus.equals(StateEngine.INMODIFY)){
+            jobClass = ModifyReservationJob.class;
+            prefix = "modifyResv";
+        }else if(reqStatus.equals(StateEngine.RESERVED)){
+            jobClass = CancelReservationJob.class;
+            prefix = "cancelResv";
+        }else{
+            this.log.error("Unknown job type");
+            return;
+        }
+        
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
         if(resv == null){
@@ -286,16 +336,60 @@ public class ReservationManager {
             return;
         }
         
+        String status = this.se.getStatus(resv);
+        if(!reqStatus.equals(status)){
+            this.log.info("Trying to fail a reservation that doesn't" + 
+                          " have status " + reqStatus);
+        }
+        
+        Domain prevDomain = this.endPointDomain(resv, true);
+        Domain nextDomain = this.endPointDomain(resv, false);
+        Domain neighborDomain = null;
+        if(nextDomain == null && prevDomain == null){
+            throw new BSSException("Reservation " + gri + 
+                                   " is not an interdomain reservation so it" +
+                                   " can't be failed by a Notification.");
+        }else if(prevDomain != null && prevDomain.getTopologyIdent().equals(producerID)){
+            neighborDomain = prevDomain;
+        }else if(nextDomain != null && nextDomain.getTopologyIdent().equals(producerID)){
+            neighborDomain = nextDomain;
+        }
+        if(neighborDomain == null){
+            this.log.debug("Cannot find notification producer " + producerID +
+                           " in the path");
+            return;
+        }
+        
+        /* Get the institution */
+        Site site = neighborDomain.getSite();
+        if(site == null){
+            this.log.error("No site associated with domain " +  
+                           neighborDomain.getTopologyIdent() + ". Please specify" +
+                           " institution associated with domain in your " +
+                           "bss.sites table.");
+            return;
+        }
+        
+        String institution = site.getName();
+        if(institution == null){
+            this.log.error("No institution associated with domain " +  
+                           neighborDomain.getTopologyIdent() + ". Please specify" +
+                           " institution associated with domain in your " +
+                           "aaa.institution and bss.sites table.");
+            return;
+        }
+        
         /* Submitting a job to the resource scheduling queue 
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = "failed-"+resv.hashCode();
+        String jobName = prefix+"-failed-"+resv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", jobClass);
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("fail", true);
         jobDataMap.put("gri", gri);
+        jobDataMap.put("institution", institution);
         jobDataMap.put("pathInfo", pathInfo);
         jobDataMap.put("errorSrc", errorSrc);
         jobDataMap.put("errorCode", errorCode);
@@ -363,7 +457,7 @@ public class ReservationManager {
 
         this.rsvLogger.redirect(gri);
         this.log.info("cancel.start: " + gri + " login: " + login + " institution: " + institution );
-        Reservation resv = getConstrainedResv(gri,login,institution);
+        Reservation resv = this.getConstrainedResv(gri,login,institution);
 
         // See if we can cancel at all; this logic is DIFFERENT from the StateEngine
         String status = StateEngine.getStatus(resv);
@@ -437,48 +531,87 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation modify(Reservation resv, String login, String institution,
-             PathInfo pathInfo)
+    public Reservation submitModify(Reservation resv, String login, String institution)
             throws  BSSException {
 
-        this.log.info("modify.start: login: " +  login + " institution: " +  institution ) ;
-
+        this.log.info("modify.start: login: " +  login + " institution: " +  institution );
         String gri = resv.getGlobalReservationId();
-        Reservation persistentResv = getConstrainedResv(gri,login,institution);
+        Reservation persistentResv = this.getConstrainedResv(gri,login,institution);
         // need to set this before validation
         // leave it the same, do not set to current user
         resv.setLogin(persistentResv.getLogin());
-
+        resv.setCreatedTime(persistentResv.getCreatedTime());
+        
         ParamValidator paramValidator = new ParamValidator();
-
-        StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
+        StringBuilder errorMsg = paramValidator.validate(resv, null);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
 
-        // handle times
+        if(StateEngine.INMODIFY.equals(this.se.getStatus(persistentResv))){
+            throw new BSSException("Cannot modify reservation because it is " +
+                                    "already being modified.");
+        }
+        this.se.canUpdateStatus(persistentResv, StateEngine.INMODIFY);
+        if (resv.getStartTime() > resv.getEndTime()) {
+            throw new BSSException("Cannot modify: start time after end time!");
+        }
+        
+        //Schedule job
+        HashMap resvMap = this.tc.reservationToHashMap(resv, null);
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String jobName = "submitModify-"+resv.hashCode();
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", ModifyReservationJob.class);
+        this.log.debug("Adding job "+jobName);
+        jobDetail.setDurability(true);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("start", true);
+        jobDataMap.put("gri", resv.getGlobalReservationId());
+        jobDataMap.put("login", login);
+        jobDataMap.put("institution", institution);
+        jobDataMap.put("resvMap", resvMap);
+        jobDetail.setJobDataMap(jobDataMap);
+        try {
+            sched.addJob(jobDetail, false);
+        } catch (SchedulerException ex) {
+            throw new BSSException(ex);
+        }
+        
+        int localStatus = 0;
+        if(this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)){
+            localStatus = 2;
+        }
+        this.se.updateStatus(persistentResv, StateEngine.INMODIFY);
+        this.se.updateLocalStatus(persistentResv, localStatus);
+        
+        return persistentResv;
+    }
+    
+    /**
+     * Modifies the reservation, given a partially filled in reservation
+     * instance and additional parameters.
+     *
+     * @param resv reservation instance modified in place
+     * @param login string with login name
+     *          if null any user's reservation may be modified
+     *          if set, only that user's reservation may be modified
+     * @param institution string with institution of caller
+     *          if null reservations from any site may be modified
+     *          if set only reservations starting or ending at that site may be modified
+     * @param pathInfo contains either layer 2 or layer 3 info
+     * @throws BSSException
+     */
+    public Reservation modify(Reservation resv, Reservation persistentResv) 
+                              throws BSSException{
         Long now = System.currentTimeMillis()/1000;
-
-        if (persistentResv.getStatus().equals("FAILED")) {
-            throw new BSSException("Cannot modify: reservation has already failed.");
-        } else if (persistentResv.getStatus().equals("FINISHED")) {
-            throw new BSSException("Cannot modify: reservation has already finished.");
-        } else if (persistentResv.getStatus().equals("CANCELLED")) {
-            throw new BSSException("Cannot modify: reservation has been cancelled.");
-        } else if (persistentResv.getStatus().equals("INVALIDATED")) {
-            throw new BSSException("Cannot modify: reservation has been invalidated.");
-        } else if (persistentResv.getStatus().equals("ACTIVE")) {
+        if (persistentResv.getStatus().equals(StateEngine.ACTIVE)) {
             // we will silently not allow the user to modify the start time
             resv.setStartTime(persistentResv.getStartTime());
             // can't end before current time
             if (resv.getEndTime() < now) {
                 resv.setEndTime(now);
             }
-            // can't end before start
-            if (resv.getStartTime() > resv.getEndTime()) {
-                throw new BSSException("Cannot modify: end time before start.");
-            }
-        } else if (persistentResv.getStatus().equals("PENDING")) {
+        } else if (persistentResv.getStatus().equals(StateEngine.RESERVED)) {
             if (resv.getEndTime() <= now) {
                 throw new BSSException("Cannot modify: reservation ends before current time.");
             }
@@ -486,24 +619,21 @@ public class ReservationManager {
             if (resv.getStartTime() < now) {
                 resv.setStartTime(now);
             }
-            if (resv.getStartTime() > resv.getEndTime()) {
-                throw new BSSException("Cannot modify: start time after end time!");
-            }
         }
-
-        // If pathInfo is null that means we should keep the stored path
+        
+        // since pathInfo is null we should keep the stored path
+        PathInfo pathInfo = tc.getPathInfo(persistentResv);
         if (pathInfo == null) {
-            pathInfo = tc.getPathInfo(persistentResv);
-            if (pathInfo == null) {
-                throw new BSSException("No path provided or stored in DB for reservation "+resv.getGlobalReservationId());
-            }
-            pathInfo = tc.toLocalPathInfo(pathInfo);
+            throw new BSSException("No path provided or stored in DB for reservation "+
+                                    resv.getGlobalReservationId());
         }
+        pathInfo = tc.toLocalPathInfo(pathInfo);
+
         // this will throw an exception if modification isn't possible
-        this.log.info("PI SRC: " + pathInfo.getLayer2Info().getSrcEndpoint());
         Path path = this.getPath(resv, pathInfo);
         this.log.info("modify.finish");
-        return persistentResv;
+        
+        return resv;
     }
 
     /**
@@ -514,8 +644,7 @@ public class ReservationManager {
      * @param resv reservation instance modified in place
      * @throws BSSException
      */
-    public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
-            throws  BSSException {
+    public Reservation finalizeModifyResv(Reservation resv) throws  BSSException {
 
         this.log.info("finalizeModify.start");
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
@@ -1230,6 +1359,33 @@ public class ReservationManager {
         }
         return institutionName;
     }
+    
+    /**
+     * Returns Domain of the institution of the an end point of the reservation
+     *
+     * @param resv Reservation for which we want to find an end point institution
+     * @param boolean source: true returns the source , false returns the destination
+     * @return institution String name of the end point
+     */
+    public Domain endPointDomain(Reservation resv, Boolean source) {
+        Path path = resv.getPath();
+        PathElem hop = path.getPathElem();
+        if (!source) { // get last hop
+            while (hop.getNextElem() != null) {
+                hop = hop.getNextElem();
+            }
+        }
+        Link endPoint = hop.getLink();
+        Link remoteLink = endPoint.getRemoteLink();
+        Domain endDomain = null;
+        if (remoteLink != null) {
+            endDomain = remoteLink.getPort().getNode().getDomain();
+        }else{
+            endDomain = endPoint.getPort().getNode().getDomain();
+        }
+
+        return endDomain;
+    }
 
     /**
      *  Generates the next Global Resource Identifier, created from the local
@@ -1497,7 +1653,7 @@ public class ReservationManager {
      *  @throws PSSException if no such reservation exists
      *
      */
-   private Reservation getConstrainedResv(String gri, String loginConstraint,
+   public Reservation getConstrainedResv(String gri, String loginConstraint,
                String institutionConstraint)  throws BSSException {
 
        ReservationDAO resvDAO = new ReservationDAO(this.dbname);

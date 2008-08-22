@@ -119,9 +119,14 @@ public class StateEngine {
         boolean allowed = true;
         String status = resv.getStatus();
         int localStatus = resv.getLocalStatus();
-        if(status.equals(INCREATE) || status.equals(INMODIFY) || status.equals(RESERVED)){
+        if(status.equals(INCREATE) ){
             if((localStatus ^ newLocalStatus) != 1){
                 allowed = false;
+            }
+        }else if(status.equals(INMODIFY) || status.equals(RESERVED)){
+            if(newLocalStatus > 3 || (localStatus == 1 && newLocalStatus > 1) 
+                || (localStatus > 1 && newLocalStatus == 1)){
+              allowed = false;   
             }
         }else if(status.equals(INSETUP) || status.equals(INTEARDOWN)){
             if(newLocalStatus > 7 || newLocalStatus < localStatus){

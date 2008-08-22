@@ -67,9 +67,9 @@ public class Forwarder extends Client {
         String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
         EventProducer eventProducer = new EventProducer();
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_STARTED, login, "JOB", resv);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_STARTED, login, "JOB", resv, pathInfo);
         ForwardReply reply = this.forward("createReservation", resv, pathInfo, url);
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_ACCEPTED, login, "JOB", resv);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_ACCEPTED, login, "JOB", resv, pathInfo);
         createReply = reply.getCreateReservation();
         this.log.info("create.finish GRI is: " +
                       createReply.getGlobalReservationId());
@@ -79,7 +79,8 @@ public class Forwarder extends Client {
     public ModifyResReply modify(Reservation resv, Reservation persistentResv, PathInfo pathInfo) throws InterdomainException {
 
         String url = null;
-
+        String login = resv.getLogin();
+         
         // currently get the next domain from the stored path
         if (persistentResv.getPath() != null && persistentResv.getPath().getNextDomain() != null) {
             url = persistentResv.getPath().getNextDomain().getUrl();
@@ -87,7 +88,10 @@ public class Forwarder extends Client {
 
         if (url != null) {
             this.log.info("modify.start forward to  " + url);
+            EventProducer eventProducer = new EventProducer();
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_STARTED, login, "JOB", persistentResv, pathInfo);
             ForwardReply reply = this.forward("modifyReservation", resv, pathInfo, url);
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_ACCEPTED, login, "JOB", persistentResv, pathInfo);
             ModifyResReply modifyReply = reply.getModifyReservation();
             this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
             return modifyReply;

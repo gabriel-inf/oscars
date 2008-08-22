@@ -280,8 +280,8 @@ public class TypeConverter {
             return pathInfo;
         }
 
-        ingress = hop[0].getLinkIdRef();
-        egress = hop[hop.length - 1].getLinkIdRef();
+        ingress = this.hopToURN(hop[0], "link");
+        egress = this.hopToURN(hop[hop.length - 1], "link");
         if(l2Info != null){
             l2Info.setSrcEndpoint(ingress);
             l2Info.setDestEndpoint(egress);
@@ -306,29 +306,53 @@ public class TypeConverter {
      */
     public CtrlPlanePathContent pathToCtrlPlane(Path path) {
         // this.log.debug("pathToCtrlPlane.start");
-
-        String hopId = null;
+        String swcapType = this.core.getReservationManager().DEFAULT_SWCAP_TYPE;
+        String encType = this.core.getReservationManager().DEFAULT_ENC_TYPE;
         Ipaddr ipaddr = null;
 
         PathElem pathElem = path.getPathElem();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
+        int i = 1;
         while (pathElem != null) {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+            CtrlPlaneLinkContent cpLink = new CtrlPlaneLinkContent();
+            CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                                new CtrlPlaneSwitchingCapabilitySpecificInfo();
             Link link = pathElem.getLink();
+            String linkId = null;
+            cpLink.setTrafficEngineeringMetric(link.getTrafficEngineeringMetric());
             if (path.getLayer2Data() != null) {
-                hopId = link.getFQTI();
+                linkId = link.getFQTI();
             } else {
+                //TODO: This should be in an ESnet specific location
                 String nodeName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = link.getValidIpaddr();
                 if (ipaddr == null) {
-                    hopId = "*out-of-date IP*";
+                    linkId = "*out-of-date IP*";
                 } else {
-                    hopId = nodeName + ": " + ipaddr.getIP();
+                    linkId = nodeName + ": " + ipaddr.getIP();
                 }
             }
-            hop.setId(hopId);
-            hop.setLinkIdRef(hopId);
+            L2SwitchingCapabilityData l2scData = 
+                                           link.getL2SwitchingCapabilityData();
+            if(l2scData == null){
+                swcap.setSwitchingcapType(swcapType);
+                swcap.setEncodingType(encType);
+                swcapInfo.setCapability("unimplemented");
+            }else{
+                swcap.setSwitchingcapType("l2sc");
+                swcap.setEncodingType("ethernet");
+                swcapInfo.setInterfaceMTU(l2scData.getInterfaceMTU());
+                swcapInfo.setVlanRangeAvailability(pathElem.getLinkDescr());
+            }
+            swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
+            cpLink.setId(linkId);
+            cpLink.setSwitchingCapabilityDescriptors(swcap);
+            hop.setId(i + "");
+            hop.setLink(cpLink);
             ctrlPlanePath.addHop(hop);
+            i++;
             pathElem = pathElem.getNextElem();
         }
         ctrlPlanePath.setId("unimplemented");
@@ -355,29 +379,6 @@ public class TypeConverter {
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
         layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
 
-        /* TODO: Coordinate between domains to determine if src and dest
-            are tagged or untagged. Also assumes vlan is the same along
-            entire path. */
-        PathElem elem = path.getPathElem();
-        while (elem != null) {
-            String vlanStr = elem.getLinkDescr();
-            if (vlanStr != null) {
-                VlanTag vtag = new VlanTag();
-                int storedVlan = Integer.parseInt(vlanStr);
-                int vlanNum = Math.abs(storedVlan);
-                vtag.setString(vlanNum + "");
-                if (storedVlan >= 0) {
-                    vtag.setTagged(true);
-                } else {
-                    vtag.setTagged(false);
-                }
-                layer2Info.setSrcVtag(vtag);
-                layer2Info.setDestVtag(vtag);
-                break;
-            }
-
-            elem = elem.getNextElem();
-        }
         //this.log.debug("pathToLayer2Info.end");
         return layer2Info;
     }
@@ -454,7 +455,7 @@ public class TypeConverter {
         for (int i=0; i < hops.length; i++) {
             CtrlPlaneHopContent hop = hops[i];
             if (hop.getId() == null || hop.getId().equals("")) {
-                hop.setId(hop.getLinkIdRef());
+                hop.setId(i+"");
             }
         }
         return;
@@ -680,6 +681,31 @@ public class TypeConverter {
         map.putAll(this.pathToHashMap(resv.getPath(), pathInfo));
 
         return map;
+    }
+    
+    /**
+     * Converts HashMap to a Reservation Hibernate bean
+     *
+     * @param HashMap the Reservation to convert
+     * @return the converted Reservation
+     */
+    public Reservation hashMapToReservation(HashMap<String, String[]> map){
+        Reservation resv = new Reservation();
+        if(map == null){
+            return resv;
+        }
+        
+        resv.setStartTime(Long.parseLong(map.get("startSeconds")[0]));
+        resv.setEndTime(Long.parseLong(map.get("endSeconds")[0]));
+        resv.setCreatedTime(Long.parseLong(map.get("createSeconds")[0]));
+        resv.setBandwidth(Long.parseLong(map.get("bandwidth")[0]));
+        resv.setDescription(map.get("description")[0]);
+        resv.setGlobalReservationId(map.get("gri")[0]);
+        resv.setLogin(map.get("userLogin")[0]);
+        
+        //TODO: Fill-in pathInfo
+        
+        return resv;
     }
 
     /**
