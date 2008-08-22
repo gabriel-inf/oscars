@@ -81,6 +81,7 @@ a resource, it may be reset to None if it is not valid for that resource.
     <td width="12%">Attribute</td>
     <td colspan="2">
         <select name="authAttributeName" id="authAttributeName">
+            onChange="oscarsState.authorizationState.constrainChoices('authAttributeName');return false;">
         </select>
     </td>
     <td>

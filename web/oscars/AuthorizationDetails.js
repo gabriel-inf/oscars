@@ -12,6 +12,7 @@ close()
 handleReply(responseObject, ioArgs)
 tabSelected(contentPaneWidget, oscarsStatus)
 resetFields(useSaved)
+validate()
 */
 
 dojo.provide("oscars.AuthorizationDetails");
@@ -29,6 +30,9 @@ oscars.AuthorizationDetails.init = function () {
 // posts authorization add to server
 oscars.AuthorizationDetails.postAdd = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
+    if (!oscars.AuthorizationDetails.validate(formNode)) {
+        return;
+    }
     dojo.xhrPost({
         url: 'servlet/AuthorizationAdd',
         handleAs: "json-comment-filtered",
@@ -40,6 +44,9 @@ oscars.AuthorizationDetails.postAdd = function () {
 
 oscars.AuthorizationDetails.postModify = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
+    if (!oscars.AuthorizationDetails.validate(formNode)) {
+        return;
+    }
     dojo.xhrPost({
         url: 'servlet/AuthorizationModify',
         handleAs: "json-comment-filtered",
@@ -52,7 +59,6 @@ oscars.AuthorizationDetails.postModify = function () {
 // posts delete request to server
 oscars.AuthorizationDetails.postDelete = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
-    var authGrid = dijit.byId("authGrid");
     dojo.xhrPost({
         url: 'servlet/AuthorizationRemove',
         handleAs: "json-comment-filtered",
@@ -83,7 +89,7 @@ oscars.AuthorizationDetails.handleReply = function (responseObject, ioArgs) {
     oscarsState.authorizationState.clearAuthState();
     if ((responseObject.method != "AuthorizationForm") &&
         (responseObject.method != "AuthorizationAdd")) {
-        // after adding, deleting, or modifying an authorization, refresh the
+        // after deleting or modifying an authorization, refresh the
         // authorizations list and display that tab
         var pane = dijit.byId("authorizationsPane");
         mainTabContainer.selectChild(pane);
@@ -131,4 +137,58 @@ oscars.AuthorizationDetails.setMenuOptionsEnabled = function () {
     for (i=0; i < menu.options.length; i++) {
         menu.options[i].disabled = false;
     }
+};
+
+oscars.AuthorizationDetails.validate = function (formNode) {
+    var menu = formNode.constraintName;
+    var constraintName = menu.options[menu.selectedIndex].value;
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    var constraintValue = formNode.constraintValue.value;
+    if (constraintName == 'none') {
+        // this will be unnecessary when constrainChoices is complete
+        if (constraintValue) {
+            oscarsStatus.className = "failure";
+            oscarsStatus.innerHTML = "Constraint value must be empty for " +
+                                     "the selected constraint option none";
+            return false;
+        }
+    } else {
+        if (!constraintValue) {
+            oscarsStatus.className = "failure";
+            oscarsStatus.innerHTML = "Constraint value must be filled in";
+            return false;
+        } else {
+            menu = formNode.resourceName;
+            var resourceName = menu.options[menu.selectedIndex].value;
+            menu = formNode.permissionName;
+            var permissionName = menu.options[menu.selectedIndex].value;
+            var constraintType = 
+                oscarsState.authorizationState.getConstraintType(resourceName,
+                                                permissionName, constraintName);
+            // try converting string to right Javascript type
+            if (constraintValue == "true") {
+                constraintValue = true;
+            } else if (constraintValue == "false") {
+                constraintValue = false;
+            } else {
+                // try converting string to number; this doesn't work
+                constraintValue += 0;
+            }
+            var newConstraintType = typeof constraintValue;
+            if (constraintType == "numeric") {
+                constraintType = "number";
+            } 
+            /*
+            console.log("required: " + constraintType + " given: " +
+                    newConstraintType);
+            if (newConstraintType != constraintType) {
+                oscarsStatus.className = "failure";
+                oscarsStatus.innerHTML = "Constraint value not of type " +
+                                         constraintType;
+                return false;
+            }
+            */
+        }
+    }
+    return true;
 };

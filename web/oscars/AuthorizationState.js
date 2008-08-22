@@ -52,13 +52,15 @@ dojo.declare("oscars.AuthorizationState", null, {
         this.constraintName = constraintName;
         this.constraintValue = constraintValue;
         var formNode = dijit.byId("authDetailsForm").domNode;
-        formNode.oldAuthAttributeName = attributeName;
-        formNode.oldResourceName = resourceName;
-        formNode.oldPermissionName = permissionName;
-        formNode.oldConstraintName = constraintName;
+        formNode.oldAuthAttributeName.value = attributeName;
+        formNode.oldResourceName.value = resourceName;
+        formNode.oldPermissionName.value = permissionName;
+        formNode.oldConstraintName.value = constraintName;
     }, 
 
     recoverAuthState: function(formNode) {
+        var deleteButton = dijit.byId("deleteAuthorization").domNode;
+        deleteButton.disabled = false;
         var menu = formNode.authAttributeName;
         oscars.Form.setMenuSelected(menu, this.attributeName);
         menu = formNode.resourceName;
@@ -73,6 +75,8 @@ dojo.declare("oscars.AuthorizationState", null, {
     },
 
     clearAuthState: function() {
+        var deleteButton = dijit.byId("deleteAuthorization").domNode;
+        deleteButton.disabled = false;
         var formNode = dijit.byId("authDetailsForm").domNode;
         var menu = formNode.authAttributeName;
         this.attributeName = menu.options[0].value;
@@ -85,10 +89,10 @@ dojo.declare("oscars.AuthorizationState", null, {
         formNode.constraintValue.value = "";
         var constraintTypeNode = dojo.byId("constraintType");
         constraintTypeNode.innerHTML = "";
-        formNode.oldAuthAttributeName = "";
-        formNode.oldResourceName = "";
-        formNode.oldPermissionName = "";
-        formNode.oldConstraintName = "";
+        formNode.oldAuthAttributeName.value = "";
+        formNode.oldResourceName.value = "";
+        formNode.oldPermissionName.value = "";
+        formNode.oldConstraintName.value = "";
     },
 
     constrainChoices: function(menuName) {
@@ -97,6 +101,13 @@ dojo.declare("oscars.AuthorizationState", null, {
         var val;
         var illegalChoice;
         var formNode = dijit.byId("authDetailsForm").domNode;
+        var attributeMenu = formNode.authAttributeName;
+        var deleteButton = dijit.byId("deleteAuthorization").domNode;
+        // not currently working
+        deleteButton.disabled = true;
+        if (menuName == "authAttributeName") {
+            return;
+        }
         var resourceMenu = formNode.resourceName;
         var permissionMenu = formNode.permissionName;
         var constraintMenu = formNode.constraintName;
@@ -123,6 +134,7 @@ dojo.declare("oscars.AuthorizationState", null, {
             var constraintValueNode = formNode.constraintValue;
             var constraintTypeNode = dojo.byId("constraintType");
             if (constraintName == 'none') {
+                constraintValueNode.value = "";
                 constraintValueNode.disabled = true;
                 constraintTypeNode.disabled = true;
                 constraintTypeNode.innerHTML = "";
@@ -156,5 +168,9 @@ dojo.declare("oscars.AuthorizationState", null, {
         } else {
             constraintTypeNode.innerHTML = "";
         }
+    },
+
+    getConstraintType: function(resourceName, permissionName, constraintName) {
+        return this.rpcData[resourceName][permissionName][constraintName];
     }
 });

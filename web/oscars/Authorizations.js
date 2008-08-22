@@ -73,7 +73,6 @@ oscars.Authorizations.tabSelected = function (
     } else {
         var authListFormNode = dijit.byId("authListForm").domNode;
         // if authorizations have been added, list needs to be updated
-        // have changed, so need to update
         if (authListFormNode.authsAdded.value) {
             oscars.Authorizations.refreshAuthGrid();
             authListFormNode.authsAdded.value = "";
