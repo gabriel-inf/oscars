@@ -43,8 +43,33 @@ public class AuthorizationModify extends HttpServlet {
                                 methodName, aaa);
             return;
         }
+        String attribute = request.getParameter("authAttributeName");
+        String permission = request.getParameter("permissionName");
+        String resource = request.getParameter("resourceName");
+        String constraintName = request.getParameter("constraintName");
+        String constraintValue = request.getParameter("constraintValue");
+        String origAttribute = request.getParameter("oldAuthAttributeName");
+        String origPermission = request.getParameter("oldPermissionName");
+        String origResource = request.getParameter("oldResourceName");
+        String origConstraint = request.getParameter("oldConstraintName");
+        
+        log.debug("modifying attribute: " + origAttribute + " to "+ attribute +
+                " resource: " + origResource + " to " + resource + 
+                " permission: " + origPermission + " to " + permission + 
+                " constraintName: " + origConstraint + " to " + constraintName );
+        
+        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+        try {
+            Authorization auth = authDAO.query(origAttribute,origPermission, origResource,
+                    origConstraint);
+            authDAO.update(auth,attribute,permission,resource,constraintName, constraintValue);
+        } catch ( AAAException e) {
+            log.error(e.getMessage());
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+            return;           
+        }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Unimplemented yet");
+        outputMap.put("status", "Authorization modified");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
@@ -59,4 +84,6 @@ public class AuthorizationModify extends HttpServlet {
 
         this.doGet(request, response);
     }
+    
+  
 }
