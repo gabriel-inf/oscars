@@ -761,23 +761,7 @@ public class ReservationManager {
         }
         
         //Convert any local hops that are still references to link objects
-        this.log.info("PRE-EXPAND");
-        for(CtrlPlaneHopContent hop : pathInfo.getPath().getHop()){
-            if(hop.getLink() == null){ continue; }
-            String vlans = hop.getLink().getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecificInfo()
-                                        .getVlanRangeAvailability();
-            this.log.info(this.tc.hopToURN(hop) + "(" + vlans + ")");
-        }
         this.expandLocalHops(pathInfo);
-         this.log.info("POST-EXPAND");
-         for(CtrlPlaneHopContent hop : pathInfo.getPath().getHop()){
-            if(hop.getLink() == null){ continue; }
-            String vlans = hop.getLink().getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecificInfo()
-                                        .getVlanRangeAvailability();
-            this.log.info(this.tc.hopToURN(hop) + "(" + vlans + ")");
-        }
         this.expandLocalHops(intraPath);
         
         ReservationDAO dao = new ReservationDAO(this.dbname);

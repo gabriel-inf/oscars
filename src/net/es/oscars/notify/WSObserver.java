@@ -343,7 +343,7 @@ public class WSObserver implements Observer {
         TopicExpressionType topicExpr = new TopicExpressionType();
         URI topicDialect = new URI(TOPIC_EXPR_FULL);
         topicExpr.setDialect(topicDialect);
-        this.log.info("xpath.start");
+
         String topicString = "";
         boolean firstMatch = true;
         for(String topic : this.topics.keySet()){
@@ -358,12 +358,9 @@ public class WSObserver implements Observer {
             SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
             xpathExpression.setNamespaceContext(nsContext);
             if(xpathExpression.booleanValueOf(omRoot)){
-                this.log.info("XPATH " + topic + " matches event!");
                 topicString += (firstMatch ? "" : "|");
                 topicString += (topic);
                 firstMatch = false;
-            }else{
-                this.log.info("XPATH " + topic + " does not match event!");
             }
             this.log.debug("Generated topic string: " + topicString);
         }
@@ -373,7 +370,6 @@ public class WSObserver implements Observer {
         }
         topicExpr.setString(topicString);
          
-        this.log.info("xpath.end");
         return topicExpr;
     }
     
@@ -389,13 +385,11 @@ public class WSObserver implements Observer {
      */
     private void loadTopics(String topicSetFile, String topicNSFile) 
                                             throws IOException, JDOMException{
-        this.log.debug("loadTopics.start");
         this.topics = new HashMap<String, String>();
         Namespace wstop = Namespace.getNamespace("http://docs.oasis-open.org/wsn/t-1");
         
         //Step 1: Figure out which Topics are supported
         //open topicset
-        this.log.debug("Loading topic set file " + topicSetFile);
         SAXBuilder builder = new SAXBuilder(false);
         Document topicSetDoc = builder.build(new File(topicSetFile));
         Element topicSetRoot = topicSetDoc.getRootElement();
@@ -488,11 +482,7 @@ public class WSObserver implements Observer {
             if("http://www.w3.org/TR/1999/REC-xpath-19991116".equals(dialect)){
                 String xpath = msgPattern.getText();
                 this.topics.put(completeName, xpath);
-                this.log.debug(name + ".completeName=" + completeName);
-                this.log.debug(name + ".xpath=" + xpath);
             }
         }
-        
-        this.log.debug("loadTopics.end");
     }
 }

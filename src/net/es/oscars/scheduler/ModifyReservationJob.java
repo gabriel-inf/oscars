@@ -300,21 +300,18 @@ public class ModifyReservationJob extends ChainingJob implements Job {
      * @param origState the initial state prior to going INMODIFY
      */
     private void rollback(Reservation resv, String origState) throws BSSException{
-        this.log.debug("rollback.start");
         String gri = resv.getGlobalReservationId();
         if(resvCache.containsKey(gri)){
             Long[] times = resvCache.get(gri);
             resv.setStartTime(times[0]);
             resv.setEndTime(times[1]);
-            this.log.debug("rollback.startTime=" + times[0]);
-            this.log.debug("rollback.endTime=" + times[1]);
+            resvCache.remove(gri);
         }else{
             this.log.info("Original times not found so keeping " + 
                           "modifed times. This might cause errors.");
         }
         this.se.updateStatus(resv, origState);
         this.se.updateLocalStatus(resv, 0);
-        this.log.debug("rollback.end");
     }
 
 }
