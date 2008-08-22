@@ -137,8 +137,6 @@ oscars.AuthorizationDetails.setMenuOptionsEnabled = function () {
     for (i=0; i < menu.options.length; i++) {
         menu.options[i].disabled = false;
     }
-    menu.disabled = true;
-    menu.selectedIndex = 2;
 };
 
 oscars.AuthorizationDetails.validate = function (formNode) {
