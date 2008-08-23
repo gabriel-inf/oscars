@@ -79,15 +79,18 @@ oscars.UserProfile.tabSelected = function (
     // and this is the first time the tab has been selected
     if (oscars.Utils.isBlank(node.profileName.value)) {
         node.userInstsUpdated.value = "";
+        node.userAttrsUpdated.value = "";
         node.profileName.value = oscarsState.login;
         oscars.UserProfile.postUserQuery();
     } else {
         // if institutions list has been updated, need to update
         // institutions menu
+        // TODO: check for userAttrsUpdated when have dynamic menu
         if (node.userInstsUpdated.value) {
             node.userInstsUpdated.value = "";
+            node.userAttrsUpdated.value = "";
             oscars.UserProfile.postUserQuery();
-        } else {
+        } else  {
             oscarsStatus.innerHTML = "Profile for user " +
                                       node.profileName.value;
         }

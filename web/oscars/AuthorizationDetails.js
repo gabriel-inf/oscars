@@ -117,6 +117,13 @@ oscars.AuthorizationDetails.tabSelected = function (
         /* domNode */ oscarsStatus) {
     oscarsStatus.className = "success";
     oscarsStatus.innerHTML = "Authorization details";
+    var formNode = dijit.byId("authDetailsForm").domNode;
+    // attributes list has been changed, need to update
+    if (formNode.authAttrsUpdated.value) {
+        // TODO:  this has to interact with constraints
+        // oscars.AuthorizationForm.init();
+        formNode.authAttrsUpdated.value = "";
+    }
 };
 
 oscars.AuthorizationDetails.resetFields = function (useSaved) {

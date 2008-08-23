@@ -17,7 +17,8 @@ oscars.Attributes.manage = function (opName) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     var formNode = dijit.byId("attributesForm").domNode;
     var choiceType = dojo.byId("attributeOpChoice");
-    var editWidget = dijit.byId("attributeEditName");
+    var editNameWidget = dijit.byId("attributeEditName");
+    var editDescrWidget = dijit.byId("attributeEditDescription");
     var addButton = dijit.byId("attributeAddButton").domNode;
     var saveButton = dijit.byId("attributeSaveButton").domNode;
     var deleteButton = dijit.byId("attributeDeleteButton").domNode;
@@ -25,13 +26,17 @@ oscars.Attributes.manage = function (opName) {
         addButton.style.color = "#FF0000";
         saveButton.style.color = "#00FF00";
         deleteButton.style.color = "#FF0000";
-        editWidget.required = false;
+        editNameWidget.required = false;
+        editDescrWidget.required = false;
         valid = dijit.byId("attributesForm").validate();
         formNode.saveAttrName.value = "";
+        formNode.saveAttrDescription.value = "";
         formNode.attributeEditName.value = "";
+        formNode.attributeEditDescription.value = "";
         choiceType.innerHTML = "Adding";
     } else if (opName == "delete") {
-        editWidget.required = true;
+        editNameWidget.required = true;
+        editDescrWidget.required = true;
         valid = dijit.byId("attributesForm").validate();
         if (!valid) {
             return;
@@ -44,9 +49,11 @@ oscars.Attributes.manage = function (opName) {
             form: formNode
         });
         formNode.saveAttrName.value = "";
+        formNode.saveAttrDescription.value = "";
         choiceType.innerHTML = "";
     } else if (opName == "save") {
-        editWidget.required = true;
+        editNameWidget.required = true;
+        editDescrWidget.required = true;
         valid = dijit.byId("attributesForm").validate();
         if (!valid) {
             return;
@@ -69,6 +76,7 @@ oscars.Attributes.manage = function (opName) {
             });
         }
         formNode.saveAttrName.value = "";
+        formNode.saveAttrDescriptionValue = "";
         choiceType.innerHTML = "";
     }
 };
@@ -78,6 +86,7 @@ oscars.Attributes.handleReply = function (responseObject, ioArgs) {
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
+    var formNode;
     var attributeGrid = dijit.byId("attributeGrid");
     var model = attributeGrid.model;
     model.setData(responseObject.attributeData);
@@ -87,29 +96,33 @@ oscars.Attributes.handleReply = function (responseObject, ioArgs) {
     attributeGrid.resize();
     attributeGrid.resize();
     oscarsState.attributeGridInitialized = true;
-    var formNode = dijit.byId("attributesForm").domNode;
-    formNode.attributeEditName.value = "";
+    var attrFormNode = dijit.byId("attributesForm").domNode;
     var addButton = dijit.byId("attributeAddButton").domNode;
     var saveButton = dijit.byId("attributeSaveButton").domNode;
     var deleteButton = dijit.byId("attributeDeleteButton").domNode;
     addButton.style.color = "#000000";
     saveButton.style.color = "#000000";
     deleteButton.style.color = "#000000";
-    /*
+    // indicate to dependent pages that they need to be updated
     if (responseObject.method != "AttributeList") {
         formNode = dijit.byId("userProfileForm").domNode;
-        formNode.userInstsUpdated.value = "changed";
+        formNode.userAttrsUpdated.value = "changed";
         // doesn't exist until user add tab first clicked on
         if (dijit.byId("userAddForm")) {
             formNode = dijit.byId("userAddForm").domNode;
-            formNode.userAddInstsUpdated.value = "changed";
+            formNode.userAddAttrsUpdated.value = "changed";
+        }
+        if ((responseObject.method != "AttributeModify") ||
+            (attrFormNode.attributeEditName.value !=
+             attrFormNode.saveAttrName.value)) {
+             if (dijit.byId("authDetailsForm")) {
+                 formNode = dijit.byId("authDetailsForm").domNode;
+                 formNode.authAttrsUpdatedValue = "changed";
+             }
         }
     }
-    if (responseObject.method == "AttributeModify") {
-        var listFormNode = dijit.byId("userListForm").domNode;
-        listFormNode.userListInstsUpdated.value = "changed";
-    }
-    */
+    attrFormNode.attributeEditName.value = "";
+    attrFormNode.attributeEditDescription.value = "";
 };
 
 // take action based on this tab being selected
@@ -139,11 +152,14 @@ oscars.Attributes.createAttributeGrid = function () {
 // select name based on row select in grid
 oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     var attributeGrid = dijit.byId("attributeGrid");
-    // get attribute name
+    // get attribute
     var attributeName = attributeGrid.model.getDatum(evt.rowIndex, 0);
+    var attributeDescription = attributeGrid.model.getDatum(evt.rowIndex, 1);
     var formNode = dijit.byId("attributesForm").domNode;
     formNode.attributeEditName.value = attributeName;
+    formNode.attributeEditDescription.value = attributeDescription;
     formNode.saveAttrName.value = attributeName;
+    formNode.saveAttrDescription.value = attributeDescription;
     var choiceType = dojo.byId("attributeOpChoice");
     choiceType.innerHTML = "Selected";
     var addButton = dijit.byId("attributeAddButton").domNode;

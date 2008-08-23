@@ -3,8 +3,8 @@
 <script type="text/javascript">
     var attributeView = {
       cells: [[
-         {name: 'Name', width: "20em"},
-         {name: 'Description', width: "25em"}
+         {name: 'Name', width: "15em"},
+         {name: 'Description', width: "32em"}
       ]]
     };
     var attributeLayout = [ attributeView ];
@@ -26,6 +26,7 @@ that attribute.
 
 <form id="attributesForm" dojoType="dijit.form.Form">
     <input type="hidden" name="saveAttrName" id="saveAttrName" />
+    <input type="hidden" name="saveAttrDescription" id="saveAttrDescription" />
 
         Attributes ->
       <button dojoType="dijit.form.Button" id="attributeAddButton">
@@ -49,13 +50,22 @@ that attribute.
   <table width="80%">
   <tbody>
   <tr>
-    <td width="4%">EDIT</td>
-    <td class="required" width="40%">
+    <td width="4%">EDIT NAME</td>
+    <td class="required" width="30%">
         <input type="text" name="attributeEditName" id="attributeEditName"
                dojoType="dijit.form.ValidationTextBox"
                promptMessage="Enter an attribute name" />
     </td>
-    <td width ="7%" id="attributeOpChoice">
+    <td width ="6%" id="attributeOpChoice">
+    </td>
+  </tr>
+  <tr>
+    <td>DESCRIPTION</td>
+    <td colspan="2" class="required">
+        <input type="text" name="attributeEditDescription"
+          id="attributeEditDescription"
+               dojoType="dijit.form.ValidationTextBox"
+               promptMessage="Enter the attribute's description" />
     </td>
   </tr>
   </tbody>
