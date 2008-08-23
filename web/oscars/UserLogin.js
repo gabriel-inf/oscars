@@ -95,6 +95,15 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
         mainTabContainer.addChild(institutionsPane, 0);
         institutionsPane.startup();
     }
+    // attributes management tab
+    if (responseObject.authorizedTabs.attributesPane) {
+        var attributesPane = new dojox.layout.ContentPane(
+              {title:'Attributes', id: 'attributesPane'},
+               dojo.doc.createElement('div'));
+        attributesPane.setHref("forms/attributes.html");
+        mainTabContainer.addChild(attributesPane, 0);
+        attributesPane.startup();
+    }
     // add user form
     if (responseObject.authorizedTabs.userAddPane) {
         var userAddPane = new dojox.layout.ContentPane(

@@ -1,0 +1,67 @@
+<html>
+<head>
+<script type="text/javascript">
+    var attributeView = {
+      cells: [[
+         {name: 'Name', width: "20em"},
+         {name: 'Description', width: "25em"}
+      ]]
+    };
+    var attributeLayout = [ attributeView ];
+
+</script>
+</head>
+
+<body>
+<p>Use this form to manage the attribute table.
+Clicking on ADD will clear the EDIT text field.  Add the row by adding
+text and clicking on SAVE.
+Clicking on a row will bring up its name in the EDIT text field and take you
+out of ADD mode.
+To then modify that name, edit the text and click on the SAVE button.
+To delete that row, click on the DELETE button.  This will not succeed unless
+there are no users possessing that attribute, and no authorizations using
+that attribute.
+</p>
+
+<form id="attributesForm" dojoType="dijit.form.Form">
+    <input type="hidden" name="saveAttrName" id="saveAttrName" />
+
+        Attributes ->
+      <button dojoType="dijit.form.Button" id="attributeAddButton">
+        ADD
+        <script type="dojo/method" event="onClick">
+            oscars.Attributes.manage("add");
+        </script>
+      </button>
+      <button dojoType="dijit.form.Button" id="attributeSaveButton">
+        SAVE
+        <script type="dojo/method" event="onClick">
+            oscars.Attributes.manage("save");
+        </script>
+      </button>
+      <button dojoType="dijit.form.Button" id="attributeDeleteButton">
+        DELETE
+        <script type="dojo/method" event="onClick">
+            oscars.Attributes.manage("delete");
+        </script>
+      </button>
+  <table width="80%">
+  <tbody>
+  <tr>
+    <td width="4%">EDIT</td>
+    <td class="required" width="40%">
+        <input type="text" name="attributeEditName" id="attributeEditName"
+               dojoType="dijit.form.ValidationTextBox"
+               promptMessage="Enter an attribute name" />
+    </td>
+    <td width ="7%" id="attributeOpChoice">
+    </td>
+  </tr>
+  </tbody>
+  </table>
+  <div id="attributeGrid" dojoType="dojox.Grid" structure="attributeLayout">
+  </div>
+</form>
+</body>
+</html>

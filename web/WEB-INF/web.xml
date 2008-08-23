@@ -87,6 +87,10 @@
         <servlet-class>net.es.oscars.servlets.Institutions</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>Attributes</servlet-name>
+        <servlet-class>net.es.oscars.servlets.Attributes</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>AuthorizationList</servlet-name>
 	<servlet-class>net.es.oscars.servlets.AuthorizationList</servlet-class>
     </servlet>
@@ -177,6 +181,10 @@
     <servlet-mapping>
         <servlet-name>Institutions</servlet-name>
         <url-pattern>/servlet/Institutions</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Attributes</servlet-name>
+        <url-pattern>/servlet/Attributes</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>AuthorizationList</servlet-name>

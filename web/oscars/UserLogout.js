@@ -72,6 +72,9 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     if (dijit.byId("institutionsPane")) {
         mainTabContainer.closeChild(dijit.byId("institutionsPane"));
     }
+    if (dijit.byId("attributesPane")) {
+        mainTabContainer.closeChild(dijit.byId("attributesPane"));
+    }
     if (dijit.byId("authorizationsPane")) {
         mainTabContainer.closeChild(dijit.byId("authorizationsPane"));
     }
@@ -83,5 +86,6 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     oscarsState.userRowSelectable = false;
     oscarsState.resvGridInitialized = false;
     oscarsState.institutionGridInitialized = false;
+    oscarsState.attributeGridInitialized = false;
     oscarsState.authGridInitialized = false;
 };

@@ -169,6 +169,9 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     // selected institutions management tab
     } else if (contentPane.id == "institutionsPane") {
         oscars.Institutions.tabSelected(contentPane, oscarsStatus);
+    // selected attributes management tab
+    } else if (contentPane.id == "attributesPane") {
+        oscars.Attributes.tabSelected(contentPane, oscarsStatus);
     // selected authorization list tab
     } else if (contentPane.id == "authorizationsPane") {
         oscars.Authorizations.tabSelected(contentPane, oscarsStatus);
