@@ -8,6 +8,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.notify.*;
 
 /**
  * Intermediary between Axis2 and OSCARS libraries.
@@ -25,7 +26,8 @@ public class PathSetupAdapter{
     private OSCARSCore core;
     private ReservationDAO resvDAO;
     private TokenDAO tokenDAO;
-
+    private StateEngine se;
+    
     /** Constructor */
     public PathSetupAdapter() {
         this.log = Logger.getLogger(this.getClass());
@@ -34,6 +36,7 @@ public class PathSetupAdapter{
         this.pm = this.core.getPathSetupManager();
         this.resvDAO = new ReservationDAO(dbname);
         this.tokenDAO = new TokenDAO(dbname);
+        this.se = this.core.getStateEngine();
 
     }
 
@@ -59,23 +62,28 @@ public class PathSetupAdapter{
         String status = null;
         String tokenValue = params.getToken();
         Long currTime = System.currentTimeMillis()/1000;
-
+        EventProducer eventProducer = new EventProducer();
+        Forwarder forwarder = new Forwarder();
+        CreatePathResponseContent forwardReply = null;
         this.log.info("create.start");
 
-        /* Connect to DB */
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
 
-        Reservation resv = getConstrainedResv(gri,tokenValue, login,institution);
-
+        Reservation resv = null;
+        
+        try{
+            this.getConstrainedResv(gri,tokenValue, login,institution);
+        }catch(PSSException e){
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
+                                   "API", "", e.getMessage());
+            throw e;
+        }
+        
+        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_RECEIVED, login, "API", resv);
         /* Check reservation parameters to make sure it can be created */
         if (resv.getPath().getPathSetupMode() == null) {
             throw new PSSException("Path setup mode is null");
         } else if (!resv.getPath().getPathSetupMode().equals("signal-xml")) {
             throw new PSSException("Path setup mode is not signal-xml");
-        } else if(!resv.getStatus().equals("PENDING")){
-            throw new PSSException("Path cannot be created. " +
-            "Invalid reservation specified.");
         } else if(currTime.compareTo(resv.getStartTime()) < 0){
             throw new PSSException("Path cannot be created. Reservation " +
             "start time not yet reached.");
@@ -83,20 +91,29 @@ public class PathSetupAdapter{
             throw new PSSException("Path cannot be created. Reservation " +
             "end time has been reached.");
         }
-
-        /* Start signaling and setup path */
-        try {
-            status = this.pm.create(resv, true);
-            response.setStatus(status);
-            response.setGlobalReservationId(gri);
-        } catch (PSSException e) {
+        
+        
+        /* Forward */
+        try{
+            StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FWD_STARTED, login, "API", resv);
+            forwardReply = forwarder.createPath(resv);
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FWD_ACCEPTED, login, "API", resv);
+        }catch (InterdomainException e) {
+            forwarder.cleanUp();
             throw e;
-        } catch (InterdomainException e) {
-            throw e;
-        } finally {
-            bss.getTransaction().commit();
+        }catch (Exception e) {
+            forwarder.cleanUp();
+            throw new PSSException(e);
         }
-
+        
+        /* Schedule path setup */
+        status = this.pm.create(resv, true);
+        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, login, "API", resv);
+        response.setStatus(status);
+        response.setGlobalReservationId(gri);
+        
+        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_ACCEPTED, login, "API", resv);
         this.log.info("create.end");
 
         return response;
@@ -129,9 +146,6 @@ public class PathSetupAdapter{
         this.log.info("refresh.start");
 
         /* Connect to DB */
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
-
         Reservation resv = getConstrainedResv(gri,tokenValue,login,institution);
 
         /* Check reservation parameters */
@@ -154,7 +168,6 @@ public class PathSetupAdapter{
             throw e;
         } finally {
             //make sure status gets updated
-              bss.getTransaction().commit();
         }
 
         this.log.info("refresh.end");
@@ -191,9 +204,6 @@ public class PathSetupAdapter{
         this.log.info("teardown.start");
 
         /* Connect to DB */
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
-
         Reservation resv = getConstrainedResv(gri,tokenValue,login,institution);
 
         if(resv.getPath().getPathSetupMode() == null ||
@@ -216,8 +226,6 @@ public class PathSetupAdapter{
         } catch (PSSException e) {
             throw e;
         } finally {
-            //make sure status gets updated
-            bss.getTransaction().commit();
         }
 
         this.log.info("teardown.end");
@@ -302,4 +310,40 @@ public class PathSetupAdapter{
        }
        return resv;
    }
+   
+   /**
+     * Extracts important information from Notify messages related to
+     * signaling and schedules a job for execution.
+     *
+     * @param event the event that occurred
+     * @param producerId the URL of the event producer
+     * @param targStatus the target status of the reservation
+     */
+    public void handleSetupEvent(EventContent event, String producerId, String targStatus){
+        String eventType = event.getType();
+        ResDetails resDetails = event.getResDetails();
+        if(resDetails == null){
+            this.log.error("No revservation details provided for event " + 
+                           eventType + " from " + producerId);
+        }
+        String gri = resDetails.getGlobalReservationId();
+        
+        try{
+            if(eventType.equals(OSCARSEvent.UP_PATH_SETUP_CONFIRMED)){
+                this.pm.handleSetupEvent(gri, producerId, true);
+            }else if(eventType.equals(OSCARSEvent.DOWN_PATH_SETUP_CONFIRMED)){
+                this.pm.handleSetupEvent(gri, producerId, false);
+            }else if(eventType.equals(OSCARSEvent.PATH_SETUP_FAILED)){
+                String src = event.getErrorSource();
+                String code = event.getErrorCode();
+                String msg = event.getErrorMessage();
+                /*this.rm.submitFailed(gri, pathInfo, producerId,
+                                     src, code, msg, reqStatus); */
+            }else{
+                this.log.debug("Discarding event " + eventType);
+            }
+        }catch(BSSException e){
+            this.log.error(e.getMessage());
+        }
+    }
 }

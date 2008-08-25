@@ -105,7 +105,7 @@ public class VendorPSS implements PSS {
         }
 
 
-        StateEngine stateEngine = new StateEngine();
+        StateEngine stateEngine = this.core.getStateEngine();
         try {
             status = StateEngine.getStatus(resv);
             this.log.debug("Reservation status was: "+status);
@@ -248,7 +248,7 @@ public class VendorPSS implements PSS {
             }
         }
 
-        StateEngine stateEngine = new StateEngine();
+        StateEngine stateEngine = this.core.getStateEngine();
         try {
             status = StateEngine.getStatus(resv);
             this.log.debug("Reservation status was: "+status);

@@ -1090,10 +1090,12 @@ public class ReservationManager {
      *
      * @param pathInfo the pathInfo element containing the interdomain path
      * @param currPathElem if path already stored then this is the first elem
+     * @param isInter true if interdomain
      * @return first PathElem of converted path
      * @throws BSSException
      */
-    public PathElem convertPathElem(PathInfo pathInfo, PathElem currPathElem) 
+    public PathElem convertPathElem(PathInfo pathInfo, PathElem currPathElem, 
+                                    boolean isInter) 
                 throws BSSException{
         CtrlPlanePathContent path = pathInfo.getPath();
         if(path == null){ return null; }
@@ -1111,7 +1113,16 @@ public class ReservationManager {
         
         for(int i = (hops.length - 1); i >= 0; i--){
             String urn = this.tc.hopToURN(hops[i]);
-            Link link = TopologyUtil.getLink(urn, this.dbname);
+            Link link = null;
+            try{
+                link = TopologyUtil.getLink(urn, this.dbname);
+            }catch(BSSException e){
+                if(isInter){
+                    //store whatever hops you can
+                    continue;
+                }
+                throw e;
+            }
             if(savedElems.containsKey(urn)){
                 currPathElem = savedElems.get(urn);
             }else{
@@ -1547,13 +1558,13 @@ public class ReservationManager {
                 swcapInfo.setSuggestedVLANRange(null);
             }
             this.tc.mergePathInfo(intraPathInfo, pathInfo, true);
-            this.convertPathElem(intraPathInfo, path.getPathElem());
+            this.convertPathElem(intraPathInfo, path.getPathElem(), false);
         }
         
         /* Store or update interdomain path */
         try {
             PathElem interPathElem = this.convertPathElem(pathInfo, 
-                                                    path.getInterPathElem());
+                                                path.getInterPathElem(), true);
             path.setInterPathElem(interPathElem);
         } catch(BSSException e) {
             /* Catch error when try to store path with links not in the

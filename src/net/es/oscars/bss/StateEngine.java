@@ -17,7 +17,6 @@ public class StateEngine {
     public final static String INSETUP = "INSETUP";
     public final static String INTEARDOWN = "INTEARDOWN";
     public final static String FINISHED = "FINISHED";
-    public final static String INCANCEL = "INCANCEL";
     public final static String CANCELLED = "CANCELLED";
     public final static String FAILED = "FAILED";
     public final static String INMODIFY = "INMODIFY";
@@ -105,7 +104,6 @@ public class StateEngine {
                 allowed = false;
             }
         } else if (newStatus.equals(CANCELLED)) {
-            //TODO: Change RESERVED to INCANCEL
             if (!status.equals(ACCEPTED) && !status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
                 allowed = false;
             }
@@ -123,13 +121,25 @@ public class StateEngine {
             if((localStatus ^ newLocalStatus) != 1){
                 allowed = false;
             }
-        }else if(status.equals(INMODIFY) || status.equals(RESERVED)){
+        }else if(status.equals(INMODIFY)){
+            //bits: confirmed
             if(newLocalStatus > 3 || (localStatus == 1 && newLocalStatus > 1) 
                 || (localStatus > 1 && newLocalStatus == 1)){
               allowed = false;   
             }
-        }else if(status.equals(INSETUP) || status.equals(INTEARDOWN)){
+        }else if(status.equals(INSETUP)){
+            //bits: upstream, downstream, local
             if(newLocalStatus > 7 || newLocalStatus < localStatus){
+                allowed = false;
+            }
+        }else if(status.equals(RESERVED)){
+            //bits: cancel
+            if(newLocalStatus > 8 || (newLocalStatus & localStatus) != 8){
+                allowed = false;
+            }
+        }else if(status.equals(INTEARDOWN)){
+            //bits: cancel,upstream, downstream, local
+            if(newLocalStatus > 15 || newLocalStatus < localStatus){
                 allowed = false;
             }
         }else if(newLocalStatus != 0){

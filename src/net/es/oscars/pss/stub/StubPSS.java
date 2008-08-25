@@ -39,9 +39,7 @@ public class StubPSS implements PSS{
      */
     public String createPath(Reservation resv) throws PSSException{
         this.log.info("stub.create.start");
-        StateEngine se = new StateEngine();
         try {
-            se.updateStatus(resv, StateEngine.INSETUP);
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "pathsetup-"+gri;
@@ -54,8 +52,6 @@ public class StubPSS implements PSS{
             sched.addJob(jobDetail, false);
         }catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
-        }catch (BSSException ex) {
-            this.log.error("State engine exception", ex);
         }
 
         this.log.info("stub.create.end");

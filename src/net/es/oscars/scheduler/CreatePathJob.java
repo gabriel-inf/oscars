@@ -6,6 +6,7 @@ import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.pss.PathSetupManager;
 
 public class CreatePathJob extends ChainingJob implements Job {
     private Logger log;
@@ -15,7 +16,8 @@ public class CreatePathJob extends ChainingJob implements Job {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("CreatePathJob.start name:"+context.getJobDetail().getFullName());
         this.core = OSCARSCore.getInstance();
-        StateEngine se = new StateEngine();
+        StateEngine se = this.core.getStateEngine();
+        PathSetupManager pm = this.core.getPathSetupManager();
         EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri = (String) dataMap.get("gri");
@@ -24,24 +26,25 @@ public class CreatePathJob extends ChainingJob implements Job {
         bss.beginTransaction();
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
         Reservation resv = null;
+        String login = null;
         try {
             resv = resvDAO.query(gri);
+            login = resv.getLogin();
             Thread.sleep(10000);//simulate setup time
-            se.updateStatus(resv, StateEngine.ACTIVE);
-            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", "SCHEDULER", resv);
+            pm.updateCreateStatus(1, resv);
         }catch (BSSException ex) {
             this.log.error("Could not create reservation "+ gri);
             this.log.error(ex);
-            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
-                                   "SCHEDULER", resv, "", ex.getMessage());
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
+                                   "JOB", resv, "", ex.getMessage());
         }catch (InterruptedException ex) {
             this.log.error("Interrupted", ex);
-            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
-                                   "SCHEDULER", resv, "", ex.getMessage());
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
+                                   "JOB", resv, "", ex.getMessage());
         }catch (Exception ex) {
             this.log.error("Exception", ex);
-            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
-                                   "SCHEDULER", resv, "", ex.getMessage());
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
+                                   "JOB", resv, "", ex.getMessage());
         }finally{
             this.runNextJob(context);
             bss.getTransaction().commit();

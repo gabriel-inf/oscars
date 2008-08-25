@@ -5,6 +5,7 @@ import org.apache.log4j.*;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.notify.*;
+import net.es.oscars.oscars.OSCARSCore;
 
 /**
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
@@ -15,11 +16,15 @@ public class PSSScheduler {
     private Logger log;
     private String dbname;
     private PathSetupManager pathSetupManager;
-
+    private OSCARSCore core;
+    private StateEngine se;
+    
     public PSSScheduler(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pathSetupManager = new PathSetupManager(dbname);
         this.dbname = dbname;
+        this.core = OSCARSCore.getInstance();
+        this.se = this.core.getStateEngine();
     }
 
 
@@ -50,9 +55,8 @@ public class PSSScheduler {
                 }
                 
             } catch (Exception ex) {
-                StateEngine stateEngine = new StateEngine();
                 try {
-                    stateEngine.updateStatus(resv, StateEngine.FAILED);
+                    this.se.updateStatus(resv, StateEngine.FAILED);
                 } catch (BSSException stateEx) {
                     this.log.error(ex.getMessage());
                 } finally {
@@ -90,13 +94,11 @@ public class PSSScheduler {
                     eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_STARTED, "", "SCHEDULER", resv);
                  }else{
                     //if still in RESERVED state
-                    StateEngine stateEngine = new StateEngine();
-                    stateEngine.updateStatus(resv, StateEngine.FINISHED);
+                    this.se.updateStatus(resv, StateEngine.FINISHED);
                  }
             } catch (Exception ex) {
-                StateEngine stateEngine = new StateEngine();
                 try {
-                    stateEngine.updateStatus(resv, StateEngine.FAILED);
+                    this.se.updateStatus(resv, StateEngine.FAILED);
                 } catch (BSSException stateEx) {
                     this.log.error(ex.getMessage());
                 } finally {

@@ -447,18 +447,24 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
            loginConstraint = login;
         }
         aaa.getTransaction().commit();
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         try {
             responseContent = this.pathSetupAdapter.create(requestContent, loginConstraint, institution);
             response.setCreatePathResponse(responseContent);
         } catch(PSSException e) {
+            bss.getTransaction().rollback();
             throw new BSSFaultMessage("createPath: " + e.getMessage());
         } catch(InterdomainException e) {
+            bss.getTransaction().rollback();
             throw new BSSFaultMessage("createPath: " + e.getMessage());
         } catch(Exception e) {
+            bss.getTransaction().rollback();
             throw new AAAFaultMessage("createPath: " + e.getMessage());
         }
-
-       return response;
+        bss.getTransaction().commit();
+        
+        return response;
     }
 
     /**
@@ -494,18 +500,24 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             loginConstraint = login;
         }
         aaa.getTransaction().commit();
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         try {
             responseContent = this.pathSetupAdapter.refresh(requestContent, loginConstraint, institution);
             response.setRefreshPathResponse(responseContent);
         } catch (PSSException e) {
+            bss.getTransaction().rollback();
             throw new BSSFaultMessage("refreshPath: " + e.getMessage());
         } catch (InterdomainException e) {
+            bss.getTransaction().rollback();
             throw new BSSFaultMessage("refreshPath: " + e.getMessage());
         } catch (Exception e) {
+            bss.getTransaction().rollback();
             throw new AAAFaultMessage("refreshPath: " + e.getMessage());
         }
-
-       return response;
+        
+        bss.getTransaction().commit();
+        return response;
     }
 
     /**
@@ -541,18 +553,24 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             loginConstraint = login;
         }
         aaa.getTransaction().commit();
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         try{
             responseContent = this.pathSetupAdapter.teardown(requestContent, loginConstraint, institution);
             response.setTeardownPathResponse(responseContent);
         } catch(PSSException e) {
+            bss.getTransaction().rollback();
             throw new BSSFaultMessage("teardownPath: " + e.getMessage());
         } catch(InterdomainException e) {
+            bss.getTransaction().rollback();
             throw new BSSFaultMessage("teardownPath: " + e.getMessage());
         } catch(Exception e) {
+            bss.getTransaction().rollback();
             throw new AAAFaultMessage("teardownPath: " + e.getMessage());
         }
-
-       return response;
+        bss.getTransaction().commit();
+        
+        return response;
     }
 
     /**
@@ -687,9 +705,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     }else if(eventType.startsWith("RESERVATION_MODIFY")){
                         this.adapter.handleEvent(event, producerId, StateEngine.INMODIFY);
                     }else if(eventType.startsWith("RESERVATION_CANCEL")){
-                        this.adapter.handleEvent(event, producerId, StateEngine.INCANCEL);
+                        this.adapter.handleEvent(event, producerId, StateEngine.RESERVED);
                     }else if(eventType.contains("PATH_SETUP")){
-                    
+                        this.pathSetupAdapter.handleSetupEvent(event, producerId, StateEngine.INSETUP);
                     }else if(eventType.contains("PATH_REFRESH")){
                     
                     }else if(eventType.contains("PATH_TEARDOWN")){

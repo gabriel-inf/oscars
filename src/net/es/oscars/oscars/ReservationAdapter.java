@@ -127,7 +127,7 @@ public class ReservationAdapter {
             confirmed = OSCARSEvent.RESV_MODIFY_CONFIRMED;
             completed = OSCARSEvent.RESV_MODIFY_COMPLETED;
             failed = OSCARSEvent.RESV_MODIFY_FAILED;
-        }else if(reqStatus.equals(StateEngine.INCANCEL)){
+        }else if(reqStatus.equals(StateEngine.RESERVED)){
             confirmed = OSCARSEvent.RESV_CANCEL_CONFIRMED;
             completed = OSCARSEvent.RESV_CANCEL_COMPLETED;
             failed = OSCARSEvent.RESV_CANCEL_FAILED;
