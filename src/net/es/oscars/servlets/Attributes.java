@@ -189,26 +189,40 @@ public class Attributes extends HttpServlet {
     public void deleteAttribute(String attributeName)
            throws AAAException {
 
-        UserManager mgr = new UserManager(Utils.getDbName());
+        boolean existingUsers = false;
+        boolean existingAuthorizations = false;
         AttributeDAO dao = new AttributeDAO(Utils.getDbName());
+        UserAttributeDAO userAttributeDAO =
+            new UserAttributeDAO(Utils.getDbName());
+        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
         Attribute attribute = dao.queryByParam("name", attributeName);
         if (attribute == null) {
             throw new AAAException("Attribute " + attributeName +
                                    " does not exist to be deleted");
         }
-        /*
-        Set<User> users = attribute.getUsers();
+        List<User> users = userAttributeDAO.getUsersByAttribute(attributeName);
         StringBuilder sb = new StringBuilder();
         if (users.size() != 0) {
             sb.append(attributeName + " has existing users: ");
-            Iterator iter = users.iterator();
-            while (iter.hasNext()) {
-                User user = (User) iter.next();
+            for (User user: users) {
                 sb.append(user.getLogin() + " ");
             }
+            existingUsers = true;
+        }
+        List<Authorization> auths = authDAO.listAuthByAttr(attributeName);
+        if (auths.size() != 0) {
+            if (existingUsers) {
+                sb.append(".  There are " + auths.size() + " existing authorizations " +
+                    "with this attribute.");
+            } else {
+                sb.append(attributeName + " has " + auths.size() +
+                          "associated authorizations.  Cannot delete.");
+            }
+            existingAuthorizations = true;
+        }
+        if (existingUsers || existingAuthorizations) {
             throw new AAAException(sb.toString());
         }
-        */
         dao.remove(attribute);
     }
 }
