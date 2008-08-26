@@ -63,9 +63,9 @@ oscars.UserAdd.tabSelected = function (
         contentPane.setHref("forms/userAdd.html");
     } else {
         var userAddFormNode = dijit.byId("userAddForm").domNode;
-        // institutions list has been changed, need to update
-        // TODO:  change if attributes have changed as well
-        if (userAddFormNode.userAddInstsUpdated.value) {
+        // institutions or attributes list has been changed, need to update
+        if ((userAddFormNode.userAddInstsUpdated.value) ||
+            (userAddFormNode.userAddAttrsUpdated.value)) {
             oscars.UserAdd.init();
             userAddFormNode.userAddInstsUpdated.value = "";
             userAddFormNode.userAddAttrsUpdated.value = "";

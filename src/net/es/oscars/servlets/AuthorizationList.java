@@ -45,14 +45,8 @@ public class AuthorizationList extends HttpServlet {
             return;
         }
         Map outputMap = new HashMap();
-        String attributeName = request.getParameter("attributeName");
-        if (attributeName != null) {
-            attributeName = attributeName.trim();
-        } else {
-            attributeName = "";
-        }
         try {
-            this.outputAuthorizations(outputMap, attributeName);
+            this.outputAuthorizations(outputMap, request);
         } catch (AAAException e) {
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
@@ -92,13 +86,27 @@ public class AuthorizationList extends HttpServlet {
      * Sets the list of authorizations to display in a grid.
      *  
      * @param outputMap Map containing JSON data
+     * @param request HttpServletRequest form parameters
      * @throws AAAException
      */
-    public void outputAuthorizations(Map outputMap, String attributeName) 
+    public void outputAuthorizations(Map outputMap, HttpServletRequest request)
             throws AAAException {
 
+        String attributeName = request.getParameter("attributeName");
+        if (attributeName != null) {
+            attributeName = attributeName.trim();
+        } else {
+            attributeName = "";
+        }
+        String attrsUpdated = request.getParameter("authListAttrsUpdated");
+        if (attrsUpdated != null) {
+            attrsUpdated = attrsUpdated.trim();
+        } else {
+            attrsUpdated = "";
+        }
         List<Authorization> auths = null;
-        if (attributeName.equals("")) {
+        if (attributeName.equals("") ||
+            ((attrsUpdated != null) && !attrsUpdated.equals(""))) {
             this.outputAttributeMenu(outputMap);
         }
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());

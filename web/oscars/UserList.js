@@ -31,6 +31,9 @@ oscars.UserList.handleReply = function (responseObject, ioArgs) {
         userGrid.resize();
         userGrid.resize();
         oscarsState.userGridInitialized = true;
+        var listFormNode = dijit.byId("userListForm").domNode;
+        listFormNode.userListInstsUpdated.value = "";
+        listFormNode.userListAttrsUpdated.value = "";
     }
 };
 
@@ -49,9 +52,9 @@ oscars.UserList.tabSelected = function (
         var listFormNode = dijit.byId("userListForm").domNode;
         // if institutions list has been updated, organization names may
         // have changed, so need to update
-        if (listFormNode.userListInstsUpdated.value) {
+        if (listFormNode.userListInstsUpdated.value ||
+            listFormNode.userListAttrsUpdated.value) {
             oscars.UserList.refreshUserGrid();
-            listFormNode.userListInstsUpdated.value = "";
         }
     }
 };

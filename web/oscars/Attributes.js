@@ -28,11 +28,9 @@ oscars.Attributes.manage = function (opName) {
         deleteButton.style.color = "#FF0000";
         editNameWidget.required = false;
         editDescrWidget.required = false;
+        // clear any error messages
         valid = dijit.byId("attributesForm").validate();
-        formNode.saveAttrName.value = "";
-        formNode.saveAttrDescription.value = "";
-        formNode.attributeEditName.value = "";
-        formNode.attributeEditDescription.value = "";
+        oscars.Attributes.clearFormValues(formNode);
         choiceType.innerHTML = "Adding";
     } else if (opName == "delete") {
         editNameWidget.required = true;
@@ -48,8 +46,6 @@ oscars.Attributes.manage = function (opName) {
             error: oscars.Form.handleError,
             form: formNode
         });
-        formNode.saveAttrName.value = "";
-        formNode.saveAttrDescription.value = "";
         choiceType.innerHTML = "";
     } else if (opName == "save") {
         editNameWidget.required = true;
@@ -75,8 +71,6 @@ oscars.Attributes.manage = function (opName) {
                 form: formNode
             });
         }
-        formNode.saveAttrName.value = "";
-        formNode.saveAttrDescriptionValue = "";
         choiceType.innerHTML = "";
     }
 };
@@ -103,7 +97,8 @@ oscars.Attributes.handleReply = function (responseObject, ioArgs) {
     addButton.style.color = "#000000";
     saveButton.style.color = "#000000";
     deleteButton.style.color = "#000000";
-    // indicate to dependent pages that they need to be updated
+    // Indicate to dependent pages that they need to be updated.
+    // There are multiple forms with attribute menus.
     if (responseObject.method != "AttributeList") {
         formNode = dijit.byId("userProfileForm").domNode;
         formNode.userAttrsUpdated.value = "changed";
@@ -115,18 +110,15 @@ oscars.Attributes.handleReply = function (responseObject, ioArgs) {
         if ((responseObject.method != "AttributeModify") ||
             (attrFormNode.attributeEditName.value !=
              attrFormNode.saveAttrName.value)) {
-             if (dijit.byId("authDetailsForm")) {
-                 formNode = dijit.byId("authDetailsForm").domNode;
-                 formNode.authAttrsUpdatedValue = "changed";
-             }
-             if (dijit.byId("authListForm")) {
-                 formNode = dijit.byId("authListForm").domNode;
-                 formNode.authListAttrsUpdated.Value = "changed";
-             }
+             formNode = dijit.byId("userListForm").domNode;
+             formNode.userListAttrsUpdated.value = "changed";
+             formNode = dijit.byId("authDetailsForm").domNode;
+             formNode.authAttrsUpdated.value = "changed";
+             formNode = dijit.byId("authListForm").domNode;
+             formNode.authListAttrsUpdated.value = "changed";
         }
     }
-    attrFormNode.attributeEditName.value = "";
-    attrFormNode.attributeEditDescription.value = "";
+    oscars.Attributes.clearFormValues(attrFormNode);
 };
 
 // take action based on this tab being selected
@@ -159,11 +151,13 @@ oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     // get attribute
     var attributeName = attributeGrid.model.getDatum(evt.rowIndex, 0);
     var attributeDescription = attributeGrid.model.getDatum(evt.rowIndex, 1);
+    var attributeType = attributeGrid.model.getDatum(evt.rowIndex, 2);
     var formNode = dijit.byId("attributesForm").domNode;
     formNode.attributeEditName.value = attributeName;
     formNode.attributeEditDescription.value = attributeDescription;
     formNode.saveAttrName.value = attributeName;
-    formNode.saveAttrDescription.value = attributeDescription;
+    var menu = formNode.attributeTypes;
+    oscars.Form.setMenuSelected(menu, attributeType);
     var choiceType = dojo.byId("attributeOpChoice");
     choiceType.innerHTML = "Selected";
     var addButton = dijit.byId("attributeAddButton").domNode;
@@ -172,4 +166,12 @@ oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     addButton.style.color = "#FF0000";
     saveButton.style.color = "#00FF00";
     deleteButton.style.color = "#00FF00";
+};
+
+oscars.Attributes.clearFormValues = function (formNode) {
+    formNode.saveAttrName.value = "";
+    formNode.attributeEditName.value = "";
+    formNode.attributeEditDescription.value = "";
+    var menu = formNode.attributeTypes;
+    menu.selectedIndex = 0;
 };

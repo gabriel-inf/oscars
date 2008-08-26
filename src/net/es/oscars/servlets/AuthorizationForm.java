@@ -50,13 +50,24 @@ public class AuthorizationForm extends HttpServlet {
                     methodName, aaa);
             return;
         }
+        String attrsUpdated = request.getParameter("authAttrsUpdated");
+        if (attrsUpdated != null) {
+            attrsUpdated = attrsUpdated.trim();
+        } else {
+            attrsUpdated = "";
+        }
         Map outputMap = new HashMap();
         this.outputAttributeMenu(outputMap);
-        this.outputResourceMenu(outputMap);
-        this.outputPermissionMenu(outputMap);
-        this.outputConstraintMenu(outputMap);
-        // only do once
         String rpcParam = request.getParameter("rpc");
+        // Make sure to update these exactly once.
+        // rpc being unset makes sure they get updated in the beginning.
+        // If just the attributes have been updated, don't redisplay.
+        if (((rpcParam == null) || (rpcParam.trim().equals("")) ||
+                attrsUpdated.equals(""))) {
+            this.outputResourceMenu(outputMap);
+            this.outputPermissionMenu(outputMap);
+            this.outputConstraintMenu(outputMap);
+        }
         if ((rpcParam == null) || rpcParam.trim().equals("")) {
             this.outputRpcs(outputMap);
         }

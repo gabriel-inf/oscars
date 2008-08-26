@@ -60,30 +60,28 @@ public class Attributes extends HttpServlet {
         if (saveAttrName != null) {
             saveAttrName = saveAttrName.trim();
         }
-        String saveAttrDescr =
-            request.getParameter("saveAttrDescription");
-        if (saveAttrDescr != null) {
-            saveAttrDescr = saveAttrDescr.trim();
-        }
         String attributeEditName = request.getParameter("attributeEditName").trim();
         String attributeEditDescr =
             request.getParameter("attributeEditDescription").trim();
+        String attributeEditType =
+            request.getParameter("attributeTypes").trim();
         try {
             if (opName.equals("add")) {
                 methodName = "AttributeAdd";
-                this.addAttribute(attributeEditName, attributeEditDescr);
+                this.addAttribute(attributeEditName, attributeEditDescr,
+                                  attributeEditType);
                 outputMap.put("status", "Added attribute: " +
                                          attributeEditName);
             } else if (opName.equals("modify")) {
                 methodName = "AttributeModify";
                 this.modifyAttribute(saveAttrName, attributeEditName,
-                                     attributeEditDescr);
+                                     attributeEditDescr, attributeEditType);
                 if (!saveAttrName.equals(attributeEditName)) {
                     outputMap.put("status", "Changed attribute name from " +
                                        saveAttrName + " to " + attributeEditName);
                 } else {
-                    outputMap.put("status", "Changed attribute description " +
-                        "from " + saveAttrDescr + " to " + attributeEditDescr);
+                    outputMap.put("status", "Modified attribute " +
+                                            saveAttrName);
                 }
             } else if (opName.equals("delete")) {
                 methodName = "AttributeDelete";
@@ -130,6 +128,7 @@ public class Attributes extends HttpServlet {
             ArrayList attributeEntry = new ArrayList();
             attributeEntry.add(attribute.getName());
             attributeEntry.add(attribute.getDescription());
+            attributeEntry.add(attribute.getAttrType());
             attributeList.add(attributeEntry);
         }
         outputMap.put("attributeData", attributeList);
@@ -139,11 +138,13 @@ public class Attributes extends HttpServlet {
      * addAttribute - add an attribute if it doesn't already exist.
      *  
      * @param String newName name of new attribute
-     * @param String newDescription descriptionn of new attribute
+     * @param String newDescription description of new attribute
+     * @param String newType type of new attribute
      * @throws AAAException
      */
-    public void addAttribute(String newName, String newDescription)
-           throws AAAException {
+    public void addAttribute(String newName, String newDescription,
+                             String newType)
+            throws AAAException {
 
         AttributeDAO dao = new AttributeDAO(Utils.getDbName());
         Attribute oldAttribute = dao.queryByParam("name", newName);
@@ -154,18 +155,21 @@ public class Attributes extends HttpServlet {
         Attribute attribute = new Attribute();
         attribute.setName(newName);
         attribute.setDescription(newDescription);
+        attribute.setAttrType(newType);
         dao.create(attribute);
     }
 
     /**
-     * modifyAttribute - change an attribute's name and/or description.
+     * modifyAttribute - change an attribute's name, description, and/or type.
      *  
      * @param String oldName old name of attribute
      * @param String newName new name of attribute
-     * @param String newDescr new attribute description
+     * @param String descr attribute description
+     * @param String attrType type of attribute
      * @throws AAAException
      */
-    public void modifyAttribute(String oldName, String newName, String newDescr)
+    public void modifyAttribute(String oldName, String newName, String descr,
+                                String attrType)
            throws AAAException {
 
         AttributeDAO dao = new AttributeDAO(Utils.getDbName());
@@ -175,7 +179,8 @@ public class Attributes extends HttpServlet {
                                    " does not exist to be modified");
         }
         attribute.setName(newName);
-        attribute.setDescription(newDescr);
+        attribute.setDescription(descr);
+        attribute.setAttrType(attrType);
         dao.update(attribute);
     }
 

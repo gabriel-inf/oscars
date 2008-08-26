@@ -51,6 +51,9 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
         authGrid.resize();
         oscarsState.authGridInitialized = true;
     }
+    var authListFormNode = dijit.byId("authListForm").domNode;
+    authListFormNode.authsAdded.value = "";
+    authListFormNode.authListAttrsUpdated.value = "";
 };
 
 // takes action based on this tab being clicked on
@@ -72,8 +75,6 @@ oscars.Authorizations.tabSelected = function (
         if (authListFormNode.authsAdded.value ||
             authListFormNode.authListAttrsUpdated.value) {
             oscars.Authorizations.refreshAuthGrid();
-            authListFormNode.authsAdded.value = "";
-            authListFormNode.authListAttrsUpdated.value = "";
         }
     }
 };

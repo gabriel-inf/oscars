@@ -85,11 +85,10 @@ oscars.UserProfile.tabSelected = function (
     } else {
         // if institutions list has been updated, need to update
         // institutions menu
-        // TODO: check for userAttrsUpdated when have dynamic menu
-        if (node.userInstsUpdated.value) {
+        if ((node.userInstsUpdated.value) || (node.userAttrsUpdated.value)) {
+            oscars.UserProfile.postUserQuery();
             node.userInstsUpdated.value = "";
             node.userAttrsUpdated.value = "";
-            oscars.UserProfile.postUserQuery();
         } else  {
             oscarsStatus.innerHTML = "Profile for user " +
                                       node.profileName.value;

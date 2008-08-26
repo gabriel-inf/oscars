@@ -34,12 +34,6 @@ public class UserList extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        String attributeName = request.getParameter("attributeName");
-        if (attributeName != null) {
-            attributeName = attributeName.trim();
-        } else {
-            attributeName = "";
-        }
         Session aaa = 
             HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
         aaa.beginTransaction();     
@@ -55,7 +49,7 @@ public class UserList extends HttpServlet {
         }
         outputMap.put("status", "User list");
         try {
-            this.outputUsers(outputMap, userName, attributeName);
+            this.outputUsers(outputMap, userName, request);
         } catch (AAAException e) {
             this.log.error(e.getMessage());
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
@@ -74,22 +68,35 @@ public class UserList extends HttpServlet {
      *  
      * @param outputMap Map containing JSON data
      * @param userName String containing name of user making request
-     * @param attributeName String containing attribute name
+     * @param request HttpServletRequest with form parameters
      * @throws AAAException
      */
     public void outputUsers(Map outputMap, String userName,
-                            String attributeName) 
+                            HttpServletRequest request)
             throws AAAException {
 
         String institutionName; 
         List<User> users = null;
         UserManager mgr = new UserManager(Utils.getDbName());
         
+        String attributeName = request.getParameter("attributeName");
+        if (attributeName != null) {
+            attributeName = attributeName.trim();
+        } else {
+            attributeName = "";
+        }
+        String attrsUpdated = request.getParameter("userListAttrsUpdated");
+        if (attrsUpdated != null) {
+            attrsUpdated = attrsUpdated.trim();
+        } else {
+            attrsUpdated = "";
+        }
         AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
         AuthValue aaaVal = mgr.checkAccess(userName, "AAA", "list");
         if (authVal == AuthValue.ALLUSERS) {
-            // check to see if need to display menu for first time
-            if (attributeName.equals("")) {
+            // check to see if need to (re)display menu
+            if (attributeName.equals("") ||
+                ((attrsUpdated != null) && !attrsUpdated.equals(""))) {
                 if (aaaVal != AuthValue.DENIED) {
                     outputMap.put("attributeInfoDisplay", Boolean.TRUE);
                     outputMap.put("attributeMenuDisplay", Boolean.TRUE);
