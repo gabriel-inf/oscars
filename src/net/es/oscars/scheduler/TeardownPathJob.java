@@ -15,7 +15,7 @@ public class TeardownPathJob extends ChainingJob implements Job {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("TeardownPathJob.start name:"+context.getJobDetail().getFullName());
         this.core = OSCARSCore.getInstance();
-        StateEngine se = new StateEngine();
+        StateEngine se = this.core.getStateEngine();
         EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri = (String) dataMap.get("gri");

@@ -310,6 +310,81 @@ public class PathSetupManager{
     }
     
     /**
+     * Handles a PATH_SETUP_FAILED event. Currently it automatically schedules 
+     * the path for teardown but more advanced handling may be possible in the 
+     * future.
+     *
+     * @param gri the reservation that failed
+     * @param producerID the domain the sent this event
+     * @param errorSrc the source of the error
+     * @param errorCode the error code
+     * @param errorMsg the error message
+     * @throws BSSException
+     **/
+     public void handleFailed(String gri, String producerID, String errorSrc, 
+                        String errorCode, String errorMsg) throws BSSException{
+        
+        EventProducer eventProducer = new EventProducer();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        ReservationManager rm = this.core.getReservationManager();
+        Reservation resv = dao.query(gri);
+        String login = resv.getLogin();
+        if(resv == null){
+            this.log.error("Reservation " + gri + " not found");
+            return;
+        }
+        
+        Domain prevDomain = rm.endPointDomain(resv, true);
+        Domain nextDomain = rm.endPointDomain(resv, false);
+        Domain neighborDomain = null;
+        if(nextDomain == null && prevDomain == null){
+            throw new BSSException("Reservation " + gri + 
+                                   " is not an interdomain reservation so it" +
+                                   " can't be failed by a Notification.");
+        }else if(prevDomain != null && prevDomain.getTopologyIdent().equals(producerID)){
+            neighborDomain = prevDomain;
+        }else if(nextDomain != null && nextDomain.getTopologyIdent().equals(producerID)){
+            neighborDomain = nextDomain;
+        }
+        if(neighborDomain == null){
+            this.log.debug("Cannot find notification producer " + producerID +
+                           " in the path");
+            return;
+        }
+        
+        /* Get the institution */
+        Site site = neighborDomain.getSite();
+        if(site == null){
+            this.log.error("No site associated with domain " +  
+                           neighborDomain.getTopologyIdent() + ". Please specify" +
+                           " institution associated with domain in your " +
+                           "bss.sites table.");
+            return;
+        }
+        
+        String institution = site.getName();
+        if(institution == null){
+            this.log.error("No institution associated with domain " +  
+                           neighborDomain.getTopologyIdent() + ". Please specify" +
+                           " institution associated with domain in your " +
+                           "aaa.institution and bss.sites table.");
+            return;
+        }
+        
+        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
+                               errorSrc, errorCode, errorMsg);
+        /** Teardown the reservation. It may be in the queue so detecting
+            status won't do much good. Just count on PSS to put in queue 
+            and properly check if setup and set to failed */
+        try{
+            this.teardown(resv, StateEngine.FAILED, false);
+        }catch(PSSException e){
+            e.printStackTrace();
+            this.log.error("Path "+gri+" was not removed after failure.");
+        }
+    }
+    
+    /**
      * Checks the interdomain status of path setup and changes status to ACTIVE
      * if upstream, downstream and local path setup status
      *

@@ -337,8 +337,7 @@ public class PathSetupAdapter{
                 String src = event.getErrorSource();
                 String code = event.getErrorCode();
                 String msg = event.getErrorMessage();
-                /*this.rm.submitFailed(gri, pathInfo, producerId,
-                                     src, code, msg, reqStatus); */
+                this.pm.handleFailed(gri, producerId, src, code, msg);
             }else{
                 this.log.debug("Discarding event " + eventType);
             }

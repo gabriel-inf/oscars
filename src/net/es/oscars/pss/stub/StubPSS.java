@@ -43,7 +43,7 @@ public class StubPSS implements PSS{
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "pathsetup-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_CREATE", CreatePathJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_SIGNALING", CreatePathJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
@@ -86,7 +86,7 @@ public class StubPSS implements PSS{
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "teardown-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_TEARDOWN", TeardownPathJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_SIGNALING", TeardownPathJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
