@@ -12,10 +12,10 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
+import edu.internet2.perfsonar.*;
 
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.interdomain.ServiceManager;
-import net.es.oscars.perfsonar.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.tss.*;
 import net.es.oscars.PropHandler;
@@ -43,6 +43,7 @@ public class TopologyRegisterJob implements Job{
         ServiceManager serviceMgr = this.core.getServiceManager();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         this.init();
+        this.log.debug("url=" + URL);
         PSTopologyClient psClient = new PSTopologyClient(URL);
         
         Session bss = this.core.getBssSession();
