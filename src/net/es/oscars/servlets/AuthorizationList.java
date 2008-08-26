@@ -45,7 +45,18 @@ public class AuthorizationList extends HttpServlet {
             return;
         }
         Map outputMap = new HashMap();
-        this.outputAuthorizations(outputMap);
+        String attributeName = request.getParameter("attributeName");
+        if (attributeName != null) {
+            attributeName = attributeName.trim();
+        } else {
+            attributeName = "";
+        }
+        try {
+            this.outputAuthorizations(outputMap, attributeName);
+        } catch (AAAException e) {
+            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+            return;
+        }
         outputMap.put("status", "Authorization list");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
@@ -62,15 +73,40 @@ public class AuthorizationList extends HttpServlet {
         this.doGet(request, response);
     }
 
+    public void
+        outputAttributeMenu(Map outputMap) {
+
+        AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
+        List<Attribute> attributes = attributeDAO.list();
+        List<String> attributeList = new ArrayList<String>();
+        attributeList.add("Any");
+        attributeList.add("true");
+        for (Attribute attr: attributes) {
+            attributeList.add(attr.getName());
+            attributeList.add("false");
+        }
+        outputMap.put("attributeSelectMenu", attributeList);
+    }
+
     /**
      * Sets the list of authorizations to display in a grid.
      *  
      * @param outputMap Map containing JSON data
+     * @throws AAAException
      */
-    public void outputAuthorizations(Map outputMap) {
+    public void outputAuthorizations(Map outputMap, String attributeName) 
+            throws AAAException {
 
+        List<Authorization> auths = null;
+        if (attributeName.equals("")) {
+            this.outputAttributeMenu(outputMap);
+        }
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
-        List<Authorization> auths = authDAO.list();
+        if (attributeName.equals("") || (attributeName.equals("Any"))) {
+            auths = authDAO.list();
+        } else {
+            auths = authDAO.listAuthByAttr(attributeName);
+        }
         AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
         ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
         PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());

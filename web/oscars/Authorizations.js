@@ -67,10 +67,13 @@ oscars.Authorizations.tabSelected = function (
         oscars.Authorizations.refreshAuthGrid();
     } else {
         var authListFormNode = dijit.byId("authListForm").domNode;
-        // if authorizations have been added, list needs to be updated
-        if (authListFormNode.authsAdded.value) {
+        // if authorizations have been added, or attributes have been
+        // modified, list needs to be updated
+        if (authListFormNode.authsAdded.value ||
+            authListFormNode.authListAttrsUpdated.value) {
             oscars.Authorizations.refreshAuthGrid();
             authListFormNode.authsAdded.value = "";
+            authListFormNode.authListAttrsUpdated.value = "";
         }
     }
 };

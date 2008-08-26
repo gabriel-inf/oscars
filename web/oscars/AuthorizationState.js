@@ -116,6 +116,7 @@ dojo.declare("oscars.AuthorizationState", null, {
         var val;
         var legalChoice;
         var illegalChoice;
+        var formNode;
         if (modified) {
             var deleteWidget = dijit.byId("deleteAuthorization");
             deleteWidget.setAttribute("disabled", true);
@@ -123,7 +124,7 @@ dojo.declare("oscars.AuthorizationState", null, {
         if (menuName == "authAttributeName") {
             return;
         }
-        var formNode = dijit.byId("authDetailsForm").domNode;
+        formNode = dijit.byId("authDetailsForm").domNode;
         var resourceMenu = formNode.resourceName;
         var permissionMenu = formNode.permissionName;
         var constraintMenu = formNode.constraintName;

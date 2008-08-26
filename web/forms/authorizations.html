@@ -17,12 +17,26 @@
 <body>
 <form id="authListForm" dojoType="dijit.form.Form">
   <input type="hidden" name="authsAdded" id="authsAdded" />
+  <input type="hidden" name="authListAttrsUpdated" id="authListAttrsUpdated" />
 
-  <p>Click on a row to view and modify an authorization.</p>
+  <p>Click on a row to view and modify an authorization.  Choose an attribute
+  and click on REFRESH to see just authorizations with that attribute.</p>
 
   <table>
   <tr>
     <td>Authorizations List</td>
+    <td>
+      <button dojoType="dijit.form.Button" id="authList">
+       REFRESH 
+       <script type="dojo/method" event="onClick">
+          oscars.Authorizations.refreshAuthGrid();
+       </script>
+      </button>
+    </td>
+    <td>Attributes ->
+      <select name="attributeName" id="attributeSelect" size="3">
+    </select>
+    </td>
     <td>
         <button dojoType="dijit.form.Button" id="goToAuthorization">
         ADD

@@ -119,6 +119,10 @@ oscars.Attributes.handleReply = function (responseObject, ioArgs) {
                  formNode = dijit.byId("authDetailsForm").domNode;
                  formNode.authAttrsUpdatedValue = "changed";
              }
+             if (dijit.byId("authListForm")) {
+                 formNode = dijit.byId("authListForm").domNode;
+                 formNode.authListAttrsUpdated.Value = "changed";
+             }
         }
     }
     attrFormNode.attributeEditName.value = "";

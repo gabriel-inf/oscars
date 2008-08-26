@@ -159,7 +159,7 @@ public class AuthorizationDAO
                         attrName + ".");
             }
  
-            String hsql = "from Authorization where attrrId = :attrId";
+            String hsql = "from Authorization where attrId = :attrId";
             auths = this.getSession().createQuery(hsql)
                            .setInteger("attrId", attr.getId())
                            .list();
