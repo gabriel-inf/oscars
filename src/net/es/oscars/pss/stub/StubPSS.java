@@ -80,9 +80,7 @@ public class StubPSS implements PSS{
      */
     public String teardownPath(Reservation resv, String newStatus) throws PSSException{
         this.log.info("stub.teardown.start");
-        StateEngine se = new StateEngine();
         try {
-            se.updateStatus(resv, StateEngine.INTEARDOWN);
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "teardown-"+gri;
@@ -96,8 +94,6 @@ public class StubPSS implements PSS{
             sched.addJob(jobDetail, false);
         }catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
-        }catch(BSSException ex){
-            this.log.error("State engine exception: " + ex);
         }
         this.log.info("stub.teardown.end");
 

@@ -485,7 +485,7 @@ public class ReservationManager {
         if (newStatus.equals(StateEngine.INTEARDOWN)) {
             // add the teardown jobs
             try {
-                core.getPathSetupManager().teardown(resv, StateEngine.CANCELLED, true);
+                core.getPathSetupManager().teardown(resv, StateEngine.CANCELLED);
             } catch (PSSException ex) {
                 this.log.error(ex);
                 throw new BSSException(ex);

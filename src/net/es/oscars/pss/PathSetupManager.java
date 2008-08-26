@@ -206,64 +206,86 @@ public class PathSetupManager{
      * Teardown path by contacting PSS module
      *
      * @param resv reservation to be torn down
-     * @param doForward forward teardown to next domain if true
+     * @param newStatus the status to apply when finished
      * @return the status returned by the the teardown operation
      * @throws PSSException
      */
-    public String teardown(Reservation resv, String newStatus, boolean doForward)
-                    throws PSSException{
-        String prevStatus = resv.getStatus();
-        String status = null;
-        String errorMsg = null;
-        String gri = resv.getGlobalReservationId();
+    public String teardown(Reservation resv, String newStatus) 
+                            throws PSSException{
         this.rsvLogger.redirect(resv.getGlobalReservationId());
-
+        StateEngine se = this.core.getStateEngine();
+        int newStatusBits = 0;
         /* Check reservation */
         if(this.pss == null){
             throw new PSSException("Path teardown not currently supported");
         }
-
+        
+        /* Prepare upper local status bits */
+        if(StateEngine.CANCELLED.equals(newStatus)){
+            newStatusBits = 8;
+        }else if(StateEngine.FINISHED.equals(newStatus)){
+            newStatusBits = 16;
+        }else if(StateEngine.FAILED.equals(newStatus)){
+            newStatusBits = 24;
+        }
+        
+        
         /* Teardown path in this domain */
         try{
-            status = this.pss.teardownPath(resv, newStatus);
-        }catch(PSSException e){
-            //still want to forward if error occurs
-            this.log.error("Unable to teardown path for " +
-                gri + ". Reason: " + e.getMessage() +
-                ". Proceeding with forward.");
-
-            if(!doForward){
-                throw e;
+            se.updateStatus(resv, StateEngine.INTEARDOWN);
+            se.updateLocalStatus(resv, newStatusBits);
+            /* Get next domain */
+            Domain nextDomain = resv.getPath().getNextDomain();
+            if(nextDomain == null){
+                this.updateTeardownStatus(2, resv);
+            }else{
+                this.scheduleStatusCheck(TEARDOWN_CONFIRM_TIMEOUT, resv, "teardown", false);
             }
-            errorMsg = "Error tearing down local path. Reason: " +
-                    e.getMessage();
+            
+            /* Get previous domain */
+            PathElem firstElem= resv.getPath().getInterPathElem();
+            Domain firstDomain = null;
+            if(firstElem != null && firstElem.getLink() != null){
+                firstDomain = firstElem.getLink().getPort().getNode().getDomain();
+            }
+            if(firstDomain == null || firstDomain.isLocal()){
+                this.updateTeardownStatus(4, resv);
+            }else{
+                this.scheduleStatusCheck(TEARDOWN_CONFIRM_TIMEOUT, resv, "teardown", true);
+            }
+        }catch(BSSException e){
+            throw new PSSException(e);
         }
-
-        /* Forward to next domain */
-        if(doForward && (!prevStatus.equals("PRECANCEL"))){
-            //this.forwardTeardown(resv, errorMsg);
-        }
+        
+        /* Teardown */
+        String status = this.pss.teardownPath(resv, newStatus);
+        
         this.rsvLogger.stop();
         return status;
     }
     
     /**
-     * Handles the notifications of an upstream or downstream PATH_SETUP_CONFIRMED
+     * Handles the notifications of an upstream or downstream PATH_*_CONFIRMED
      * event.
      *
      * @param gri the gri of the affected reservation
      * @param producerID the producer of the notification
+     * @param targStatus INSETUP or INTEARDOWN
      * @param upstream true if supposed to be from upstream neighbor
      * @throws BSSException
      *
      */
-    public void handleSetupEvent(String gri, String producerID, boolean upstream) 
-                                throws BSSException{
+    public void handleEvent(String gri, String producerID, String targStatus,
+                            boolean upstream) throws BSSException{
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
         ReservationManager rm = this.core.getReservationManager();
         StateEngine se = this.core.getStateEngine();
         int newLocalStatus = upstream ? 4 : 2;
+        String op = "setup";
+        if(targStatus.equals(StateEngine.INTEARDOWN)){
+            op = "teardown";
+        }
         String targetNeighbor = "downstream";
         if(upstream){
             targetNeighbor = "upstream";
@@ -305,8 +327,8 @@ public class PathSetupManager{
             return;
         }
         
-        this.scheduleUpdateAttempt(0,gri,login,StateEngine.INSETUP,
-                                   newLocalStatus,"setup",upstream,-1);
+        this.scheduleUpdateAttempt(0,gri,login, targStatus, newLocalStatus,
+                                   op,upstream,-1);
     }
     
     /**
@@ -319,10 +341,12 @@ public class PathSetupManager{
      * @param errorSrc the source of the error
      * @param errorCode the error code
      * @param errorMsg the error message
+     * @param failedType PATH_SETUP_FAILED or PATH_TEARDOWN_FAILED
      * @throws BSSException
      **/
      public void handleFailed(String gri, String producerID, String errorSrc, 
-                        String errorCode, String errorMsg) throws BSSException{
+                        String errorCode, String errorMsg, String failedType) 
+                        throws BSSException{
         
         EventProducer eventProducer = new EventProducer();
         ReservationDAO dao = new ReservationDAO(this.dbname);
@@ -371,13 +395,12 @@ public class PathSetupManager{
             return;
         }
         
-        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
-                               errorSrc, errorCode, errorMsg);
+        eventProducer.addEvent(failedType, login, errorSrc, errorCode, errorMsg);
         /** Teardown the reservation. It may be in the queue so detecting
             status won't do much good. Just count on PSS to put in queue 
             and properly check if setup and set to failed */
         try{
-            this.teardown(resv, StateEngine.FAILED, false);
+            this.teardown(resv, StateEngine.FAILED);
         }catch(PSSException e){
             e.printStackTrace();
             this.log.error("Path "+gri+" was not removed after failure.");
@@ -419,6 +442,55 @@ public class PathSetupManager{
             se.updateStatus(resv, StateEngine.ACTIVE);
             se.updateLocalStatus(resv, 0);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, login, "JOB", resv);
+        }
+     }
+     
+     /**
+     * Checks the interdomain status of path teardowm and changes status to newStatus
+     * if upstream, downstream and local path teardown complete
+     *
+     * @param newStatus the new status if complete
+     * @param newLocalStatus the new amount to increase the local status field
+     * @param resv the reservation to update
+     */
+     synchronized public void updateTeardownStatus(int newLocalStatus, Reservation resv) throws BSSException{
+        StateEngine se = this.core.getStateEngine();
+        int localStatus = se.getLocalStatus(resv);
+        se.updateLocalStatus(resv, localStatus + newLocalStatus);
+        localStatus = se.getLocalStatus(resv);
+        String login = resv.getLogin();
+        EventProducer eventProducer = new EventProducer();
+        int newStatusBits = (localStatus >> 3) & 255;
+        String newStatus = StateEngine.RESERVED;
+        
+        if(newStatusBits == 1){
+            newStatus = StateEngine.CANCELLED;
+        }else if(newStatusBits == 2){
+            newStatus = StateEngine.FINISHED;
+        }else if(newStatusBits == 3){
+            newStatus = StateEngine.FAILED;
+        }
+        
+        //local path setup done
+        if(newLocalStatus == 1){
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
+        }
+        
+        //downstream path setup done
+        if(newLocalStatus <= 2 && (localStatus & 3) ==3){
+            eventProducer.addEvent(OSCARSEvent.DOWN_PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
+        }
+        
+        //upstream path setup done
+        if((newLocalStatus == 1 || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
+            eventProducer.addEvent(OSCARSEvent.UP_PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
+        }
+        
+        //everything complete
+        if((localStatus & 7)  == 7){
+            se.updateStatus(resv, newStatus);
+            se.updateLocalStatus(resv, 0);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, login, "JOB", resv);
         }
      }
      
@@ -491,6 +563,8 @@ public class PathSetupManager{
         dataMap.put("statusCheck", true);
         dataMap.put("gri", resv.getGlobalReservationId());
         dataMap.put("status", se.getStatus(resv));
+        dataMap.put("newLocalStatus", 0);//unused
+        dataMap.put("retries", 0);//unused
         dataMap.put("op", op);
         dataMap.put("upstream", upstream);
         jobDetail.setJobDataMap(dataMap);

@@ -138,8 +138,9 @@ public class StateEngine {
                 allowed = false;
             }
         }else if(status.equals(INTEARDOWN)){
-            //bits: cancel,upstream, downstream, local
-            if(newLocalStatus > 15 || newLocalStatus < localStatus){
+            //bits: newStatus, newStatus,upstream, downstream, local
+            //newStatus: 00=RESERVED,01=CANCELLED, 10=FINISHED, 11=FAILED
+            if(newLocalStatus > 31 || newLocalStatus < localStatus){
                 allowed = false;
             }
         }else if(newLocalStatus != 0){

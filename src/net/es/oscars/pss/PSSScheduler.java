@@ -90,7 +90,7 @@ public class PSSScheduler {
                 this.log.info("expiredReservation: " + resv.getGlobalReservationId());
                 eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_FINISHED, "", "SCHEDULER", resv);
                 if(status.equals(StateEngine.ACTIVE)){
-                    this.pathSetupManager.teardown(resv, StateEngine.FINISHED, false);
+                    this.pathSetupManager.teardown(resv, StateEngine.FINISHED);
                     eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_STARTED, "", "SCHEDULER", resv);
                  }else{
                     //if still in RESERVED state

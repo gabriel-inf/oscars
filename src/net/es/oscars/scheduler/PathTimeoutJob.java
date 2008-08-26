@@ -91,8 +91,10 @@ public class PathTimeoutJob implements org.quartz.Job {
                    another domain whose clock is slightly earlier than the 
                    local clock */
                 String status = se.getStatus(resv);
-                if(targStatus.equals(status)){
+                if(targStatus.equals(status) && op.equals("setup")){
                     pm.updateCreateStatus(newLocalStatus, resv);
+                }else if(targStatus.equals(status) && op.equals("teardown")){
+                    pm.updateTeardownStatus(newLocalStatus, resv);
                 }else if(retries >= 1){
                     retries--;
                     pm.scheduleUpdateAttempt(retryWait, gri, login, targStatus,

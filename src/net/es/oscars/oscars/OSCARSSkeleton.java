@@ -707,11 +707,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     }else if(eventType.startsWith("RESERVATION_CANCEL")){
                         this.adapter.handleEvent(event, producerId, StateEngine.RESERVED);
                     }else if(eventType.contains("PATH_SETUP")){
-                        this.pathSetupAdapter.handleSetupEvent(event, producerId, StateEngine.INSETUP);
+                        this.pathSetupAdapter.handleEvent(event, producerId, StateEngine.INSETUP);
                     }else if(eventType.contains("PATH_REFRESH")){
-                    
+                        
                     }else if(eventType.contains("PATH_TEARDOWN")){
-                    
+                        this.pathSetupAdapter.handleEvent(event, producerId, StateEngine.INTEARDOWN);
                     }else{
                         this.log.debug("Received unkown event " + eventType);
                     }

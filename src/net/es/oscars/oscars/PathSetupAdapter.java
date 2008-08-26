@@ -92,7 +92,6 @@ public class PathSetupAdapter{
             "end time has been reached.");
         }
         
-        
         /* Forward */
         try{
             StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
@@ -101,9 +100,13 @@ public class PathSetupAdapter{
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FWD_ACCEPTED, login, "API", resv);
         }catch (InterdomainException e) {
             forwarder.cleanUp();
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, "API",
+                                   resv, "", e.getMessage());
             throw e;
         }catch (Exception e) {
             forwarder.cleanUp();
+            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, "API",
+                                   resv, "", e.getMessage());
             throw new PSSException(e);
         }
         
@@ -197,37 +200,49 @@ public class PathSetupAdapter{
                                    throws PSSException, InterdomainException {
         TeardownPathResponseContent response = new
             TeardownPathResponseContent();
+        TeardownPathResponseContent forwardReply = null;
+        EventProducer eventProducer = new EventProducer();
         String gri = params.getGlobalReservationId();
         String tokenValue = params.getToken();
         String status = null;
 
         this.log.info("teardown.start");
-
-        /* Connect to DB */
         Reservation resv = getConstrainedResv(gri,tokenValue,login,institution);
-
-        if(resv.getPath().getPathSetupMode() == null ||
+        eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_RECEIVED, login, "API", resv);
+        if(resv == null){
+            String msg = "No reservation found matching request";
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, login, "API",
+                                   resv, "", msg);
+            throw new PSSException(msg);
+        }
+        
+        Forwarder forwarder = new Forwarder();
+        try{
+            if(resv.getPath().getPathSetupMode() == null ||
                 (!resv.getPath().getPathSetupMode().equals("signal-xml")) ){
                 throw new PSSException("No reservations match request");
-        }
-
-        String currentStatus = StateEngine.getStatus(resv);
-        try {
-        	StateEngine.canModifyStatus(currentStatus, StateEngine.INTEARDOWN);
-        } catch (BSSException ex) {
-        	throw new PSSException(ex);
-        }
-
-        /* Teardown path in this domain */
-        try {
-            status = this.pm.teardown(resv, StateEngine.RESERVED, true);
+            }
+            String currentStatus = StateEngine.getStatus(resv);
+            StateEngine.canModifyStatus(currentStatus, StateEngine.INTEARDOWN);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FWD_STARTED, login, "API", resv);
+            forwardReply = forwarder.teardownPath(resv);
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FWD_ACCEPTED, login, "API", resv);
+            status = this.pm.teardown(resv, StateEngine.RESERVED);
             response.setStatus(status);
             response.setGlobalReservationId(gri);
-        } catch (PSSException e) {
+        }catch (InterdomainException e) {
+            forwarder.cleanUp();
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, login, "API",
+                                   resv, "", e.getMessage());
             throw e;
-        } finally {
+        }catch (Exception e) {
+            forwarder.cleanUp();
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, login, "API",
+                                   resv, "", e.getMessage());
+            throw new PSSException(e);
         }
-
+        
+        eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_ACCEPTED, login, "API", resv);
         this.log.info("teardown.end");
 
         return response;
@@ -319,7 +334,7 @@ public class PathSetupAdapter{
      * @param producerId the URL of the event producer
      * @param targStatus the target status of the reservation
      */
-    public void handleSetupEvent(EventContent event, String producerId, String targStatus){
+    public void handleEvent(EventContent event, String producerId, String targStatus){
         String eventType = event.getType();
         ResDetails resDetails = event.getResDetails();
         if(resDetails == null){
@@ -327,17 +342,32 @@ public class PathSetupAdapter{
                            eventType + " from " + producerId);
         }
         String gri = resDetails.getGlobalReservationId();
+        String upConfirmed = null;
+        String downConfirmed = null;
+        String failed = null;
+        if(StateEngine.INCREATE.equals(targStatus)){
+            upConfirmed = OSCARSEvent.UP_PATH_SETUP_CONFIRMED;
+            downConfirmed = OSCARSEvent.DOWN_PATH_SETUP_CONFIRMED;
+            failed = OSCARSEvent.PATH_SETUP_FAILED;
+        }else if(StateEngine.INTEARDOWN.equals(targStatus)){
+            upConfirmed = OSCARSEvent.UP_PATH_TEARDOWN_CONFIRMED;
+            downConfirmed = OSCARSEvent.DOWN_PATH_TEARDOWN_CONFIRMED;
+            failed = OSCARSEvent.PATH_TEARDOWN_FAILED;
+        }else{
+            this.log.error("Invalid target status given");
+            return;
+        }
         
         try{
-            if(eventType.equals(OSCARSEvent.UP_PATH_SETUP_CONFIRMED)){
-                this.pm.handleSetupEvent(gri, producerId, true);
-            }else if(eventType.equals(OSCARSEvent.DOWN_PATH_SETUP_CONFIRMED)){
-                this.pm.handleSetupEvent(gri, producerId, false);
-            }else if(eventType.equals(OSCARSEvent.PATH_SETUP_FAILED)){
+            if(eventType.equals(upConfirmed)){
+                this.pm.handleEvent(gri, producerId, targStatus, true);
+            }else if(eventType.equals(downConfirmed)){
+                this.pm.handleEvent(gri, producerId, targStatus, false);
+            }else if(eventType.equals(failed)){
                 String src = event.getErrorSource();
                 String code = event.getErrorCode();
                 String msg = event.getErrorMessage();
-                this.pm.handleFailed(gri, producerId, src, code, msg);
+                this.pm.handleFailed(gri, producerId, src, code, msg, failed);
             }else{
                 this.log.debug("Discarding event " + eventType);
             }

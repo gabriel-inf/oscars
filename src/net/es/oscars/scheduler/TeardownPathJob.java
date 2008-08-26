@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.pss.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.OSCARSCore;
 
@@ -15,11 +16,11 @@ public class TeardownPathJob extends ChainingJob implements Job {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("TeardownPathJob.start name:"+context.getJobDetail().getFullName());
         this.core = OSCARSCore.getInstance();
-        StateEngine se = this.core.getStateEngine();
         EventProducer eventProducer = new EventProducer();
+        PathSetupManager pm = this.core.getPathSetupManager();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        String gri = (String) dataMap.get("gri");
-        String newStatus = (String) dataMap.get("newStatus");
+        String gri = dataMap.getString("gri");
+        String newStatus = dataMap.getString("newStatus");
         String bssDbName = core.getBssDbName();
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -28,8 +29,8 @@ public class TeardownPathJob extends ChainingJob implements Job {
         try {
             resv = resvDAO.query(gri);
             Thread.sleep(10000);//simulate setup time
-            se.updateStatus(resv, newStatus);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "SCHEDULER", resv);
+            pm.updateTeardownStatus(1, resv);
         }catch (BSSException ex) {
             this.log.error("Could not teardown reservation "+ gri);
             this.log.error(ex);
