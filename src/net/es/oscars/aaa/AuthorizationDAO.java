@@ -348,9 +348,7 @@ public class AuthorizationDAO
         auth.setResourceId(resourceId);
         auth.setPermissionId(permId);
         auth.setConstraintId(constrId);
-        if (constraintValue != null) {
-            auth.setConstraintValue(constraintValue);
-        }
+        auth.setConstraintValue(constraintValue);
         super.update(auth);
             
     }

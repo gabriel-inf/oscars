@@ -60,9 +60,9 @@ public class AuthorizationModify extends HttpServlet {
         
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
         try {
-            Authorization auth = authDAO.query(origAttribute,origPermission, origResource,
+            Authorization auth = authDAO.query(origAttribute,origResource,origPermission, 
                     origConstraint);
-            authDAO.update(auth,attribute,permission,resource,constraintName, constraintValue);
+            authDAO.update(auth,attribute,resource,permission,constraintName, constraintValue);
         } catch ( AAAException e) {
             log.error(e.getMessage());
             Utils.handleFailure(out, e.getMessage(), methodName, aaa);
