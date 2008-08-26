@@ -63,9 +63,9 @@ public class ServiceManager{
         for(int i = 1; props.getProperty(i+"") != null; i++){
             String service = props.getProperty(i+"");
             if("lookup".equals(service.toLowerCase())){
-                //this.serviceJobs.add(new LSRegisterJob());
+                //this.serviceJobs.add(LSRegisterJob.class);
             }else if("topology".equals(service.toLowerCase())){
-                //this.serviceJobs.add(new TSRegisterJob());
+                this.serviceJobs.add(TopologyRegisterJob.class);
             }else if("subscribe".equals(service.toLowerCase())){
                 this.serviceJobs.add(SubscribeJob.class);
             }
@@ -90,8 +90,9 @@ public class ServiceManager{
      */
     public void scheduleServiceJob(Class job, JobDataMap dataMap, Date date){
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String triggerName = "serviceTrig-" + dataMap.hashCode();
-        String jobName = "serviceJob-" + dataMap.hashCode();
+        long currTime = System.currentTimeMillis();
+        String triggerName = "serviceTrig-" + job.hashCode()+currTime;
+        String jobName = "serviceJob-" + job.hashCode()+currTime;
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
                                                   date, null, 0, 0L);
         JobDetail jobDetail = new JobDetail(jobName, "EXT_SERVICE", job);

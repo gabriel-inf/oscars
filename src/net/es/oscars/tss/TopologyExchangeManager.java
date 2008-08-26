@@ -75,4 +75,12 @@ public class TopologyExchangeManager {
         tedb.insertNetworkTopology(topology);
         this.log.info("insertNetworkTopology.end");
     }
+    
+    /**
+     * Return the TEDB
+     * @return the TEDB
+     */
+    public TEDB getTEDB(){
+        return this.tedb;
+    }
 }
