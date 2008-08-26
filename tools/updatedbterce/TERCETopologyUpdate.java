@@ -384,7 +384,7 @@ public class TERCETopologyUpdate{
         
         if(switchingcapType.equals("l2sc")){
             L2SwitchingCapabilityDataDAO swcapDAO = new L2SwitchingCapabilityDataDAO("bss");
-            L2SwitchingCapabilityData dbL2SwcapData = swcapDAO.getFromLink(parent);
+            L2SwitchingCapabilityData dbL2SwcapData = parent.getL2SwitchingCapabilityData();
             if(dbL2SwcapData == null){
                 dbL2SwcapData = new L2SwitchingCapabilityData();
             }
