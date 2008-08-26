@@ -345,7 +345,7 @@ public class PathSetupAdapter{
         String upConfirmed = null;
         String downConfirmed = null;
         String failed = null;
-        if(StateEngine.INCREATE.equals(targStatus)){
+        if(StateEngine.INSETUP.equals(targStatus)){
             upConfirmed = OSCARSEvent.UP_PATH_SETUP_CONFIRMED;
             downConfirmed = OSCARSEvent.DOWN_PATH_SETUP_CONFIRMED;
             failed = OSCARSEvent.PATH_SETUP_FAILED;
