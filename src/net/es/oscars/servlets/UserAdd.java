@@ -53,24 +53,18 @@ public class UserAdd extends HttpServlet {
             if ((authVal != AuthValue.DENIED) && 
                         (profileName != userName)) {
                 newUser = this.toUser(out, profileName, request);
-                String roles[] = request.getParameterValues("roles");
-                if (roles == null ) { 
+                String roles[] = request.getParameterValues("attributeName");
+                for (int i=0; i < roles.length; i++) {
+                    roles[i] = Utils.dropDescription(roles[i].trim());
+                }
+                // will be only one parameter value due to constraints
+                // on client side
+                if (roles[0].equals("None")) { 
                     this.log.debug("roles = null");
                     addRoles = new ArrayList<Integer>();
                 } else {
                     this.log.debug("number of roles input is "+roles.length);
                     addRoles = roleUtils.convertRoles(roles);
-                }
-                newRole = request.getParameter("newRole");
-                if ((newRole != null) && !newRole.trim().equals("")) {
-                    Attribute newAttr = new Attribute();
-                    newAttr.setName(newRole);
-                    attrDAO.create(newAttr); 
-                    try {
-                        addRoles.add(attrDAO.getIdByName(newRole));
-                    } catch (AAAException ex) {
-                        this.log.error("error: no attribute id was assigned by create");
-                    }
                 }
                 mgr.create(newUser, request.getParameter("institutionName"),
                            addRoles);  

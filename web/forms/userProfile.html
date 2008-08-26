@@ -111,63 +111,15 @@
     </td>
   </tr>
   <tr>
-    <td>Choose Roles</td>
-    <td>
-       <input name="roles" id="oscarsUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-user"
-        type="checkbox" />
-      <label for="oscarsUserRole">User - make reservations</label>
-    </td>
+    <td colspan="2">Choose Roles</td>
   </tr>
   <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="operatorUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-operator"
-        type="checkbox" />
-      <label for="operatorUserRole">Operator - view all reservations</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="engineerUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-engineer"
-        type="checkbox" />
-      <label for="engineerUserRole">Engineer - manage all reservations</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="adminUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-administrator"
-        type="checkbox" />
-      <label for="adminUserRole">Administrator - manage all users</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="serviceUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-service"
-        type="checkbox" />
-      <label for="serviceUserRole">Service - make reservations and view topology</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="siteAdminUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-siteAdmin"
-        type="checkbox" />
-      <label for="siteAdminUserRole">Site Administrator - control all reservations starting or ending at site</label>
+    <td colspan="2">
+        <select name="attributeName" id="attributeName"
+            multiple="true"
+            onChange="oscars.Utils.constrainAttributeChoices('attributeName');
+                     return false;">
+        </select>
     </td>
   </tr>
   <tr>

@@ -11,10 +11,8 @@ import org.hibernate.*;
 import net.sf.json.*;
 
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.User;
-import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AAAException;
 
 
@@ -173,7 +171,7 @@ public class UserQuery extends HttpServlet {
            outputMap.put("certIssuer", strParam);
         }
         this.outputInstitutionMenu(outputMap, insts, user);
-        this.outputRoleMap(outputMap, attrNames, modifyRights);
+        this.outputAttributeMenu(outputMap, attrNames, modifyRights);
         
         strParam = user.getDescription();
         if (strParam != null) {
@@ -226,45 +224,32 @@ public class UserQuery extends HttpServlet {
         outputMap.put("institutionMenu", institutionList);
     }
     
-    public void outputRoleMap(Map outputMap, List<String> attrNames,
-                               boolean modify) {
+    public void outputAttributeMenu(Map outputMap, List<String> attrNames,
+                                    boolean modify) {
 
-        Map roleMap = new HashMap();
-        if (attrNames.contains("OSCARS-user")) {
-            roleMap.put("oscarsUserRole", Boolean.TRUE);
+        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
+        List<Attribute> attributes = dao.list();
+        List<String> attributeList = new ArrayList<String>();
+        // default is none 
+        attributeList.add("None");
+        if (attrNames.isEmpty()) {
+            attributeList.add("true");
         } else {
-            roleMap.put("oscarsUserRole", Boolean.FALSE);
+            attributeList.add("false");
         }
-        if (attrNames.contains("OSCARS-operator")) {
-            roleMap.put("operatorUserRole", Boolean.TRUE);
-        } else {
-            roleMap.put("operatorUserRole", Boolean.FALSE);
-        }
-        if (attrNames.contains("OSCARS-engineer")) {
-            roleMap.put("engineerUserRole", Boolean.TRUE);
-        } else {
-            roleMap.put("engineerUserRole", Boolean.FALSE);
-        }
-        if (attrNames.contains("OSCARS-administrator")){
-            roleMap.put("adminUserRole", Boolean.TRUE);
-        } else {
-            roleMap.put("adminUserRole", Boolean.FALSE);
-        }
-        if (attrNames.contains("OSCARS-service")) {
-            roleMap.put("serviceUserRole", Boolean.TRUE);
-        } else {
-            roleMap.put("serviceUserRole", Boolean.FALSE);
-        }
-        if (attrNames.contains("OSCARS-siteAdmin")){
-            roleMap.put("siteAdminUserRole",Boolean.TRUE);
-        } else {
-            roleMap.put("siteAdminUserRole", Boolean.FALSE);
+        for (Attribute a: attributes) {
+            attributeList.add(a.getName() + " -> " + a.getDescription());
+            if (attrNames.contains(a.getName())) {
+                attributeList.add("true");
+            } else {
+                attributeList.add("false");
+            }
         }
         if (modify) {
-            roleMap.put("modify", Boolean.TRUE);
+            outputMap.put("attributeNameEnable", Boolean.TRUE);
         } else {
-            roleMap.put("modify", Boolean.FALSE);
+            outputMap.put("attributeNameEnable", Boolean.FALSE);
         }
-        outputMap.put("roleCheckboxes", roleMap);
+        outputMap.put("attributeNameMenu", attributeList);
     }
 }

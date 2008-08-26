@@ -101,63 +101,15 @@
     </td>
   </tr>
   <tr>
-    <td>Choose Roles</td>
-    <td>
-       <input name="roles" id="newOscarsUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-user"
-        type="checkbox" />
-      <label for="newOscarsUserRole">User - make reservations</label>
-    </td>
+    <td colspan="2">Choose Roles</td>
   </tr>
   <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="newOperatorUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-operator"
-        type="checkbox" />
-      <label for="newOperatorUserRole">Operator - view all reservations</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="newEngineerUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-engineer"
-        type="checkbox" />
-      <label for="newEngineerUserRole">Engineer - manage all reservations</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="newAdminUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-administrator"
-        type="checkbox" />
-      <label for="newAdminUserRole">Administrator - manage all users</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="newServiceUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-service"
-        type="checkbox" />
-      <label for="newServiceUserRole">Service - make reservations and view topology</label>
-    </td>
-  </tr>
-  <tr>
-    <td>*</td>
-    <td>
-      <input name="roles" id="newSiteAdminUserRole"
-        dojoType="dijit.form.CheckBox"
-        value="OSCARS-siteAdmin"
-        type="checkbox" />
-      <label for="newSiteAdminUserRole">Site Administrator - manage all reservations at starting or ending at site</label>
+    <td colspan="2">
+        <select name="attributeName" id="newAttributeName"
+            multiple="true"
+            onChange="oscars.Utils.constrainAttributeChoices('newAttributeName');
+                     return false;">
+        </select>
     </td>
   </tr>
   <tr>

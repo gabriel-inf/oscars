@@ -140,9 +140,15 @@ public class AuthorizationForm extends HttpServlet {
         ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
         List<Constraint> constraints = constraintDAO.list();
         List<String> constraintList = new ArrayList<String>();
+        int ctr = 0;
         for (Constraint constraint: constraints) {
             constraintList.add(constraint.getName());
-            constraintList.add("false");
+            if (ctr == 0) {
+                constraintList.add("true");
+            } else {
+                constraintList.add("false");
+            }
+            ctr++;
         }
         outputMap.put("constraintNameMenu", constraintList);
     }

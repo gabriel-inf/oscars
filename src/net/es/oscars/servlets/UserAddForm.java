@@ -10,9 +10,7 @@ import org.hibernate.*;
 import net.sf.json.*;
 
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.Institution;
-import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.AuthValue;
 
 
@@ -50,6 +48,7 @@ public class UserAddForm extends HttpServlet {
 
         Map outputMap = new HashMap();
         outputMap.put("status", "Add a user");
+        this.outputAttributeMenu(outputMap);
         this.outputInstitutionMenu(outputMap, institutions);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
@@ -64,6 +63,22 @@ public class UserAddForm extends HttpServlet {
             throws IOException, ServletException {
 
         this.doGet(request, response);
+    }
+
+    public void
+        outputAttributeMenu(Map outputMap) {
+
+        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
+        List<Attribute> attributes = dao.list();
+        List<String> attributeList = new ArrayList<String>();
+        // default is none 
+        attributeList.add("None");
+        attributeList.add("true");
+        for (Attribute a: attributes) {
+            attributeList.add(a.getName() + " -> " + a.getDescription());
+            attributeList.add("false");
+        }
+        outputMap.put("newAttributeNameMenu", attributeList);
     }
 
     public void

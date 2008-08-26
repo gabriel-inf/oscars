@@ -104,9 +104,12 @@ public class UserModify extends HttpServlet {
             // see if any attributes need to be added or removed
             if (authVal == AuthValue.ALLUSERS) {
                 RoleUtils roleUtils = new RoleUtils();
-                String roles[] = request.getParameterValues("roles");
+                String roles[] = request.getParameterValues("attributeName");
+                for (int i=0; i < roles.length; i++) {
+                    roles[i] = Utils.dropDescription(roles[i].trim());
+                }
                 ArrayList<Integer> newRoles = null;
-                if (roles == null) {
+                if (roles[0].equals("None")) {
                     log.info("AddUser: roles = null");
                     newRoles = new ArrayList<Integer>();
                 } else {
@@ -118,10 +121,8 @@ public class UserModify extends HttpServlet {
                     curRoles.add(attrDAO.getIdByName(s));
                 }
                 /*
-                 * form only sets OSCARS-user, OSCARS-service, 
-                 * OSCARS-operator, OSCARS-engineer, OSCARS-siteAdmin or
-                 * OSCARS-administrator so we need to compare those three
-                 * values between the new and current.
+                 * For all the current attributes, need to compare these
+                 * against the new ones from the form.
                  */
                  for (Integer newRoleItem : newRoles) {
                      int intNewRoleItem = newRoleItem.intValue();
@@ -137,18 +138,6 @@ public class UserModify extends HttpServlet {
                          UserAttributeDAO userAttrDAO =
                              new UserAttributeDAO(Utils.getDbName());
                          userAttrDAO.remove(userId, intCurRoleItem);
-                     }
-                 }
-                 String newRole = request.getParameter("newRole");
-                 if ((newRole != null) && !newRole.trim().equals("")) {
-                     Attribute newAttr = new Attribute();
-                     newAttr.setName(newRole);
-                     attrDAO.create(newAttr);
-                     try {
-                         this.addUserAttribute(attrDAO.getIdByName(newRole),
-                                               userId);
-                     } catch (AAAException ex) {
-                         this.log.error("error: no attribute id was assigned by create");
                      }
                  }
              }             

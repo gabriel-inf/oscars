@@ -22,3 +22,17 @@ oscars.Utils.isBlank = function (str) {
     }
     return true;
 };
+
+// Don't allow none and other options to be selected at once in a menu
+// with multiple selections permitted.  Used by user add and user profile form.
+oscars.Utils.constrainAttributeChoices = function (menuName) {
+    var i;
+    var menu = dojo.byId(menuName);
+    if (menu.selectedIndex === 0) {
+        for (i=1; i < menu.options.length; i++) {
+            menu.options[i].selected = false;
+        }
+    } else {
+        menu.options[0].selected = false;
+    }
+};

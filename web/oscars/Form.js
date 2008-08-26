@@ -51,11 +51,11 @@ oscars.Form.resetStatus = function (responseObject) {
     return true;
 };
 
-// NOTE:  Depends on naming  convention agreements between client and server.
-// Parameter names ending with Checkboxes, Display and Replace are treated
-// differently than other names, which are treated as widget ids.  Note that
-// widget id's of "method", "status", and "succeed" will mess things up, since
-// they are parameter names used by handleReply.
+// NOTE:  Depends on naming convention agreements between client and server.
+// Parameter names ending with Enable, Display, Replace, Menu and TimeConvert
+// are treated differently than other names, which are treated as widget ids.
+// Note that  widget id's of "method", "status", and "succeed" will mess
+// things up, since they are parameter names used by handleReply.
 oscars.Form.applyParams = function (responseObject) {
     for (var param in responseObject) {
       if (responseObject.hasOwnProperty(param)) {
@@ -65,8 +65,14 @@ oscars.Form.applyParams = function (responseObject) {
         var selected;
         var result;
         var i = 0;
-        // if info for a group of checkboxes
-        if (param.match(/Checkboxes$/i)) {
+        // will currently only work for inputs with disabled property
+        if ((result = param.match(/(\w+)Enable$/i))) {
+            var enableNode = dojo.byId(result[1]);
+            if (enableNode && (enableNode.disabled !== 'undefined')) {
+                enableNode.disabled = !responseObject[param];
+            }
+        // not currently used
+        } else if (param.match(/Checkboxes$/i)) {
             var disabled = false;
             // first search to see if checkboxes can be modified
             for (cb in responseObject[param]) {
@@ -99,6 +105,7 @@ oscars.Form.applyParams = function (responseObject) {
                 if (responseObject[param] instanceof Array) {
                     newMenu.options.length = 0;
                     for (i=0; i < responseObject[param].length; i += 2) {
+                        // list is of type string on server
                         if (responseObject[param][i+1] == "true") {
                             selected = true;
                         } else {
