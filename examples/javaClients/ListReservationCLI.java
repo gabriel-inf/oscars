@@ -435,9 +435,13 @@ public class ListReservationCLI {
 
             /* Send Request */
             response = oscarsClient.listReservations(listReq);
+            int numResults = response.getTotalResults();
+            if (numResults == 0) {
+                System.out.println("Empty results");
+                return;
+            }
             ResDetails[] details = response.getResDetails();
             ResDetails[] filteredDetails = cli.filterResults(details);
-            int numResults = response.getTotalResults();
 
             System.out.println("Results: "+filteredDetails.length);
 

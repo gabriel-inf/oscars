@@ -66,8 +66,12 @@ public class ListReservationsClient extends ExampleClient {
         // make the call to the server
         ListReply response = this.getClient().listReservations(listReq);
 
-        ResDetails[] details = response.getResDetails();
         int numResults = response.getTotalResults();
+        if (numResults == 0) {
+            System.out.println("Empty results");
+            return response;
+        }
+        ResDetails[] details = response.getResDetails();
 
         System.out.println("Results: "+details.length);
 

@@ -708,6 +708,9 @@ public class ReservationManager {
     }
 
    /**
+     * @param numRequested int with the number of reservations to return
+     * @param resOffset int with the offset into the list 
+     *
      * @param login String with user's login name
      *          if null any user's reservation may be listed
      *          if set, only that user's reservation may be listed
@@ -739,7 +742,8 @@ public class ReservationManager {
      * @return reservations list of reservations that user is allowed to see
      * @throws BSSException
      */
-    public List<Reservation> list(String login, String institution,
+    public List<Reservation> list(int numRequested, int resOffset,
+        String login, String institution,
         List<String> statuses, String description, List<Link> links,
         List<String> vlanTags,  Long startTime, Long endTime)
                 throws BSSException {
@@ -755,7 +759,8 @@ public class ReservationManager {
             loginIds.add(login);
         }
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        reservations = dao.list(loginIds, statuses, description, links,
+        reservations = dao.list(numRequested, resOffset, loginIds, statuses,
+                                description, links,
                                 vlanTags, startTime, endTime);
 
         if (institution == null){

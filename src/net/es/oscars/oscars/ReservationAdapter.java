@@ -386,11 +386,12 @@ public class ReservationAdapter {
         }
         String description = request.getDescription();
         reservations =
-            this.rm.list(login, institution, statuses, description, inLinks,
-                            inVlanTags, startTime, endTime);
+            this.rm.list(request.getResRequested(),
+                         request.getResOffset(),
+                         login, institution, statuses, description, inLinks,
+                         inVlanTags, startTime, endTime);
 
-        reply = this.tc.reservationToListReply(reservations,
-                           request.getResRequested(), request.getResOffset());
+        reply = this.tc.reservationToListReply(reservations);
 
         this.log.info("list.finish: " + reply.toString());
         return reply;

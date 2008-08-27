@@ -188,17 +188,14 @@ public class TypeConverter {
      * Reservation beans and a list of PathInfo structures.
      *
      * @param reservations A list of Hibernate Reservation beans
-     * @param numRequested - the number of reservations to return
-     * @param resOffset - the offset of the first reservation to be returned
      * @return ListReply A list of Axis2 ListReply instances
      */
-    public ListReply reservationToListReply(List<Reservation> reservations,
-        int numRequested, int resOffset) {
+    public ListReply reservationToListReply(List<Reservation> reservations) {
         ListReply reply = new ListReply();
         int ctr = 0;
 
-        if (reservations == null) {
-            this.log.info("toListReply, reservations is null");
+        if ((reservations == null) || reservations.isEmpty()) {
+            this.log.info("toListReply, reservations is null or empty");
             reply.setTotalResults(0);
             return reply;
         }
@@ -207,17 +204,10 @@ public class TypeConverter {
         ResDetails[] resList = new ResDetails[listLength];
         reply.setTotalResults(listLength);
 
-        int offset = 1;
-        int results = 0;
-
         for (Reservation resv : reservations) {
-            if ((offset >= resOffset) && (results < numRequested)) {
-                ResDetails details = this.reservationToDetails(resv);
-                resList[ctr] = details;
-                ctr++;
-                results++;
-            }
-            offset++;
+            ResDetails details = this.reservationToDetails(resv);
+            resList[ctr] = details;
+            ctr++;
         }
         reply.setResDetails(resList);
         return reply;

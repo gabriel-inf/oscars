@@ -43,9 +43,11 @@ public class ReservationDAO
         return reservation;
     }
 
-
     /**
      * Lists reservations
+     *
+     * @param numRequested int with the number of reservations to return
+     * @param resOffset int with the offset into the list 
      *
      * @param logins a list of user logins. If not null or empty, results will
      * only include reservations submitted by these specific users. If null / empty
@@ -74,7 +76,8 @@ public class ReservationDAO
      * @throws BSSException
      */
     @SuppressWarnings("unchecked")
-    public List<Reservation> list(List<String> logins, List<String> statuses,
+    public List<Reservation> list(int numRequested, int resOffset,
+            List<String> logins, List<String> statuses,
             String description, List<Link> links, List<String> vlanTags,
             Long startTime, Long endTime)
                 throws BSSException {
@@ -121,6 +124,11 @@ public class ReservationDAO
         this.log.debug("HSQL is: ["+hsql+"]");
 
         Query query = this.getSession().createQuery(hsql);
+        // if zero, get everything (needed for browser)
+        if (numRequested > 0) {
+            query.setMaxResults(numRequested);
+            query.setFirstResult(resOffset);
+        }
         if (startTime != null) {
             query.setLong("startTime", startTime);
         }
@@ -129,6 +137,7 @@ public class ReservationDAO
         }
 
         this.reservations = query.list();
+        this.log.debug("done with Hibernate query");
 
         if (vlanTags != null && !vlanTags.isEmpty() &&
             !vlanTags.contains("any")) {

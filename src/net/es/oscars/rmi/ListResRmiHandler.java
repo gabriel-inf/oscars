@@ -37,7 +37,7 @@ public class ListResRmiHandler {
 
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
         throws IOException {
-        this.log.debug("list.start");
+        this.log.debug("listReservations.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String institution = null;
         String loginConstraint = null;
@@ -70,6 +70,8 @@ public class ListResRmiHandler {
             String numRowParam =numRowsParam[0].trim();
             if (!numRowParam.equals("") && !numRowParam.equals("all")) {
                 numRowsReq = Integer.parseInt(numRowParam);
+            } else {
+                numRowsReq = 0;  // special case to get all results
             }
         }
         Session aaa = core.getAaaSession();
@@ -97,8 +99,9 @@ public class ListResRmiHandler {
         try {
             inLinks = this.getLinks(inputMap);
             reservations =
-                rm.list(loginConstraint, institution, statuses, description, inLinks,
-                        vlans, startTimeSeconds, endTimeSeconds);
+                rm.list(numRowsReq, 0, loginConstraint, institution, statuses,
+                        description, inLinks, vlans,
+                        startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {
@@ -113,18 +116,14 @@ public class ListResRmiHandler {
             }
 
         }
-
-
-        outputReservations(result, reservations, numRowsReq);
+        outputReservations(result, reservations);
         result.put("totalRowsReplace", "Total rows: " + reservations.size());
         result.put("status", "list reservations successful ");
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 
         bss.getTransaction().commit();
-        this.log.info("ListReservations.end");
         this.log.debug("listReservations.end");
-
         return result;
     }
 
@@ -150,7 +149,6 @@ public class ListResRmiHandler {
         }
         String[] linkIds = linkList.split(" ");
         if (linkIds.length > 0) {
-            
             for (String s : linkIds) {
                 if (s != null && !s.trim().equals("")) {
                     Link link = null;
@@ -236,8 +234,7 @@ public class ListResRmiHandler {
      * @param request servlet request
      */
     public void
-        outputReservations(Map outputMap, List<Reservation> reservations,
-                           int numRowsReq) {
+        outputReservations(Map outputMap, List<Reservation> reservations) {
 
         InetAddress inetAddress = null;
         String gri = "";
@@ -247,15 +244,8 @@ public class ListResRmiHandler {
         
         net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils(core.getBssDbName());
         ArrayList resvList = new ArrayList();
-        int rowsReturned = reservations.size();
 
-        if (numRowsReq != 0) {
-            if (numRowsReq < rowsReturned) {
-                rowsReturned = numRowsReq;
-            }
-        }
-        for (int i=0; i < rowsReturned; i++) {
-            Reservation resv = reservations.get(i);
+        for (Reservation resv: reservations) {
             Path path = resv.getPath();
             String pathStr = utils.pathToString(path, false);
             String localSrc = null;
