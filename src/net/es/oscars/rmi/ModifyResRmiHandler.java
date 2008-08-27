@@ -90,7 +90,7 @@ public class ModifyResRmiHandler {
         Reservation resv = this.toReservation(simpleInputMap);
         try {   
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, userName, "RMI", resv);
-            Reservation persistentResv = rm.submitModify(resv, loginConstraint, institution);
+            Reservation persistentResv = rm.submitModify(resv, loginConstraint, userName, institution);
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, userName, "RMI", resv);
         } catch (Exception e) {
             String errMessage = e.getMessage();

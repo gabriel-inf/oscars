@@ -449,8 +449,8 @@ public class ReservationManager {
      * @param institution the sender's institution
      * @throws BSSException
      */
-    public void submitCancel(Reservation resv, String login, String institution) 
-            throws BSSException{
+    public void submitCancel(Reservation resv, String loginConstraint, 
+                        String login, String institution) throws BSSException{
         String gri = resv.getGlobalReservationId();
         String status = this.se.getStatus(resv);
         
@@ -474,6 +474,7 @@ public class ReservationManager {
         jobDataMap.put("start", true);
         jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
+        jobDataMap.put("loginConstraint", loginConstraint);
         jobDataMap.put("institution", institution);
         jobDetail.setJobDataMap(jobDataMap);
         try {
@@ -567,21 +568,23 @@ public class ReservationManager {
      * instance and additional parameters.
      *
      * @param resv reservation instance modified in place
-     * @param login string with login name
+     * @param loginConstraint string with login name
      *          if null any user's reservation may be modified
      *          if set, only that user's reservation may be modified
+     * @param login string with login name of requester
      * @param institution string with institution of caller
      *          if null reservations from any site may be modified
      *          if set only reservations starting or ending at that site may be modified
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation submitModify(Reservation resv, String login, String institution)
-            throws  BSSException {
+    public Reservation submitModify(Reservation resv, String loginConstraint, 
+                       String login, String institution) throws  BSSException {
 
-        this.log.info("modify.start: login: " +  login + " institution: " +  institution );
+        this.log.info("modify.start: login: " +  loginConstraint + 
+                      " institution: " +  institution );
         String gri = resv.getGlobalReservationId();
-        Reservation persistentResv = this.getConstrainedResv(gri,login,institution);
+        Reservation persistentResv = this.getConstrainedResv(gri,loginConstraint,institution);
         // need to set this before validation
         // leave it the same, do not set to current user
         resv.setLogin(persistentResv.getLogin());
@@ -613,6 +616,7 @@ public class ReservationManager {
         jobDataMap.put("start", true);
         jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
+        jobDataMap.put("loginConstraint", loginConstraint);
         jobDataMap.put("institution", institution);
         jobDataMap.put("resvMap", resvMap);
         jobDetail.setJobDataMap(jobDataMap);

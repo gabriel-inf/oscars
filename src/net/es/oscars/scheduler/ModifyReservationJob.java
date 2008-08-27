@@ -42,6 +42,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri =  dataMap.getString("gri");
         String login = dataMap.getString("login");
+        String loginConstraint = dataMap.getString("loginConstraint");
         String institution = dataMap.getString("institution");
         HashMap<String, String[]> resvMap = 
                     (HashMap<String, String[]>) dataMap.get("resvMap");
@@ -55,7 +56,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         
         /* Get reservation */
         try{
-            persistentResv = rm.getConstrainedResv(gri,login,institution);
+            persistentResv = rm.getConstrainedResv(gri,loginConstraint,institution);
         }catch(BSSException ex){
             bss.getTransaction().rollback();
             this.log.error(ex.getMessage());

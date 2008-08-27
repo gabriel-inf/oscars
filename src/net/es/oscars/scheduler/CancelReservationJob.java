@@ -32,6 +32,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri =  dataMap.getString("gri");
         String login = dataMap.getString("login");
+        String loginConstraint = dataMap.getString("loginConstraint");
         String institution = dataMap.getString("institution");
         Reservation resv = null;
         this.log.debug("GRI is: "+dataMap.get("gri")+"for job name: "+jobName);
@@ -42,7 +43,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         
         /* Get reservation */
         try{
-            resv = rm.getConstrainedResv(gri,login,institution);
+            resv = rm.getConstrainedResv(gri,loginConstraint,institution);
         }catch(BSSException ex){
             bss.getTransaction().rollback();
             this.log.error(ex.getMessage());
@@ -62,7 +63,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
             }else if(dataMap.containsKey("fail")){
                 this.fail(resv, login, dataMap);
             }else if(dataMap.containsKey("statusCheck")){
-               /* String status = this.se.getStatus(resv);
+               String status = this.se.getStatus(resv);
                 int localStatus = this.se.getLocalStatus(resv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
@@ -71,7 +72,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
                                  OSCARSEvent.RESV_CANCEL_CONFIRMED);
                     throw new BSSException("Modify reservation timed-out " +
                                            "while waiting for event " +  op);
-                } */
+                }
             }else{
                 this.log.error("Unknown modifyReservation job cannot be executed");
             }
@@ -182,6 +183,8 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         //if last domain in path
         if(remoteStatus == null){
             this.confirm(resv, login, true);
+        }else{
+            this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
         this.log.debug("start.end");
     }
@@ -213,7 +216,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         if(this.isFirstDomain(resv)){
             this.complete(resv, login);
         }else{
-            //this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
+            this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
         this.log.debug("confirm.end");
     }
@@ -273,4 +276,34 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         String srcDomainId = parseResults.get("domainId");
         return domainDAO.isLocal(srcDomainId);
     }
+    
+    /**
+     * Schedules job to check if a request timed out
+     *
+     * @param resv the reservation to be check
+     */
+     public void scheduleStatusCheck(long timeout, Reservation resv){
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String triggerName = "cancelResvTimeoutTrig-" + resv.hashCode();
+        String jobName = "cancelResvTimeoutJob-" + resv.hashCode();
+        long time = System.currentTimeMillis() + timeout*1000;
+        Date date = new Date(time);
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  date, null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "REQ_TIMEOUT", 
+                                            CancelReservationJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("statusCheck", true);
+        dataMap.put("gri", resv.getGlobalReservationId());
+        dataMap.put("status", this.se.getStatus(resv));
+        dataMap.put("localStatus", this.se.getLocalStatus(resv));
+        jobDetail.setJobDataMap(dataMap);
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);    
+        }
+     }
 }

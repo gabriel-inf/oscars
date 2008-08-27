@@ -55,8 +55,8 @@ public class PathSetupAdapter{
      * @throws InterdomainException
      */
     public CreatePathResponseContent create(CreatePathContent params,
-                                            String login, String institution)
-                                   throws PSSException, InterdomainException {
+                      String loginConstraint, String login, String institution)
+                      throws PSSException, InterdomainException {
         CreatePathResponseContent response = new CreatePathResponseContent();
         String gri = params.getGlobalReservationId();
         String status = null;
@@ -71,7 +71,7 @@ public class PathSetupAdapter{
         Reservation resv = null;
         
         try{
-            this.getConstrainedResv(gri,tokenValue, login,institution);
+            this.getConstrainedResv(gri,tokenValue, loginConstraint,institution);
         }catch(PSSException e){
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
                                    "API", "", e.getMessage());
@@ -196,8 +196,8 @@ public class PathSetupAdapter{
      * @throws InterdomainException
      */
     public TeardownPathResponseContent teardown(TeardownPathContent params,
-                                            String login, String institution)
-                                   throws PSSException, InterdomainException {
+                      String loginConstraint, String login, String institution)
+                      throws PSSException, InterdomainException {
         TeardownPathResponseContent response = new
             TeardownPathResponseContent();
         TeardownPathResponseContent forwardReply = null;
@@ -207,7 +207,7 @@ public class PathSetupAdapter{
         String status = null;
 
         this.log.info("teardown.start");
-        Reservation resv = getConstrainedResv(gri,tokenValue,login,institution);
+        Reservation resv = getConstrainedResv(gri,tokenValue,loginConstraint,institution);
         eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_RECEIVED, login, "API", resv);
         if(resv == null){
             String msg = "No reservation found matching request";

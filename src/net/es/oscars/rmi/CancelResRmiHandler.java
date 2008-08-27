@@ -74,7 +74,7 @@ public class CancelResRmiHandler {
         String errMessage = null;
         try {
             reservation = rm.getConstrainedResv(gri, loginConstraint, institution);
-            rm.submitCancel(reservation, loginConstraint, institution);
+            rm.submitCancel(reservation, loginConstraint, userName, institution);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {

@@ -154,7 +154,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.cancel(params,loginConstraint,institution);
+            reply = this.adapter.cancel(params,loginConstraint,login,institution);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("cancelReservation caught BSSException: " + e.getMessage());
@@ -253,7 +253,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.modify(params, loginConstraint, institution );
+            reply = this.adapter.modify(params, loginConstraint, login, institution );
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
@@ -446,7 +446,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
-            responseContent = this.pathSetupAdapter.create(requestContent, loginConstraint, institution);
+            responseContent = this.pathSetupAdapter.create(requestContent, 
+                                        loginConstraint, login, institution);
             response.setCreatePathResponse(responseContent);
         } catch(PSSException e) {
             bss.getTransaction().rollback();
@@ -552,7 +553,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         try{
-            responseContent = this.pathSetupAdapter.teardown(requestContent, loginConstraint, institution);
+            responseContent = this.pathSetupAdapter.teardown(requestContent, 
+                                          loginConstraint, login, institution);
             response.setTeardownPathResponse(responseContent);
         } catch(PSSException e) {
             bss.getTransaction().rollback();

@@ -165,7 +165,8 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public ModifyResReply modify(ModifyResContent params, String login, String institution)
+    public ModifyResReply modify(ModifyResContent params, String loginConstraint,
+                                    String login, String institution)
             throws BSSException{
 
         this.log.info("modify.start");
@@ -176,7 +177,7 @@ public class ReservationAdapter {
         ModifyResReply reply = null;
         try {
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, login, "API", resv);
-            Reservation persistentResv = this.rm.submitModify(resv, login, institution);
+            Reservation persistentResv = this.rm.submitModify(resv, loginConstraint, login, institution);
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, login, "API", resv);
             reply = this.tc.reservationToModifyReply(persistentResv);
         } catch (BSSException e) {
@@ -205,16 +206,16 @@ public class ReservationAdapter {
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException
      */
-    public String cancel(GlobalReservationId params, String login, String institution)
-            throws BSSException {
+    public String cancel(GlobalReservationId params, String loginConstraint, 
+                         String login, String institution) throws BSSException{
     	
         EventProducer eventProducer = new EventProducer();
         String gri = params.getGri();
         Reservation resv = null;
         try{
             this.log.info("cancel.start: " + gri);
-            resv = this.rm.getConstrainedResv(gri, login, institution);
-            this.rm.submitCancel(resv, login, institution);
+            resv = this.rm.getConstrainedResv(gri, loginConstraint, institution);
+            this.rm.submitCancel(resv,loginConstraint, login, institution);
             this.log.info("cancel.finish " + "GRI: " + gri + 
                           ", status: "  + resv.getStatus());
         }catch(BSSException e){
