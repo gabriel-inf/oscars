@@ -10,6 +10,9 @@ import java.util.Iterator;
 import org.apache.axis2.AxisFault;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 import org.omg.CORBA_2_3.portable.InputStream;
 
 import net.es.oscars.bss.topology.URNParser;
@@ -371,8 +374,6 @@ public class ListReservationCLI {
          if(layer2Info != null){
              output += "Source Endpoint: " + layer2Info.getSrcEndpoint() + "\n";
              output += "Destination Endpoint: " + layer2Info.getDestEndpoint() + "\n";
-             output += "Source VLAN: " + layer2Info.getSrcVtag() + "\n";
-             output += "Destination VLAN: " + layer2Info.getDestVtag() + "\n";
          }
          if(layer3Info != null){
              output += "Source Host: " + layer3Info.getSrcHost() + "\n";
@@ -388,7 +389,20 @@ public class ListReservationCLI {
          }
          output += "Path: \n";
          for (CtrlPlaneHopContent hop : path.getHop()){
-             output += "\t" + hop.getLinkIdRef() + "\n";
+            CtrlPlaneLinkContent link = hop.getLink();
+            if(link==null){
+                //should not happen
+                output += "no link";
+                continue;
+            }
+            output += "\t" + link.getId();
+            CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = swcap.getSwitchingCapabilitySpecificInfo();
+            output += ", " + swcap.getEncodingType();
+            if("ethernet".equals(swcap.getEncodingType())){
+                output += ", " + swcapInfo.getVlanRangeAvailability();
+            }
+            output += "\n";
          }
          System.out.println(output);
     }

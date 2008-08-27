@@ -12,6 +12,9 @@ import net.es.oscars.wsdlTypes.ResDetails;
 import org.apache.axis2.AxisFault;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 
 public class QueryReservationCLI {
@@ -100,8 +103,6 @@ public class QueryReservationCLI {
             if(layer2Info != null){
             	System.out.println("Source Endpoint: " + layer2Info.getSrcEndpoint());
             	System.out.println("Destination Endpoint: " + layer2Info.getDestEndpoint());
-            	System.out.println("Source VLAN: " + layer2Info.getSrcVtag());
-            	System.out.println("Destination VLAN: " + layer2Info.getDestVtag());
             }
             if(layer3Info != null){
             	System.out.println("Source Host: " + layer3Info.getSrcHost());
@@ -116,9 +117,24 @@ public class QueryReservationCLI {
             	System.out.println("LSP Class: " + mplsInfo.getLspClass());
             }
             System.out.println("Path: ");
+            String output ="";
             for (CtrlPlaneHopContent hop : path.getHop()){
-            	System.out.println("\t" + hop.getLinkIdRef());
+            	CtrlPlaneLinkContent link = hop.getLink();
+                if(link==null){
+                    //should not happen
+                    output += "no link";
+                    continue;
+                }
+                output += "\t" + link.getId();
+                CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = swcap.getSwitchingCapabilitySpecificInfo();
+                output += ", " + swcap.getEncodingType();
+                if("ethernet".equals(swcap.getEncodingType())){
+                    output += ", " + swcapInfo.getVlanRangeAvailability();
+                }
+                output += "\n";
             }
+            System.out.print(output);
         } catch (AxisFault e) { 
             e.printStackTrace(); 
         } catch (RemoteException e) { 
