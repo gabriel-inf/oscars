@@ -160,7 +160,6 @@ public class TypeConverter {
      * @return ResDetails instance
      */
     public ResDetails reservationToDetails(Reservation resv) {
-        this.log.debug("reservationToDetails.start");
 
         if (resv == null) {
             this.log.debug("reservationToDetails.end (null)");
@@ -179,7 +178,6 @@ public class TypeConverter {
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
         reply.setPathInfo(this.getPathInfo(resv));
-        this.log.debug("reservationToDetails.end");
         return reply;
     }
 
