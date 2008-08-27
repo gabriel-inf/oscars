@@ -115,7 +115,7 @@ public class StateEngine {
     
     public static void canUpdateLocalStatus(Reservation resv, int newLocalStatus) throws BSSException{
         boolean allowed = true;
-        StateEngine se = new StateEngine();
+        StateEngine se = OSCARSCore.getInstance().getStateEngine();
         String status = se.getStatus(resv);
         int localStatus = resv.getLocalStatus();
         if(status.equals(INCREATE) ){

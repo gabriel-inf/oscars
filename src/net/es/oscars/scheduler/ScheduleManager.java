@@ -41,7 +41,7 @@ public class ScheduleManager {
             JobDetail pqJobDetail = new JobDetail("Process Queue", "queue", ProcessQueueJob.class);
             CronTrigger pqTrigger = null;
             try {
-                pqTrigger = new CronTrigger("pqTrigger", "INTERNAL", "0/20 * * * * ?");
+                pqTrigger = new CronTrigger("pqTrigger", "INTERNAL", "0/1 * * * * ?");
             } catch (ParseException ex) {
                 this.log.error("Error parsing trigger expression", ex);
                 return;
