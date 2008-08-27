@@ -327,6 +327,13 @@ public class PathSetupManager{
             return;
         }
         
+        //check if in cancel state
+        int localStatus = se.getLocalStatus(resv);
+        if((localStatus & 24) == 8){
+            //ignore and wait for cancel event
+            return;
+        }
+        
         this.scheduleUpdateAttempt(0,gri,login, targStatus, newLocalStatus,
                                    op,upstream,-1);
     }
