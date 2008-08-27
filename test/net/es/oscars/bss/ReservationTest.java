@@ -146,7 +146,8 @@ public class ReservationTest {
         List<String> logins = null;
         try {
              // if null, list all reservations by all users
-            reservations = dao.list(logins, null, null, null, null, null, null);
+            reservations = dao.list(10, 0, logins, null, null, null, null,
+                                    null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -166,7 +167,8 @@ public class ReservationTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = dao.list(logins, null, null, null, null, null, null);
+            reservations = dao.list(10, 0, logins, null, null, null, null,
+                                    null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

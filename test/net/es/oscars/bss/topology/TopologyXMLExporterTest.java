@@ -64,14 +64,7 @@ public class TopologyXMLExporterTest {
             if (link == null) {
                 continue;
             }
-            Port port = link.getPort();
-            Node node = port.getNode();
-            Domain domain = node.getDomain();
-            output += " urn:ogf:network:" +
-                      domain.getTopologyIdent() + ":" +
-                      node.getTopologyIdent() + ":" +
-                      port.getTopologyIdent() + ":" +
-                      link.getTopologyIdent();
+            output += " " + link.getFQTI();
             outputStream.println(output);
         }
         outputStream.close();
