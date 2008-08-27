@@ -42,6 +42,7 @@ public class CreateTest {
         Attribute attribute = new Attribute();
         String attrName = this.props.getProperty("attributeName");
         attribute.setName(attrName);
+        attribute.setDescription("test attribute");
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
         attrDAO.create(attribute);

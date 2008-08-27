@@ -15,7 +15,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "aaa", "institution" })
+@Test(groups={ "aaa", "institution" }, dependsOnGroups={ "create"})
 public class InstitutionTest {
     private Properties props;
     private SessionFactory sf;
