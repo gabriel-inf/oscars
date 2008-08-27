@@ -437,41 +437,75 @@ public class ReservationManager {
         this.log.info("store.finish");
         this.rsvLogger.stop();
     }
-
+    
+    /**
+     * Submits a cancel job for execution
+     *
+     * @param resv the reservation to cancel
+     * @param login the login of the sender of the cancel
+     * @param institution the sender's institution
+     * @throws BSSException
+     */
+    public void submitCancel(Reservation resv, String login, String institution) 
+            throws BSSException{
+        String gri = resv.getGlobalReservationId();
+        String status = this.se.getStatus(resv);
+        
+        //can't cancel a reservation in a terminal state
+        if(StateEngine.CANCELLED.equals(status) || 
+            StateEngine.FINISHED.equals(status) || 
+            StateEngine.FAILED.equals(status)){
+            throw new BSSException("Can't cancel a reservation in the state "
+                                   + status);
+        }
+        
+        /* don't worry about any other states because that will be detected 
+           when it's actually in the queue */
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String jobName = "submitCancel-"+resv.hashCode();
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", 
+                                            CancelReservationJob.class);
+        this.log.debug("Adding job "+jobName);
+        jobDetail.setDurability(true);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("start", true);
+        jobDataMap.put("gri", resv.getGlobalReservationId());
+        jobDataMap.put("login", login);
+        jobDataMap.put("institution", institution);
+        jobDetail.setJobDataMap(jobDataMap);
+        try {
+            sched.addJob(jobDetail, false);
+        } catch (SchedulerException ex) {
+            throw new BSSException(ex);
+        }
+    }
+    
     /**
      * Given a reservation GRI, cancels the corresponding reservation.
      * (Can only cancel a pending or active reservation.)
      *
-     * @param gri string with reservation global reservation id
-     * @param login  string with login name of user
-     *          if null any user's reservation may be canceled
-     *          if set, only that user's reservation may canceled
-     * @param institution string with institution of caller
-     *          if null reservations from any site may be canceled
-     *          if set only reservations starting or ending at that site may be canceled
-     *
-     * @return reservation with cancellation status
+     * @param resv the reservation to cancel
      * @throws BSSException
      */
-
-    public Reservation cancel(String gri, String login, String institution)
+    public void cancel(Reservation resv)
             throws BSSException {
-
+        String gri = resv.getGlobalReservationId();
         this.rsvLogger.redirect(gri);
-        this.log.info("cancel.start: " + gri + " login: " + login + " institution: " + institution );
-        Reservation resv = this.getConstrainedResv(gri,login,institution);
 
         // See if we can cancel at all; this logic is DIFFERENT from the StateEngine
         String status = StateEngine.getStatus(resv);
-
         if (status.equals(StateEngine.CANCELLED)) {
             // a no-op; no need to complain though
-            return resv;
+            return;
         }
 
         String newStatus = "";
-        if (status.equals(StateEngine.RESERVED) || status.equals(StateEngine.ACCEPTED)) {
+        if(status.equals(StateEngine.ACCEPTED)){
+            //hasn't been forwarded yet so cancel immediately
             newStatus = StateEngine.CANCELLED;
+        } else if (status.equals(StateEngine.RESERVED)) {
+            //wait for complete before cancelled
+            newStatus = StateEngine.RESERVED;
         } else if (status.equals(StateEngine.ACTIVE)) {
             newStatus = StateEngine.INTEARDOWN;
         } else {
@@ -479,9 +513,12 @@ public class ReservationManager {
         }
 
         // remove all pending jobs in the scheduler related to this reservation
-        this.core.getScheduleManager().processCancel(resv, newStatus);
+        /* NOTE: I DON'T THINK WE NEED THIS AS STATE ENGINE SHOULD PREVENT ANY
+                 ERRORS. IF WE DO END UP NEEDING THIS IT MUST BE MODIFED TO NOT
+                 DELETE THE CURRENT JOB
+        */
+        //this.core.getScheduleManager().processCancel(resv, newStatus);
 
-        this.se.updateStatus(resv, newStatus);
         if (newStatus.equals(StateEngine.INTEARDOWN)) {
             // add the teardown jobs
             try {
@@ -490,10 +527,13 @@ public class ReservationManager {
                 this.log.error(ex);
                 throw new BSSException(ex);
             }
+        }else if(newStatus.equals(StateEngine.CANCELLED)){
+            this.se.updateStatus(resv, newStatus);
+            this.se.updateLocalStatus(resv, 0);
         }
+        
         this.log.info("cancel.finish: " + resv.getGlobalReservationId());
         this.rsvLogger.stop();
-        return resv;
     }
 
     /**

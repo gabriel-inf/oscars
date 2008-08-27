@@ -115,7 +115,8 @@ public class StateEngine {
     
     public static void canUpdateLocalStatus(Reservation resv, int newLocalStatus) throws BSSException{
         boolean allowed = true;
-        String status = resv.getStatus();
+        StateEngine se = new StateEngine();
+        String status = se.getStatus(resv);
         int localStatus = resv.getLocalStatus();
         if(status.equals(INCREATE) ){
             if((localStatus ^ newLocalStatus) != 1){
@@ -133,8 +134,13 @@ public class StateEngine {
                 allowed = false;
             }
         }else if(status.equals(RESERVED)){
-            //bits: cancel
-            if(newLocalStatus > 8 || (newLocalStatus & localStatus) != 8){
+            //bits: cancel,empty,empty,confirm
+            if((newLocalStatus & 6) != 0){
+                allowed = false;
+            }
+        }else if(status.equals(ACTIVE)){
+            //bits: cancel,empty,empty,empty
+            if(newLocalStatus != 8 && newLocalStatus != 0){
                 allowed = false;
             }
         }else if(status.equals(INTEARDOWN)){

@@ -1,7 +1,7 @@
 package net.es.oscars.scheduler;
 
-import java.util.Properties;
-import java.util.Date;
+import java.util.*;
+import java.net.InetAddress;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
@@ -23,10 +23,8 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String jobName = context.getJobDetail().getFullName();
-        this.log = Logger.getLogger(this.getClass());
-        this.log.debug("ModifyReservationJob.start name:"+jobName);
-        this.core = OSCARSCore.getInstance();
-        this.se = this.core.getStateEngine();
+        this.init();
+        this.log.debug("CancelReservationJob.start name:"+jobName);
         TypeConverter tc = this.core.getTypeConverter();
         ReservationManager rm = this.core.getReservationManager();
         String idcURL = this.core.getServiceManager().getIdcURL();
@@ -37,7 +35,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         String institution = dataMap.getString("institution");
         Reservation resv = null;
         this.log.debug("GRI is: "+dataMap.get("gri")+"for job name: "+jobName);
-        this.init();
+        
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -54,23 +52,18 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         }
         
         /* Perform start, confirm, complete, fail or statusCheck operation */
-       /* try{
+        try{
             if(dataMap.containsKey("start")){
                 this.start(resv, login);
             }else if(dataMap.containsKey("confirm")){
-                this.confirm(resv, login);
+                this.confirm(resv, login, true);
             }else if(dataMap.containsKey("complete")){
                 this.complete(resv, login);
             }else if(dataMap.containsKey("fail")){
-                String code = dataMap.getString("errorCode");
-                String msg = dataMap.getString("errorMsg");
-                String src = dataMap.getString("errorSource");
-                this.rollback(resv, origState);
-                eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login,
-                                      src, persistentResv, code, msg);
+                this.fail(resv, login, dataMap);
             }else if(dataMap.containsKey("statusCheck")){
-                String status = this.se.getStatus(persistentResv);
-                int localStatus = this.se.getLocalStatus(persistentResv);
+               /* String status = this.se.getStatus(resv);
+                int localStatus = this.se.getLocalStatus(resv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
                     String op = ((localStatus & 1) == 1 ? 
@@ -78,7 +71,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
                                  OSCARSEvent.RESV_CANCEL_CONFIRMED);
                     throw new BSSException("Modify reservation timed-out " +
                                            "while waiting for event " +  op);
-                }
+                } */
             }else{
                 this.log.error("Unknown modifyReservation job cannot be executed");
             }
@@ -86,29 +79,32 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         }catch(Exception ex){
             ex.printStackTrace();
             //Rollback any changes...
+            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, 
+                                   idcURL, resv, "", ex.getMessage());
             bss.getTransaction().rollback();
-            //...then start new transaction to update status
             try{
                 bss = core.getBssSession();
                 bss.beginTransaction();
-                this.rollback(persistentResv, origState);
-                eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, 
-                                      idcURL, persistentResv, "", ex.getMessage());
+                this.se.updateLocalStatus(resv, 0);
                 bss.getTransaction().commit();
-            }catch(Exception ex2){
+            }catch(BSSException e){
                 bss.getTransaction().rollback();
-                this.log.error(ex2);
+                this.log.error(e);
             }
+            
         }finally{
             this.runNextJob(context);
-        } */
-        this.log.info("ModifyReservationJob.end");
+        }
+        this.log.info("CancelReservationJob.end");
     }
     
     /**
      * Reads in timeout properties
      */
      public void init(){
+        this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSCore.getInstance();
+        this.se = this.core.getStateEngine();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("timeout", true);
         String defaultTimeoutStr = props.getProperty("default");
@@ -147,24 +143,134 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         }
      }
      
-     /*
-        Forwarder forwarder = this.core.getForwarder();
+    public void start(Reservation resv, String login) throws BSSException, InterdomainException{
+        this.log.debug("start.start");
+        EventProducer eventProducer = new EventProducer();
+        String status = this.se.getStatus(resv);
+        int localStatus = this.se.getLocalStatus(resv);
+        Forwarder forwarder = null;
         String remoteStatus = null;
-        resv = this.rm.cancel(gri, login, institution);
         
+        if(!(StateEngine.RESERVED.equals(status) || 
+                StateEngine.ACTIVE.equals(status)) ||
+                StateEngine.ACCEPTED.equals(status)){
+            throw new BSSException("Cannot cancel a reservation with status "+ 
+                                    status);
+        }
+        if((localStatus & 8) == 8){
+            //no-op
+            this.log.debug("Already in cancel so skipping");
+            return;
+        }
+        
+        this.se.updateLocalStatus(resv, 8);
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_STARTED, login, "JOB", resv);
         InterdomainException interException = null;
         try {
+            forwarder = this.core.getForwarder();
             remoteStatus = forwarder.cancel(resv);
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, "API", resv);
         } catch (InterdomainException e) {
             interException = e;
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API", resv, "", e.getMessage());
+            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "JOB", resv, "", e.getMessage());
         } finally {
             forwarder.cleanUp();
             if(interException != null){
                 throw interException;
             }
         }
-     */
-
+        
+        //if last domain in path
+        if(remoteStatus == null){
+            this.confirm(resv, login, true);
+        }
+        this.log.debug("start.end");
+    }
+    
+    public void confirm(Reservation resv, String login, boolean doCancel) throws BSSException{
+        this.log.debug("confirm.start");
+        EventProducer eventProducer = new EventProducer();
+        if(doCancel){
+            ReservationManager rm = this.core.getReservationManager();
+            rm.cancel(resv);
+            String status = this.se.getStatus(resv);
+            if(status.equals(StateEngine.CANCELLED)){
+                //if was cancelled then complete immediately
+                eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_CONFIRMED, 
+                                      login, "JOB", resv);
+                eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, 
+                                       login, "JOB", resv);
+                return;
+            }else if(status.equals(StateEngine.INTEARDOWN)){
+                //wait for teardown before confirming cancel
+                return;
+            }
+        }
+        
+        this.se.updateLocalStatus(resv, 8+1);//8=INCANCEL,1=confirmed
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_CONFIRMED, 
+                               login, "JOB", resv);
+        
+        if(this.isFirstDomain(resv)){
+            this.complete(resv, login);
+        }else{
+            //this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
+        }
+        this.log.debug("confirm.end");
+    }
+    
+    public void complete(Reservation resv, String login) throws BSSException{
+        this.log.debug("complete.start");
+        EventProducer eventProducer = new EventProducer();
+        this.se.updateStatus(resv, StateEngine.CANCELLED);
+        this.se.updateLocalStatus(resv, 0);
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, "JOB",
+                               resv);
+        this.log.debug("complete.end");
+    }
+    
+    public void fail(Reservation resv, String login, JobDataMap dataMap)
+                     throws BSSException{
+        this.log.debug("fail.start");
+        EventProducer eventProducer = new EventProducer();
+        String code = dataMap.getString("errorCode");
+        String msg = dataMap.getString("errorMsg");
+        String src = dataMap.getString("errorSource");
+        int localStatus = this.se.getLocalStatus(resv);
+        if((localStatus & 1) == 1){
+            //set to failed if already been confirmed
+            this.se.updateStatus(resv, StateEngine.FAILED);
+        }
+        this.se.updateLocalStatus(resv, 0);
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login,
+                              src, resv, code, msg);
+        this.log.debug("fail.end");
+    }
+   
+    public boolean isFirstDomain(Reservation resv) throws BSSException{
+        /* Not guaranteed interdomain path so try finding src */
+        Path path = resv.getPath();
+        String src = "";
+        String bssDbName = this.core.getBssDbName();
+        
+        if(path.getLayer2Data() != null){
+            src = path.getLayer2Data().getSrcEndpoint();
+        }else if(path.getLayer3Data() != null){
+            src = path.getLayer3Data().getSrcHost();
+            try{
+                src = InetAddress.getByName(src).getHostAddress();
+            }catch(Exception e){
+                e.printStackTrace();
+                throw new BSSException(e);
+            }
+            IpaddrDAO ipaddrDAO = new IpaddrDAO(bssDbName);
+            Ipaddr ip = ipaddrDAO.queryByParam("IP", src);
+            src = ip.getLink().getFQTI();
+        }else{
+            throw new BSSException("Cannot find src endpoint for reservation");
+        }
+        DomainDAO domainDAO = new DomainDAO(bssDbName);
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(src);
+        String srcDomainId = parseResults.get("domainId");
+        return domainDAO.isLocal(srcDomainId);
+    }
 }

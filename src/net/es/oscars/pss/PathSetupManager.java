@@ -9,7 +9,7 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
-import net.es.oscars.scheduler.PathTimeoutJob;
+import net.es.oscars.scheduler.*;
 
 import net.es.oscars.oscars.OSCARSCore;
 
@@ -486,12 +486,19 @@ public class PathSetupManager{
             eventProducer.addEvent(OSCARSEvent.UP_PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
         }
         
-        //everything complete
-        if((localStatus & 7)  == 7){
+        if(StateEngine.CANCELLED.equals(newStatus) && newLocalStatus == 1){
+            se.updateStatus(resv, StateEngine.RESERVED);
+            CancelReservationJob crj = new CancelReservationJob();
+            crj.init();
+            crj.confirm(resv,login,false);
+        } else if((localStatus & 7)  == 7){
+            //everything complete
             se.updateStatus(resv, newStatus);
             se.updateLocalStatus(resv, 0);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, login, "JOB", resv);
         }
+        
+        
      }
      
      /**

@@ -224,9 +224,10 @@ public class ReservationDAO
 
         seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where status = :status " +
+                      "and localStatus=0 " +
                       "and startTime < :startTime " +
                       "and endTime > :now "+
-                      " order by startTime";
+                      " order by startTime ";
         this.reservations = this.getSession().createQuery(hsql)
                               .setString("status", StateEngine.RESERVED)
                               .setLong("startTime", seconds)
@@ -272,7 +273,7 @@ public class ReservationDAO
         long periodEnd = offset + interval;
 
         String hsql = "from Reservation where " +
-                      " ( (status NOT IN (:stateClause)) and " +
+                      " ( (status NOT IN (:stateClause)) and localStatus=0 and" +
                       "   (endTime >= :periodStart and endTime <= :periodEnd) )" +
                       " order by endTime";
 

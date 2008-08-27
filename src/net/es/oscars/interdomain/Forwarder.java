@@ -117,12 +117,16 @@ public class Forwarder extends Client {
     public String cancel(Reservation resv) throws InterdomainException {
 
         String url = null;
+        String login = resv.getLogin();
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
             url = resv.getPath().getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("cancel start forward to: " + url);
+        EventProducer eventProducer = new EventProducer();
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FWD_STARTED, login, "JOB", resv);
         ForwardReply reply = this.forward("cancelReservation", resv, null, url);
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FWD_ACCEPTED, login, "JOB", resv);
         return reply.getCancelReservation();
     }
 

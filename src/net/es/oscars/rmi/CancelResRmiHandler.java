@@ -14,7 +14,6 @@ import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.database.*;
-import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
 
 public class CancelResRmiHandler {
@@ -43,9 +42,6 @@ public class CancelResRmiHandler {
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
 
-
-        TypeConverter tc = core.getTypeConverter();
-        Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
         UserManager userMgr =  new UserManager("aaa");
         EventProducer eventProducer = new EventProducer();
@@ -77,17 +73,13 @@ public class CancelResRmiHandler {
         bss.beginTransaction();
         String errMessage = null;
         try {
-            reservation = rm.cancel(gri, loginConstraint, institution);
-
-            // TODO: Make this an asynchronous job
-            String remoteStatus = forwarder.cancel(reservation);
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, userName, "WBUI", reservation);
+            reservation = rm.getConstrainedResv(gri, loginConstraint, institution);
+            rm.submitCancel(reservation, loginConstraint, institution);
         } catch (BSSException e) {
             errMessage = e.getMessage();
-        } catch (InterdomainException e) {
+        } catch (Exception e) {
             errMessage = e.getMessage();
         } finally {
-            forwarder.cleanUp();
             if (errMessage != null) {
                 result.put("error", errMessage);
                 bss.getTransaction().rollback();

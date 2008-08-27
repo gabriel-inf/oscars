@@ -159,10 +159,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bss.getTransaction().rollback();
             this.log.error("cancelReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
-        }   catch (InterdomainException e) {
-            bss.getTransaction().rollback();
-            this.log.error("cancelReservation interdomain error: " + e.getMessage());
-            throw new BSSFaultMessage("cancelReservation interdomain error " + e.getMessage());
         } catch (Exception e) {
             bss.getTransaction().rollback();
             this.log.error("cancelReservation caught Exception: " + e.getMessage());

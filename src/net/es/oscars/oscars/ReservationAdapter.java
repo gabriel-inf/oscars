@@ -205,35 +205,27 @@ public class ReservationAdapter {
      * @throws BSSException
      */
     public String cancel(GlobalReservationId params, String login, String institution)
-            throws BSSException, InterdomainException {
+            throws BSSException {
     	
         EventProducer eventProducer = new EventProducer();
-
-        Reservation resv = null;
-        Forwarder forwarder = this.core.getForwarder();
-        String remoteStatus = null;
-
         String gri = params.getGri();
-        this.log.info("cancel.start: " + gri);
-        resv = this.rm.cancel(gri, login, institution);
-        this.log.info("cancel.finish " + "GRI: " + gri + ", status: "  + resv.getStatus());
-        // checks whether next domain should be contacted, forwards to
-        // the next domain if necessary, and handles the response
-        this.log.debug("cancel to forward");
-
-        InterdomainException interException = null;
-        try {
-            remoteStatus = forwarder.cancel(resv);
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, "API", resv);
-        } catch (InterdomainException e) {
-            interException = e;
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API", resv, "", e.getMessage());
-        } finally {
-            forwarder.cleanUp();
-            if(interException != null){
-                throw interException;
-            }
+        Reservation resv = null;
+        try{
+            this.log.info("cancel.start: " + gri);
+            resv = this.rm.getConstrainedResv(gri, login, institution);
+            this.rm.submitCancel(resv, login, institution);
+            this.log.info("cancel.finish " + "GRI: " + gri + 
+                          ", status: "  + resv.getStatus());
+        }catch(BSSException e){
+            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API",
+                resv, "", e.getMessage());
+            throw e;
+        }catch(Exception e){
+            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API",
+                resv, "", e.getMessage());
+            throw new BSSException(e);
         }
+        
         return resv.getStatus();
     }
 
