@@ -133,14 +133,9 @@ public class StateEngine {
             if(newLocalStatus > 7 || newLocalStatus < localStatus){
                 allowed = false;
             }
-        }else if(status.equals(RESERVED)){
+        }else if(status.equals(RESERVED) || status.equals(ACTIVE)){
             //bits: cancel,empty,empty,confirm
             if((newLocalStatus & 6) != 0){
-                allowed = false;
-            }
-        }else if(status.equals(ACTIVE)){
-            //bits: cancel,empty,empty,empty
-            if(newLocalStatus != 8 && newLocalStatus != 0){
                 allowed = false;
             }
         }else if(status.equals(INTEARDOWN)){

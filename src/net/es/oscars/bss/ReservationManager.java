@@ -203,6 +203,7 @@ public class ReservationManager {
         /* Find job type */
         Class jobClass = null;
         String prefix = "";
+        String altStatus = null;
         boolean requirePath = false;
         if(reqStatus.equals(StateEngine.INCREATE)){
             jobClass = CreateReservationJob.class;
@@ -214,6 +215,7 @@ public class ReservationManager {
         }else if(reqStatus.equals(StateEngine.RESERVED)){
             jobClass = CancelReservationJob.class;
             prefix = "cancelResv";
+            altStatus = StateEngine.ACTIVE;
         }else{
             this.log.error("Unknown job type");
             return;
@@ -236,9 +238,10 @@ public class ReservationManager {
         }
         
         String status = this.se.getStatus(resv);
-        if(!reqStatus.equals(status)){
+        if((!reqStatus.equals(status)) && (!status.equals(altStatus))){
             this.log.info("Trying to " + op + " a reservation that doesn't" + 
                           " have status " + reqStatus);
+            return;
         }
         if(confirm){
             int newLocalStatus = this.se.getLocalStatus(resv) + 1;

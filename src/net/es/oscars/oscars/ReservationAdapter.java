@@ -112,6 +112,7 @@ public class ReservationAdapter {
         if(resDetails == null){
             this.log.error("No revservation details provided for event " + 
                            eventType + " from " + producerId);
+            return;
         }
         String gri = resDetails.getGlobalReservationId();
         PathInfo pathInfo = resDetails.getPathInfo();

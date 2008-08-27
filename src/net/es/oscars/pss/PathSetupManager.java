@@ -518,9 +518,10 @@ public class PathSetupManager{
                                int newLocalStatus, String op, 
                                boolean upstream, int retries){
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String triggerName = "pathRetryTrig-" + gri.hashCode();
-        String jobName = "pathRetryJob-" + gri.hashCode();
-        long time = System.currentTimeMillis() + wait*1000;
+        long currTime = System.currentTimeMillis();
+        String triggerName = "pathRetryTrig-" + gri.hashCode()+currTime;
+        String jobName = "pathRetryJob-" + gri.hashCode()+currTime;
+        long time = currTime + wait*1000;
         Date date = new Date(time);
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
                                                   date, null, 0, 0L);
