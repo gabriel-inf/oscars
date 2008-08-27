@@ -117,13 +117,9 @@ public class QueryReservationClient extends ExampleClient {
         if (layer2info != null) {
         	String srcE = layer2info.getSrcEndpoint();
         	String dstE = layer2info.getDestEndpoint();
-        	String srcVt = layer2info.getSrcVtag().getString();
-        	String dstVt = layer2info.getDestVtag().getString();
         	System.out.println("Layer 2 info");
         	System.out.println("Src endpoint:" + srcE);
         	System.out.println("Dst endpoint:" + dstE);
-        	System.out.println("Src vtag:" + srcVt);
-        	System.out.println("Dst vtag:" + dstVt);
         	
             CtrlPlanePathContent path = pathInfo.getPath();
             if (path != null) {

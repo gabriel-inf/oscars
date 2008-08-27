@@ -8,6 +8,9 @@ import java.util.*;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
@@ -224,8 +227,6 @@ public class ListReservationsClient extends ExampleClient {
          if(layer2Info != null){
              output += "Source Endpoint: " + layer2Info.getSrcEndpoint() + "\n";
              output += "Destination Endpoint: " + layer2Info.getDestEndpoint() + "\n";
-             output += "Source VLAN: " + layer2Info.getSrcVtag() + "\n";
-             output += "Destination VLAN: " + layer2Info.getDestVtag() + "\n";
          }
          if(layer3Info != null){
 
@@ -242,7 +243,20 @@ public class ListReservationsClient extends ExampleClient {
          }
          output += "Path: \n";
          for (CtrlPlaneHopContent hop : path.getHop()){
-             output += "\t" + hop.getLinkIdRef() + "\n";
+            CtrlPlaneLinkContent link = hop.getLink();
+            if(link==null){
+                //should not happen
+                output += "no link";
+                continue;
+            }
+            output += "\t" + link.getId();
+            CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = swcap.getSwitchingCapabilitySpecificInfo();
+            output += ", " + swcap.getEncodingType();
+            if("ethernet".equals(swcap.getEncodingType())){
+                output += ", " + swcapInfo.getVlanRangeAvailability();
+            }
+            output += "\n";
          }
          System.out.println(output);
     }

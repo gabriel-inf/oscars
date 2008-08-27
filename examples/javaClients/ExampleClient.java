@@ -8,6 +8,9 @@ import org.apache.axis2.AxisFault;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;
@@ -81,13 +84,23 @@ public class ExampleClient {
     public void outputHops(CtrlPlanePathContent path) {
         System.out.println("Path is:");
         CtrlPlaneHopContent[] hops = path.getHop();
+        String output ="";
         for (int i = 0; i < hops.length; i++) {
-            // What is passed back depends on what layer information is
-            // associated with a reservation.  This will be a topology
-            // identifier for layer 2, and an IPv4 or IPv6 address for
-            // layer 3.
-            String hopId = hops[i].getLinkIdRef();
-            System.out.println("\t" + hopId);
+            CtrlPlaneLinkContent link = hops[i].getLink();
+            if(link==null){
+                //should not happen
+                output += "no link";
+                continue;
+            }
+            output += "\t" + link.getId();
+            CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = swcap.getSwitchingCapabilitySpecificInfo();
+            output += ", " + swcap.getEncodingType();
+            if("ethernet".equals(swcap.getEncodingType())){
+                output += ", " + swcapInfo.getVlanRangeAvailability();
+            }
+            output += "\n";
         }
+        System.out.print(output);
     }
 }
