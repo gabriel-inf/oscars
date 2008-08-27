@@ -46,6 +46,10 @@ public class CreatePathJob extends ChainingJob implements Job {
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, login, 
                                    "JOB", resv, "", ex.getMessage());
         }finally{
+            //this delays the queue a domain-specific amount
+            try{ 
+                Thread.sleep(3000);
+            }catch(InterruptedException e){}
             this.runNextJob(context);
             bss.getTransaction().commit();
         }
