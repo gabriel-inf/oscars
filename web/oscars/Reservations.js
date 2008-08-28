@@ -17,8 +17,14 @@ dojo.provide("oscars.Reservations");
 // posts request to retrieve reservations from server based on search
 // parameters
 oscars.Reservations.postSearch = function () {
+    // need to do at very beginning or won't catch as often
+    if (oscarsState.reservationsEntered) {
+        return;
+    }
+    oscarsState.reservationsEntered = true;
     var valid = dijit.byId("reservationsForm").validate();
     if (!valid) {
+        oscarsState.reservationsEntered = false;
         return;
     }
     var oscarsStatus = dojo.byId("oscarsStatus");
@@ -36,6 +42,9 @@ oscars.Reservations.postSearch = function () {
 
 // handles reply from list reservations servlet
 oscars.Reservations.handleReply = function (responseObject, ioArgs) {
+    // reset that not in process anymore in any event
+    oscarsState.reservationsEntered = false;
+
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }

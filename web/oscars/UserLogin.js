@@ -14,8 +14,14 @@ dojo.provide("oscars.UserLogin");
 
 // posts login request to AuthenticateUser servlet
 oscars.UserLogin.authenticateUser = function () {
+    // need to do at very beginning or won't catch as often
+    if (oscarsState.loginEntered) {
+        return;
+    }
+    oscarsState.loginEntered = true;
     var valid = dijit.byId("AuthenticateUser").validate();
     if (!valid) {
+        oscarsState.loginEntered = false;
         return;
     }
     var oscarsStatus = dojo.byId("oscarsStatus");
@@ -32,6 +38,9 @@ oscars.UserLogin.authenticateUser = function () {
 
 // handles reply from AuthenticateUser servlet
 oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
+    // reset that not in process anymore in any event
+    oscarsState.loginEntered = false;
+
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }

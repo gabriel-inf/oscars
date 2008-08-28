@@ -18,11 +18,20 @@ dojo.provide("oscars.ReservationDetails");
 
 // posts reservation query to server
 oscars.ReservationDetails.postQueryReservation = function (newGri) {
+    if (oscarsState.reservationDetailsEntered) {
+        return;
+    }
+    oscarsState.reservationDetailsEntered = true;
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     if (!newGri) {
         oscars.ReservationDetails.setCurrentGri(formNode);
     } else {
         newGri = dijit.byId("newGri").getValue();
+        // can happen if hit enter accidentally more than once
+        if (oscars.Utils.isBlank(newGri)) {
+            oscarsState.reservationDetailsEntered = false;
+            return;
+        }
         formNode.gri.value = newGri;
     }
     dojo.xhrPost({
@@ -193,6 +202,7 @@ oscars.ReservationDetails.cloneReservation = function () {
 
 // handles all servlet replies
 oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
+    oscarsState.reservationDetailsEntered = false;
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
