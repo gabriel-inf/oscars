@@ -92,8 +92,7 @@
             name="linkProtectionTypes" type="xs:string"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" name="administrativeGroups" 
             type="CtrlPlane:CtrlPlaneAdministrativeGroup"/>
-        <xs:element minOccurs="0" name="SwitchingCapabilityDescriptors" 
-            type="CtrlPlane:CtrlPlaneSwcapContent"/>
+        <xs:element name="SwitchingCapabilityDescriptors" type="CtrlPlane:CtrlPlaneSwcapContent"/>
       </xs:sequence>
       <xs:attribute name="id" use="required" type="xs:string"/>
   </xs:complexType>
