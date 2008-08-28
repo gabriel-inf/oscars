@@ -31,7 +31,7 @@ public class CreatePathJob extends ChainingJob implements Job {
             resv = resvDAO.query(gri);
             login = resv.getLogin();
             Thread.sleep(10000);//simulate setup time
-            pm.updateCreateStatus(1, resv);
+            pm.updateCreateStatus(StateEngine.CONFIRMED, resv);
         }catch (BSSException ex) {
             this.log.error("Could not create reservation "+ gri);
             this.log.error(ex);

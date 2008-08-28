@@ -72,7 +72,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 String msg = dataMap.getString("errorMsg");
                 String src = dataMap.getString("errorSource");
                 this.se.updateStatus(resv, StateEngine.FAILED);
-                this.se.updateLocalStatus(resv, 0);
+                this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login,
                                       src, resv, code, msg);
             }else if(dataMap.containsKey("statusCheck")){
@@ -80,7 +80,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 int localStatus = this.se.getLocalStatus(resv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
-                    String op = (localStatus == 1 ? 
+                    String op = (localStatus == StateEngine.CONFIRMED ? 
                                  OSCARSEvent.RESV_CREATE_COMPLETED : 
                                  OSCARSEvent.RESV_CREATE_CONFIRMED);
                     throw new BSSException("Create reservation timed-out " +
@@ -99,7 +99,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 bss = core.getBssSession();
                 bss.beginTransaction();
                 this.se.updateStatus(resv, StateEngine.FAILED);
-                this.se.updateLocalStatus(resv, 0);
+                this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, 
                                       idcURL, resv, "", ex.getMessage());
                 bss.getTransaction().commit();
@@ -217,7 +217,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String login = resv.getLogin();
         rm.finalizeResv(resv, pathInfo, true);
         rm.store(resv);
-        this.se.updateLocalStatus(resv, 1);
+        this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv, pathInfo);
         
         DomainDAO domainDAO = new DomainDAO(bssDbName);
@@ -247,7 +247,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         
         rm.finalizeResv(resv, pathInfo, false);
         rm.store(resv);
-        this.se.updateLocalStatus(resv, 0);
+        this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         this.se.updateStatus(resv, StateEngine.RESERVED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv, pathInfo);
         

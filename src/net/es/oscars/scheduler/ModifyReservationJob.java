@@ -312,7 +312,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                           "modifed times. This might cause errors.");
         }
         this.se.updateStatus(resv, origState);
-        this.se.updateLocalStatus(resv, 0);
+        this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
     }
 
 }

@@ -30,7 +30,7 @@ public class TeardownPathJob extends ChainingJob implements Job {
             resv = resvDAO.query(gri);
             Thread.sleep(10000);//simulate setup time
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "SCHEDULER", resv);
-            pm.updateTeardownStatus(1, resv);
+            pm.updateTeardownStatus(StateEngine.CONFIRMED, resv);
         }catch (BSSException ex) {
             this.log.error("Could not teardown reservation "+ gri);
             this.log.error(ex);

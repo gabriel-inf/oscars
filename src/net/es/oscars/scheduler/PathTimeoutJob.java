@@ -107,7 +107,7 @@ public class PathTimeoutJob implements org.quartz.Job {
                    the time this job runs */
                 String status = this.se.getStatus(resv);
                 int localStatus = this.se.getLocalStatus(resv);
-                int bit = (upstream ? 4 : 2);
+                int bit = (upstream ? StateEngine.UP_CONFIRMED : StateEngine.DOWN_CONFIRMED);
                 if(status.equals(dataMap.getString("status")) && 
                     (localStatus & bit) != 1){
                     throw new BSSException("Timeout while waiting for event "+
@@ -126,7 +126,7 @@ public class PathTimeoutJob implements org.quartz.Job {
                 bss = core.getBssSession();
                 bss.beginTransaction();
                 se.updateStatus(resv, StateEngine.FAILED);
-                se.updateLocalStatus(resv, 0);
+                se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
                 eventProducer.addEvent(failedEvent, login, idcURL, 
                                        resv, "", ex.getMessage());
                 bss.getTransaction().commit();

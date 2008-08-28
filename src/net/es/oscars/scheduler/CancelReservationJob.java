@@ -67,7 +67,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
                 int localStatus = this.se.getLocalStatus(resv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
-                    String op = ((localStatus & 1) == 1 ? 
+                    String op = ((localStatus & StateEngine.CONFIRMED) == StateEngine.CONFIRMED ? 
                                  OSCARSEvent.RESV_CANCEL_COMPLETED : 
                                  OSCARSEvent.RESV_CANCEL_CONFIRMED);
                     throw new BSSException("Modify reservation timed-out " +
@@ -86,7 +86,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
             try{
                 bss = core.getBssSession();
                 bss.beginTransaction();
-                this.se.updateLocalStatus(resv, 0);
+                this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
                 bss.getTransaction().commit();
             }catch(BSSException e){
                 bss.getTransaction().rollback();
@@ -158,13 +158,13 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
             throw new BSSException("Cannot cancel a reservation with status "+ 
                                     status);
         }
-        if((localStatus & 8) == 8){
+        if((localStatus & StateEngine.NEXT_STATUS_CANCEL) == StateEngine.NEXT_STATUS_CANCEL){
             //no-op
             this.log.debug("Already in cancel so skipping");
             return;
         }
         
-        this.se.updateLocalStatus(resv, 8);
+        this.se.updateLocalStatus(resv, StateEngine.NEXT_STATUS_CANCEL);
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_STARTED, login, "JOB", resv);
         InterdomainException interException = null;
         try {
@@ -209,7 +209,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
             }
         }
         
-        this.se.updateLocalStatus(resv, 8+1);//8=INCANCEL,1=confirmed
+        this.se.updateLocalStatus(resv, StateEngine.NEXT_STATUS_CANCEL+StateEngine.CONFIRMED);
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_CONFIRMED, 
                                login, "JOB", resv);
         
@@ -225,7 +225,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         this.log.debug("complete.start");
         EventProducer eventProducer = new EventProducer();
         this.se.updateStatus(resv, StateEngine.CANCELLED);
-        this.se.updateLocalStatus(resv, 0);
+        this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, "JOB",
                                resv);
         this.log.debug("complete.end");
@@ -239,11 +239,11 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         String msg = dataMap.getString("errorMsg");
         String src = dataMap.getString("errorSource");
         int localStatus = this.se.getLocalStatus(resv);
-        if((localStatus & 1) == 1){
+        if((localStatus & StateEngine.CONFIRMED) == StateEngine.CONFIRMED){
             //set to failed if already been confirmed
             this.se.updateStatus(resv, StateEngine.FAILED);
         }
-        this.se.updateLocalStatus(resv, 0);
+        this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login,
                               src, resv, code, msg);
         this.log.debug("fail.end");

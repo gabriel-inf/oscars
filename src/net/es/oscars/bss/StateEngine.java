@@ -20,7 +20,20 @@ public class StateEngine {
     public final static String CANCELLED = "CANCELLED";
     public final static String FAILED = "FAILED";
     public final static String INMODIFY = "INMODIFY";
-
+    
+    //local statuses
+    public final static int LOCAL_INIT = 0;
+    public final static int CONFIRMED = 1;
+    public final static int MODIFY_ACTIVE = 2;
+    public final static int DOWN_CONFIRMED = 2;
+    public final static int UP_CONFIRMED = 4;
+    public final static int COMPLETED = 7;
+    public final static int NEXT_STATUS = 24; //the next status bits
+    public final static int NEXT_STATUS_RESERVED = 0;
+    public final static int NEXT_STATUS_CANCEL = 8;
+    public final static int NEXT_STATUS_FINISHED = 16;
+    public final static int NEXT_STATUS_FAILED = 24;
+    
     private String dbname;
     private static HashMap<String, String> statusMap = new HashMap<String, String>();
     private static HashMap<String, Integer> localStatusMap = new HashMap<String, Integer>();
@@ -124,13 +137,14 @@ public class StateEngine {
             }
         }else if(status.equals(INMODIFY)){
             //bits: confirmed
-            if(newLocalStatus > 3 || (localStatus == 1 && newLocalStatus > 1) 
-                || (localStatus > 1 && newLocalStatus == 1)){
+            if(newLocalStatus > (MODIFY_ACTIVE + CONFIRMED) || 
+               (localStatus == CONFIRMED && newLocalStatus > CONFIRMED) ||
+               (localStatus > CONFIRMED && newLocalStatus == CONFIRMED)){
               allowed = false;   
             }
         }else if(status.equals(INSETUP)){
             //bits: upstream, downstream, local
-            if(newLocalStatus > 7 || newLocalStatus < localStatus){
+            if(newLocalStatus > COMPLETED || newLocalStatus < localStatus){
                 allowed = false;
             }
         }else if(status.equals(RESERVED) || status.equals(ACTIVE)){
@@ -141,7 +155,8 @@ public class StateEngine {
         }else if(status.equals(INTEARDOWN)){
             //bits: newStatus, newStatus,upstream, downstream, local
             //newStatus: 00=RESERVED,01=CANCELLED, 10=FINISHED, 11=FAILED
-            if(newLocalStatus > 31 || newLocalStatus < localStatus){
+            if(newLocalStatus > (NEXT_STATUS_FAILED + COMPLETED) || 
+               newLocalStatus < localStatus){
                 allowed = false;
             }
         }else if(newLocalStatus != 0){

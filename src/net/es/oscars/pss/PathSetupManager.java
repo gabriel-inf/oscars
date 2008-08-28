@@ -281,7 +281,7 @@ public class PathSetupManager{
         Reservation resv = dao.query(gri);
         ReservationManager rm = this.core.getReservationManager();
         StateEngine se = this.core.getStateEngine();
-        int newLocalStatus = upstream ? 4 : 2;
+        int newLocalStatus = upstream ? StateEngine.UP_CONFIRMED : StateEngine.DOWN_CONFIRMED;
         String op = "setup";
         if(targStatus.equals(StateEngine.INTEARDOWN)){
             op = "teardown";
@@ -329,7 +329,7 @@ public class PathSetupManager{
         
         //check if in cancel state
         int localStatus = se.getLocalStatus(resv);
-        if((localStatus & 24) == 8){
+        if((localStatus & StateEngine.NEXT_STATUS) == StateEngine.NEXT_STATUS_CANCEL){
             //ignore and wait for cancel event
             return;
         }
@@ -430,22 +430,24 @@ public class PathSetupManager{
         EventProducer eventProducer = new EventProducer();
         
         //local path setup done
-        if(newLocalStatus == 1){
+        if(newLocalStatus == StateEngine.CONFIRMED){
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_CONFIRMED, login, "JOB", resv);
         }
         
         //downstream path setup done
-        if(newLocalStatus <= 2 && (localStatus & 3) ==3){
+        //3 = StateEngine.DOWN_CONFIRMED + StateEngine.CONFIRMED
+        if(newLocalStatus <= StateEngine.DOWN_CONFIRMED && (localStatus & 3) ==3){
             eventProducer.addEvent(OSCARSEvent.DOWN_PATH_SETUP_CONFIRMED, login, "JOB", resv);
         }
         
         //upstream path setup done
-        if((newLocalStatus == 1 || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
+        //5 = StateEngine.UP_CONFIRMED + StateEngine.CONFIRMED
+        if((newLocalStatus == StateEngine.CONFIRMED || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
             eventProducer.addEvent(OSCARSEvent.UP_PATH_SETUP_CONFIRMED, login, "JOB", resv);
         }
         
         //everything complete
-        if((localStatus & 7)  == 7){
+        if((localStatus & StateEngine.COMPLETED)  == StateEngine.COMPLETED){
             se.updateStatus(resv, StateEngine.ACTIVE);
             se.updateLocalStatus(resv, 0);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, login, "JOB", resv);
@@ -479,29 +481,32 @@ public class PathSetupManager{
         }
         
         //local path setup done
-        if(newLocalStatus == 1){
+        if(newLocalStatus == StateEngine.CONFIRMED){
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
         }
         
         //downstream path setup done
-        if(newLocalStatus <= 2 && (localStatus & 3) ==3){
+        //3 = StateEngine.DOWN_CONFIRMED + StateEngine.CONFIRMED
+        if(newLocalStatus <= StateEngine.DOWN_CONFIRMED && (localStatus & 3) ==3){
             eventProducer.addEvent(OSCARSEvent.DOWN_PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
         }
         
         //upstream path setup done
-        if((newLocalStatus == 1 || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
+        //5 = StateEngine.UP_CONFIRMED + StateEngine.CONFIRMED
+        if((newLocalStatus == StateEngine.CONFIRMED || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
             eventProducer.addEvent(OSCARSEvent.UP_PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
         }
         
-        if(StateEngine.CANCELLED.equals(newStatus) && newLocalStatus == 1){
+        if(StateEngine.CANCELLED.equals(newStatus) && 
+                newLocalStatus == StateEngine.CONFIRMED){
             se.updateStatus(resv, StateEngine.RESERVED);
             CancelReservationJob crj = new CancelReservationJob();
             crj.init();
             crj.confirm(resv,login,false);
-        } else if((localStatus & 7)  == 7){
+        } else if((localStatus & StateEngine.COMPLETED) == StateEngine.COMPLETED){
             //everything complete
             se.updateStatus(resv, newStatus);
-            se.updateLocalStatus(resv, 0);
+            se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, login, "JOB", resv);
         }
         

@@ -106,7 +106,7 @@ public class ReservationManager {
 
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);
-        resv.setLocalStatus(0);
+        resv.setLocalStatus(StateEngine.LOCAL_INIT);
         try {
             // Assume AAA has been performed before this.
             this.se.updateStatus(resv, StateEngine.ACCEPTED);
@@ -533,7 +533,7 @@ public class ReservationManager {
             }
         }else if(newStatus.equals(StateEngine.CANCELLED)){
             this.se.updateStatus(resv, newStatus);
-            this.se.updateLocalStatus(resv, 0);
+            this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         }
         
         this.log.info("cancel.finish: " + resv.getGlobalReservationId());
@@ -628,7 +628,7 @@ public class ReservationManager {
         
         int localStatus = 0;
         if(this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)){
-            localStatus = 2;
+            localStatus = StateEngine.MODIFY_ACTIVE;
         }
         this.se.updateStatus(persistentResv, StateEngine.INMODIFY);
         this.se.updateLocalStatus(persistentResv, localStatus);
