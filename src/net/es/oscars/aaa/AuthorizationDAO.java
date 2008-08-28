@@ -19,10 +19,12 @@ public class AuthorizationDAO
     extends GenericHibernateDAO<Authorization, Integer> {
 
     String dbname;
+    private Logger log;
 
     public AuthorizationDAO(String dbname) {
         this.setDatabase(dbname);
         this.dbname = dbname;
+        this.log = Logger.getLogger(this.getClass());
     }
 
     /**
@@ -93,7 +95,7 @@ public class AuthorizationDAO
         /* currently not called - designed for use by Web interface to manage
            authorizations */
 
-        List<Authorization> auths = null;
+        List<Authorization> auths = new ArrayList<Authorization>();
         User user = null;
         UserDAO userDAO = new UserDAO(this.dbname);
 

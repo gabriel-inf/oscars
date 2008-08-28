@@ -95,6 +95,20 @@ public class RemoveTest {
         assert permission == null;
     }
 
+  @Test(dependsOnMethods={ "authorizationRemove" })
+    public void constraintRemove() {
+        ConstraintDAO constraintDAO = new ConstraintDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        // remove a constraint
+        Constraint constraint = (Constraint) constraintDAO.queryByParam("name",
+                                   this.props.getProperty("constraintName"));
+        constraintDAO.remove(constraint);
+        constraint = (Constraint) constraintDAO.queryByParam("name",
+                                   this.props.getProperty("constraintName"));
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert constraint == null;
+    }
+
   @Test(dependsOnMethods={ "authorizationRemove", "userAttributeRemove" })
     public void attributeRemove() {
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);

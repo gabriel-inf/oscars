@@ -78,6 +78,20 @@ public class CreateTest {
     }
 
   @Test
+    public void constraintCreate() {
+        Constraint constraint = new Constraint();
+        constraint.setName(this.props.getProperty("constraintName"));
+        constraint.setType("role");
+        constraint.setDescription("test constraint");
+        ConstraintDAO constraintDAO = new ConstraintDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        constraintDAO.create(constraint);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert constraint.getId() != null;
+        assert constraint.getName() != null;
+    }
+
+  @Test
     public void institutionCreate() {
         Institution institution = new Institution();
         institution.setName(this.props.getProperty("institutionName"));
@@ -146,24 +160,30 @@ public class CreateTest {
     }
 
   @Test(dependsOnMethods={ "attributeCreate", "permissionCreate",
-                           "resourceCreate" })
+                           "resourceCreate", "constraintCreate" })
     public void authorizationCreate() {
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);
         ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
         PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
+        ConstraintDAO constraintDAO = new ConstraintDAO(this.dbname);
         String attrName = this.props.getProperty("attributeName");
         String resourceName = this.props.getProperty("resourceName");
         String permissionName = this.props.getProperty("permissionName");
+        String constraintName = this.props.getProperty("constraintName");
         Authorization auth = new Authorization();
         this.sf.getCurrentSession().beginTransaction();
         Attribute attr = (Attribute) attrDAO.queryByParam("name", attrName);
         Permission permission = (Permission)
                 permissionDAO.queryByParam("name", permissionName);
-        Resource resource = (Resource) resourceDAO.queryByParam("name", resourceName);
+        Resource resource = (Resource) resourceDAO.queryByParam("name",
+                resourceName);
+        Constraint constraint = (Constraint) constraintDAO.queryByParam("name",
+                constraintName);
         auth.setAttrId(attr.getId());
         auth.setResourceId(resource.getId());
         auth.setPermissionId(permission.getId());
+        auth.setConstraintId(constraint.getId());
         authDAO.create(auth);
         this.sf.getCurrentSession().getTransaction().commit();
         assert auth.getId() != null;

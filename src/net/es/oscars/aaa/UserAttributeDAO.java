@@ -76,14 +76,14 @@ import  org.apache.log4j.*;;
      */
     public void removeAllAttributes(int userId) {
 
-	List<UserAttribute> userAttrs = getAttributesByUser(userId);
-	if (userAttrs != null) {
-	    for (UserAttribute ua: userAttrs){
-		super.remove(ua);
-	    }
-	}
-	
+        List<UserAttribute> userAttrs = getAttributesByUser(userId);
+        if (userAttrs != null) {
+            for (UserAttribute ua: userAttrs) {
+                super.remove(ua);
+            }
+        }
     }
+
      /**
       * Removes a userAttribute, given a user and attribute name. 
       * @param login String with the user login name.

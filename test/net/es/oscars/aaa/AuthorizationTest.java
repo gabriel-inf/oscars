@@ -71,6 +71,52 @@ public class AuthorizationTest {
     }
 
   @Test
+    public void authorizationQueryByName() throws AAAException {
+
+        AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
+        String attrName = this.props.getProperty("attributeName");
+        String resourceName = this.props.getProperty("resourceName");
+        String permissionName = this.props.getProperty("permissionName");
+        String constraintName = this.props.getProperty("constraintName");
+
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        Attribute attr = (Attribute) attrDAO.queryByParam("name", attrName);
+        if (attr == null) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("Attribute " + attrName + " does not exist");
+        }
+
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        Resource resource = (Resource) resourceDAO.queryByParam("name", resourceName);
+        if (resource == null) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("Resource " + resourceName + " does not exist");
+        }
+
+        PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
+        Permission permission = (Permission)
+                permissionDAO.queryByParam("name", permissionName);
+        if (permission == null) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("permission " + permissionName + " does not exist");
+        }
+
+        ConstraintDAO constraintDAO = new ConstraintDAO(this.dbname);
+        Constraint constraint = (Constraint)
+                constraintDAO.queryByParam("name", constraintName);
+        if (constraint == null) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("constraint " + constraintName + " does not exist");
+        }
+
+        Authorization auth = authDAO.query(attr.getName(), resource.getName(),
+                permission.getName(), constraint.getName());
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert auth != null;
+    }
+
+  @Test
     public void authorizationList() throws AAAException {
 
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
@@ -78,5 +124,54 @@ public class AuthorizationTest {
         List<Authorization> auths = authDAO.list();
         this.sf.getCurrentSession().getTransaction().commit();
         assert !auths.isEmpty();
+    }
+
+  @Test
+    public void authorizationListByUser() throws AAAException {
+        String login = this.props.getProperty("login");
+        AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        List<Authorization> auths = authDAO.listAuthByUser(login);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert !auths.isEmpty();
+    }
+
+  @Test
+    public void authorizationListByAttribute() throws AAAException {
+        String attributeName = this.props.getProperty("attributeName");
+        AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        List<Authorization> auths = authDAO.listAuthByAttr(attributeName);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert !auths.isEmpty();
+    }
+
+  @Test(dependsOnMethods={ "authorizationQueryByName" })
+    public void authorizationGetConstraintName() throws AAAException {
+        AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
+        String attrName = this.props.getProperty("attributeName");
+        String resourceName = this.props.getProperty("resourceName");
+        String permissionName = this.props.getProperty("permissionName");
+        String constraintName = this.props.getProperty("constraintName");
+
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        Attribute attr = (Attribute) attrDAO.queryByParam("name", attrName);
+
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        Resource resource = (Resource) resourceDAO.queryByParam("name", resourceName);
+        PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
+        Permission permission = (Permission)
+                permissionDAO.queryByParam("name", permissionName);
+
+        ConstraintDAO constraintDAO = new ConstraintDAO(this.dbname);
+        Constraint constraint = (Constraint)
+                constraintDAO.queryByParam("name", constraintName);
+
+        Authorization auth = authDAO.query(attr.getName(), resource.getName(),
+                permission.getName(), constraint.getName());
+        String authConstraintName = authDAO.getConstraintName(auth);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert authConstraintName.equals(constraintName);
     }
 }
