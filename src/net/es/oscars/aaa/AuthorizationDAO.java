@@ -82,6 +82,28 @@ public class AuthorizationDAO
     }
     
     /**
+     * Retrieves all authorizations in alphabetical order on attribute name,
+     * resource name, permission name, and constraint name.
+     *
+     * @return auths An ordered list of authorization instances.
+     */
+    public List<Authorization> orderedList() {
+        // the corresponding command in MySQL will return all the names
+        // as well, but Hibernate just gets the authorizations
+        String sql = "select * from authorizations a " +
+            "inner join attributes attr on a.attrId = attr.id " +
+            "inner join resources r on a.resourceId = r.id " +
+            "inner join permissions p on a.permissionId = p.id " +
+            "inner join constraints c on a.constraintId = c.id " +
+            "order by attr.name, r.name, p.name, c.name";
+        List<Authorization> auths =
+            (List<Authorization>) this.getSession().createSQLQuery(sql)
+                                                  .addEntity(Authorization.class)
+                                                  .list();
+        return auths;
+    }
+
+    /**
      * Retrieves authorizations for a given user if userName is given.
      *     Otherwise, all authorizations are returned.
      *
@@ -161,10 +183,18 @@ public class AuthorizationDAO
                         attrName + ".");
             }
  
-            String hsql = "from Authorization where attrId = :attrId";
-            auths = this.getSession().createQuery(hsql)
-                           .setInteger("attrId", attr.getId())
-                           .list();
+            String sql = "select * from authorizations a " +
+                "inner join attributes attr on a.attrId = attr.id " +
+                "inner join resources r on a.resourceId = r.id " +
+                "inner join permissions p on a.permissionId = p.id " +
+                "inner join constraints c on a.constraintId = c.id " +
+                "where attr.id = ? " +
+                "order by attr.name, r.name, p.name, c.name";
+            auths =
+                (List<Authorization>) this.getSession().createSQLQuery(sql)
+                                                .addEntity(Authorization.class)
+                                                .setInteger(0, attr.getId())
+                                                .list();
             return auths;
         }
         auths = super.list();

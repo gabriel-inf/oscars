@@ -44,8 +44,6 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
         var authGrid = dijit.byId("authGrid");
         var model = authGrid.model;
         model.setData(responseObject.authData);
-        authGrid.setSortIndex(0, true);
-        authGrid.sort();
         authGrid.update();
         authGrid.resize();
         authGrid.resize();

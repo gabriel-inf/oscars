@@ -111,7 +111,7 @@ public class AuthorizationList extends HttpServlet {
         }
         AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
         if (attributeName.equals("") || (attributeName.equals("Any"))) {
-            auths = authDAO.list();
+            auths = authDAO.orderedList();
         } else {
             auths = authDAO.listAuthByAttr(attributeName);
         }
