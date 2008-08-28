@@ -212,53 +212,57 @@ public class ListReservationsClient extends ExampleClient {
              resvDest = layer3Info.getDestHost().trim();
          }
 
-
          /* Print response information */
-         String output = "";
-         output += "GRI: " + response.getGlobalReservationId() + "\n";
-         output += "Login: " + response.getLogin() + "\n";
-         output += "Status: " + response.getStatus() + "\n";
-         output += "Start Time: " + response.getStartTime() + "\n";
-         output += "End Time: " + response.getEndTime() + "\n";
-         output += "Time of request: " + response.getCreateTime() + "\n";
-         output += "Bandwidth: " + response.getBandwidth() + "\n";
-         output += "Description: " + response.getDescription() + "\n";
-         output += "Path Setup Mode: " + pathInfo.getPathSetupMode() + "\n";
-         if(layer2Info != null){
-             output += "Source Endpoint: " + layer2Info.getSrcEndpoint() + "\n";
-             output += "Destination Endpoint: " + layer2Info.getDestEndpoint() + "\n";
+         StringBuilder sb = new StringBuilder();
+         sb.append("GRI: " + response.getGlobalReservationId() + "\n");
+         sb.append("Login: " + response.getLogin() + "\n");
+         sb.append("Status: " + response.getStatus() + "\n");
+         sb.append("Start Time: " +
+            new Date(response.getStartTime()*1000).toString() + "\n");
+         sb.append("End Time: " +
+            new Date(response.getEndTime()*1000).toString() + "\n");
+         sb.append("Time of request: " +
+            new Date(response.getCreateTime()*1000).toString() + "\n");
+         sb.append("Bandwidth: " + response.getBandwidth() + "\n");
+         sb.append("Description: " + response.getDescription() + "\n");
+         sb.append("Path Setup Mode: " + pathInfo.getPathSetupMode() + "\n");
+         if (layer2Info != null) {
+             sb.append("Source Endpoint: " + layer2Info.getSrcEndpoint() + "\n");
+             sb.append("Destination Endpoint: " + layer2Info.getDestEndpoint() + "\n");
          }
-         if(layer3Info != null){
-
-             output += "Source Host: " + layer3Info.getSrcHost() + "\n";
-             output += "Destination Host: " + layer3Info.getDestHost() + "\n";
-             output += "Source L4 Port: " + layer3Info.getSrcIpPort() + "\n";
-             output += "Destination L4 Port: " + layer3Info.getDestIpPort() + "\n";
-             output += "Protocol: " + layer3Info.getProtocol() + "\n";
-             output += "DSCP: " + layer3Info.getDscp() + "\n";
+         if (layer3Info != null) {
+             sb.append("Source Host: " + layer3Info.getSrcHost() + "\n");
+             sb.append("Destination Host: " + layer3Info.getDestHost() + "\n");
+             sb.append("Source L4 Port: " + layer3Info.getSrcIpPort() + "\n");
+             sb.append("Destination L4 Port: " + layer3Info.getDestIpPort() + "\n");
+             sb.append("Protocol: " + layer3Info.getProtocol() + "\n");
+             sb.append("DSCP: " + layer3Info.getDscp() + "\n");
          }
-         if(mplsInfo != null){
-             output += "Burst Limit: " + mplsInfo.getBurstLimit() + "\n";
-             output += "LSP Class: " + mplsInfo.getLspClass() + "\n";
+         if (mplsInfo != null) {
+             sb.append("Burst Limit: " + mplsInfo.getBurstLimit() + "\n");
+             sb.append("LSP Class: " + mplsInfo.getLspClass() + "\n");
          }
-         output += "Path: \n";
-         for (CtrlPlaneHopContent hop : path.getHop()){
+         sb.append("Path: \n");
+         for (CtrlPlaneHopContent hop : path.getHop()) {
             CtrlPlaneLinkContent link = hop.getLink();
-            if(link==null){
+            if (link==null) {
                 //should not happen
-                output += "no link";
+                sb.append("no link");
                 continue;
             }
-            output += "\t" + link.getId();
+            sb.append("\t" + link.getId());
             CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
             CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = swcap.getSwitchingCapabilitySpecificInfo();
-            output += ", " + swcap.getEncodingType();
+            sb.append(", " + swcap.getEncodingType());
             if("ethernet".equals(swcap.getEncodingType())){
-                output += ", " + swcapInfo.getVlanRangeAvailability();
+                String vlanRange = swcapInfo.getVlanRangeAvailability();
+                if (vlanRange != null) {
+                    sb.append(", " + vlanRange);
+                }
             }
-            output += "\n";
+            sb.append("\n");
          }
-         System.out.println(output);
+         System.out.println(sb.toString());
     }
 
     public void createDOT(ResDetails[] resList) throws IOException {
