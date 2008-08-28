@@ -18,7 +18,59 @@
 </div>
 <h1>OSCARS Authorization Policy</h1>
 <br>
-<h2>Introduction</h2>
+<ol id="mozToc">
+<!--mozToc h2 1 h3 2 h4 3 h4 4 h5 5 h6 6--><li><a href="#mozTocId6115">Introduction</a></li>
+  <li><a href="#mozTocId788215">Authorization policy requirements </a>
+    <ol>
+      <li><a href="#mozTocId189841">Permissions with respect to users
+and institutions </a></li>
+      <li><a href="#mozTocId884752">Permissions with respect to
+bandwidth and reservations</a></li>
+      <li><a href="#mozTocId897657">Permissions with respect to
+topology </a></li>
+      <li><a href="#mozTocId863497">Permission with respect to
+authorizations</a></li>
+      <li><a href="#mozTocId381061">Permission with respect to
+notification server</a></li>
+    </ol>
+  </li>
+  <li><a href="#mozTocId328735">Policy Tables</a>
+    <ol>
+      <li><a href="#mozTocId53543">Table summary</a></li>
+      <li><a href="#mozTocId730373">Default behaviors</a></li>
+    </ol>
+  </li>
+  <li><a href="#mozTocId834880">Mapping of requirements to
+authorizations</a>
+    <ol>
+      <li><a href="#mozTocId735363">Permissions with respect to users
+and institutions </a></li>
+      <li><a href="#mozTocId677595">Permissions with respect to
+bandwidth and reservations</a></li>
+      <li><a href="#mozTocId42461">Permissions with respect to topology
+        </a></li>
+      <li><a href="#mozTocId89020">Permission with respect to
+authorizations</a></li>
+      <li><a href="#mozTocId322242">Permission with respect to
+notification server</a></li>
+    </ol>
+  </li>
+  <li><a href="#mozTocId592874">Default Tables </a>
+    <ol>
+      <li><a href="#mozTocId174937">Attributes Table</a></li>
+      <li><a href="#mozTocId170830">Default Authorizations Table</a></li>
+    </ol>
+  </li>
+  <li><a href="#mozTocId625591">API for access checks</a>
+    <ol>
+      <li><a href="#mozTocId804096">CheckAccess Implementation</a></li>
+      <li><a href="#mozTocId305904">Standard method</a></li>
+      <li><a href="#mozTocId364346">Method for
+create and modify reservations</a></li>
+    </ol>
+  </li>
+</ol>
+<h2><a class="mozTocH2" name="mozTocId6115"></a>Introduction</h2>
 An authorization decision consists of deciding if an authenticated
 entity should be allowed to perform some action on a controlled
 resource. In OSCARS an authenticated entity may be a bandwidth user or
@@ -69,11 +121,13 @@ system can remain manageable. The name of the user is included in the
 forwarded request, so it can be used for auditing purposes or can later
 be used for authorization. <br>
 </p>
-<h2>Authorization policy requirements<br>
+<h2><a class="mozTocH2" name="mozTocId788215"></a>Authorization policy
+requirements<br>
 </h2>
 The following paragraphs list the various actions that we want to
 control with respect to the resources that OSCARS controls.<br>
-<h3>Permissions with respect to users and institutions<br>
+<h3><a class="mozTocH3" name="mozTocId189841"></a>Permissions with
+respect to users and institutions<br>
 </h3>
 <ul>
   <li>see own profile</li>
@@ -82,11 +136,12 @@ control with respect to the resources that OSCARS controls.<br>
   <li>see all user profiles</li>
   <li>add/delete a user</li>
   <li>modify any user profile</li>
-  <li>grant or remove authorizations for any user</li>
+  <li>grant or remove attributes for any user</li>
   <li>add, edit or delete institutions<br>
   </li>
 </ul>
-<h3>Permissions with respect to bandwidth and reservations</h3>
+<h3><a class="mozTocH3" name="mozTocId884752"></a>Permissions with
+respect to bandwidth and reservations</h3>
 <ul>
   <li>make unlimited reservation</li>
   <li>make reservation with bandwidth constraint</li>
@@ -94,8 +149,8 @@ control with respect to the resources that OSCARS controls.<br>
   <li>make reservation with topology constraint</li>
   <li>list own reservations</li>
   <li>query own reservations</li>
-  <li>cancel, modify own reservation</li>
-  <li>signal own reservation</li>
+  <li>cancel, modify own reservations</li>
+  <li>signal own reservations</li>
   <li>list all reservations starting or terminating at a site<br>
   </li>
   <li>query any reservations starting or terminating at a site</li>
@@ -111,22 +166,24 @@ control with respect to the resources that OSCARS controls.<br>
 <span style="font-style: italic;">(signaling instantiates a reservation
 or tears down an established circuit by causing the appropriate
 commands to be sent to the routers involved)</span><br>
-<h3>Permissions with respect to topology <br>
+<h3><a class="mozTocH3" name="mozTocId897657"></a>Permissions with
+respect to topology <br>
 </h3>
-<br>
 <ul>
   <li>view topology</li>
   <li>modify the topology</li>
 </ul>
-<h3>Permission with respect to authorizations</h3>
+<h3><a class="mozTocH3" name="mozTocId863497"></a>Permission with
+respect to authorizations</h3>
 <ul>
   <li>view all attributes and authorizations</li>
-  <li>create or delete attributes<br>
+  <li>create, modify or delete attributes<br>
   </li>
   <li>modify authorizations associated with attributes<br>
   </li>
 </ul>
-<h3>Permission with respect to notification server</h3>
+<h3><a class="mozTocH3" name="mozTocId381061"></a>Permission with
+respect to notification server</h3>
 <ul>
   <li>register to publish events</li>
   <li>remove publisher registrations<br>
@@ -135,7 +192,7 @@ commands to be sent to the routers involved)</span><br>
   <li>renew or cancel a subscription<br>
   </li>
 </ul>
-<h2>Policy Implementation</h2>
+<h2><a class="mozTocH2" name="mozTocId328735"></a>Policy Tables</h2>
 All access decisions are made by one of two methods which are called
 from each place in the code that is about to grant some access. Access
 policy is stored in a database, and an access decision is made by doing
@@ -143,40 +200,75 @@ table lookups based on the requester, the action requested and the
 resource. Authorizations may have constraints attached, in which case
 the parameters of the request must meet the constraints. <br>
 <br>
+<h3><a class="mozTocH3" name="mozTocId53543"></a>Table summary</h3>
 The following tables define the components for authorization:<br>
 <ul>
   <li><span style="font-weight: bold;">users </span>&#8211; contains
 an entry for each registered user, containing among other things, user
 loginId, institution to which the user belongs, certSubject and
 certIssuer</li>
-  <li><span style="font-weight: bold;">resources</span> &#8211; has
-three entries: users, reservations, topology where topology is the
-information about specific paths and routers.</li>
-  <li><span style="font-weight: bold;">permissions</span> &#8211; has
-five entries: list, query, create, modify and signal</li>
+  <li><span style="font-weight: bold;">resources</span> &#8211; constains an
+entry
+for each resource that needs to be controlled:</li>
+  <ul>
+    <li><span style="font-weight: bold;">reservations </span>- all
+information about reservations </li>
+    <li><span style="font-weight: bold;">topology</span> - the
+description of the network topology<br>
+    </li>
+    <li><span style="font-weight: bold;">users </span>- all
+information about users<span style="font-weight: bold;"><br>
+      </span></li>
+    <li><span style="font-weight: bold;">AA </span>- the attributes,
+institutions and authorizations</li>
+    <li><span style="font-weight: bold;">subscriptions</span> -
+receiving notifications of OSCARS events</li>
+    <li><span style="font-weight: bold;">publishers</span> - publish
+OSCARS events<br>
+    </li>
+  </ul>
+  <li><span style="font-weight: bold;">permissions</span> &#8211; actions
+that can be performed on a resource<br>
+  </li>
   <ul>
     <li><span style="font-weight: bold;">list</span> &#8211; shows
 minimum information about a reservation or
-user</li>
+user, shows the authorization tables<br>
+    </li>
     <li><span style="font-weight: bold;">query</span> &#8211; shows all
-information about a reservation or user</li>
+information about a reservation, user or the topology<br>
+    </li>
     <li><span style="font-weight: bold;">create</span> &#8211; allows a
-new user to added or a reservation to
+new user to added, a reservation to
 be
-created</li>
+created, a new subscription to be made, or to register as a publisher<br>
+    </li>
     <li><span style="font-weight: bold;">modify</span> &#8211; allows
 deletion of a user and modification to a
-user profile or cancellation or modification of a reservation.</li>
+user profile or cancellation or modification of a reservation.&nbsp;
+Allows modification of the institutions, attributes and authorizations
+tables. Allows reloading of the topology tables. Also allows renewal
+and cancellation of subscriptions and deletion of a publisher
+registration.<br>
+    </li>
     <li><span style="font-weight: bold;">signal </span>&#8211; allows a
 circuit for reservation to be instantiated or torn down.<br>
     </li>
   </ul>
   <li><span style="font-weight: bold;"> attributes</span> &#8211; has entries
 for attributes on which authorization
-is
-granted, e.g. OSCARS-user, OSCARS-engineer, OSCARS-admin,
-OSCARS-service, OSCARS-operator, OSCARS-site-administrator, OSCARS-publisher.
-There is an
+is based. The default attributes are:
+    <ul>
+      <li>OSCARS-user </li>
+      <li>OSCARS-engineer </li>
+      <li>OSCARS-admin</li>
+      <li>OSCARS-service </li>
+      <li>OSCARS-operator </li>
+      <li>OSCARS-site-administrator </li>
+      <li>OSCARS-publisher </li>
+    </ul>
+  </li>
+  <li>There is an
 attribute-type field which is set to <span style="font-style: italic;">role</span>
 for all these attributes. There is currently one <span
  style="font-style: italic;">privilege</span> attribute:
@@ -185,7 +277,8 @@ for some non-privileged users. It
 is possible to define explicit user attributes for users with specific
 permissions, e.g.
 user-david with the attribute type user. So far we have not found
-the&nbsp; need for any user attributes.<br>
+the&nbsp; need for any user attributes. For a more detailed desciption
+of the attributes see <a href="attributes.html">here</a>.<br>
   </li>
   <li><span style="font-weight: bold;"> userAttributes</span> -
 maps userIds to the attributes they
@@ -231,11 +324,13 @@ id, a resource id, a permission id , a constraint id and value.<br>
 </ul>
 <br>
 Users may have one or more attributes although the role attributes,
-except for administrator and publisher, are designed to be used alone.
-Attributes are arbitrary strings,
-defined in the attributes table, e.g. OSCARS-engineer, and it is
-expected that sites may re-define or add new attributes to meet their
-needs. <br>
+except for administrator are designed to be used alone.
+Attributes and authorizations are arbitrary strings and while there is
+a default set defined, it is
+expected that sites may re-define or add new ones to meet their
+needs.&nbsp; On the other hand, resources, permissions, and constraints
+are strings that are used by the code and changing them must be
+accompanied by code changes that enforce the semantics desired.<br>
 <br>
 Using attributes to grant authorizations, rather than just the user
 identity, allows a set of authorizations
@@ -246,14 +341,15 @@ Currently the OSCARS AA system registers users and assigns them
 attributes. In the future, user identities and attributes may be
 available from multiple external identity or attributes providers.<br>
 <br>
-<h3>Default behaviors</h3>
+<h3><a class="mozTocH3" name="mozTocId730373"></a>Default behaviors</h3>
 If a user has no entry in the user table or has no attributes in
 the userAttribute table, any attempted OSCARS
 access
 will be rejected immediately by Oscars:OscarsSkeleton:checkUser or
 Servlets:AuthenticateUser<br>
 If no attribute that the user possesses has an entry for the
-resource/permission pair in the authorization table, the request is
+required resource/permission pair in the authorization table, the
+request is
 denied.<br>
 The constraint defaults are intended to be the most common cases,
 not
@@ -282,17 +378,243 @@ setup)</li>
   <li>If specify-gri is not specified, a GlobalResourceId may not
 be
 specified by the user, but will be automatically generated by the
-CreateReservation code.</li>
+CreateReservation code. This is should be used only by OSCARS-service.<br>
+  </li>
 </ul>
 <ul>
 </ul>
-<h3>Default Tables<br>
+<h2><a class="mozTocH2" name="mozTocId834880"></a>Mapping of
+requirements to authorizations</h2>
+The following tables describe the possible actions
+and the authorizations that they require.<br>
+<h3><a class="mozTocH3" name="mozTocId735363"></a>Permissions with
+respect to users and institutions<br>
 </h3>
+<table style="width: 668px; height: 251px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>see own profile</td>
+      <td>query users </td>
+    </tr>
+    <tr>
+      <td>modify own profile</td>
+      <td>modify users </td>
+    </tr>
+    <tr>
+      <td>list all users</td>
+      <td>list users </td>
+    </tr>
+    <tr>
+      <td>see all user profiles</td>
+      <td>query users, all-users </td>
+    </tr>
+    <tr>
+      <td>add a user</td>
+      <td>create users, all-users </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">delete a user<br>
+      </td>
+      <td style="vertical-align: top;">modify users, all-users</td>
+    </tr>
+    <tr>
+      <td>modify any user profile</td>
+      <td>modify users, all-users </td>
+    </tr>
+    <tr>
+      <td>grant or remove attributes for any user</td>
+      <td>modify users, all-users </td>
+    </tr>
+    <tr>
+      <td>add, edit or delete institutions<br>
+      </td>
+      <td>modify AAA </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h3><a class="mozTocH3" name="mozTocId677595"></a>Permissions with
+respect to bandwidth and reservations</h3>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>make unlimited reservation</td>
+      <td>create reservations </td>
+    </tr>
+    <tr>
+      <td>make reservation with bandwidth constraint</td>
+      <td>create reservations, max-bandwidth= &lt;upper-limit&gt;<br>
+      </td>
+    </tr>
+    <tr>
+      <td>make reservation with duration constraint</td>
+      <td>create reservations, max-duration=&lt;upper-limit&gt;<br>
+      </td>
+    </tr>
+    <tr>
+      <td>make reservation with topology constraint</td>
+      <td>create reservations, specify-path-elements<br>
+      </td>
+    </tr>
+    <tr>
+      <td>list own reservations</td>
+      <td>list reservations </td>
+    </tr>
+    <tr>
+      <td>query own reservations</td>
+      <td>query reservations </td>
+    </tr>
+    <tr>
+      <td>cancel, modify own reservation</td>
+      <td>modify reservations </td>
+    </tr>
+    <tr>
+      <td>signal own reservation</td>
+      <td>signal reservations </td>
+    </tr>
+    <tr>
+      <td>list all reservations starting or terminating at a site<br>
+      </td>
+      <td>list reservations, my-site </td>
+    </tr>
+    <tr>
+      <td>query any reservations starting or terminating at a site</td>
+      <td>query reservations, my-site </td>
+    </tr>
+    <tr>
+      <td>cancel, modify any reservations starting or terminating at a
+site </td>
+      <td>modify reservations, my-site </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">signal any reservations starting
+or terminating at a
+site</td>
+      <td style="vertical-align: top;">signal reservations, my-site</td>
+    </tr>
+    <tr>
+      <td>list all reservations</td>
+      <td>list reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>query any reservations</td>
+      <td>query reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>cancel, modify any reservations</td>
+      <td>modify reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>signal any reservations</td>
+      <td>signal reservations, all-users </td>
+    </tr>
+    <tr>
+      <td>cancel, modify and signal any reservations regardless of state<br>
+      </td>
+      <td>signal reservations, unsafe-allowed </td>
+    </tr>
+  </tbody>
+</table>
+<span style="font-style: italic;">(signaling instantiates a reservation
+or tears down an established circuit by causing the appropriate
+commands to be sent to the routers involved)</span><br>
+<br>
+<h3><a class="mozTocH3" name="mozTocId42461"></a>Permissions with
+respect to topology <br>
+</h3>
+<table style="width: 668px; height: 84px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>view topology</td>
+      <td>query domains </td>
+    </tr>
+    <tr>
+      <td>modify the topology</td>
+      <td>modify domains </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h3><a class="mozTocH3" name="mozTocId89020"></a>Permission with
+respect to authorizations</h3>
+<table style="width: 672px; height: 99px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>view all attributes and authorizations</td>
+      <td>list AAA </td>
+    </tr>
+    <tr>
+      <td>create or delete attributes</td>
+      <td>modify AAA </td>
+    </tr>
+    <tr>
+      <td>add/modify authorizations associated with attributes <br>
+      </td>
+      <td>modify AAA </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h3><a class="mozTocH3" name="mozTocId322242"></a>Permission with
+respect to notification server</h3>
+<table style="width: 670px; height: 142px;" border="1" cellpadding="5"
+ cellspacing="0">
+  <tbody>
+    <tr style="background-color: rgb(255, 255, 204);">
+      <td><span style="font-weight: bold;">desired action</span> </td>
+      <td><span style="font-weight: bold;">permission resource,
+constraint</span> </td>
+    </tr>
+    <tr>
+      <td>register to publish events</td>
+      <td>create publishers </td>
+    </tr>
+    <tr>
+      <td>remove publishers registration </td>
+      <td>modify publishers</td>
+    </tr>
+    <tr>
+      <td>subscribe to events</td>
+      <td>create subscriptions </td>
+    </tr>
+    <tr>
+      <td>renew or cancel a subscription</td>
+      <td>modify subscriptions</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<h2><a class="mozTocH2" name="mozTocId592874"></a>Default Tables<br>
+</h2>
 The distribution includes scripts (sql/aaa/populateDefaults.sql) to set
 up the roles described above. The standard attributes are entered into
 the Attributes table.<span style="font-weight: bold;"><br>
 </span>
-<h3>Attributes Table</h3>
+<h3><a class="mozTocH3" name="mozTocId174937"></a>Attributes Table</h3>
 <table style="text-align: left; width: 616px; height: 220px;" border="1"
  cellpadding="2" cellspacing="0">
   <tbody>
@@ -343,7 +665,8 @@ type</span> (int)</td>
   </tbody>
 </table>
 <br>
-<h3>Default Authorizations Table</h3>
+<h3><a class="mozTocH3" name="mozTocId170830"></a><a name="authTable"></a>Default
+Authorizations Table</h3>
 <table style="" 1="" border="1" cellpadding="5" cellspacing="0">
   <tbody>
     <tr style="background-color: rgb(255, 255, 204);">
@@ -730,7 +1053,13 @@ modify his own user information.
 An OSCARS admin can manage all user information, but not see or modify
 reservations. <br>
 <br>
-<h3>CheckAccess Implementation</h3>
+<h2><a class="mozTocH2" name="mozTocId625591"></a>API for access checks<br>
+</h2>
+<ol id="mozToc">
+<!--mozToc h2 1 h3 2 h3 3 h4 4 h5 5 h6 6-->
+</ol>
+<h3><a class="mozTocH3" name="mozTocId804096"></a>CheckAccess
+Implementation</h3>
 The preferred way to implement access control is to isolate the access
 checking in one place, called the PolicyDecisionPoint that returns a
 permit or deny response and is called by all access control
@@ -740,10 +1069,10 @@ access checking. The first is called any place where a reservation
 is not being modified and the second by createReservation and
 modifyReservation.<br>
 <br style="font-weight: bold;">
-<span style="font-weight: bold;">Standard checkAccess method:<br>
-<br>
-</span>
-<small><code style="font-weight: bold;"><big>AuthValue
+<h3><a class="mozTocH3" name="mozTocId305904"></a><span
+ style="font-weight: bold;">Standard method</span></h3>
+<span style="font-weight: bold;"><br>
+</span><small><code style="font-weight: bold;"><big>AuthValue
 UserManager.checkAccess(String user, String resource, String
 permission);</big></code></small>
 <p>Initialize the return value to DENIED<br>
@@ -767,15 +1096,15 @@ continue </li>
 </ul>
 At end of loop check for SELFONLY and/or MYSITE<br>
 Return DENIED, SELFONLY, SITEONLY
-<p><span style="font-weight: bold;">checkAccess method called by
-createReservation and
-modifyReservation:<br>
-<br>
-</span><code style="font-weight: bold;">AuthValue
+<h3><a class="mozTocH3" name="mozTocId364346"></a><span
+ style="font-weight: bold;">Method for
+create and modify reservations</span></h3>
+<code style="font-weight: bold;"><br>
+AuthValue
 UserManager.checkModResAccess(String user,String resource,
 String permission, int ReqBandWidth, int ReqDuration, Boolean
 specify-path-elements);</code><br>
-<br>
+<p><br>
 Start out with<br>
 &nbsp;&nbsp;&nbsp; ReturnValue = DENIED<br>
 &nbsp;&nbsp;&nbsp; bandwidthOK = false<br>
