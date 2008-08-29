@@ -381,7 +381,7 @@ public class TopologyXMLImporter {
 
         Element swcapTypeXML = linkSwCapXML.getChild("switchingcapType", ns);
         Element encTypeXML = linkSwCapXML.getChild("encodingType", ns);
-        Element swCapSpcXML = linkSwCapXML.getChild("switchingCapabilitySpecficInfo", ns);
+        Element swCapSpcXML = linkSwCapXML.getChild("switchingCapabilitySpecificInfo", ns);
 
         if (swCapSpcXML == null) {
             return;

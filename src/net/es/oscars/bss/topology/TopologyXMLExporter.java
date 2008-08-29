@@ -167,142 +167,161 @@ public class TopologyXMLExporter {
             while (nodeIt.hasNext()) {
                 Node nodeDB = (Node) nodeIt.next();
                 String nodeId = nodeDB.getFQTI();
-
-                Element nodeXML = new Element("node", ns);
-
-                Attribute nodeIdXML = new Attribute("id", nodeId);
-                nodeXML.setAttribute(nodeIdXML);
-
-                Element addrXML = new Element("address", ns);
-                NodeAddress nodeAddrDB = nodeDB.getNodeAddress();
-
-                if (nodeAddrDB != null) {
-                    String addr = nodeAddrDB.getAddress();
-                    addrXML.addContent(addr);
-                    nodeXML.addContent(addrXML);
+                if (!nodeDB.isValid()) {
+                    this.log.info("Node "+nodeId+" not valid");
                 } else {
-                    this.log.info("Node without address: [" +
-                        nodeDB.getTopologyIdent() + "]");
+                    this.exportNode(nodeDB, domXML);
                 }
-
-                if (nodeDB.getPorts() != null) {
-                    Iterator portIt = nodeDB.getPorts().iterator();
-
-                    while (portIt.hasNext()) {
-                        Port portDB = (Port) portIt.next();
-                        Element portXML = new Element("port", ns);
-
-                        String portId = portDB.getFQTI();
-                        Attribute portIdXML = new Attribute("id", portId);
-                        portXML.setAttribute(portIdXML);
-
-                        Element portCap = new Element("capacity", ns);
-                        portCap.addContent(portDB.getCapacity().toString());
-                        portXML.addContent(portCap);
-
-                        Long maxResCap = portDB.getMaximumReservableCapacity();
-                        if (maxResCap != null) {
-                            Element portMaxResCap = new Element("maximumReservableCapacity", ns);
-                            portMaxResCap.addContent(maxResCap.toString());
-                            portXML.addContent(portMaxResCap);
-                        }
-
-                        Long minResCap = portDB.getMinimumReservableCapacity();
-                        if (minResCap != null) {
-                            Element portMinResCap = new Element("minimumReservableCapacity", ns);
-                            portMinResCap.addContent(minResCap.toString());
-                            portXML.addContent(portMinResCap);
-                        }
-
-                        Long granularity = portDB.getGranularity();
-                        if (granularity != null) {
-                            Element portGran = new Element("granularity", ns);
-                            portGran.addContent(granularity.toString());
-                            portXML.addContent(portGran);
-                        }
-
-
-                        if (portDB.getLinks() != null) {
-                            Iterator linkIt = portDB.getLinks().iterator();
-
-                            while (linkIt.hasNext()) {
-                                Link linkDB = (Link) linkIt.next();
-                                Element linkXML = new Element("link", ns);
-
-                                String linkId = linkDB.getFQTI();
-                                Attribute linkIdXML = new Attribute("id", linkId);
-                                linkXML.setAttribute(linkIdXML);
-
-                                Link remLinkDB = linkDB.getRemoteLink();
-
-                                if (remLinkDB != null) {
-                                    Element remLinkXML = new Element("remoteLinkId", ns);
-                                    remLinkXML.addContent(remLinkDB.getFQTI());
-                                    linkXML.addContent(remLinkXML);
-/*
-                                    Element remPortXML = new Element("remotePortId",
-                                            ns);
-                                    remPortXML.addContent(TopologyUtil.getFQTI(
-                                            remLinkDB.getPort()));
-                                    linkXML.addContent(remPortXML);
-
-                                    Element remNodeXML = new Element("remoteNodeId",
-                                            ns);
-                                    remNodeXML.addContent(TopologyUtil.getFQTI(
-                                            remLinkDB.getPort().getNode()));
-                                    linkXML.addContent(remNodeXML);
-
-                                    Element remDomXML = new Element("remoteDomainId",
-                                            ns);
-                                    remDomXML.addContent(TopologyUtil.getFQTI(
-                                            remLinkDB.getPort().getNode()
-                                                     .getDomain()));
-                                    linkXML.addContent(remDomXML);
-*/
-                                }
-                                L2SwitchingCapabilityData l2capDB = linkDB.getL2SwitchingCapabilityData();
-                                if (l2capDB != null) {
-                                    Element l2CapXML = new Element("SwitchingCapabilityDescriptors", ns);
-                                    Element swCapTypeXML = new Element("switchingcapType", ns);
-                                    Element encTypeXML = new Element("encodingType", ns);
-                                    Element swCapSpcXML = new Element("switchingCapabilitySpecficInfo",
-                                            ns);
-                                    l2CapXML.addContent(swCapTypeXML);
-                                    l2CapXML.addContent(encTypeXML);
-                                    l2CapXML.addContent(swCapSpcXML);
-
-                                    Element capXML = new Element("capability", ns);
-                                    Element ifceMtuXML = new Element("interfaceMTU", ns);
-                                    Element vlanAvXML = new Element("vlanRangeAvailability", ns);
-
-                                    vlanAvXML.addContent(l2capDB.getVlanRangeAvailability());
-                                    ifceMtuXML.addContent(new Integer(l2capDB.getInterfaceMTU()).toString());
-
-                                    swCapSpcXML.addContent(capXML);
-                                    swCapSpcXML.addContent(ifceMtuXML);
-                                    swCapSpcXML.addContent(vlanAvXML);
-
-
-
-
-                                    linkXML.addContent(l2CapXML);
-
-                                }
-
-                                portXML.addContent(linkXML);
-                            }
-
-                        }
-
-                        nodeXML.addContent(portXML);
-                    }
-                }
-
-                domXML.addContent(nodeXML);
             }
         }
 
         return domXML;
+    }
+
+
+
+
+    protected void exportNode(Node nodeDB, Element domXML) {
+
+        String nodeId = nodeDB.getFQTI();
+        Element nodeXML = new Element("node", ns);
+
+        Attribute nodeIdXML = new Attribute("id", nodeId);
+        nodeXML.setAttribute(nodeIdXML);
+
+        Element addrXML = new Element("address", ns);
+        NodeAddress nodeAddrDB = nodeDB.getNodeAddress();
+
+        if (nodeAddrDB != null) {
+            String addr = nodeAddrDB.getAddress();
+            addrXML.addContent(addr);
+            nodeXML.addContent(addrXML);
+        } else {
+            this.log.info("Node without address: [" + nodeDB.getTopologyIdent() + "]");
+        }
+
+        if (nodeDB.getPorts() != null) {
+            Iterator portIt = nodeDB.getPorts().iterator();
+
+            while (portIt.hasNext()) {
+                Port portDB = (Port) portIt.next();
+
+                String portId = portDB.getFQTI();
+                if (!portDB.isValid()) {
+                    this.log.info("Port "+portId+" not valid");
+                } else {
+                    this.exportPort(portDB, nodeXML);
+                }
+
+            }
+        }
+        domXML.addContent(nodeXML);
+    }
+
+
+
+
+
+    protected void exportPort(Port portDB, Element nodeXML) {
+        String portId = portDB.getFQTI();
+        Element portXML = new Element("port", ns);
+        Attribute portIdXML = new Attribute("id", portId);
+        portXML.setAttribute(portIdXML);
+
+        Element portCap = new Element("capacity", ns);
+        portCap.addContent(portDB.getCapacity().toString());
+        portXML.addContent(portCap);
+
+        Long maxResCap = portDB.getMaximumReservableCapacity();
+        if (maxResCap != null) {
+            Element portMaxResCap = new Element("maximumReservableCapacity", ns);
+            portMaxResCap.addContent(maxResCap.toString());
+            portXML.addContent(portMaxResCap);
+        }
+
+        Long minResCap = portDB.getMinimumReservableCapacity();
+        if (minResCap != null) {
+            Element portMinResCap = new Element("minimumReservableCapacity", ns);
+            portMinResCap.addContent(minResCap.toString());
+            portXML.addContent(portMinResCap);
+        }
+
+        Long granularity = portDB.getGranularity();
+        if (granularity != null) {
+            Element portGran = new Element("granularity", ns);
+            portGran.addContent(granularity.toString());
+            portXML.addContent(portGran);
+        }
+
+
+        if (portDB.getLinks() != null) {
+            Iterator linkIt = portDB.getLinks().iterator();
+
+            while (linkIt.hasNext()) {
+                Link linkDB = (Link) linkIt.next();
+                String linkId = linkDB.getFQTI();
+                if (!linkDB.isValid()) {
+                    this.log.info("Link "+linkId+" not valid");
+                } else {
+                    this.exportLink(linkDB, portXML);
+                }
+            }
+
+        }
+
+        nodeXML.addContent(portXML);
+    }
+
+    protected void exportLink(Link linkDB, Element portXML) {
+        Element linkXML = new Element("link", ns);
+
+        String linkId = linkDB.getFQTI();
+        Attribute linkIdXML = new Attribute("id", linkId);
+        linkXML.setAttribute(linkIdXML);
+
+
+        Link remLinkDB = linkDB.getRemoteLink();
+
+        if (remLinkDB != null && remLinkDB.isValid()) {
+            Element remLinkXML = new Element("remoteLinkId", ns);
+            remLinkXML.addContent(remLinkDB.getFQTI());
+            linkXML.addContent(remLinkXML);
+        }
+
+        String teMetric = linkDB.getTrafficEngineeringMetric();
+        Element teMetricXML = new Element("trafficEngineeringMetric", ns);
+        teMetricXML.addContent(teMetric);
+        linkXML.addContent(teMetricXML);
+
+        L2SwitchingCapabilityData l2capDB = linkDB.getL2SwitchingCapabilityData();
+        if (l2capDB != null) {
+            Element l2CapXML = new Element("SwitchingCapabilityDescriptors", ns);
+            Element swCapTypeXML = new Element("switchingcapType", ns);
+            Element encTypeXML = new Element("encodingType", ns);
+            Element swCapSpcXML = new Element("switchingCapabilitySpecificInfo", ns);
+            l2CapXML.addContent(swCapTypeXML);
+            l2CapXML.addContent(encTypeXML);
+            l2CapXML.addContent(swCapSpcXML);
+
+            Element capXML = new Element("capability", ns);
+            Element ifceMtuXML = new Element("interfaceMTU", ns);
+            Element vlanAvXML = new Element("vlanRangeAvailability", ns);
+
+            vlanAvXML.addContent(l2capDB.getVlanRangeAvailability());
+            ifceMtuXML.addContent(new Integer(l2capDB.getInterfaceMTU()).toString());
+
+            swCapSpcXML.addContent(capXML);
+            swCapSpcXML.addContent(ifceMtuXML);
+            swCapSpcXML.addContent(vlanAvXML);
+
+            linkXML.addContent(l2CapXML);
+
+        }
+
+        if (remLinkDB != null && remLinkDB.isValid()) {
+
+            portXML.addContent(linkXML);
+        }
     }
 
 
