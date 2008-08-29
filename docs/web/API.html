@@ -18,7 +18,7 @@ User Manual</a>
 <h1 style="text-align: center;"><a class="mozTocH1"
  name="mozTocId258292"></a>API User Manual</h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
-version 0.3 Apr 2008<br>
+version 0.4 September<br>
 </span>
 </div>
 <br>
@@ -151,14 +151,18 @@ or 1) can be a number, a range of numbers
 (3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"</li>
         <li><span style="font-weight: bold;">srcEndpoin</span>t
 (string)
-The ingress link. May be a topology identifier, IPaddr or Host Name. If it looks like a name,
-the DNS server will be called to resolve it to an IPAddr. Given an IPAddr, a lookup server will
+The ingress link. May be a topology identifier, IPaddr or Host Name. If
+it looks like a name,
+the DNS server will be called to resolve it to an IPAddr. Given an
+IPAddr, a lookup server will
 be called to find its topology identifier.<br>
         </li>
         <li><span style="font-weight: bold;">destEndpoint</span>
 (string)
-The egress link . May be a topology identifier, IPaddr or Host Name. If it looks like a name,
-the DNS server will be called to resolve it to an IPAddr. Given an IPAddr, a lookup server will
+The egress link . May be a topology identifier, IPaddr or Host Name. If
+it looks like a name,
+the DNS server will be called to resolve it to an IPAddr. Given an
+IPAddr, a lookup server will
 be called to find its topology identifier.</li>
       </ul>
     </li>
@@ -167,11 +171,13 @@ be called to find its topology identifier.</li>
     <ul>
       <li><span style="font-weight: bold;">srcHost</span> (string) -
 may be DNS name, IPaddr or topology
-identifier. If it is a Host Name, the DNS will be used to resolve it to an IPaddr. 
-If it a topology identifier, its IPaddr will be found from the topology database.<br>
+identifier. If it is a Host Name, the DNS will be used to resolve it to
+an IPaddr. If it a topology identifier, its IPaddr will be found from
+the topology database.<br>
         <span style="font-weight: bold;">destHost</span> (string) - may
-be DNS name, IPaddr or topology identifier, f it is a Host Name, the DNS will be used to resolve it to an IPaddr. 
-If it a topology identifier, its IPaddr will be found from the topology database.<br>
+be DNS name, IPaddr or topology identifier, f it is a Host Name, the
+DNS will be used to resolve it to an IPaddr. If it a topology
+identifier, its IPaddr will be found from the topology database.<br>
         <span style="font-weight: bold;">protocol</span> (string, 0 or
 1) - "UDP" or "TCP"<br>
         <span style="font-weight: bold;">srcIpPort </span>(int, 0 or
@@ -203,7 +209,7 @@ a token will be returned that may be used to signal circuit&nbsp; setup
 and tear down.<br>
   </li>
   <li><span style="font-weight: bold;">status </span>(string) - should
-be PENDING<span style="color: rgb(204, 0, 0);"></span></li>
+be ACCEPTED<span style="color: rgb(204, 0, 0);"></span></li>
   <li><span style="font-weight: bold;">pathInfo</span> ( <a
  href="#PathInfo">pathInfo</a>) - same format as described above, but
 all the hops have been filled in and resources reserved resulting in a <span
@@ -275,10 +281,26 @@ name of
 the owner of the reservation</li>
   <li><span style="font-weight: bold;">status</span> (string) -
     <ul>
-      <li>PENDING - reservation has been made, but the scheduled start
+      <li>ACCEPTED - reservation request has been accepted and the
+reservation is scheduled to be processed</li>
+      <li>PENDING/RESERVED&nbsp;
+- reservation processing is complete and resources have been reserved,
+but
+the scheduled start
 time
-has not arrived yet</li>
+has not arrived yet (may have required inter-domain operations)<br>
+      </li>
+      <li>INSETUP - the circuits are being provisioned - (may require
+inter-domain operations)<br>
+      </li>
       <li>ACTIVE - circuit is currently provisioned</li>
+      <li>INMODIFY - a modification requested by the user is in process
+(inter-domain operation)<br>
+      </li>
+      <li>INTEARDOWN - the end-to-end circuit is in the process of
+being
+torn-down (inter-domain operation)<br>
+      </li>
       <li>FINISHED - end time has past, and circuit has been torn down</li>
       <li>CANCELLED - reservation was canceled, circuit is not
 active</li>
@@ -286,8 +308,13 @@ active</li>
 required
 resources were not available, or a link that the circuit uses is down
 and the circuit may
-still be provisioned<br>
+still be provisioned</li>
+      <li>See <a href="reservationStates.jpg">reservation state diagram</a>
+        <br>
       </li>
+    </ul>
+    <span style="font-weight: bold;"></span>
+    <ul>
     </ul>
   </li>
   <li><span style="font-weight: bold;">startTime</span> (long) -

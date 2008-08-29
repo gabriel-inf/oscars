@@ -18,32 +18,40 @@ User Manual</a>
 <h1 style="text-align: center;">User Manual - Part 1: WBUI<br>
 </h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
-version 0.3 Apr 2008<br>
+version 0.4 September 2008<br>
 </span>
 </div>
 <br>
+<br>
 <ul id="mozToc">
-<!--mozToc h2 1 h3 2 --><li><a href="#mozTocId338737">Web Browser
+<!--mozToc h2 1 h3 2 h4 3--><li><a href="#mozTocId338737">Web Browser
 Interface (WBUI)</a>
     <ul>
       <li><a href="#mozTocId393263">1. Login</a></li>
       <li><a href="#mozTocId752007">2. Create
-Reservation</a></li>
-      <ul>
-        <li><a href="#mozTocId79347">Common parameters</a></li>
-        <li><a href="#mozTocId877039">Layer 3 parameters
+Reservation</a>
+        <ul>
+          <li><a href="#mozTocId79347">Common parameters</a></li>
+          <li><a href="#mozTocId877039">Layer 3 parameters
 (only supported by ESnet) </a></li>
-        <li><a href="#mozTocId938748">Layer 2 parameters </a></li>
-      </ul>
+          <li><a href="#mozTocId938748">Layer 2 parameters</a></li>
+        </ul>
+      </li>
+      <li><br>
+      </li>
       <li><a href="#mozTocId970301">3. List
 Reservations</a></li>
       <li><a href="#mozTocId792110">4.
 Reservation Details</a></li>
-      <li><a href="#mozTocId849582">5.
+      <li><a href="#mozTocId789680">5.
 Cancel Reservation </a></li>
       <li><a href="#mozTocId549818">6. User Profile</a></li>
       <li><a href="#mozTocId747004">7. User List</a></li>
       <li><a href="#mozTocId245912">8. Add User</a></li>
+      <li><a href="#mozTocId525780">9. Attributes</a></li>
+      <li><a href="#mozTocId508891">10. Institutions</a></li>
+      <li><a href="#mozTocId27859">11. Authorizations</a></li>
+      <li><a href="#mozTocId71990">12. Authorization Details</a></li>
     </ul>
   </li>
 </ul>
@@ -89,9 +97,8 @@ topology schema. A topology identifier is a URN that may consist of as
 many as four hierarchical components: domain:node:port:link. See <a
  href="tss.html">Topology
 components notes</a> for more about the topology naming scheme.<br>
-<br>
-<h3><a class="mozTocH3" name="mozTocId79347"></a><a
- name="CommonParameters"></a>Common parameters</h3>
+<h4><a class="mozTocH3" name="mozTocId79347"></a><a
+ name="CommonParameters"></a>Common parameters</h4>
 <ul>
   <li><span style="font-weight: bold;">Source </span>and <span
  style="font-weight: bold;">Destination hosts</span> may be specified
@@ -112,12 +119,16 @@ urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
     <small style="font-weight: bold;"> destination:</small> <code>urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1</code></div>
   </li>
   <li>For layer3 reservations the hosts are the machines on which the
-data resides. If a host name is specified, the DNS will be used to resolve it to an IPaddr.
-If a topology identifier is specified, the associated IPaddr will be found from the topology database. 
-For layer2 reservations, they are the ingress and egress links to the ISP. If they are input as a host names or IPaddrs
-the DNS and a lookup server are used to resolve them to topology identifiers.  Alternatively, a user may
-communicate with the ISP administrators to find out what topology identifiers to use.
-    <br>
+data resides. If a host name is specified, the DNS will be used to
+resolve it to an IPaddr.
+If a topology identifier is specified, the associated IPaddr will be
+found from the topology database. For layer2 reservations, they are the
+ingress and egress links to the ISP. If they are input as a host names
+or IPaddrs
+the DNS and a lookup server are used to resolve them to topology
+identifiers. Alternatively, a user may
+communicate with the ISP administrators to find out what topology
+identifiers to use. <br>
   </li>
   <li><span style="font-weight: bold;">Path </span>is a
 list of topology identifiers for ingress and egress links/routers. In
@@ -167,11 +178,11 @@ Type in new values in the format shown.</li>
 values default to 4 minutes from the
 current time. Type in new values in the format shown.</li>
 </ul>
-<h3><a class="mozTocH3" name="mozTocId877039"></a><a class="mozTocH3"
+<h4><a class="mozTocH3" name="mozTocId877039"></a><a class="mozTocH3"
  name="layer3"></a><span style="font-weight: bold;"><a
  name="Layer3Parameters"></a>Layer 3 parameters
 (only supported by ESnet)<br>
-</span></h3>
+</span></h4>
 <ul>
   <li><span style="font-weight: bold;">Source port</span> - the port on
 the source host from which the data
@@ -189,10 +200,10 @@ bits. Currently BNL's Terapaths sets the DSCP code point so that it can
 indicate to ESnet which flow (out of a bunch) that have the same
 src/dst will use the L3 circuit.</li>
 </ul>
-<h3><a class="mozTocH3" name="mozTocId938748"></a><a class="mozTocH3"
+<h4><a class="mozTocH3" name="mozTocId938748"></a><a class="mozTocH3"
  name="layer2"></a><span style="font-weight: bold;"><a
- name="Layer2parameters"></a>Layer 2 parameters</span>
-</h3>
+ name="Layer2parameters"></a>Layer 2 parameters</span></h4>
+<h3><a class="mozTocH3" name="mozTocId860271"></a></h3>
 <ul>
   <li><span style="font-weight: bold;">VLAN tag</span> - A VLAN
 tag
@@ -214,7 +225,8 @@ eventually change.<br>
  name="ListReservations"></a>List
 Reservations</big></h3>
 Depending on your privileges, list reservations will display only your
-reservations or all the reservations in the system. We keep a record of
+reservations, reservations starting or ending at your site, or all the
+reservations in the system. We keep a record of
 all the reservations that have ever been made, so the
 interface allows you to specify the statuses, the time periods, the
 links involved and the description of the reservations to display. In
@@ -233,26 +245,43 @@ user who created the reservation</li>
 one or more of <br>
   </li>
   <ul>
-    <li>PENDING&nbsp;
-- reservation has been made, but the scheduled start
+    <li>ACCEPTED - reservation request has been accepted and the
+reservation is scheduled to be processed</li>
+    <li>PENDING/RESERVED&nbsp;
+- reservation processing is complete and resources have been reserved,
+but
+the scheduled start
 time
-has not arrived yet</li>
+has not arrived yet (may have required inter-domain operations)<br>
+    </li>
+    <li>INSETUP - the circuits are being provisioned - (may require
+inter-domain operations)<br>
+    </li>
     <li>ACTIVE - circuit is currently provisioned</li>
+    <li>INMODIFY - a modification requested by the user is in process
+(inter-domain operation)<br>
+    </li>
+    <li>INTEARDOWN - the end-to-end circuit is in the process of being
+torn-down (inter-domain operation)<br>
+    </li>
     <li>FINISHED - end time has past, and circuit has been torn down</li>
     <li>CANCELLED - reservation was canceled, circuit is not
 active</li>
     <li>FAILED - Path may have failed to be setup because the required
 resources were not available, or a link that the circuit uses is down
 and the circuit may
-still be provisioned<br>
+still be provisioned</li>
+    <li>See <a href="reservationStates.jpg">reservation state diagram</a>
+      <br>
     </li>
-    <li>INVALIDATED -&nbsp;</li>
   </ul>
   <li><span style="font-weight: bold;">Start Time </span>- Date and
 time at which the reservation circuit will be provisioned (times are
 displayed in the local time zone of the browser)</li>
-  <li><span style="font-weight: bold;">Bandwidth</span> reserved bandwidth in Mbits per second</li>
-  <li><span style="font-weight: bold;">VLAN</span> used to identify a flow across domains</li>
+  <li><span style="font-weight: bold;">Bandwidth</span> reserved
+bandwidth in Mbits per second</li>
+  <li><span style="font-weight: bold;">VLAN</span> used to identify a
+flow across domains</li>
   <li><span style="font-weight: bold;">End Time</span> - Date and time
 at which the reservation circuit will be torn down</li>
   <li><span style="font-weight: bold;">Source</span> - Node at which
@@ -261,12 +290,15 @@ the data flow starts - user host for layer 3, ingress link for layer 2<br>
   <li><span style="font-weight: bold;">Destination </span>- Node at
 which the data flow ends - user host for layer 3, egress link for
 layer 2</li>
-<li><span style="font-weight: bold;">Local Source</span> - Local ingress node at which
+  <li><span style="font-weight: bold;">Local Source</span> - Local
+ingress node at which
 the data flow starts</li>
-<li><span style="font-weight: bold;">Local Destination</span> - Local egress node at which
+  <li><span style="font-weight: bold;">Local Destination</span> - Local
+egress node at which
 the data leaves this domain</li>
 </ul>
-If you click on a GRI and you have the required authorization, you will see the details of the
+If you click on a GRI and you have the required authorization, you will
+see the details of the
 reservation.<br>
 <h3><a class="mozTocH3" name="mozTocId792110"></a><big>4.
 <a name="ReservationDetails"></a>Reservation Details</big></h3>
@@ -281,9 +313,11 @@ description that the user specified<br>
   <li><span style="font-weight: bold;">created time</span> - time the
 reservation was created (local time zone of the browser)</li>
   <li><span style="font-weight: bold;">intradomain hops</span> - the
-abstract nodes in the confirmed SIDP (Strict Interdomain Path) within this domain.</li>
+abstract nodes in the confirmed SIDP (Strict Interdomain Path) within
+this domain.</li>
   <li><span style="font-weight: bold;">interdomain path</span> - the
-abstract nodes in the confirmed SIDP from the source to the destination. It will
+abstract nodes in the confirmed SIDP from the source to the
+destination. It will
 include an ingress and egress link for each domain in the path.</li>
   <li><span style="font-weight: bold;">source, destination port</span>
 - for layer 3 reservations only</li>
@@ -296,7 +330,8 @@ reservations (if set)<br>
   <li><span style="font-weight: bold;">lsp class</span> - for layer 3
 (if set)</li>
 </ul>
-<h3><big><span style="font-weight: bold;">5.
+<h3><a class="mozTocH3" name="mozTocId789680"></a><big><span
+ style="font-weight: bold;">5.
 Cancel Reservation
 </span></big></h3>
 The Reservation Details page provides a button to
@@ -327,29 +362,39 @@ these items are not required</li>
   <li><span style="font-weight: bold;">Organization</span> - choose one
 from the pull-down menu</li>
   <li><span style="font-weight: bold;">Roles</span> - These can only be
-modified by an administrator. Currently
-there are six choices. It it recommended to choose one from the first 
-five choices. The administrator should be given to whoever is going to manage
+modified by an administrator. Currently seven default atttirbute roles
+defined. It it recommended to choose one from the first four choices.
+The administrator should be given to whoever is going to
+manage
 the users and authorizations for your site.</li>
   <ul>
-    <li><span style="font-weight: bold;">user</span> - make
+    <li><span style="font-weight: bold;">OSCARS-user</span> - make
 reservations, query, modify and signal own reservations,
 modify own profile</li>
-    <li><span style="font-weight: bold;">operator</span> - list and
+    <li><span style="font-weight: bold;">OSCARS-operator</span> - list
+and
 query all reservations, list all users, modify own profile</li>
- <li><span style="font-weight: bold;">site administrator</span> - list and
-control all reservations that start or end at his site, modify own profile</li>
-    <li><span style="font-weight: bold;">engineer</span> - make
+    <li><span style="font-weight: bold;">OSCARS-site-administrator</span>
+-
+list and
+control all reservations that start or end at his site, modify own
+profile</li>
+    <li><span style="font-weight: bold;">OSECARS-engineer</span> - make
 reservations, query, modify and signal all
 reservations, modify own profile</li>
-    <li><span style="font-weight: bold;">service</span> - make
+    <li><span style="font-weight: bold;">OSCARS-service</span> - make
 reservations where the GRI and path elements are specified, list,
 query, modify and signal own reservations (granted
-to IDC services in co-operating domains)</li>
-    <li><span style="font-weight: bold;">administrator</span> - create
+to IDC services in co-operating domains, not to be given to human users)</li>
+    <li><span style="font-weight: bold;">OSCARS-administrator</span> -
+create
 new users, modify profiles, including
 roles, for all users</li>
+    <li><span style="font-weight: bold;">OSCARS-publisher</span> -
+publish events to the OSCARS notification server</li>
   </ul>
+see <a href="attributes.html">Attributes</a> for a more
+complete description of the roles.<br>
   <li><span style="font-weight: bold;">personal description</span> -
 for our information</li>
   <li style="font-weight: bold;">email (primary)</li>
@@ -376,8 +421,48 @@ filled
 in to add a new user to the system. See <a href="#UserProfile">User
 Profile</a> for a description of the fields.<br>
 <br>
+<h3><a class="mozTocH3" name="mozTocId525780"></a><big>9. <a
+ name="Attributes"></a>Attributes</big></h3>
+This page can only be seen by holders of the OSCARS-administrator role.
+It lists all the current attributes and allows the addition, deletion
+and modification of attributes. Each attribute has a name, a type and a
+short description. Attributes of type <span style="font-style: italic;">role
+</span>are intended to provide all the authorizations that a class of
+users will need. Attribues of type <span style="font-style: italic;">privilge
+</span>are used to add a specific privilege to a user, that his normal
+role does&nbsp; not provide.<br>
 <br>
+An attribute can only be deleted if there are no users currently
+holding that attribute. To see all the users who have an attribute, go
+to the <a href="#UserList">User List</a> page and select the attribute
+from the Attributes menu.<br>
 <br>
+<h3><a class="mozTocH3" name="mozTocId508891"></a><big>10. <a
+ name="Institutions"></a>Institutions</big></h3>
+This page can only be seen by holders of the OSCARS-administrator role.
+It lists all the current institutions and allows the addition, deletion
+and modification of institutions. An institution can only be deleted if
+there are currently no registered using belonging to that institution.<br>
+<br>
+<h3><a class="mozTocH3" name="mozTocId27859"></a><big>11. <a
+ name="Authorizations"></a></big><big>Authorizations</big></h3>
+This page can only be seen by holders of the OSCARS-administrator role.
+It lists all the current authorizations and allows the selection of an
+authorization to be deleted or modified.<br>
+The list of authorizations can be limited to those belonging to a
+specified attribute. Any column can be sorted alphabetically by
+clicking on the column title.<br>
+<br>
+<h3><a class="mozTocH3" name="mozTocId71990"></a><big>12. <a
+ name="AuthDetails"></a>Authorization Details</big></h3>
+This page can only be seen by holders of the OSCARS-administrator
+role.&nbsp;
+It allows the addition, deletion
+and modification of authorizations. If an existing authorization is
+modified, it previous value is deleted
+and replaced by the modified value. It is also possible to clone and
+then modify an authorization, in which case both the old and new values
+exist.
 <!--#include virtual="footer.html" -->
 </body>
 </html>

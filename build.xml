@@ -251,7 +251,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
         <copy file="do_build.sh" tofile="web/docs/do_build.sh.txt"/>
         <copy todir="web/docs">
-            <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
+            <fileset dir="docs/web" includes="*.html, *.jpg, images/*, styleSheets/*.css"/>
         </copy>
         <copy todir="web/docs/papers">
             <fileset dir="docs/papers" includes="*.pdf"/>
