@@ -462,7 +462,7 @@ public class GraphVizExporter {
        int colorIndex = 0;
        while (griIt.hasNext()) {
            String gri = (String) griIt.next();
-           String color = colors[colorIndex];
+           String color = colors[colorIndex % 20];
 //           System.out.println(gri+"_"+color);
 
            HashMap<String, HashMap<String, String>> resvEdges = griToResvEdges.get(gri);
@@ -617,7 +617,7 @@ public class GraphVizExporter {
 
        for (int i = 0; i < resList.length; i++) {
            ResDetails resv = resList[i];
-           color = colors[i];
+           color = colors[i % 20];
 
            String gri = resv.getGlobalReservationId();
            gris[i] = gri;
@@ -787,7 +787,7 @@ public class GraphVizExporter {
            } else {
                lineweight = "bold";
            }
-           color = colors[i];
+           color = colors[i % 20];
            i++;
            for (int j = 0; j < theHops.size() - 1; j++) {
                String hop = theHops.get(j);
