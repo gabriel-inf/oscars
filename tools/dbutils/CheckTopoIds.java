@@ -207,7 +207,7 @@ public class CheckTopoIds {
                                             vo += "    l2swcap: mtu: "+l2data.getInterfaceMTU()+"\n";
                                             dbo += "l2: ["+l2data.getId()+"] ";
                                         }
-                                        Ipaddr ipaddr = ipaddrDAO.fromLink(link);
+                                        Ipaddr ipaddr = link.getValidIpaddr();
                                         if (ipaddr == null) {
                                             vo += "  no ipaddr data \n";
                                         } else {
