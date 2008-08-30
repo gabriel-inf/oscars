@@ -146,6 +146,16 @@ public class TopologyManager {
         Topology savedTopology = new Topology();
         savedTopology.setDomains(currentDomains);
 
+        Hashtable<String, Hashtable<String, String>> validLinkInfo = new Hashtable<String, Hashtable<String, String>>();
+        for (String thisFqti : remoteLinkFQTIMap.keySet()) {
+            String remFqti = remoteLinkFQTIMap.get(thisFqti);
+            if (!validLinkInfo.keySet().contains(thisFqti)) {
+                validLinkInfo.put(thisFqti, URNParser.parseTopoIdent(thisFqti));
+            }
+            if (!validLinkInfo.keySet().contains(remFqti)) {
+                validLinkInfo.put(remFqti, URNParser.parseTopoIdent(remFqti));
+            }
+        }
 
         ArrayList<Domain> domainsToInsert = new ArrayList<Domain>();
         ArrayList<Domain> domainsToUpdate = new ArrayList<Domain>();
@@ -187,7 +197,7 @@ public class TopologyManager {
         for (Domain savedDomain : savedTopology.getDomains()) {
             for (Domain newDomain : newTopology.getDomains()) {
                 if (newDomain.equalsTopoId(savedDomain)) {
-                    this.mergeNodes(savedDomain, newDomain);
+                    this.mergeNodes(savedDomain, newDomain, validLinkInfo);
                 }
             }
         }
@@ -197,8 +207,10 @@ public class TopologyManager {
         this.log.debug("mergeTopology.end");
     }
 
-    private void mergeNodes(Domain savedDomain, Domain newDomain) {
+    private void mergeNodes(Domain savedDomain, Domain newDomain, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
         this.log.debug("mergeNodes start");
+
+
 
         this.log.debug("Merging nodes for: ["+savedDomain.getFQTI()+"]");
 
@@ -277,9 +289,29 @@ public class TopologyManager {
                 Node savedNode = (Node) savedNodeIt.next();
                 Node foundNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
 
+                // not in new topology structure
                 if (foundNode == null) {
-                    this.log.debug("Will invalidate node: "+savedNode.getFQTI());
-                    nodesToInvalidate.add(savedNode);
+                    boolean invalidate = true;
+
+                    // don't invalidate if in external remote links though!
+                    for (String fqti : validLinkInfo.keySet()) {
+                        Hashtable<String, String> results = validLinkInfo.get(fqti);
+                        String domainId = results.get("domainId");
+                        String nodeId = results.get("nodeId");
+                        String portId = results.get("portId");
+                        String linkId = results.get("linkId");
+                        if (domainId.equals(savedDomain.getTopologyIdent())) {
+                            if (nodeId.equals(savedNode.getTopologyIdent())) {
+                                savedNode.setValid(true);
+                                invalidate = false;
+                            }
+                        }
+                    }
+
+                    if (invalidate) {
+                        this.log.debug("Will invalidate node: "+savedNode.getFQTI());
+                        nodesToInvalidate.add(savedNode);
+                    }
                 }
             }
         }
@@ -355,7 +387,7 @@ public class TopologyManager {
 
             Node newNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
             if (newNode != null) {
-                this.mergePorts(savedNode, newNode);
+                this.mergePorts(savedNode, newNode, validLinkInfo);
             }
         }
 
@@ -370,7 +402,7 @@ public class TopologyManager {
 
 
 
-    private void mergePorts(Node savedNode, Node newNode) {
+    private void mergePorts(Node savedNode, Node newNode, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
         this.log.debug("mergePorts start");
 
         ArrayList<Port> portsToInsert = new ArrayList<Port>();
@@ -424,15 +456,36 @@ public class TopologyManager {
                 Port foundPort = newNode.getPortByTopoId(savedPort.getTopologyIdent());
 
                 if (foundPort == null) {
-                    this.log.debug("Will invalidate port: "+savedPort.getFQTI());
-                    portsToInvalidate.add(savedPort);
+                    boolean invalidate = true;
+
+                    // don't invalidate if in external remote links though!
+                    for (String fqti : validLinkInfo.keySet()) {
+                        Hashtable<String, String> results = validLinkInfo.get(fqti);
+                        String domainId = results.get("domainId");
+                        String nodeId = results.get("nodeId");
+                        String portId = results.get("portId");
+                        String linkId = results.get("linkId");
+                        if (domainId.equals(savedNode.getDomain().getTopologyIdent())) {
+                            if (nodeId.equals(savedNode.getTopologyIdent())) {
+                                if (portId.equals(savedPort.getTopologyIdent())) {
+                                    savedPort.setValid(true);
+                                    invalidate = false;
+                                }
+                            }
+                        }
+                    }
+
+                    if (invalidate) {
+                        this.log.debug("Will invalidate port: "+savedPort.getFQTI());
+                        portsToInvalidate.add(savedPort);
+                    }
+
+
                 }
             }
         }
 
         this.log.debug("Checking for invalidation finished.");
-
-
 
 
         this.log.debug("Adding ports...");
@@ -470,7 +523,7 @@ public class TopologyManager {
             Port savedPort = (Port) savedPortIt.next();
             Port newPort = newNode.getPortByTopoId(savedPort.getTopologyIdent());
             if (newPort!= null) {
-                this.mergeLinks(savedPort, newPort);
+                this.mergeLinks(savedPort, newPort, validLinkInfo);
             }
         }
 
@@ -481,7 +534,7 @@ public class TopologyManager {
 
 
 
-    private void mergeLinks(Port savedPort, Port newPort) {
+    private void mergeLinks(Port savedPort, Port newPort, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
         this.log.debug("mergeLinks.start");
 
         ArrayList<Link> linksToInsert = new ArrayList<Link>();
@@ -537,8 +590,32 @@ public class TopologyManager {
                 Link foundLink = newPort.getLinkByTopoId(savedLink.getTopologyIdent());
 
                 if (foundLink == null) {
-                    this.log.debug("Will invalidate link: "+savedLink.getFQTI());
-                    linksToInvalidate.add(savedLink);
+                    boolean invalidate = true;
+
+                    // don't invalidate if in external remote links though!
+                    for (String fqti : validLinkInfo.keySet()) {
+                        Hashtable<String, String> results = validLinkInfo.get(fqti);
+                        String domainId = results.get("domainId");
+                        String nodeId = results.get("nodeId");
+                        String portId = results.get("portId");
+                        String linkId = results.get("linkId");
+                        if (domainId.equals(savedPort.getNode().getDomain().getTopologyIdent())) {
+                            if (nodeId.equals(savedPort.getNode().getTopologyIdent())) {
+                                if (portId.equals(savedPort.getTopologyIdent())) {
+                                    if (linkId.equals(savedLink.getTopologyIdent())) {
+                                        savedLink.setValid(true);
+                                        invalidate = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (invalidate) {
+                        this.log.debug("Will invalidate link: "+savedLink.getFQTI());
+                        linksToInvalidate.add(savedLink);
+                    }
+
                 }
             }
         }
@@ -601,7 +678,7 @@ public class TopologyManager {
             Link remoteLink = null;
             try {
                 thisLink = TopologyUtil.getLink(thisFqti, this.dbname);
-            } catch (Exception ex) {
+            } catch (BSSException ex) {
                 thisLink = null;
                 this.log.error("Error: "+ex.getMessage());
                 break;
@@ -609,7 +686,8 @@ public class TopologyManager {
 
             try {
                 remoteLink = TopologyUtil.getLink(remFqti, this.dbname);
-            } catch (Exception ex) {
+            } catch (BSSException ex) {
+                this.log.error(ex);
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
             }
 
@@ -617,7 +695,6 @@ public class TopologyManager {
                 thisLink.setRemoteLink(remoteLink);
                 linkDAO.update(thisLink);
             }
-
 
         }
 
@@ -742,9 +819,10 @@ public class TopologyManager {
 
     private Link insertFQTILink(String linkFqti, Link remoteLink) {
 
-        this.log.debug("Creating remote link: ["+linkFqti+"]");
+        this.log.debug("Creating link: ["+linkFqti+"]");
         Hashtable<String, String> results = URNParser.parseTopoIdent(linkFqti);
-        if (!results.get("type").equals("link")) {
+        if (results== null || results.get("type") == null || !results.get("type").equals("link")) {
+            this.log.error("FQTI is not a link!:" + linkFqti);
             return null;
         }
         String domainId = results.get("domainId");
@@ -762,58 +840,85 @@ public class TopologyManager {
         Domain domain = null;
         for (Domain savedDomain : currentDomains) {
             if (savedDomain.getTopologyIdent().equals(domainId)) {
+                this.log.debug("found domain "+domainId+" : "+savedDomain.getId());
                 haveDomain = true;
                 domain = savedDomain;
                 break;
             }
         }
+
         if (!haveDomain) {
             domain = new Domain(true);
             domain.setTopologyIdent(domainId);
+            domainDAO.create(domain);
         }
 
-        Node node = domain.getNodeByTopoId(nodeId);
+        Node node = null;
+        if (haveDomain) {
+            node = domain.getNodeByTopoId(nodeId);
+        }
         if (node == null) {
             node = new Node(domain, true);
             node.setTopologyIdent(nodeId);
+            domain.addNode(node);
+            nodeDAO.create(node);
         } else {
+            this.log.debug("found node "+nodeId+" : "+node.getId());
             haveNode = true;
+            node.setValid(true);
+            nodeDAO.update(node);
         }
 
-        Port port = node.getPortByTopoId(portId);
+        Port port = null;
+        if (haveNode) {
+            port = node.getPortByTopoId(portId);
+        }
         if (port == null) {
             port = new Port(node, true);
             port.setTopologyIdent(portId);
+            node.addPort(port);
+            portDAO.create(port);
         } else {
+            this.log.debug("found link "+portId+" : "+port.getId());
             havePort = true;
+            port.setValid(true);
+            portDAO.update(port);
         }
 
-        Link link = port.getLinkByTopoId(linkId);
+        Link link = null;
+        if (havePort) {
+            link = port.getLinkByTopoId(linkId);
+        }
+
         if (link == null) {
             link = new Link(port, true);
             link.setTopologyIdent(linkId);
             link.setRemoteLink(remoteLink);
+            port.addLink(link);
+            linkDAO.create(link);
         } else {
+            this.log.debug("found link "+linkId+" : "+link.getId());
             haveLink = true;
+            link.setValid(true);
+            link.setRemoteLink(remoteLink);
+            linkDAO.update(link);
         }
+
 
         if (!haveDomain) {
             this.log.debug("Created domain: ["+domain.getFQTI()+"]");
-            domainDAO.create(domain);
         }
         if (!haveNode) {
             this.log.debug("Created node: ["+node.getFQTI()+"]");
-            nodeDAO.create(node);
         }
         if (!havePort) {
             this.log.debug("Created port: ["+port.getFQTI()+"]");
-            portDAO.create(port);
         }
         if (!haveLink) {
             this.log.debug("Created link: ["+link.getFQTI()+"]");
-            linkDAO.create(link);
         }
 
+        this.log.debug("Finished creating link: ["+linkFqti+"]");
         return link;
 
     }
@@ -938,7 +1043,7 @@ public class TopologyManager {
                 if (!this.isDuplicate(oldPath, path)) {
                     String msg = "Reservation invalidated due to changed path.";
                     EventProducer eventProducer = new EventProducer();
-                    eventProducer.addEvent(OSCARSEvent.RESV_INVALIDATED, "", 
+                    eventProducer.addEvent(OSCARSEvent.RESV_INVALIDATED, "",
                         "WBUI", r, "", msg);
 //                    r.setStatus("INVALIDATED");
                     this.log.warn("INVALIDATED request due to changed path: " +

@@ -248,19 +248,19 @@ public class TopologyUtil {
         LinkDAO linkDAO = new LinkDAO(dbname);
         Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
         if (domain == null) {
-            throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
+            throw new BSSException("Domain not found for domain id: ["+results.get("domainId")+"], fqti:"+topoIdent);
         }
         Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
         if (node == null) {
-            throw new BSSException("Node not found for node id: "+results.get("nodeId"));
+            throw new BSSException("Node not found for node id: ["+results.get("nodeId")+"], fqti:"+topoIdent);
         }
         Port port = portDAO.fromTopologyIdent(results.get("portId"), node);
         if (port == null) {
-            throw new BSSException("Port not found for port id: "+results.get("portId"));
+            throw new BSSException("Port not found for port id: ["+results.get("portId")+"], fqti:"+topoIdent);
         }
         Link link = linkDAO.fromTopologyIdent(results.get("linkId"), port);
         if (link == null) {
-            throw new BSSException("Link not found for link id: "+results.get("linkId"));
+            throw new BSSException("Link not found for link id: ["+results.get("linkId")+"], fqti:"+topoIdent);
         }
         return link;
     }
