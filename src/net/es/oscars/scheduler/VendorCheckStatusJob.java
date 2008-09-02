@@ -149,7 +149,8 @@ public class VendorCheckStatusJob implements Job {
 
     private synchronized void sendNotification(Reservation resv, String newStatus, String operation) throws BSSException {
         EventProducer eventProducer = new EventProducer();
-        StateEngine se = new StateEngine();
+        StateEngine se = core.getStateEngine();
+        PathSetupManager pe = core.getPathSetupManager();
         String status = StateEngine.getStatus(resv);
         se.updateStatus(resv, newStatus);
 
@@ -157,17 +158,12 @@ public class VendorCheckStatusJob implements Job {
             if (newStatus.equals(StateEngine.FAILED)) {
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv);
             } else if (status.equals(newStatus)) {
-                // this will only happen the second time this function is run
-                // for a specific reservation
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", "JOB", resv);
+                pe.updateCreateStatus(1, resv);
             }
         } else if (operation.equals("PATH_TEARDOWN")) {
             if (newStatus.equals(StateEngine.FAILED)) {
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv);
-            } else if (status.equals(newStatus)) {
-                // this will only happen the second time this function is run
-                // for a specific reservation
-                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "JOB", resv);
+                pe.updateTeardownStatus(1, resv);
             }
         }
    }

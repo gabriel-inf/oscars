@@ -30,7 +30,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
 
         EventProducer eventProducer = new EventProducer();
         String status;
-        StateEngine stateEngine = new StateEngine();
+        StateEngine stateEngine = core.getStateEngine();
 
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();

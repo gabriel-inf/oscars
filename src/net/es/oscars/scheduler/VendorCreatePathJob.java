@@ -28,14 +28,14 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
+        // prepare common objects
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
-
-
         EventProducer eventProducer = new EventProducer();
         String status;
-        StateEngine stateEngine = new StateEngine();
+        StateEngine stateEngine = core.getStateEngine();
 
 
+        // Get reservation info from DB
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String direction = (String) dataMap.get("direction");
         String routerType = (String) dataMap.get("routerType");
@@ -49,8 +49,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             return;
         }
 
-
-
+        // Prepare LSP data from path
         LSPData lspData = new LSPData(bssDbName);
         Path path = resv.getPath();
         try {
@@ -68,8 +67,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             return;
         }
 
-
-
+        // If something has failed up to here, go to the next job
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.ACTIVE);
         } catch (BSSException ex) {
@@ -78,7 +76,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             return;
         }
 
-
+        // Try and set up the path
         String errString = "";
         boolean pathWasSetup = true;
         LSP ciscoLSP = null;
@@ -103,6 +101,9 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             }
         }
 
+        // All done with configuring routers, now update resv status
+        // We must add a reservation to maintainStatus's checklist
+        // CheckStatus job
         try {
             status = StateEngine.getStatus(resv);
             if (!pathWasSetup) {
