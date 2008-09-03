@@ -443,7 +443,42 @@ public class UserManager {
         this.log.info("checkAccess.finish: " + retValSt + " access for " 
                 + permissionName + " on " + resourceName);
         return retVal;
-    }   
+    } 
+    /**
+     * Checks to make sure that that user has the permission to 
+     * perform "unsafe" operations on reservations.
+     *
+     * @param userName a string with the login name of the user
+     * @return true or false
+     */
+    public boolean checkAccessForUnsafe(String userName) {
+
+        UserDAO userDAO = new UserDAO(this.dbname);
+        User user = userDAO.query(userName);
+        if (user == null) { return false; }
+ 
+        // get list of  attributes for this user
+        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
+        this.userAttrs = userAttrDAO.getAttributesByUser(user.getId());
+       
+        if (this.userAttrs.isEmpty())  {
+            // this.log.info("checkAccessForUnsafe: userAttrs is empty");
+            return false;
+        } else {
+            AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+
+            UserAttribute currentAttr = null;
+            Iterator attrIter = this.userAttrs.iterator();
+            while (attrIter.hasNext()) {
+                currentAttr = (UserAttribute) attrIter.next();
+                String attrName = attrDAO.getAttributeName(currentAttr.getId());
+                if (attrName.equals("OSCARS-engineer")){
+                    return true;
+                }
+            }   
+        }
+        return false;
+    }
     /**
      * Checks to make sure that that user has the permission to use the
      *     resource by checking for the corresponding quadruplet in the
