@@ -725,6 +725,7 @@ public class TopologyManager {
                 if (foundIpaddr == null) {
                     this.log.debug("Will add ipaddr: "+newIpaddr.getIP());
                     newIpaddr.setLink(savedLink);
+                    newIpaddr.setValid(true);
                     ipaddrsToInsert.add(newIpaddr);
                 } else {
                     this.log.debug("Will update ipaddr: "+newIpaddr.getIP());
@@ -783,6 +784,8 @@ public class TopologyManager {
         }
         this.log.debug("Invalidating ipaddrs  finished.");
 
+        linkDAO.update(savedLink);
+
         this.log.debug("mergeLinkIpaddrs.end");
     }
 
@@ -823,7 +826,7 @@ public class TopologyManager {
         Link remLink = remoteLink;
         Port remPort = remoteLink.getPort();
 
-        this.log.debug("Creating link: ["+linkFqti+"]");
+        this.log.debug("Deep-creating link: ["+linkFqti+"]");
         Hashtable<String, String> results = URNParser.parseTopoIdent(linkFqti);
         if (results== null || results.get("type") == null || !results.get("type").equals("link")) {
             this.log.error("FQTI is not a link!:" + linkFqti);
@@ -927,18 +930,21 @@ public class TopologyManager {
 
         L2SwitchingCapabilityData l2scd = link.getL2SwitchingCapabilityData();
         if (l2scd != null) {
+            this.log.debug("found l2swcap for "+linkId);
             haveL2swcap = true;
             // do nothing
         } else {
-            l2scd = new L2SwitchingCapabilityData();
             L2SwitchingCapabilityData remL2scd = remLink.getL2SwitchingCapabilityData();
-            l2scd.setLink(link);
-            l2scd.setVlanRangeAvailability(remL2scd.getVlanRangeAvailability());
-            l2scd.setInterfaceMTU(remL2scd.getInterfaceMTU());
-            l2scd.setVlanTranslation(remL2scd.getVlanTranslation());
-            link.setL2SwitchingCapabilityData(l2scd);
-            l2swcapDAO.create(l2scd);
-            linkDAO.update(link);
+            if (remL2scd != null) {
+                l2scd = new L2SwitchingCapabilityData();
+                l2scd.setLink(link);
+                l2scd.setVlanRangeAvailability(remL2scd.getVlanRangeAvailability());
+                l2scd.setInterfaceMTU(remL2scd.getInterfaceMTU());
+                l2scd.setVlanTranslation(remL2scd.getVlanTranslation());
+                link.setL2SwitchingCapabilityData(l2scd);
+                l2swcapDAO.create(l2scd);
+                linkDAO.update(link);
+            }
         }
 
 
@@ -960,7 +966,7 @@ public class TopologyManager {
             this.log.debug("Created l2swcap link: ["+link.getFQTI()+"]");
         }
 
-        this.log.debug("Finished creating link: ["+linkFqti+"]");
+        this.log.debug("Finished with link: ["+linkFqti+"]");
         return link;
 
     }

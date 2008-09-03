@@ -286,6 +286,7 @@ public class TopologyXMLImporter {
             Element linkXML = (Element) linkXMLIterator.next();
 
             String tempLinkId = linkXML.getAttributeValue("id");
+            // this is an undocumented way of adding ip addresses
             columns = tempLinkId.split("##");
             String linkId;
             String ipAddress;
@@ -490,6 +491,10 @@ public class TopologyXMLImporter {
 
         Hashtable<String, String> results = URNParser.parseTopoIdent(remoteLinkId);
         String fqti;
+        if (results == null || results.get("type") == null) {
+            this.log.error("ERROR: Could not parse linkId: "+remoteLinkId);
+            return;
+        }
 
         if (results.get("type").equals("link")) {
             fqti = results.get("fqti");
@@ -546,97 +551,6 @@ public class TopologyXMLImporter {
         }
 
         this.remoteLinkMap.put(linkDB.getFQTI(), fqti);
-
-
-        /*
-
-        // OK, we should have all the IDs set up; make the object
-        // hierarchy
-        Domain thisDomainDB = linkDB.getPort().getNode().getDomain();
-
-        remoteDomainDB = new Domain(true);
-        remoteDomainDB.setName(remoteDomainId);
-        remoteDomainDB.setTopologyIdent(remoteDomainId);
-
-        boolean internalLink = false;
-
-        if (thisDomainDB.equalsTopoId(remoteDomainDB)) {
-            internalLink = true;
-        }
-
-        boolean found = false;
-        if (!internalLink) {
-            for (Domain dom : this.topology.getDomains()) {
-                if (dom.equalsTopoId(remoteDomainDB)) {
-                    found = true;
-                    remoteDomainDB = dom;
-                    break;
-                }
-            }
-            if (!found) {
-                this.topology.addDomain(remoteDomainDB);
-            }
-        } else {
-            // no need to add the domain
-            remoteDomainDB = thisDomainDB;
-        }
-
-
-        remoteNodeDB = new Node(remoteDomainDB, true);
-        remoteNodeDB.setTopologyIdent(remoteNodeId);
-        remoteNodeDB.setDomain(remoteDomainDB);
-
-
-        found = false;
-        Iterator nodeIt = remoteDomainDB.getNodes().iterator();
-        while (nodeIt.hasNext()) {
-            Node node = (Node) nodeIt.next();
-            if (node.equalsTopoId(remoteNodeDB)) {
-                found = true;
-                remoteNodeDB = node;
-                break;
-            }
-        }
-        if (!found) {
-            remoteDomainDB.getNodes().add(remoteNodeDB);
-        }
-
-        remotePortDB = new Port(remoteNodeDB, true);
-        remotePortDB.setTopologyIdent(remotePortId);
-        remotePortDB.setAlias(remotePortId);
-        remotePortDB.setNode(remoteNodeDB);
-        Iterator portIt = remoteNodeDB.getPorts().iterator();
-        while (portIt.hasNext()) {
-            Port port = (Port) portIt.next();
-            if (port.equalsTopoId(remotePortDB)) {
-                found = true;
-                remotePortDB = port;
-                break;
-            }
-        }
-
-        if (!found) {
-            remoteNodeDB.addPort(remotePortDB);
-        }
-
-        remoteLinkDB = new Link(remotePortDB, true);
-        remoteLinkDB.setTopologyIdent(TopologyUtil.getLSTI(remoteLinkId, "Link"));
-        remoteLinkDB.setAlias(TopologyUtil.getLSTI(remoteLinkId, "Link"));
-        Iterator linkIt = remotePortDB.getLinks().iterator();
-        while (linkIt.hasNext()) {
-            Link link = (Link) linkIt.next();
-            if (link.equalsTopoId(remoteLinkDB)) {
-                found = true;
-                remoteLinkDB = link;
-                break;
-            }
-        }
-
-        if (!found) {
-            remotePortDB.addLink(remoteLinkDB);
-        }
-        linkDB.setRemoteLink(remoteLinkDB);
-        */
 
         return;
     }
