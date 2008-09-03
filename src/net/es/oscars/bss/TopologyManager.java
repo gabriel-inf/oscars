@@ -686,6 +686,7 @@ public class TopologyManager {
 
             try {
                 remoteLink = TopologyUtil.getLink(remFqti, this.dbname);
+                remoteLink = this.insertFQTILink(remFqti, thisLink);
             } catch (BSSException ex) {
                 this.log.error(ex);
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
@@ -819,6 +820,9 @@ public class TopologyManager {
 
     private Link insertFQTILink(String linkFqti, Link remoteLink) {
 
+        Link remLink = remoteLink;
+        Port remPort = remoteLink.getPort();
+
         this.log.debug("Creating link: ["+linkFqti+"]");
         Hashtable<String, String> results = URNParser.parseTopoIdent(linkFqti);
         if (results== null || results.get("type") == null || !results.get("type").equals("link")) {
@@ -836,6 +840,7 @@ public class TopologyManager {
         boolean haveNode = false;
         boolean havePort = false;
         boolean haveLink = false;
+        boolean haveL2swcap = false;
 
         Domain domain = null;
         for (Domain savedDomain : currentDomains) {
@@ -877,11 +882,25 @@ public class TopologyManager {
             port = new Port(node, true);
             port.setTopologyIdent(portId);
             node.addPort(port);
+            port.setCapacity(remPort.getCapacity());
+            port.setGranularity(remPort.getGranularity());
+            port.setMaximumReservableCapacity(remPort.getMaximumReservableCapacity());
+            port.setMinimumReservableCapacity(remPort.getMinimumReservableCapacity());
+            port.setUnreservedCapacity(port.getMaximumReservableCapacity());
+            port.setValid(true);
             portDAO.create(port);
         } else {
-            this.log.debug("found link "+portId+" : "+port.getId());
+            this.log.debug("found port "+portId+" : "+port.getId());
             havePort = true;
             port.setValid(true);
+            if (port.getCapacity() == 0L) {
+                port.setCapacity(remPort.getCapacity());
+                port.setGranularity(remPort.getGranularity());
+                port.setMaximumReservableCapacity(remPort.getMaximumReservableCapacity());
+                port.setMinimumReservableCapacity(remPort.getMinimumReservableCapacity());
+                port.setUnreservedCapacity(port.getMaximumReservableCapacity());
+                this.log.debug("Updated port: ["+port.getFQTI()+"]");
+            }
             portDAO.update(port);
         }
 
@@ -896,6 +915,7 @@ public class TopologyManager {
             link.setRemoteLink(remoteLink);
             port.addLink(link);
             linkDAO.create(link);
+
         } else {
             this.log.debug("found link "+linkId+" : "+link.getId());
             haveLink = true;
@@ -903,6 +923,25 @@ public class TopologyManager {
             link.setRemoteLink(remoteLink);
             linkDAO.update(link);
         }
+
+
+        L2SwitchingCapabilityData l2scd = link.getL2SwitchingCapabilityData();
+        if (l2scd != null) {
+            haveL2swcap = true;
+            // do nothing
+        } else {
+            l2scd = new L2SwitchingCapabilityData();
+            L2SwitchingCapabilityData remL2scd = remLink.getL2SwitchingCapabilityData();
+            l2scd.setLink(link);
+            l2scd.setVlanRangeAvailability(remL2scd.getVlanRangeAvailability());
+            l2scd.setInterfaceMTU(remL2scd.getInterfaceMTU());
+            l2scd.setVlanTranslation(remL2scd.getVlanTranslation());
+            link.setL2SwitchingCapabilityData(l2scd);
+            l2swcapDAO.create(l2scd);
+            linkDAO.update(link);
+        }
+
+
 
 
         if (!haveDomain) {
@@ -916,6 +955,9 @@ public class TopologyManager {
         }
         if (!haveLink) {
             this.log.debug("Created link: ["+link.getFQTI()+"]");
+        }
+        if (!haveL2swcap) {
+            this.log.debug("Created l2swcap link: ["+link.getFQTI()+"]");
         }
 
         this.log.debug("Finished creating link: ["+linkFqti+"]");

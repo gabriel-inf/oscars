@@ -253,8 +253,8 @@ public class TopologyXMLImporter {
             portDB.setCapacity(capacity);
             portDB.setMaximumReservableCapacity(maxRCapacity);
             portDB.setMinimumReservableCapacity(minRCapacity);
+            portDB.setUnreservedCapacity(maxRCapacity);
             portDB.setGranularity(granularity);
-            //          portDB.setUnreservedCapacity(capacity); // TODO: think about this
             portDB.setAlias(portTopoIdent);
 
             if (!nodeDB.addPort(portDB)) {
