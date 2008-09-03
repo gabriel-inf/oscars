@@ -128,6 +128,7 @@ public class VlsrPSS implements PSS {
      */
     private String generateQueueName(Link ingressLink) throws PSSException{
         VlsrPSSJob job = new VlsrPSSJob();
+        job.init();
         String sshPortForwardStr = this.props.getProperty("ssh.portForward");
         boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String queueName = "SERIALIZE_";

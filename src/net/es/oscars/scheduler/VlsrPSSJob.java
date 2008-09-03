@@ -3,6 +3,7 @@ package net.es.oscars.scheduler;
 import java.util.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
 
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.JSch;
@@ -25,12 +26,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private long DELAY = 30;
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        this.log = Logger.getLogger(this.getClass());
-        this.log.info("VlsrPSSJob.start name:"+context.getJobDetail().getFullName());
-        this.core = OSCARSCore.getInstance();
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("pss.dragon", true);
         this.init();
+        this.log.info("VlsrPSSJob.start name:"+context.getJobDetail().getFullName());
         StateEngine se = this.core.getStateEngine();
         PathSetupManager pm = this.core.getPathSetupManager();
         EventProducer eventProducer = new EventProducer();
@@ -85,7 +82,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         this.log.info("VlsrPSSJob.end");
     }
     
-    private void init(){
+    public void init(){
+        this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSCore.getInstance();
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("pss.dragon", true);
         String delayStr = this.props.getProperty("delay");
         if(delayStr != null){
             try{
@@ -170,7 +171,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         
         /* Set layer specific params */
         if(layer2Data != null){
-            String bandwidth = this.prepareL2Bandwidth(resv.getBandwidth());
+            String bandwidth = this.prepareBandwidth(resv.getBandwidth(), path);
             lsp.setBandwidth(bandwidth);
             int vtag = 0;
             
@@ -810,56 +811,33 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      * DRAGON CLI for ethernet requests. 
      *
      * @param bw Long bandwidth value from database
+     * @param path the local path ofthe circuit
      * @return String value of given bandwidth understood by VLSR CLI
      */
-    private String prepareL2Bandwidth(Long bw) throws PSSException{
+    private String prepareBandwidth(Long bw, Path path) throws PSSException{
         String bwString = null;
+        DecimalFormat df = new DecimalFormat("#.###");
+        boolean isSonet = false;
         
-        if(bw <= 100000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_100M;
-        }else if(bw <= 150000000L){
-            //special case of 150M
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_150M;
-        }else if(bw <= 200000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_200M;
-        }else if(bw <= 300000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_300M;
-        }else if(bw <= 400000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_400M;
-        }else if(bw <= 500000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_500M;
-        }else if(bw <= 600000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_600M;
-        }else if(bw <= 700000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_700M;
-        }else if(bw <= 800000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_800M;
-        }else if(bw <= 900000000L){
-            bwString = DragonLSP.BANDWIDTH_ETHERNET_900M;
-        }else if(bw <= 1000000000L){
-            bwString = DragonLSP.BANDWIDTH_GIGE;
-        }else if(bw <= 2000000000L){
-            bwString = DragonLSP.BANDWIDTH_2GIGE;
-        }else if(bw <= 3000000000L){
-            bwString = DragonLSP.BANDWIDTH_3GIGE;
-        }else if(bw <= 4000000000L){
-            bwString = DragonLSP.BANDWIDTH_4GIGE;
-        }else if(bw <= 5000000000L){
-            bwString = DragonLSP.BANDWIDTH_5GIGE;
-        }else if(bw <= 6000000000L){
-            bwString = DragonLSP.BANDWIDTH_6GIGE;
-        }else if(bw <= 7000000000L){
-            bwString = DragonLSP.BANDWIDTH_7GIGE;
-        }else if(bw <= 8000000000L){
-            bwString = DragonLSP.BANDWIDTH_8GIGE;
-        }else if(bw <= 9000000000L){
-            bwString = DragonLSP.BANDWIDTH_9GIGE;
-        }else if(bw <= 10000000000L){
-            bwString = DragonLSP.BANDWIDTH_10G;
-        }else{
-            throw new PSSException("Unsupported bandwidth value");
+        PathElem elem = path.getPathElem();
+        while(elem != null){
+            Link link = elem.getLink();
+            if(link == null){ continue; }
+            if(link.getL2SwitchingCapabilityData() == null){
+                isSonet = true;
+                break;
+            }
+            elem = elem.getNextElem();
         }
         
+        if(isSonet){
+            int stsVal = (int)(bw/(49.536*1000000));
+            double bwVal = (double)stsVal * 49.536;
+            bwString = "eth" + df.format(bwVal) + "M";
+        }else{
+             bwString = "eth" + df.format((double)bw/1000000.0) + "M";
+        }
+        this.log.info("prepareBandwidth.bandwidth=" + bwString);
         return bwString;
     }
     
