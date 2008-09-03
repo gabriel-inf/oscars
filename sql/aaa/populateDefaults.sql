@@ -161,7 +161,6 @@ INSERT INTO constraints VALUES (NULL, "max-duration", "numeric","limits reservat
 INSERT INTO constraints VALUES (NULL, "my-site", "boolean", "limits access to reservations to those starting or ending at users site");
 INSERT INTO constraints VALUES (NULL, "specify-path-elements", "boolean", "allows path elements to be specified for reservations");
 INSERT INTO constraints VALUES (NULL, "specify-gri", "boolean", "allows a gri to be specified on path creation");
-INSERT INTO constraints VALUES (NULL, "unsafe-allowed", "boolean", "allows unsafe state changes in reservations");
 
 
 -- Create resource, permission, constraint (rpcs) table which contains a list of the meaningful RPC tuples
@@ -329,16 +328,7 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="create"),
 	(select id from constraints where name="specify-gri"));
-	
- -- allow unsafe state changes
-INSERT INTO rpcs VALUES (NULL,
-	(select id from resources where name="reservations"),
-	(select id from permissions where name="modify"),
-	(select id from constraints where name="unsafe-allowed"));
-INSERT INTO rpcs VALUES (NULL,
-	(select id from resources where name="reservations"),
-	(select id from permissions where name="signal"),
-	(select id from constraints where name="unsafe-allowed"));
+
 -- populate authorizations table
         
 CREATE TABLE IF NOT EXISTS authorizations (
