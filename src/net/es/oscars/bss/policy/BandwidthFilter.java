@@ -103,6 +103,8 @@ public class BandwidthFilter implements PolicyFilter {
         for (Link link : localLinks) {
             // initialize aggregator array for link
             List<BandwidthIntervalAggregator> aggrs = new ArrayList<BandwidthIntervalAggregator>();
+            //check granularity
+            this.checkGranularity(link, capacity);
             // intervals are the same in this case
             aggrs.add(new BandwidthIntervalAggregator(startTime, endTime, startTime, endTime, capacity));
             linkIntervals.put(link, aggrs);
@@ -140,7 +142,26 @@ public class BandwidthFilter implements PolicyFilter {
             pathElem = pathElem.getNextElem();
         }
     }
-
+    
+    /**
+     * Checks if the requested bandwidth is of the required granularity.
+     *
+     * @param link the link with the granularity requirement
+     * @param capacity the requested bandwidth
+     * @throws BSSException thrown when capacity is not evenly divisible by granularity
+     */
+    private void checkGranularity(Link link, Long capacity) throws BSSException{
+        long granularity = 1000000L;//default=1Mbps
+        if(link.getGranularity() != null && link.getGranularity() > 0){
+            granularity = link.getGranularity();
+        }
+        this.log.debug("capacity=" + capacity + ", granularity=" + granularity);
+        if((capacity % granularity) != 0){
+            throw new BSSException("Requested path only supports " +
+                    "requests with a bandwidth granularity of " + 
+                    (granularity/1000000) + "Mbps.");
+        }
+    }
 
 	
 }
