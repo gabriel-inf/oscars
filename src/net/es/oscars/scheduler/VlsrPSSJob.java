@@ -916,7 +916,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      * @return string of IP Address used to access VLSR via ssh
      * @throws PSSException
      */
-    private String findSshAddress(Link link) throws PSSException{
+    public String findSshAddress(Link link) throws PSSException{
         Node node = link.getPort().getNode();
         String sshAddress = this.props.getProperty(node.getTopologyIdent() + ".ssh");
         if(sshAddress == null){

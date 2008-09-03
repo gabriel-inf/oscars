@@ -1,5 +1,7 @@
 package net.es.oscars.pss.dragon;
 
+import java.util.Properties;
+import net.es.oscars.PropHandler;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
@@ -12,11 +14,13 @@ import net.es.oscars.pss.*;
 public class VlsrPSS implements PSS {
     private Logger log;
     private OSCARSCore core;
-
+    private Properties props;
     /** Constructor */
     public VlsrPSS(){
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("pss.dragon", true);
     }
 
     /**
@@ -29,15 +33,13 @@ public class VlsrPSS implements PSS {
         this.log.info("vlsrpss.create.start");
         Path path = resv.getPath();
         Link ingressLink = path.getPathElem().getLink();
-        VlsrPSSJob job = new VlsrPSSJob();
-        String telnetAddress = job.findTelnetAddress(ingressLink);
-        this.log.info("vlsr.createPath.ingress=" + telnetAddress);
+        String queueName = this.generateQueueName(ingressLink);
         
         try {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "pathsetup-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_" + telnetAddress, VlsrPSSJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
@@ -65,14 +67,12 @@ public class VlsrPSS implements PSS {
         this.log.info("vlsrpss.teardown.start");
         Path path = resv.getPath();
         Link ingressLink = path.getPathElem().getLink();
-        VlsrPSSJob job = new VlsrPSSJob();
-        String telnetAddress = job.findTelnetAddress(ingressLink);
-        this.log.info("vlsr.createPath.ingress=" + telnetAddress);
+        String queueName = this.generateQueueName(ingressLink);
         try {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "refresh-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_" + telnetAddress, VlsrPSSJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
@@ -98,14 +98,12 @@ public class VlsrPSS implements PSS {
         this.log.info("vlsrpss.teardown.start");
         Path path = resv.getPath();
         Link ingressLink = path.getPathElem().getLink();
-        VlsrPSSJob job = new VlsrPSSJob();
-        String telnetAddress = job.findTelnetAddress(ingressLink);
-        this.log.info("vlsr.createPath.ingress=" + telnetAddress);
+        String queueName = this.generateQueueName(ingressLink);
         try {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "teardown-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_" + telnetAddress, VlsrPSSJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
@@ -119,5 +117,27 @@ public class VlsrPSS implements PSS {
         this.log.info("vlsrpss.teardown.end");
 
         return resv.getStatus();
+    }
+    
+    /**
+     * Generates the queue name given the ingressLink
+     *
+     * @param ingressLink the ingress link
+     * @return the queue name
+     * @throws PSSException
+     */
+    private String generateQueueName(Link ingressLink) throws PSSException{
+        VlsrPSSJob job = new VlsrPSSJob();
+        String sshPortForwardStr = this.props.getProperty("ssh.portForward");
+        boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
+        String queueName = "SERIALIZE_";
+        
+        if(sshPortForward){
+            queueName += job.findSshAddress(ingressLink);
+        }else{
+            queueName += job.findTelnetAddress(ingressLink);
+        }
+        
+        return queueName;
     }
 }
