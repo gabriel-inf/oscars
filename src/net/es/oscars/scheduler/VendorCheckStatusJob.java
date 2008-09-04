@@ -65,6 +65,7 @@ public class VendorCheckStatusJob implements Job {
 
 
         HashMap<String, String> resvsToUpdate = new HashMap<String, String>();
+        HashMap<String, String> resvDirection = new HashMap<String, String>();
         Iterator<String> griIt = checklist.keySet().iterator();
         while (griIt.hasNext()) {
             String gri = griIt.next();
@@ -74,6 +75,7 @@ public class VendorCheckStatusJob implements Job {
             String ingressNodeId 	= params.get("ingressNodeId");
             String egressNodeId 	= params.get("egressNodeId");
             String desiredStatus 	= params.get("desiredStatus");
+            String direction;
 
             String which = null;
             if (nodeId.equals(ingressNodeId)) {
@@ -91,11 +93,15 @@ public class VendorCheckStatusJob implements Job {
                         isPathUp = results.get(ingressVlan);
                     }
                     this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId+":"+ingressVlan);
+                    direction = "DOWN";
+                    resvDirection.put(gri, direction);
                 } else if (which.equals("egress")) {
                     if (allowLSP) {
                         isPathUp = results.get(egressVlan);
                     }
                     this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId+":"+egressVlan);
+                    direction = "UP";
+                    resvDirection.put(gri, direction);
                 }
                 if (!allowLSP) {
                     resvsToUpdate.put(gri, desiredStatus);
@@ -133,9 +139,10 @@ public class VendorCheckStatusJob implements Job {
 
 
             String newStatus = resvsToUpdate.get(gri);
+            String direction = resvDirection.get(gri);
             try {
                 Reservation resv = resvDAO.query(gri);
-                this.sendNotification(resv, newStatus, operation);
+                this.sendNotification(resv, newStatus, operation, direction);
 
             } catch (BSSException ex) {
                 this.log.error(ex);
@@ -147,23 +154,31 @@ public class VendorCheckStatusJob implements Job {
         this.log.debug("checkStatusJob.end "+jobName);
     }
 
-    private synchronized void sendNotification(Reservation resv, String newStatus, String operation) throws BSSException {
+    private synchronized void sendNotification(Reservation resv, String newStatus, String operation, String direction) throws BSSException {
         EventProducer eventProducer = new EventProducer();
         StateEngine se = core.getStateEngine();
         PathSetupManager pe = core.getPathSetupManager();
         String status = StateEngine.getStatus(resv);
         se.updateStatus(resv, newStatus);
+        String gri = resv.getGlobalReservationId();
 
         if (operation.equals("PATH_SETUP")) {
             if (newStatus.equals(StateEngine.FAILED)) {
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv);
             } else if (status.equals(newStatus)) {
-                pe.updateCreateStatus(1, resv);
+                String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_SETUP", direction);
+                if (syncedStatus.equals("PATH_SETUP_BOTH")) {
+                    pe.updateCreateStatus(1, resv);
+                }
             }
         } else if (operation.equals("PATH_TEARDOWN")) {
             if (newStatus.equals(StateEngine.FAILED)) {
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv);
-                pe.updateTeardownStatus(1, resv);
+            } else {
+                String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_TEARDOWN", direction);
+                if (syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
+                    pe.updateTeardownStatus(1, resv);
+                }
             }
         }
    }
