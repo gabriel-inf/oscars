@@ -92,14 +92,14 @@ public class VendorCheckStatusJob implements Job {
                     if (allowLSP) {
                         isPathUp = results.get(ingressVlan);
                     }
-                    this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId+":"+ingressVlan);
+                    this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId+":"+ingressVlan+" isPathUp:"+isPathUp);
                     direction = "DOWN";
                     resvDirection.put(gri, direction);
                 } else if (which.equals("egress")) {
                     if (allowLSP) {
                         isPathUp = results.get(egressVlan);
                     }
-                    this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId+":"+egressVlan);
+                    this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId+":"+egressVlan+" isPathUp:"+isPathUp);
                     direction = "UP";
                     resvDirection.put(gri, direction);
                 }
