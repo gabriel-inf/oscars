@@ -36,6 +36,11 @@ public class VendorCheckStatusJob implements Job {
         this.log.debug(jobName + " for node: "+nodeId+ " vendor: "+vendor);
 
         ArrayList<String> vlanList = (ArrayList<String>) jobDataMap.get("vlanList");
+        String theList = "vlans to be checked: ";
+        for (String vlan : vlanList) {
+            theList = theList + vlan + " ";
+        }
+        this.log.debug(theList);
         HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) jobDataMap.get("checklist");
 
         HashMap<String, Boolean> results = new HashMap<String, Boolean>();
