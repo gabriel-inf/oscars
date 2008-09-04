@@ -313,8 +313,9 @@ public class LSP {
                 throw new PSSException(ex.getMessage());
             }
             Pattern pattern = Pattern.compile("/.*Eth VLAN (\\d{3,4}).*(UP|DOWN)/");
-            List<MatchResult> results = this.th.findAll(pattern, sb.toString());
+            List<MatchResult> results = TemplateHandler.findAll(pattern, sb.toString());
             for (MatchResult r: results) {
+                this.log.debug("group 1: ["+r.group(1)+ "] group 2: ["+r.group(2)+"]");
                 if (r.group(2).equals("UP")) {
                     currentVlans.put(r.group(1), true);
                     this.log.debug("Found that vlan:" + r.group(1) + " is UP");
