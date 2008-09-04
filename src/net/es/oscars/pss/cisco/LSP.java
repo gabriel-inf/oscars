@@ -317,15 +317,19 @@ public class LSP {
             for (MatchResult r: results) {
                 if (r.group(2).equals("UP")) {
                     currentVlans.put(r.group(1), true);
+                    this.log.debug("Found that vlan:" + r.group(1) + " is UP");
                 } else {
                     currentVlans.put(r.group(1), false);
+                    this.log.debug("Found that vlan:" + r.group(1) + " is DOWN");
                 }
             }
             for (String vlanId: vlanIds) {
                 if (!currentVlans.containsKey(vlanId)) {
                     vlanStatuses.put(vlanId, false);
+                    this.log.debug("Decided that vlan:" + vlanId + " is DOWN");
                 } else {
                     vlanStatuses.put(vlanId, currentVlans.get(vlanId));
+                    this.log.debug("Decided that vlan:" + vlanId + " is "+currentVlans.get(vlanId));
                 }
             }
             return vlanStatuses;
