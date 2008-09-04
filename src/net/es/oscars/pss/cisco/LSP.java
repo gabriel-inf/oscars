@@ -312,7 +312,7 @@ public class LSP {
             } catch (IOException ex) {
                 throw new PSSException(ex.getMessage());
             }
-            Pattern pattern = Pattern.compile("/.*Eth VLAN (\\d{3,4}).*(UP|DOWN)/");
+            Pattern pattern = Pattern.compile(".*Eth VLAN (\\d{3,4}).*(UP|DOWN)");
             List<MatchResult> results = TemplateHandler.findAll(pattern, sb.toString());
             for (MatchResult r: results) {
                 this.log.debug("group 1: ["+r.group(1)+ "] group 2: ["+r.group(2)+"]");
