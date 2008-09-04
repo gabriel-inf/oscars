@@ -73,7 +73,11 @@ public class TopologyManager {
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
-        this.setLocalDomain(this.props.getProperty("localdomain").trim());
+        String localdomain = this.props.getProperty("localdomain");
+        if(localdomain != null){
+            localdomain = localdomain.trim();
+        }
+        this.setLocalDomain(localdomain);
 
         this.domainDAO = new DomainDAO(this.dbname);
         this.nodeDAO = new NodeDAO(this.dbname);
