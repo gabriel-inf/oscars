@@ -315,22 +315,22 @@ public class LSP {
             Pattern pattern = Pattern.compile(".*Eth VLAN (\\d{3,4}).*(UP|DOWN)");
             List<MatchResult> results = TemplateHandler.findAll(pattern, sb.toString());
             for (MatchResult r: results) {
-                this.log.debug("group 1: ["+r.group(1)+ "] group 2: ["+r.group(2)+"]");
+//                this.log.debug("group 1: ["+r.group(1)+ "] group 2: ["+r.group(2)+"]");
                 if (r.group(2).equals("UP")) {
                     currentVlans.put(r.group(1), true);
-                    this.log.debug("Found that vlan:" + r.group(1) + " is UP");
+//                    this.log.debug("Found that vlan:" + r.group(1) + " is UP");
                 } else {
                     currentVlans.put(r.group(1), false);
-                    this.log.debug("Found that vlan:" + r.group(1) + " is DOWN");
+//                    this.log.debug("Found that vlan:" + r.group(1) + " is DOWN");
                 }
             }
             for (String vlanId: vlanIds) {
                 if (!currentVlans.containsKey(vlanId)) {
                     vlanStatuses.put(vlanId, false);
-                    this.log.debug("Decided that vlan:" + vlanId + " is DOWN");
+//                    this.log.debug("Decided that vlan:" + vlanId + " is DOWN");
                 } else {
                     vlanStatuses.put(vlanId, currentVlans.get(vlanId));
-                    this.log.debug("Decided that vlan:" + vlanId + " is "+currentVlans.get(vlanId));
+//                    this.log.debug("Decided that vlan:" + vlanId + " is "+currentVlans.get(vlanId));
                 }
             }
             return vlanStatuses;
