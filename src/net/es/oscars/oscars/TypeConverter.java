@@ -38,7 +38,7 @@ public class TypeConverter {
 
     private Logger log;
     private OSCARSCore core;
-    
+
     public TypeConverter() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
@@ -306,7 +306,7 @@ public class TypeConverter {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
             CtrlPlaneLinkContent cpLink = new CtrlPlaneLinkContent();
             CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
-            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
                                 new CtrlPlaneSwitchingCapabilitySpecificInfo();
             Link link = pathElem.getLink();
             String linkId = null;
@@ -323,7 +323,7 @@ public class TypeConverter {
                     linkId = nodeName + ": " + ipaddr.getIP();
                 }
             }
-            L2SwitchingCapabilityData l2scData = 
+            L2SwitchingCapabilityData l2scData =
                                            link.getL2SwitchingCapabilityData();
             if(l2scData == null){
                 swcap.setSwitchingcapType(swcapType);
@@ -604,6 +604,7 @@ public class TypeConverter {
     public String maskToRangeString(byte[] mask){
         int start = -2;//far away from 0
         String range = new String();
+        boolean allowsAny = true;
 
         for(int i = 0; i < mask.length; i++){
             for(int j = 0; j < 8; j++){
@@ -613,6 +614,7 @@ public class TypeConverter {
                         start = tag;
                     }
                 }else if(start != -2){
+                    allowsAny = false;
                     if(!range.equals("")){
                         range += ",";
                     }
@@ -623,6 +625,9 @@ public class TypeConverter {
                     start = -2;
                 }
             }
+        }
+        if (allowsAny) {
+            return "0-4096";
         }
 
         return range;
@@ -655,7 +660,7 @@ public class TypeConverter {
             return map;
         }
         StateEngine se = this.core.getStateEngine();
-        
+
         map.put("startSeconds", this.genHashVal(resv.getStartTime() + ""));
         map.put("endSeconds", this.genHashVal(resv.getEndTime() + ""));
         map.put("createSeconds", this.genHashVal(resv.getCreatedTime() + ""));
@@ -676,7 +681,7 @@ public class TypeConverter {
 
         return map;
     }
-    
+
     /**
      * Converts HashMap to a Reservation Hibernate bean
      *
@@ -688,7 +693,7 @@ public class TypeConverter {
         if(map == null){
             return resv;
         }
-        
+
         resv.setStartTime(Long.parseLong(map.get("startSeconds")[0]));
         resv.setEndTime(Long.parseLong(map.get("endSeconds")[0]));
         resv.setCreatedTime(Long.parseLong(map.get("createSeconds")[0]));
@@ -696,9 +701,9 @@ public class TypeConverter {
         resv.setDescription(map.get("description")[0]);
         resv.setGlobalReservationId(map.get("gri")[0]);
         resv.setLogin(map.get("userLogin")[0]);
-        
+
         //TODO: Fill-in pathInfo
-        
+
         return resv;
     }
 
@@ -761,18 +766,18 @@ public class TypeConverter {
             map.put("burstLimit", this.genHashVal(mplsData.getBurstLimit() + ""));
             map.put("lspClass", this.genHashVal(mplsData.getLspClass()));
         }
-        
-         
+
+
         if(pathInfo != null){
             String pathType = pathInfo.getPathType() == null ? "strict" : pathInfo.getPathType();
             map.put("pathType", this.genHashVal(pathType));
         }
-        
+
         /* If given pathInfo add info to hash map*/
         Layer2Info l2Info = null;
         boolean usePathInfo = false;
         ArrayList<String> interHopInfo = new ArrayList<String>();
-        if(pathInfo != null && pathInfo.getPath() != null 
+        if(pathInfo != null && pathInfo.getPath() != null
            && pathInfo.getPath().getHop() != null){
             for(CtrlPlaneHopContent hop :  pathInfo.getPath().getHop()){
                 String urn = this.hopToURN(hop);
@@ -781,7 +786,7 @@ public class TypeConverter {
                 if(link != null){
                     String infoVal = link.getTrafficEngineeringMetric();
                     CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
-                    CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                    CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
                         swcap.getSwitchingCapabilitySpecificInfo();
                     infoVal += ";" + swcap.getSwitchingcapType();
                     infoVal += ";" + swcap.getEncodingType();
@@ -800,7 +805,7 @@ public class TypeConverter {
             l2Info = pathInfo.getLayer2Info();
             usePathInfo = true;
         }
-        
+
         if(!usePathInfo){
             while(interPathElem != null){
                 Link link = interPathElem.getLink();
@@ -826,7 +831,7 @@ public class TypeConverter {
         }
         map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
         map.put("interdomainHopInfo", interHopInfo.toArray(new String[interHopInfo.size()]));
-        
+
         ArrayList<String> intraHopInfo = new ArrayList<String>();
         while(pathElem != null){
             Link link = pathElem.getLink();
@@ -842,10 +847,10 @@ public class TypeConverter {
         }
         map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
         map.put("intradomainHopInfo", intraHopInfo.toArray(new String[intraHopInfo.size()]));
-        
+
         return map;
     }
-    
+
     /**
      * Creates a ';' delimited String with detailed information about each hop
      * in a path.
@@ -870,10 +875,10 @@ public class TypeConverter {
             //TEMetric;swcap;enc;MTU;capbility
             infoVal += ";" + defaulSwcapType + ";" + defaulEncType + ";unimplemented";
         }
-        
+
         return infoVal;
      }
-     
+
     /**
      * Converts PathElem Hibernate bean of a layer2 link to a HashMap
      *
@@ -1020,8 +1025,8 @@ public class TypeConverter {
            /idc:event/idc:localDetails */
         String[] path = map.get("interdomainPath");
         String[] hopInfo = map.get("interdomainHopInfo");
-        String[] intra = map.get("intradomainPath"); 
-        String[] intraHopInfo = map.get("intradomainHopInfo"); 
+        String[] intra = map.get("intradomainPath");
+        String[] intraHopInfo = map.get("intradomainHopInfo");
         //if no interdomain path show the local ingress/egress
         /* TODO: Conversion from intradomain to interdomain should be done
             in domain-specific module like Pathfinder */
@@ -1097,9 +1102,9 @@ public class TypeConverter {
 
         return details;
     }
-    
+
     /**
-     * Converts a string array of a path and its corresponding array of hop 
+     * Converts a string array of a path and its corresponding array of hop
      * details to a CtrlPlanePathContent object.
      *
      * @param path the path to convert as an array of URNs
@@ -1144,7 +1149,7 @@ public class TypeConverter {
             }else if("domain".equals(hopType)){
                 hop.setDomainIdRef(path[i]);
             }
-            
+
             wsPath.addHop(hop);
         }
         return wsPath;
@@ -1206,22 +1211,22 @@ public class TypeConverter {
 
         return mplsData;
      }
-     
+
      /**
      * Returns the URN of the any type based on the hop object ID or
      * IDRef field. Also does some validation Axis2 is missing.
-     * 
+     *
      * @param link the CtrlPlaneHopContent to parse
      * @return the domain,node,port or link URN of the hop, null if invalid hop
      */
     public String hopToURN(CtrlPlaneHopContent hop){
         return this.hopToURN(hop, "any");
     }
-    
+
      /**
      * Returns the URN of the given type based on the hop object ID or
      * IDRef field. Also does some validation Axis2 is missing.
-     * 
+     *
      * @param link the CtrlPlaneHopContent to parse
      * @return the domain,node,port or link URN of the hop, null if invalid hop
      */
@@ -1229,14 +1234,14 @@ public class TypeConverter {
         if(hop == null){
             return null;
         }
-        if(type == null || !("link".equals(type) || "any".equals(type) || 
+        if(type == null || !("link".equals(type) || "any".equals(type) ||
            "port".equals(type) || "node".equals(type) || "domain".equals(type))){
             return null;
         }
         String urn = null;
         int urnType = 0;
         int childCount = 0;
-        
+
         String linkIdRef = hop.getLinkIdRef();
         if(linkIdRef != null){
             urn = linkIdRef;
@@ -1252,7 +1257,7 @@ public class TypeConverter {
         if("link".equals(type)){
             return urn;
         }
-        
+
         String portIdRef = hop.getPortIdRef();
         if(portIdRef != null){
             urn = portIdRef;
@@ -1270,7 +1275,7 @@ public class TypeConverter {
         }else if(urnType == 2){
             return null;
         }
-        
+
         String nodeIdRef = hop.getNodeIdRef();
         if(nodeIdRef != null){
             urn = nodeIdRef;
@@ -1288,7 +1293,7 @@ public class TypeConverter {
         }else if(urnType == 3){
             return null;
         }
-        
+
         String domainIdRef = hop.getDomainIdRef();
         if(domainIdRef != null){
             urn = domainIdRef;
@@ -1306,8 +1311,8 @@ public class TypeConverter {
         }else if(urnType == 4){
             return null;
         }
-        
-        /* we have to tcheck errors ourselves because xsd:choice 
+
+        /* we have to tcheck errors ourselves because xsd:choice
           elements are clunky in Axis2 */
         if(urn == null){
             this.log.debug("Empty hop");
@@ -1316,12 +1321,12 @@ public class TypeConverter {
                            "domain, node, port or link object/reference");
             urn = null;
         }
-        
+
         return urn;
     }
-    
+
     /**
-     * Converts a path in a PathInfo object that may contain a mixture of 
+     * Converts a path in a PathInfo object that may contain a mixture of
      * references and objects and converts it to a path containing only references.
      * It then returns a new copy of the PathInfo object containing the converted
      * path.
@@ -1347,7 +1352,7 @@ public class TypeConverter {
         refPathInfo.setLayer2Info(pathInfo.getLayer2Info());
         refPathInfo.setLayer3Info(pathInfo.getLayer3Info());
         refPathInfo.setMplsInfo(pathInfo.getMplsInfo());
-        
+
         refPath.setId(path.getId());
         for(CtrlPlaneHopContent hop : hops){
             String urn = this.hopToURN(hop);
@@ -1374,10 +1379,10 @@ public class TypeConverter {
             refPath.addHop(refHop);
         }
         refPathInfo.setPath(refPath);
-        
+
         return refPathInfo;
      }
-     
+
      /**
       * Merge additional hops in the new path with an original path while maintaining any
       * objects in that path. Useful for pathfinders that only work on paths containing
@@ -1394,14 +1399,14 @@ public class TypeConverter {
         CtrlPlanePathContent origPath = origPathInfo.getPath();
         CtrlPlanePathContent newPath = newPathInfo.getPath();
         HashMap<String, CtrlPlaneHopContent> hopMap = new  HashMap<String, CtrlPlaneHopContent>();
-        if(newPath == null || newPath.getHop() == null || 
+        if(newPath == null || newPath.getHop() == null ||
            newPath.getHop().length == 0){
             return;
         }else if(origPath == null || origPath.getHop() == null){
             origPath = new CtrlPlanePathContent();
             origPath.setHop(new CtrlPlaneHopContent[0]);
         }
-        
+
         CtrlPlaneHopContent[] origHops = origPath.getHop();
         CtrlPlaneHopContent[] newHops = newPath.getHop();
         for(CtrlPlaneHopContent origHop : origHops){
@@ -1423,5 +1428,5 @@ public class TypeConverter {
             origPathInfo.setPath(mergedPath);
         }
       }
-     
+
 }
