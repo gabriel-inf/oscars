@@ -19,8 +19,14 @@ public class VendorCheckStatusJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
 
-        this.core = OSCARSCore.getInstance();
+        // only check status 5 sec after setup is complete!
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            this.log.error(ex);
+        }
 
+        this.core = OSCARSCore.getInstance();
 
         String bssDbName = core.getBssDbName();
         // Need to get our own Hibernate session since this is a new thread
