@@ -26,8 +26,13 @@ CLASSPATH=$CLASSPATH:.
 export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
+TERCE_PARAMS=$*
 # start up logging to file
+if [ -z $1 ]; then
+   TERCE_PARAMS="http://127.0.0.1:8080/axis2/services/TERCE"
+fi
+
 javac `pwd`/TERCETopologyUpdate.java
-java -Djava.net.preferIPv4Stack=true TERCETopologyUpdate $*
+java -Djava.net.preferIPv4Stack=true TERCETopologyUpdate $TERCE_PARAMS
 
 exit 1
