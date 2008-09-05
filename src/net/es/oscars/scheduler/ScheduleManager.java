@@ -87,7 +87,7 @@ public class ScheduleManager {
 
 
     @SuppressWarnings("unchecked")
-    public void processQueue() {
+    public synchronized void processQueue() {
         try {
             this.pauseScheduler();
 
