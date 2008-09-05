@@ -90,7 +90,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }catch(BSSException e){
             throw new PathfinderException(e.getMessage());
         }
-        
+
         this.log.debug("findPath.End");
         return pathInfo;
     }
@@ -110,13 +110,14 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (l2Info != null) {
             String src = l2Info.getSrcEndpoint();
             String srcURN = this.resolveToFQTI(src);
-            CtrlPlaneHopContent[] hops = pathInfo.getPath().getHop();
-            for (int i = 0; i < hops.length; i++) {
-                hops[i].setLinkIdRef(this.resolveToFQTI(hops[i].getLinkIdRef()));
+            if (pathInfo.getPath() != null) {
+                CtrlPlaneHopContent[] hops = pathInfo.getPath().getHop();
+                for (int i = 0; i < hops.length; i++) {
+                    hops[i].setLinkIdRef(this.resolveToFQTI(hops[i].getLinkIdRef()));
+                }
+                pathInfo.getPath().setHop(hops);
             }
-            pathInfo.getPath().setHop(hops);
             return super.findIngress(srcURN, pathInfo.getPath());
-
         }
 
         //...if layer 3 request then pass to TraceroutePathfinder.findIngress
