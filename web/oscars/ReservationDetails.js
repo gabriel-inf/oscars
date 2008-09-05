@@ -151,17 +151,20 @@ oscars.ReservationDetails.cloneReservation = function () {
     if (pathSectionNode.style.display != "none") {
         var tableNode = dojo.byId("pathReplace");
         var tbodyNode = tableNode.firstChild;
-        var trNodes = tbodyNode.childNodes;
-        var pathStr = "";
-        for (i = 0; i < trNodes.length; i++) {
-            // get contents of text element in td (hop)
-            pathStr += trNodes[i].firstChild.firstChild.data + "\n";
-        }
-        // don't clone layer 3 if no longer valid
-        if (!pathStr.match(/Out of date IP/)) {
-            // set path text area on create reservation page
-            var textareaWidget = dijit.byId("explicitPath");
-            textareaWidget.setValue(pathStr);
+        // failed reservation might not have path
+        if (tbodyNode) {
+            var trNodes = tbodyNode.childNodes;
+            var pathStr = "";
+            for (i = 0; i < trNodes.length; i++) {
+                // get contents of text element in td (hop)
+                pathStr += trNodes[i].firstChild.firstChild.data + "\n";
+            }
+            // don't clone layer 3 if no longer valid
+            if (!pathStr.match(/Out of date IP/)) {
+                // set path text area on create reservation page
+                var textareaWidget = dijit.byId("explicitPath");
+                textareaWidget.setValue(pathStr);
+            }
         }
     }
     node = dojo.byId("vlanReplace");
