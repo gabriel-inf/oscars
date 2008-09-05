@@ -6,20 +6,21 @@ import net.es.oscars.bss.*;
 
 public class VendorStatusSemaphore {
     private static HashMap<String, String> statusMap = null;
+    private static HashMap<String, String> setupMap = null;
 
     private VendorStatusSemaphore() {
     }
 
     public static synchronized String syncStatusCheck(String gri, String operation, String direction) throws BSSException {
         String reverse;
-        if (!operation.equals("PATH_SETUP") && !operation.equals("PATH_TEARDOWN")) {
+        if (!operation.equals("SETUP") && !operation.equals("TEARDOWN")) {
             throw new BSSException("Invalid operation:"+operation);
         }
 
-        if (direction.equals("DOWN")) {
-            reverse = "UP";
-        } else if (direction.equals("UP")) {
-            reverse = "DOWN";
+        if (direction.equals("FORWARD")) {
+            reverse = "REVERSE";
+        } else if (direction.equals("REVERSE")) {
+            reverse = "FORWARD";
         } else {
             throw new BSSException("Invalid direction:"+direction);
         }
@@ -46,6 +47,47 @@ public class VendorStatusSemaphore {
             return newStatus;
         } else {
             throw new BSSException("Corrupt statusMap for gri: "+gri+" st: "+statusMap.get(gri)+" dir: "+direction+" op: "+operation);
+        }
+    }
+
+
+
+    public static synchronized String syncSetupCheck(String gri, String operation, String direction) throws BSSException {
+        String reverse;
+        if (!operation.equals("SETUP") && !operation.equals("TEARDOWN")) {
+            throw new BSSException("Invalid operation:"+operation);
+        }
+
+        if (direction.equals("forward")) {
+            reverse = "reverse";
+        } else if (direction.equals("reverse")) {
+            reverse = "forward";
+        } else {
+            throw new BSSException("Invalid direction:"+direction);
+        }
+
+        if (setupMap == null) {
+            setupMap = new HashMap<String, String>();
+        }
+
+        String newStatus;
+        if (setupMap.get(gri) == null) {
+            newStatus = operation+"_"+direction;
+            setupMap.put(gri, newStatus);
+            return newStatus;
+        } else if (setupMap.get(gri).equals(operation+"_"+direction)) {
+            newStatus = operation+"_"+direction;
+            return newStatus;
+        } else if (setupMap.get(gri).equals(operation+"_"+reverse)) {
+            newStatus = operation+"_BOTH";
+            setupMap.put(gri, newStatus);
+            return newStatus;
+        } else if (setupMap.get(gri).equals(operation+"_BOTH")) {
+            newStatus = operation+"_BOTH";
+            setupMap.put(gri, newStatus);
+            return newStatus;
+        } else {
+            throw new BSSException("Corrupt setupMap for gri: "+gri+" st: "+setupMap.get(gri)+" dir: "+direction+" op: "+operation);
         }
 
     }

@@ -102,36 +102,38 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         }
 
         // All done with configuring routers, now update resv status
-        // We must add a reservation to maintainStatus's checklist
-        // CheckStatus job
         try {
             status = StateEngine.getStatus(resv);
+            // path was not set up, fail.
             if (!pathWasSetup) {
                 status = stateEngine.updateStatus(resv, StateEngine.FAILED);
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errString);
             } else {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("desiredStatus", StateEngine.ACTIVE);
-                params.put("operation", "PATH_SETUP");
-                if (direction.equals("forward")) {
-                    this.log.debug("setting forward status check params");
-                    params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
-                    params.put("ingressVlan", lspData.getVlanTag());
-                    params.put("ingressVendor", routerType);
-                } else if (direction.equals("reverse")) {
-                    this.log.debug("setting reverse status check params");
-                    params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
-                    params.put("egressVlan", lspData.getVlanTag());
-                    params.put("egressVendor", routerType);
+                String syncedStatus = VendorStatusSemaphore.syncSetupCheck(gri, "PATH_SETUP", direction);
+                // make sure both path setup operations have completed
+                if (syncedStatus.equals("PATH_SETUP_BOTH")) {
+                    ArrayList<String> directions = new ArrayList<String>();
+                    directions.add("forward");
+                    directions.add("reverse");
+                    // add the reservation to the status checklist
+                    for (String dir : directions) {
+                        HashMap<String, String> params = new HashMap<String, String>();
+                        params.put("desiredStatus", StateEngine.ACTIVE);
+                        params.put("operation", "PATH_SETUP");
+                        if (dir.equals("forward")) {
+                            this.log.debug("setting forward status check params");
+                            params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
+                            params.put("ingressVlan", lspData.getVlanTag());
+                            params.put("ingressVendor", routerType);
+                        } else if (dir.equals("reverse")) {
+                            this.log.debug("setting reverse status check params");
+                            params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
+                            params.put("egressVlan", lspData.getVlanTag());
+                            params.put("egressVendor", routerType);
+                        }
+                        VendorMaintainStatusJob.addToCheckList(gri, params);
+                    }
                 }
-                VendorMaintainStatusJob.addToCheckList(gri, params);
-                /*
-                Iterator<String> paramIt = VendorMaintainStatusJob.checklist.get(gri).keySet().iterator();
-                while (paramIt.hasNext()) {
-                    String key = paramIt.next();
-                    this.log.debug("key: "+key+ " val: "+VendorMaintainStatusJob.checklist.get(gri).get(key));
-               }
-               */
             }
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);

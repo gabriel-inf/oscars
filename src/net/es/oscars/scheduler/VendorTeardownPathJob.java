@@ -1,4 +1,5 @@
 package net.es.oscars.scheduler;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.es.oscars.bss.*;
@@ -101,25 +102,37 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             }
         }
 
+        // All done with configuring routers, now update resv status
         try {
             status = StateEngine.getStatus(resv);
+            // path was not torn down, fail.
             if (!pathWasTornDown) {
                 status = stateEngine.updateStatus(resv, StateEngine.FAILED);
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errString);
             } else {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("desiredStatus", newStatus);
-                params.put("operation", "PATH_TEARDOWN");
-                if (direction.equals("forward")) {
-                    params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
-                    params.put("ingressVlan", lspData.getVlanTag());
-                    params.put("ingressVendor", routerType);
-                } else if (direction.equals("reverse")) {
-                    params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
-                    params.put("egressVlan", lspData.getVlanTag());
-                    params.put("egressVendor", routerType);
+                String syncedStatus = VendorStatusSemaphore.syncSetupCheck(gri, "PATH_TEARDOWN", direction);
+                // make sure both path teardown operations have completed
+                if (syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
+                    ArrayList<String> directions = new ArrayList<String>();
+                    directions.add("forward");
+                    directions.add("reverse");
+                    // add the reservation to the status checklist
+                    for (String dir : directions) {
+                        HashMap<String, String> params = new HashMap<String, String>();
+                        params.put("desiredStatus", newStatus);
+                        params.put("operation", "PATH_TEARDOWN");
+                        if (dir.equals("forward")) {
+                            params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
+                            params.put("ingressVlan", lspData.getVlanTag());
+                            params.put("ingressVendor", routerType);
+                        } else if (dir.equals("reverse")) {
+                            params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
+                            params.put("egressVlan", lspData.getVlanTag());
+                            params.put("egressVendor", routerType);
+                        }
+                        VendorMaintainStatusJob.addToCheckList(gri, params);
+                    }
                 }
-                VendorMaintainStatusJob.addToCheckList(gri, params);
             }
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
