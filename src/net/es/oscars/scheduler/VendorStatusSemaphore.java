@@ -12,10 +12,16 @@ public class VendorStatusSemaphore {
     }
 
     public static synchronized String syncStatusCheck(String gri, String operation, String direction) throws BSSException {
-        String reverse;
+        String reverseOp;
         if (!operation.equals("PATH_SETUP") && !operation.equals("PATH_TEARDOWN")) {
             throw new BSSException("Invalid operation:"+operation);
+        } else if (operation.equals("PATH_SETUP")) {
+            reverseOp = "PATH_TEARDOWN";
+        } else {
+            reverseOp = "PATH_SETUP";
         }
+
+        String reverse;
 
         if (direction.equals("FORWARD")) {
             reverse = "REVERSE";
@@ -36,6 +42,7 @@ public class VendorStatusSemaphore {
             return newStatus;
         } else if (statusMap.get(gri).equals(operation+"_"+direction)) {
             newStatus = operation+"_"+direction;
+            statusMap.put(gri, newStatus);
             return newStatus;
         } else if (statusMap.get(gri).equals(operation+"_"+reverse)) {
             newStatus = operation+"_BOTH";
@@ -43,6 +50,10 @@ public class VendorStatusSemaphore {
             return newStatus;
         } else if (statusMap.get(gri).equals(operation+"_BOTH")) {
             newStatus = operation+"_BOTH";
+            statusMap.put(gri, newStatus);
+            return newStatus;
+        } else if (statusMap.get(gri).startsWith(reverseOp)) {
+            newStatus = operation+"_"+direction;
             statusMap.put(gri, newStatus);
             return newStatus;
         } else {
@@ -53,11 +64,16 @@ public class VendorStatusSemaphore {
 
 
     public static synchronized String syncSetupCheck(String gri, String operation, String direction) throws BSSException {
-        String reverse;
+        String reverseOp;
         if (!operation.equals("PATH_SETUP") && !operation.equals("PATH_TEARDOWN")) {
             throw new BSSException("Invalid operation:"+operation);
+        } else if (operation.equals("PATH_SETUP")) {
+            reverseOp = "PATH_TEARDOWN";
+        } else {
+            reverseOp = "PATH_SETUP";
         }
 
+        String reverse;
         if (direction.equals("forward")) {
             reverse = "reverse";
         } else if (direction.equals("reverse")) {
@@ -84,6 +100,10 @@ public class VendorStatusSemaphore {
             return newStatus;
         } else if (setupMap.get(gri).equals(operation+"_BOTH")) {
             newStatus = operation+"_BOTH";
+            setupMap.put(gri, newStatus);
+            return newStatus;
+        } else if (setupMap.get(gri).startsWith(reverseOp)) {
+            newStatus = operation+"_"+direction;
             setupMap.put(gri, newStatus);
             return newStatus;
         } else {

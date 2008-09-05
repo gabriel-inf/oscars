@@ -21,7 +21,7 @@ public class VendorCheckStatusJob implements Job {
 
         // only check status 5 sec after setup is complete!
         try {
-            Thread.sleep(5000);
+            Thread.sleep(60000);
         } catch (InterruptedException ex) {
             this.log.error(ex);
         }
