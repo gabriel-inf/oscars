@@ -46,7 +46,7 @@ public class TopologyXMLParser {
      * Constructor initializes logging and local properties
      */
     public TopologyXMLParser(Namespace ns) {
-//        this.log = Logger.getLogger(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
         this.ns = ns;
         this.remoteLinkMap = new Hashtable<String, String>();
         this.elementMap = new Hashtable<String, Object>();
@@ -63,7 +63,7 @@ public class TopologyXMLParser {
      */
     public Topology parse(Element topology, String operation) {
         // TODO: support different operations
-        System.out.println("parsing domains");
+        this.log.debug("parsing domains");
 
         Topology retTopology = new Topology();
 
@@ -77,7 +77,7 @@ public class TopologyXMLParser {
 
             domainId = TopologyUtil.getLSTI(domainId, "Domain");
 
-            System.out.println("  Got domain, id: [" + domTopoIdent + "]");
+            this.log.debug("  Got domain, id: [" + domTopoIdent + "]");
 
             Domain domDB = new Domain(true);
 
@@ -108,11 +108,16 @@ public class TopologyXMLParser {
                 Hashtable<String, String> urnInfo = URNParser.parseTopoIdent(remoteLinkId);
                 // create a new domain, node, port for this link, as needed
 
-                System.out.println("Remote link id: "+remoteLinkId);
+                this.log.debug("Remote link id: "+remoteLinkId);
 
                 Domain d;
                 Node n;
                 Port p;
+
+                if (urnInfo.get("type") == null || (urnInfo.get("type").equals("link") == false)) {
+                    this.log.error("Received an invalid link identifier for a remote link id: '"+remoteLinkId+"'");
+                    continue;
+                }
 
                 p = (Port) elementMap.get(urnInfo.get("portFQID"));
                 if (p == null) {
@@ -162,7 +167,7 @@ public class TopologyXMLParser {
      */
     @SuppressWarnings("unchecked")
     protected void parseNodes(Element domXML, Domain domDB) {
-        System.out.println("parsing nodes");
+        this.log.debug("parsing nodes");
 
         String nodeTopoIdent = "";
 
@@ -174,7 +179,7 @@ public class TopologyXMLParser {
             String fqid = nodeXML.getAttributeValue("id");
             nodeTopoIdent = TopologyUtil.getLSTI(fqid, "Node");
 
-            System.out.println("  got node, topo id: [" + nodeTopoIdent + "]");
+            this.log.debug("  got node, topo id: [" + nodeTopoIdent + "]");
 
 
             Node nodeDB = new Node(domDB, true);
@@ -210,19 +215,19 @@ public class TopologyXMLParser {
         }
 
         NodeAddress addrDB = nodeDB.getNodeAddress();
-        System.out.println(" node address is: [" + address + "]");
+        this.log.debug(" node address is: [" + address + "]");
 
         // TODO: figure out what to do re: different operations
         if (address.equals("")) {
-            System.out.println(" no address, setting to null");
+            this.log.debug(" no address, setting to null");
             nodeDB.setNodeAddress(null);
             return;
         } else {
             if (addrDB == null) {
-                System.out.println(" new address");
+                this.log.debug(" new address");
                 addrDB = new NodeAddress();
             } else {
-                System.out.println(" replacing address");
+                this.log.debug(" replacing address");
             }
             addrDB.setAddress(address);
             addrDB.setNode(nodeDB);
@@ -248,7 +253,7 @@ public class TopologyXMLParser {
 
             String fqid = portXML.getAttributeValue("id");
 
-            System.out.println("  got port, id:[" + fqid + "]");
+            this.log.debug("  got port, id:[" + fqid + "]");
 
             Port portDB = new Port(nodeDB, true);
 
@@ -313,7 +318,7 @@ public class TopologyXMLParser {
                 fqid = tempLinkId;
                 ipAddress = null;
             }
-            System.out.println("  link: [" + fqid + "]");
+            this.log.debug("  link: [" + fqid + "]");
 
             Link linkDB = new Link(portDB, true);
             linkTopoIdent = TopologyUtil.getLSTI(fqid, "Link");
@@ -423,7 +428,7 @@ public class TopologyXMLParser {
         ifceMTU = Integer.parseInt(ifceMTUXML.getValue());
         vlanAv = vlanAvXML.getValue();
 
-        System.out.println("l2cap: mtu: [" + new Integer(ifceMTU).toString() + "] vlanAv: [" + vlanAv + "]");
+        this.log.debug("l2cap: mtu: [" + new Integer(ifceMTU).toString() + "] vlanAv: [" + vlanAv + "]");
 
         L2SwitchingCapabilityData l2Cap = new L2SwitchingCapabilityData();
         l2Cap.setInterfaceMTU(ifceMTU);
