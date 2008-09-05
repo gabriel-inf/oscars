@@ -13,7 +13,7 @@ public class VendorStatusSemaphore {
 
     public static synchronized String syncStatusCheck(String gri, String operation, String direction) throws BSSException {
         String reverse;
-        if (!operation.equals("SETUP") && !operation.equals("TEARDOWN")) {
+        if (!operation.equals("PATH_SETUP") && !operation.equals("PATH_TEARDOWN")) {
             throw new BSSException("Invalid operation:"+operation);
         }
 
@@ -54,7 +54,7 @@ public class VendorStatusSemaphore {
 
     public static synchronized String syncSetupCheck(String gri, String operation, String direction) throws BSSException {
         String reverse;
-        if (!operation.equals("SETUP") && !operation.equals("TEARDOWN")) {
+        if (!operation.equals("PATH_SETUP") && !operation.equals("PATH_TEARDOWN")) {
             throw new BSSException("Invalid operation:"+operation);
         }
 
