@@ -1,24 +1,10 @@
 package net.es.oscars.lookup;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Properties;
+import java.util.*;
+import org.apache.log4j.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
+import edu.internet2.perfsonar.dcn.DCNLookupClient;
+import net.es.oscars.PropHandler;
 
 
 /**
@@ -29,16 +15,54 @@ import org.xml.sax.SAXException;
  */
 public class PSLookupClient {
     private Logger log;
-    private HttpClient client;
-    private String fname;
-    private String url;
-    private String xmlRequest;
-
-
+    private Properties props;
+    private DCNLookupClient client;
+    
     /** Contructor */
     public PSLookupClient(){
         this.log = Logger.getLogger(this.getClass());
-        this.client = new HttpClient();
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("lookup", true);
+        String hints = this.props.getProperty("hints");
+        String[] gLSs = null;
+        String[] hLSs = null;
+        
+        int i = 0;
+        ArrayList<String> gLSList = new ArrayList<String>(); 
+        while(this.props.getProperty("global." + i) != null){
+            gLSList.add(this.props.getProperty("global." + i));
+        }
+        if(!gLSList.isEmpty()){
+            gLSList.toArray(gLSs);
+        }
+        
+        i = 0;
+        ArrayList<String> hLSList = new ArrayList<String>(); 
+        while(this.props.getProperty("home." + i) != null){
+            hLSList.add(this.props.getProperty("home." + i));
+        }
+        if(!hLSList.isEmpty()){
+            hLSList.toArray(hLSs);
+        }
+        
+        String useGlobals = this.props.getProperty("useGlobal");
+        if(useGlobals != null){
+            this.client.setUseGlobalLS("1".equals(useGlobals));
+        }
+        
+        try{
+            if(gLSs != null || hLSs != null){
+                this.client = new DCNLookupClient(gLSs, hLSs);
+            }else if(hints != null){
+                this.client = new DCNLookupClient(hints);
+            }else{
+                throw new Exception("Cannot initialize perfSONAR lookup client " +
+                    "because missing required properties. Please set " +
+                    "lookup.hints, lookup.global.1 or lookup.home.1 in oscars.properties");
+            }
+        }catch(Exception e){
+            this.log.error(e.getMessage());
+        }
     }
 
     /**
@@ -50,130 +74,20 @@ public class PSLookupClient {
      * throws BSSException
      */
     public String lookup(String hostname) throws LookupException {
+        if(this.client == null){
+            this.log.error("Cannot use perfSONAR lookup client " +
+                "because missing required properties. Please set " +
+                "lookup.hints, lookup.global.1 or lookup.home.1 in oscars.properties");
+            throw new LookupException("Cannot lookup " + hostname + 
+                    " because lookup client not intialized");
+        }
         String urn = null;
-        Document topologyXMLDoc = null;
-
-        if (hostname == null) {
-            return null;
-        }
-        //Generate and send response
         try{
-            PostMethod postMethod = this.generateRequest(this.url, hostname);
-            String response = this.sendRequest(postMethod);
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            ByteArrayInputStream in = new ByteArrayInputStream(response.getBytes());
-            topologyXMLDoc = docBuilder.parse(in);
-        }catch (HttpException e) {
-            this.log.error("HTTP Error: " + e.getMessage());
-            throw new LookupException("HTTP Error: " + e.getMessage());
-        }catch (SAXException e) {
-            this.log.error("SAX Error: " + e.getMessage());
-            throw new LookupException("SAX Error: " + e.getMessage());
-        }catch (ParserConfigurationException e) {
-            this.log.error("Parser Error: " + e.getMessage());
-            throw new LookupException("Parser Error: " + e.getMessage());
-        }catch (IOException e) {
-            this.log.error("IO Error: " + e.getMessage());
-            throw new LookupException("IO Error: " + e.getMessage());
+            urn =this.client.lookupHost(hostname);
+        }catch(Exception e){
+            throw new LookupException(e.getMessage());
         }
-
-        //Parse response
-        NodeList urnList = topologyXMLDoc.getElementsByTagName("psservice:datum");
-        Node urnNode = urnList.item(0);
-        if(urnNode == null){
-            return null;
-        }
-
-        urn = urnNode.getTextContent();
-        if(urn == null || urn.equals("Nothing returned for search.")){
-            throw new LookupException("Lookup service could not find "+hostname);
-        }
-
-        //return urn with trailing whitespace removed
-        return urn.replaceAll("\\s$", "");
-    }
-
-    /**
-     * Private method that creates the request to send to the lookup service.
-     * It reads an XML file, replaces the correct fieldswith the hostname,
-     * and returns a PostMethod for use by HTTPClient
-     *
-     * @param url the URL of the perfSONAR lookup service
-     * @param hostname the name of the host to lookup
-     * @return a PostMethod that is callable by HttpClient
-     * @throws IOException
-     */
-    private PostMethod generateRequest(String url, String hostname)
-        throws IOException{
-        PostMethod postMethod = new PostMethod(url);
-
-        if (this.getXmlRequest() == null || this.getXmlRequest().equals("")) {
-            this.readXmlRequest(this.fname);
-        }
-
-        String thisXmlRequest = xmlRequest.replaceAll("<!--hostname-->", hostname);
-        StringRequestEntity entity = new StringRequestEntity(thisXmlRequest, "text/xml",null);
-        postMethod.setRequestEntity(entity);
-
-        return postMethod;
-    }
-
-    private void readXmlRequest(String filename) throws IOException {
-        if (filename != null && !filename.equals("")) {
-            FileReader fin = new FileReader(filename);
-            StringBuilder xmlRequestBuilder = new StringBuilder("");
-
-            char[] buf = new char[1500];
-            while(fin.read(buf, 0, buf.length) > 0){
-                xmlRequestBuilder.append(buf);
-            }
-            this.setXmlRequest(xmlRequestBuilder.toString());
-        } else {
-            throw new IOException("Empty filename!");
-        }
-    }
-
-    /**
-     * Sends the given lookup request to the server
-     *
-     * @param postMethod the PostMethod created by a call to generateRequest
-     * @return the raw XML response from the server
-     * @throws HttpException
-     * @throwsIOException
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     */
-    private String sendRequest(PostMethod postMethod)
-            throws HttpException, IOException, ParserConfigurationException, SAXException {
-        int statusCode = client.executeMethod(postMethod);
-        this.log.info("LOOKUP REQUEST HTTP STATUS: " + statusCode);
-        String response = postMethod.getResponseBodyAsString();
-        return response;
-    }
-
-    public String getFname() {
-        return fname;
-    }
-
-    public void setFname(String fname) {
-        this.fname = fname;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getXmlRequest() {
-        return xmlRequest;
-    }
-
-    public void setXmlRequest(String xmlRequest) {
-        this.xmlRequest = xmlRequest;
+        return urn;
     }
 }
 
