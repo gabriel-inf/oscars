@@ -19,19 +19,25 @@ public class IDCOrgUtil extends IDCCmdUtil{
         this.dbname = "aaa";
     }
     
+     public String addOrg(){
+        return this.addOrg(true);
+     }
+    
     /**
      * Main logic that adds organization to the database
      *
      */
-    public void addOrg(){
+    public String addOrg(boolean initDb){
         Scanner in = new Scanner(System.in);
         String name = readInput(in, "Organization Name", "", true);
 
         /* Init database */
-        Initializer initializer = new Initializer();
-        ArrayList<String> dbnames = new ArrayList<String>();
-        dbnames.add(this.dbname);
-        initializer.initDatabase(dbnames);
+        if(initDb){
+            Initializer initializer = new Initializer();
+            ArrayList<String> dbnames = new ArrayList<String>();
+            dbnames.add(this.dbname);
+            initializer.initDatabase(dbnames);
+        }
         try { // if there is a unique index defined on the institution name 
               // hibernate will throw an exception if you try to add a duplicate name
             Session aaa =
@@ -42,12 +48,14 @@ public class IDCOrgUtil extends IDCCmdUtil{
             aaa.save(org);
             aaa.getTransaction().commit();
         } catch (HibernateException e){
+            e.printStackTrace();
             System.out.println("caught " + e.getClass().getName() + ": " + e.getMessage());
             System.out.println( name + " not added.");
-            return;
+            return null;
         }
         
         System.out.println("New organization '" + name + "' added.");
+        return name;
     }
     
     /**

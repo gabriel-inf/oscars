@@ -16,6 +16,7 @@ import org.hibernate.*;
  */
 public class IDCCmdUtil{
     protected String dbname;
+    protected String aaaDbName;
     protected Logger log;
     
     /**

@@ -3,6 +3,7 @@ import java.io.*;
 
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.*;
+import net.es.oscars.aaa.*;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
@@ -17,6 +18,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
     public IDCDomainUtil(){
         this.log = Logger.getLogger(this.getClass());
         this.dbname = "bss";
+        this.aaaDbName = "aaa";
     }
     
     /**
@@ -30,15 +32,18 @@ public class IDCDomainUtil extends IDCCmdUtil{
         Initializer initializer = new Initializer();
         ArrayList<String> dbnames = new ArrayList<String>();
         dbnames.add(this.dbname);
+        dbnames.add(this.aaaDbName);
         initializer.initDatabase(dbnames);
         Session bss =
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        
         bss.beginTransaction();
         Domain domain = new Domain();
         domain.setTopologyIdent(readInput(in, "Topology Identifier (i.e. mydomain.net)", "", true));
         domain.setUrl(readInput(in, "IDC URL", "", true));
         domain.setName(readInput(in, "Descriptive Name (for display purposes)", "", true));
         domain.setAbbrev(readInput(in, "Abbreviated Name (for display purposes)", "", true));
+        Site site = this.selectSite(domain, in);
         System.out.print("Is this your IDC's local domain? [y/n] ");
         String ans = in.next();
         if(ans.toLowerCase().startsWith("y")){
@@ -47,6 +52,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
             domain.setLocal(false);
         }
         bss.save(domain);
+        bss.save(site);
         bss.getTransaction().commit();
         
         System.out.println("New domain '" + domain.getTopologyIdent() + "' added.");
@@ -63,6 +69,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
         Initializer initializer = new Initializer();
         ArrayList<String> dbnames = new ArrayList<String>();
         dbnames.add(this.dbname);
+        dbnames.add(this.aaaDbName);
         initializer.initDatabase(dbnames);
         Session bss =
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
@@ -74,6 +81,12 @@ public class IDCDomainUtil extends IDCCmdUtil{
         
         if(ans.toLowerCase().startsWith("y")){
             domain.setPaths(null);
+            domain.setNodes(null);
+            Site site = domain.getSite();
+            domain.setSite(null);
+            if(site != null){
+                bss.delete(site);
+            }
             bss.delete(domain);
             System.out.println("Domain '" + domain.getTopologyIdent() + "' deleted.");
         }else{
@@ -111,6 +124,49 @@ public class IDCDomainUtil extends IDCCmdUtil{
         }
         
         return domains.get(n-1);
+    }
+    
+    /**
+     * Prints the current list of institutions in the database and allows the
+     * user to choose one
+     *
+     * @param the domain being created
+     * @param in the Scanner to use for accepting input
+     * @return the new site
+     */
+    protected Site selectSite(Domain domain, Scanner in){
+        Site site = new Site();
+        site.setDomain(domain);
+        Session aaa =
+            HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        aaa.beginTransaction();
+        InstitutionDAO instDAO = new InstitutionDAO(this.aaaDbName);
+        List<Institution> insts = instDAO.list();
+        int i = 1;
+        System.out.println();
+        for(Institution inst : insts){
+            System.out.println(i + ". " + inst.getName());
+            i++;
+        }
+        System.out.println(i + ". New...");
+         
+        System.out.print("Select the organization associated with this domain (by number): ");
+        int n = in.nextInt();
+        in.nextLine();
+        
+        if(n <= 0 || n > i){
+            System.err.println("Invalid organization number '" +n + "' entered");
+            System.exit(0);
+        }else if(n < i){
+            site.setName(insts.get(n-1).getName());
+            aaa.getTransaction().commit();
+        }else{
+            aaa.getTransaction().commit();
+            IDCOrgUtil orgUtil = new IDCOrgUtil();
+            site.setName(orgUtil.addOrg(false));
+        }
+        domain.setSite(site);
+        return site;
     }
     
     /**

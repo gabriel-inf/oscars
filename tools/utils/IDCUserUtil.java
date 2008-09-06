@@ -31,8 +31,6 @@ public class IDCUserUtil extends IDCCmdUtil{
     public void addUser(){
         Scanner in = new Scanner(System.in);
         String input = null;
-        EraserThread et = new EraserThread();
-        Thread mask = new Thread(et);
         Utils utils = new Utils();
         ArrayList<UserAttribute> userAttrs = new ArrayList<UserAttribute>();
         String salt = this.props.getProperty("salt");
@@ -50,11 +48,10 @@ public class IDCUserUtil extends IDCCmdUtil{
         /* Get login name */
         user.setLogin(this.readInput(in, "Login", "", true));
         
-        /* Get password with mask */
-        mask.start();
+        /* Get password */
         String pwd1 =  this.readInput(in, "Password", "", true);
         String pwd2 =  this.readInput(in, "Confirm Password", "", true);
-        et.stopMasking();
+
         try{
             String password = utils.checkPassword(pwd1, pwd2);
             pwd1= Jcrypt.crypt(salt, password);
