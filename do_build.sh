@@ -11,6 +11,7 @@ fi
 
 INSTALL_HOME=`pwd`;
 IDC_HOSTNAME=`hostname`;
+HAS_UNZIP=`whereis unzip`;
 
 # Find Ant
 if [ `which ant` ]; then
@@ -93,6 +94,11 @@ if [ $FOUND_AXIS == 0 ] || [ $FOUND_RAMPART == 0 ] || [ $DEPLOYED_AXIS == 0 ]; t
 	if [ "$READ_BUILDAXIS" == "y" ] || [ "$READ_BUILDAXIS" == "Y" ]; then
 		echo "    OK, will build Axis2 for you.";
 		BUILD_AXIS=1;
+		#Verify has unzip
+        if [ -z HAS_UNZIP ] || [ "$HAS_UNZIP" = "unzip:" ]; then
+            echo "unzip command not found in PATH. Please install unzip command so Axis2 can be unpacked.";
+            exit 1;
+        fi
 	else
   	    echo "";
 		echo "Cannot continue without Axis2 library. You can download and copy required files into lib/axis2, then run installer again.";
@@ -201,7 +207,9 @@ if [ $READ_HOSTNAME ]; then
 	IDC_HOSTNAME=READ_HOSTNAME;
 fi
 echo "    Using $IDC_HOSTNAME . ";
-
+#set defaults but still inform users that they may change these in documentation
+sed -i"" -e "s/idc\.url=.*/idc\.url=https:\/\/$IDC_HOSTNAME:8443\/axis2\/services\/OSCARS/g" conf/examples/server/oscars.properties
+sed -i"" -e "s/notify\.ws\.broker\.url=.*/notify\.ws\.broker\.url=https:\/\/$IDC_HOSTNAME:8443\/axis2\/services\/OSCARSNotify/g" conf/examples/server/oscars.properties
 
 READ_INSTALLDB=0;
 while [ $READ_INSTALLDB == 0 ]; do
@@ -297,6 +305,8 @@ if [ $INSTALL_DB == 1 ]; then
 				echo "    IDC account access verified.";
 				MYSQL_IDC_HAS_ACCESS=1;
 				MYSQL_GOT_IDC_CREDENTIALS=1;
+				sed -i"" -e "s/hibernate\.connection\.username=.*/hibernate\.connection\.username=$MYSQL_IDC_USERNAME/g" conf/examples/server/oscars.properties
+				sed -i"" -e "s/hibernate\.connection\.password=.*/hibernate\.connection\.password=$MYSQL_IDC_PASSWORD/g" conf/examples/server/oscars.properties
 			fi
 		done
 		echo "";
@@ -306,6 +316,7 @@ if [ $INSTALL_DB == 1 ]; then
 
 			MYSQL_AAA_DBNAME="aaa";
 			MYSQL_BSS_DBNAME="bss";
+			MYSQL_NOTIFY_DBNAME="notify";
 			MYSQL_TESTBSS_DBNAME="testbss";
 			MYSQL_TESTAAA_DBNAME="testaaa";
 
@@ -331,16 +342,18 @@ if [ $INSTALL_DB == 1 ]; then
 
 
 
-		echo "    Creating databases $MYSQL_BSS_DBNAME, $MYSQL_AAA_DBNAME, $MYSQL_TESTBSS_DBNAME, $MYSQL_TESTAAA_DBNAME ";
+		echo "    Creating databases $MYSQL_BSS_DBNAME, $MYSQL_AAA_DBNAME, $MYSQL_NOTIFY_DBNAME, $MYSQL_TESTBSS_DBNAME, $MYSQL_TESTAAA_DBNAME ";
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_BSS_DBNAME" > /dev/null 2> /dev/null`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_AAA_DBNAME" > /dev/null 2> /dev/null`;
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_NOTIFY_DBNAME" > /dev/null 2> /dev/null`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_TESTBSS_DBNAME" > /dev/null 2> /dev/null`;
 	    `mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_TESTAAA_DBNAME" > /dev/null 2> /dev/null`;
 		echo "    Databases created...";
 		echo "    Initializing databases...";
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_BSS_DBNAME < sql/bss/createTables.sql`;
-		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_AAA_DBNAME < sql/aaa/createTables.sql`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_AAA_DBNAME < sql/aaa/populateDefaults.sql`;
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_NOTIFY_DBNAME < sql/notify/createTables.sql`;
+		
 		echo "    Databases initialized...";
 
 		echo "    Granting privileges to IDC account...";
@@ -351,6 +364,7 @@ if [ $INSTALL_DB == 1 ]; then
 		fi
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_BSS_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_AAA_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_NOTIFY_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_TESTBSS_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_TESTAAA_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
 	    echo "    IDC account authorized.";
@@ -401,8 +415,6 @@ if [ "$READ_BUILDTOOLS" == "y" ] || [ "$READ_BUILDTOOLS" == "Y" ]; then
     echo "--- Building tools...";
     cd ./tools/utils
     ant
-    cd ../schedulers
-    ant
     echo "";
     echo "";
     echo "--- Tools built.";
@@ -413,16 +425,13 @@ echo "";
 echo "##############################################################################";
 echo "";
 echo "INSTALLATION NOTES";
-echo "- If you haven't done so already, you must create or import SSH certificates. ";
-if [ DOMAIN_FOUND == 0 ]; then
-	echo "- You must also edit conf/server/oscars.properties to fit your environment.";
-else
+if [ "$DOMAIN_FOUND" == "1" ]; then
+    echo "- If you haven't done so already, you must create or import your X.509 certificates. ";
 	echo "- You must also edit $DOMAIN_HOME/server/oscars.properties .";
+	echo "  Please refer to the documentation for instructions.";
 fi
-
-echo "  Please refer to the documentation for instructions.";
 echo "";
-echo "After you have completed the above, please run do_install.sh";
+echo "OSCARS built. Please run do_install.sh to complete this installation.";
 echo "";
 echo "##############################################################################";
 
