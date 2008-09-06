@@ -11,7 +11,6 @@ fi
 
 INSTALL_HOME=`pwd`;
 IDC_HOSTNAME=`hostname`;
-HAS_UNZIP=`whereis unzip`;
 
 # Find Ant
 if [ `which ant` ]; then
@@ -95,7 +94,9 @@ if [ $FOUND_AXIS == 0 ] || [ $FOUND_RAMPART == 0 ] || [ $DEPLOYED_AXIS == 0 ]; t
 		echo "    OK, will build Axis2 for you.";
 		BUILD_AXIS=1;
 		#Verify has unzip
-        if [ -z HAS_UNZIP ] || [ "$HAS_UNZIP" = "unzip:" ]; then
+        if [ `which unzip` ]; then
+            echo "unzip found.";
+        else
             echo "unzip command not found in PATH. Please install unzip command so Axis2 can be unpacked.";
             exit 1;
         fi
@@ -158,7 +159,9 @@ if [ $BUILD_AXIS ]; then
 	fi
 	echo "--- Copying OSCARS specific libs to Axis2...";
 	cp lib/antlr* dists/axis2-1.3/lib;
-        echo "--- Building Axis2 with Rampart...";
+	cp conf/server/axis2.log4j.properties dists/axis2-1.3/log4j.properties
+	cp conf/server/axis2.log4j.properties dists/axis2-1.3/webapp/WEB-INF/classes/log4j.properties
+    echo "--- Building Axis2 with Rampart...";
 	`sed -e 's/CHANGE_THIS/\.\./g' conf/axis2/build.xml > dists/axis2-1.3/webapp/build.xml`;
 	cd dists/axis2-1.3/webapp;
 	ant;
