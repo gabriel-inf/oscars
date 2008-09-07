@@ -281,10 +281,11 @@ public class SubscriptionAdapter{
     public void schedSendNotify(NotificationMessageHolderType holder,
                                 Subscription subscription){
         this.log.info("schedSendNotify.start");
+        NotificationMessageHolderType holderCopy = this.copyHolder(holder);
         Scheduler sched = this.core.getScheduler();
-        String triggerName = "sendNotifyTrig-" + holder.hashCode() +
+        String triggerName = "sendNotifyTrig-" + holderCopy.hashCode() +
                              ":" + subscription.hashCode();
-        String jobName = "sendNotify-" + holder.hashCode() +
+        String jobName = "sendNotify-" + holderCopy.hashCode() +
                          ":" + subscription.hashCode();
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
                                                   new Date(), null, 0, 0L);
@@ -293,7 +294,7 @@ public class SubscriptionAdapter{
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("url", subscription.getUrl());
         dataMap.put("subRefId", subscription.getReferenceId());
-        dataMap.put("message", holder);
+        dataMap.put("message", holderCopy);
         jobDetail.setJobDataMap(dataMap);
         
         try{
@@ -959,5 +960,14 @@ public class SubscriptionAdapter{
         }
         
         return timestamp;
+    }
+    
+    private NotificationMessageHolderType copyHolder(NotificationMessageHolderType holder){
+        NotificationMessageHolderType holderCopy = new NotificationMessageHolderType();
+        holderCopy.setTopic(holder.getTopic());
+        holderCopy.setProducerReference(holder.getProducerReference());
+        holderCopy.setMessage(holder.getMessage());
+        
+        return holderCopy;
     }
 }
