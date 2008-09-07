@@ -1,7 +1,6 @@
 package net.es.oscars.notify.ws.policy;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.databinding.ADBException;
 import org.apache.log4j.*;
@@ -9,11 +8,14 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMFactory;
+import org.hibernate.*;
 import org.oasis_open.docs.wsn.b_2.*;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.jaxen.JaxenException;
 import org.jaxen.SimpleNamespaceContext;
 import net.es.oscars.notify.ws.OSCARSNotifyCore;
 import net.es.oscars.aaa.*;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.notify.ws.AAAFaultMessage;
 import net.es.oscars.aaa.UserManager.AuthValue;
 
@@ -25,6 +27,7 @@ import net.es.oscars.aaa.UserManager.AuthValue;
  */
 public class IDCEventPEP implements NotifyPEP{
     private Logger log;
+    private OSCARSNotifyCore core;
     private HashMap<String,String> namespaces;
     private UserManager userMgr;
     private String dbname;
@@ -32,9 +35,10 @@ public class IDCEventPEP implements NotifyPEP{
     final public String ROOT_XPATH = "/idc:event";
     final public String USERLOGIN_XPATH = "/idc:event/idc:userLogin";
     final public String RESV_LOGIN_XPATH = "/idc:event/idc:resDetails/idc:login";
-    
+    final public String RESV_LINKS_XPATH = "/idc:event/idc:resDetails/idc:pathInfo/idc:path/nmwg-ctrlp:hop/nmwg-ctrlp:link";
     public IDCEventPEP(){
         this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSNotifyCore.getInstance();
         this.namespaces = new HashMap<String,String>();
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
         this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
@@ -103,11 +107,53 @@ public class IDCEventPEP implements NotifyPEP{
         }
         permissionMap.put("IDC_RESV_USER", userList);
         
-        //TODO: Parse endpoints and enforce institution
-        /*if(user != null){
-            institutionList.add(user.getInstitution().getName());
-            permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
-        }*/
+        Session bss = null;
+        try{
+            bss = this.core.getBssSession();
+            bss.beginTransaction();
+            AXIOMXPath xpathExpression = new AXIOMXPath(this.RESV_LINKS_XPATH); 
+            SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
+            xpathExpression.setNamespaceContext(nsContext);
+            List<OMElement> links = (List<OMElement>) xpathExpression.selectNodes(omMessage);
+            if(links == null){
+                this.log.debug("prepare.end");
+                return permissionMap;
+            }
+            HashMap<String,String> domainInsts = new HashMap<String,String>();
+            DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+            for(OMElement omLink : links){
+                CtrlPlaneLinkContent link = CtrlPlaneLinkContent.Factory.parse(omLink.getXMLStreamReaderWithoutCaching());
+                String urn = link.getId();
+                if(urn == null){
+                    continue;
+                }
+                Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+                this.log.debug("urn=" + urn);
+                String domainId = parseResults.get("domainId");
+                if(domainId == null || domainInsts.containsKey(domainId)){
+                    continue;
+                }
+                Domain domain = domainDAO.fromTopologyIdent(domainId);
+                if(domain == null){
+                    continue;
+                }
+                Site site = domain.getSite();
+                if(site == null){
+                    continue;
+                }
+                domainInsts.put(domainId, site.getName());
+                institutionList.add(site.getName());
+                this.log.debug("site=" + site.getName());
+            }
+            if(!institutionList.isEmpty()){
+                permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
+            }
+            bss.getTransaction().commit();
+        }catch(Exception e){
+            bss.getTransaction().rollback();
+            e.printStackTrace();
+            this.log.info("Ignoring error");
+        }
         
         this.log.debug("prepare.end");
         return permissionMap;

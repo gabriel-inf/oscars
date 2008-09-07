@@ -30,7 +30,8 @@ public class OSCARSNotifyCore{
     private static OSCARSNotifyCore instance = null;
     final private String aaaDbName = "aaa";
     final private String notifyDbName = "notify";
-
+    final private String bssDbName = "bss";
+    
     private OSCARSNotifyCore() {
         this.log = Logger.getLogger(this.getClass());
     }
@@ -65,6 +66,7 @@ public class OSCARSNotifyCore{
             this.log.error("Scheduler error shutting down", ex);
         }
         HibernateUtil.closeSessionFactory(this.aaaDbName);
+        HibernateUtil.closeSessionFactory(this.bssDbName);
         HibernateUtil.closeSessionFactory(this.notifyDbName);
         this.log.info("shutdown.end");
     }
@@ -76,6 +78,7 @@ public class OSCARSNotifyCore{
         List<String> dbnames = new ArrayList<String>();
         dbnames.add(aaaDbName);
         dbnames.add(notifyDbName);
+        dbnames.add(bssDbName);
         initializer.initDatabase(dbnames);
         this.getAAASession();
         this.getNotifySession();
@@ -138,6 +141,27 @@ public class OSCARSNotifyCore{
             this.log.error("BSS session is still closed!");
         }
         return notify;
+    }
+    
+    public Session getBssSession() {
+        Session bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
+        if (bss == null || !bss.isOpen()) {
+            this.log.debug("opening BSS session");
+            bss = HibernateUtil.getSessionFactory(this.bssDbName).openSession();
+            bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
+        }
+        if (bss == null || !bss.isOpen()) {
+            this.log.error("BSS session is still closed!");
+        }
+        return bss;
+    }
+
+
+    /**
+     * @return the bssDbName
+     */
+    public String getBssDbName() {
+        return bssDbName;
     }
 
     public ArrayList<NotifyPEP> getNotifyPEPs() {

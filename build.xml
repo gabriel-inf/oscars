@@ -478,7 +478,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="notifyaar" description="Create OSCARSNotify.aar file" depends="compile">
         <copy file="conf/notify-server/notify.cfg.xml" todir="${build.classes}"/>
         <jar destfile="build/OSCARSNotify.aar">
-            <fileset dir="${build.classes}" includes="**/*" excludes="**/bss/**/*,**/lookup/**/*,**/pathfinder/**/*,**/servlets/**/*,**/pss/**/*,**/rmi/**/*,**/tss/**/*"/>
+            <fileset dir="${build.classes}" includes="**/*" excludes="**/lookup/**/*,**/pathfinder/**/*,**/servlets/**/*,**/pss/**/*,**/rmi/**/*,**/tss/**/*"/>
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
             <metainf dir="conf/notify-server" includes="*.wsdl, *.xsd, services.xml"/>
         </jar>
