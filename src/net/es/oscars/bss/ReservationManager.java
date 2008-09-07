@@ -345,6 +345,7 @@ public class ReservationManager {
         if(!reqStatus.equals(status)){
             this.log.info("Trying to fail a reservation that doesn't" + 
                           " have status " + reqStatus);
+            return;
         }
         
         Domain prevDomain = this.endPointDomain(resv, true);
