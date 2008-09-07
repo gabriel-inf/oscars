@@ -14,7 +14,7 @@ fi
 if [ -n "$CATALINA_HOME" ]; then
 	echo "    CATALINA_HOME is set to $CATALINA_HOME";
 else
-	echo "Required environment variable CATALINA_HOME is not set. Please run do_build.sh .";
+	echo "Required environment variable CATALINA_HOME is not set. Please run do_build.sh.";
 	exit 1;
 fi
 echo "  ";
@@ -32,12 +32,12 @@ done
 if [ "$MYSQL_ANS" = "y" ] || [ "$MYSQL_ANS" = "Y" ]; then
     echo -n "Please enter your mysql user name: ";
     read MYSQL_USER;
-    mysql -u $MYSQL_USER -p bss < sql/bss/upgradeTables.sql
+    mysql -u $MYSQL_USER -p bss < sql/bss/upgradeTables0.3-0.4.sql
     echo "--- mysql tables upgraded";
 fi
 MYSQL_ANS2=0;
 while [ $MYSQL_ANS2 == 0 ]; do
-	echo -n "Would you like to add the OSCARS-service and OSCARS-operator attributes to your aaa database y/n? ";
+	echo -n "Would you like to upgrade your aaa database y/n? ";
     read MYSQL_ANS2;
     if [ "$MYSQL_ANS2" != "y" ] && [ "$MYSQL_ANS2" != "Y" ] && [ "$MYSQL_ANS2" != "n" ] && [ "$MYSQL_ANS2" != "N" ]; then
         MYSQL_ANS2=0;
@@ -46,72 +46,185 @@ done
 if [ "$MYSQL_ANS2" = "y" ] || [ "$MYSQL_ANS2" = "Y" ]; then
     echo -n "Please enter your mysql user name: ";
     read MYSQL_USER;
-    mysql -u $MYSQL_USER -p aaa < sql/aaa/upgradeTables.sql
+    mysql -u $MYSQL_USER -p aaa < sql/aaa/upgradeTables0.3-0.4.sql
+    echo "--- mysql tables upgraded";
+fi
+MYSQL_ANS3=0;
+while [ $MYSQL_ANS3 == 0 ]; do
+	echo -n "Would you like to create the notify database y/n? ";
+    read MYSQL_ANS3;
+    if [ "$MYSQL_ANS3" != "y" ] && [ "$MYSQL_ANS3" != "Y" ] && [ "$MYSQL_ANS3" != "n" ] && [ "$MYSQL_ANS3" != "N" ]; then
+        MYSQL_ANS3=0;
+    fi
+done
+if [ "$MYSQL_ANS3" = "y" ] || [ "$MYSQL_ANS3" = "Y" ]; then
+    echo "NOTE: This action requires you to specifiy a privileged MySQL user account such as 'root'";
+    echo -n "Please input a privileged mysql user (i.e. root): ";
+    read MYSQL_USER;
+    mysql -u $MYSQL_USER -p < sql/notify/createTables.sql
     echo "--- mysql tables upgraded";
 fi
 
-#check for sec-server.jks
-if [ -f $CATALINA_HOME/shared/classes/server/sec-server.jks ]; then
-    echo "--- sec-server.jks looks good. no upgrade needed for file.";
-else
-    JKS_ANS=0;
-    while [ $JKS_ANS == 0 ]; do
-        echo -n "May I copy sec-server.jks to $CATALINA_HOME/shared/classes/server y/n? ";
-        read JKS_ANS;
-        if [ "$JKS_ANS" != "y" ] && [ "$JKS_ANS" != "Y" ] && [ "$JKS_ANS" != "n" ] && [ "$JKS_ANS" != "N" ]; then
-            JKS_ANS=0;
-        fi
-    done
-    if [ "$JKS_ANS" = "y" ] || [ "$JKS_ANS" = "Y" ]; then
-        if [ -n "$DOMAIN_HOME" ]; then
-            cp $DOMAIN_HOME/server/sec-server.jks $CATALINA_HOME/shared/classes/server/sec-server.jks
-        else
-            cp conf/examples/server/sec-server.jks $CATALINA_HOME/shared/classes/server/sec-server.jks
-        fi
-        
-        echo "--- sec-server.jks moved to $CATALINA_HOME/shared/classes/server/";
+#upgrade topology - TODO: Read terce properties
+TOPO_ANS=0;
+while [ $TOPO_ANS == 0 ]; do
+	echo -n "Would you like to update your topology description to match the latest schema version? ";
+    read TOPO_ANS;
+    if [ "$TOPO_ANS" != "y" ] && [ "$TOPO_ANS" != "Y" ] && [ "$TOPO_ANS" != "n" ] && [ "$TOPO_ANS" != "N" ]; then
+        TOPO_ANS=0;
     fi
+done
+if [ "$TOPO_ANS" = "y" ] || [ "$TOPO_ANS" = "Y" ]; then
+    INTER_FILE=`cat $CATALINA_HOME/shared/classes/terce.conf/terce-ws.properties | grep tedb.static.db.interdomain | sed -e 's/tedb.static.db.interdomain=//g'`;
+    INTRA_FILE=`cat $CATALINA_HOME/shared/classes/terce.conf/terce-ws.properties | grep tedb.static.db.intradomain | sed -e 's/tedb.static.db.intradomain=//g'`;
+    sed -i -e 's/20071023/20080828\//g' $INTER_FILE
+    sed -i -e 's/20071023/20080828\//g' $INTRA_FILE
+    sed -i -e 's/Specfic/Specific/g' $INTER_FILE
+    sed -i -e 's/Specfic/Specific/g' $INTRA_FILE
 fi
 
-#Check for sec-server.properties
-if [ -f $CATALINA_HOME/shared/classes/server/sec-server.properties ]; then 
-    PROPS_ANS=0;
-    while [ $PROPS_ANS == 0 ]; do
-        echo -n "May I update sec-server.properties to point to $CATALINA_HOME/shared/classes/server/sec-server.jks y/n? ";
-        read PROPS_ANS;
-        if [ "$PROPS_ANS" != "y" ] && [ "$PROPS_ANS" != "Y" ] && [ "$PROPS_ANS" != "n" ] && [ "$PROPS_ANS" != "N" ]; then
-            PROPS_ANS=0;
-        fi
-    done
-    if [ "$PROPS_ANS" = "y" ] || [ "$PROPS_ANS" = "Y" ]; then
-        sed -e 's/org\.apache\.ws\.security\.crypto\.merlin\.file=.*/org.apache.ws.security.crypto.merlin.file=server\/sec-server.jks/g' $CATALINA_HOME/shared/classes/server/sec-server.properties > conf/server/sec-server.properties
-        cp conf/server/sec-server.properties $CATALINA_HOME/shared/classes/server/sec-server.properties
-        echo "--- Upgraded sec-server.properties";
-    fi
-else
-    PROPS_ANS=0;
-    while [ $PROPS_ANS == 0 ]; do
-        echo -n "May I copy sec-server.properties to $CATALINA_HOME/shared/classes/server y/n? ";
-        read PROPS_ANS;
-        if [ "$PROPS_ANS" != "y" ] && [ "$PROPS_ANS" != "Y" ] && [ "$PROPS_ANS" != "n" ] && [ "$PROPS_ANS" != "N" ]; then
-            PROPS_ANS=0;
-        fi
-    done
-    if [ "$PROPS_ANS" = "y" ] || [ "$PROPS_ANS" = "Y" ]; then
-        cp conf/examples/server/sec-server.properties $CATALINA_HOME/shared/classes/server/sec-server.properties
-        echo "--- sec-server.properties moved to $CATALINA_HOME/shared/classes/server/";
-    fi
+echo "- Updating oscars.properties...";
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "lookup.url"`;
+if [ -z "$OLD_PROP" ]; then
+    echo "-- Changing lookup.url to lookup.hints...";
+    sed -i"" -e 's/lookup\.url\=.+/lookup\.hints=http:\/\/www.perfsonar.net\/gls.root.hints/g' $CATALINA_HOME/shared/classes/server/oscars.properties
 fi
 
-#Fix oscars.properties
-NEED_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep aaa.secureCookie`;
-if [ "$NEED_PROP" == "" ]; then
-    echo "" >> $CATALINA_HOME/shared/classes/server/oscars.properties;
-    echo "aaa.secureCookie=0" >> $CATALINA_HOME/shared/classes/server/oscars.properties;
-    echo "--- oscars.properties upgraded.";
-else
-    echo "--- oscars.properties looks good. no upgrade needed for file.";
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "idc.url"`;
+if [ -z "$OLD_PROP" ]; then
+    echo "Enter your IDC's URL: ";
+    read IDC_URL;
+    echo "idc.url=$IDC_URL" >> $CATALINA_HOME/shared/classes/server/oscars.properties
 fi
+
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "notify.ws.broker.url"`;
+if [ -z "$OLD_PROP" ]; then
+    if [ -z "$IDC_URL" ]; then
+        echo "Enter your IDC's URL: ";
+         read IDC_URL;
+    fi
+    echo "notify.ws.broker.url=$IDC_URL""Notify" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+fi
+
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "perfsonar.topology_url"`;
+if [ -z "$OLD_PROP" ]; then
+    echo "-- Adding default topology service URL";
+    echo "perfsonar.topology_url=http://packrat.internet2.edu:8012/perfSONAR_PS/services/topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+fi
+
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "notifybroker.pep.1=net.es.oscars.notify.ws.policy.IDCEventPEP"`;
+if [ -z "$OLD_PROP" ]; then
+    echo "-- Adding IDC PEP to notification broker";
+    echo "notifybroker.pep.1=net.es.oscars.notify.ws.policy.IDCEventPEP" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+fi
+
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "pathfinder.pathMethod=terce"`;
+if [ -n "$OLD_PROP" ]; then
+    PS_ANS=0;
+    while [ "$PS_ANS" == "0" ]; do
+        echo -n "Would you like to use the new perfsonar pathfinder? [y/n]  ";
+        read PS_ANS;
+        if [ "$PS_ANS" != "y" ] && [ "$PS_ANS" != "Y" ] && [ "$PS_ANS" != "n" ] && [ "$PS_ANS" != "N" ]; then
+            PS_ANS=0;
+        fi
+        if [ "$PS_ANS" = "y" ] || [ "$PS_ANS" = "Y" ]; then
+            sed -i"" -e 's/pathfinder\.pathMethod=terce/pathfinder\.pathMethod=perfsonar,terce/g' $CATALINA_HOME/shared/classes/server/oscars.properties
+        fi
+    done
+fi
+
+WS_ANS=0;
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "notify\.observer\.[0-9]+=net.es.oscars.notify.WSObserver"`;
+if [ -z "$OLD_PROP" ]; then
+    while [ "$WS_ANS" == "0" ]; do
+        echo -n "Would you like to activate WS-Notifcations? [y/n]  ";
+        read WS_ANS;
+        if [ "$WS_ANS" != "y" ] && [ "$WS_ANS" != "Y" ] && [ "$WS_ANS" != "n" ] && [ "$WS_ANS" != "N" ]; then
+            WS_ANS=0;
+        fi
+        if [ "$WS_ANS" = "y" ] || [ "$WS_ANS" = "Y" ]; then
+            LAST_FOUND=0;
+            COUNT=1;
+            while [ $LAST_FOUND == 0 ]; do
+                OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "^notify\.observer\.$COUNT=.+"`;
+                if [ -z "$OLD_PROP" ]; then
+                    LAST_FOUND=1;
+                else
+                    COUNT=`expr $COUNT + 1`;
+                fi
+            done
+            echo "notify.observer.$COUNT=net.es.oscars.notify.WSObserver" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+        fi
+    done    
+fi
+
+SERV_ANS=0;
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "external\.service\.[0-9]+=subscribe"`;
+if [ -z "$OLD_PROP" ]; then
+    while [ "$SERV_ANS" == "0" ]; do
+        echo -n "Would you like to subscribe to other IDCs notifications? [y/n]  ";
+        read SERV_ANS;
+        if [ "$SERV_ANS" != "y" ] && [ "$SERV_ANS" != "Y" ] && [ "$SERV_ANS" != "n" ] && [ "$SERV_ANS" != "N" ]; then
+            SERV_ANS=0;
+        fi
+        if [ "$SERV_ANS" = "y" ] || [ "$SERV_ANS" = "Y" ]; then
+            LAST_FOUND=0;
+            COUNT=1;
+            while [ $LAST_FOUND == 0 ]; do
+                OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "^external\.service\.$COUNT=.+"`;
+                if [ -z "$OLD_PROP" ]; then
+                    LAST_FOUND=1;
+                else
+                    COUNT=`expr $COUNT + 1`;
+                fi
+            done
+            echo "external.service.$COUNT=subscribe" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+        fi
+    done    
+fi
+
+SERV_ANS=0;
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "external\.service\.[0-9]+=topology"`;
+if [ -z "$OLD_PROP" ]; then
+    while [ "$SERV_ANS" == "0" ]; do
+        echo -n "Would you like to register the local topology with the topology service? [y/n]  ";
+        read SERV_ANS;
+        if [ "$SERV_ANS" != "y" ] && [ "$SERV_ANS" != "Y" ] && [ "$SERV_ANS" != "n" ] && [ "$SERV_ANS" != "N" ]; then
+            SERV_ANS=0;
+        fi
+        if [ "$SERV_ANS" = "y" ] || [ "$SERV_ANS" = "Y" ]; then
+            LAST_FOUND=0;
+            COUNT=1;
+            while [ $LAST_FOUND == 0 ]; do
+                OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "^external\.service\.$COUNT=.+"`;
+                if [ -z "$OLD_PROP" ]; then
+                    LAST_FOUND=1;
+                else
+                    COUNT=`expr $COUNT + 1`;
+                fi
+            done
+            echo "external.service.$COUNT=topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+        fi
+    done    
+fi
+
+if [ -f "$CATALINA_HOME/webapps/axis2/WEB-INF/lib/jdom.jar" ]; then
+    echo "-- Found JDOM";
+else
+    JDOM_ANS=0;
+    while [ "$JDOM_ANS" == "0" ]; do
+        echo -n "May this script copy jdom.jar to $CATALINA_HOME/webapps/axis2/WEB-INF/lib/? [y/n]  ";
+        read JDOM_ANS;
+        if [ "$JDOM_ANS" != "y" ] && [ "$JDOM_ANS" != "Y" ] && [ "$JDOM_ANS" != "n" ] && [ "$JDOM_ANS" != "N" ]; then
+            JDOM_ANS=0;
+        fi
+        if [ "$JDOM_ANS" = "y" ] || [ "$JDOM_ANS" = "Y" ]; then
+            cp lib/jdom.jar $CATALINA_HOME/webapps/axis2/WEB-INF/lib/jdom.jar
+        fi
+    done
+fi
+
+# add neighbor brokers
 
 echo "--- Upgrade changes complete";
 
@@ -131,8 +244,6 @@ if [ "$READ_BUILDTOOLS" == "y" ] || [ "$READ_BUILDTOOLS" == "Y" ]; then
     echo "--- Building tools...";
     cd ./tools/utils
     ant
-    cd ../schedulers
-    ant
     echo "";
     echo "";
     echo "--- Tools built.";
@@ -144,6 +255,14 @@ echo "";
 echo "UPGRADE NOTES";
 echo "";
 echo "You may now run ./do_install.sh to complete your upgrade.";
+echo "";
+echo "You also need to complete the following steps:";
+echo "";
+echo "   1. Create a user account for the local domain as described in section '7.3 Activation Notifications' of the DCNSS install document";
+echo "";
+echo "   2. Add the URL of each neighboring domain's NotificationBroker by running tools/utils/idc-serviceadd as described at the end of section '7.2 Making your IDC Aware of Other Domains' of the DCNSS install document";
+echo "";
+echo "   3. Associate each neighboring domain with an Institution by running tools/utils/idc-siteadd";
 echo "";
 echo "##############################################################################";
 
