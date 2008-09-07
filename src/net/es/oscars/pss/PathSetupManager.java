@@ -402,7 +402,7 @@ public class PathSetupManager{
             return;
         }
         
-        eventProducer.addEvent(failedType, login, errorSrc, errorCode, errorMsg);
+        eventProducer.addEvent(failedType, login, errorSrc, resv, errorCode, errorMsg);
         /** Teardown the reservation. It may be in the queue so detecting
             status won't do much good. Just count on PSS to put in queue 
             and properly check if setup and set to failed */
@@ -424,6 +424,11 @@ public class PathSetupManager{
      synchronized public void updateCreateStatus(int newLocalStatus, Reservation resv) throws BSSException{
         StateEngine se = this.core.getStateEngine();
         int localStatus = se.getLocalStatus(resv);
+        if((newLocalStatus & localStatus) == 1){
+            throw new BSSException("Already set local status bit " + newLocalStatus);
+        }
+        this.log.debug("create.newLocalStatus=" + newLocalStatus);
+        this.log.debug("create.oldLocalStatus=" + localStatus);
         se.updateLocalStatus(resv, localStatus + newLocalStatus);
         localStatus = se.getLocalStatus(resv);
         String login = resv.getLogin();
@@ -442,7 +447,7 @@ public class PathSetupManager{
         
         //upstream path setup done
         //5 = StateEngine.UP_CONFIRMED + StateEngine.CONFIRMED
-        if((newLocalStatus == StateEngine.CONFIRMED || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
+        if((newLocalStatus == StateEngine.CONFIRMED || newLocalStatus == StateEngine.UP_CONFIRMED) && ((localStatus & 5) == 5)){
             eventProducer.addEvent(OSCARSEvent.UP_PATH_SETUP_CONFIRMED, login, "JOB", resv);
         }
         
@@ -465,6 +470,9 @@ public class PathSetupManager{
      synchronized public void updateTeardownStatus(int newLocalStatus, Reservation resv) throws BSSException{
         StateEngine se = this.core.getStateEngine();
         int localStatus = se.getLocalStatus(resv);
+        if((newLocalStatus & localStatus) == 1){
+            throw new BSSException("Already set local status bit " + newLocalStatus);
+        }
         se.updateLocalStatus(resv, localStatus + newLocalStatus);
         localStatus = se.getLocalStatus(resv);
         String login = resv.getLogin();
@@ -493,7 +501,7 @@ public class PathSetupManager{
         
         //upstream path setup done
         //5 = StateEngine.UP_CONFIRMED + StateEngine.CONFIRMED
-        if((newLocalStatus == StateEngine.CONFIRMED || newLocalStatus ==  3) && ((localStatus & 5) == 5)){
+        if((newLocalStatus == StateEngine.CONFIRMED || newLocalStatus ==  StateEngine.UP_CONFIRMED) && ((localStatus & 5) == 5)){
             eventProducer.addEvent(OSCARSEvent.UP_PATH_TEARDOWN_CONFIRMED, login, "JOB", resv);
         }
         
