@@ -49,6 +49,7 @@ if [ "$MYSQL_ANS2" = "y" ] || [ "$MYSQL_ANS2" = "Y" ]; then
     mysql -u $MYSQL_USER -p aaa < sql/aaa/upgradeTables0.3-0.4.sql
     echo "--- mysql tables upgraded";
 fi
+
 MYSQL_ANS3=0;
 while [ $MYSQL_ANS3 == 0 ]; do
 	echo -n "Would you like to create the notify database y/n? ";
@@ -60,15 +61,26 @@ done
 if [ "$MYSQL_ANS3" = "y" ] || [ "$MYSQL_ANS3" = "Y" ]; then
     echo "NOTE: This action requires you to specifiy a privileged MySQL user account such as 'root'";
     echo -n "Please input a privileged mysql user (i.e. root): ";
+    read MYSQL_ROOT_USER;
+    echo -n "Please input password for privileged mysql user: ";
+    stty -echo;
+    read MYSQL_ROOT_PASSWORD;
+    stty echo;
+    echo -n "Please enter the mysql user name OSCARS uses (i.e. oscars): ";
     read MYSQL_USER;
-    mysql -u $MYSQL_USER -p < sql/notify/createTables.sql
+    echo -n "Please enter the password fo the mysql user name OSCARS uses: ";
+    stty -echo;
+    read MYSQL_PW;
+    stty echo;
+    mysql --user=$MYSQL_ROOT_USER --password=$MYSQL_ROOT_PASSWORD < sql/notify/createTables.sql
+    echo "    Granting privileges to IDC account...";
+    `mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --execute="GRANT ALL PRIVILEGES ON notify.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PW'"`;
     echo "--- mysql tables upgraded";
 fi
 
-#upgrade topology - TODO: Read terce properties
 TOPO_ANS=0;
 while [ $TOPO_ANS == 0 ]; do
-	echo -n "Would you like to update your topology description to match the latest schema version? ";
+	echo -n "Would you like to update your topology description to match the latest schema version y/n? ";
     read TOPO_ANS;
     if [ "$TOPO_ANS" != "y" ] && [ "$TOPO_ANS" != "Y" ] && [ "$TOPO_ANS" != "n" ] && [ "$TOPO_ANS" != "N" ]; then
         TOPO_ANS=0;
@@ -77,10 +89,10 @@ done
 if [ "$TOPO_ANS" = "y" ] || [ "$TOPO_ANS" = "Y" ]; then
     INTER_FILE=`cat $CATALINA_HOME/shared/classes/terce.conf/terce-ws.properties | grep tedb.static.db.interdomain | sed -e 's/tedb.static.db.interdomain=//g'`;
     INTRA_FILE=`cat $CATALINA_HOME/shared/classes/terce.conf/terce-ws.properties | grep tedb.static.db.intradomain | sed -e 's/tedb.static.db.intradomain=//g'`;
-    sed -i -e 's/20071023/20080828\//g' $INTER_FILE
-    sed -i -e 's/20071023/20080828\//g' $INTRA_FILE
-    sed -i -e 's/Specfic/Specific/g' $INTER_FILE
-    sed -i -e 's/Specfic/Specific/g' $INTRA_FILE
+    sed -i -e 's/20071023/20080828\//g' $INTER_FILE;
+    sed -i -e 's/20071023/20080828\//g' $INTRA_FILE;
+    sed -i -e 's/Specfic/Specific/g' $INTER_FILE;
+    sed -i -e 's/Specfic/Specific/g' $INTRA_FILE;
 fi
 
 echo "- Updating oscars.properties...";
@@ -92,7 +104,7 @@ fi
 
 OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "idc.url"`;
 if [ -z "$OLD_PROP" ]; then
-    echo "Enter your IDC's URL: ";
+    echo -n "Enter your IDC's URL: ";
     read IDC_URL;
     echo "idc.url=$IDC_URL" >> $CATALINA_HOME/shared/classes/server/oscars.properties
 fi
@@ -100,8 +112,8 @@ fi
 OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "notify.ws.broker.url"`;
 if [ -z "$OLD_PROP" ]; then
     if [ -z "$IDC_URL" ]; then
-        echo "Enter your IDC's URL: ";
-         read IDC_URL;
+        echo -n "Enter your IDC's URL: ";
+        read IDC_URL;
     fi
     echo "notify.ws.broker.url=$IDC_URL""Notify" >> $CATALINA_HOME/shared/classes/server/oscars.properties
 fi
