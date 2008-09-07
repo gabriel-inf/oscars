@@ -269,6 +269,27 @@ public class IDCDomainUtil extends IDCCmdUtil{
         bss.getTransaction().commit();
     }
     
+    public void addSite(){
+        Scanner in = new Scanner(System.in);
+
+        /* Init database */
+        Initializer initializer = new Initializer();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add(this.dbname);
+        dbnames.add(this.aaaDbName);
+        initializer.initDatabase(dbnames);
+        Session bss =
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        
+        bss.beginTransaction();
+        Domain domain = this.selectDomain(in, "domain");
+        Site site = this.selectSite(domain, in);
+        bss.save(site);
+        bss.getTransaction().commit();
+        
+        System.out.println("New site created that associates domain '" + domain.getTopologyIdent() + "' with organization '" + site.getName() + "'.");
+    }
+    
     public static void main(String[] args){
         IDCDomainUtil util = new IDCDomainUtil();
         if(args[0] == null || args[0].equals("add")){
@@ -279,6 +300,8 @@ public class IDCDomainUtil extends IDCCmdUtil{
             util.addDomainService();
         }else if(args[0].equals("removeService")){
             util.removeDomainService();
+        }else if(args[0].equals("addSite")){
+            util.addSite();
         }else{
             System.err.println("Invalid option.");
         }
