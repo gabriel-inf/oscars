@@ -120,30 +120,14 @@ public class IDCEventPEP implements NotifyPEP{
                 return permissionMap;
             }
             HashMap<String,String> domainInsts = new HashMap<String,String>();
-            DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
             for(OMElement omLink : links){
                 CtrlPlaneLinkContent link = CtrlPlaneLinkContent.Factory.parse(omLink.getXMLStreamReaderWithoutCaching());
                 String urn = link.getId();
                 if(urn == null){
                     continue;
                 }
-                Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
-                this.log.debug("urn=" + urn);
-                String domainId = parseResults.get("domainId");
-                if(domainId == null || domainInsts.containsKey(domainId)){
-                    continue;
-                }
-                Domain domain = domainDAO.fromTopologyIdent(domainId);
-                if(domain == null){
-                    continue;
-                }
-                Site site = domain.getSite();
-                if(site == null){
-                    continue;
-                }
-                domainInsts.put(domainId, site.getName());
-                institutionList.add(site.getName());
-                this.log.debug("site=" + site.getName());
+                this.addInst(urn,institutionList, domainInsts);
+                this.addRemoteInst(urn,institutionList, domainInsts);
             }
             if(!institutionList.isEmpty()){
                 permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
@@ -157,5 +141,49 @@ public class IDCEventPEP implements NotifyPEP{
         
         this.log.debug("prepare.end");
         return permissionMap;
+    }
+    
+    private void addInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
+        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+        this.log.debug("urn=" + urn);
+        String domainId = parseResults.get("domainId");
+        if(domainId == null || domainInsts.containsKey(domainId)){
+            return;
+        }
+        Domain domain = domainDAO.fromTopologyIdent(domainId);
+        if(domain == null){
+            return;
+        }
+        Site site = domain.getSite();
+        if(site == null){
+            return;
+        }
+        domainInsts.put(domainId, site.getName());
+        insts.add(site.getName());
+        this.log.debug("site=" + site.getName());
+    }
+    
+    private void addRemoteInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
+        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+        Link link = domainDAO.getFullyQualifiedLink(urn);
+        if(link == null){
+            return;
+        }
+        Link remoteLink = link.getRemoteLink();
+        if(remoteLink == null){
+            return;
+        }
+        Domain remoteDomain = remoteLink.getPort().getNode().getDomain();
+        if(domainInsts.containsKey(remoteDomain.getTopologyIdent())){
+            return;
+        }
+        Site site = remoteDomain.getSite();
+        if(site == null){
+            return;
+        }
+        domainInsts.put(remoteDomain.getTopologyIdent(), site.getName());
+        insts.add(site.getName());
+        this.log.debug("site=" + site.getName());
     }
 }
