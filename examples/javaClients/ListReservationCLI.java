@@ -14,13 +14,12 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
-import org.omg.CORBA_2_3.portable.InputStream;
+import edu.internet2.perfsonar.PSException;
+import edu.internet2.perfsonar.dcn.DCNLookupClient;
 
 import net.es.oscars.bss.topology.URNParser;
 import net.es.oscars.bss.topology.GraphVizExporter;
 import net.es.oscars.client.Client;
-import net.es.oscars.lookup.LookupException;
-import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.Layer2Info;
@@ -48,31 +47,14 @@ public class ListReservationCLI {
     private int numResults = 10;;
 
     public ListRequest readArgs(String[] args){
-        PSLookupClient lookupClient = new PSLookupClient();
-
-        java.io.InputStream lookupXMLStream  = this.getClass().getClassLoader().getResourceAsStream("perfSONAR-LSQuery.xml");
-//        this.getClass().getClassLoader().getResource("xxx").
-
-        try {
-
-            StringBuilder xmlRequestBuilder = new StringBuilder("");
-            byte[] buf = new byte[1500];
-            while(lookupXMLStream.read(buf, 0, buf.length) > 0){
-                char[] tmp = new char[1500];
-                for (int i = 0; i < buf.length; i++) {
-                    tmp[i] = (char) buf[i];
-                }
-                xmlRequestBuilder.append(tmp);
-            }
-            String xmlRequest = xmlRequestBuilder.toString();
-
-            lookupClient.setXmlRequest(xmlRequest);
-            lookupClient.setUrl("http://packrat.internet2.edu:8009/perfSONAR_PS/services/LS");
-        } catch (IOException ex) {
-            System.out.println("IO error: "+ex.getMessage());
+        DCNLookupClient lookupClient = null; 
+        try{
+            lookupClient = new DCNLookupClient("http://www.perfsonar.net/gls.root.hints");
+        }catch(Exception e){
+            e.printStackTrace();
             System.exit(1);
-
         }
+        
         /* Set request parameters */
         try{
             for(int i = 0; i < args.length; i++){
@@ -117,9 +99,9 @@ public class ListReservationCLI {
                         this.endpoint = args[i+1].trim();
                         if (!this.endpoint.startsWith("urn:ogf:network")) {
                             try {
-                                String lookupResult = lookupClient.lookup(this.between_a);
+                                String lookupResult = lookupClient.lookupHost(this.between_a);
                                 this.endpoint = lookupResult.trim();
-                            } catch (LookupException ex) {
+                            } catch (PSException ex) {
                                 System.out.println("Error: could not resolve ENDPOINT.\n\t"+ex.getMessage());
                                 System.exit(1);
                             }
@@ -159,18 +141,18 @@ public class ListReservationCLI {
                     this.between_b = parts[1].trim();
                     if (!this.between_a.startsWith("urn:ogf:network")) {
                         try {
-                            String lookupResult = lookupClient.lookup(this.between_a);
+                            String lookupResult = lookupClient.lookupHost(this.between_a);
                             this.between_a = lookupResult.trim();
-                        } catch (LookupException ex) {
+                        } catch (PSException ex) {
                             System.out.println("Error: could not resolve ENDPOINT_A.\n\t"+ex.getMessage());
                             System.exit(1);
                         }
                     }
                     if (!this.between_b.startsWith("urn:ogf:network")) {
                         try {
-                            String lookupResult = lookupClient.lookup(this.between_b);
+                            String lookupResult = lookupClient.lookupHost(this.between_b);
                             this.between_b = lookupResult.trim();
-                        } catch (LookupException ex) {
+                        } catch (PSException ex) {
                             System.out.println("Error: could not resolve ENDPOINT_B.\n\t"+ex.getMessage());
                             System.exit(1);
                         }
@@ -180,8 +162,8 @@ public class ListReservationCLI {
                     this.src = args[i+1].trim();
                     if (!this.src.matches("urn\\:ogf\\:network")) {
                         try {
-                            this.src = lookupClient.lookup(this.src).trim();
-                        } catch (LookupException ex) {
+                            this.src = lookupClient.lookupHost(this.src).trim();
+                        } catch (PSException ex) {
                             System.out.println("Error: could not resolve src.\n\t"+ex.getMessage());
                             System.exit(1);
                         }
@@ -190,8 +172,8 @@ public class ListReservationCLI {
                     this.dst= args[i+1].trim();
                     if (!this.dst.matches("urn\\:ogf\\:network")) {
                         try {
-                            this.dst = lookupClient.lookup(this.dst).trim();
-                        } catch (LookupException ex) {
+                            this.dst = lookupClient.lookupHost(this.dst).trim();
+                        } catch (PSException ex) {
                             System.out.println("Error: could not resolve dst.\n\t"+ex.getMessage());
                             System.exit(1);
                         }
