@@ -1530,7 +1530,7 @@ public class ReservationManager {
         if(vlanPool.size() > 1){
             Random rand = new Random();
             index = rand.nextInt(vlanPool.size()-1);
-        }else{
+        }else if(vlanPool.size() == 0){
             return null;
         }
         
