@@ -35,7 +35,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
     private Logger log;
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
-    private ArrayList<String> objectsToAvoid;
+    private HashMap<String, Double> objectsToReweigh;
 
     public DBPathfinder(String dbname) {
         super(dbname);
@@ -43,7 +43,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.log = Logger.getLogger(this.getClass());
 
         this.dbga = new DBGraphAdapter(dbname);
-        this.objectsToAvoid = new ArrayList<String>();
+        this.objectsToReweigh = new HashMap<String, Double>();
         /*
 
         List<String> dbnames = new ArrayList<String>();
@@ -263,6 +263,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
         int firstLocalHopIndex = 0;
         int lastLocalHopIndex = 0;
 
+        String localIngress = "";
+        String localEgress = "";
+
         boolean foundLocalSegment = false;
 
         for (int i=0; i < hops.length; i++) {
@@ -283,11 +286,13 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 if (!foundLocalSegment) {
                     firstLocalHopIndex = i;
                     foundLocalSegment = true;
+                    localIngress = fqti;
                 }
                 this.log.debug("Local link: "+fqti);
                 localLinkIds.add(localLinkIndex, fqti);
                 localLinkIndex++;
                 lastLocalHopIndex = i;
+                localEgress = fqti;
             }
 
             // reset id ref to local topology identifier
@@ -380,6 +385,20 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         pathInfo.setPath(newPath);
 
+        String altPathStr = "Local alternate path\n";
+        Path altPath = this.findLocalAltPath(localIngress, localEgress, bandwidth, startTime, endTime, reservation, "L2", localPath);
+        if (altPath != null) {
+            PathElem ape = altPath.getPathElem();
+            while (ape != null) {
+                String altFqti = ape.getLink().getFQTI();
+                altPathStr += altFqti+"\n";
+                ape = ape.getNextElem();
+            }
+        } else {
+            this.log.info("No alt path:\n\n");
+        }
+        this.log.debug(altPathStr);
+
 
         this.log.debug("handleExplicitRouteObject.finish");
     }
@@ -465,7 +484,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
 
 
-    public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation, String layer)
+    public Path findPathBetween(String src, String dst, Long bandwidth,
+                                Long startTime, Long endTime, Reservation reservation, String layer)
             throws PathfinderException {
         this.log.debug("findPathBetween.start");
 
@@ -489,7 +509,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         Path path = new Path();
 
-        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime, reservation, this.objectsToAvoid);
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph =
+            dbga.dbToGraph(bandwidth, startTime, endTime, reservation, this.objectsToReweigh, null);
         src = URNParser.parseTopoIdent(src).get("fqti");
         dst = URNParser.parseTopoIdent(dst).get("fqti");
 
@@ -554,7 +575,112 @@ public class DBPathfinder extends Pathfinder implements PCE {
     }
 
 
+    public Path findLocalAltPath(String src, String dst, Long bandwidth,
+            Long startTime, Long endTime, Reservation reservation, String layer, Path primaryPath)
+                throws PathfinderException {
+        this.log.debug("findLocalAltPath.start");
 
+
+        DomainDAO domDAO = new DomainDAO(this.dbname);
+
+        if (layer.equals("L2")) {
+            Link srcLink = domDAO.getFullyQualifiedLink(src);
+            Link dstLink = domDAO.getFullyQualifiedLink(dst);
+            if (srcLink == null) {
+                throw new PathfinderException("Could not locate link in DB for string: "+src);
+            } else if (dstLink == null) {
+                throw new PathfinderException("Could not locate link in DB for string: "+dst);
+            }
+        }
+
+        HashMap<String, Long> alreadyReserved = new HashMap<String, Long>();
+        PathElem ppe = primaryPath.getPathElem();
+
+        while (ppe != null) {
+            Link link = ppe.getLink();
+            Port port = link.getPort();
+            Node node = port.getNode();
+            String linkFQTI = link.getFQTI();
+            String portFQTI = port.getFQTI();
+            String nodeFQTI = node.getFQTI();
+            this.objectsToReweigh.put(nodeFQTI, 20d);
+//            this.objectsToReweigh.put(portFQTI, 20d);
+//            this.objectsToReweigh.put(linkFQTI, 20d);
+            if (linkFQTI.equals(src) || linkFQTI.equals(dst)) {
+            } else {
+                alreadyReserved.put(portFQTI, bandwidth);
+            }
+            ppe = ppe.getNextElem();
+        }
+
+        Path path = new Path();
+
+
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph =
+                dbga.dbToGraph(bandwidth, startTime, endTime, reservation, this.objectsToReweigh, alreadyReserved);
+        src = URNParser.parseTopoIdent(src).get("fqti");
+        dst = URNParser.parseTopoIdent(dst).get("fqti");
+
+        DijkstraShortestPath sp;
+        Iterator peIt;
+        try {
+            sp = new DijkstraShortestPath(graph, src, dst);
+        } catch (Exception ex) {
+            this.log.error(ex);
+            throw new PathfinderException(ex.getMessage());
+        }
+
+        if ((sp == null) || (sp.getPathEdgeList() == null)) {
+            this.log.info("No alternate path found");
+            return null;
+        }
+
+
+        peIt = sp.getPathEdgeList().iterator();
+
+        PathElem pathElem = null;
+        PathElem prvPathElem = null;
+        boolean firstEdge = true;
+        boolean lastEdge = false;
+
+        while (peIt.hasNext()) {
+            DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
+            if (!peIt.hasNext()) {
+                lastEdge = true;
+            }
+
+            String[] cols = edge.toString().split("\\s\\:\\s");
+
+            Double weight = graph.getEdgeWeight(edge);
+            this.log.debug(edge);
+
+            String topoId = cols[0].substring(1);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(topoId);
+            String type = parseResults.get("type");
+            if (type.equals("link")) {
+                this.log.debug("Adding "+topoId+" edge "+weight);
+                Link link = domDAO.getFullyQualifiedLink(topoId);
+                pathElem = new PathElem();
+                pathElem.setLink(link);
+                if (firstEdge) {
+                    firstEdge = false;
+                    path.setPathElem(pathElem);
+                } else {
+                    prvPathElem.setNextElem(pathElem);
+                }
+                prvPathElem = pathElem;
+            }
+        }
+
+        Link lastLink = domDAO.getFullyQualifiedLink(dst);
+        PathElem lastPathElem = new PathElem();
+        lastPathElem.setLink(lastLink);
+        prvPathElem.setNextElem(lastPathElem);
+
+
+        this.log.debug("findLocalAltPath.end");
+        return path;
+    }
 
     private Path removeLoops(Path path) {
         Path newPath = path;
@@ -562,17 +688,17 @@ public class DBPathfinder extends Pathfinder implements PCE {
     }
 
     /**
-     * @return the objectsToAvoid
+     * @return the objectsToReweigh
      */
-    public ArrayList<String> getObjectsToAvoid() {
-        return objectsToAvoid;
+    public HashMap<String, Double> getObjectsToReweigh() {
+        return objectsToReweigh;
     }
 
     /**
-     * @param objectsToAvoid the objectsToAvoid to set
+     * @param objectsToReweigh the objectsToReweigh to set
      */
-    public void setObjectsToAvoid(ArrayList<String> objectsToAvoid) {
-        this.objectsToAvoid = objectsToAvoid;
+    public void setObjectsToReweigh(HashMap<String, Double> objectsToReweigh) {
+        this.objectsToReweigh = objectsToReweigh;
     }
 
 

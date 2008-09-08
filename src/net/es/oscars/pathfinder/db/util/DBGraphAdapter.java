@@ -43,7 +43,9 @@ public class DBGraphAdapter {
 
     }
 
-    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime, Reservation reservationToIgnore, ArrayList<String> objectsToAvoid) {
+    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth,
+                    Long startTime, Long endTime, Reservation reservationToIgnore,
+                    HashMap<String, Double> objectsToReweigh, HashMap<String, Long> alreadyReserved) {
         this.log.debug("dbToGraph.start");
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
@@ -100,8 +102,15 @@ public class DBGraphAdapter {
                     continue;
                 }
                 String nodeFQTI = node.getFQTI();
-                if (objectsToAvoid.contains(nodeFQTI)) {
+                Double nodeMult = objectsToReweigh.get(nodeFQTI);
+                if (nodeMult != null && nodeMult < 0d) {
                     continue;
+                } else if (nodeMult == null) {
+                    nodeMult = 1d;
+                }
+
+                if (!node.getDomain().isLocal()) {
+                    nodeMult = 20d;
                 }
 
                 g.addVertex(nodeFQTI);
@@ -113,8 +122,12 @@ public class DBGraphAdapter {
                         continue;
                     }
                     String portFQTI = port.getFQTI();
-                    if (objectsToAvoid.contains(portFQTI)) {
+
+                    Double portMult = objectsToReweigh.get(portFQTI);
+                    if (portMult != null && portMult < 0d) {
                         continue;
+                    } else if (portMult == null) {
+                        portMult = 1d;
                     }
 
                     Long portCapacity = port.getCapacity();
@@ -122,24 +135,33 @@ public class DBGraphAdapter {
                     if (reservedCapacity == null) {
                         reservedCapacity = 0L;
                     }
-                    Long remainingCapacity = portCapacity - reservedCapacity;
 
-                    if (bandwidth > 0 && remainingCapacity < bandwidth) {
-                        continue;
+                    if (alreadyReserved != null && alreadyReserved.get(portFQTI) != null) {
+                        reservedCapacity += alreadyReserved.get(portFQTI);
                     }
 
-    //            	System.out.println(portFQTI);
+                    Long remainingCapacity = portCapacity - reservedCapacity;
+
+                    if (bandwidth > 0L && remainingCapacity < bandwidth) {
+//                        System.out.println("port: "+portFQTI+" rsv: "+reservedCapacity+" rem: "+remainingCapacity);
+                        continue;
+                    } else {
+//                        System.out.println("port: "+portFQTI+" in graph");
+                    }
+
+
+                    Double portEdgeCost = 0.1d * portMult;
 
 
                     g.addVertex(portFQTI);
                     edge = g.addEdge(nodeFQTI, portFQTI);
                     if (edge != null) {
-                        g.setEdgeWeight(edge, 0.1d);
+                        g.setEdgeWeight(edge, portEdgeCost);
                     }
 
                     edge = g.addEdge(portFQTI, nodeFQTI);
                     if (edge != null) {
-                        g.setEdgeWeight(edge, 0.1d);
+                        g.setEdgeWeight(edge, portEdgeCost);
                     }
 
                     Iterator linkIt = port.getLinks().iterator();
@@ -149,9 +171,12 @@ public class DBGraphAdapter {
                             continue;
                         }
                         String linkFQTI = link.getFQTI();
-                       if (objectsToAvoid.contains(linkFQTI)) {
-                           continue;
-                       }
+                        Double linkMult = objectsToReweigh.get(linkFQTI);
+                        if (linkMult != null && linkMult < 0d) {
+                            continue;
+                        } else if (linkMult == null) {
+                            linkMult = 1d;
+                        }
     //                	System.out.println(linkFQTI);
 
                         g.addVertex(linkFQTI);
@@ -173,6 +198,10 @@ public class DBGraphAdapter {
                                 if (link.getTrafficEngineeringMetric() != null) {
                                     edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
                                 }
+
+                                // testing
+                                edgeWeight = edgeWeight * nodeMult * linkMult;
+
 
                                 g.addVertex(remLinkFQTI);
 
