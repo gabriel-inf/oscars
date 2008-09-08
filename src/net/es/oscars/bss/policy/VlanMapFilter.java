@@ -215,10 +215,17 @@ public class VlanMapFilter implements PolicyFilter{
                 globalMask[j] &= currHopMask[j];
             }
             
+            
             /* If supports VLAN translation and is not the remote end of the 
-               previous link then no further filtering needed */
-           if(l2scData.getVlanTranslation() && (currLink.getRemoteLink() == null || 
-                    (!currLink.getRemoteLink().equals(prevLink)))){
+               previous link then no further filtering needed 
+               if untagged make its own segment like translation. This assumes 
+               that untagged can only happen on the edges */
+            String currHopRangeStr = this.tc.maskToRangeString(currHopMask);
+            String rangeStr = this.tc.maskToRangeString(currSegmentMask);
+            if("0".equals(currHopRangeStr) || "0".equals(rangeStr) ||
+                    (l2scData.getVlanTranslation() &&
+                    (currLink.getRemoteLink() == null || 
+                    (!currLink.getRemoteLink().equals(prevLink))))){
                 segments.add(currSegment.toArray(new CtrlPlaneHopContent[currSegment.size()]));
                 segmentMasks.add(currSegmentMask);
                 currSegment = new ArrayList<CtrlPlaneHopContent>();
@@ -228,22 +235,9 @@ public class VlanMapFilter implements PolicyFilter{
                 continue;
             }
             
-            String currHopRangeStr = this.tc.maskToRangeString(currHopMask);
-            /* if untagged make its own segment. This assumes that once 
-               something is untagged it can go back to tagged which is 
-               apparently a valid assumption for the general case */
-            if("0".equals(currHopRangeStr)){
-                //nothing says segments need to be in order
-                CtrlPlaneHopContent[] currHops = new CtrlPlaneHopContent[1];
-                currHops[0] = hops[i];
-                segments.add(currHops);
-                segmentMasks.add(currHopMask);
-                continue;
-            }
             for(int j = 0; j < currHopMask.length; j++){
                 currSegmentMask[j] &= currHopMask[j];
             }
-            String rangeStr = this.tc.maskToRangeString(currSegmentMask);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN(s) not available for segment " +
                                        "starting at hop " + 
