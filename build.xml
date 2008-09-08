@@ -108,7 +108,7 @@ Adding a -sd switch generates resources/services.xml -->
             <arg value="-package"/>
             <arg value="net.es.oscars.oscars"/>
             <arg value="--namespace2package"/>
-            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes"/>
+            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
         </java>
         <echo>
   ***
