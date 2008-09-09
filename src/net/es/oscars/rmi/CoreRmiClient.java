@@ -1,5 +1,7 @@
 package net.es.oscars.rmi;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -37,7 +39,19 @@ public class CoreRmiClient implements CoreRmiInterface {
             } catch (NumberFormatException e) { }
         }
         try {
-            Registry registry = LocateRegistry.getRegistry(port);
+
+            String rmiIpaddr = "127.0.0.1";
+            if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
+                rmiIpaddr = props.getProperty("serverIpaddr");
+            }
+
+            System.setProperty("java.rmi.server.hostname",rmiIpaddr);
+
+            InetAddress ipAddr = InetAddress.getByName(rmiIpaddr);
+            AnchorSocketFactory sf = new AnchorSocketFactory(ipAddr);
+
+            Registry registry = LocateRegistry.getRegistry(rmiIpaddr, port, sf);
+
             this.remote = (CoreRmiInterface) registry.lookup("IDCRMIServer");
             this.connected = true;
             this.log.debug("Connected to IDC RMI server");

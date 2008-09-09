@@ -53,7 +53,20 @@ public class CoreRmiServer  implements CoreRmiInterface  {
                 port = Integer.decode(props.getProperty("registryPort"));
             } catch (NumberFormatException e) { }
         }
-        this.registry = LocateRegistry.createRegistry(port);
+
+        String rmiIpaddr = "127.0.0.1";
+        if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
+            rmiIpaddr = props.getProperty("serverIpaddr");
+        }
+
+        try {
+            InetAddress ipAddr = InetAddress.getByName(rmiIpaddr);
+            AnchorSocketFactory sf = new AnchorSocketFactory(ipAddr);
+            this.registry = LocateRegistry.createRegistry(port, null, sf);
+        } catch (UnknownHostException ex) {
+
+        }
+            // LocateRegistry.createRegistry(port);
 
         port = 0;
         if (props.getProperty("serverPort") != null) {
