@@ -352,6 +352,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         this.log.debug("handleEro.injectedPrevious");
 
+
+        String nextDomainIngress = "";
+        boolean foundNextIngress = false;
         // inject local bits of the calculated path to the reservation localPath
         int j = firstLocalHopIndex;
         PathElem pathElem = localPath.getPathElem();
@@ -373,21 +376,37 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 j++;
                 this.log.debug("Injecting local "+newHop.getLinkIdRef());
                 localEgress = fqti;
+            } else if (!foundNextIngress) {
+                nextDomainIngress = fqti;
+                foundNextIngress = true;
             }
             pathElem = pathElem.getNextElem();
         }
         this.log.debug("handleEro.injectedIntoLocal");
-        
-        
-/*
+
+
         for (int i = lastLocalHopIndex + 1; i < hops.length; i++) {
+
+            if (foundNextIngress && i == lastLocalHopIndex + 1) {
+                String nextInPath = hops[i].getLinkIdRef();
+                if (!nextInPath.equals(nextDomainIngress)) {
+                    CtrlPlaneHopContent newHop = new CtrlPlaneHopContent();
+                    newHop.setLinkIdRef(nextDomainIngress);
+                    this.log.debug("Injecting next (ingress) "+nextDomainIngress);
+                    tmpHops[j] = newHop;
+                    j++;
+                    totalHops++;
+                }
+            }
             totalHops++;
             tmpHops[j] = hops[i];
             this.log.debug("Injecting next "+hops[i].getLinkIdRef());
             j++;
         }
         this.log.debug("handleEro.injectedNext");
-*/
+
+
+
         String finalPath = "Path is:\n";
 
         CtrlPlaneHopContent[] resultHops = new CtrlPlaneHopContent[totalHops];
