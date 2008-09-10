@@ -312,6 +312,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (!foundLocalSegment) {
             throw new PathfinderException("Path must contain at least the ingress link to local domain ["+domain.getTopologyIdent()+"]");
         }
+
+
         // case 2: We get passed ONE or MORE local links
         // The very first one should be our ingress
         // we find the paths between each two until we reach the last one
@@ -339,10 +341,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             this.log.debug("handleEro.foundToNext");
         }
 
-
-
-
-        // inject local path into previous:
+        // inject local path into the local path that was passed to us:
         int totalHops = 0;
         CtrlPlanePathContent newPath = new CtrlPlanePathContent();
         CtrlPlaneHopContent[] tmpHops = new CtrlPlaneHopContent[100]; // should be enough..
@@ -353,20 +352,34 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         this.log.debug("handleEro.injectedPrevious");
 
+        // inject local bits of the calculated path to the reservation localPath
         int j = firstLocalHopIndex;
         PathElem pathElem = localPath.getPathElem();
         while (pathElem != null) {
-            totalHops++;
-            CtrlPlaneHopContent newHop = new CtrlPlaneHopContent();
-            newHop.setLinkIdRef(pathElem.getLink().getFQTI());
-            tmpHops[j] = newHop;
-            j++;
-            this.log.debug("Injecting local "+newHop.getLinkIdRef());
+            String linkId = pathElem.getLink().getFQTI();
+
+            parseResults = URNParser.parseTopoIdent(linkId);
+            fqti = parseResults.get("fqti");
+            String domainId = parseResults.get("domainId");
+
+            if (domDAO.isLocal(domainId)) {
+                if (!foundLocalSegment) {
+                    localIngress = fqti;
+                }
+                totalHops++;
+                CtrlPlaneHopContent newHop = new CtrlPlaneHopContent();
+                newHop.setLinkIdRef(fqti);
+                tmpHops[j] = newHop;
+                j++;
+                this.log.debug("Injecting local "+newHop.getLinkIdRef());
+                localEgress = fqti;
+            }
             pathElem = pathElem.getNextElem();
         }
-
-        this.log.debug("handleEro.injectedLocal");
-
+        this.log.debug("handleEro.injectedIntoLocal");
+        
+        
+/*
         for (int i = lastLocalHopIndex + 1; i < hops.length; i++) {
             totalHops++;
             tmpHops[j] = hops[i];
@@ -374,11 +387,15 @@ public class DBPathfinder extends Pathfinder implements PCE {
             j++;
         }
         this.log.debug("handleEro.injectedNext");
+*/
+        String finalPath = "Path is:\n";
 
         CtrlPlaneHopContent[] resultHops = new CtrlPlaneHopContent[totalHops];
         for (int i = 0; i < totalHops; i++) {
             resultHops[i] = tmpHops[i];
+            finalPath += resultHops[i].getLinkIdRef()+"\n";
         }
+        this.log.debug(finalPath);
 
 
         newPath.setHop(resultHops);
