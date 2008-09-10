@@ -24,7 +24,7 @@ public class PolicyManager {
     private Logger log;
     private String dbname;
     private String vlanFilter;
-    
+
     public PolicyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
@@ -58,7 +58,7 @@ public class PolicyManager {
 
         BandwidthFilter bwf = new BandwidthFilter();
         bwf.applyFilter(pathInfo, intraPath.getHop(), localLinks, newReservation, activeReservations);
- 
+
         if (pathInfo.getLayer2Info() != null) {
             PolicyFilter vlf = PolicyFilterFactory.create(this.vlanFilter);
             vlf.applyFilter(pathInfo, intraPath.getHop(), localLinks, newReservation, activeReservations);
@@ -83,7 +83,7 @@ public class PolicyManager {
         this.log.info("getLinksFromPath.start");
         ArrayList<Link> links= new ArrayList<Link>();
         TypeConverter tc = new TypeConverter();
-        
+
         if (ctrlPlanePath == null) {
             throw new BSSException("no path provided to initlinkIntervals");
         }
@@ -107,7 +107,7 @@ public class PolicyManager {
                     links.add(link);
 
                 } else {
-                    throw new BSSException("Non-local link in intradomain path: " + hopTopoId);
+//                    throw new BSSException("Non-local link in intradomain path: " + hopTopoId);
                 }
             } else {
                 throw new BSSException("Hops in intradomain path must be " +
