@@ -58,7 +58,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
     private TopologyGraphAdapter tga;
     private Properties props;
     private TypeConverter tc;
-    
+
     /**
      * Constructor
      *
@@ -257,7 +257,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
             return null;
         }
 
-	DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
+    DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
 
         graph = this.tga.genGraph(topology, reservation.getBandwidth(), reservation.getStartTime(), reservation.getEndTime(), reservation);
 
@@ -513,6 +513,9 @@ public class PSPathfinder extends Pathfinder implements PCE {
     private void verifyPath(String src, String dest,
         CtrlPlanePathContent interPath) throws PathfinderException{
 
+        String srcURN = this.resolveToFQTI(src);
+        String destURN = this.resolveToFQTI(dest);
+
         CtrlPlaneHopContent[] hops = interPath.getHop();
         String firstHop = this.tc.hopToURN(hops[0], "link");
         String lastHop = this.tc.hopToURN(hops[hops.length - 1], "link");
@@ -520,11 +523,11 @@ public class PSPathfinder extends Pathfinder implements PCE {
         if(firstHop == null || lastHop == null){
             this.reportError("The first and last hop of the given path must " +
                 "be a link or link ID reference.");
-        }else if(!firstHop.equals(src)){
+        }else if(!firstHop.equals(srcURN)){
             this.reportError("The first hop of the path must be the same as " +
             "the source. The source given was " + src + " and the first hop " +
             "of the provided path is " + firstHop);
-        }else if(!lastHop.equals(dest)){
+        }else if(!lastHop.equals(destURN)){
             this.reportError("The last hop of the path must be the same as " +
             "the destination. The destination given was " + dest + " and the" +
             "last hop of the provided path is " + lastHop);
