@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash -x
 echo "  ";
 echo "--- Checking prerequisites...";
 if [ -d src/net/es/oscars ]; then

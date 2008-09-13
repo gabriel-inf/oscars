@@ -351,10 +351,10 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
         <copy file="conf/server/axis2.log4j.properties" tofile="${webservice.home}/../classes/log4j.properties"/>
         <!-- these jars need to be in shared/lib to avoid classNotFound
-         errors ... mrt/3/27 -->
+         errors ...They now come from lib/axis2  mrt/912/08 	
         <copy todir="${webapp.home}/../shared/lib">
-            <!-- <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/> -->
-        </copy>
+            <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/> 
+        </copy> -->
         <!-- Since wss4j is there the PWCallback class needs to be there as well -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
