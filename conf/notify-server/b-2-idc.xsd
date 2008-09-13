@@ -53,9 +53,9 @@ This document and the information contained herein is provided on an "AS IS" bas
 
   <xsd:complexType name="FilterType">
     <xsd:sequence>
-      <xsd:element ref="TopicExpression" minOccurs="0" maxOccurs="unbounded"/>
-      <xsd:element ref="ProducerProperties" minOccurs="0" maxOccurs="unbounded"/>
-      <xsd:element ref="MessageContent" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element ref="wsnt:TopicExpression" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element ref="wsnt:ProducerProperties" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element ref="wsnt:MessageContent" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>

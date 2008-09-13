@@ -39,7 +39,8 @@
         <fail unless="axis2.found" message="Axis2 library not found. Please either build and deploy axis2.war with rampart support, or manually copy the necessary .jar files to lib/axis2. See documentation for details."/>
         <available file="lib/jta.jar" property="jta.found"/>
         <fail unless="jta.found" message="JTA library not found. Please download jta.jar from Sun's website and place it in the lib directory."/>
-        <available file="lib/axis2/rampart-core-1.3.jar" property="rampart.found"/>
+        <!-- <available file="lib/axis2/rampart-core-1.3.jar" property="rampart.found"/> -->
+        <available file="lib/axis2/rampart-core-1.4.jar" property="rampart.found"/>
         <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
@@ -259,7 +260,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </target>
     <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs">
         <copy todir="tmplib" flatten="true">
-            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-132.jar, axis2/opensaml-1.1.jar, axis2/rampart-core-1.3.jar,axis2/rampart-policy-1.3.jar,axis2/rampart-trust-1.3.jar, axis2/wss4j-1.5.3.jar,axis2/xmlsec-1.4.0.jar, axis2/log4j-1.2.14.jar"/>
+            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-*.jar, axis2/opensaml-1.1.jar, axis2/rampart-core-1.*.jar,axis2/rampart-policy-1.*.jar,axis2/rampart-trust-1.*.jar, axis2/wss4j-1.5.*.jar,axis2/xmlsec-1.4.*.jar, axis2/log4j-1.2.*.jar"/>
         </copy>
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml"/>
@@ -331,12 +332,16 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="setupServer" description="populate the shared/classes directory" depends="copydomain,copydefaults">
         <mkdir dir="${catalina.home}/shared/classes/server"/>
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
-        <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/classes/repo/modules"/>
+        <!-- <copy file="conf/rampart-1.*.mar" todir="${catalina.home}/shared/classes/repo/modules"/> -->
+        <copy todir="${catalina.home}/shared/classes/repo/modules/">
+            <fileset dir="conf/" includes="rampart*.mar"/>
+        </copy>
         <copy file="conf/server/common.log4j.properties" tofile="${catalina.home}/common/classes/log4j.properties"/>
         <copy file="conf/server/nmtopo-ctrlp.xsd" tofile="${catalina.home}/shared/classes/server/nmtopo-ctrlp.xsd"/>
         <!-- copy log4j.jar and commons-logging.jar to common/lib so that Tomcat will use log4j logging -->
-        <copy file="lib/axis2/log4j-1.2.14.jar" tofile="${catalina.home}/common/lib/log4j-1.2.14.jar"/>
-        <copy file="lib/axis2/commons-logging-1.1.jar" tofile="${catalina.home}/common/lib/commons-logging-1.1.jar"/>
+        <copy todir="${catalina.home}/common/lib/">
+            <fileset dir="lib/axis2/" includes="log4j-1.2.1*.jar,commons-logging-1.1*.jar"/>
+        </copy>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
@@ -348,7 +353,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <!-- these jars need to be in shared/lib to avoid classNotFound
          errors ... mrt/3/27 -->
         <copy todir="${webapp.home}/../shared/lib">
-            <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/>
+            <!-- <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/> -->
         </copy>
         <!-- Since wss4j is there the PWCallback class needs to be there as well -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
@@ -363,7 +368,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <property name="test.classes" value="build/test"/>
     <path id="test.compile.path">
         <fileset dir="${build.lib}" includes="*.jar"/>
-        <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-1.3.jar"/>
+        <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-1.*.jar"/>
         <pathelement location="${build.classes}"/>
     </path>
     <path id="test.path">

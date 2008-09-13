@@ -221,7 +221,7 @@ public class Attributes extends HttpServlet {
                     "with this attribute.");
             } else {
                 sb.append(attributeName + " has " + auths.size() +
-                          "associated authorizations.  Cannot delete.");
+                          " associated authorizations.  Cannot delete.");
             }
             existingAuthorizations = true;
         }

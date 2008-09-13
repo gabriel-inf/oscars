@@ -142,6 +142,7 @@
         </handler>
     </phase>
     <phase name="OperationInFaultPhase" />
+    <phase name="Security" />
     <phase name="soapmonitorPhase" />
 </phaseOrder>
 
@@ -149,6 +150,7 @@
     <phase name="soapmonitorPhase" />
     <phase name="OperationOutFaultPhase" />
     <phase name="PolicyDetermination" />
+    <phase name="Security" />
     <phase name="MessageOut" />
 </phaseOrder>
 
