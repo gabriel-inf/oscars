@@ -112,6 +112,12 @@ public class VendorCheckStatusJob implements Job {
                     if (which.equals("ingress")) {
                         if (allowLSP) {
                             isPathUp = results.get(ingressVlan);
+                        } else {
+                            if (desiredStatus.equals(StateEngine.ACTIVE)) {
+                                isPathUp = true;
+                            } else {
+                                isPathUp = false;
+                            }
                         }
                         this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId+":"+ingressVlan+" isPathUp:"+isPathUp);
                         direction = "FORWARD";
@@ -119,6 +125,12 @@ public class VendorCheckStatusJob implements Job {
                     } else if (which.equals("egress")) {
                         if (allowLSP) {
                             isPathUp = results.get(egressVlan);
+                        } else {
+                            if (desiredStatus.equals(StateEngine.ACTIVE)) {
+                                isPathUp = true;
+                            } else {
+                                isPathUp = false;
+                            }
                         }
                         this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId+":"+egressVlan+" isPathUp:"+isPathUp);
                         direction = "REVERSE";
@@ -221,19 +233,19 @@ public class VendorCheckStatusJob implements Job {
 
     private synchronized void sendNotification(Reservation resv, String newStatus, String operation, String direction) throws BSSException {
         EventProducer eventProducer = new EventProducer();
-        StateEngine se = core.getStateEngine();
         PathSetupManager pe = core.getPathSetupManager();
-        String status = StateEngine.getStatus(resv);
-        se.updateStatus(resv, newStatus);
         String gri = resv.getGlobalReservationId();
 
         if (operation.equals("PATH_SETUP")) {
             if (newStatus.equals(StateEngine.FAILED)) {
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv);
-            } else if (status.equals(newStatus)) {
+            } else {
                 String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_SETUP", direction);
                 if (syncedStatus.equals("PATH_SETUP_BOTH")) {
+                    this.log.debug("Updating status for gri:"+gri);
                     pe.updateCreateStatus(1, resv);
+                } else {
+                    this.log.debug("Not updating status for gri:"+gri);
                 }
             }
         } else if (operation.equals("PATH_TEARDOWN")) {
@@ -242,7 +254,10 @@ public class VendorCheckStatusJob implements Job {
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_TEARDOWN", direction);
                 if (syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
+                    this.log.debug("Updating status for gri:"+gri);
                     pe.updateTeardownStatus(1, resv);
+                } else {
+                    this.log.debug("Not updating status for gri:"+gri);
                 }
             }
         }

@@ -1,10 +1,14 @@
 package net.es.oscars.scheduler;
 import java.util.*;
+
+import org.apache.log4j.Logger;
+
 import net.es.oscars.bss.*;
 
 
 
 public class VendorStatusSemaphore {
+    private static Logger log = Logger.getLogger(VendorStatusSemaphore.class);
     private static HashMap<String, String> statusMap = null;
     private static HashMap<String, String> setupMap = null;
 
@@ -20,6 +24,8 @@ public class VendorStatusSemaphore {
         } else {
             reverseOp = "PATH_SETUP";
         }
+
+        log.debug(gri + " "+operation+" "+direction);
 
         String reverse;
 

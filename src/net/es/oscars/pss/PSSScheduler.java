@@ -18,7 +18,7 @@ public class PSSScheduler {
     private PathSetupManager pathSetupManager;
     private OSCARSCore core;
     private StateEngine se;
-    
+
     public PSSScheduler(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pathSetupManager = new PathSetupManager(dbname);
@@ -53,7 +53,7 @@ public class PSSScheduler {
                     this.pathSetupManager.create(resv, true);
                     eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "SCHEDULER", resv);
                 }
-                
+
             } catch (Exception ex) {
                 try {
                     this.se.updateStatus(resv, StateEngine.FAILED);
@@ -76,8 +76,8 @@ public class PSSScheduler {
      * @return response a list of reservations that have expired
      */
     public List<Reservation> expiredReservations(Integer timeInterval) {
-
         List<Reservation> reservations = null;
+//        this.log.info("expiredReservations.start");
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.expiredReservations(timeInterval);
@@ -86,7 +86,7 @@ public class PSSScheduler {
 
             try {
                 // call PSS to schedule LSP teardown(s)
-                String status = resv.getStatus();
+                String status = StateEngine.getStatus(resv);
                 this.log.info("expiredReservation: " + resv.getGlobalReservationId());
                 eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_FINISHED, "", "SCHEDULER", resv);
                 if(status.equals(StateEngine.ACTIVE)){
@@ -108,6 +108,7 @@ public class PSSScheduler {
             }
             dao.update(resv);
         }
+//        this.log.info("expiredReservations.end");
         return reservations;
     }
 
