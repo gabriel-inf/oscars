@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS institutions (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX instName ON institutions(name(9));
+CREATE UNIQUE INDEX instName ON institutions(name(15));
 INSERT INTO institutions VALUES(1, "Energy Sciences Network");
 INSERT INTO institutions VALUES(2, "Internet2");
 
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX attrName ON attributes(name(9));
+CREATE UNIQUE INDEX attrName ON attributes(name(15));
 -- ordinary OSCARS user
 INSERT INTO attributes VALUES(NULL, "OSCARS-user", "role" , "make reservations");
 
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS constraints (
     description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX constraintName ON constraints(name(9)); 
+CREATE UNIQUE INDEX constraintName ON constraints(name(15)); 
 
 INSERT INTO constraints VALUES (NULL, "none", "", "");
 INSERT INTO constraints VALUES (NULL, "all-users", "boolean","allows access to reservations or details of all users");

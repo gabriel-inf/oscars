@@ -12,7 +12,7 @@ CREATE TABLE constraints (
     description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX constraintName ON constraints(name(9)); 
+CREATE UNIQUE INDEX constraintName ON constraints(name(15)); 
 
 INSERT INTO constraints VALUES (NULL, "none", "", "");
 INSERT INTO constraints VALUES (NULL, "all-users","boolean","allows access to reservations or details of all users");
@@ -23,6 +23,11 @@ INSERT INTO constraints VALUES (NULL, "specify-path-elements", "boolean", "allow
 INSERT INTO constraints VALUES (NULL, "specify-gri", "boolean", "allows a gri to be specified on path creation");
 
 -- CHANGES TO TABLES
+
+-- INSTITUTIONS TABLES
+-- expand number of characters used in index
+ALTER TABLE institutions DROP INDEX instName;
+CREATE UNIQUE INDEX instName ON institutions(name(15));
 
 -- RESOURCES TABLE
 -- Add a resource to control modification of attributes, authorizations and institutions
@@ -207,7 +212,9 @@ DROP TABLE resourcePermissions;
 CREATE UNIQUE INDEX permName on permissions (name(6));
 
 -- ATTRIBUTES TABLE
-	                        
+
+ALTER TABLE attributes DROP INDEX attrName;
+CREATE UNIQUE INDEX attrName ON attributes(name(15));                    
 -- Add description description for attributes
 ALTER IGNORE TABLE attributes ADD COLUMN description TEXT NOT NULL;
 UPDATE attributes SET attrType="role" WHERE attrType="group";
