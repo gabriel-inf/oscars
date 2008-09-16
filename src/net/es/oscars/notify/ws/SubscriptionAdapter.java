@@ -60,7 +60,7 @@ public class SubscriptionAdapter{
         }
         this.repo = catalinaHome + "shared/classes/repo/";
         PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("notifybroker", true); 
+        Properties props = propHandler.getPropertyGroup("notify.ws.broker", true); 
         this.subscriptionManagerURL = props.getProperty("url");
         this.sm = new SubscriptionManager(this.dbname);
         if(this.subscriptionManagerURL == null){
