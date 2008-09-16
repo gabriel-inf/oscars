@@ -1136,8 +1136,8 @@ public class ReservationManager {
     }
 
     /**
-     * Converts teh path in a pathInfo object to a PathElem bean. If an 
-     * existing pathElem object is then it is updated rather than creating 
+     * Converts the path in a pathInfo object to a PathElem bean. If an 
+     * existing pathElem object is given then it is updated rather than creating 
      * a new one from scratch. This is useful for storing the inter-domain 
      * path and updating VLANs when a reservation completes.
      *
@@ -1187,11 +1187,16 @@ public class ReservationManager {
             }
             if(link.getL2SwitchingCapabilityData() != null && 
                     hops[i].getLink() != null){
-                String vlan = hops[i].getLink()
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                                     hops[i].getLink()
                                      .getSwitchingCapabilityDescriptors()
-                                     .getSwitchingCapabilitySpecificInfo()
-                                     .getVlanRangeAvailability();
-               currPathElem.setLinkDescr(vlan);
+                                     .getSwitchingCapabilitySpecificInfo();
+                String vlan = swcapInfo.getVlanRangeAvailability();
+                if("0".equals(vlan)){
+                    vlan = "-" + swcapInfo.getSuggestedVLANRange();
+                    swcapInfo.setSuggestedVLANRange("0");
+                }
+                currPathElem.setLinkDescr(vlan);
             }
             prevPathElem = currPathElem;
         }
@@ -1474,7 +1479,8 @@ public class ReservationManager {
                                         .getSwitchingCapabilitySpecificInfo();
         String vlanRange = swcapInfo.getVlanRangeAvailability();
         if("0".equals(vlanRange)){//untagged
-            pathElem.setLinkDescr("0");
+            pathElem.setLinkDescr("-"+swcapInfo.getSuggestedVLANRange());
+            swcapInfo.setSuggestedVLANRange("0");
         }else{
             pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
         }

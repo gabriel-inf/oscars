@@ -569,6 +569,11 @@ public class TypeConverter {
                     if(tag < 4096){
                         mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
                     }
+                } else if(rangeEnds.length == 2 && "".equals(rangeEnds[0])){
+                    int tag = Integer.parseInt(rangeEnds[1].trim());
+                    if(tag < 4096){
+                        mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
+                    }
                 } else if(rangeEnds.length == 2){
                     int startTag = Integer.parseInt(rangeEnds[0].trim());
                     int endTag = Integer.parseInt(rangeEnds[1].trim());
