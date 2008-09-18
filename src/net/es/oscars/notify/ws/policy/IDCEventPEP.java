@@ -2,22 +2,18 @@ package net.es.oscars.notify.ws.policy;
 
 import java.util.*;
 import org.apache.axiom.om.OMElement;
-import org.apache.axis2.databinding.ADBException;
 import org.apache.log4j.*;
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.xpath.AXIOMXPath;
-import org.apache.axiom.om.OMAbstractFactory;
-import org.apache.axiom.om.OMFactory;
 import org.hibernate.*;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
-import org.jaxen.JaxenException;
-import org.jaxen.SimpleNamespaceContext;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import net.es.oscars.notify.ws.OSCARSNotifyCore;
 import net.es.oscars.aaa.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.notify.ws.AAAFaultMessage;
 import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.wsdlTypes.EventContent;
+
 
 /**
  * IDCEventPEP extracts the user login from and idc:event message
@@ -28,20 +24,12 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 public class IDCEventPEP implements NotifyPEP{
     private Logger log;
     private OSCARSNotifyCore core;
-    private HashMap<String,String> namespaces;
     private UserManager userMgr;
     private String dbname;
-    
-    final public String ROOT_XPATH = "/idc:event";
-    final public String USERLOGIN_XPATH = "/idc:event/idc:userLogin";
-    final public String RESV_LOGIN_XPATH = "/idc:event/idc:resDetails/idc:login";
-    final public String RESV_LINKS_XPATH = "/idc:event/idc:resDetails/idc:pathInfo/idc:path/nmwg-ctrlp:hop/nmwg-ctrlp:link";
+
     public IDCEventPEP(){
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSNotifyCore.getInstance();
-        this.namespaces = new HashMap<String,String>();
-        this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
-        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
     }
     
     public void init(String dbname){
@@ -76,34 +64,46 @@ public class IDCEventPEP implements NotifyPEP{
         return permissionMap;
     }
     
-    public HashMap<String, ArrayList<String>> enforce(OMElement omMessage) throws AAAFaultMessage{
+    public HashMap<String, ArrayList<String>> enforce(OMElement[] omEvents) throws AAAFaultMessage{
+        HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
+        for(OMElement omEvent : omEvents){
+            HashMap<String, ArrayList<String>> tmpMap = this.enforce(omEvent);
+            if(tmpMap != null){
+                permissionMap.putAll(tmpMap);
+            }
+        }
+        return permissionMap;
+    }
+    
+    public HashMap<String, ArrayList<String>> enforce(OMElement omEvent) throws AAAFaultMessage{
         this.log.debug("prepare.start");
         HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> institutionList = new ArrayList<String>();
-        UserDAO dao = new UserDAO(this.dbname);
-        User user = null;
-        OMElement userLogin = null;
-        OMElement resvLoginElem = null;
+        String userLogin = null;
+        String resvLogin = null;
+        EventContent event = null;
         try{
-            AXIOMXPath xpathExpression = new AXIOMXPath(this.RESV_LOGIN_XPATH); 
-            SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
-            xpathExpression.setNamespaceContext(nsContext);
-            userLogin = (OMElement) xpathExpression.selectSingleNode(omMessage);
+            event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
+            userLogin = event.getUserLogin();
+            if(event.getResDetails() != null && event.getResDetails().getLogin() != null){
+                resvLogin = event.getResDetails().getLogin();
+            }
         }catch(Exception e){
-            e.printStackTrace();
-            throw new AAAFaultMessage(e.getMessage());
+            this.log.debug("notification not an idc:event");
+            return permissionMap;
         }
         
         //Add user
         userList.add("ALL");
-        if(userLogin != null){
-            String userString = userLogin.getText();
-            this.log.debug("Adding user login '"+ userString + "'");
-            userList.add(userString);
-            user = dao.query(userString);
-        }else{
-            this.log.debug("Did not find user login in notify message!");
+        if(userLogin != null && userLogin.trim().equals("")){
+            this.log.debug("Adding user login '"+ userLogin + "'");
+            userList.add(userLogin);
+        }
+        if(resvLogin != null && resvLogin.trim().equals("") &&
+                (!resvLogin.equals(userLogin))){
+            this.log.debug("Adding resv login '"+ resvLogin + "'");
+            userList.add(resvLogin);
         }
         permissionMap.put("IDC_RESV_USER", userList);
         
@@ -111,21 +111,21 @@ public class IDCEventPEP implements NotifyPEP{
         try{
             bss = this.core.getBssSession();
             bss.beginTransaction();
-            AXIOMXPath xpathExpression = new AXIOMXPath(this.RESV_LINKS_XPATH); 
-            SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
-            xpathExpression.setNamespaceContext(nsContext);
-            List<OMElement> links = (List<OMElement>) xpathExpression.selectNodes(omMessage);
-            if(links == null){
+            
+            if(event.getResDetails() == null || 
+               event.getResDetails().getPathInfo().getPath() == null ||
+               event.getResDetails().getPathInfo().getPath().getHop() == null){
                 this.log.debug("prepare.end");
-                return permissionMap;
+                return permissionMap;   
             }
+            CtrlPlaneHopContent[] hops = event.getResDetails().getPathInfo().getPath().getHop();
             HashMap<String,String> domainInsts = new HashMap<String,String>();
-            for(OMElement omLink : links){
-                CtrlPlaneLinkContent link = CtrlPlaneLinkContent.Factory.parse(omLink.getXMLStreamReaderWithoutCaching());
-                String urn = link.getId();
-                if(urn == null){
+            for(CtrlPlaneHopContent hop : hops){
+                CtrlPlaneLinkContent link = hop.getLink();
+                if(link == null){
                     continue;
                 }
+                String urn = link.getId();
                 this.addInst(urn,institutionList, domainInsts);
                 this.addRemoteInst(urn,institutionList, domainInsts);
             }

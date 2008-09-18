@@ -86,12 +86,12 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                 Session aaa = this.core.getAAASession();
                 aaa.beginTransaction();
                 HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
-                OMElement omMessage = holder.getMessage().getOMElement(NotificationMessage.MY_QNAME, omFactory);
+                OMElement[] omElems = holder.getMessage().getExtraElement();
                 for(NotifyPEP notifyPep : this.notifyPEPs){
                     if(!notifyPep.matches(topics)){
                         continue;
                     }
-                    HashMap<String, ArrayList<String>> pepMap = notifyPep.enforce(omMessage);
+                    HashMap<String, ArrayList<String>> pepMap = notifyPep.enforce(omElems);
                     if(pepMap != null){
                         permissionMap.putAll(pepMap);
                     }

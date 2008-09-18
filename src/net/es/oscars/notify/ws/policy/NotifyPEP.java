@@ -20,6 +20,6 @@ public interface NotifyPEP extends Serializable{
     
     public HashMap<String, String> prepare(String subscriberLogin) throws AAAFaultMessage;
     
-    public HashMap<String, ArrayList<String>> enforce(OMElement message) throws AAAFaultMessage;
+    public HashMap<String, ArrayList<String>> enforce(OMElement[] messages) throws AAAFaultMessage;
     
 }
