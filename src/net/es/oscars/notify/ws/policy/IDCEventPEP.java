@@ -96,11 +96,11 @@ public class IDCEventPEP implements NotifyPEP{
         
         //Add user
         userList.add("ALL");
-        if(userLogin != null && userLogin.trim().equals("")){
+        if(userLogin != null && (!userLogin.trim().equals(""))){
             this.log.debug("Adding user login '"+ userLogin + "'");
             userList.add(userLogin);
         }
-        if(resvLogin != null && resvLogin.trim().equals("") &&
+        if(resvLogin != null && (!resvLogin.trim().equals("")) &&
                 (!resvLogin.equals(userLogin))){
             this.log.debug("Adding resv login '"+ resvLogin + "'");
             userList.add(resvLogin);
