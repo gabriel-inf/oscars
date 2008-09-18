@@ -552,8 +552,10 @@ public class OSCARSCore {
      * @return the scheduleManager
      */
     public ScheduleManager getScheduleManager() {
-        if (this.scheduleManager == null) {
-            this.initScheduleManager();
+        synchronized(this){
+            if (this.scheduleManager == null) {
+                this.initScheduleManager();
+            }
         }
         return scheduleManager;
     }
