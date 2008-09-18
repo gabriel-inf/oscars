@@ -78,18 +78,12 @@
             <localRepository refid="local.repository"/>
             <remoteRepository refid="remote.repository.mvn"/>
         </artifact:dependencies>
+        <copy file="${maven.repo}/jboss/javassist/3.4.ga/javassist-3.4.ga.jar" todir="${build.lib}"/>
         <artifact:dependencies>
             <dependency groupId="javax.transaction" artifactId="transaction-api" version="1.1"/>
             <localRepository refid="local.repository"/>
             <remoteRepository refid="remote.repository.java"/>
         </artifact:dependencies>
-        <copy file="${maven.repo}/jboss/javassist/3.4.ga/javassist-3.4.ga.jar" todir="${build.lib}"/>
-        <artifact:dependencies>
-            <dependency groupId="mysql" artifactId="mysql-connector-java" version="3.1.13"/>
-            <localRepository refid="local.repository"/>
-            <remoteRepository refid="remote.repository.mvn"/>
-        </artifact:dependencies>
-        <copy file="${maven.repo}/mysql/mysql-connector-java/3.1.13/mysql-connector-java-3.1.13.jar" todir="${build.lib}"/>
 	<copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
     </target>
     <!-- Using Axis2, generates code in net.es.oscars.oscars and
