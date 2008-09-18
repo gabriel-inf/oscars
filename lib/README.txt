@@ -1,45 +1,53 @@
-Berkeley Lab is unable to redistribute some third-party jar's.  We are
-looking into the possibility of having another site host these jar's in
-one place.
+We are unable to redistribute some third-party jar's due to licensing
+restrictions.
 
-1.  The Axis2 jar's.  You  need to get these from the Axis2 1.3 distribution:
+1.  The Axis2 jar's.  These will automatically be downloaded for you with
+    do_build.sh if you have wget installed.
 
-    http://ws.apache.org/axis2/download/1_3/download.cgi
+2.  The Rampart (Java security) jar's.  These will also be automatically
+    downloaded for you with do_build.sh.
 
-    Download the standard binary distribution.
+3.  transaction-api-1.1.jar:  This will be automatically downloaded if you run
+    ant prepare.
 
-2.  The Rampart (Java security) jar's.  Download only the Rampart module
-    from
-
-    http://ws.apache.org/axis2/modules/index.html
-
-    This is temporary; we need to improve our build process.
-
-3.  jta.jar:  You only need this for running the standalone tests.  The best
-    way to get it is through the Hibernate distribution:
-
-    http://www.hibernate.org/6.html  Download only Hibernate Core.
-
-4.  servlet-api.jar:  If you have a running Tomcat server, you can get this
+4.  servlet-api.jar:  If you have a running Tomcat 5.5 server, you can get this
     from $CATALINA_HOME/lib
 
-5.  mysql-connector-java-3.1.14-bin.jar:  You can download this from
+5.  mysql-connector-java-3.1.13-bin.jar:  This will automatically be downloaded
+    if you run ant prepare.
     
-    http://dev.mysql.com/downloads/connector/j/3.1.html
-
-
 If you are upgrading Hibernate, the following jar's all need to be upgraded
-at the same time, assuming Hibernate has a later version.  The jar's
-besides hibernate3.jar are found in lib in the Hibernate distribution.  Some
-of the required Hibernate jar's (see _README.txt in lib) are also found
-elsewhere and shouldn't be copied, for example those from Axis2.
+at the same time, assuming Hibernate has a later version.
+The jar's required for DCN from the Hibernate distribution as of 3.3.1.GA are
+the following.  Notice that these may be not the latest versions; don't
+downgrade if things are running correctly with what is currently installed.
 
-hibernate3.jar
-asm.jar
-asm-attrs.jar
-antlr-x.jar
-c3p0-x.jar
-cglib-x.jar
-jta.jar
+hibernate3.jar  Use from the distribution
 
+antlr-x.jar, commons-collections-x.jar dom4j-x
+  The versions of these haven't changed for awhile; if they've
+  been updated, these are in lib/required from the distribution.  Use the
+  version from Axis2 1.* for commons-collections.
 
+c3p0-x.jar:  Get from lib/optional/c3p0 in the distribution.
+
+slf4j-api-x.jar, slf4j-jcl-x.jar, slf4j-simple-x.jar
+
+The SLF4J jar's should be downloaded from the SLF4J site:
+
+http://www.slf4j.org/
+
+Only slf4j-api-x.jar is currently distributed with Hibernate.  There is
+apparently a problem with it; use the same version of the jar from the SLF4J
+site, as well as the same version of the other two jar's.
+
+jta-1.1.jar is from the Hibernate distribution.  transaction-api-1.1.jar is
+the same thing without legal notices, and is downloaded automatically.  In
+the event that there is a newer version (hasn't been for awhile), the
+Maven download in build.xml will need to be changed.
+
+javassist-3.4.GA.jar is from the Hibernate distribution.
+javassist-3.4.ga.jar is downloaded automatically, and is the same as what
+Hibernate distributes.  If Hibernate changes the version of javassist they
+distribute, the Maven download in build.xml will need to be changed
+(there are later versions).
