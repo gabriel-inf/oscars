@@ -20,6 +20,33 @@ fi
 echo "  ";
 echo "  ";
 
+#Upgrade Axis2 
+sh conf/axis2/axis2_install.sh `pwd`
+if [ $? != 0 ]; then
+    exit 1;
+fi
+AXIS2_ANS=0;
+while [ $AXIS2_ANS == 0 ]; do
+	echo -n "Would you like to update your Axis2 configuration for version 1.4 y/n? ";
+    read AXIS2_ANS;
+    if [ "$AXIS2_ANS" != "y" ] && [ "$AXIS2_ANS" != "Y" ] && [ "$AXIS2_ANS" != "n" ] && [ "$AXIS2_ANS" != "N" ]; then
+        AXIS2_ANS=0;
+    fi
+done
+if [ "$AXIS2_ANS" = "y" ] || [ "$AXIS2_ANS" = "Y" ]; then
+    #Update axis2.xml
+    REPO_PATH="$CATALINA_HOME/shared/classes/repo";
+    CERT_ALIAS=`grep "<user>.*</user>" $REPO_PATH/axis2.xml | sed -e 's/.*<user>\(.*\)<\/user>.*/\1/'`;
+    sed -i -e "s/<user>.*<\/user>/<user>$CERT_ALIAS<\/user>/g" conf/examples/client/axis2.xml
+    cp conf/examples/client/axis2.xml $REPO_PATH/axis2.xml
+    
+    #Re-install TERCE if applicable
+    if [ -f "../terce/do_install.sh" ]; then
+        `sh ../terce/do_install.sh`;
+    fi
+    echo "--- Axis2 configuration upgraded."; 
+fi
+
 #Upgrade mysql tables
 MYSQL_ANS=0;
 while [ $MYSQL_ANS == 0 ]; do
