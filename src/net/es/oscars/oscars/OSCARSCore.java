@@ -227,7 +227,7 @@ public class OSCARSCore {
         this.log.debug("initForwarder.end");
     }
 
-    public void initScheduleManager() {
+    synchronized public void initScheduleManager() {
         this.log.debug("initScheduleManager.start");
         this.scheduleManager = ScheduleManager.getInstance();
         this.log.debug("initScheduleManager.end");
@@ -552,11 +552,10 @@ public class OSCARSCore {
      * @return the scheduleManager
      */
     public ScheduleManager getScheduleManager() {
-        synchronized(this){
-            if (this.scheduleManager == null) {
-                this.initScheduleManager();
-            }
+        if (this.scheduleManager == null) {
+            this.initScheduleManager();
         }
+
         return scheduleManager;
     }
 

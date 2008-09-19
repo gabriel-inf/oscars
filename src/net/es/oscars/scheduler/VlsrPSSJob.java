@@ -199,6 +199,25 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 lsp.setDstVtag(Math.abs(egressLinkDescr));
             }
             
+            /* Set end-to-end VLAN when edges untagged where there is at least
+               one ethernet trunk. */
+            if(ingLocalId.getType().equals(DragonLocalID.UNTAGGED_PORT) && 
+               egrLocalId.getType().equals(DragonLocalID.UNTAGGED_PORT)){
+                PathElem elem = path.getPathElem();
+                int e2eVtag = 0;
+                while(elem != null){
+                    String linkDescr = elem.getLinkDescr();
+                    if(linkDescr != null){
+                        try{
+                            e2eVtag = Integer.parseInt(linkDescr);
+                            if(e2eVtag > 0){ break; }
+                        }catch(Exception e){}
+                    }
+                    elem = elem.getNextElem();
+                }
+                lsp.setE2EVtag(e2eVtag);
+            }
+            
             lsp.setSrcLocalID(ingLocalId);
             lsp.setDstLocalID(egrLocalId);
             lsp.setSWCAP(DragonLSP.SWCAP_L2SC);
@@ -724,7 +743,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private DragonLocalID linkToLocalId(Link link, int vtag, boolean hasNarb, boolean isIngress)
         throws PSSException{
         String portTopoId = link.getPort().getTopologyIdent();
-        boolean tagged = (vtag >= 0);
+        boolean tagged = (vtag > 0);
         String type = null;
         int number = 0;
         
