@@ -21,7 +21,8 @@ echo "  ";
 echo "  ";
 
 #Upgrade Axis2 
-sh conf/axis2/axis2_install.sh `pwd`
+INSTALL_HOME=`pwd`;
+sh conf/axis2/axis2_install.sh $INSTALL_HOME
 if [ $? != 0 ]; then
     exit 1;
 fi
@@ -42,7 +43,9 @@ if [ "$AXIS2_ANS" = "y" ] || [ "$AXIS2_ANS" = "Y" ]; then
     
     #Re-install TERCE if applicable
     if [ -f "../terce/do_install.sh" ]; then
-        `sh ../terce/do_install.sh`;
+        cd ../terce
+        sh do_install.sh;
+        cd $INSTALL_HOME;
     fi
     echo "--- Axis2 configuration upgraded."; 
 fi
