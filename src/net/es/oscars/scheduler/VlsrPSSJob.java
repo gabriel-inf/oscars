@@ -72,11 +72,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             eventProducer.addEvent(failedEvent, login, 
                                    "JOB", resv, "", ex.getMessage());
         }finally{
+            bss.getTransaction().commit();
             try{ 
                 Thread.sleep(DELAY*1000);
             }catch(InterruptedException e){}
             this.runNextJob(context);
-            bss.getTransaction().commit();
         }
 
         this.log.info("VlsrPSSJob.end");
@@ -128,7 +128,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         Link ingressLink = path.getPathElem().getLink();
         Link egressLink= this.getEgressLink(path);
         int ingressLinkDescr = this.getLinkDescr(path, true);
-        int egressLinkDescr = this.getLinkDescr(path, true);
+        int egressLinkDescr = this.getLinkDescr(path, false);
 
         String ingressPortTopoId = ingressLink.getPort().getTopologyIdent();
         String egressPortTopoId = egressLink.getPort().getTopologyIdent();
@@ -177,45 +177,24 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             
             if(ingressLinkDescr <= 0 && 
                 ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
-                (!tunnelMode)){
-                lsp.setSrcVtag(-1);
-            }else if(ingressLinkDescr <= 0 && 
-                ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
                 tunnelMode){
+                lsp.setSrcVtag(-1);
+            }else if(ingressLinkDescr <= 0){
                 lsp.setSrcVtag(0);
+                lsp.setE2EVtag(Math.abs(ingressLinkDescr));
             }else{
-                lsp.setSrcVtag(Math.abs(ingressLinkDescr));
+                lsp.setSrcVtag(ingressLinkDescr);
             }
             
             if(egressLinkDescr <= 0 && 
                 egrLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
-                (!tunnelMode)){
-                lsp.setDstVtag(-1);
-            }else if(egressLinkDescr <= 0 && 
-                egrLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
                 tunnelMode){
+                lsp.setDstVtag(-1);
+            }else if(egressLinkDescr <= 0){
                 lsp.setDstVtag(0);
+                lsp.setE2EVtag(Math.abs(egressLinkDescr));
             }else{
-                lsp.setDstVtag(Math.abs(egressLinkDescr));
-            }
-            
-            /* Set end-to-end VLAN when edges untagged where there is at least
-               one ethernet trunk. */
-            if(ingLocalId.getType().equals(DragonLocalID.UNTAGGED_PORT) && 
-               egrLocalId.getType().equals(DragonLocalID.UNTAGGED_PORT)){
-                PathElem elem = path.getPathElem();
-                int e2eVtag = 0;
-                while(elem != null){
-                    String linkDescr = elem.getLinkDescr();
-                    if(linkDescr != null){
-                        try{
-                            e2eVtag = Integer.parseInt(linkDescr);
-                            if(e2eVtag > 0){ break; }
-                        }catch(Exception e){}
-                    }
-                    elem = elem.getNextElem();
-                }
-                lsp.setE2EVtag(e2eVtag);
+                lsp.setDstVtag(egressLinkDescr);
             }
             
             lsp.setSrcLocalID(ingLocalId);
