@@ -199,7 +199,10 @@ public class PSPathfinder extends Pathfinder implements PCE {
         List<String> urns = new ArrayList<String>();
         try {
             sp = new DijkstraShortestPath(graph, src, dst);
-
+            if(sp.getPathEdgeList() == null){
+                throw new PathfinderException("No path found in graph between " + 
+                                              src + " and " + dst);
+            }
             Iterator peIt = sp.getPathEdgeList().iterator();
             while (peIt.hasNext()) {
                 DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
