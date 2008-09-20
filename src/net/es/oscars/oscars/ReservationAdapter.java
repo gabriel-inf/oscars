@@ -172,7 +172,7 @@ public class ReservationAdapter {
         this.log.info("modify.start");
         EventProducer eventProducer = new EventProducer();
         Reservation resv = this.tc.contentToReservation(params);
-        this.log.debug("Reservation was: "+resv.getGlobalReservationId());
+        this.log.info("Reservation was: "+resv.getGlobalReservationId());
 
         ModifyResReply reply = null;
         try {

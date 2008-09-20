@@ -802,7 +802,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.SIGN) ||
                         (((java.lang.Integer) eResult.get(
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.UT)) {
-                    this.log.debug("setOperationContext.getSecurityInfo, " +
+                    this.log.info("setOperationContext.getSecurityInfo, " +
                         "Principal's name: " +
                         ((Principal) eResult.get(
                             WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
@@ -858,7 +858,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         // lookup up using input DN first
         String origDN = this.certSubject.getName();
-        this.log.debug("checkUser original DN: " + origDN);
+        this.log.info("checkUser original DN: " + origDN);
         try {
             login = this.userMgr.loginFromDN(origDN);
             if (login == null) {

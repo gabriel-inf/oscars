@@ -197,7 +197,7 @@ public class TopologyXMLExporter {
             addrXML.addContent(addr);
             nodeXML.addContent(addrXML);
         } else {
-            this.log.info("Node without address: [" + nodeDB.getTopologyIdent() + "]");
+            this.log.debug("Node without address: [" + nodeDB.getTopologyIdent() + "]");
         }
 
         if (nodeDB.getPorts() != null) {

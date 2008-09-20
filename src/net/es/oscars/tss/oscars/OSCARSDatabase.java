@@ -138,7 +138,7 @@ public class OSCARSDatabase implements TEDB {
           }
 
           domain.setId(domainId);
-          this.log.info("domain:"+domain.getId());
+          this.log.debug("domain:"+domain.getId());
 
           Iterator nodeIt = domXML.getChildren("node", ns).iterator();
           while (nodeIt.hasNext()) {
@@ -157,7 +157,7 @@ public class OSCARSDatabase implements TEDB {
 
             domain.addNode(node);
 
-            this.log.info("node:"+node.getId());
+            this.log.debug("node:"+node.getId());
 
             Iterator portIt = nodeXML.getChildren("port", ns).iterator();
             while (portIt.hasNext()) {
@@ -167,7 +167,7 @@ public class OSCARSDatabase implements TEDB {
               node.addPort(port);
               port.setId(portXML.getAttributeValue("id"));
 
-              this.log.info("port:"+port.getId());
+              this.log.debug("port:"+port.getId());
 
               Element capXML = portXML.getChild("capacity", ns);
               if (capXML != null) {
@@ -195,7 +195,7 @@ public class OSCARSDatabase implements TEDB {
                 CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
                 port.addLink(link);
                 link.setId(linkXML.getAttributeValue("id"));
-                this.log.info("link:"+link.getId());
+                this.log.debug("link:"+link.getId());
                 
                 Element remLinkXML = linkXML.getChild("remoteLinkId", ns);
                 if (remLinkXML != null) {
@@ -248,7 +248,7 @@ public class OSCARSDatabase implements TEDB {
 
                 Attribute domId = new Attribute("id", d.getId(), ns);
                 domXML.setAttribute(domId);
-                this.log.info("domain id:["+domId+"]");
+                this.log.debug("domain id:["+domId+"]");
 
                 topoXML.addContent(domXML);
 
