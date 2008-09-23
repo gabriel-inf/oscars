@@ -254,7 +254,7 @@ public class ScheduleManager {
             }
 
             if (jobToSchedule != null) {
-                Trigger trigger = new SimpleTrigger("immediate", queuedJobsGroupName, new Date());
+                Trigger trigger = new SimpleTrigger("immediate-"+jobToSchedule, queuedJobsGroupName, new Date());
                 trigger.setJobName(jobToSchedule);
                 trigger.setJobGroup(queuedJobsGroupName);
                 this.scheduler.scheduleJob(trigger);
