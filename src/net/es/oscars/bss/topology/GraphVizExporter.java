@@ -462,7 +462,7 @@ public class GraphVizExporter {
        int colorIndex = 0;
        while (griIt.hasNext()) {
            String gri = (String) griIt.next();
-           String color = colors[colorIndex % 20];
+           String color = colors[colorIndex % colors.length];
 //           System.out.println(gri+"_"+color);
 
            HashMap<String, HashMap<String, String>> resvEdges = griToResvEdges.get(gri);
@@ -617,7 +617,7 @@ public class GraphVizExporter {
 
        for (int i = 0; i < resList.length; i++) {
            ResDetails resv = resList[i];
-           color = colors[i % 20];
+           color = colors[i % colors.length];
 
            String gri = resv.getGlobalReservationId();
            gris[i] = gri;
@@ -640,7 +640,7 @@ public class GraphVizExporter {
 
                boolean reverseHops = false;
                if (topNodes != null) {
-                   String topoId = hops[hops.length - 1].getId();
+                   String topoId = hops[hops.length - 1].getLink().getId();
                    Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
                    String nodeId = parsed.get("nodeId");
                    for (String topNode : topNodes) {
@@ -669,10 +669,18 @@ public class GraphVizExporter {
                for (int j = 0; j < hops.length; j++) {
 
                    CtrlPlaneHopContent hop = hops[j];
-                   String topoId = hop.getId();
+                   String topoId = hop.getLink().getId();
+                   if (topoId == null || topoId.equals("")) {
+                       System.err.println(gri+" empty topoid");
+                       continue;
+                   }
 //                       System.out.println(topoId);
 
                    Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
+                   if (parsed == null || parsed.get("type") == null || !parsed.get("type").equals("link")) {
+                       System.err.println(gri+" could not parse: "+topoId);
+                       continue;
+                   }
                    String domainId = parsed.get("domainId");
                    String nodeId   = parsed.get("nodeId");
                    String portId   = parsed.get("portId");
@@ -811,15 +819,15 @@ public class GraphVizExporter {
 
                if (j == 0) {
                    label = bandwidth+" Mbps";
-                   output += "\""+gri+"-start\" -> "+hop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\", minlen=2];\n";
+                   output += "\""+gri+"-start\" -> "+hop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\"];\n";
                }
                if (j % 2 > 0 ) {
-                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\", minlen=3];\n";
+                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\"];\n";
                } else {
                    output += hop+" -> "+nextHop+" [color="+color+",dir=both, group="+color+"];\n";
                }
                if (j == theHops.size() -2) {
-                   output += nextHop +" -> \""+gri+"-end\" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", minlen=2];\n";
+                   output += nextHop +" -> \""+gri+"-end\" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+"];\n";
                }
            }
        }
