@@ -54,7 +54,15 @@ public class Pathfinder {
             } else if (!domainDAO.isLocal(domainId)) {
                 throw new PathfinderException("Could not determine ingress; no path given and source link is not local (" + domainId + ")");
             } else {
-                return parseResults.get("fqti");
+                String fqti = parseResults.get("fqti");
+                Link ingressLink = domainDAO.getFullyQualifiedLink(fqti);
+                if (ingressLink == null) {
+                    throw new PathfinderException("Could not locate ingress link in DB");
+                } else if (!ingressLink.isValid()) {
+                    throw new PathfinderException("Ingress link is not valid");
+                }
+
+                return fqti;
             }
         }
 
@@ -136,6 +144,10 @@ public class Pathfinder {
                 }
             }
         }
+        if (fqti == null) {
+            throw new PathfinderException("Could not resolve "+urnOrName);
+        }
+
         return fqti;
     }
 
