@@ -74,6 +74,13 @@ public class ListResRmiHandler {
                 numRowsReq = 0;  // special case to get all results
             }
         }
+        // won't be set unless user search input enabled
+        if (inputMap.get("resvLogin") != null) {
+            String loginEntered = inputMap.get("resvLogin")[0];
+            if (!loginEntered.equals("")) {
+                loginConstraint = loginEntered;
+            }
+        }
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
@@ -86,10 +93,16 @@ public class ListResRmiHandler {
             this.log.debug("query failed: no permission to list Reservations");
             return result;
         }
+        // only display user search field if can look at other users'
+        // reservations
         if (authVal.equals(AuthValue.MYSITE)) {
+            result.put("resvLoginDisplay", Boolean.TRUE);
             institution = userMgr.getInstitution(userName);
         } else if (authVal.equals(AuthValue.SELFONLY)){
+            result.put("resvLoginDisplay", Boolean.FALSE);
             loginConstraint = userName;
+        } else {
+            result.put("resvLoginDisplay", Boolean.TRUE);
         }
         aaa.getTransaction().commit();
 
