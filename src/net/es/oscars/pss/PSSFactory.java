@@ -2,10 +2,13 @@ package net.es.oscars.pss;
 
 import net.es.oscars.pss.dragon.VlsrPSS;
 import net.es.oscars.pss.stub.StubPSS;
+import net.es.oscars.pss.vendor.VendorPSS;
+
+
 /**
  * Factory class that creates an instance of a module that implements
  * PSS. Created instance will be used to configure network and create paths.
- *  
+ *
  * @author Andrew Lake (alake@internet2.edu), David Robertson (dwrobertson@lbl.gov)
  */
 public class PSSFactory{
@@ -17,7 +20,7 @@ public class PSSFactory{
      * @return a new instance of a PSS. null if pss is not recognized.
      */
     public PSS createPSS(String pssType, String dbname) {
-        
+
         // check for null in case config file doesn't not have pss.method
         if (pssType == null) {
             ;

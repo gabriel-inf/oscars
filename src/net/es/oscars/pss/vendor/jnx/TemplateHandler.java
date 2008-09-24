@@ -1,4 +1,4 @@
-package net.es.oscars.pss.jnx;
+package net.es.oscars.pss.vendor.jnx;
 
 import java.io.*;
 import java.util.*;
@@ -39,7 +39,7 @@ public class TemplateHandler {
      * @throws PSSException
      */
     public Document fillTemplate(Map<String,String> hm, List<String> hops,
-                                 String fname) 
+                                 String fname)
             throws IOException, JDOMException, PSSException {
 
         this.log.info("fillTemplate.start");
@@ -72,7 +72,7 @@ public class TemplateHandler {
      * @param list a List of elements
      * @param hm a hash map of name value pairs
      * @throws PSSException
-     */ 
+     */
     private void replaceElements(List list, Map<String,String> hm)
             throws PSSException {
 
@@ -127,7 +127,7 @@ public class TemplateHandler {
      * @param list a List of elements
      * @param hm a hash map of name value pairs
      * @throws PSSException
-     */ 
+     */
     private void replaceFilterNames(List list, Map<String,String> hm)
             throws PSSException {
 
@@ -218,8 +218,8 @@ public class TemplateHandler {
     }
 
     private void listElement(Element e, String indent) {
-        this.log.info(indent + "*Element, name:" + 
-                           e.getName() + ", text:" + 
+        this.log.info(indent + "*Element, name:" +
+                           e.getName() + ", text:" +
                            e.getText().trim());
 
         // List all attributes
@@ -233,8 +233,8 @@ public class TemplateHandler {
     private void listAttributes(List as, String indent) {
         for (Iterator i = as.iterator(); i.hasNext();) {
             Attribute a = (Attribute) i.next();
-            this.log.info(indent + "*Attribute, name:" + 
-                                   a.getName() + ", value:" + 
+            this.log.info(indent + "*Attribute, name:" +
+                                   a.getName() + ", value:" +
                                    a.getValue());
         }
     }

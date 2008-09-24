@@ -1,4 +1,4 @@
-package net.es.oscars.pss.jnx;
+package net.es.oscars.pss.vendor.jnx;
 
 import java.io.*;
 import java.util.*;

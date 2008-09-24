@@ -1,4 +1,4 @@
-package net.es.oscars.pss.jnx;
+package net.es.oscars.pss.vendor.jnx;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,7 +54,7 @@ public class LSPConnection {
 
     /**
      * Creates an ssh connection, given a hash map with name/value pairs.
-     * 
+     *
      *  @param hm
      *  @throws IOException
      *  @throws PSSException
@@ -63,19 +63,19 @@ public class LSPConnection {
             throws IOException, PSSException {
 
         this.log.info("createSSHconnection.start");
-        if (!hm.containsKey("login")) { 
+        if (!hm.containsKey("login")) {
             throw new PSSException(
                 "no user name given for setting up SSH connection to router");
         }
-        if (!hm.containsKey("router")) { 
+        if (!hm.containsKey("router")) {
             throw new PSSException(
                 "no host name given for setting up SSH connection to router");
         }
-        if (!hm.containsKey("keyfile")) { 
+        if (!hm.containsKey("keyfile")) {
             throw new PSSException(
                 "no keyfile given for setting up SSH connection to router");
         }
-        if (!hm.containsKey("passphrase")) { 
+        if (!hm.containsKey("passphrase")) {
             throw new PSSException(
                 "no passphrase given for setting up SSH connection to router");
         }
@@ -100,7 +100,7 @@ public class LSPConnection {
         }
     }
 
-    /** 
+    /**
      * Not currently used.
      * This would be used with SSL sockets that need to connect to a server
      * whose CA cert we don't have in our keyring. The effect of this
@@ -112,7 +112,7 @@ public class LSPConnection {
     public void disableTrustManager() throws IOException, PSSException {
 
         // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[] { 
+        TrustManager[] trustAllCerts = new TrustManager[] {
             new X509TrustManager() {
                 public X509Certificate[]
                     getAcceptedIssuers() {
@@ -131,7 +131,7 @@ public class LSPConnection {
                                 String authType) {
                         System.out.print("in checkServerTrusted");
                 }
-            } 
+            }
         };
 
         try {

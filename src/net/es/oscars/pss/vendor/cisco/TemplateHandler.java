@@ -1,4 +1,4 @@
-package net.es.oscars.pss.cisco;
+package net.es.oscars.pss.vendor.cisco;
 
 import java.io.*;
 import java.util.*;
@@ -33,7 +33,7 @@ public class TemplateHandler {
      * @throws PSSException
      */
     public String buildString(Map<String,String> hm, List<String> hops,
-                              String fname) 
+                              String fname)
             throws IOException, PSSException {
 
         BufferedReader in = null;
@@ -64,7 +64,7 @@ public class TemplateHandler {
      * @param hops list of strings containing hops to add, if any
      * @return filledTemplate StringBuilder instance with substrings replaced
      * @throws PSSException
-     */ 
+     */
     private StringBuilder replaceVars(String buf, Map<String,String> hm,
                                       List<String> hops)
             throws PSSException {
@@ -91,7 +91,7 @@ public class TemplateHandler {
             prevPosition = r.end(0);
         }
         // TODO: last bit is chomped off..
-        filledTemplate.append("\n!\nend\n"); 
+        filledTemplate.append("\n!\nend\n");
         return filledTemplate;
     }
 
@@ -103,7 +103,7 @@ public class TemplateHandler {
      * @throws PSSException
      */
     public void addPath(StringBuilder sb, List<String> hops) {
-        
+
         // first instance of "next-address" already part of template
         for (int i=0; i < hops.size(); i++) {
             sb.append(hops.get(i) + "\n");

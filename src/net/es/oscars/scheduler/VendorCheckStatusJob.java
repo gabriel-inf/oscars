@@ -70,7 +70,7 @@ public class VendorCheckStatusJob implements Job {
             // Ask the routers if these VLANs are up
             if (vendor.equals("cisco")) {
                 try {
-                    net.es.oscars.pss.cisco.LSP ciscoLSP = new net.es.oscars.pss.cisco.LSP(core.getBssDbName());
+                    net.es.oscars.pss.vendor.cisco.LSP ciscoLSP = new net.es.oscars.pss.vendor.cisco.LSP(core.getBssDbName());
                     allowLSP = ciscoLSP.isAllowLSP();
                     if (allowLSP) {
                         results.putAll(ciscoLSP.statusLSP(nodeId, vlanList));
@@ -79,7 +79,7 @@ public class VendorCheckStatusJob implements Job {
                     this.log.error(ex);
                 }
             } else {
-                net.es.oscars.pss.jnx.JnxLSP jnxLSP = new net.es.oscars.pss.jnx.JnxLSP(core.getBssDbName());
+                net.es.oscars.pss.vendor.jnx.JnxLSP jnxLSP = new net.es.oscars.pss.vendor.jnx.JnxLSP(core.getBssDbName());
                 allowLSP = jnxLSP.isAllowLSP();
                 // TODO: do the jnx case
             }

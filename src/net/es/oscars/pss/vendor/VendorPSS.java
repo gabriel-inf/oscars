@@ -1,4 +1,4 @@
-package net.es.oscars.pss;
+package net.es.oscars.pss.vendor;
 
 import java.util.Properties;
 
@@ -9,8 +9,9 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.oscars.OSCARSCore;
-import net.es.oscars.pss.jnx.JnxLSP;
-import net.es.oscars.pss.cisco.LSP;
+import net.es.oscars.pss.vendor.jnx.JnxLSP;
+import net.es.oscars.pss.vendor.cisco.LSP;
+import net.es.oscars.pss.*;
 import net.es.oscars.scheduler.*;
 
 
