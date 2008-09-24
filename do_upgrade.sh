@@ -96,15 +96,17 @@ if [ "$MYSQL_ANS3" = "y" ] || [ "$MYSQL_ANS3" = "Y" ]; then
     stty -echo;
     read MYSQL_ROOT_PASSWORD;
     stty echo;
-    echo -n "Please enter the mysql user name OSCARS uses (i.e. oscars): ";
+    echo "";
+    echo -n "Please enter the mysql username OSCARS uses (i.e. oscars): ";
     read MYSQL_USER;
-    echo -n "Please enter the password fo the mysql user name OSCARS uses: ";
+    echo -n "Please enter the password for the mysql username OSCARS uses: ";
     stty -echo;
     read MYSQL_PW;
     stty echo;
+    echo "";
     mysql --user=$MYSQL_ROOT_USER --password=$MYSQL_ROOT_PASSWORD < sql/notify/createTables.sql
     echo "    Granting privileges to IDC account...";
-    `mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --execute="GRANT ALL PRIVILEGES ON notify.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PW'"`;
+    `mysql --user=$MYSQL_ROOT_USER --password="$MYSQL_ROOT_PASSWORD" --execute="GRANT ALL PRIVILEGES ON notify.* TO $MYSQL_USER@localhost IDENTIFIED BY '$MYSQL_PW'"`;
     echo "--- mysql tables upgraded";
 fi
 

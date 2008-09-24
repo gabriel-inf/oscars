@@ -54,7 +54,7 @@ if [ $FOUND_AXIS1_4 == 0 ] || [ $FOUND_RAMPART1_4 == 0 ] || [ $DEPLOYED_AXIS1_4 
 	READ_BUILDAXIS=0;
 	while [ $READ_BUILDAXIS == 0 ]; do
 	    echo "";
-		echo "- Axis2-1.4.1 installation not detected. Should I build it for you y/n? "
+		echo -n "- Axis2-1.4.1 installation not detected. Should I build it for you y/n? "
 		read READ_BUILDAXIS;
 		if [ "$READ_BUILDAXIS" != "y" ] && [ "$READ_BUILDAXIS" != "Y" ] && [ "$READ_BUILDAXIS" != "n" ] && [ "$READ_BUILDAXIS" != "N" ]; then
 			READ_BUILDAXIS=0;
@@ -80,7 +80,7 @@ READ_DEPLOYAXIS=0;
 if [ $DEPLOYED_AXIS1_4 == 0 ]; then
 	while [ $READ_DEPLOYAXIS == 0 ]; do
 		echo "";
-		echo "- Axis2-1.4.1 is not deployed. Should I do this for you y/n? "
+		echo -n "- Axis2-1.4.1 is not deployed. Should I do this for you y/n? "
 		read READ_DEPLOYAXIS;
 		if [ "$READ_DEPLOYAXIS" != "y" ] && [ "$READ_DEPLOYAXIS" != "Y" ] && [ "$READ_DEPLOYAXIS" != "n" ] && [ "$READ_DEPLOYAXIS" != "N" ]; then
 			READ_DEPLOYAXIS=0;
