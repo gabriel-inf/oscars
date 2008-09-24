@@ -24,7 +24,7 @@
     <target name="prepare" description="Create build directoy and copy in files">
         <mkdir dir="${idcutil.home}/classes"/>
         <copy todir="lib">
-            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-*.jar,commons-collections-*.jar,jta.jar,mysql-connector-java-*.jar,c3p0-*.jar,cglib-*.jar,asm.jar"/>
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-*.jar,commons-collections-*.jar,transaction-api-1.1.jar,mysql-connector-java-*.jar,c3p0-*.jar, javassist-3.4.ga.jar, slf4j-api-1.5.2.jar, slf4j-jcl-1.5.2.jar slf4j-simple-1.5.2.jar"/>
             <fileset dir="${build.home}/lib/axis2" includes="log4j-*.jar,commons-logging-*.jar"/>
         </copy>
         <copy todir="classes">
@@ -45,9 +45,6 @@
         <jar destfile="IDCUtil.jar">
             <fileset dir="${build.classes}" includes="**/*.class,**/*.xml" />
             <fileset dir="${idcutil.home}/classes"  includes="*.class,log4j.properties" />
-            <!--
-                <fileset dir="${build.home}" includes="lib/hibernate3.jar, lib/log4j-1.2.13.jar, lib/commons-logging-1.1.jar"/> 
-             -->
         </jar>
     </target>
 
