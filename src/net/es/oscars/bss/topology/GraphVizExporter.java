@@ -609,7 +609,7 @@ public class GraphVizExporter {
        Hashtable<String, ArrayList<String>> portLinks;
        ArrayList<String> links;
        ArrayList<ArrayList<String>> coloredHops = new ArrayList<ArrayList<String>>();
-       String[] gris = new String[100];
+       String[] gris = new String[500];
 
        String output = "\n\n\ndigraph reservations {\n";
        String sources = "";
@@ -764,6 +764,7 @@ public class GraphVizExporter {
 
                String nextHop = theHops.get(j+1);
                String edge = hop+":"+nextHop;
+               String revEdge = nextHop+":"+hop;
                if (j == 0 || j % 2 > 0 ) {
                    int edgeBW = 0;
                    if (edgeBWs.containsKey(edge)) {
@@ -771,6 +772,13 @@ public class GraphVizExporter {
                    }
                    edgeBW += bandwidth;
                    edgeBWs.put(edge, edgeBW);
+
+                   edgeBW = 0;
+                   if (edgeBWs.containsKey(revEdge)) {
+                       edgeBW = edgeBWs.get(revEdge);
+                   }
+                   edgeBW += bandwidth;
+                   edgeBWs.put(revEdge, edgeBW);
 
 //                       output += hop+" -> "+nextHop+" [color="+color+",dir=both, style=bold];\n";
 //                   } else {
