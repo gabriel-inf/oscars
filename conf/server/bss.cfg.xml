@@ -20,11 +20,20 @@
         <property name="current_session_context_class">thread</property>
 
         <!-- connection pool section -->
+	<!-- See http://www.mchange.com/projects/c3p0/index.html before
+	     making any changes -->
+        <property name="hibernate.c3p0.acquire_increment">3</property>
+	<property name="hibernate.c3p0.idle_test_period">3600</property>
+	<property name="hibernate.c3p0.timeout">3500</property>
+	<property name="hibernate.c3p0.max_size">20</property>
+	<property name="hibernate.c3p0.max_statements">50</property>
         <property name="hibernate.c3p0.min_size">5</property>
-        <property name="hibernate.c3p0.max_size">20</property>
-    <property name="hibernate.c3p0.timeout">300</property>
-    <property name="hibernate.c3p0.max_statements">50</property>
-    <property name="hibernate.c3p0.idle_test_period">3000</property>
+
+	<!-- from http://kobyleha.com/en/programming/java/java_hibernate_broken_pipe_eng -->
+	<property name="hibernate.c3p0.preferredTestQuery">select 1;</property>
+	<property name="connection.autoReconnect">true</property>
+	<property name="connection.autoReconnectForPools">true</property>
+	<property name="connection.is-connection-validation-required">true</property>
 
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
