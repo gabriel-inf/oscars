@@ -39,15 +39,6 @@ else
     echo "    Environment variable DOMAIN_HOME is not set. Continuing without it.";
 fi
 
-# Detect JTA
-if [ -f ./lib/transaction-api-1.1.jar ]; then
-    echo "    Found transaction-api-1.1.jar under lib";
-else
-    echo "";
-    echo "transaction-api-1.1.jar not found. Recommend you run do_build.sh; Maven will download this for you.";
-    exit 1;
-fi
-
 # Axis2 retrieve & build
 bash conf/axis2/axis2_install.sh $INSTALL_HOME
 if [ $? != 0 ]; then
