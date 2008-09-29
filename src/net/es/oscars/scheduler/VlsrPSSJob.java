@@ -271,20 +271,23 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             }
             
             /* Create egress local id */
-            csa.deleteLocalId(egrLocalId);
-            if(csa.createLocalId(egrLocalId, egrLocalIdIface)){
-                this.log.info("Created local-id " + egrLocalId.getType() + " " +
-                    egrLocalId.getNumber());
-            }else{
-                this.log.error("unable to create dest local-id " + 
-                    lsp.getLSPName() + ": " + csa.getError());
-                throw new PSSException("Unable to create LSP: Dest local-id " + 
-                    csa.getError());
-            }
-    
-            /* Remove port forwarding */
-            if(sshPortForward){
-                egressSshSess.disconnect();
+            if((!egressPortTopoId.startsWith("G")) && 
+                    DragonLocalID.UNTAGGED_PORT_GROUP != egrLocalId.getType()){
+	            csa.deleteLocalId(egrLocalId);
+	            if(csa.createLocalId(egrLocalId, egrLocalIdIface)){
+	                this.log.info("Created local-id " + egrLocalId.getType() + " " +
+	                    egrLocalId.getNumber());
+	            }else{
+	                this.log.error("unable to create dest local-id " + 
+	                    lsp.getLSPName() + ": " + csa.getError());
+	                throw new PSSException("Unable to create LSP: Dest local-id " + 
+	                    csa.getError());
+	            }
+	    
+	            /* Remove port forwarding */
+	            if(sshPortForward){
+	                egressSshSess.disconnect();
+	            }
             }
             
             /* Logout */
@@ -339,7 +342,9 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
         
         /* Create ingress local-id */
-        if(hasNarb && ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
+        if(hasNarb && ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE &&
+        		(!ingressPortTopoId.startsWith("G")) && 
+        		DragonLocalID.UNTAGGED_PORT_GROUP != ingLocalId.getType()){
             
             /* Delete local-id if ingress and egress not the same */
             if(!(ingress.getHostAddress().equals(egress.getHostAddress()) && 
@@ -741,6 +746,14 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             String strNum = portTopoId.substring(1);
             number = this.intefaceToLocalIdNum(strNum, false);
             this.log.info("local-id value " + number);
+        }else if(portTopoId.indexOf('G') == 0){
+            this.log.info("tagged group local-id (override)");
+            type = DragonLocalID.TAGGED_PORT_GROUP;
+            number = Math.abs(vtag);
+        }else if(portTopoId.indexOf('U') == 0){
+            this.log.info("untagged group local-id (override)");
+            type = DragonLocalID.UNTAGGED_PORT_GROUP;
+            number = Math.abs(vtag);
         }else if(portTopoId.indexOf('S') == 0){
             this.log.info("subnet-interface local-id");
             type = DragonLocalID.SUBNET_INTERFACE;
@@ -794,7 +807,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         
         /* If doesn't match any of the above but isn't required to be an 
            ethernet type return -1 */
-        if(matchAny){
+        if(matchAny || portTopoId.indexOf('G') == 0){
             return -1;
         }
         
