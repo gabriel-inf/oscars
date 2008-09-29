@@ -69,7 +69,8 @@ public class BandwidthFilter implements PolicyFilter {
             Long capacitySum = newAgg.getMax();
             if (capacitySum > maximumReservableCapacity) {
                 throw new BSSException(
-                  "Port (" + link.getPort().getTopologyIdent() +
+                  "Node (" + link.getPort().getNode().getTopologyIdent() +
+                  "), Port (" + link.getPort().getTopologyIdent() +
                   ") oversubscribed:  " + capacitySum +
                   " bps > " + maximumReservableCapacity + " bps");
             }
