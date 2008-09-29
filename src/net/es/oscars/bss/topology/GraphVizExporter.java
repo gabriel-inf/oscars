@@ -79,6 +79,8 @@ public class GraphVizExporter {
     */
     private StringBuffer graph = new StringBuffer();
 
+    private StringBuffer xdotSource = new StringBuffer();
+
     public static String[] colors;
 
    /**
@@ -124,6 +126,20 @@ public class GraphVizExporter {
        this.graph.append(graph);
    }
 
+   /**
+    * Returns the graph's source description in dot language.
+    * @return Source of the graph in dot language.
+    */
+   public String getXdotSource() {
+      return xdotSource.toString();
+   }
+
+   public void setXdotSource(String xdot) {
+       if (this.xdotSource.length() > 0) {
+           this.xdotSource.delete(0, this.xdotSource.length()-1);
+       }
+       this.xdotSource.append(xdot);
+   }
 
    /**
     * Adds a string to the graph's source (without newline).
@@ -991,6 +1007,42 @@ public class GraphVizExporter {
       }
 
       return img_stream;
+   }
+
+
+   public void transformToXdot(String dot) {
+          try {
+              File tempDot = File.createTempFile("graph_", ".dot", new File(this.TEMP_DIR));
+              String temp = tempDot.getAbsolutePath();
+
+              Runtime rt = Runtime.getRuntime();
+              String cmd = DOT + " -Txdot"+tempDot.getAbsolutePath();
+              Process p = rt.exec(cmd);
+              p.waitFor();
+              this.setXdotSource("");
+              String a;
+
+              BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()),5000);
+              while ((a = in.readLine()) != null) {
+                  this.xdotSource.append(a);
+              }
+
+              // Close it if we need to
+              if( in != null ) in.close();
+              if (tempDot.delete() == false)
+                  System.err.println("Warning: "+tempDot.getAbsolutePath()+" could not be deleted!");
+
+           }
+           catch (java.io.IOException ioe) {
+              System.err.println("Error:    in I/O processing of tempfile in dir "+this.TEMP_DIR+"\n");
+              System.err.println("       or in calling external command");
+              ioe.printStackTrace();
+           }
+           catch (java.lang.InterruptedException ie) {
+              System.err.println("Error: the execution of the external program was interrupted");
+              ie.printStackTrace();
+           }
+
    }
 
 
