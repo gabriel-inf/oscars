@@ -29,12 +29,7 @@
 	<property name="hibernate.c3p0.max_size">20</property>
 	<property name="hibernate.c3p0.max_statements">50</property>
         <property name="hibernate.c3p0.min_size">5</property>
-
-	<!-- from http://kobyleha.com/en/programming/java/java_hibernate_broken_pipe_eng -->
 	<property name="hibernate.c3p0.preferredTestQuery">select 1;</property>
-	<property name="connection.autoReconnect">true</property>
-	<property name="connection.autoReconnectForPools">true</property>
-	<property name="connection.is-connection-validation-required">true</property>
 
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
