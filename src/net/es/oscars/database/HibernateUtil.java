@@ -1,9 +1,14 @@
 package net.es.oscars.database;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.hibernate.*;
 import org.hibernate.cfg.*;
+import org.hibernate.jmx.StatisticsService;
 
 import net.es.oscars.PropHandler;
 
@@ -36,11 +41,23 @@ public class HibernateUtil {
             Properties props = propHandler.getPropertyGroup("hibernate", false);
             Configuration cfg = new Configuration();
             cfg.setProperties(props);
-
+            String monitorProp = props.getProperty("hibernate.monitor");
+            	
             for (String dbname: dbnames) {
                 if (sessionFactories.get(dbname) == null) {
                     SessionFactory sessionFactory = cfg.configure(dbname + ".cfg.xml").buildSessionFactory();
                     putSessionFactory(dbname, sessionFactory);
+                    if("1".equals(monitorProp)){
+	                    MBeanServer mbeanServer =
+	                        ManagementFactory.getPlatformMBeanServer();
+	                    final ObjectName objectName = new ObjectName(
+	                                  "Hibernate:name=statistics,Type="+dbname+System.currentTimeMillis());
+	                    final StatisticsService mBean =
+	                                           new StatisticsService();
+	                    mBean.setStatisticsEnabled(true);
+	                    mBean.setSessionFactory(sessionFactory);
+	                    mbeanServer.registerMBean(mBean, objectName);
+                    }
                 }
             }
         } catch (Throwable ex) {
