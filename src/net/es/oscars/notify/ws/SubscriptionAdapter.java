@@ -327,7 +327,6 @@ public class SubscriptionAdapter{
                                       UnacceptableTerminationTimeFault{
         this.log.info("renew.start");
         RenewResponse response = new RenewResponse();
-        Subscription subscription = null;
         long termTime = this.parseTermTime(request.getTerminationTime());
         long newTermTime = 0L;
         EndpointReferenceType subRef = request.getSubscriptionReference();
@@ -454,7 +453,6 @@ public class SubscriptionAdapter{
                                       PauseFailedFault{
         this.log.info("pause.start");
         PauseSubscriptionResponse response = new PauseSubscriptionResponse();
-        Subscription subscription = null;
         EndpointReferenceType subRef = request.getSubscriptionReference();
         String address = this.parseEPR(subRef);
         ReferenceParametersType refParams = subRef.getReferenceParameters(); 
@@ -509,7 +507,6 @@ public class SubscriptionAdapter{
                                       ResumeFailedFault{
         this.log.info("resume.start");
         ResumeSubscriptionResponse response = new ResumeSubscriptionResponse();
-        Subscription subscription = null;
         EndpointReferenceType subRef = request.getSubscriptionReference();
         String address = this.parseEPR(subRef);
         ReferenceParametersType refParams = subRef.getReferenceParameters(); 

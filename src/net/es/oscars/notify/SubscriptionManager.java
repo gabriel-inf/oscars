@@ -152,9 +152,7 @@ public class SubscriptionManager{
         this.log.info("renew.start");
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
-        String loginConstraint = permissionMap.get("loginConstraint");
         Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
-        SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
         long expTime = 0L;
         
