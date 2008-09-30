@@ -1,4 +1,4 @@
-package net.es.oscars.pss.cisco;
+package net.es.oscars.pss.vendor.cisco;
 
 import org.testng.annotations.*;
 

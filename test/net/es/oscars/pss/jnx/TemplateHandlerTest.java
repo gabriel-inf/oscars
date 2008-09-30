@@ -1,4 +1,4 @@
-package net.es.oscars.pss.jnx;
+package net.es.oscars.pss.vendor.jnx;
 
 import org.testng.annotations.*;
 
