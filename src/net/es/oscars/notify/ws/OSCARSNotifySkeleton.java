@@ -94,6 +94,8 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 	                aaa.getTransaction().commit();
                 }catch(Exception e){
                 	aaa.getTransaction().rollback();
+                	this.log.error(e.getMessage());
+                	return;
                 }
                 this.sa.schedProcessNotify(holder, permissionMap);
             }
