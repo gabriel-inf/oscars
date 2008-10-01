@@ -19,15 +19,12 @@ import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 
-import net.es.oscars.pathfinder.perfsonar.util.TopologyGraphAdapter;
 import net.es.oscars.bss.topology.URNParser;
 
 import org.jdom.*;
 
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.oscars.*;
-
-import edu.internet2.perfsonar.PSTopologyClient;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
@@ -53,12 +50,11 @@ import org.jgrapht.alg.*;
  */
 public class PSPathfinder extends Pathfinder implements PCE {
     private Logger log;
-    private PSTopologyClient TSClient;
-    private String localDomain;
-    private TopologyGraphAdapter tga;
+    private Domain localDomain;
     private Properties props;
     private TypeConverter tc;
-
+    private String TSUrl;
+ 
     /**
      * Constructor
      *
@@ -70,14 +66,12 @@ public class PSPathfinder extends Pathfinder implements PCE {
         this.log = Logger.getLogger(this.getClass());
 
         DomainDAO domDAO = new DomainDAO(dbname);
-        this.localDomain = domDAO.getLocalDomain().getFQTI();
+        this.localDomain = domDAO.getLocalDomain();
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("perfsonar", true);
-        String TSUrl = this.props.getProperty("topology_url");
+        this.TSUrl = this.props.getProperty("topology_url");
 
-        this.TSClient = new PSTopologyClient(TSUrl);
-        this.tga = new TopologyGraphAdapter(dbname);
         this.tc = OSCARSCore.getInstance().getTypeConverter();
     }
 
@@ -168,9 +162,9 @@ public class PSPathfinder extends Pathfinder implements PCE {
             this.reportError(e.getMessage());
         }
 
-        this.log.debug("Path Type: " + pathInfo.getPathType());
+        System.out.println("Path Type: " + pathInfo.getPathType());
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
-            this.log.debug(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
+            System.out.println(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
         }
 
         /* Remove strict pathType for backward compatibility */
@@ -180,55 +174,6 @@ public class PSPathfinder extends Pathfinder implements PCE {
         }
 
         return intraPathInfo;
-    }
-
-    /** Takes a source and destination URN, along with a reservation and looks
-     * up a path between those two points in the specified topology graph.
-     * @param graph the graph representing the topology
-     * @param src the source URN
-     * @param dst the destination URN
-     * @param Reservation a reservation to ignore when constructing the path
-     * @return a list of hops describing the path between the source and destination
-     * @throws PathfinderException
-     */
-    public List<String> lookupPath(DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph, String src, String dst, Reservation reservation)
-                                                        throws PathfinderException {
-        this.log.debug("Looking up path between "+src+" and "+dst);
-
-        DijkstraShortestPath sp;
-        List<String> urns = new ArrayList<String>();
-        try {
-            sp = new DijkstraShortestPath(graph, src, dst);
-            if(sp.getPathEdgeList() == null){
-                throw new PathfinderException("No path found in graph between " + 
-                                              src + " and " + dst);
-            }
-            Iterator peIt = sp.getPathEdgeList().iterator();
-            while (peIt.hasNext()) {
-                DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
-
-                String[] cols = edge.toString().split("\\s\\:\\s");
-
-                String topoId = cols[0].substring(1);
-
-                urns.add(topoId);
-                this.log.debug("Path found URN: "+topoId);
-            }
-
-            if (urns.get(0).equals(src) == false) {
-                // the source hop doesn't exist for some reason
-                urns.add(0, src);
-            }
-
-            if (urns.get(urns.size() - 1).equals(dst) == false) {
-                // the destination hop doesn't exist for some reason
-                urns.add(dst);
-            }
-        } catch (Exception ex) {
-            throw new PathfinderException("Pathfinding Failed: "+ex.getMessage());
-        }
-
-        return urns;
     }
 
     /**
@@ -246,23 +191,16 @@ public class PSPathfinder extends Pathfinder implements PCE {
     private CtrlPlanePathContent buildNewPath(PathInfo pathInfo, Reservation reservation)
         throws PathfinderException, BSSException {
 
-        Element topoXML = this.TSClient.getTopology();
-
-        if (topoXML == null) {
-            this.log.error("Couldn't obtain topology from topology service");
-            return null;
+        PSGenericPathfinder pf;
+        try {
+            pf = new PSGenericPathfinder();
+        } catch (Exception e) {
+            throw new PathfinderException("Couldn't initialize Generic perfSONAR pathfinder");
         }
 
-        TopologyXMLParser parser = new TopologyXMLParser(null);
-        Topology topology = parser.parse(topoXML, null);
-        if (topology == null) {
-            this.log.error("Couldn't parse topology");
-            return null;
-        }
+        pf.addDomain(this.localDomain);
 
-    DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
-
-        graph = this.tga.genGraph(topology, reservation.getBandwidth(), reservation.getStartTime(), reservation.getEndTime(), reservation);
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
 
         CtrlPlanePathContent newInterPath = new CtrlPlanePathContent();
         CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
@@ -277,9 +215,11 @@ public class PSPathfinder extends Pathfinder implements PCE {
         boolean foundLocal = false;
         for(int i = 0; i < currHops.length; i++) {
             CtrlPlaneHopContent currHop = currHops[i];
+            System.out.println("Current hop: "+this.getHopURN(currHop));
+
             Hashtable<String, String> currHopURNInfo = URNParser.parseTopoIdent(this.getHopURN(currHop));
 
-            if (currHopURNInfo.get("domainFQID").equals(this.localDomain)) {
+            if (currHopURNInfo.get("domainFQID").equals(this.localDomain.getFQTI())) {
                 foundLocal = true;
             } else if (i == currHops.length - 1 && foundLocal == false) {
                 // There was no hop specifying our ingress point, so we must
@@ -287,7 +227,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
 
                 CtrlPlaneHopContent newHop = new CtrlPlaneHopContent();
 
-                newHop.setDomainIdRef(this.localDomain);
+                newHop.setDomainIdRef(this.localDomain.getFQTI());
 
                 newPath.addHop(newHop);
             }
@@ -305,12 +245,16 @@ public class PSPathfinder extends Pathfinder implements PCE {
             CtrlPlaneHopContent currHop = currHops[i];
             Hashtable<String, String> currHopURNInfo = URNParser.parseTopoIdent(this.getHopURN(currHop));
 
-            if (currHopURNInfo.get("domainFQID").equals(this.localDomain) == false) {
+            System.out.println("Current hop: "+this.getHopURN(currHop));
+
+            if (currHopURNInfo.get("domainFQID").equals(this.localDomain.getFQTI()) == false) {
                 if (egressURN != null) {
+                    System.out.println("Adding verbatim hop(after egress): "+this.getHopURN(currHop));
                     // we've already found our ingress/egress points
                     newInterPath.addHop(currHop);
                     prevHop = currHop;
                 } else if (ingressURN == null) {
+                    System.out.println("Adding verbatim hop(before egress): "+this.getHopURN(currHop));
                     // we've not yet found our ingress point
                     newInterPath.addHop(currHop);
                     prevHop = currHop;
@@ -322,14 +266,14 @@ public class PSPathfinder extends Pathfinder implements PCE {
                     // intradomain path, and add the egress point to the
                     // interdomain path.
 
-                    this.log.debug("Finding the egress point");
+                    System.out.println("Finding the egress point");
 
-                    List<String> path = this.lookupPath(graph, this.getHopURN(prevHop), this.getHopURN(currHop), reservation);
+                    List<String> path = pf.lookupPath(this.getHopURN(prevHop), this.getHopURN(currHop), reservation.getBandwidth());
                     if (path == null) {
                         throw new PathfinderException("There is no known path between "+this.getHopURN(prevHop)+" and "+this.getHopURN(currHop));
                     }
 
-                    this.log.debug("Found a path between "+this.getHopURN(prevHop)+" and "+this.getHopURN(currHop));
+                    System.out.println("Found a path between "+this.getHopURN(prevHop)+" and "+this.getHopURN(currHop));
 
                     for( String urn : path ) {
                         Hashtable<String, String> currURN = URNParser.parseTopoIdent(urn);
@@ -339,7 +283,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
                             continue;
                         }
 
-                        if (currURN.get("domainFQID").equals(this.localDomain) == false) {
+                        if (currURN.get("domainFQID").equals(this.localDomain.getFQTI()) == false) {
                             // we've found the hop in the next domain, so our
                             // previous URN was the egress point. Add the
                             // previous URN to the interdomain path and break
@@ -347,7 +291,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
                             // to go anywhere in the next domain. XXX this is
                             // where we'd add in true interdomain path finding.
 
-                            this.log.debug("Adding hop to interdomain: "+this.getHopURN(prevHop));
+                            System.out.println("Adding hop to interdomain: "+this.getHopURN(prevHop));
 
                             egressURN = this.getHopURN(prevHop);
                             newInterPath.addHop(prevHop);
@@ -356,28 +300,23 @@ public class PSPathfinder extends Pathfinder implements PCE {
                             // think is the hop into the next domain. So add
                             // what our current URN is since it will correspond
                             // to the link in the next domain.
-                            this.log.debug("Adding next hop in next domain: "+urn);
+                            System.out.println("Adding next hop in next domain: "+urn);
                             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
                             hop.setLinkIdRef(urn);
                             newInterPath.addHop(hop);
 
                             // since we can only use a given link once, remove
                             // it from contention for later searches.
-                            if (graph.getEdge(prevHop.getLinkIdRef(), urn) != null) {
-                                this.log.debug("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
-                                graph.removeEdge(prevHop.getLinkIdRef(), urn);
-                            }
+                            System.out.println("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
+                            pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
 
-                            if (graph.getEdge(urn, prevHop.getLinkIdRef()) != null) {
-                                this.log.debug("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
-                                graph.removeEdge(urn, prevHop.getLinkIdRef());
-                            }
-
+                            System.out.println("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
+                            pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
 
                             // add the current hop as long as it's not the same
                             // as the element we just added.
-                            if (currHop.getLinkIdRef().equals(hop.getLinkIdRef()) == false) {
-                                    this.log.debug("Adding the given nextHop to interdomain: "+this.getHopURN(currHop));
+                            if (currHop.getLinkIdRef() != null && currHop.getLinkIdRef().equals(hop.getLinkIdRef()) == false) {
+                                    System.out.println("Adding the given nextHop to interdomain: "+this.getHopURN(currHop));
                                     newInterPath.addHop(currHop);
                             }
 
@@ -387,18 +326,14 @@ public class PSPathfinder extends Pathfinder implements PCE {
                                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
                                 hop.setLinkIdRef(urn);
 
-                                this.log.debug("Adding "+urn+" to intradomain path");
+                                System.out.println("Adding "+urn+" to intradomain path");
                                 intraPath.addHop(hop);
 
-                                if (graph.getEdge(prevHop.getLinkIdRef(), urn) != null) {
-                                    this.log.debug("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
-                                    graph.removeEdge(prevHop.getLinkIdRef(), urn);
-                                }
+                                System.out.println("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
+                                pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
 
-                                if (graph.getEdge(urn, prevHop.getLinkIdRef()) != null) {
-                                    this.log.debug("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
-                                    graph.removeEdge(urn, prevHop.getLinkIdRef());
-                                }
+                                System.out.println("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
+                                pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
 
                                 prevHop = hop;
                             }
@@ -414,12 +349,12 @@ public class PSPathfinder extends Pathfinder implements PCE {
                 if (egressURN != null) {
                     // we've already found and left our domain. An error for
                     // now.
-                    throw new PathfinderException("Found multiple instances of "+this.localDomain+" in the path");
+                    throw new PathfinderException("Found multiple instances of "+this.localDomain.getFQTI()+" in the path");
                 } else if (prevHop == null) {
                     // this is the first hop in the interdomain path, so add it
                     // as is and set it as our ingress.
 
-                    this.log.debug("Found the ingress point");
+                    System.out.println("Found the ingress point: "+this.getHopURN(currHop));
 
                     ingressURN = this.getHopURN(currHop);
                     newInterPath.addHop(currHop);
@@ -432,9 +367,9 @@ public class PSPathfinder extends Pathfinder implements PCE {
                     // path. If the ingress point is found, add it to the
                     // interdomain path.
 
-                    this.log.debug("Finding the ingress point");
+                    System.out.println("Finding the ingress point");
 
-                    List<String> path = this.lookupPath(graph, this.getHopURN(prevHop), this.getHopURN(currHop), reservation);
+                    List<String> path = pf.lookupPath(this.getHopURN(prevHop), this.getHopURN(currHop), reservation.getBandwidth());
                     if (path == null) {
                         throw new PathfinderException("There is no known path between "+this.getHopURN(prevHop)+" and "+this.getHopURN(currHop));
                     }
@@ -449,7 +384,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
 
                         // if we were given elements not in our domain and it's
                         // not what the other domain gave us, it's an error.
-                        if (currURN.get("domainFQID").equals(this.localDomain) == false) {
+                        if (currURN.get("domainFQID").equals(this.localDomain.getFQTI()) == false) {
                             if (currURN.get("fqti").equals(this.getHopURN(prevHop)) == false) {
                                 throw new PathfinderException("Pathfinding gave us a segment that was not agreed to by a previous domain: "+urn);
                             }
@@ -459,28 +394,24 @@ public class PSPathfinder extends Pathfinder implements PCE {
                                 hop.setLinkIdRef(urn);
 
                                 if (ingressURN == null) {
-                                    this.log.debug("Found our ingress point "+urn+" ading to interdomain path");
+                                    System.out.println("Found our ingress point "+urn+" ading to interdomain path");
                                     // we've found our ingress point. Add it to
                                     // the interdomain path.
                                     newInterPath.addHop(hop);
                                     ingressURN = urn;
                                 }
 
-                                this.log.debug("Adding "+urn+" to intradomain path");
+                                System.out.println("Adding "+urn+" to intradomain path");
                                 intraPath.addHop(hop);
 
                                 // XXX Currently, we can't reuse a port, so
                                 // remove each link we add from contention for
                                 // future searches
-                                if (graph.getEdge(prevHop.getLinkIdRef(), urn) != null) {
-                                    this.log.debug("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
-                                    graph.removeEdge(prevHop.getLinkIdRef(), urn);
-                                }
+                                System.out.println("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
+                                pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
 
-                                if (graph.getEdge(urn, prevHop.getLinkIdRef()) != null) {
-                                    this.log.debug("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
-                                    graph.removeEdge(urn, prevHop.getLinkIdRef());
-                                }
+                                System.out.println("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
+                                pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
 
                                 prevHop = hop;
                             }
