@@ -47,6 +47,11 @@
                     <name><user-var>resv-id</user-var></name>
                 </policer>
                 <family>
+                    <ccc>
+                        <filter delete="delete">
+                            <name><user-var>resv-id</user-var><txt>_stats</txt></name>
+                        </filter>
+                    </ccc>
                     <any>
                         <filter delete="delete">
                             <name><user-var>resv-id</user-var></name>

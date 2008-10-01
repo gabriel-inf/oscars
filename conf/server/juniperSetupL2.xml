@@ -9,8 +9,16 @@
                     <unit>
                         <name><user-var>vlan_id</user-var></name>
                         <description><user-var>resv-id</user-var><txt>:</txt><user-var>bandwidth</user-var><txt>:oscars-l2circuit:show:circuit-intercloud</txt></description>
-                        <vlan-id><user-var>vlan_id</user-var></vlan-id>
                         <encapsulation>vlan-ccc</encapsulation>
+                        <vlan-id><user-var>vlan_id</user-var></vlan-id>
+                        <family>
+                            <ccc>
+                                <filter>
+                                    <input><user-var>resv-id</user-var><txt>_stats</txt></input>
+                                    <output><user-var>resv-id</user-var><txt>_stats</txt></output>
+                                </filter>
+                            </ccc>
+                        </family>
                     </unit>
                 </interface>
             </interfaces>
@@ -74,6 +82,7 @@
                         <name><user-var>egress-rtr-loopback</user-var></name>
                         <interface>
                             <name><user-var>port</user-var><txt>.</txt><user-var>vlan_id</user-var></name>
+                            <psn-tunnel-endpoint><user-var>lsp_to</user-var></psn-tunnel-endpoint>
                             <virtual-circuit-id><user-var>vlan_id</user-var></virtual-circuit-id>
                             <description><user-var>resv-id</user-var></description>
                             <community><user-var>resv-id</user-var></community>
@@ -94,6 +103,19 @@
                     </then>
                 </policer>
                 <family>
+                    <ccc>
+                        <filter>
+                            <name><user-var>resv-id</user-var><txt>_stats</txt></name>
+                            <interface-specific/>
+                            <term>
+                                <name><user-var>resv-id</user-var><txt>_stats</txt></name>
+                                <then>
+                                    <count><user-var>resv-id</user-var><txt>_stats</txt></count>
+                                    <accept/>
+                                </then>
+                            </term>
+                        </filter>
+                    </ccc>
                     <any>
                         <filter>
                             <name><user-var>resv-id</user-var></name>

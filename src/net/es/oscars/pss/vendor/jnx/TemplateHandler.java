@@ -27,6 +27,26 @@ public class TemplateHandler {
     }
 
     /**
+     * Builds a document from a template where no user variables are
+     * involved.
+     *
+     * @param fname full path of template file
+     * @return doc XML Document suitable for configuring router
+     * @throws IOException
+     * @throws JDOMException
+     * @throws PSSException
+     */
+    public Document buildTemplate(String fname) 
+            throws IOException, JDOMException, PSSException {
+
+        this.log.info("buildTemplate.start");
+        // request document building without validation
+        SAXBuilder builder = new SAXBuilder(false);
+        Document doc = builder.build(new File(fname));
+        return doc;
+    }
+
+    /**
      * Finds and substitutes the correct values into the document.
      *
      * @param hm a hash map containing info retrieved from the reservation,

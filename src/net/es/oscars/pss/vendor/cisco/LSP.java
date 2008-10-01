@@ -9,6 +9,7 @@ import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.*;
+import net.es.oscars.pss.vendor.*;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 
@@ -281,66 +282,75 @@ public class LSP {
      * Gets the LSP status of a set of VLAN's on a Cisco router.
      *
      * @param router string with router id
-     * @param vlanIds list of VLAN's to check
+     * @param statusInputs HashMap of VLAN's to check with associated info
      * @return vlanStatuses HashMap with VLAN's and their statuses
      * @throws PSSException
      */
-    public Map<String, Boolean> statusLSP(String router, List<String> vlanIds)
+    public Map<String, VendorStatusResult> statusLSP(String router,
+                                     Map<String,VendorStatusInput> statusInputs)
             throws PSSException {
 
-        Map<String,Boolean> vlanStatuses = new HashMap<String,Boolean>();
-        Map<String,Boolean> currentVlans = new HashMap<String,Boolean>();
+        Map<String,VendorStatusResult> vlanStatuses =
+            new HashMap<String,VendorStatusResult>();
+        Map<String,VendorStatusResult> currentVlans =
+            new HashMap<String,VendorStatusResult>();
         BufferedReader cmdOutput = null;
         StringBuilder sb = null;
 
         this.log.info("statusLSP.start");
 
-        if (this.allowLSP) {
-            this.log.info("clogin -c \"show mpls l2transport vc\" " +
-                          router);
-            String[] cmd = { "clogin", "-c", "show mpls l2transport vc",
-                             router };
-            try {
-                cmdOutput = this.runCommand(cmd);
-                String outputLine = null;
-                sb = new StringBuilder();
-                while ((outputLine = cmdOutput.readLine()) != null) {
-                    this.log.info("output: " + outputLine);
-                    sb.append(outputLine + "\n");
-                }
-                cmdOutput.close();
-            } catch (IOException ex) {
-                throw new PSSException(ex.getMessage());
-            }
-            Pattern pattern = Pattern.compile(".*Eth VLAN (\\d{3,4}).*(UP|DOWN)");
-            List<MatchResult> results = TemplateHandler.findAll(pattern, sb.toString());
-            for (MatchResult r: results) {
-//                this.log.debug("group 1: ["+r.group(1)+ "] group 2: ["+r.group(2)+"]");
-                if (r.group(2).equals("UP")) {
-                    currentVlans.put(r.group(1), true);
-//                    this.log.debug("Found that vlan:" + r.group(1) + " is UP");
-                } else {
-                    currentVlans.put(r.group(1), false);
-//                    this.log.debug("Found that vlan:" + r.group(1) + " is DOWN");
+        this.log.info("clogin -c \"show mpls l2transport vc\" " +
+                      router);
+        String[] cmd = { "clogin", "-c", "show mpls l2transport vc", router };
+        try {
+            cmdOutput = this.runCommand(cmd);
+            String outputLine = null;
+            sb = new StringBuilder();
+            while ((outputLine = cmdOutput.readLine()) != null) {
+                sb.append(outputLine + "\n");
+                // in this case no VLAN can be checked
+                if (outputLine.startsWith("Error:")) {
+                    for (String vlanId: statusInputs.keySet()) {
+                        VendorStatusResult statusResult =
+                                new CiscoStatusResult();
+                        statusResult.setErrorMessage(outputLine);
+                        vlanStatuses.put(vlanId, statusResult);
+                    }
+                    this.log.info("output: " + sb.toString());
+                    return vlanStatuses;
                 }
             }
-            for (String vlanId: vlanIds) {
-                if (!currentVlans.containsKey(vlanId)) {
-                    vlanStatuses.put(vlanId, false);
-//                    this.log.debug("Decided that vlan:" + vlanId + " is DOWN");
-                } else {
-                    vlanStatuses.put(vlanId, currentVlans.get(vlanId));
-//                    this.log.debug("Decided that vlan:" + vlanId + " is "+currentVlans.get(vlanId));
-                }
-            }
-            return vlanStatuses;
-        } else {
-            // in case we're not allowed to talk to the routers, let's always return true
-            for (String vlan : vlanIds) {
-                vlanStatuses.put(vlan, true);
-            }
-            return vlanStatuses;
+            cmdOutput.close();
+        } catch (IOException ex) {
+            throw new PSSException(ex.getMessage());
         }
+        this.log.info("output: " + sb.toString());
+        Pattern pattern = Pattern.compile(".*Eth VLAN (\\d{3,4}).*(UP|DOWN)");
+        List<MatchResult> results = TemplateHandler.findAll(pattern, sb.toString());
+        for (MatchResult r: results) {
+            VendorStatusResult statusResult = new CiscoStatusResult();
+            if (r.group(2).equals("UP")) {
+                statusResult.setCircuitStatus(true);
+                currentVlans.put(r.group(1), statusResult);
+//                this.log.debug("Found that vlan:" + r.group(1) + " is UP");
+            } else {
+                statusResult.setCircuitStatus(false);
+                currentVlans.put(r.group(1), statusResult);
+//                this.log.debug("Found that vlan:" + r.group(1) + " is DOWN");
+            }
+        }
+        for (String vlanId: statusInputs.keySet()) {
+            if (!currentVlans.containsKey(vlanId)) {
+                VendorStatusResult statusResult = new CiscoStatusResult();
+                statusResult.setCircuitStatus(false);
+                vlanStatuses.put(vlanId, statusResult);
+//                this.log.debug("Decided that vlan:" + vlanId + " is DOWN");
+            } else {
+                vlanStatuses.put(vlanId, currentVlans.get(vlanId));
+//                this.log.debug("Decided that vlan:" + vlanId + " is "+currentVlans.get(vlanId));
+            }
+        }
+        return vlanStatuses;
     }
 
     /**
@@ -398,11 +408,13 @@ public class LSP {
             String cmd[] = { "clogin", "-x", fname, hm.get("router") };
             BufferedReader cmdOutput = this.runCommand(cmd);
             String outputLine = null;
+            StringBuilder sb = new StringBuilder();
             while ((outputLine = cmdOutput.readLine()) != null) {
                 // just log
-                this.log.info("output: " + outputLine);
+                sb.append(outputLine + "\n");
             }
             cmdOutput.close();
+            this.log.debug(sb.toString());
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
@@ -421,8 +433,6 @@ public class LSP {
      */
     private BufferedReader runCommand(String[] cmd)
             throws IOException, PSSException {
-
-        String outputStr = null;
 
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader cmdOutput =

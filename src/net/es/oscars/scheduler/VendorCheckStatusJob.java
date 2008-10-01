@@ -1,8 +1,8 @@
 package net.es.oscars.scheduler;
 
-
 import net.es.oscars.bss.*;
 import net.es.oscars.pss.*;
+import net.es.oscars.pss.vendor.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.OSCARSCore;
 
@@ -16,22 +16,15 @@ public class VendorCheckStatusJob implements Job {
     private Logger log;
     private OSCARSCore core;
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-
-        try {
-            this.log.debug("Sleeping for 5 secs...");
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-            this.log.error(ex);
-        }
-
         String bssDbName = core.getBssDbName();
+
         // Need to get our own Hibernate session since this is a new thread
         Session bss = core.getBssSession();
         bss.beginTransaction();
-
         String jobName = context.getJobDetail().getFullName();
         this.log.debug("checkStatusJob.start "+jobName);
 
@@ -39,153 +32,167 @@ public class VendorCheckStatusJob implements Job {
         String nodeId = (String) jobDataMap.get("nodeId");
         String vendor = (String) jobDataMap.get("vendor");
         this.log.debug(jobName + " for node: "+nodeId+ " vendor: "+vendor);
-
-        ArrayList<String> vlanList = (ArrayList<String>) jobDataMap.get("vlanList");
+        HashMap<String,VendorStatusInput> statusInputs =
+            (HashMap<String,VendorStatusInput>) jobDataMap.get("statusInputs");
         String theList = "vlans to be checked: ";
-        for (String vlan : vlanList) {
+        for (String vlan : statusInputs.keySet()) {
             theList = theList + vlan + " ";
         }
         this.log.debug(theList);
-        HashMap<String, HashMap<String, String>> checklist = (HashMap<String, HashMap<String, String>>) jobDataMap.get("checklist");
-
-
-        HashMap<String, String> resvsToUpdate = new HashMap<String, String>();
-        HashMap<String, String> resvDirection = new HashMap<String, String>();
-
+        // default timeout is for Juniper
+        int timeout = 30000;
+        if (vendor.equals("cisco")) {
+            timeout = 5000;
+        }
+        try {
+            this.log.debug("Sleeping for " + timeout + " secs...");
+            Thread.sleep(timeout);
+        } catch (InterruptedException ex) {
+            this.log.error(ex);
+        }
         boolean allowLSP = true;
-
-
         boolean doCheck = true;
         boolean doSleep = false;
-
-        while (doCheck) {
-            HashMap<String, Boolean> results = new HashMap<String, Boolean>();
-
-
-            // *************************************
-            // should eventually be replaced by
-            // results = LSP.checkStatus(nodeId, vlanList);
-            // *************************************
+        // allow to fail once
+        for (int checkCtr=0; checkCtr < 2; checkCtr++) {
+            HashMap<String, VendorStatusResult> results =
+                new HashMap<String, VendorStatusResult>();
 
             // Ask the routers if these VLANs are up
             if (vendor.equals("cisco")) {
                 try {
-                    net.es.oscars.pss.vendor.cisco.LSP ciscoLSP = new net.es.oscars.pss.vendor.cisco.LSP(core.getBssDbName());
+                    net.es.oscars.pss.vendor.cisco.LSP ciscoLSP =
+                        new net.es.oscars.pss.vendor.cisco.LSP(core.getBssDbName());
                     allowLSP = ciscoLSP.isAllowLSP();
                     if (allowLSP) {
-                        results.putAll(ciscoLSP.statusLSP(nodeId, vlanList));
+                        results.putAll(ciscoLSP.statusLSP(nodeId, statusInputs));
                     }
                 } catch (PSSException ex) {
                     this.log.error(ex);
+                    // TODO:  mark all as error
                 }
             } else {
-                net.es.oscars.pss.vendor.jnx.JnxLSP jnxLSP = new net.es.oscars.pss.vendor.jnx.JnxLSP(core.getBssDbName());
-                allowLSP = jnxLSP.isAllowLSP();
-                // TODO: do the jnx case
+                try {
+                    net.es.oscars.pss.vendor.jnx.JnxLSP jnxLSP = new net.es.oscars.pss.vendor.jnx.JnxLSP(core.getBssDbName());
+                    allowLSP = jnxLSP.isAllowLSP();
+                    if (allowLSP) {
+                        results.putAll(jnxLSP.statusLSP(nodeId, statusInputs));
+                    }
+                } catch (PSSException ex) {
+                    this.log.error(ex);
+                    // TODO:  mark all as error
+                }
             }
-
-            ArrayList<String> checkedGris = new ArrayList<String>();
+            ArrayList<String> checkedVlans = new ArrayList<String>();
 
             // find out what vlan goes to which reservation
-            Iterator<String> griIt = checklist.keySet().iterator();
-            while (griIt.hasNext()) {
-                String gri = griIt.next();
-                HashMap<String, String> params = checklist.get(gri);
-                String ingressVlan 		= params.get("ingressVlan");
-                String egressVlan 		= params.get("egressVlan");
-                String ingressNodeId 	= params.get("ingressNodeId");
-                String egressNodeId 	= params.get("egressNodeId");
-                String desiredStatus 	= params.get("desiredStatus");
-                String direction;
-
-                String which = null;
-                if (nodeId.equals(ingressNodeId)) {
-                    which = "ingress";
+            for (String vlanId: statusInputs.keySet()) {
+                VendorStatusInput statusInput = statusInputs.get(vlanId);
+                VendorStatusResult statusResult = results.get(vlanId);
+                String gri = statusInput.getGri();
+                String direction = statusInput.getDirection();
+                String desiredStatus = statusInput.getDesiredStatus();
+                if (direction.equals("FORWARD")) {
                     this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId);
-                } else if (nodeId.equals(egressNodeId)) {
-                    which = "egress";
+                } else if (direction.equals("REVERSE")) {
                     this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId);
+                } else {
+                    continue;  // TODO:  error message
                 }
-
-                if (which != null) {
-                    boolean isPathUp = false;
-                    if (which.equals("ingress")) {
-                        if (allowLSP) {
-                            isPathUp = results.get(ingressVlan);
-                        } else {
-                            if (desiredStatus.equals(StateEngine.ACTIVE)) {
-                                isPathUp = true;
-                            } else {
-                                isPathUp = false;
-                            }
-                        }
-                        this.log.debug(jobName + ": ingress matched "+gri+" at "+nodeId+":"+ingressVlan+" isPathUp:"+isPathUp);
-                        direction = "FORWARD";
-                        resvDirection.put(gri, direction);
-                    } else if (which.equals("egress")) {
-                        if (allowLSP) {
-                            isPathUp = results.get(egressVlan);
-                        } else {
-                            if (desiredStatus.equals(StateEngine.ACTIVE)) {
-                                isPathUp = true;
-                            } else {
-                                isPathUp = false;
-                            }
-                        }
-                        this.log.debug(jobName + ": egress matched "+gri+" at "+nodeId+":"+egressVlan+" isPathUp:"+isPathUp);
-                        direction = "REVERSE";
-                        resvDirection.put(gri, direction);
+                boolean isPathUp = false;
+                if (allowLSP) {
+                    isPathUp = statusResult.isCircuitUp();
+                } else {
+                    if (desiredStatus.equals(StateEngine.ACTIVE)) {
+                        isPathUp = true;
+                    } else {
+                        isPathUp = false;
                     }
-                    // OK, we have the vlan-gri mapping
-
-
-                    if (!allowLSP) {
-                        // always pretend everything went well
-                        resvsToUpdate.put(gri, desiredStatus);
-                    } else if (isPathUp) {
-                        // if we're setting up the circuit:
-                        if (!desiredStatus.equals(StateEngine.ACTIVE)) {
-                            if (doCheck) {
-                                // the first check
-                                this.log.debug(gri+" path is up but desired status is "+desiredStatus+", will recheck");
-                                doSleep = true;
-                            } else {
-                                // after 2nd check, path is still up even though we wanted to tear it down
-                                this.log.error("Failing gri "+gri+" because path is up but desired status is "+desiredStatus);
-                                resvsToUpdate.put(gri, StateEngine.FAILED);
-                            }
+                }
+                this.log.debug(jobName + ": in " + direction + " direction" +
+                        gri+ " at " + nodeId+":" + vlanId + " isPathUp:"+
+                        isPathUp);
+                String errMsg = statusResult.getErrorMessage();
+                if (!errMsg.equals("")) {
+                    this.log.debug("error in circuit setup: " + errMsg);
+                }
+                if (!allowLSP) {
+                    // always pretend everything went well
+                    statusResult = null;
+                    this.updateReservation(statusInput, statusResult,
+                                           desiredStatus);
+                // if there was an error, trumps circuit status
+                } else if (!errMsg.equals("")) {
+                    if (checkCtr == 0) {
+                        // the first check
+                        this.log.debug(gri+" has error message: " + errMsg +
+                                ", will recheck");
+                        doSleep = true;
+                    } else {
+                        // after 2nd check, path is still up even though we wanted to tear it down
+                        this.log.error("Failing gri "+ gri +
+                            "because of error message: " + errMsg);
+                        this.updateReservation(statusInput, statusResult,
+                                               StateEngine.FAILED);
+                    }
+                } else if (isPathUp) {
+                    // if we're setting up the circuit:
+                    if (!desiredStatus.equals(StateEngine.ACTIVE)) {
+                        if (checkCtr == 0) {
+                            // the first check
+                            this.log.debug(gri + " path is up but desired " +
+                                "status is " + desiredStatus +
+                                ", will recheck");
+                            doSleep = true;
                         } else {
-                            // path is up as desired
-                            this.log.debug("Making gri "+gri+" "+desiredStatus+" because path is up");
-                            resvsToUpdate.put(gri, StateEngine.ACTIVE);
-                            checkedGris.add(gri);
+                            // after 2nd check, path is still up even though we
+                            // wanted to tear it down
+                            this.log.error("Failing gri " + gri +
+                                " because path is up but desired status is " +
+                                desiredStatus);
+                            this.updateReservation(statusInput, statusResult,
+                                                   StateEngine.FAILED);
                         }
                     } else {
-                        // if we're tearing down the circuit:
-                        if (desiredStatus.equals(StateEngine.ACTIVE)) {
-                            if (doCheck) {
-                                // the first check
-                                this.log.debug(gri+" path is down but desired status is "+desiredStatus+", will recheck");
-                                doSleep = true;
-                            } else {
-                                // after 2nd check, path is down even though we wanted to set it up
-                                this.log.debug("Failing gri "+gri+" because path is down but desired status is "+desiredStatus);
-                                resvsToUpdate.put(gri, StateEngine.FAILED);
-                            }
-
+                        // path is up as desired
+                        this.log.debug("Making gri " + gri +
+                            " " + desiredStatus + " because path is up");
+                        this.updateReservation(statusInput, statusResult,
+                                               StateEngine.ACTIVE);
+                        checkedVlans.add(vlanId);
+                    }
+                } else {
+                    // if we're tearing down the circuit:
+                    if (desiredStatus.equals(StateEngine.ACTIVE)) {
+                        if (checkCtr == 0) {
+                            // the first check
+                            this.log.debug(gri +
+                                " path is down but desired status is " +
+                                desiredStatus + ", will recheck");
+                            doSleep = true;
                         } else {
-                            // path is down as desired
-                            this.log.debug("Making gri "+gri+" "+desiredStatus+" because path is down");
-                            resvsToUpdate.put(gri, desiredStatus);
-                            checkedGris.add(gri);
+                            // after 2nd check, path is down even though we
+                            // wanted to set it up
+                            this.log.debug("Failing gri " + gri +
+                                " because path is down but desired status is "+
+                                desiredStatus);
+                            this.updateReservation(statusInput,
+                                              statusResult, StateEngine.FAILED);
                         }
+                    } else {
+                        // path is down as desired
+                        this.log.debug("Making gri " + gri + " " +
+                            desiredStatus + " because path is down");
+                        this.updateReservation(statusInput, statusResult,
+                                               desiredStatus);
+                        checkedVlans.add(vlanId);
                     }
                 }
             }
-
             // don't recheck successfully checked reservations
-            for (String gri : checkedGris) {
-                checklist.remove(gri);
+            for (String vlan : checkedVlans) {
+                this.log.debug("removing statusInput for vlan: " + vlan);
+                statusInputs.remove(vlan);
             }
 
             // if this is set it means at least one reservation was not found to be in the expected state
@@ -200,45 +207,47 @@ public class VendorCheckStatusJob implements Job {
                     this.log.error(ex);
                 }
             } else {
-                // everything went well OR this is the 2nd time checking, don't do a 3rd
-                doCheck = false;
+                // everything went well OR this is the 2nd time checking
+                break;
             }
         }
-
-        ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
-
-        // update reservation statuses, send out notifications
-        Iterator<String> griIt = resvsToUpdate.keySet().iterator();
-        while (griIt.hasNext()) {
-            String gri = griIt.next();
-            HashMap<String, String> params = checklist.get(gri);
-            String operation = params.get("operation");
-
-
-            String newStatus = resvsToUpdate.get(gri);
-            String direction = resvDirection.get(gri);
-            try {
-                Reservation resv = resvDAO.query(gri);
-                this.sendNotification(resv, newStatus, operation, direction);
-
-            } catch (BSSException ex) {
-                this.log.error(ex);
-            }
-        }
-
         bss.getTransaction().commit();
-
         this.log.debug("checkStatusJob.end "+jobName);
     }
 
-    private synchronized void sendNotification(Reservation resv, String newStatus, String operation, String direction) throws BSSException {
+    private void updateReservation(VendorStatusInput input,
+                                   VendorStatusResult result,
+                                   String newStatus) {
+        ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
+        String gri = input.getGri();
+        String operation = input.getOperation();
+        String direction = input.getDirection();
+        try {
+            Reservation resv = resvDAO.query(gri);
+            if (result != null) {
+                this.sendNotification(resv, newStatus, operation, direction,
+                                      result.getErrorMessage());
+            } else {
+                this.sendNotification(resv, newStatus, operation, direction, "");
+            }
+        } catch (BSSException ex) {
+            this.log.error(ex);
+        }
+    }
+
+    private synchronized void sendNotification(Reservation resv,
+        String newStatus, String operation, String direction, String errMsg)
+            throws BSSException {
         EventProducer eventProducer = new EventProducer();
         PathSetupManager pe = core.getPathSetupManager();
         String gri = resv.getGlobalReservationId();
+        StateEngine stateEngine = this.core.getStateEngine();
 
         if (operation.equals("PATH_SETUP")) {
             if (newStatus.equals(StateEngine.FAILED)) {
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv);
+                String status =
+                    stateEngine.updateStatus(resv, StateEngine.FAILED);
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errMsg);
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_SETUP", direction);
                 if (syncedStatus.equals("PATH_SETUP_BOTH")) {
@@ -250,7 +259,9 @@ public class VendorCheckStatusJob implements Job {
             }
         } else if (operation.equals("PATH_TEARDOWN")) {
             if (newStatus.equals(StateEngine.FAILED)) {
-                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv);
+                String status =
+                    stateEngine.updateStatus(resv, StateEngine.FAILED);
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errMsg);
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_TEARDOWN", direction);
                 if (syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
@@ -262,5 +273,4 @@ public class VendorCheckStatusJob implements Job {
             }
         }
    }
-
 }
