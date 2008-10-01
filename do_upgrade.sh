@@ -89,7 +89,7 @@ while [ $MYSQL_ANS3 == 0 ]; do
     fi
 done
 if [ "$MYSQL_ANS3" = "y" ] || [ "$MYSQL_ANS3" = "Y" ]; then
-    echo "NOTE: This action requires you to specifiy a privileged MySQL user account such as 'root'";
+    echo "NOTE: This action requires you to specify a privileged MySQL user account such as 'root'";
     echo -n "Please input a privileged mysql user (i.e. root): ";
     read MYSQL_ROOT_USER;
     echo -n "Please input password for privileged mysql user: ";
@@ -181,7 +181,7 @@ WS_ANS=0;
 OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "notify\.observer\.[0-9]+=net.es.oscars.notify.WSObserver"`;
 if [ -z "$OLD_PROP" ]; then
     while [ "$WS_ANS" == "0" ]; do
-        echo -n "Would you like to activate WS-Notifcations? [y/n]  ";
+        echo -n "Would you like to activate WS-Notifications? [y/n]  ";
         read WS_ANS;
         if [ "$WS_ANS" != "y" ] && [ "$WS_ANS" != "Y" ] && [ "$WS_ANS" != "n" ] && [ "$WS_ANS" != "N" ]; then
             WS_ANS=0;
@@ -268,31 +268,7 @@ else
     done
 fi
 
-# add neighbor brokers
-
 echo "--- Upgrade changes complete";
-
-#Build the OSCARS tools
-READ_BUILDTOOLS=0;
-while [ $READ_BUILDTOOLS == 0 ]; do
-    echo "";
-    echo -n "Should I build the OSCARS tools for you y/n?";
-    read READ_BUILDTOOLS;
-    if [ "$READ_BUILDTOOLS" != "y" ] && [ "$READ_BUILDTOOLS" != "Y" ] && [ "$READ_BUILDTOOLS" != "n" ] && [ "$READ_BUILDTOOLS" != "N" ]; then
-        READ_BUILDTOOLS=0;
-    fi
-done
-if [ "$READ_BUILDTOOLS" == "y" ] || [ "$READ_BUILDTOOLS" == "Y" ]; then
-    echo "";
-    echo "";
-    echo "--- Building tools...";
-    cd ./tools/utils
-    ant
-    echo "";
-    echo "";
-    echo "--- Tools built.";
-fi
-
 echo "";
 echo "##############################################################################";
 echo "";
