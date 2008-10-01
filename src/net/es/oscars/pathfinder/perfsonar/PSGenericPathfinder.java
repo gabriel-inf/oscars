@@ -62,23 +62,57 @@ public class PSGenericPathfinder implements Comparator {
     private TSLookupClient TSClient;
     private HashMap<String, Domain> domains;
     private DefaultDirectedWeightedGraph<String, PSGraphEdge> graph;
-    Map<String, Double> costs;
-    Map<String, Double> weightOverrides;
-    Map<String, Double> bandwidthOverrides;
+    private Map<String, Double> costs;
+    private Properties props;
+   
+    private static final String KNOWN_TOPOLOGY_TYPE = "http://ogf.org/schema/network/topology/ctrlPlane/20080828/";
 
-    /**
-     * Constructor
-     *
-     * @param dbname the name of the database to use for reservations and
-     * getting the local domain.
-     */
     public PSGenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
-        this.TSClient = new TSLookupClient("http://www.perfsonar.net/gls.root.hints");
         this.domains = new HashMap<String, Domain>();
-        this.weightOverrides = new HashMap<String, Double>();
-        this.bandwidthOverrides = new HashMap<String, Double>();
         this.graph = new DefaultDirectedWeightedGraph<String, PSGraphEdge>(PSGraphEdge.class);
+
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("lookup", true);
+        String hints = this.props.getProperty("hints");
+        String[] gLSs = null;
+        String[] hLSs = null;
+
+        int i = 0;
+        ArrayList<String> gLSList = new ArrayList<String>();
+        while(this.props.getProperty("global." + i) != null){
+            gLSList.add(this.props.getProperty("global." + i));
+        }
+        if(!gLSList.isEmpty()){
+            gLSList.toArray(gLSs);
+        }
+
+        i = 0;
+        ArrayList<String> hLSList = new ArrayList<String>();
+        while(this.props.getProperty("home." + i) != null){
+            hLSList.add(this.props.getProperty("home." + i));
+        }
+        if(!hLSList.isEmpty()){
+            hLSList.toArray(hLSs);
+        }
+
+        try{
+            if(gLSs != null || hLSs != null){
+                this.TSClient = new TSLookupClient(gLSs, hLSs);
+            }else if(hints != null){
+                this.TSClient = new TSLookupClient(hints);
+            }else{
+                this.log.warn("No lookup service information specified, using defaults");
+                this.TSClient = new TSLookupClient("http://www.perfsonar.net/gls.root.hints");
+            }
+        }catch(Exception e){
+            this.log.error(e.getMessage());
+        }
+
+        String useGlobals = this.props.getProperty("useGlobal");
+        if(useGlobals != null){
+            this.TSClient.setUseGlobalLS(("1".equals(useGlobals) || "true".equals(useGlobals)));
+        }
     }
 
     public void addDomain(Domain domain) {
@@ -135,7 +169,7 @@ public class PSGenericPathfinder implements Comparator {
     }
 
     private void updateGraph(Domain domain) {
-        System.out.println("updateGraph.start");
+        this.log.debug("updateGraph.start");
 
         PSGraphEdge edge;
 	Set<Node> nodes;
@@ -165,7 +199,7 @@ public class PSGenericPathfinder implements Comparator {
 
                     Hashtable<String, String> currURN = URNParser.parseTopoIdent(remLinkFQTI);
                     if (currURN.get("error") != null) {
-                        System.out.println("Parsing failed "+currURN.get("error"));
+                        this.log.error("Parsing failed "+currURN.get("error"));
                     } else if (currURN.get("domainFQID").equals(domFQTI)) {
                         // we found an internal link
                         isOpaque = false;
@@ -183,14 +217,14 @@ public class PSGenericPathfinder implements Comparator {
  
         // we need to add the domains so that searches can be done like
         // "how do i get from domain A to domain B".
-        System.out.println("Adding vertex "+domFQTI);
+        this.log.debug("Adding vertex "+domFQTI);
         this.graph.addVertex(domFQTI);
 
         nodes = domain.getNodes();
         for (Node node : nodes) {
             String nodeFQTI = node.getFQTI();
 
-            System.out.println("Adding vertex "+nodeFQTI);
+            this.log.debug("Adding vertex "+nodeFQTI);
             this.graph.addVertex(nodeFQTI);
 
             // The edges will only be one way though, node -> domain. If
@@ -227,7 +261,7 @@ public class PSGenericPathfinder implements Comparator {
                 if (capacity == 0L)
                     continue;
 
-                System.out.println("Adding vertex "+portFQTI);
+                this.log.debug("Adding vertex "+portFQTI);
                 this.graph.addVertex(portFQTI);
 
                 edge = this.graph.addEdge(nodeFQTI, portFQTI);
@@ -246,7 +280,7 @@ public class PSGenericPathfinder implements Comparator {
                 for (Link link : links) {
                     String linkFQTI = link.getFQTI();
 
-                    System.out.println("Adding vertex "+linkFQTI);
+                    this.log.debug("Adding vertex "+linkFQTI);
                     this.graph.addVertex(linkFQTI);
 
                     edge = this.graph.addEdge(linkFQTI, portFQTI);
@@ -293,7 +327,7 @@ public class PSGenericPathfinder implements Comparator {
                         edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
                     }
 
-                    System.out.println("Adding edge "+linkFQTI+"->"+remLinkFQTI);
+                    this.log.debug("Adding edge "+linkFQTI+"->"+remLinkFQTI);
                     edge = this.graph.addEdge(linkFQTI, remLinkFQTI);
                     if (edge != null) {
                         edge.setBandwidth(Double.MAX_VALUE);
@@ -303,7 +337,7 @@ public class PSGenericPathfinder implements Comparator {
             }
         }
 
-        System.out.println("updateGraph.finish");
+        this.log.debug("updateGraph.finish");
     }
 
     double parseTEM(String trafficEngineeringMetric) {
@@ -314,35 +348,35 @@ public class PSGenericPathfinder implements Comparator {
     private void lookupDomain(String id) {
         Element topoXML;
 
-        System.out.println("Looking up domain: "+id);
+        this.log.debug("Looking up domain: "+id);
 
         try {
-            topoXML = this.TSClient.getDomain(id);
+            topoXML = this.TSClient.getDomain(id, KNOWN_TOPOLOGY_TYPE);
         } catch (PSException e) {
-            System.out.println("PSException while getting domain "+id);
+            this.log.error("PSException while getting domain "+id);
             topoXML = null;
         }
 
         if (topoXML == null) {
-            System.out.println("ERROR:Couldn't get find domain "+id+" in topology service");
+            this.log.error("Couldn't get find domain "+id+" in topology service");
             return;
         }
 
-	System.out.println("topoXML: "+topoXML);
+	this.log.debug("topoXML: "+topoXML);
 
         TopologyXMLParser parser = new TopologyXMLParser(null);
         Topology topology = parser.parse(topoXML, null);
         if (topology == null) {
-            System.out.println("ERROR:Couldn't parse topology");
+            this.log.error("Couldn't parse topology");
             return;
         }
 
-	System.out.println("Parsed topology");
+	this.log.debug("Parsed topology");
 
         List<Domain> domains = topology.getDomains();
         for (Domain dom : domains) {
             String domFQTI = dom.getFQTI();
-	    System.out.println("Found domain: "+domFQTI);
+	    this.log.debug("Found domain: "+domFQTI);
             if (this.domains.get(domFQTI) == null) {
                 this.domains.put(domFQTI, dom);
                 this.updateGraph(dom);
@@ -355,7 +389,7 @@ public class PSGenericPathfinder implements Comparator {
         Map<String, String> prevMap = new HashMap<String, String>();
         this.costs = new HashMap<String, Double>(); // reset the costs
 
-        System.out.println("Looking up path between "+src+" and "+dst);
+        this.log.info("Looking up path between "+src+" and "+dst);
 
         String id;
 
@@ -369,8 +403,7 @@ public class PSGenericPathfinder implements Comparator {
 
             Hashtable<String, String> currURN = URNParser.parseTopoIdent(id);
             if (currURN.get("error") != null) {
-                // XXX fail
-                System.out.println("Parsing failed "+currURN.get("error"));
+                this.log.error("Parsing failed "+currURN.get("error"));
                 throw new PathfinderException("Couldn't parse identifier: "+id);
             }
 
@@ -380,10 +413,10 @@ public class PSGenericPathfinder implements Comparator {
             }
 
             if (this.graph.containsVertex(id) == false) {
-                System.out.println("Couldn't find "+id);
+                this.log.error("Couldn't find "+id);
             }
 
-            double cost = costs.get(id);
+            Double cost = costs.get(id);
 
             for (PSGraphEdge e : this.graph.edgesOf(id)) {
                 if (e.getBandwidth() < bandwidth)
@@ -391,8 +424,8 @@ public class PSGenericPathfinder implements Comparator {
 
                 String target = this.graph.getEdgeTarget(e);
 
-                if (costs.get(target) == null || costs.get(target) > cost + this.graph.getEdgeWeight(e)) {
-                    costs.put(target, cost + this.graph.getEdgeWeight(e));
+                if (costs.get(target) == null || costs.get(target) > cost.longValue() + this.graph.getEdgeWeight(e)) {
+                    costs.put(target, cost.longValue() + this.graph.getEdgeWeight(e));
                     prevMap.put(target, id);
                     elements.remove(target);
                     elements.add(target);
@@ -406,10 +439,10 @@ public class PSGenericPathfinder implements Comparator {
 
         List<String> retIds = new ArrayList<String>();
         retIds.add(0, dst);
-        System.out.println("Adding(dst): "+dst);
+        this.log.debug("Adding(dst): "+dst);
         id = dst;
         while((id = prevMap.get(id)) != null) {
-            System.out.println("Adding: "+id);
+            this.log.debug("Adding: "+id);
             retIds.add(0, id);
         }
 
