@@ -12,7 +12,14 @@ public class LookupFactory {
     }
 
     public PSLookupClient getPSLookupClient() {
-        PSLookupClient result = new PSLookupClient();
+        PSLookupClient result;
+
+        try {
+            result = new PSLookupClient();
+        } catch (Exception e) {
+            return null;
+        }
+
         return result;
     }
 

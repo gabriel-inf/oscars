@@ -77,28 +77,49 @@ public class PSGenericPathfinder implements Comparator {
         String hints = this.props.getProperty("hints");
         String[] gLSs = null;
         String[] hLSs = null;
+        String[] TSs = null;
 
         int i = 0;
         ArrayList<String> gLSList = new ArrayList<String>();
         while(this.props.getProperty("global." + i) != null){
             gLSList.add(this.props.getProperty("global." + i));
+            i++;
         }
         if(!gLSList.isEmpty()){
-            gLSList.toArray(gLSs);
+            String [] temp = new String[1];
+            gLSList.toArray(temp);
+            gLSs = temp;
         }
 
         i = 0;
         ArrayList<String> hLSList = new ArrayList<String>();
         while(this.props.getProperty("home." + i) != null){
             hLSList.add(this.props.getProperty("home." + i));
+            i++;
         }
         if(!hLSList.isEmpty()){
-            hLSList.toArray(hLSs);
+            String [] temp = new String[1];
+            hLSList.toArray(temp);
+            hLSs = temp;
         }
 
+        i = 0;
+        ArrayList<String> TSList = new ArrayList<String>();
+        while(this.props.getProperty("topology." + i) != null){
+            TSList.add(this.props.getProperty("topology." + i));
+            i++;
+        }
+        if(!TSList.isEmpty()){
+            String [] temp = new String[1];
+            TSList.toArray(temp);
+            TSs = temp;
+        }
+
+	System.out.println("In here");
+
         try{
-            if(gLSs != null || hLSs != null){
-                this.TSClient = new TSLookupClient(gLSs, hLSs);
+            if(gLSs != null || hLSs != null || TSs != null){
+                this.TSClient = new TSLookupClient(gLSs, hLSs, TSs);
             }else if(hints != null){
                 this.TSClient = new TSLookupClient(hints);
             }else{

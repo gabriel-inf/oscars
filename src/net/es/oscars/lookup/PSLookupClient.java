@@ -19,7 +19,7 @@ public class PSLookupClient {
     private DCNLookupClient client;
     
     /** Contructor */
-    public PSLookupClient(){
+    public PSLookupClient() throws LookupException {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("lookup", true);
@@ -28,40 +28,50 @@ public class PSLookupClient {
         String[] hLSs = null;
         
         int i = 0;
-        ArrayList<String> gLSList = new ArrayList<String>(); 
+        ArrayList<String> gLSList = new ArrayList<String>();
         while(this.props.getProperty("global." + i) != null){
             gLSList.add(this.props.getProperty("global." + i));
+            i++;
         }
         if(!gLSList.isEmpty()){
-            gLSList.toArray(gLSs);
+            String [] temp = new String[1];
+            gLSList.toArray(temp);
+            gLSs = temp;
         }
-        
+
         i = 0;
-        ArrayList<String> hLSList = new ArrayList<String>(); 
+        ArrayList<String> hLSList = new ArrayList<String>();
         while(this.props.getProperty("home." + i) != null){
             hLSList.add(this.props.getProperty("home." + i));
+            i++;
         }
         if(!hLSList.isEmpty()){
-            hLSList.toArray(hLSs);
+            String [] temp = new String[1];
+            hLSList.toArray(temp);
+            hLSs = temp;
         }
-        
-        String useGlobals = this.props.getProperty("useGlobal");
-        if(useGlobals != null){
-            this.client.setUseGlobalLS("1".equals(useGlobals));
-        }
-        
-        try{
+
+        try {
             if(gLSs != null || hLSs != null){
                 this.client = new DCNLookupClient(gLSs, hLSs);
             }else if(hints != null){
                 this.client = new DCNLookupClient(hints);
             }else{
-                throw new Exception("Cannot initialize perfSONAR lookup client " +
+                throw new LookupException("Cannot initialize perfSONAR lookup client " +
                     "because missing required properties. Please set " +
                     "lookup.hints, lookup.global.1 or lookup.home.1 in oscars.properties");
             }
-        }catch(Exception e){
-            this.log.error(e.getMessage());
+        } catch (Exception e) {
+            this.client = null;
+        }
+
+        if (this.client == null) {
+            throw new LookupException("Cannot initialize perfSONAR lookup client");
+        }
+
+        String useGlobals = this.props.getProperty("useGlobal");
+        if(useGlobals != null){
+            this.client.setUseGlobalLS(("1".equals(useGlobals) || "true".equals(useGlobals)));
         }
     }
 
