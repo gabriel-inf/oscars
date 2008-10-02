@@ -48,7 +48,6 @@ public class TopologyManager {
     private String dbname;
     private ReservationManager rm;
     private Utils utils;
-    private Properties props;
     private String localDomain;
 
 
@@ -69,17 +68,12 @@ public class TopologyManager {
         this.utils = new Utils(this.dbname);
 
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
-
-
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("topo", true);
-        String localdomain = this.props.getProperty("localdomain");
-        if(localdomain != null){
-            localdomain = localdomain.trim();
-        }
-        this.setLocalDomain(localdomain);
-
+        this.sf.getCurrentSession().beginTransaction();
         this.domainDAO = new DomainDAO(this.dbname);
+        String localdomain = domainDAO.getLocalDomain().getTopologyIdent();
+        this.setLocalDomain(localdomain);
+        this.sf.getCurrentSession().getTransaction().commit();
+
         this.nodeDAO = new NodeDAO(this.dbname);
         this.nodeAddrDAO = new NodeAddressDAO(this.dbname);
         this.portDAO = new PortDAO(this.dbname);
@@ -99,7 +93,6 @@ public class TopologyManager {
         try {
             // step 1
             this.log.info("merging with current topology");
-
             this.mergeTopology(topology, remoteLinkFQTIMap);
             this.log.info("finished merging with current topology");
 
@@ -108,6 +101,7 @@ public class TopologyManager {
            // TODO: currently broken, must fix!
 //           this.recalculatePaths("PENDING");
            this.log.info("recalculated pending paths");
+
            // step 3
            this.log.info("recalculating active paths");
            // TODO: currently broken, must fix!
@@ -118,13 +112,10 @@ public class TopologyManager {
 //           this.clean();
         } catch (BSSException e) {
            this.sf.getCurrentSession().getTransaction().rollback();
-
            this.log.error("updateDomains: " + e.getMessage());
-
            e.printStackTrace(pw);
            this.log.debug("error: "+e.getMessage());
            this.log.debug(sw.toString());
-
            this.log.error(sw.toString());
            System.exit(-1);
         } catch (Exception e) {
@@ -144,7 +135,6 @@ public class TopologyManager {
         //        Domain domain = this.queryByParam("topologyIdent", topologyIdent);
 
         this.log.debug("mergeTopology.start");
-
         List<Domain> currentDomains = domainDAO.list();
 
         Topology savedTopology = new Topology();
@@ -163,7 +153,6 @@ public class TopologyManager {
 
         ArrayList<Domain> domainsToInsert = new ArrayList<Domain>();
         ArrayList<Domain> domainsToUpdate = new ArrayList<Domain>();
-
         for (Domain newDomain : newTopology.getDomains()) {
             boolean found = false;
             Domain foundDomain = null;
@@ -182,7 +171,6 @@ public class TopologyManager {
                 domainsToUpdate.add(foundDomain);
             }
         }
-
         for (Domain domain : domainsToInsert) {
             domainDAO.create(domain);
             savedTopology.addDomain(domain);
@@ -193,8 +181,6 @@ public class TopologyManager {
             domainDAO.update(domain);
             this.log.debug("Updated domain: "+domain.getFQTI());
         }
-
-
         savedTopology.setDomains(domainDAO.list());
 
         // Now that everything is saved, merge domains
@@ -205,17 +191,13 @@ public class TopologyManager {
                 }
             }
         }
-
         this.mergeRemoteLinks(remoteLinkFQTIMap);
-
         this.log.debug("mergeTopology.end");
     }
 
     private void mergeNodes(Domain savedDomain, Domain newDomain, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
+
         this.log.debug("mergeNodes start");
-
-
-
         this.log.debug("Merging nodes for: ["+savedDomain.getFQTI()+"]");
 
         ArrayList<Node> nodesToInsert = new ArrayList<Node>();
@@ -236,11 +218,8 @@ public class TopologyManager {
             newNodeIt = newDomain.getNodes().iterator();
             while (newNodeIt.hasNext()) {
                 Node newNode = (Node) newNodeIt.next();
-
                 Node foundNode = savedDomain.getNodeByTopoId(newNode.getTopologyIdent());
-
                 NodeAddress newNodeAddr = newNode.getNodeAddress();
-
                 if (foundNode == null) {
                     this.log.debug("Will add node: "+newNode.getFQTI());
                     nodesToInsert.add(newNode);
@@ -278,11 +257,7 @@ public class TopologyManager {
                 }
             }
         }
-
-
-
         this.log.debug("Checking for invalidation...");
-
         // Check for invalidation
         if (savedDomain.getNodes() == null) {
             // nothing to invalidate.
@@ -292,11 +267,9 @@ public class TopologyManager {
                 boolean found = false;
                 Node savedNode = (Node) savedNodeIt.next();
                 Node foundNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
-
                 // not in new topology structure
                 if (foundNode == null) {
                     boolean invalidate = true;
-
                     // don't invalidate if in external remote links though!
                     for (String fqti : validLinkInfo.keySet()) {
                         Hashtable<String, String> results = validLinkInfo.get(fqti);
@@ -311,7 +284,6 @@ public class TopologyManager {
                             }
                         }
                     }
-
                     if (invalidate) {
                         this.log.debug("Will invalidate node: "+savedNode.getFQTI());
                         nodesToInvalidate.add(savedNode);
@@ -319,12 +291,7 @@ public class TopologyManager {
                 }
             }
         }
-
         this.log.debug("Checking for invalidation finished.");
-
-
-
-
 
         this.log.debug("Adding nodes...");
         for (Node node : nodesToInsert) {
@@ -347,13 +314,11 @@ public class TopologyManager {
         }
         this.log.debug("Updating nodes finished.");
 
-
         this.log.debug("Invalidating nodes...");
         for (Node node : nodesToInvalidate) {
             this.invalidateNode(node);
         }
         this.log.debug("Invalidating nodes finished.");
-
 
         this.log.debug("Adding node addresses...");
         for (NodeAddress nodeAddr : nodeAddrsToInsert) {
@@ -394,17 +359,10 @@ public class TopologyManager {
                 this.mergePorts(savedNode, newNode, validLinkInfo);
             }
         }
-
-
         this.log.debug("Merging nodes for: ["+savedDomain.getFQTI()+"] finished.");
-
-
-
         this.log.debug("mergeNodes end");
         return;
     }
-
-
 
     private void mergePorts(Node savedNode, Node newNode, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
         this.log.debug("mergePorts start");
@@ -423,9 +381,7 @@ public class TopologyManager {
             newPortIt = newNode.getPorts().iterator();
             while (newPortIt.hasNext()) {
                 Port newPort = (Port) newPortIt.next();
-
                 Port foundPort = savedNode.getPortByTopoId(newPort.getTopologyIdent());
-
                 if (foundPort == null) {
                     this.log.debug("Will add port: "+newPort.getFQTI());
                     portsToInsert.add(newPort);
@@ -444,11 +400,7 @@ public class TopologyManager {
                 }
             }
         }
-
-
-
         this.log.debug("Checking for invalidation...");
-
         // Check for invalidation
         if (savedNode.getPorts() == null) {
             // nothing to invalidate.
@@ -458,7 +410,6 @@ public class TopologyManager {
                 boolean found = false;
                 Port savedPort = (Port) savedPortIt.next();
                 Port foundPort = newNode.getPortByTopoId(savedPort.getTopologyIdent());
-
                 if (foundPort == null) {
                     boolean invalidate = true;
 
@@ -478,19 +429,14 @@ public class TopologyManager {
                             }
                         }
                     }
-
                     if (invalidate) {
                         this.log.debug("Will invalidate port: "+savedPort.getFQTI());
                         portsToInvalidate.add(savedPort);
                     }
-
-
                 }
             }
         }
-
         this.log.debug("Checking for invalidation finished.");
-
 
         this.log.debug("Adding ports...");
         for (Port port : portsToInsert) {
@@ -520,8 +466,6 @@ public class TopologyManager {
         }
         this.log.debug("Invalidating ports finished.");
 
-
-
         savedPortIt = savedNode.getPorts().iterator();
         while (savedPortIt.hasNext()) {
             Port savedPort = (Port) savedPortIt.next();
@@ -530,9 +474,6 @@ public class TopologyManager {
                 this.mergeLinks(savedPort, newPort, validLinkInfo);
             }
         }
-
-
-
         this.log.debug("mergePorts.end");
     }
 
@@ -555,13 +496,10 @@ public class TopologyManager {
             newLinkIt = newPort.getLinks().iterator();
             while (newLinkIt.hasNext()) {
                 Link newLink = (Link) newLinkIt.next();
-
                 Link foundLink = savedPort.getLinkByTopoId(newLink.getTopologyIdent());
-
                 if (foundLink == null) {
                     this.log.debug("Will add link: "+newLink.getFQTI());
                     newLink.setRemoteLink(null);
-
                     linksToInsert.add(newLink);
                 } else {
                     this.log.debug("Will update link: "+newLink.getFQTI());
@@ -580,9 +518,7 @@ public class TopologyManager {
             }
         }
 
-
         this.log.debug("Checking for invalidation...");
-
         // Check for invalidation
         if (savedPort.getLinks() == null) {
             // nothing to invalidate.
@@ -592,7 +528,6 @@ public class TopologyManager {
                 boolean found = false;
                 Link savedLink = (Link) savedLinkIt.next();
                 Link foundLink = newPort.getLinkByTopoId(savedLink.getTopologyIdent());
-
                 if (foundLink == null) {
                     boolean invalidate = true;
 
@@ -614,22 +549,14 @@ public class TopologyManager {
                             }
                         }
                     }
-
                     if (invalidate) {
                         this.log.debug("Will invalidate link: "+savedLink.getFQTI());
                         linksToInvalidate.add(savedLink);
                     }
-
                 }
             }
         }
-
         this.log.debug("Checking for invalidation finished.");
-
-
-
-
-
 
         this.log.debug("Adding links...");
         for (Link link : linksToInsert) {
@@ -652,7 +579,6 @@ public class TopologyManager {
         }
         this.log.debug("Updating links finished.");
 
-
         this.log.debug("Invalidating links...");
         for (Link link : linksToInvalidate) {
             this.invalidateLink(link);
@@ -668,7 +594,6 @@ public class TopologyManager {
                 this.mergeLinkSwcaps(savedLink, newLink);
             }
         }
-
         this.log.debug("mergeLinks.end");
     }
 
@@ -676,7 +601,6 @@ public class TopologyManager {
         this.log.debug("mergeRemoteLinks.start");
 
         for (String thisFqti : remoteLinkFQTIMap.keySet()) {
-
             String remFqti = remoteLinkFQTIMap.get(thisFqti);
             Link thisLink = null;
             Link remoteLink = null;
@@ -687,7 +611,6 @@ public class TopologyManager {
                 this.log.error("Error: "+ex.getMessage());
                 break;
             }
-
             try {
                 remoteLink = TopologyUtil.getLink(remFqti, this.dbname);
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
@@ -695,20 +618,16 @@ public class TopologyManager {
                 this.log.error(ex);
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
             }
-
             if (thisLink != null) {
                 thisLink.setRemoteLink(remoteLink);
                 linkDAO.update(thisLink);
             }
-
         }
-
         this.log.debug("mergeRemoteLinks.end");
     }
 
     private void mergeLinkIpaddrs(Link savedLink, Link newLink) {
         this.log.debug("mergeLinkIpaddrs.start");
-
 
         ArrayList<Ipaddr> ipaddrsToInsert = new ArrayList<Ipaddr>();
         ArrayList<Ipaddr> ipaddrsToUpdate = new ArrayList<Ipaddr>();
@@ -723,9 +642,7 @@ public class TopologyManager {
             newIpaddrIt = newLink.getIpaddrs().iterator();
             while (newIpaddrIt.hasNext()) {
                 Ipaddr newIpaddr = (Ipaddr) newIpaddrIt.next();
-
                 Ipaddr foundIpaddr = savedLink.getIpaddrByIP(newIpaddr.getIP());
-
                 if (foundIpaddr == null) {
                     this.log.debug("Will add ipaddr: "+newIpaddr.getIP());
                     newIpaddr.setLink(savedLink);
@@ -741,7 +658,6 @@ public class TopologyManager {
         }
 
         this.log.debug("Checking for invalidation...");
-
         // Check for invalidation
         if (savedLink.getIpaddrs() == null) {
             // nothing to invalidate.
@@ -758,7 +674,6 @@ public class TopologyManager {
                 }
             }
         }
-
         this.log.debug("Checking for invalidation finished.");
 
         this.log.debug("Adding ipaddrs...");
@@ -772,14 +687,11 @@ public class TopologyManager {
         }
         this.log.debug("Adding ipaddrs finished.");
 
-
         this.log.debug("Updating ipaddrs...");
         for (Ipaddr ipaddr : ipaddrsToUpdate) {
             ipaddrDAO.update(ipaddr);
         }
         this.log.debug("Updating ipaddrs  finished.");
-
-
 
         this.log.debug("Invalidating ipaddrs...");
         for (Ipaddr ipaddr : ipaddrsToInvalidate) {
@@ -802,16 +714,13 @@ public class TopologyManager {
 
         if ((savedSwCap == null) && (newSwCap == null)) {
             return;
-
         } else if ((savedSwCap != null) && (newSwCap == null)) {
             l2swcapDAO.remove(savedSwCap);
             savedLink.setL2SwitchingCapabilityData(null);
             linkDAO.update(savedLink);
         } else if ((savedSwCap == null) && (newSwCap != null)) {
-
             newSwCap.setLink(savedLink);
             l2swcapDAO.create(newSwCap);
-
             savedLink.setL2SwitchingCapabilityData(newSwCap);
             linkDAO.update(savedLink);
         } else if ((savedSwCap != null) && (newSwCap != null)) {
@@ -819,11 +728,8 @@ public class TopologyManager {
             savedSwCap.setInterfaceMTU(newSwCap.getInterfaceMTU());
             l2swcapDAO.update(savedSwCap);
         }
-
         this.log.debug("mergeLinkSwcap.end");
     }
-
-
 
     private Link insertFQTILink(String linkFqti, Link remoteLink) {
 
@@ -842,7 +748,6 @@ public class TopologyManager {
         String linkId = results.get("linkId");
 
         List<Domain> currentDomains = domainDAO.list();
-
         boolean haveDomain = false;
         boolean haveNode = false;
         boolean havePort = false;
@@ -858,13 +763,11 @@ public class TopologyManager {
                 break;
             }
         }
-
         if (!haveDomain) {
             domain = new Domain(true);
             domain.setTopologyIdent(domainId);
             domainDAO.create(domain);
         }
-
         Node node = null;
         if (haveDomain) {
             node = domain.getNodeByTopoId(nodeId);
@@ -880,7 +783,6 @@ public class TopologyManager {
             node.setValid(true);
             nodeDAO.update(node);
         }
-
         Port port = null;
         if (haveNode) {
             port = node.getPortByTopoId(portId);
@@ -910,19 +812,16 @@ public class TopologyManager {
             }
             portDAO.update(port);
         }
-
         Link link = null;
         if (havePort) {
             link = port.getLinkByTopoId(linkId);
         }
-
         if (link == null) {
             link = new Link(port, true);
             link.setTopologyIdent(linkId);
             link.setRemoteLink(remoteLink);
             port.addLink(link);
             linkDAO.create(link);
-
         } else {
             this.log.debug("found link "+linkId+" : "+link.getId());
             haveLink = true;
@@ -930,7 +829,6 @@ public class TopologyManager {
             link.setRemoteLink(remoteLink);
             linkDAO.update(link);
         }
-
 
         L2SwitchingCapabilityData l2scd = link.getL2SwitchingCapabilityData();
         if (l2scd != null) {
@@ -950,10 +848,6 @@ public class TopologyManager {
                 linkDAO.update(link);
             }
         }
-
-
-
-
         if (!haveDomain) {
             this.log.debug("Created domain: ["+domain.getFQTI()+"]");
         }
@@ -969,10 +863,8 @@ public class TopologyManager {
         if (!haveL2swcap) {
             this.log.debug("Created l2swcap link: ["+link.getFQTI()+"]");
         }
-
         this.log.debug("Finished with link: ["+linkFqti+"]");
         return link;
-
     }
 
     private void invalidateNode(Node nodeDB) {
@@ -981,7 +873,6 @@ public class TopologyManager {
         nodeDAO.update(nodeDB);
 
         Iterator portIt = nodeDB.getPorts().iterator();
-
         while (portIt.hasNext()) {
             Port portDB = (Port) portIt.next();
             this.invalidatePort(portDB);
@@ -993,12 +884,10 @@ public class TopologyManager {
         portDB.setValid(false);
 
         Iterator linkIt = portDB.getLinks().iterator();
-
         while (linkIt.hasNext()) {
             Link linkDB = (Link) linkIt.next();
             this.invalidateLink(linkDB);
         }
-
         portDAO.update(portDB);
     }
 
@@ -1011,7 +900,6 @@ public class TopologyManager {
             currentIpaddr.setValid(false);
             ipaddrDAO.update(currentIpaddr);
         }
-
         linkDB.setValid(false);
         linkDAO.update(linkDB);
     }
@@ -1036,14 +924,12 @@ public class TopologyManager {
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.statusReservations(status);
-
         for (Reservation r : reservations) {
             Path oldPath = r.getPath();
 
             // find old ingress and egress IP's
             // TODO:  this may no longer be necessary
             PathElem pathElem = oldPath.getPathElem();
-
             while (pathElem != null) {
                 if (pathElem.getDescription() != null) {
                     if (pathElem.getDescription().equals("ingress")) {
@@ -1064,14 +950,12 @@ public class TopologyManager {
                         }
                     }
                 }
-
                 pathElem = pathElem.getNextElem();
             }
 
             //TODO:  build layer-specific info from old path in database
             //       assuming only the hops have the possibility of changing
             PathInfo pathInfo = new PathInfo();
-
             try {
                 TypeConverter tc = new TypeConverter();
                 // finds path and checks for oversubscription
@@ -1084,10 +968,8 @@ public class TopologyManager {
                 this.log.warn("request may be INVALID due to oversubscription: " +
                     r.getGlobalReservationId() );
                 dao.update(r);
-
                 continue;
             }
-
             if (status.equals("PENDING")) {
                 r.setPath(path);
                 dao.update(r);
@@ -1127,14 +1009,12 @@ public class TopologyManager {
                 pathDAO.remove(path);
             }
         }
-
         this.log.info("finished removing paths that are no longer in use");
 
         // remove all invalid ipaddrs that are not part of any reservation
         // (ipaddrs associated with pending and active reservations are
         // guaranteed to be valid because of path recalculation)
         this.log.info("removing invalid ipaddrs that are no longer in use");
-
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         List<Ipaddr> ipaddrs = ipaddrDAO.list();
         PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
@@ -1146,9 +1026,7 @@ public class TopologyManager {
             Ipaddr ipaddr = link.getValidIpaddr();
             ipset.add(ipaddr);
         }
-
         LinkDAO linkDAO = new LinkDAO(this.dbname);
-
         for (Ipaddr ipaddr : ipaddrs) {
             if (!ipaddr.isValid()) {
                 Link parent = ipaddr.getLink();
@@ -1162,7 +1040,6 @@ public class TopologyManager {
                 }
             }
         }
-
         this.log.info("finished removing invalid ipaddrs");
 
         // remove invalid links that now have no ipaddrs
@@ -1178,7 +1055,6 @@ public class TopologyManager {
                 portDAO.update(parent);
             }
         }
-
         this.log.info("finished removing invalid links");
 
         // remove invalid ports that now have no ipaddrs
@@ -1194,7 +1070,6 @@ public class TopologyManager {
                 nodeDAO.update(parent);
             }
         }
-
         this.log.info("finished removing invalid ports");
 
         // remove invalid nodes that now have no ports
@@ -1205,7 +1080,6 @@ public class TopologyManager {
                 nodeDAO.remove(node);
             }
         }
-
         this.log.info("finished removing invalid nodes");
         this.log.info("clean.finish");
     }
@@ -1227,7 +1101,6 @@ public class TopologyManager {
 
             return false;
         }
-
         // first check that paths are the same length
         int firstCtr = 0;
         PathElem pathElem = savedPath.getPathElem();
@@ -1236,38 +1109,30 @@ public class TopologyManager {
             firstCtr++;
             pathElem = pathElem.getNextElem();
         }
-
         int secondCtr = 0;
         pathElem = checkPath.getPathElem();
-
         while (pathElem != null) {
             secondCtr++;
             pathElem = pathElem.getNextElem();
         }
-
         if (firstCtr != secondCtr) {
             this.log.debug("two paths have different lengths");
 
             return false;
         }
-
         // now that know paths are the same length,
         // check each element of the two paths for equality
         pathElem = savedPath.getPathElem();
-
         PathElem checkPathElem = checkPath.getPathElem();
-
         while (pathElem != null) {
             if (!pathElem.equals(checkPathElem)) {
                 this.log.debug("two paths are different");
 
                 return false;
             }
-
             pathElem = pathElem.getNextElem();
             checkPathElem = checkPathElem.getNextElem();
         }
-
         // check to see if the layer-specific information is the same
         Layer2DataDAO layer2DataDAO = new Layer2DataDAO(this.dbname);
         Layer3DataDAO layer3DataDAO = new Layer3DataDAO(this.dbname);
@@ -1282,52 +1147,40 @@ public class TopologyManager {
         if ((savedLayer2Data != null) && (checkLayer2Data != null)) {
             if (!savedLayer2Data.equals(checkLayer2Data)) {
                 this.log.debug("layer 2 fields are different");
-
                 return false;
             }
         }
-
         if (((savedLayer2Data == null) && (checkLayer2Data != null)) ||
                 ((savedLayer2Data != null) && (checkLayer2Data == null))) {
             this.log.debug("one path is layer 2, the other is not");
-
             return false;
         }
-
         if ((savedLayer3Data != null) && (checkLayer3Data != null)) {
             if (!savedLayer3Data.equals(checkLayer3Data)) {
                 this.log.debug("layer 3 fields are different");
-
                 return false;
             }
         }
-
         if (((savedLayer3Data == null) && (checkLayer3Data != null)) ||
                 ((savedLayer3Data != null) && (checkLayer3Data == null))) {
             this.log.debug("one path is layer 3, the other is not");
-
             return false;
         }
-
         if ((savedMPLSData != null) && (checkMPLSData != null)) {
             if (!savedMPLSData.equals(checkMPLSData)) {
                 this.log.debug("MPLS-specific fields are different");
-
                 return false;
             }
         }
-
         if (((savedMPLSData == null) && (checkMPLSData != null)) ||
                 ((savedMPLSData != null) && (checkMPLSData == null))) {
             this.log.debug("one path is MPLS-specific, the other is not");
-
             return false;
         }
-
         this.log.info("isDuplicate.finish true");
-
         return true;
     }
+
     /**
      * localDomain getter
      * @return the value of localDomain
