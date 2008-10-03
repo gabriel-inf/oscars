@@ -43,9 +43,10 @@
         <property name="cache.provider_class">
                   org.hibernate.cache.HashtableCacheProvider</property>
         
-        <mapping resource="net/es/oscars/notify/Publisher.hbm.xml"/>
-        <mapping resource="net/es/oscars/notify/Subscription.hbm.xml"/>
-        <mapping resource="net/es/oscars/notify/SubscriptionFilter.hbm.xml"/>
+        <mapping resource="net/es/oscars/notify/db/ExternalService.hbm.xml"/>
+        <mapping resource="net/es/oscars/notify/db/Publisher.hbm.xml"/>
+        <mapping resource="net/es/oscars/notify/db/Subscription.hbm.xml"/>
+        <mapping resource="net/es/oscars/notify/db/SubscriptionFilter.hbm.xml"/>
         
     </session-factory>
 </hibernate-configuration>

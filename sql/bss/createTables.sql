@@ -342,7 +342,7 @@ CREATE TABLE IF NOT EXISTS sites (
 ) type=MyISAM;
 
 --
--- Table to lookup external servcies associated with a domain
+-- Table to lookup external services associated with a domain
 -- Used as a backup to the perfSONAR LS
 CREATE TABLE IF NOT EXISTS domainServices (
     id                  INT NOT NULL AUTO_INCREMENT,
