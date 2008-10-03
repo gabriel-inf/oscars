@@ -2,9 +2,7 @@ package net.es.oscars.bss.topology;
 
 import net.es.oscars.database.HibernateBean;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.hibernate.Hibernate;
 import java.io.Serializable;
-import java.util.*;
 
 
 /**
@@ -22,8 +20,12 @@ public class DomainService extends HibernateBean implements Serializable {
     /** persistent field */
     private String url;
     
-    /** persistent field */
+    /** null-able persistent field */
+    private String serviceKey;
+    
+	/** persistent field */
     private Domain domain;
+    
     
     /** default constructor */
     public DomainService() {}
@@ -55,6 +57,20 @@ public class DomainService extends HibernateBean implements Serializable {
     public void setUrl(String url) {
         this.url = url;
     }
+    
+    /**
+     * @return a key required to register/lookup data (if any)
+     */
+    public String getServiceKey() {
+		return this.serviceKey;
+	}
+    
+    /**
+     * @param serviceKey a key required to register/lookup data (if any)
+     */
+	public void setServiceKey(String serviceKey) {
+		this.serviceKey = serviceKey;
+	}
 
     /**
      * @return domain a Domain instance (uses association)

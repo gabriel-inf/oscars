@@ -38,4 +38,24 @@ public class DomainServiceDAO extends GenericHibernateDAO<DomainService, Integer
         }
         return url;
     }
+    
+    /**
+     * Returns a URL for the service belonging to the given domain and 
+     * having the given type
+     *
+     * @param domain Domain of the service to lookup
+     * @param type the type of service to lookup
+     * @return a URL for the service belonging to the given domain and having the given type
+     */
+    public List<DomainService> getServices(Domain domain, String type){
+        String sql = "SELECT ds.* FROM domainServices AS ds INNER JOIN domains " +
+                     "AS d ON ds.domainId=d.id WHERE d.topologyIdent=? AND " +
+                     "ds.type=?";
+        return (List<DomainService>) this.getSession().createSQLQuery(sql)
+                                        .addEntity(DomainService.class)
+                                        .setString(0, domain.getTopologyIdent())
+                                        .setString(1, type)
+                                        .list();
+                                        
+    }
 }

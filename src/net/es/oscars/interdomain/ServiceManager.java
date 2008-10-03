@@ -62,8 +62,8 @@ public class ServiceManager{
         /* Load service modules */
         for(int i = 1; props.getProperty(i+"") != null; i++){
             String service = props.getProperty(i+"");
-            if("lookup".equals(service.toLowerCase())){
-                //this.serviceJobs.add(LSRegisterJob.class);
+            if("lsregister".equals(service.toLowerCase())){
+                this.serviceJobs.add(LSRegisterJob.class);
             }else if("topology".equals(service.toLowerCase())){
                 this.serviceJobs.add(TopologyRegisterJob.class);
             }else if("subscribe".equals(service.toLowerCase())){

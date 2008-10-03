@@ -349,5 +349,6 @@ CREATE TABLE IF NOT EXISTS domainServices (
     domainId            INT NOT NULL,
     type                TEXT NOT NULL,
     url                 TEXT NOT NULL,
+    serviceKey          TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;

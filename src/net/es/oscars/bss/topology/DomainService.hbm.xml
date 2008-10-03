@@ -34,7 +34,9 @@
            @hibernate.property not-null="true"
         </meta>    
     </property>
-
+	
+	<property name="serviceKey" />
+	
     <!-- Associations -->
     <many-to-one name="domain" column="domainId"
 	    class="net.es.oscars.bss.topology.Domain" not-null="true" />

@@ -45,13 +45,13 @@ public class WSObserver implements Observer {
     private String repo;
     private String axisConfig;
     private boolean initialized;
-    private HashMap<String, String> topics;
     private HashMap<String,String> namespaces;
     private HashMap<String,String> prefixes;
     private static String publisherRegistrationId = null;
     private static String brokerConsumerURL = null;
-    
-    /* Constants */
+    private static HashMap<String, String> topics = null;
+
+	/* Constants */
     private final String TOPIC_EXPR_FULL = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full";
     
     /** Constructor */
@@ -485,4 +485,8 @@ public class WSObserver implements Observer {
             }
         }
     }
+    
+    public static HashMap<String, String> getTopics() {
+		return topics;
+	}
 }
