@@ -120,9 +120,7 @@ public class OSCARSCore {
         this.log.info("shutdown.end");
     }
 
-
-
-
+    
     public void initDatabases() {
         this.log.debug("initDatabases.start");
         ArrayList<String> dbnames = new ArrayList<String>();
@@ -130,8 +128,6 @@ public class OSCARSCore {
         dbnames.add(this.aaaDbName);
         Initializer dbInitializer = new Initializer();
         dbInitializer.initDatabase(dbnames);
-        this.getAaaSession();
-        this.getBssSession();
         this.log.debug("initDatabases.end");
     }
 

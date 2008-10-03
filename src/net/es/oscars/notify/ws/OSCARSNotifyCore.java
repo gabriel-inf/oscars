@@ -1,7 +1,6 @@
 package net.es.oscars.notify.ws;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.hibernate.*;
 import org.apache.log4j.*;
@@ -17,7 +16,7 @@ import net.es.oscars.notify.ws.policy.*;
  * functionality. This includes initializing databases,
  * managing the scheduler, and loading PEPs.
  *
- * @author Andew Lake (alake@internet2.edu)
+ * @author Andrew Lake (alake@internet2.edu)
  */
 public class OSCARSNotifyCore{
     private Logger log;
@@ -80,8 +79,6 @@ public class OSCARSNotifyCore{
         dbnames.add(notifyDbName);
         dbnames.add(bssDbName);
         initializer.initDatabase(dbnames);
-        this.getAAASession();
-        this.getNotifySession();
         this.log.debug("initDatabases.end");
     }
 
