@@ -249,7 +249,16 @@ public class PSLookupClient {
     		if(ip == null){ continue; }
     		nodeReg.setL3Address(ip, isIPv6);
     	}
-    	
+    	HashMap<String,String> locationInfo = new HashMap<String,String>();
+    	for(String locField : NodeRegistration.LOCATION_FIELDS){
+    		String locProp = this.props.getProperty("reg.location." + locField);
+    		if(locProp != null){
+    			locationInfo.put(locField, locProp);
+    		}
+    	}
+    	if(!locationInfo.isEmpty()){
+    		nodeReg.setLocation(locationInfo);
+    	}
     	return this.client.registerNode(nodeReg, nodeKeys);
     }
     
