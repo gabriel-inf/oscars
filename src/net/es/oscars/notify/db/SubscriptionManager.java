@@ -1,4 +1,4 @@
-package net.es.oscars.notify;
+package net.es.oscars.notify.db;
 
 import java.util.*;
 import org.apache.log4j.*;

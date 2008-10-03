@@ -11,9 +11,9 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.notify.Publisher" table="publishers">
+<class name="net.es.oscars.notify.db.Subscription" table="subscriptions">
     <meta attribute="class-description" inherit="false">
-       @hibernate.class table="publishers"
+       @hibernate.class table="subscriptions"
     </meta>
 
     <id name="id">
@@ -53,17 +53,17 @@
         </meta>    
     </property>
     
-    <property name="demand" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-    
     <property name="status" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
     </property>
+
+    <!-- Associations -->
+    <set name="filters" inverse="true" cascade="all, delete-orphan">
+        <key column="subscriptionId" />
+        <one-to-many class="net.es.oscars.notify.db.SubscriptionFilter" />
+    </set>
     
 </class>
 </hibernate-mapping>

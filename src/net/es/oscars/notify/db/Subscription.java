@@ -1,4 +1,4 @@
-package net.es.oscars.notify;
+package net.es.oscars.notify.db;
 
 import net.es.oscars.database.HibernateBean;
 
@@ -16,7 +16,7 @@ import java.util.*;
  * Port is adapted from a Middlegen class automatically generated
  * from the schema for the bss.ports table.
  */
-public class Publisher extends HibernateBean implements Serializable {
+public class Subscription extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -37,13 +37,13 @@ public class Publisher extends HibernateBean implements Serializable {
     private Long terminationTime;
     
     /** persistent field */
-    private boolean demand;
-    
-    /** persistent field */
     private int status;
     
+    /** persistent field */
+    private Set filters;
+
     /** default constructor */
-    public Publisher() {}
+    public Subscription() {}
 
     /**
      * @return a String with the id used in SubscriptionReference
@@ -116,20 +116,6 @@ public class Publisher extends HibernateBean implements Serializable {
     }
     
     /**
-     * @return a boolean indicating whether this is a demand publisher
-     */
-    public boolean isDemand() {
-        return this.demand;
-    }
-    
-    /**
-     * @param demand a boolean indicating whether this is a demand publisher
-     */
-    public void setDemand(boolean demand) {
-        this.demand = demand;
-    }
-    
-    /**
      * @return an int with the status
      */
     public int getStatus() {
@@ -141,6 +127,20 @@ public class Publisher extends HibernateBean implements Serializable {
      */
     public void setStatus(int status) {
         this.status = status;
+    }
+    
+    /**
+     * @return a Set with the filters for this subscription
+     */
+    public Set getFilters() {
+        return this.filters;
+    }
+
+    /**
+     * @param filters a Set with the filters for this subscription
+     */
+    public void setFilters(Set filters) {
+        this.filters = filters;
     }
     
     public String toString() {

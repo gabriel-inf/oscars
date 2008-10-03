@@ -1,4 +1,4 @@
-package net.es.oscars.notify;
+package net.es.oscars.notify.db;
 
 import net.es.oscars.database.HibernateBean;
 
