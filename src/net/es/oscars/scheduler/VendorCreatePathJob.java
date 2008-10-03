@@ -38,7 +38,8 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         // Get reservation info from DB
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String direction = (String) dataMap.get("direction");
-        String routerType = (String) dataMap.get("routerType");
+        String ingressRouterType = (String) dataMap.get("ingressRouterType");
+        String egressRouterType = (String) dataMap.get("egressRouterType");
         String gri = (String) dataMap.get("gri");
         Reservation resv = null;
         try {
@@ -81,7 +82,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         boolean pathWasSetup = true;
         LSP ciscoLSP = null;
         JnxLSP jnxLSP = null;
-        if (routerType.equals("jnx")) {
+        if (ingressRouterType.equals("jnx")) {
             jnxLSP = new JnxLSP(bssDbName);
             try {
                 jnxLSP.createPath(resv, lspData, direction);
@@ -90,7 +91,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 errString = ex.getMessage();
                 pathWasSetup = false;
             }
-        } else if (routerType.equals("cisco")) {
+        } else if (ingressRouterType.equals("cisco")) {
             ciscoLSP = new LSP(bssDbName);
             try {
                 ciscoLSP.createPath(resv, lspData, direction);
@@ -120,16 +121,17 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                         HashMap<String, String> params = new HashMap<String, String>();
                         params.put("desiredStatus", StateEngine.ACTIVE);
                         params.put("operation", "PATH_SETUP");
+                        params.put("description", resv.getDescription());
                         if (dir.equals("forward")) {
                             this.log.debug("setting forward status check params");
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
                             params.put("ingressVlan", lspData.getVlanTag());
-                            params.put("ingressVendor", routerType);
+                            params.put("ingressVendor", ingressRouterType);
                         } else if (dir.equals("reverse")) {
                             this.log.debug("setting reverse status check params");
                             params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
                             params.put("egressVlan", lspData.getVlanTag());
-                            params.put("egressVendor", routerType);
+                            params.put("egressVendor", egressRouterType);
                         }
                         VendorMaintainStatusJob.addToCheckList(gri, params);
                     }

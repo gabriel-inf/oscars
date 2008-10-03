@@ -129,7 +129,8 @@ public class VendorPSS implements PSS {
             fwdJobDataMap.put("gri", resv.getGlobalReservationId());
             fwdJobDataMap.put("lspData", lspData);
             fwdJobDataMap.put("direction", "forward");
-            fwdJobDataMap.put("routerType", forwardRouterType);
+            fwdJobDataMap.put("ingressRouterType", forwardRouterType);
+            fwdJobDataMap.put("egressRouterType", reverseRouterType);
             fwdJobDetail.setJobDataMap(fwdJobDataMap);
             sched.addJob(fwdJobDetail, false);
             if (doReverse) {
@@ -141,7 +142,8 @@ public class VendorPSS implements PSS {
                 rvsJobDataMap.put("gri", resv.getGlobalReservationId());
                 rvsJobDataMap.put("lspData", lspData);
                 rvsJobDataMap.put("direction", "reverse");
-                rvsJobDataMap.put("routerType", reverseRouterType);
+                rvsJobDataMap.put("ingressRouterType", reverseRouterType);
+                rvsJobDataMap.put("egressRouterType", forwardRouterType);
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
                 sched.addJob(rvsJobDetail, false);
             }
@@ -270,7 +272,8 @@ public class VendorPSS implements PSS {
             JobDataMap fwdJobDataMap = new JobDataMap();
             fwdJobDataMap.put("gri", resv.getGlobalReservationId());
             fwdJobDataMap.put("direction", "forward");
-            fwdJobDataMap.put("routerType", forwardRouterType);
+            fwdJobDataMap.put("ingressRouterType", forwardRouterType);
+            fwdJobDataMap.put("egressRouterType", reverseRouterType);
             fwdJobDataMap.put("newStatus", newStatus);
             fwdJobDetail.setJobDataMap(fwdJobDataMap);
             sched.addJob(fwdJobDetail, false);
@@ -282,7 +285,8 @@ public class VendorPSS implements PSS {
                 JobDataMap rvsJobDataMap = new JobDataMap();
                 rvsJobDataMap.put("gri", resv.getGlobalReservationId());
                 rvsJobDataMap.put("direction", "reverse");
-                rvsJobDataMap.put("routerType", reverseRouterType);
+                rvsJobDataMap.put("ingressRouterType", reverseRouterType);
+                rvsJobDataMap.put("egressRouterType", forwardRouterType);
                 rvsJobDataMap.put("newStatus", newStatus);
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
                 sched.addJob(rvsJobDetail, false);

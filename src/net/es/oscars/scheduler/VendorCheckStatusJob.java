@@ -39,14 +39,9 @@ public class VendorCheckStatusJob implements Job {
             theList = theList + vlan + " ";
         }
         this.log.debug(theList);
-        // default timeout is for Juniper
-        int timeout = 30000;
-        if (vendor.equals("cisco")) {
-            timeout = 5000;
-        }
         try {
-            this.log.debug("Sleeping for " + timeout + " secs...");
-            Thread.sleep(timeout);
+            this.log.debug("Sleeping for " + 30 + " secs...");
+            Thread.sleep(30000);
         } catch (InterruptedException ex) {
             this.log.error(ex);
         }
@@ -131,7 +126,7 @@ public class VendorCheckStatusJob implements Job {
                     } else {
                         // after 2nd check, path is still up even though we wanted to tear it down
                         this.log.error("Failing gri "+ gri +
-                            "because of error message: " + errMsg);
+                            " because of error message: " + errMsg);
                         this.updateReservation(statusInput, statusResult,
                                                StateEngine.FAILED);
                     }
@@ -199,10 +194,10 @@ public class VendorCheckStatusJob implements Job {
             // so sleep a bit then try again
             if (doSleep) {
                 doSleep = false;
-                // retry the check in 60 secs
+                // retry the check in 45 secs
                 try {
-                    this.log.debug("Sleeping for 60 secs...");
-                    Thread.sleep(60000);
+                    this.log.debug("Sleeping for 45 secs...");
+                    Thread.sleep(45000);
                 } catch (InterruptedException ex) {
                     this.log.error(ex);
                 }

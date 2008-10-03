@@ -43,6 +43,7 @@ public class VendorMaintainStatusJob implements Job {
             String egressNodeId 	= params.get("egressNodeId");
             String ingressVendor 	= params.get("ingressVendor");
             String egressVendor 	= params.get("egressVendor");
+            String description          = params.get("description");
             String operation = params.get("operation");
             String desiredStatus = params.get("desiredStatus");
 
@@ -58,6 +59,7 @@ public class VendorMaintainStatusJob implements Job {
                 }
                 VendorStatusInput statusInput = new VendorStatusInput();
                 statusInput.setGri(gri);
+                statusInput.setDescription(description);
                 statusInput.setOperation(operation);
                 statusInput.setDesiredStatus(desiredStatus);
                 statusInput.setDirection("FORWARD");
@@ -70,6 +72,7 @@ public class VendorMaintainStatusJob implements Job {
                 }
                 statusInput = new VendorStatusInput();
                 statusInput.setGri(gri);
+                statusInput.setDescription(description);
                 statusInput.setOperation(operation);
                 statusInput.setDesiredStatus(desiredStatus);
                 statusInput.setDirection("REVERSE");

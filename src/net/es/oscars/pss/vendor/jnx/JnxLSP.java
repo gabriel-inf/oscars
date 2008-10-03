@@ -111,13 +111,8 @@ public class JnxLSP {
         }
         // Create map for filling in template.
         HashMap<String, String> hm = new HashMap<String, String>();
-        String circuitStr = "oscars_" + resv.getGlobalReservationId();
-        // "." is illegal character in resv-id parameter
-        String circuitName = circuitStr.replaceAll("\\.", "_");
-        // capitalize circuit names for production circuits
-        if (resv.getDescription().contains("PRODUCTION")) {
-            circuitName = circuitName.toUpperCase();
-        }
+        String circuitName = this.getCircuitName(resv.getGlobalReservationId(),
+                                                resv.getDescription());
         hm.put("bandwidth", Long.toString(resv.getBandwidth()));
         if (mplsData != null) {
             if (mplsData.getLspClass() != null) {
@@ -254,13 +249,8 @@ public class JnxLSP {
         }
         // Create map for filling in template.
         HashMap<String, String> hm = new HashMap<String, String>();
-        String circuitStr = "oscars_" + resv.getGlobalReservationId();
-        // "." is illegal character in resv-id parameter
-        String circuitName = circuitStr.replaceAll("\\.", "_");
-        // capitalize circuit names for production circuits
-        if (resv.getDescription().contains("PRODUCTION")) {
-            circuitName = circuitName.toUpperCase();
-        }
+        String circuitName = this.getCircuitName(resv.getGlobalReservationId(),
+                                                resv.getDescription());
         if (layer2Data != null) {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
@@ -446,6 +436,24 @@ public class JnxLSP {
     }
 
     /**
+     * Gets the circuit name given the reservation gri and d
+     *
+     * @param gri string with global reservation id
+     * @param description string with reservation description
+     * @return circuitName string with circuit name
+     */
+    public String getCircuitName(String gri, String description) {
+        String circuitStr = "oscars_" + gri;
+        // "." is illegal character in resv-id parameter
+        String circuitName = circuitStr.replaceAll("\\.", "_");
+        // capitalize circuit names for production circuits
+        if (description.contains("PRODUCTION")) {
+            circuitName = circuitName.toUpperCase();
+        }
+        return circuitName;
+    }
+
+    /**
      * Configure an LSP. Sends the LSP-XML command to the server
      * and sees what happens.
      *
@@ -548,11 +556,11 @@ public class JnxLSP {
             new HashMap<String,JnxStatusResult>();
         Pattern pattern = Pattern.compile(".*\\(vc (\\d{3,4})\\)$");
         for (Iterator i = connectionList.iterator(); i.hasNext();) {
-            String vlanId = null;
             Element conn = (Element) i.next();
             List connectionChildren = conn.getChildren();
+            String vlanId = null;
+            JnxStatusResult statusResult = new JnxStatusResult();
             for (Iterator j = connectionChildren.iterator(); j.hasNext();) {
-                JnxStatusResult statusResult = new JnxStatusResult();
                 Element e = (Element) j.next();
                 if (e.getName().equals("connection-id")) {
                     Matcher m = pattern.matcher(e.getText());
@@ -562,6 +570,7 @@ public class JnxLSP {
                         vlanId = m.group(1);
                     } else {
                         // this should never happen
+                        this.log.error("no vlan id found in connection-id!");
                         continue;
                     }
                 } else if (e.getName().equals("connection-status")) {
@@ -586,9 +595,9 @@ public class JnxLSP {
                         }
                     }
                 }
-                if (vlanId != null) {
-                    currentVlans.put(vlanId, statusResult);
-                }
+            }
+            if (vlanId != null) {
+                currentVlans.put(vlanId, statusResult);
             }
         }
         for (String vlanId: statusInputs.keySet()) {
@@ -598,32 +607,35 @@ public class JnxLSP {
             } else {
                 StringBuilder sb = new StringBuilder();
                 JnxStatusResult currentResult = currentVlans.get(vlanId);
+                VendorStatusInput statusInput = statusInputs.get(vlanId);
                 String connectionStatus = currentResult.getConnectionStatus();
-                String op = statusInputs.get(vlanId).getOperation();
+                String op = statusInput.getOperation();
                 if (op == null) {
                     sb.append("No operation provided to statusLSP");
                 } else if (op.equals("PATH_TEARDOWN")) {
                     sb.append("VLAN still exists with: ");
                     if (currentResult.getConnectionStatus() == null) {
-                        sb.append("unknown status");
+                        sb.append("connection status is null");
                     } else if (this.statuses.containsKey(connectionStatus)) {
                         sb.append(this.statuses.get(connectionStatus));
                     } else {
-                        sb.append("unknown status");
+                        sb.append("unknown status: " + connectionStatus);
                     }
                 } else if (op.equals("PATH_SETUP")) {
                     // this case can only happen on setup, since it will always fail
-                    String label = statusInputs.get(vlanId).getGri();
+                    String gri = statusInput.getGri();
+                    String description = statusInput.getDescription();
+                    String circuitName = this.getCircuitName(gri, description);
                     if ((currentResult.getInterfaceDescription() != null) &&
-                            !currentResult.getInterfaceDescription().equals(label)) {
+                        !currentResult.getInterfaceDescription().equals(circuitName)) {
                         sb.append("VLAN already in use by another reservation");
                     } else if (connectionStatus == null) {
-                        sb.append("unknown error");
+                        sb.append("connection status is null");
                     } else if (!connectionStatus.equals("Up")) {
                         if (this.statuses.containsKey(connectionStatus)) {
                             sb.append(this.statuses.get(connectionStatus));
                         } else {
-                            sb.append("unknown error");
+                            sb.append("unknown status: " + connectionStatus);
                         }
                     } else if ((currentResult.getInterfaceStatus() == null) ||
                              !currentResult.getInterfaceStatus().equals("Up")) {

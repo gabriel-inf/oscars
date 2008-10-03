@@ -16,6 +16,7 @@ public class VendorStatusInput implements Serializable {
     private static final long serialVersionUID = 1;
 
     private String gri;
+    private String description;
     private String operation;
     private String direction;
     private String desiredStatus;
@@ -33,6 +34,18 @@ public class VendorStatusInput implements Serializable {
      */
     public void setGri(String gri) {
         this.gri = gri;
+    }
+
+    /**
+     * @return description a string with the reservation's description 
+     */
+    public String getDescription() { return this.description; }
+
+    /**
+     * @param gri a string with the reservation's description
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
