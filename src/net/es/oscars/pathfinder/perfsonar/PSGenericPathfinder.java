@@ -79,7 +79,7 @@ public class PSGenericPathfinder implements Comparator {
         String[] hLSs = null;
         String[] TSs = null;
 
-        int i = 0;
+        int i = 1;
         ArrayList<String> gLSList = new ArrayList<String>();
         while(this.props.getProperty("global." + i) != null){
             gLSList.add(this.props.getProperty("global." + i));
@@ -91,7 +91,7 @@ public class PSGenericPathfinder implements Comparator {
             gLSs = temp;
         }
 
-        i = 0;
+        i = 1;
         ArrayList<String> hLSList = new ArrayList<String>();
         while(this.props.getProperty("home." + i) != null){
             hLSList.add(this.props.getProperty("home." + i));
@@ -103,7 +103,7 @@ public class PSGenericPathfinder implements Comparator {
             hLSs = temp;
         }
 
-        i = 0;
+        i = 1;
         ArrayList<String> TSList = new ArrayList<String>();
         while(this.props.getProperty("topology." + i) != null){
             TSList.add(this.props.getProperty("topology." + i));
@@ -114,8 +114,6 @@ public class PSGenericPathfinder implements Comparator {
             TSList.toArray(temp);
             TSs = temp;
         }
-
-	System.out.println("In here");
 
         try{
             if(gLSs != null || hLSs != null || TSs != null){
@@ -193,7 +191,7 @@ public class PSGenericPathfinder implements Comparator {
         this.log.debug("updateGraph.start");
 
         PSGraphEdge edge;
-	Set<Node> nodes;
+        Set<Node> nodes;
 
         boolean isOpaque = true;
 
@@ -383,7 +381,7 @@ public class PSGenericPathfinder implements Comparator {
             return;
         }
 
-	this.log.debug("topoXML: "+topoXML);
+        this.log.debug("topoXML: "+topoXML);
 
         TopologyXMLParser parser = new TopologyXMLParser(null);
         Topology topology = parser.parse(topoXML, null);
@@ -392,13 +390,13 @@ public class PSGenericPathfinder implements Comparator {
             return;
         }
 
-	this.log.debug("Parsed topology");
+        this.log.debug("Parsed topology");
 
         List<Domain> domains = topology.getDomains();
         for (Domain dom : domains) {
             String domFQTI = dom.getFQTI();
-	    this.log.debug("Found domain: "+domFQTI);
-            if (this.domains.get(domFQTI) == null) {
+            this.log.debug("Found domain: "+domFQTI);
+            if (domFQTI.equals(id)) {
                 this.domains.put(domFQTI, dom);
                 this.updateGraph(dom);
             }
@@ -421,6 +419,37 @@ public class PSGenericPathfinder implements Comparator {
             if (id.equals(dst)) {
                 break;
             }
+
+            int i;
+
+            this.log.debug("Selected "+id);
+            this.log.debug("Priority("+elements.size()+"/"+costs.size()+"): ");
+            Iterator<String> iter = elements.iterator();
+            i = 0;
+            while(iter.hasNext()) {
+                String key = iter.next();
+                this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                i++;
+            }
+
+            this.log.debug("Costs("+costs.size()+"): ");
+            Iterator<String> iter2 = costs.keySet().iterator();
+            i = 0;
+            while(iter2.hasNext()) {
+                String key = iter2.next();
+                this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                i++;
+            }
+
+            this.log.debug("Domains("+this.domains.size()+"): ");
+            Iterator<String> iter3 = domains.keySet().iterator();
+            i = 0;
+            while(iter3.hasNext()) {
+                String key = iter3.next();
+                this.log.debug(i+"). "+key);
+                i++;
+            }
+
 
             Hashtable<String, String> currURN = URNParser.parseTopoIdent(id);
             if (currURN.get("error") != null) {
@@ -445,8 +474,11 @@ public class PSGenericPathfinder implements Comparator {
 
                 String target = this.graph.getEdgeTarget(e);
 
-                if (costs.get(target) == null || costs.get(target) > cost.longValue() + this.graph.getEdgeWeight(e)) {
-                    costs.put(target, cost.longValue() + this.graph.getEdgeWeight(e));
+                this.log.debug("Found target: "+target);
+
+                if (costs.get(target) == null) {
+                    this.log.debug("Adding '"+target+"' to queue: "+(cost.longValue() + this.graph.getEdgeWeight(e)));
+                    costs.put(target, new Double(cost.longValue() + this.graph.getEdgeWeight(e)));
                     prevMap.put(target, id);
                     elements.remove(target);
                     elements.add(target);

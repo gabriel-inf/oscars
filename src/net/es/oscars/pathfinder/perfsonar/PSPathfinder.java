@@ -158,7 +158,7 @@ public class PSPathfinder extends Pathfinder implements PCE {
 
         this.log.debug("Path Type: " + pathInfo.getPathType());
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
-            System.out.println(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
+            this.log.debug(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
         }
 
         /* Remove strict pathType for backward compatibility */
