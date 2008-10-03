@@ -302,10 +302,12 @@ public class PSPathfinder extends Pathfinder implements PCE {
                             // since we can only use a given link once, remove
                             // it from contention for later searches.
                             this.log.debug("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
-                            pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
+                            //pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
+                            pf.removeEdge(prevHop.getLinkIdRef(), urn);
 
                             this.log.debug("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
-                            pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
+                            //pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
+                            pf.removeEdge(urn, prevHop.getLinkIdRef());
 
                             // add the current hop as long as it's not the same
                             // as the element we just added.
@@ -324,10 +326,12 @@ public class PSPathfinder extends Pathfinder implements PCE {
                                 intraPath.addHop(hop);
 
                                 this.log.debug("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
-                                pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
+                                //pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
+                                pf.removeEdge(prevHop.getLinkIdRef(), urn);
 
                                 this.log.debug("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
-                                pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
+                                //pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
+                                pf.removeEdge(urn, prevHop.getLinkIdRef());
 
                                 prevHop = hop;
                             }
@@ -402,10 +406,12 @@ public class PSPathfinder extends Pathfinder implements PCE {
                                 // remove each link we add from contention for
                                 // future searches
                                 this.log.debug("Removing edge between "+prevHop.getLinkIdRef()+" and "+urn);
-                                pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
+                                //pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
+                                pf.removeEdge(prevHop.getLinkIdRef(), urn);
 
                                 this.log.debug("Removing edge between "+urn+" and "+prevHop.getLinkIdRef());
-                                pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
+                                //pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
+                                pf.removeEdge(urn, prevHop.getLinkIdRef());
 
                                 prevHop = hop;
                             }
