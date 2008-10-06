@@ -57,20 +57,15 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
  *
  * @author Aaron Brown (aaron@internet2.edu)
  */
-public class PSGenericPathfinder implements Comparator {
+public class PSGenericPathfinder extends GenericPathfinder {
     private Logger log;
     private TSLookupClient TSClient;
-    private HashMap<String, Domain> domains;
-    private DefaultDirectedWeightedGraph<String, PSGraphEdge> graph;
-    private Map<String, Double> costs;
     private Properties props;
    
     private static final String KNOWN_TOPOLOGY_TYPE = "http://ogf.org/schema/network/topology/ctrlPlane/20080828/";
 
     public PSGenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
-        this.domains = new HashMap<String, Domain>();
-        this.graph = new DefaultDirectedWeightedGraph<String, PSGraphEdge>(PSGraphEdge.class);
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("lookup", true);
@@ -134,240 +129,10 @@ public class PSGenericPathfinder implements Comparator {
         }
     }
 
-    public void addDomain(Domain domain) {
-        if (this.domains.get(domain.getFQTI()) != null)
-            return;
-
-        this.domains.put(domain.getFQTI(), domain);
-        this.updateGraph(domain);
-    }
-
-    public void removeEdge(String src, String dst) {
-        if (this.graph.containsEdge(src, dst)) {
-            this.graph.removeEdge(src, dst);
-        }
-    }
-
-    public double getEdgeBandwidth(String src, String dst) {
-        PSGraphEdge e = this.graph.getEdge(src, dst);
-        if (e == null) {
-            return 0.0;
-        }
-
-        return e.getBandwidth();
-    }
-
-    public int setEdgeBandwidth(String src, String dst, double bandwidth) {
-        PSGraphEdge e = this.graph.getEdge(src, dst);
-        if (e == null) {
-            return -1;
-        }
-
-        e.setBandwidth(bandwidth);
-
-        return 0;
-    }
-
-    public double getEdgeWeight(String src, String dst) {
-        PSGraphEdge e = this.graph.getEdge(src, dst);
-        if (e == null) {
-            return 0;
-        }
-        return this.graph.getEdgeWeight(e);
-    }
-
-    public int setEdgeWeight(String src, String dst, double weight) {
-        PSGraphEdge e = this.graph.getEdge(src, dst);
-        if (e == null) {
-            return -1;
-        }
-
-        this.graph.setEdgeWeight(e, weight);
-
-        return 0;
-    }
-
-    private void updateGraph(Domain domain) {
-        this.log.debug("updateGraph.start");
-
-        PSGraphEdge edge;
-        Set<Node> nodes;
-
-        boolean isOpaque = true;
-
-        // This won't link together the remoteLinkIds and the port, so we do a
-        // two phase approach. First, go through and add all the ports to the
-        // graph, and then do a subsequent pass to link the ports together.
-        String domFQTI = domain.getFQTI();
-
-        // Calculate if it's an opaque topology, i.e. a domain whose internal
-        // links have been removed. This allows one to keep topology secret
-        // while still permitting basic pathfinding to occur.
-        nodes = domain.getNodes();
-        for (Node node : nodes) {
-
-            Set<Port> ports = node.getPorts();
-            for (Port port : ports) {
-
-                Set<Link> links = port.getLinks();
-                for (Link link : links) {
-                    if (link.getRemoteLink() == null)
-                        continue;
-
-                    String remLinkFQTI = link.getRemoteLink().getFQTI();
-
-                    Hashtable<String, String> currURN = URNParser.parseTopoIdent(remLinkFQTI);
-                    if (currURN.get("error") != null) {
-                        this.log.error("Parsing failed "+currURN.get("error"));
-                    } else if (currURN.get("domainFQID").equals(domFQTI)) {
-                        // we found an internal link
-                        isOpaque = false;
-                        break;
-                    }
-                }
-
-                if (isOpaque == false)
-                    break;
-            }
-
-            if (isOpaque == false)
-                break;
-        }
- 
-        // we need to add the domains so that searches can be done like
-        // "how do i get from domain A to domain B".
-        this.log.debug("Adding vertex "+domFQTI);
-        this.graph.addVertex(domFQTI);
-
-        nodes = domain.getNodes();
-        for (Node node : nodes) {
-            String nodeFQTI = node.getFQTI();
-
-            this.log.debug("Adding vertex "+nodeFQTI);
-            this.graph.addVertex(nodeFQTI);
-
-            // The edges will only be one way though, node -> domain. If
-            // they went both ways, a valid path could be found by finding
-            // a path to one node in the domain and finding a path from a
-            // different node in the domain, even though there was no path
-            // between the two nodes.
-            edge = this.graph.addEdge(nodeFQTI, domFQTI);
-            if (edge != null) {
-                this.graph.setEdgeWeight(edge, 0.1d);
-                edge.setBandwidth(Double.MAX_VALUE);
-            }
-
-            // If it's an opaque instance, we won't know any internal links, so
-            // we have to assume that if we can get to a domain, we can get out
-            // of it via an external link.
-            if (isOpaque) {
-                edge = this.graph.addEdge(domFQTI, nodeFQTI);
-                if (edge != null) {
-                    this.graph.setEdgeWeight(edge, 0.1d);
-                    edge.setBandwidth(Double.MAX_VALUE);
-                }
-            }
-
-            Set<Port> ports = node.getPorts();
-            for (Port port : ports) {
-                String portFQTI = port.getFQTI();
-
-                Long capacity = port.getMaximumReservableCapacity();
-                if (capacity == 0L) {
-                    capacity = port.getCapacity();
-                }
-
-                if (capacity == 0L)
-                    continue;
-
-                this.log.debug("Adding vertex "+portFQTI);
-                this.graph.addVertex(portFQTI);
-
-                edge = this.graph.addEdge(nodeFQTI, portFQTI);
-                if (edge != null) {
-                    this.graph.setEdgeWeight(edge, 0.1d);
-                    edge.setBandwidth(capacity);
-                }
-
-                edge = this.graph.addEdge(portFQTI, nodeFQTI);
-                if (edge != null) {
-                    this.graph.setEdgeWeight(edge, 0.1d);
-                    edge.setBandwidth(capacity);
-                }
-
-                Set<Link> links = port.getLinks();
-                for (Link link : links) {
-                    String linkFQTI = link.getFQTI();
-
-                    this.log.debug("Adding vertex "+linkFQTI);
-                    this.graph.addVertex(linkFQTI);
-
-                    edge = this.graph.addEdge(linkFQTI, portFQTI);
-                    if (edge != null) {
-                        this.graph.setEdgeWeight(edge, 0.1d);
-                        edge.setBandwidth(Double.MAX_VALUE);
-                    }
-
-                    edge = this.graph.addEdge(portFQTI, linkFQTI);
-                    if (edge != null) {
-                        this.graph.setEdgeWeight(edge, 0.1d);
-                        edge.setBandwidth(Double.MAX_VALUE);
-                    }
-                }
-            }
-        }
-
-        nodes = domain.getNodes();
-        for (Node node : nodes) {
-
-            Set<Port> ports = node.getPorts();
-            for (Port port : ports) {
-                String portFQTI = port.getFQTI();
-
-                Set<Link> links = port.getLinks();
-                for (Link link : links) {
-                    if (link.getRemoteLink() == null)
-                        continue;
-
-                    String linkFQTI = link.getFQTI();
-                    String remLinkFQTI = link.getRemoteLink().getFQTI();
-
-                    if (graph.containsVertex(linkFQTI) == false)
-                        continue;
-
-                    // add empty links so that we know when we'll need to
-                    // lookup the next domain.
-                    if (graph.containsVertex(remLinkFQTI) == false) {
-                        this.graph.addVertex(remLinkFQTI);
-                    }
-
-                    Double edgeWeight = 10d;
-                    if (link.getTrafficEngineeringMetric() != null) {
-                        edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
-                    }
-
-                    this.log.debug("Adding edge "+linkFQTI+"->"+remLinkFQTI);
-                    edge = this.graph.addEdge(linkFQTI, remLinkFQTI);
-                    if (edge != null) {
-                        edge.setBandwidth(Double.MAX_VALUE);
-                        this.graph.setEdgeWeight(edge, edgeWeight);
-                    }
-                }
-            }
-        }
-
-        this.log.debug("updateGraph.finish");
-    }
-
-    double parseTEM(String trafficEngineeringMetric) {
-        double weight = new Double(trafficEngineeringMetric).doubleValue();
-        return weight;
-    }
-
-    private void lookupDomain(String id) {
+    protected Domain lookupDomain(String id) {
         Element topoXML;
 
-        this.log.debug("Looking up domain: "+id);
+        System.out.println("Looking up domain: "+id);
 
         try {
             topoXML = this.TSClient.getDomain(id, KNOWN_TOPOLOGY_TYPE);
@@ -378,138 +143,29 @@ public class PSGenericPathfinder implements Comparator {
 
         if (topoXML == null) {
             this.log.error("Couldn't get find domain "+id+" in topology service");
-            return;
+            return null;
         }
 
-        this.log.debug("topoXML: "+topoXML);
+        System.out.println("topoXML: "+topoXML);
 
         TopologyXMLParser parser = new TopologyXMLParser(null);
         Topology topology = parser.parse(topoXML, null);
         if (topology == null) {
             this.log.error("Couldn't parse topology");
-            return;
+            return null;
         }
 
-        this.log.debug("Parsed topology");
+        System.out.println("Parsed topology");
 
         List<Domain> domains = topology.getDomains();
         for (Domain dom : domains) {
             String domFQTI = dom.getFQTI();
-            this.log.debug("Found domain: "+domFQTI);
+
             if (domFQTI.equals(id)) {
-                this.domains.put(domFQTI, dom);
-                this.updateGraph(dom);
-            }
-        }
-    }
-
-    public List<String> lookupPath(String src, String dst, double bandwidth) throws PathfinderException {
-        PriorityQueue<String> elements = new PriorityQueue<String>(this.graph.vertexSet().size() + 1, this);
-        Map<String, String> prevMap = new HashMap<String, String>();
-        this.costs = new HashMap<String, Double>(); // reset the costs
-
-        this.log.info("Looking up path between "+src+" and "+dst);
-
-        String id;
-
-        this.costs.put(src, 0.0);
-        elements.add(src);
-
-        while ((id = elements.poll()) != null) {
-            if (id.equals(dst)) {
-                break;
-            }
-
-            int i;
-
-            this.log.debug("Selected "+id);
-            this.log.debug("Priority("+elements.size()+"/"+costs.size()+"): ");
-            Iterator<String> iter = elements.iterator();
-            i = 0;
-            while(iter.hasNext()) {
-                String key = iter.next();
-                this.log.debug(i+"). "+key+" -- "+costs.get(key));
-                i++;
-            }
-
-            this.log.debug("Costs("+costs.size()+"): ");
-            Iterator<String> iter2 = costs.keySet().iterator();
-            i = 0;
-            while(iter2.hasNext()) {
-                String key = iter2.next();
-                this.log.debug(i+"). "+key+" -- "+costs.get(key));
-                i++;
-            }
-
-            this.log.debug("Domains("+this.domains.size()+"): ");
-            Iterator<String> iter3 = domains.keySet().iterator();
-            i = 0;
-            while(iter3.hasNext()) {
-                String key = iter3.next();
-                this.log.debug(i+"). "+key);
-                i++;
-            }
-
-
-            Hashtable<String, String> currURN = URNParser.parseTopoIdent(id);
-            if (currURN.get("error") != null) {
-                this.log.error("Parsing failed "+currURN.get("error"));
-                throw new PathfinderException("Couldn't parse identifier: "+id);
-            }
-
-            String currDomain = currURN.get("domainFQID");
-            if (this.domains.get(currDomain) == null) {
-                this.lookupDomain(currDomain);
-            }
-
-            if (this.graph.containsVertex(id) == false) {
-                this.log.error("Couldn't find "+id);
-            }
-
-            Double cost = costs.get(id);
-
-            for (PSGraphEdge e : this.graph.edgesOf(id)) {
-                if (e.getBandwidth() < bandwidth)
-                    continue;
-
-                String target = this.graph.getEdgeTarget(e);
-
-                this.log.debug("Found target: "+target);
-
-                if (costs.get(target) == null) {
-                    this.log.debug("Adding '"+target+"' to queue: "+(cost.longValue() + this.graph.getEdgeWeight(e)));
-                    costs.put(target, new Double(cost.longValue() + this.graph.getEdgeWeight(e)));
-                    prevMap.put(target, id);
-                    elements.remove(target);
-                    elements.add(target);
-                }
+                return dom;
             }
         }
 
-        if (prevMap.get(dst) == null) {
-            return null;
-        }
-
-        List<String> retIds = new ArrayList<String>();
-        retIds.add(0, dst);
-        this.log.debug("Adding(dst): "+dst);
-        id = dst;
-        while((id = prevMap.get(id)) != null) {
-            this.log.debug("Adding: "+id);
-            retIds.add(0, id);
-        }
-
-        return retIds;
-    }
-
-    public int compare(Object left, Object right) {
-        String left_str = (String) left;
-        String right_str = (String) right;
-        int res = (int) (this.costs.get(left) - this.costs.get(right));
-      
-        if (res == 0)
-            res = left_str.compareTo(right_str); 
-
-        return res;
+        return null;
     }
 }
