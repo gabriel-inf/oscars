@@ -60,54 +60,85 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 public class PSGenericPathfinder extends GenericPathfinder {
     private Logger log;
     private TSLookupClient TSClient;
-    private Properties props;
    
     private static final String KNOWN_TOPOLOGY_TYPE = "http://ogf.org/schema/network/topology/ctrlPlane/20080828/";
 
     public PSGenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
 
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("lookup", true);
-        String hints = this.props.getProperty("hints");
         String[] gLSs = null;
         String[] hLSs = null;
         String[] TSs = null;
+        Boolean setUseGlobalLS = null;
+        String hints = null;
 
-        int i = 1;
-        ArrayList<String> gLSList = new ArrayList<String>();
-        while(this.props.getProperty("global." + i) != null){
-            gLSList.add(this.props.getProperty("global." + i));
-            i++;
-        }
-        if(!gLSList.isEmpty()){
-            String [] temp = new String[1];
-            gLSList.toArray(temp);
-            gLSs = temp;
+        String[] sections = { "topology", "lookup" };
+
+        for ( String section : sections) {
+
+		System.out.println("Handling section: "+section);
+
+                PropHandler propHandler = new PropHandler("oscars.properties");
+                Properties props = propHandler.getPropertyGroup(section, true);
+
+                if (hints == null) {
+                    hints = props.getProperty("hints");
+                }
+
+                int i;
+
+                if (gLSs == null) {
+                    i = 1;
+                    ArrayList<String> gLSList = new ArrayList<String>();
+                    while(props.getProperty("global." + i) != null){
+                        gLSList.add(props.getProperty("global." + i));
+                        i++;
+                    }
+                    if(!gLSList.isEmpty()){
+                        String [] temp = new String[1];
+                        gLSList.toArray(temp);
+                        gLSs = temp;
+                    }
+                }
+
+                if (hLSs == null) {
+                    i = 1;
+                    ArrayList<String> hLSList = new ArrayList<String>();
+                    while(props.getProperty("home." + i) != null){
+                            hLSList.add(props.getProperty("home." + i));
+                            i++;
+                    }
+                    if(!hLSList.isEmpty()){
+                            String [] temp = new String[1];
+                            hLSList.toArray(temp);
+                            hLSs = temp;
+                    }
+                }
+
+                if (TSs == null) {
+                    i = 1;
+                    ArrayList<String> TSList = new ArrayList<String>();
+                    while(props.getProperty("topology." + i) != null){
+                            TSList.add(props.getProperty("topology." + i));
+                            i++;
+                    }
+                    if(!TSList.isEmpty()){
+                            String [] temp = new String[1];
+                            TSList.toArray(temp);
+                            TSs = temp;
+                    }
+                }
+
+                if (setUseGlobalLS == null) {
+                        String useGlobals = props.getProperty("useGlobal");
+                        if(useGlobals != null) {
+                                setUseGlobalLS = ("1".equals(useGlobals) || "true".equals(useGlobals));
+                        }
+                }
         }
 
-        i = 1;
-        ArrayList<String> hLSList = new ArrayList<String>();
-        while(this.props.getProperty("home." + i) != null){
-            hLSList.add(this.props.getProperty("home." + i));
-            i++;
-        }
-        if(!hLSList.isEmpty()){
-            String [] temp = new String[1];
-            hLSList.toArray(temp);
-            hLSs = temp;
-        }
-
-        i = 1;
-        ArrayList<String> TSList = new ArrayList<String>();
-        while(this.props.getProperty("topology." + i) != null){
-            TSList.add(this.props.getProperty("topology." + i));
-            i++;
-        }
-        if(!TSList.isEmpty()){
-            String [] temp = new String[1];
-            TSList.toArray(temp);
-            TSs = temp;
+        if (setUseGlobalLS == null) {
+            setUseGlobalLS = false;
         }
 
         try{
@@ -123,10 +154,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
             this.log.error(e.getMessage());
         }
 
-        String useGlobals = this.props.getProperty("useGlobal");
-        if(useGlobals != null){
-            this.TSClient.setUseGlobalLS(("1".equals(useGlobals) || "true".equals(useGlobals)));
-        }
+        this.TSClient.setUseGlobalLS(setUseGlobalLS);
     }
 
     protected Domain lookupDomain(String id) {

@@ -1,19 +1,15 @@
 package net.es.oscars.pathfinder.perfsonar;
 
 import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.Iterator;
 import java.util.ArrayList;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.RouteElem;
-import net.es.oscars.bss.topology.DomainDAO;
-import net.es.oscars.bss.topology.Domain;
-import net.es.oscars.bss.topology.Node;
-import net.es.oscars.bss.topology.Port;
-import net.es.oscars.bss.topology.Link;
-import net.es.oscars.bss.topology.TopologyUtil;
+import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.wsdlTypes.*;
@@ -193,6 +189,39 @@ public class PSPathfinder extends Pathfinder implements PCE {
         }
 
         pf.addDomain(this.localDomain);
+
+        // add in the overlapping reservations to the path.
+
+        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+        Long startTime = reservation.getStartTime();
+        Long endTime = reservation.getEndTime();
+
+        ArrayList<Reservation> reservations = new ArrayList<Reservation>(resvDAO.overlappingReservations(startTime, endTime));
+        for (Reservation resv : reservations) {
+            if (resv.getGlobalReservationId().equals(reservation.getGlobalReservationId())) {
+                continue;
+            }
+
+            this.log.debug("Found overlapping reservation: "+resv.getGlobalReservationId());
+
+            Double bw = new Double(resv.getBandwidth());
+            Path path = resv.getPath();
+            PathElem pathElem = path.getPathElem();
+            while (pathElem != null) {
+                Link link = pathElem.getLink();
+                Port port = link.getPort();
+                if (pf.getElementBandwidth(port.getFQTI()) > 0) {
+                    double newBw = pf.getElementBandwidth(port.getFQTI()) - bw.doubleValue();
+
+                    if (newBw < 0) {
+                        newBw = 0;
+                    }
+
+                    pf.setElementBandwidth(port.getFQTI(), newBw);
+                }
+                pathElem = pathElem.getNextElem();
+            }
+        }
 
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
 

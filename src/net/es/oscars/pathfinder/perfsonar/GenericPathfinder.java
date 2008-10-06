@@ -198,6 +198,8 @@ public class GenericPathfinder implements Comparator {
                 if (capacity == 0L)
                     continue;
 
+                this.elementBandwidths.put(portFQTI, new Double(capacity));
+
                 System.out.println("Adding vertex "+portFQTI);
                 this.graph.addVertex(portFQTI);
 
