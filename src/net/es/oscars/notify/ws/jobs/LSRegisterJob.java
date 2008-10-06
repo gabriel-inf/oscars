@@ -1,19 +1,20 @@
-package net.es.oscars.scheduler;
+package net.es.oscars.notify.ws.jobs;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.topology.Domain;
-import net.es.oscars.bss.topology.DomainDAO;
-import net.es.oscars.bss.topology.DomainService;
-import net.es.oscars.bss.topology.DomainServiceDAO;
-import net.es.oscars.interdomain.ServiceManager;
+import net.es.oscars.notify.ws.jobs.ServiceManager;
 import net.es.oscars.lookup.LookupException;
 import net.es.oscars.lookup.PSLookupClient;
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.notify.db.ExternalService;
+import net.es.oscars.notify.db.ExternalServiceDAO;
+import net.es.oscars.notify.db.Publisher;
+import net.es.oscars.notify.db.PublisherDAO;
+import net.es.oscars.notify.ws.OSCARSNotifyCore;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -24,17 +25,17 @@ import org.quartz.JobExecutionException;
 
 public class LSRegisterJob  implements Job{
 	private Logger log;
-	private OSCARSCore core;
+	private OSCARSNotifyCore core;
 	private long RENEW_TIME = 3600;//60 minutes
 	
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		 this.log = Logger.getLogger(this.getClass());
 	     String jobName = context.getJobDetail().getFullName();
 	     this.log.info("LSRegisterJob.start name:"+jobName);
-	     this.core = OSCARSCore.getInstance();
+	     this.core = OSCARSNotifyCore.getInstance();
 	     ServiceManager serviceMgr = this.core.getServiceManager();
 	     JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-	     String idcURL = dataMap.getString("idcURL");
+	     String nbURL = dataMap.getString("nbURL");
 	     PSLookupClient client;
 	     try {
 	    	 client = new PSLookupClient();
@@ -42,14 +43,9 @@ public class LSRegisterJob  implements Job{
 	    	 this.log.error(e1.getMessage());
 	    	 return;
 	     }
-	     Session bss = this.core.getBssSession();
+	     Session notify = this.core.getNotifySession();
 	     PropHandler propHandler = new PropHandler("oscars.properties");
 	     Properties props = propHandler.getPropertyGroup("external.service.lsRegister", true);
-	     Properties nbProps = propHandler.getPropertyGroup("notifybroker", true);
-	     String nbURL = nbProps.getProperty("url");
-	     if(nbURL == null){
-	    	 nbURL = idcURL + "Notify";
-	     }
 	     if(props.getProperty("renewTime") != null){
 	    	 try{
 	    		 RENEW_TIME = Long.parseLong(props.getProperty("renewTime"));
@@ -57,20 +53,14 @@ public class LSRegisterJob  implements Job{
 	     }
 	     
 	     try {
-			bss.beginTransaction();
+	    	notify.beginTransaction();
 			//Get local domain
-			DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
-			DomainServiceDAO dsDAO = new DomainServiceDAO(this.core.getBssDbName());
-			Domain localDomain = domainDAO.getLocalDomain();
-			if(localDomain == null){
-				this.log.debug("Please specify the local domain");
-				return;
-			}
-			String domainId = "urn:ogf:network:domain=" + localDomain.getTopologyIdent();
+	    	PublisherDAO pubDAO = new PublisherDAO(this.core.getNotifyDbName());
+			ExternalServiceDAO extDAO = new ExternalServiceDAO(this.core.getNotifyDbName());
+			List<ExternalService> hLSs = extDAO.getByType("LS");
 			HashMap<String,String> serviceKeys = new HashMap<String,String>();
 			HashMap<String,String> nodeKeys = new HashMap<String,String>();
-			List<DomainService> hLSs = dsDAO.getServices(localDomain, "LS");
-			for(DomainService hLS : hLSs){
+			for(ExternalService hLS : hLSs){
 				String url = hLS.getUrl();
 				String keyStr = hLS.getServiceKey();
 				if(keyStr == null){
@@ -82,11 +72,16 @@ public class LSRegisterJob  implements Job{
 					nodeKeys.put(url, keyPair[1]);
 				}
 			}
-			HashMap<String,String> keys = client.registerIDC(idcURL, domainId, nbURL, serviceKeys, nodeKeys);
+			List<Publisher> pubs = pubDAO.queryActive();
+			ArrayList<String> pubURLs = new ArrayList<String>();
+			for(Publisher pub : pubs){
+				pubURLs.add(pub.getUrl());
+			}
+			HashMap<String,String> keys =client.registerNB(nbURL, pubURLs, serviceKeys, nodeKeys);
 			this.saveKeys(keys);
-			bss.getTransaction().commit();
+			notify.getTransaction().commit();
 	     } catch (Exception e) {
-	    	 bss.getTransaction().rollback();
+	    	 notify.getTransaction().rollback();
 	    	 e.printStackTrace();
 	     }finally{
 	    	//Schedule next job
@@ -97,21 +92,18 @@ public class LSRegisterJob  implements Job{
 	}
 	
 	private void saveKeys(HashMap<String, String> keys) {
-    	//NOTE: it won't save the node key if this is the first time saving
-    	OSCARSCore core = OSCARSCore.getInstance();
-    	DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
-    	DomainServiceDAO dsDAO = new DomainServiceDAO(core.getBssDbName());
-    	Domain localDomain = domainDAO.getLocalDomain();
-		for(String url : keys.keySet()){
-			DomainService ds = dsDAO.queryByParam("url", url);
-			if(ds == null || !(ds.getType().equals("LS") && ds.getDomain().equals(localDomain))){
-				ds = new DomainService();
-				ds.setDomain(domainDAO.getLocalDomain());
-				ds.setType("LS");
-				ds.setUrl(url);
-			}
-			ds.setServiceKey(keys.get(url));
-			dsDAO.update(ds);
-		}
-	}
+     	OSCARSNotifyCore core = OSCARSNotifyCore.getInstance();
+     	ExternalServiceDAO extDAO = new ExternalServiceDAO(core.getNotifyDbName());
+ 		for(String url : keys.keySet()){
+ 			ExternalService ext = extDAO.queryByParam("url", url);
+ 			if(ext == null || !(ext.getType().equals("LS"))){
+ 				ext = new ExternalService();
+ 				ext.setType("LS");
+ 				ext.setUrl(url);
+ 			}
+ 			ext.setServiceKey(keys.get(url));
+ 			extDAO.update(ext);
+ 		}
+ 	}
+
 }

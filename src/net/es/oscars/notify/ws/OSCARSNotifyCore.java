@@ -9,6 +9,7 @@ import org.quartz.impl.*;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.notify.ws.jobs.ServiceManager;
 import net.es.oscars.notify.ws.policy.*;
 
 /**
@@ -22,6 +23,7 @@ public class OSCARSNotifyCore{
     private Logger log;
     private Scheduler scheduler;
     private SubscriptionAdapter sa;
+    private ServiceManager serviceManager = null;
     private UserManager userManager = null;
     private ArrayList<NotifyPEP> notifyPEPs;
 
@@ -51,6 +53,7 @@ public class OSCARSNotifyCore{
         instance.initScheduler();
         instance.initUserManager();
         instance.initNotifyPEPs();
+        instance.initServiceManager();
         instance.initSubscriptionAdapter();
 
         return instance;
@@ -100,7 +103,13 @@ public class OSCARSNotifyCore{
         }
         this.log.debug("initScheduler.end");
     }
-
+    
+    public void initServiceManager() {
+        this.log.debug("initServiceManager.start");
+        this.serviceManager = new ServiceManager();
+        this.log.debug("initServiceManager.end");
+    }
+    
     public void initSubscriptionAdapter(){
         this.log.debug("initSubscriptionAdapter.start");
         this.sa = new SubscriptionAdapter(notifyDbName);
@@ -140,7 +149,14 @@ public class OSCARSNotifyCore{
         return notify;
     }
     
-    public Session getBssSession() {
+    /**
+	 * @return the notifyDbName
+	 */
+	public String getNotifyDbName() {
+		return notifyDbName;
+	}
+
+	public Session getBssSession() {
         Session bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
         if (bss == null || !bss.isOpen()) {
             this.log.debug("opening BSS session");
@@ -173,7 +189,21 @@ public class OSCARSNotifyCore{
         return this.sa;
     }
 
-    public UserManager getUserManager(){
+    /**
+	 * @return the serviceManager
+	 */
+	public ServiceManager getServiceManager() {
+		return serviceManager;
+	}
+
+	/**
+	 * @param serviceManager the serviceManager to set
+	 */
+	public void setServiceManager(ServiceManager serviceManager) {
+		this.serviceManager = serviceManager;
+	}
+
+	public UserManager getUserManager(){
         return this.userManager;
     }
 }

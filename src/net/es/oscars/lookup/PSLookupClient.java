@@ -13,10 +13,6 @@ import edu.internet2.perfsonar.PSException;
 import edu.internet2.perfsonar.ServiceRegistration;
 import edu.internet2.perfsonar.dcn.*;
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.topology.Domain;
-import net.es.oscars.bss.topology.DomainDAO;
-import net.es.oscars.bss.topology.DomainService;
-import net.es.oscars.bss.topology.DomainServiceDAO;
 import net.es.oscars.notify.WSObserver;
 import net.es.oscars.oscars.OSCARSCore;
 
@@ -122,7 +118,7 @@ public class PSLookupClient {
      * @param nodeKeys 
      * @param serviceKeys 
      */
-    public void registerIDC(String url, String domainId, String nbURL, HashMap<String, String> serviceKeys, HashMap<String, String> nodeKeys) throws LookupException {
+    public HashMap<String, String> registerIDC(String url, String domainId, String nbURL, HashMap<String, String> serviceKeys, HashMap<String, String> nodeKeys) throws LookupException {
         if(this.client == null){
             this.log.error("Cannot use perfSONAR lookup client " +
                 "because missing required properties. Please set " +
@@ -130,21 +126,25 @@ public class PSLookupClient {
             throw new LookupException("Cannot register IDC"+ 
                     " because lookup client not intialized");
         }
+        HashMap<String, String> keys = this.saveKeys(serviceKeys, nodeKeys);
         try{
+        	
         	URL urlObj = new URL(url);
         	String hostname = urlObj.getHost();
         	String[] ids = new String[1];
         	//Only register new node if doesn't exist or if exists and you have a lsKey
         	Element node = this.client.lookupNode(hostname);
         	if(node == null || (node != null && (!nodeKeys.isEmpty()))){
-        		nodeKeys = this.registerNode(hostname, nodeKeys, ids);
-        		this.saveKeys(serviceKeys, nodeKeys);
+        		nodeKeys = this.registerNode(hostname, nodeKeys, ids, true);
+        		keys = this.saveKeys(serviceKeys, nodeKeys);
+        	}else{
+        		this.registerNode(hostname, nodeKeys, ids, false);
         	}
         	
         	//Only register IDC if doesn't exist or exists and have a key
         	String existingIDCUrl = this.lookup(domainId);
-        	if(existingIDCUrl != null && nodeKeys.isEmpty() && existingIDCUrl.equals(url)){
-        		return;
+        	if(existingIDCUrl != null && serviceKeys.isEmpty() && existingIDCUrl.equals(url)){
+        		return keys;
         	}
         	
             String serviceName = props.getProperty("reg.idc.name");
@@ -170,7 +170,7 @@ public class PSLookupClient {
             	this.loadNotifyMessage(reg, urls);
             	if(nbURL != null){
                 	String[] subscribers = {nbURL};
-                	reg.setSubscribers(subscribers);
+                	reg.setPublisherRel(subscribers);
                 }
             	HashMap<String,String[]> topicMap = new HashMap<String,String[]>();
             	int tc = topics.keySet().size();
@@ -179,39 +179,93 @@ public class PSLookupClient {
             	reg.setOptionalParameters(topicMap);
             }
             serviceKeys = this.client.registerService(reg, serviceKeys);
-            this.saveKeys(serviceKeys, nodeKeys);
+            keys =  this.saveKeys(serviceKeys, nodeKeys);
         }catch(Exception e){
         	e.printStackTrace();
-            throw new LookupException(e.getMessage());
+            this.log.error(e.getMessage());
         }
+        
+        return keys;
     }
     
-    private void saveKeys(HashMap<String, String> serviceKeys,
-			HashMap<String, String> nodeKeys) {
-    	//NOTE: it won't save the node key if this is the first time saving
-    	OSCARSCore core = OSCARSCore.getInstance();
-    	DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
-    	DomainServiceDAO dsDAO = new DomainServiceDAO(core.getBssDbName());
-    	Domain localDomain = domainDAO.getLocalDomain();
-		for(String url : serviceKeys.keySet()){
-			DomainService ds = dsDAO.queryByParam("url", url);
-			if(ds == null || !(ds.getType().equals("LS") && ds.getDomain().equals(localDomain))){
-				ds = new DomainService();
-				ds.setDomain(domainDAO.getLocalDomain());
-				ds.setType("LS");
-				ds.setUrl(url);
-			}
-			String key = serviceKeys.get(url);
-			if(nodeKeys.containsKey(url)){
-				key += ";" + nodeKeys.get(url);
-			}
-			ds.setServiceKey(key);
-			dsDAO.update(ds);
-		}
-		
-	}
+    /**
+     * Registers the local IDC with the lookup service
+     * 
+     * @param url the URL of the service to register
+     * @param nodeKeys 
+     * @param serviceKeys 
+     */
+    public HashMap<String, String> registerNB(String nbURL, List<String> pubs, HashMap<String, String> serviceKeys, HashMap<String, String> nodeKeys) throws LookupException {
+        if(this.client == null){
+            this.log.error("Cannot use perfSONAR lookup client " +
+                "because missing required properties. Please set " +
+                "lookup.hints, lookup.global.1 or lookup.home.1 in oscars.properties");
+            throw new LookupException("Cannot register IDC"+ 
+                    " because lookup client not intialized");
+        }
+        HashMap<String, String> keys = this.saveKeys(serviceKeys, nodeKeys);
+        try{
+        	URL urlObj = new URL(nbURL);
+        	String hostname = urlObj.getHost();
+        	String[] ids = new String[1];
+        	//Only register new node if doesn't exist or if exists and you have a lsKey
+        	Element node = this.client.lookupNode(hostname);
+        	if(node == null || (node != null && (!nodeKeys.isEmpty()))){
+        		nodeKeys = this.registerNode(hostname, nodeKeys, ids, true);
+        		keys = this.saveKeys(serviceKeys, nodeKeys);
+        	}else{
+        		this.registerNode(hostname, nodeKeys, ids, false);
+        	}
+        	
+        	//Only register IDC if doesn't exist or exists and have a key
+        	Element existingNB = this.client.lookupNB(nbURL);
+        	if(existingNB != null && serviceKeys.isEmpty()){
+        		return keys;
+        	}
+        	
+            String serviceName = props.getProperty("reg.nb.name");
+            if(serviceName == null){
+            	serviceName = nbURL;
+            }
+            
+            String serviceDescr = props.getProperty("reg.idc.description");
+            if(serviceDescr == null){
+            	serviceDescr = nbURL + "'s NB";
+            }
+            
+            ServiceRegistration reg = new ServiceRegistration(serviceName, ServiceRegistration.NB_TYPE);
+            reg.setDescription(serviceDescr);
+            reg.setNode(ids[0]);
+            
+            if(pubs != null && (!pubs.isEmpty())){
+            	reg.setSubscriberRel(pubs.toArray(new String[pubs.size()]));
+            }
+            
+            String[] urls = {nbURL};
+            this.loadWSNMessages(reg, urls);
+            this.loadWSNBMessages(reg, urls);
+            serviceKeys = this.client.registerService(reg, serviceKeys);
+            keys = this.saveKeys(serviceKeys, nodeKeys);
+        }catch(Exception e){
+        	e.printStackTrace();
+            this.log.error(e.getMessage());
+        }
+        return keys;
+    }
+    
+    private HashMap<String,String> saveKeys(HashMap<String,String> serviceKeys, HashMap<String,String> nodeKeys){
+    	HashMap<String,String> keys = new HashMap<String,String>();
+    	for(String url : serviceKeys.keySet()){
+    		String key = serviceKeys.get(url);
+    		if(nodeKeys.containsKey(url)){
+    			key += ";" + nodeKeys.get(url);
+    		}
+    		keys.put(url, key);
+    	}
+    	return keys;
+    }
 
-	private HashMap<String,String> registerNode(String hostname, HashMap<String, String> nodeKeys, String[] ids) throws UnknownHostException, LookupException, PSException{
+	private HashMap<String,String> registerNode(String hostname, HashMap<String, String> nodeKeys, String[] ids, boolean submit) throws UnknownHostException, LookupException, PSException{
     	String id = "";
     	InetAddress[] nodeIPs = InetAddress.getAllByName(hostname);
     	String name = null;
@@ -238,7 +292,7 @@ public class PSLookupClient {
     		id += ":node=" + name.substring(0, dotIndex);
     	}
     	ids[0] = id;
-    	
+    	if(!submit){ return null; }
     	NodeRegistration nodeReg = new NodeRegistration(id);
     	if(name != null){
     		nodeReg.setName(name, "dns");
@@ -284,6 +338,27 @@ public class PSLookupClient {
     	String[] wsnMsgs = { DCNLookupClient.PROTO_OSCARS + "#Notify"};
     	wsnMessages.put(DCNLookupClient.PARAM_SUPPORTED_MSG, wsnMsgs);
     	reg.setPort(urls, DCNLookupClient.PROTO_WSN, wsnMessages);
+    }
+    
+    private void loadWSNMessages(ServiceRegistration reg, String[] urls){
+    	HashMap<String, String[]> wsnMessages = new HashMap<String,String[]>();
+    	
+    	String[] wsnMsgs = {DCNLookupClient.PROTO_WSN + "#Notify", 
+    					    DCNLookupClient.PROTO_WSN + "#Subscribe",
+    					    DCNLookupClient.PROTO_WSN + "#Renew", 
+    					    DCNLookupClient.PROTO_WSN + "#Unsubscribe", 
+    					    DCNLookupClient.PROTO_WSN + "#PauseSubscription", 
+    					    DCNLookupClient.PROTO_WSN + "#ResumeSubscription"};
+    	wsnMessages.put(DCNLookupClient.PARAM_SUPPORTED_MSG, wsnMsgs);
+    	reg.setPort(urls, DCNLookupClient.PROTO_WSN, wsnMessages);
+    }
+    
+    private void loadWSNBMessages(ServiceRegistration reg, String[] urls){
+    	HashMap<String, String[]> wsnbMessages = new HashMap<String,String[]>();
+    	String[] wsnMsgs = {DCNLookupClient.PROTO_WSNB + "#RegisterPublisher", 
+    					    DCNLookupClient.PROTO_WSNB + "#DestroyRegistration"};
+    	wsnbMessages.put(DCNLookupClient.PARAM_SUPPORTED_MSG, wsnMsgs);
+    	reg.setPort(urls, DCNLookupClient.PROTO_WSNB, wsnbMessages);
     }
 }
 

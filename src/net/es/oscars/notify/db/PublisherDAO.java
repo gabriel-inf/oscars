@@ -1,8 +1,11 @@
 package net.es.oscars.notify.db;
 
 import java.util.*;
+
 import org.apache.log4j.*;
 import org.hibernate.*;
+
+import net.es.oscars.bss.topology.DomainService;
 import net.es.oscars.database.GenericHibernateDAO;
 
 /**
@@ -39,4 +42,13 @@ public class PublisherDAO
         
         return (Publisher) query.uniqueResult();
    }
+    
+    public List<Publisher> queryActive(){
+    	String sql = "SELECT * FROM publishers WHERE terminationTime < ? && status=1";
+    	long now = System.currentTimeMillis()/1000;
+    	 return (List<Publisher>) this.getSession().createSQLQuery(sql)
+         .addEntity(Publisher.class)
+         .setLong(0, now)
+         .list();
+    }
 }
