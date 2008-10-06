@@ -22,7 +22,6 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         this.log.debug("VendorCreatePathJob.start name: "+jobName);
 
         OSCARSCore core = OSCARSCore.getInstance();
-
         String bssDbName = core.getBssDbName();
         // Need to get our own Hibernate session since this is a new thread
         Session bss = core.getBssSession();
@@ -34,12 +33,13 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         String status;
         StateEngine stateEngine = core.getStateEngine();
 
-
         // Get reservation info from DB
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String direction = (String) dataMap.get("direction");
         String ingressRouterType = (String) dataMap.get("ingressRouterType");
         String egressRouterType = (String) dataMap.get("egressRouterType");
+        this.log.debug("ingress router type: " + ingressRouterType);
+        this.log.debug("egress router type: " + egressRouterType);
         String gri = (String) dataMap.get("gri");
         Reservation resv = null;
         try {
@@ -126,12 +126,23 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                             this.log.debug("setting forward status check params");
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
                             params.put("ingressVlan", lspData.getVlanTag());
-                            params.put("ingressVendor", ingressRouterType);
+                            // depends on which finished first
+                            if (direction.equals("forward")) {
+                                params.put("ingressVendor", ingressRouterType);
+                            } else {
+                                this.log.info("switching ingress vendor to " + egressRouterType);
+                                params.put("ingressVendor", egressRouterType);
+                            }
                         } else if (dir.equals("reverse")) {
                             this.log.debug("setting reverse status check params");
                             params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
                             params.put("egressVlan", lspData.getVlanTag());
-                            params.put("egressVendor", egressRouterType);
+                            if (direction.equals("forward")) {
+                                params.put("egressVendor", egressRouterType);
+                            } else {
+                                this.log.info("switching egress vendor to " + ingressRouterType);
+                                params.put("egressVendor", ingressRouterType);
+                            }
                         }
                         VendorMaintainStatusJob.addToCheckList(gri, params);
                     }
@@ -141,13 +152,8 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             this.log.error("State engine error", ex);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", ex.getMessage());
         }
-
         bss.getTransaction().commit();
-
         this.runNextJob(context);
-
         this.log.debug("VendorCreatePathJob.end name: "+jobName);
-
     }
-
 }

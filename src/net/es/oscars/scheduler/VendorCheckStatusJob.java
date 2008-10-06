@@ -107,17 +107,14 @@ public class VendorCheckStatusJob implements Job {
                 this.log.debug(jobName + ": in " + direction + " direction" +
                         gri+ " at " + nodeId+":" + vlanId + " isPathUp:"+
                         isPathUp);
-                String errMsg = statusResult.getErrorMessage();
-                if (!errMsg.equals("")) {
-                    this.log.debug("error in circuit setup: " + errMsg);
-                }
                 if (!allowLSP) {
                     // always pretend everything went well
                     statusResult = null;
                     this.updateReservation(statusInput, statusResult,
                                            desiredStatus);
                 // if there was an error, trumps circuit status
-                } else if (!errMsg.equals("")) {
+                } else if (!statusResult.getErrorMessage().equals("")) {
+                    String errMsg = statusResult.getErrorMessage();
                     if (checkCtr == 0) {
                         // the first check
                         this.log.debug(gri+" has error message: " + errMsg +
@@ -219,6 +216,7 @@ public class VendorCheckStatusJob implements Job {
         String direction = input.getDirection();
         try {
             Reservation resv = resvDAO.query(gri);
+            // result is null if not configuring router
             if (result != null) {
                 this.sendNotification(resv, newStatus, operation, direction,
                                       result.getErrorMessage());

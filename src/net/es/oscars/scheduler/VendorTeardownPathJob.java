@@ -22,17 +22,14 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         this.log.debug("VendorTeardownPathJob.start name:"+context.getJobDetail().getFullName());
 
         OSCARSCore core = OSCARSCore.getInstance();
-
         String bssDbName = core.getBssDbName();
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
-
         EventProducer eventProducer = new EventProducer();
         String status;
         StateEngine stateEngine = core.getStateEngine();
-
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String direction = (String) dataMap.get("direction");
@@ -48,9 +45,6 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             this.runNextJob(context);
             return;
         }
-
-
-
         LSPData lspData = new LSPData(bssDbName);
         Path path = resv.getPath();
         try {
@@ -67,10 +61,6 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             this.runNextJob(context);
             return;
         }
-
-
-
-
         try {
             StateEngine.canUpdateStatus(resv, newStatus);
         } catch (BSSException ex) {
@@ -126,11 +116,22 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
                         if (dir.equals("forward")) {
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
                             params.put("ingressVlan", lspData.getVlanTag());
-                            params.put("ingressVendor", ingressRouterType);
+                            // depends on which finished first
+                            if (direction.equals("forward")) {
+                                params.put("ingressVendor", ingressRouterType);
+                            } else {
+                                this.log.info("switching ingress vendor to " + egressRouterType);
+                                params.put("ingressVendor", egressRouterType);
+                            }
                         } else if (dir.equals("reverse")) {
                             params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
                             params.put("egressVlan", lspData.getVlanTag());
-                            params.put("egressVendor", egressRouterType);
+                            if (direction.equals("forward")) {
+                                params.put("egressVendor", egressRouterType);
+                            } else {
+                                this.log.info("switching egress vendor to " + ingressRouterType);
+                                params.put("egressVendor", ingressRouterType);
+                            }
                         }
                         VendorMaintainStatusJob.addToCheckList(gri, params);
                     }
@@ -140,13 +141,9 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             this.log.error("State engine error", ex);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", ex.getMessage());
         }
-
-
         bss.getTransaction().commit();
-
         this.runNextJob(context);
         this.log.debug("VendorTeardownPathJobs.end");
 
     }
-
 }
