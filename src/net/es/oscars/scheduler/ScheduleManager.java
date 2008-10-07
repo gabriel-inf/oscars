@@ -188,12 +188,17 @@ public class ScheduleManager {
     public void queueExpiredAndPending() {
         core = OSCARSCore.getInstance();
         Session session = core.getBssSession();
-        session.beginTransaction();
-        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
-        sched.pendingReservations(0);
-        sched.expiredReservations(0);
-        sched.expiringReservations(0);
-        session.getTransaction().commit();
+        try{
+	        session.beginTransaction();
+	        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
+	        sched.pendingReservations(0);
+	        sched.expiredReservations(0);
+	        sched.expiringReservations(0);
+	        session.getTransaction().commit();
+        }catch(Exception e){
+        	session.getTransaction().rollback();
+        	this.log.error(e.getMessage());
+        }
     }
 
 
