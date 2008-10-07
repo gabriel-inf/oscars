@@ -81,7 +81,7 @@ oscars.Authorizations.tabSelected = function (
 oscars.Authorizations.refreshAuthGrid = function () {
     dojo.xhrPost({
         url: 'servlet/AuthorizationList',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.Authorizations.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("authListForm").domNode

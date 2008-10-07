@@ -19,7 +19,7 @@ dojo.provide("oscars.ReservationCreate");
 oscars.ReservationCreate.init = function () {
     dojo.xhrPost({
         url: "servlet/CreateReservationForm",
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.ReservationCreate.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("reservationCreateForm").domNode
@@ -43,7 +43,7 @@ oscars.ReservationCreate.createReservation = function () {
     oscarsStatus.innerHTML = "Creating reservation...";
     dojo.xhrPost({
       url: 'servlet/CreateReservation',
-      handleAs: "json-comment-filtered",
+      handleAs: "json",
       load: oscars.ReservationCreate.handleReply,
       error: oscars.Form.handleError,
       form: dijit.byId("reservationCreateForm").domNode
@@ -65,7 +65,7 @@ oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
         formNode.gri.value = responseObject.gri;
         dojo.xhrPost({
             url: 'servlet/QueryReservation',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.ReservationDetails.handleReply,
             error: oscars.Form.handleError,
             form: dijit.byId("reservationDetailsForm").domNode

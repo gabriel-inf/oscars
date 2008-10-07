@@ -62,7 +62,7 @@ public class AuthenticateUser extends HttpServlet {
             int r = generator.nextInt();
             sessionName = String.valueOf(r);
         }
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         Session aaa = 
             HibernateUtil.getSessionFactory(
                     Utils.getDbName()).getCurrentSession();
@@ -88,7 +88,8 @@ public class AuthenticateUser extends HttpServlet {
         outputMap.put("status", userName + " signed in.  Use tabs " +
                     "to navigate to different pages.");
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        log.info("{}&&" + jsonObject);
+        out.println("{}&& " + jsonObject);
         aaa.getTransaction().commit();
         log.info("servlet.end: user " + userName + " logged in");
     }

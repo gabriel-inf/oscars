@@ -38,7 +38,7 @@ public class CreateReservation extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
 
         HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
@@ -66,7 +66,7 @@ public class CreateReservation extends HttpServlet {
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
         return;
     }

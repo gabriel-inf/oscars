@@ -37,7 +37,7 @@ public class UserQuery extends HttpServlet {
         List<String> attrNames = new ArrayList<String>();
 
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
@@ -99,7 +99,7 @@ public class UserQuery extends HttpServlet {
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         aaa.getTransaction().commit();
         this.log.debug("servlet.end");
     }

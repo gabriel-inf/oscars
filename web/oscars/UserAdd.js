@@ -15,7 +15,7 @@ dojo.provide("oscars.UserAdd");
 oscars.UserAdd.init = function () {
     dojo.xhrPost({
         url: 'servlet/UserAddForm',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserAdd.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userAddForm").domNode
@@ -29,7 +29,7 @@ oscars.UserAdd.postUserAdd = function () {
     }
     dojo.xhrPost({
         url: 'servlet/UserAdd',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserAdd.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userAddForm").domNode

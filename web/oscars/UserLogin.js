@@ -29,7 +29,7 @@ oscars.UserLogin.authenticateUser = function () {
     oscarsStatus.innerHTML = "Authenticating...";
     dojo.xhrPost({
         url: 'servlet/AuthenticateUser',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserLogin.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("AuthenticateUser").domNode

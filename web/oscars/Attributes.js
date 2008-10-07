@@ -41,7 +41,7 @@ oscars.Attributes.manage = function (opName) {
         } 
         dojo.xhrPost({
             url: 'servlet/Attributes?op=delete',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.Attributes.handleReply,
             error: oscars.Form.handleError,
             form: formNode
@@ -57,7 +57,7 @@ oscars.Attributes.manage = function (opName) {
         if (!formNode.saveAttrName.value) {
             dojo.xhrPost({
                 url: 'servlet/Attributes?op=add',
-                handleAs: "json-comment-filtered",
+                handleAs: "json",
                 load: oscars.Attributes.handleReply,
                 error: oscars.Form.handleError,
                 form: formNode
@@ -65,7 +65,7 @@ oscars.Attributes.manage = function (opName) {
         } else {
             dojo.xhrPost({
                 url: 'servlet/Attributes?op=modify',
-                handleAs: "json-comment-filtered",
+                handleAs: "json",
                 load: oscars.Attributes.handleReply,
                 error: oscars.Form.handleError,
                 form: formNode
@@ -138,7 +138,7 @@ oscars.Attributes.tabSelected = function (
 oscars.Attributes.createAttributeGrid = function () {
     dojo.xhrPost({
         url: 'servlet/Attributes?op=list',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.Attributes.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("attributesForm").domNode

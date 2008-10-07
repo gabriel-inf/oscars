@@ -32,7 +32,7 @@ public class AuthorizationForm extends HttpServlet {
         log.debug("servlet.start");
 
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             log.error("No user session: cookies invalid");
@@ -75,7 +75,7 @@ public class AuthorizationForm extends HttpServlet {
         // this form does not reset status
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         aaa.getTransaction().commit();
         log.debug("servlet.end");      
     }

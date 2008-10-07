@@ -20,7 +20,7 @@ dojo.provide("oscars.AuthorizationDetails");
 oscars.AuthorizationDetails.init = function () {
     dojo.xhrPost({
         url: 'servlet/AuthorizationForm',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.AuthorizationDetails.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("authDetailsForm").domNode
@@ -35,7 +35,7 @@ oscars.AuthorizationDetails.postAdd = function () {
     }
     dojo.xhrPost({
         url: 'servlet/AuthorizationAdd',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.AuthorizationDetails.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("authDetailsForm").domNode
@@ -49,7 +49,7 @@ oscars.AuthorizationDetails.postModify = function () {
     }
     dojo.xhrPost({
         url: 'servlet/AuthorizationModify',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.AuthorizationDetails.handleReply,
         error: oscars.Form.handleError,
         form: formNode
@@ -61,7 +61,7 @@ oscars.AuthorizationDetails.postDelete = function () {
     var formNode = dijit.byId("authDetailsForm").domNode;
     dojo.xhrPost({
         url: 'servlet/AuthorizationRemove',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.AuthorizationDetails.handleReply,
         error: oscars.Form.handleError,
         form: formNode

@@ -18,7 +18,7 @@ dojo.provide("oscars.UserProfile");
 oscars.UserProfile.postUserQuery = function () {
     dojo.xhrPost({
         url: 'servlet/UserQuery',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserProfile.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userProfileForm").domNode
@@ -33,7 +33,7 @@ oscars.UserProfile.postUserModify = function () {
     }
     dojo.xhrPost({
         url: 'servlet/UserModify',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserProfile.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userProfileForm").domNode
@@ -44,7 +44,7 @@ oscars.UserProfile.postUserModify = function () {
 oscars.UserProfile.postUserRemove = function () {
     dojo.xhrPost({
         url: 'servlet/UserRemove',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserProfile.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userProfileForm").domNode

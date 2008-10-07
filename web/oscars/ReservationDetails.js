@@ -36,7 +36,7 @@ oscars.ReservationDetails.postQueryReservation = function (newGri) {
     }
     dojo.xhrPost({
         url: 'servlet/QueryReservation',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.ReservationDetails.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("reservationDetailsForm").domNode
@@ -62,7 +62,7 @@ oscars.ReservationDetails.postModify = function () {
     formNode.modifyDescription.value = description;
     dojo.xhrPost({
         url: 'servlet/ModifyReservation',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.ReservationDetails.handleReply,
         error: oscars.Form.handleError,
         form: formNode
@@ -75,7 +75,7 @@ oscars.ReservationDetails.postCancelReservation = function (dialogFields) {
     oscars.ReservationDetails.setCurrentGri(formNode);
     dojo.xhrPost({
         url: 'servlet/CancelReservation',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.ReservationDetails.handleReply,
             error: oscars.Form.handleError,
             form: formNode
@@ -88,7 +88,7 @@ oscars.ReservationDetails.postCreatePath = function (dialogFields) {
     oscars.ReservationDetails.setCurrentGri(formNode);
     dojo.xhrPost({
         url: 'servlet/PathSetupReservation',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.ReservationDetails.handleReply,
             error: oscars.Form.handleError,
             form: formNode
@@ -101,7 +101,7 @@ oscars.ReservationDetails.postTeardownPath = function (dialogFields) {
     oscars.ReservationDetails.setCurrentGri(formNode);
     dojo.xhrPost({
         url: 'servlet/PathTeardownReservation',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.ReservationDetails.handleReply,
             error: oscars.Form.handleError,
             form: formNode
@@ -114,7 +114,7 @@ oscars.ReservationDetails.postOverrideStatus = function (dialogFields) {
     oscars.ReservationDetails.setCurrentGri(formNode);
     dojo.xhrPost({
         url: 'servlet/OverrideStatusReservation',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.ReservationDetails.handleReply,
             error: oscars.Form.handleError,
             form: formNode

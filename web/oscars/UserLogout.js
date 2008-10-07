@@ -15,7 +15,7 @@ dojo.provide("oscars.UserLogout");
 oscars.UserLogout.postLogout = function () {
     dojo.xhrPost({
         url: 'servlet/UserLogout',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserLogout.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("UserLogout").domNode

@@ -16,14 +16,14 @@ public class UserLogout extends HttpServlet {
         Logger log = Logger.getLogger(this.getClass());
         log.info("servlet.start");
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         UserSession userSession = new UserSession();
         Map outputMap = new HashMap();
         outputMap.put("method", "UserLogout");
         outputMap.put("success", Boolean.TRUE);
         outputMap.put("status", "User logged out.");
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         userSession.expireCookie("userName", "", response);
         userSession.expireCookie("sessionName", "", response);
         log.info("servlet.end");

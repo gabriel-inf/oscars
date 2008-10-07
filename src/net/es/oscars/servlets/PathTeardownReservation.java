@@ -24,7 +24,7 @@ public class PathTeardownReservation extends HttpServlet {
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
 
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
@@ -59,7 +59,7 @@ public class PathTeardownReservation extends HttpServlet {
         }
 
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
     }
 

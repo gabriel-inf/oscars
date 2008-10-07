@@ -38,7 +38,7 @@ oscars.Institutions.manage = function (opName) {
         } 
         dojo.xhrPost({
             url: 'servlet/Institutions?op=delete',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.Institutions.handleReply,
             error: oscars.Form.handleError,
             form: formNode
@@ -54,7 +54,7 @@ oscars.Institutions.manage = function (opName) {
         if (!formNode.saveName.value) {
             dojo.xhrPost({
                 url: 'servlet/Institutions?op=add',
-                handleAs: "json-comment-filtered",
+                handleAs: "json",
                 load: oscars.Institutions.handleReply,
                 error: oscars.Form.handleError,
                 form: formNode
@@ -62,7 +62,7 @@ oscars.Institutions.manage = function (opName) {
         } else {
             dojo.xhrPost({
                 url: 'servlet/Institutions?op=modify',
-                handleAs: "json-comment-filtered",
+                handleAs: "json",
                 load: oscars.Institutions.handleReply,
                 error: oscars.Form.handleError,
                 form: formNode
@@ -127,7 +127,7 @@ oscars.Institutions.tabSelected = function (
 oscars.Institutions.createInstitutionGrid = function () {
     dojo.xhrPost({
         url: 'servlet/Institutions?op=list',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.Institutions.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("institutionsForm").domNode

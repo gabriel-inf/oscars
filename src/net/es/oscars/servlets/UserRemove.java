@@ -28,7 +28,7 @@ public class UserRemove extends HttpServlet {
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager(Utils.getDbName());
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) { return; }
 
@@ -73,7 +73,7 @@ public class UserRemove extends HttpServlet {
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         aaa.getTransaction().commit();
         log.info("servlet.end");
     }

@@ -27,7 +27,7 @@ public class AuthorizationList extends HttpServlet {
         this.log.debug("servlet.start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
@@ -55,7 +55,7 @@ public class AuthorizationList extends HttpServlet {
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         aaa.getTransaction().commit();
         this.log.debug("servlet.end");
     }

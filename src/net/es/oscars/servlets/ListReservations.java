@@ -34,7 +34,7 @@ public class ListReservations extends HttpServlet {
         UserSession userSession = new UserSession();
 
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
@@ -68,7 +68,7 @@ public class ListReservations extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
 
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
 
     }

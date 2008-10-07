@@ -27,7 +27,7 @@ public class AuthorizationModify extends HttpServlet {
 
         String methodName = "AuthorizationModify";
         PrintWriter out = response.getWriter();
-        response.setContentType("text/json-comment-filtered");
+        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             log.error("No user session: cookies invalid");
@@ -73,7 +73,7 @@ public class AuthorizationModify extends HttpServlet {
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         aaa.getTransaction().commit();
         log.debug("servlet.end");      
     }

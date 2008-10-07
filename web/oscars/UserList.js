@@ -63,7 +63,7 @@ oscars.UserList.tabSelected = function (
 oscars.UserList.refreshUserGrid = function () {
     dojo.xhrPost({
         url: 'servlet/UserList',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserList.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userListForm").domNode
@@ -87,7 +87,7 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     // get user details
     dojo.xhrPost({
         url: 'servlet/UserQuery',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.UserProfile.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("userProfileForm").domNode

@@ -33,7 +33,7 @@ oscars.Reservations.postSearch = function () {
     oscars.Reservations.convertSearchTimes();
     dojo.xhrPost({
         url: 'servlet/ListReservations',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.Reservations.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("reservationsForm").domNode
@@ -79,7 +79,7 @@ oscars.Reservations.tabSelected = function (
         oscarsStatus.innerHTML = "Retrieving reservations...";
         dojo.xhrPost({
             url: 'servlet/ListReservations',
-            handleAs: "json-comment-filtered",
+            handleAs: "json",
             load: oscars.Reservations.handleReply,
             error: oscars.Form.handleError,
             form: dijit.byId("reservationsForm").domNode
@@ -102,7 +102,7 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     // get reservation details
     dojo.xhrPost({
         url: 'servlet/QueryReservation',
-        handleAs: "json-comment-filtered",
+        handleAs: "json",
         load: oscars.ReservationDetails.handleReply,
         error: oscars.Form.handleError,
         form: dijit.byId("reservationDetailsForm").domNode
