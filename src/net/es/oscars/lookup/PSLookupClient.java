@@ -14,7 +14,6 @@ import edu.internet2.perfsonar.ServiceRegistration;
 import edu.internet2.perfsonar.dcn.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notify.WSObserver;
-import net.es.oscars.oscars.OSCARSCore;
 
 
 /**
@@ -360,5 +359,19 @@ public class PSLookupClient {
     	wsnbMessages.put(DCNLookupClient.PARAM_SUPPORTED_MSG, wsnMsgs);
     	reg.setPort(urls, DCNLookupClient.PROTO_WSNB, wsnbMessages);
     }
+
+	/**
+	 * @return the client
+	 */
+	public DCNLookupClient getClient() {
+		return client;
+	}
+
+	/**
+	 * @param client the client to set
+	 */
+	public void setClient(DCNLookupClient client) {
+		this.client = client;
+	}
 }
 
