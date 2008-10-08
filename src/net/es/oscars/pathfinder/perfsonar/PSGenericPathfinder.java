@@ -96,9 +96,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
                         i++;
                     }
                     if(!gLSList.isEmpty()){
-                        String [] temp = new String[1];
-                        gLSList.toArray(temp);
-                        gLSs = temp;
+                        gLSs = gLSList.toArray(new String[gLSList.size()]);
                     }
                 }
 
@@ -110,9 +108,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
                             i++;
                     }
                     if(!hLSList.isEmpty()){
-                            String [] temp = new String[1];
-                            hLSList.toArray(temp);
-                            hLSs = temp;
+                            hLSs = hLSList.toArray(new String[hLSList.size()]);
                     }
                 }
 
@@ -124,9 +120,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
                             i++;
                     }
                     if(!TSList.isEmpty()){
-                            String [] temp = new String[1];
-                            TSList.toArray(temp);
-                            TSs = temp;
+                            TSs = TSList.toArray(new String[TSList.size()]);
                     }
                 }
 

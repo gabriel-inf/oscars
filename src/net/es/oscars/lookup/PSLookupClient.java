@@ -43,9 +43,7 @@ public class PSLookupClient {
             i++;
         }
         if(!gLSList.isEmpty()){
-            String [] temp = new String[1];
-            gLSList.toArray(temp);
-            gLSs = temp;
+            gLSs = gLSList.toArray(new String[gLSList.size()]);
         }
 
         i = 1;
@@ -55,9 +53,7 @@ public class PSLookupClient {
             i++;
         }
         if(!hLSList.isEmpty()){
-            String [] temp = new String[1];
-            hLSList.toArray(temp);
-            hLSs = temp;
+            hLSs = hLSList.toArray(new String[hLSList.size()]);
         }
 
         try {
