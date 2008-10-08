@@ -25,11 +25,10 @@ import net.es.oscars.oscars.*;
 /**
  * QueryResRmiHandler - interfaces between servlet and ReservationManager
  * 
- * @param userName String - name of user  making request
  * @param inputMap HashMap contains the gri of the reservation
- * 
+ * @param userName String - name of user  making request
  * @return HashMap contains: gri, status, user, description
- *        start, end and create times, bandwidth, vlan tag, and path information.        
+ *       start, end and create times, bandwidth, vlan tag, and path information.
  */
 public class QueryResRmiHandler {
     private OSCARSCore core;
@@ -41,8 +40,18 @@ public class QueryResRmiHandler {
         this.core = OSCARSCore.getInstance();
     }
 
-    public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
-        throws IOException {
+    /**
+     * Finds reservation based on information passed from servlet.
+     * 
+     * @param inputMap HashMap contains the gri of the reservation
+     * @param userName String - name of user  making request
+     * @return HashMap contains: gri, status, user, description
+     *   start, end and create times, bandwidth, vlan tag, and path information.
+     * @throws IOException
+     */
+    public HashMap<String, Object>
+          queryReservation(HashMap<String, String[]> inputMap, String userName) 
+            throws IOException {
         this.log.debug("query.start");
         String methodName = "QueryReservation";
         HashMap<String, Object> result = new HashMap<String, Object>();

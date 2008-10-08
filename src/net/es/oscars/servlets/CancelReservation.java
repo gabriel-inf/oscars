@@ -18,11 +18,12 @@ import net.es.oscars.rmi.CoreRmiInterface;
 
 public class CancelReservation extends HttpServlet {
     private Logger log;
+
     /**
-     * doGet
+     * Handles CancelReservation servlet request.
      * 
      * @param request HttpServletRequest - contains gri of reservation to cancel
-     * @return response HttpServletResponse -contains gri of reservation, success or error status
+     * @param response HttpServletResponse -contains gri of reservation, success or error status
      */
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)

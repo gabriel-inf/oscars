@@ -679,28 +679,25 @@ public class TypeConverter {
 
         //set Token
         Token token = resv.getToken();
-        if(token != null){
+        if (token != null) {
             map.put("token", this.genHashVal(token.getValue()));
         }
-
         //set path
         map.putAll(this.pathToHashMap(resv.getPath(), pathInfo));
-
         return map;
     }
 
     /**
      * Converts HashMap to a Reservation Hibernate bean
      *
-     * @param HashMap the Reservation to convert
-     * @return the converted Reservation
+     * @param map a HashMap with parameters to initialize reservation
+     * @return resv the converted Reservation
      */
     public Reservation hashMapToReservation(HashMap<String, String[]> map){
         Reservation resv = new Reservation();
-        if(map == null){
+        if (map == null) {
             return resv;
         }
-
         resv.setStartTime(Long.parseLong(map.get("startSeconds")[0]));
         resv.setEndTime(Long.parseLong(map.get("endSeconds")[0]));
         resv.setCreatedTime(Long.parseLong(map.get("createSeconds")[0]));
@@ -710,7 +707,6 @@ public class TypeConverter {
         resv.setLogin(map.get("userLogin")[0]);
 
         //TODO: Fill-in pathInfo
-
         return resv;
     }
 
@@ -718,7 +714,8 @@ public class TypeConverter {
      * Converts Path Hibernate bean to a HashMap
      *
      * @param path the Path to convert
-     * @return the converted HashMap
+     * @param pathInfo associated path information to add to the hash map
+     * @return map the converted HashMap
      */
     public HashMap<String, String[]> pathToHashMap(Path path, PathInfo pathInfo){
         HashMap<String, String[]> map = new HashMap<String, String[]>();
@@ -992,8 +989,8 @@ public class TypeConverter {
     /**
      * Converts a hash map to a ResDetail object for Axis2
      *
-     * @param value the String to convert
-     * @return the converted HashMap in a ResDatils object
+     * @param map a HashMap with reservation information
+     * @return the converted HashMap in a ResDetails object
      */
     public ResDetails hashMaptoResDetails(HashMap<String, String[]> map){
         //Verify that map has enough fields to build valid ResDetails object
@@ -1223,7 +1220,7 @@ public class TypeConverter {
      * Returns the URN of the any type based on the hop object ID or
      * IDRef field. Also does some validation Axis2 is missing.
      *
-     * @param link the CtrlPlaneHopContent to parse
+     * @param hop the CtrlPlaneHopContent to parse
      * @return the domain,node,port or link URN of the hop, null if invalid hop
      */
     public String hopToURN(CtrlPlaneHopContent hop){
@@ -1234,7 +1231,8 @@ public class TypeConverter {
      * Returns the URN of the given type based on the hop object ID or
      * IDRef field. Also does some validation Axis2 is missing.
      *
-     * @param link the CtrlPlaneHopContent to parse
+     * @param hop the CtrlPlaneHopContent to parse
+     * @param type string with type of hop
      * @return the domain,node,port or link URN of the hop, null if invalid hop
      */
     public String hopToURN(CtrlPlaneHopContent hop, String type){

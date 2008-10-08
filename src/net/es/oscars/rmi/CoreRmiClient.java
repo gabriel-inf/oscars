@@ -25,6 +25,8 @@ public class CoreRmiClient implements CoreRmiInterface {
 
     /**
      * init
+     *
+     * @throws RemoteException
      */
     public void init() throws RemoteException {
         this.remote = null;
@@ -39,14 +41,11 @@ public class CoreRmiClient implements CoreRmiInterface {
             } catch (NumberFormatException e) { }
         }
         try {
-
             String rmiIpaddr = "127.0.0.1";
             if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
                 rmiIpaddr = props.getProperty("serverIpaddr");
             }
-
             System.setProperty("java.rmi.server.hostname",rmiIpaddr);
-
             InetAddress ipAddr = InetAddress.getByName(rmiIpaddr);
             AnchorSocketFactory sf = new AnchorSocketFactory(ipAddr);
 
@@ -70,15 +69,17 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     /**
-     *   createReservation
+     * createReservation
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        createReservation(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug("createReservation.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CreateReservation";
@@ -92,7 +93,6 @@ public class CoreRmiClient implements CoreRmiInterface {
             result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
-
         try {
             result = this.remote.createReservation(inputMap, userName);
             this.log.debug("createReservation.end");
@@ -108,15 +108,17 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     /**
-     *   queryReservation
+     * queryReservation
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        queryReservation(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug("queryReservation.start");
         HashMap<String, Object> result =  new HashMap<String, Object>();
         String methodName = "QueryReservation";
@@ -130,7 +132,6 @@ public class CoreRmiClient implements CoreRmiInterface {
             result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
-
         try {
             result = this.remote.queryReservation(inputMap, userName);
             this.log.debug("queryReservation.end");
@@ -146,15 +147,17 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     /**
-     *   listReservations
+     * listReservations
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        listReservations(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug(" listReservations.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "ListReservations";
@@ -184,14 +187,16 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     /**
-     *   cancelReservation
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * cancelReservation
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        cancelReservation(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug(" cancelReservation.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
@@ -221,15 +226,17 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     /**
-     *   modifyReservation
+     * modifyReservation
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        modifyReservation(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug("modifyReservation.start");
         String methodName = "ModifyReservation";
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -243,7 +250,6 @@ public class CoreRmiClient implements CoreRmiInterface {
             result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
-
         try {
             result = this.remote.modifyReservation(inputMap, userName);
             this.log.debug("modifyReservation.end");
@@ -258,17 +264,18 @@ public class CoreRmiClient implements CoreRmiInterface {
         return result;
     }
 
-
     /**
-     *   createPath
+     * createPath
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        createPath(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> createPath(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug("createPath.start");
         String methodName = "CreatePath";
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -282,7 +289,6 @@ public class CoreRmiClient implements CoreRmiInterface {
             result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
-
         try {
             result = this.remote.createPath(inputMap, userName);
             this.log.debug("createPath.end");
@@ -297,17 +303,17 @@ public class CoreRmiClient implements CoreRmiInterface {
         return result;
     }
 
-
     /**
-     *   teardownPath
+     * teardownPath
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
      */
+    public HashMap<String, Object>
+        teardownPath(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> teardownPath(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug("teardownPath.start");
         String methodName = "TeardownPath";
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -321,7 +327,6 @@ public class CoreRmiClient implements CoreRmiInterface {
             result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
-
         try {
             result = this.remote.teardownPath(inputMap, userName);
             this.log.debug("teardownPath.end");
@@ -337,15 +342,17 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     /**
-     *   modifyStatus
+     * modifyStatus
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        modifyStatus(HashMap<String, String[]> inputMap, String userName)
+            throws RemoteException {
 
-    public HashMap<String, Object> modifyStatus(HashMap<String, String[]> inputMap, String userName)
-        throws RemoteException {
         this.log.debug("modifyStatus.start");
         String methodName = "ModifyStatus";
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -359,7 +366,6 @@ public class CoreRmiClient implements CoreRmiInterface {
             result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
-
         try {
             result = this.remote.modifyStatus(inputMap, userName);
             this.log.debug("modifyStatus.end");
@@ -373,5 +379,4 @@ public class CoreRmiClient implements CoreRmiInterface {
         }
         return result;
     }
-
 }

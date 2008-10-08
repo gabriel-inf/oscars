@@ -463,7 +463,6 @@ public class PathSetupManager{
      * Checks the interdomain status of path teardowm and changes status to newStatus
      * if upstream, downstream and local path teardown complete
      *
-     * @param newStatus the new status if complete
      * @param newLocalStatus the new amount to increase the local status field
      * @param resv the reservation to update
      */

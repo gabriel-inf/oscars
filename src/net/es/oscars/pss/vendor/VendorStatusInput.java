@@ -42,7 +42,7 @@ public class VendorStatusInput implements Serializable {
     public String getDescription() { return this.description; }
 
     /**
-     * @param gri a string with the reservation's description
+     * @param description a string with the reservation's description
      */
     public void setDescription(String description) {
         this.description = description;
@@ -54,7 +54,7 @@ public class VendorStatusInput implements Serializable {
     public String getOperation() { return this.operation; }
 
     /**
-     * @param operration a string with the operation
+     * @param operation a string with the operation
      */
     public void setOperation(String op) {
         this.operation = op;
@@ -78,10 +78,9 @@ public class VendorStatusInput implements Serializable {
     public String getDesiredStatus() { return this.desiredStatus; }
 
     /**
-     * @param desiredStatus a string with the desired statuus
+     * @param status a string with the desired statuus
      */
     public void setDesiredStatus(String status) {
         this.desiredStatus = status;
     }
 }
-

@@ -189,7 +189,7 @@ public class CreateResRmiHandler {
     /**
      * Takes form parameters and builds PathInfo structures.
      *
-     * @param request contains form request parameters
+     * @param inputMap contains form request parameters
      * @return pathInfo a PathInfo instance with layer 2 or 3 information
      */
     public PathInfo handlePath(HashMap<String, String[]> inputMap)

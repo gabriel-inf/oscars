@@ -642,13 +642,7 @@ public class ReservationManager {
      * instance and additional parameters.
      *
      * @param resv reservation instance modified in place
-     * @param login string with login name
-     *          if null any user's reservation may be modified
-     *          if set, only that user's reservation may be modified
-     * @param institution string with institution of caller
-     *          if null reservations from any site may be modified
-     *          if set only reservations starting or ending at that site may be modified
-     * @param pathInfo contains either layer 2 or layer 3 info
+     * @param persistentResv
      * @throws BSSException
      */
     public void modify(Reservation resv, Reservation persistentResv) 
@@ -688,11 +682,11 @@ public class ReservationManager {
      * Modifies the reservation, given a partially filled in reservation
      * instance and additional parameters.
      *
-     * @param forwardReply response from the forwarded modify message
      * @param resv reservation instance modified in place
      * @throws BSSException
      */
-    public Reservation finalizeModifyResv(Reservation resv) throws  BSSException {
+    public Reservation finalizeModifyResv(Reservation resv)
+            throws BSSException {
 
         this.log.info("finalizeModify.start");
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);

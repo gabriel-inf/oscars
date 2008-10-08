@@ -137,9 +137,9 @@ public class Attributes extends HttpServlet {
     /**
      * addAttribute - add an attribute if it doesn't already exist.
      *  
-     * @param String newName name of new attribute
-     * @param String newDescription description of new attribute
-     * @param String newType type of new attribute
+     * @param newName string with name of new attribute
+     * @param newDescription string with description of new attribute
+     * @param newType string with type of new attribute
      * @throws AAAException
      */
     public void addAttribute(String newName, String newDescription,
@@ -162,10 +162,10 @@ public class Attributes extends HttpServlet {
     /**
      * modifyAttribute - change an attribute's name, description, and/or type.
      *  
-     * @param String oldName old name of attribute
-     * @param String newName new name of attribute
-     * @param String descr attribute description
-     * @param String attrType type of attribute
+     * @param oldName string with old name of attribute
+     * @param newName string new name of attribute
+     * @param descr string with attribute description
+     * @param attrType string with type of attribute
      * @throws AAAException
      */
     public void modifyAttribute(String oldName, String newName, String descr,
@@ -188,7 +188,7 @@ public class Attributes extends HttpServlet {
      * deleteAttribute - delete an attribute, but only if no users
      *     currently belong to it
      *  
-     * @param String attributeName name of attribute to delete
+     * @param attributeName string with name of attribute to delete
      * @throws AAAException
      */
     public void deleteAttribute(String attributeName)

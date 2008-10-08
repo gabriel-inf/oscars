@@ -16,17 +16,17 @@ import net.es.oscars.rmi.CoreRmiInterface;
  * @author David Robertson, Mary Thompson
  *
  */
-
 public class QueryReservation extends HttpServlet {
+    private Logger log;
 
     /**
-     * doGet
+     * Handles QueryReservation servlet request.
      * 
      * @param request HttpServletRequest contains the gri of the reservation
-     * @param response HttpServletResponse contains: gri, status, user, description
-     *        start, end and create times, bandwidth, vlan tag, and path information. 
+     * @param response HttpServletResponse contains: gri, status, user,
+     *        description start, end and create times, bandwidth, vlan tag,
+     *        and path information. 
      */
-    private Logger log;
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {

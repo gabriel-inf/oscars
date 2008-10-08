@@ -124,7 +124,7 @@ public class Institutions extends HttpServlet {
     /**
      * addInstitution - add an institution if it doesn't already exist.
      *  
-     * @param String newName name of new institution
+     * @param newName string with name of new institution
      * @throws AAAException
      */
     public void addInstitution(String newName)
@@ -144,8 +144,8 @@ public class Institutions extends HttpServlet {
     /**
      * modifyInstitution - change an institution's name.
      *  
-     * @param String oldName old name of institution
-     * @param String newName new name of institution
+     * @param oldName string with old name of institution
+     * @param newName string with new name of institution
      * @throws AAAException
      */
     public void modifyInstitution(String oldName, String newName)
@@ -165,7 +165,7 @@ public class Institutions extends HttpServlet {
      * deleteInstitution - delete an institution, but only if no users
      *     currently belong to it
      *  
-     * @param String institutionName name of institution to delete
+     * @param institutionName string with name of institution to delete
      * @throws AAAException
      */
     public void deleteInstitution(String institutionName)

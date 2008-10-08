@@ -29,14 +29,15 @@ public class ListResRmiHandler {
     private OSCARSCore core;
     private Logger log;
 
-
     public ListResRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
     }
 
-    public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
-        throws IOException {
+    public HashMap<String, Object>
+           listReservations(HashMap<String, String[]> inputMap, String userName)
+               throws IOException {
+
         this.log.debug("listReservations.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String institution = null;
@@ -127,7 +128,6 @@ public class ListResRmiHandler {
                 this.log.debug("list failed: " + errMessage);
                 return result;  
             }
-
         }
         outputReservations(result, reservations);
         result.put("totalRowsReplace", "Total rows: " + reservations.size());
@@ -146,11 +146,11 @@ public class ListResRmiHandler {
      * one of these links, it is returned as part of the list.
      *
      * @param request servlet request
-     * @
      * @return list of links to send to BSS
+     * @throws BSSException
      */
-
-    public List<Link> getLinks(HashMap<String, String[]> request) throws BSSException {
+    public List<Link> getLinks(HashMap<String, String[]> request)
+            throws BSSException {
 
         List<Link> inLinks = new ArrayList<Link>();
         String linkList;
@@ -176,7 +176,6 @@ public class ListResRmiHandler {
                 }
             }
         }
-        
         return inLinks;
     }
  
@@ -184,7 +183,6 @@ public class ListResRmiHandler {
      * Gets description search parameter and sets to blank field if empty.
      *
      * @param request servlet request
-     * @
      * @return string with description
      */
     public String getDescription(HashMap<String, String[]> request) {
@@ -201,7 +199,6 @@ public class ListResRmiHandler {
      * Gets reservation statuses to search for.
      *
      * @param request HashMap passed from servlet 
-     * @
      * @return list of statuses to send to BSS
      */
     public List<String> getStatuses(HashMap<String, String[]> request) {
@@ -223,7 +220,6 @@ public class ListResRmiHandler {
      * servlet request.
      *
      * @param request servlet request
-     * @
      * @return list of vlans and/or ranges to send to BSS
      */
     public List<String> getVlanTags(HashMap<String, String[]> request) {

@@ -92,8 +92,8 @@ public class Utils {
     
     /**
      * removes the description part of the authorization input form fields
-     * @param inputField
-     * @return
+     * @param inputField A string with the complete field.
+     * @return A string minus the description field of the parameter
      */
     public static String dropDescription(String inputField) {
      // assumes field name has a name followed by " -> description"

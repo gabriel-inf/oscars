@@ -33,7 +33,7 @@ public class Pathfinder {
      * @param src the fully-qualified link-id of the request's source
      * @param path the path to analyze. if null then src is returned.
      * @return the fully-qualified link-id of the ingress link
-     * @throws
+     * @throws PathfinderException
      */
     protected String findIngress(String src, CtrlPlanePathContent path)
                                     throws PathfinderException {

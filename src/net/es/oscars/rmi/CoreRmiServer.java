@@ -91,12 +91,9 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      * shutdown
      */
     public void shutdown() {
-
         try {
             java.rmi.server.UnicastRemoteObject.unexportObject(CoreRmiServer.staticObject, true);
             java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
-
-
             this.registry.unbind("IDCRMIServer");
         } catch (RemoteException ex) {
             this.log.error("Remote exception shutting down RMI server", ex);
@@ -107,15 +104,18 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   createReservation
+     * createReservation
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        createReservation(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -123,15 +123,18 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   queryReservation
+     * queryReservation
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        queryReservation(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -139,15 +142,16 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   listReservations
+     * listReservations
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
      */
+    public HashMap<String, Object>
+        listReservations(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -155,14 +159,17 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   cancelReservationOverride
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * cancelReservationOverride
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param String userName - authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        cancelReservation(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -170,33 +177,37 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   modifyReservation
+     * modifyReservation
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        modifyReservation(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
         return this.modifyHandler.modifyReservation(inputMap, userName);
     }
 
-
-
     /**
-     *   createPath
+     * createPath
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userNaOverrideme - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        createPath(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> createPath(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -204,15 +215,18 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   teardownPath
+     * teardownPath
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param userName string with authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        teardownPath(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> teardownPath(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -220,15 +234,18 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     }
 
     /**
-     *   modifyStatus
+     * modifyStatus
      *
-     *   @param inputMap HashMap<String, String[]> - contains input from web request
-     *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into json Object.
+     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param String userName - authenticated login name of user
+     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @throws IOException
+     * @throws RemoteException
      */
+    public HashMap<String, Object>
+        modifyStatus(HashMap<String, String[]> inputMap, String userName)
+            throws IOException, RemoteException {
 
-    public HashMap<String, Object> modifyStatus(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
         if (!checkClientHost()){
             throw new RemoteException("rmi call from non-local host");
         }
@@ -239,7 +256,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      * Check that rmi call came from the local host
      * @return true/false
      */
-    private boolean checkClientHost(){
+    private boolean checkClientHost() {
         try {
             String remoteHost = RemoteServer.getClientHost();
             String localHost = InetAddress.getLocalHost().getHostAddress();
@@ -258,5 +275,4 @@ public class CoreRmiServer  implements CoreRmiInterface  {
             return false;
         }
     }
-
 }

@@ -22,14 +22,16 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     private Logger log;
     private OSCARSCore core;
     private StateEngine se;
-    private long CONFIRM_TIMEOUT = 600;//10min
-    private long COMPLETE_TIMEOUT = 600;//10min
+    private long CONFIRM_TIMEOUT = 600; //10min
+    private long COMPLETE_TIMEOUT = 600; //10min
     
     
     //TODO: This should probably be a MySQL table
     private static HashMap<String, Long[]> resvCache = new HashMap<String, Long[]>();
     
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
+
         String jobName = context.getJobDetail().getFullName();
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("ModifyReservationJob.start name:"+jobName);
@@ -55,9 +57,9 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         bss.beginTransaction();
         
         /* Get reservation */
-        try{
+        try {
             persistentResv = rm.getConstrainedResv(gri,loginConstraint,institution);
-        }catch(BSSException ex){
+        } catch(BSSException ex) {
             bss.getTransaction().rollback();
             this.log.error(ex.getMessage());
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, 
@@ -66,11 +68,11 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         }
         
         /* Perform start, confirm, complete, fail or statusCheck operation */
-        try{
-            if(this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)){
+        try {
+            if (this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)) {
                 origState = StateEngine.ACTIVE;
             }
-            if(dataMap.containsKey("start")){
+            if (dataMap.containsKey("start")) {
                 Reservation resv = tc.hashMapToReservation(resvMap);
                 resv.setLogin(persistentResv.getLogin());
                 Long[] times = new Long[2];
@@ -78,18 +80,18 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                 times[1] = persistentResv.getEndTime();
                 resvCache.put(gri, times);
                 this.start(resv, persistentResv, login);
-            }else if(dataMap.containsKey("confirm")){
+            } else if (dataMap.containsKey("confirm")) {
                 this.confirm(persistentResv, login);
-            }else if(dataMap.containsKey("complete")){
+            } else if (dataMap.containsKey("complete")) {
                 this.complete(persistentResv, login);
-            }else if(dataMap.containsKey("fail")){
+            } else if (dataMap.containsKey("fail")) {
                 String code = dataMap.getString("errorCode");
                 String msg = dataMap.getString("errorMsg");
                 String src = dataMap.getString("errorSource");
                 this.rollback(persistentResv, origState);
                 eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login,
                                       src, persistentResv, code, msg);
-            }else if(dataMap.containsKey("statusCheck")){
+            } else if (dataMap.containsKey("statusCheck")) {
                 String status = this.se.getStatus(persistentResv);
                 int localStatus = this.se.getLocalStatus(persistentResv);
                 if(status.equals(dataMap.getString("status")) && 
@@ -100,27 +102,27 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                     throw new BSSException("Modify reservation timed-out " +
                                            "while waiting for event " +  op);
                 }
-            }else{
+            } else {
                 this.log.error("Unknown modifyReservation job cannot be executed");
             }
             bss.getTransaction().commit();
-        }catch(Exception ex){
+        } catch(Exception ex) {
             ex.printStackTrace();
             //Rollback any changes...
             bss.getTransaction().rollback();
             //...then start new transaction to update status
-            try{
+            try {
                 bss = core.getBssSession();
                 bss.beginTransaction();
                 this.rollback(persistentResv, origState);
                 eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, 
                                       idcURL, persistentResv, "", ex.getMessage());
                 bss.getTransaction().commit();
-            }catch(Exception ex2){
+            } catch(Exception ex2) {
                 bss.getTransaction().rollback();
                 this.log.error(ex2);
             }
-        }finally{
+        } finally {
             this.runNextJob(context);
         }
         this.log.info("ModifyReservationJob.end");
@@ -129,41 +131,39 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     /**
      * Reads in timeout properties
      */
-     public void init(){
+     public void init() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("timeout", true);
         String defaultTimeoutStr = props.getProperty("default");
         String confirmTimeoutStr = props.getProperty("modifyResv.confirm");
         String completeTimeoutStr = props.getProperty("modifyResv.complete");
         int defaultTimeout = 0;
-        if(defaultTimeoutStr != null){
-            try{
+        if (defaultTimeoutStr != null) {
+            try {
                 defaultTimeout = Integer.parseInt(defaultTimeoutStr);
-            }catch(Exception e){
+            } catch(Exception e) {
                 this.log.error("Default timeout.default property invalid. " +
                                "Defaulting to another value for timeout.");
             }
         }
-        
-        if(confirmTimeoutStr != null){
-            try{
+        if (confirmTimeoutStr != null) {
+            try {
                 CONFIRM_TIMEOUT = Integer.parseInt(confirmTimeoutStr);
-            }catch(Exception e){
+            } catch(Exception e) {
                 this.log.error("timeout.modifyResv.confirm property invalid." +
                                "Defaulting to another value for timeout.");
             }
-        }else if(defaultTimeout > 0){
+        } else if(defaultTimeout > 0) {
             CONFIRM_TIMEOUT = defaultTimeout;
         }
-        
-        if(completeTimeoutStr != null){
-            try{
+        if (completeTimeoutStr != null) {
+            try {
                 COMPLETE_TIMEOUT = Integer.parseInt(completeTimeoutStr);
-            }catch(Exception e){
+            } catch(Exception e) {
                 this.log.error("timeout.modifyResv.complete property invalid." +
                                "Defaulting to another value for timeout.");
             }
-        }else if(defaultTimeout > 0){
+        } else if(defaultTimeout > 0) {
             COMPLETE_TIMEOUT = defaultTimeout;
         }
      }
@@ -171,9 +171,13 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     /**
      * Processes an initial request
      *
-     * @param dataMap the job parameters
+     * @param resv reservation modified in place
+     * @param persistentResv modified reservation saved in database
+     * @param login string with user name of person modifying reservation
      */
-    public void start(Reservation resv, Reservation persistentResv, String login) throws Exception{
+    public void start(Reservation resv, Reservation persistentResv,
+                      String login)
+            throws Exception {
         ReservationManager rm = this.core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
         Forwarder forwarder = this.core.getForwarder();
@@ -193,7 +197,6 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                 throw error;
             }
         }
-        
         //hold resources
         //TODO: Create mechanism for rolling back to original
         persistentResv = rm.finalizeModifyResv(resv);
@@ -208,9 +211,11 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     /**
      * Confirms a modification
      *
-     * @param dataMap the job parameters
+     * @param resv modified reservation
+     * @param login string with user name of person modifying reservation
      */
-    public void confirm(Reservation resv, String login) throws BSSException, UnknownHostException{
+    public void confirm(Reservation resv, String login)
+            throws BSSException, UnknownHostException {
         this.log.debug("confirm.start");
         EventProducer eventProducer = new EventProducer();
         String bssDbName = this.core.getBssDbName();
@@ -235,9 +240,9 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         DomainDAO domainDAO = new DomainDAO(bssDbName);
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(src);
         String srcDomainId = parseResults.get("domainId");
-        if(domainDAO.isLocal(srcDomainId)){
+        if (domainDAO.isLocal(srcDomainId)) {
             this.complete(resv, login);
-        }else{
+        } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
         this.log.debug("confirm.end");
@@ -246,15 +251,16 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     /**
      * Completes a modification
      *
-     * @param dataMap the job parameters
+     * @param resv modified reservation
+     * @param login string with user name of person modifying reservation
      */
-    public void complete(Reservation resv, String login) throws BSSException{
+    public void complete(Reservation resv, String login) throws BSSException {
         this.log.debug("complete.start");
         EventProducer eventProducer = new EventProducer();
         int localStatus = this.se.getLocalStatus(resv);
-        if(localStatus >= 2){
+        if (localStatus >= 2) {
             this.se.updateStatus(resv, StateEngine.ACTIVE);
-        }else{
+        } else {
             this.se.updateStatus(resv, StateEngine.RESERVED);
         }
         this.se.updateLocalStatus(resv, 0);
@@ -267,9 +273,10 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     /**
      * Schedules a job to check if a request timed out
      *
-     * @param resv the reservation to be check
+     * @param timeout time in seconds after which a request times out
+     * @param resv the reservation to be checked
      */
-    public void scheduleStatusCheck(long timeout, Reservation resv){
+    public void scheduleStatusCheck(long timeout, Reservation resv) {
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String triggerName = "modifyResvTimeoutTrig-" + resv.hashCode();
         String jobName = "modifyResvTimeoutJob-" + resv.hashCode();
@@ -285,11 +292,11 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         dataMap.put("status", this.se.getStatus(resv));
         dataMap.put("localStatus", this.se.getLocalStatus(resv));
         jobDetail.setJobDataMap(dataMap);
-        try{
+        try {
             this.log.debug("Adding job " + jobName);
             sched.scheduleJob(jobDetail, trigger);
             this.log.debug("Job added.");
-        }catch(SchedulerException ex){
+        } catch(SchedulerException ex) {
             this.log.error("Scheduler exception: " + ex);    
         }
      }
@@ -307,12 +314,11 @@ public class ModifyReservationJob extends ChainingJob implements Job {
             resv.setStartTime(times[0]);
             resv.setEndTime(times[1]);
             resvCache.remove(gri);
-        }else{
+        } else {
             this.log.info("Original times not found so keeping " + 
                           "modifed times. This might cause errors.");
         }
         this.se.updateStatus(resv, origState);
         this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
     }
-
 }
