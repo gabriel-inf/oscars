@@ -17,7 +17,7 @@ public class ResourceDAO extends GenericHibernateDAO<Resource, Integer> {
      * given an resource name, return the resource id
      * 
      * @param resourceName String name of the resource
-     * @returns an Integer containing the resource id
+     * @return an Integer containing the resource id
      */
     public Integer getIdByName(String resourceName) throws AAAException {
         Resource resource = super.queryByParam("name", resourceName);

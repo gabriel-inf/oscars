@@ -24,11 +24,6 @@ import net.es.oscars.oscars.*;
 
 /**
  * QueryResRmiHandler - interfaces between servlet and ReservationManager
- * 
- * @param inputMap HashMap contains the gri of the reservation
- * @param userName String - name of user  making request
- * @return HashMap contains: gri, status, user, description
- *       start, end and create times, bandwidth, vlan tag, and path information.
  */
 public class QueryResRmiHandler {
     private OSCARSCore core;

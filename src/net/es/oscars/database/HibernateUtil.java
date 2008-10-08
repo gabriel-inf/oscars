@@ -29,7 +29,6 @@ public class HibernateUtil {
      * Called from OSCARSSkeleton and test setup. When running in axis, we need
      *     to set the classLoader in order for it to find the .xml files.
      *
-     * @param CL classloader for the calling class
      * @param dbnames list of db names to build session factories for
      */
     public static void initSessionFactories(List<String> dbnames) {

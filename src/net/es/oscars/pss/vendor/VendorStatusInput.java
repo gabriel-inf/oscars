@@ -54,7 +54,7 @@ public class VendorStatusInput implements Serializable {
     public String getOperation() { return this.operation; }
 
     /**
-     * @param operation a string with the operation
+     * @param op a string with the operation
      */
     public void setOperation(String op) {
         this.operation = op;

@@ -53,7 +53,7 @@ public class TopologyXMLExporter {
      * object which can then be traversed, prettyprinted etc.
      * The user can specify a query to perform against the
      * database.
-     * @param query the query to perform against the DB
+     * @param domainId string with domain's topology identifier
      * @return The topology JDOM Document object
      */
     public Document getTopology(String domainId) {
@@ -88,7 +88,7 @@ public class TopologyXMLExporter {
      * JDOM Document object.
      * Note: Need to specify how queries should run; currently
      * we support queries in the form of domain topology identifiers
-     * @param query the query to perform against the DB
+     * @param domainId string with domain's topology identifier
      * @return The topology JDOM Document object
      */
     @SuppressWarnings("unchecked")

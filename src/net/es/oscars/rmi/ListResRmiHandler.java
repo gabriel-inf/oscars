@@ -240,7 +240,6 @@ public class ListResRmiHandler {
      *
      * @param outputMap map containing grid data
      * @param reservations list of reservations satisfying search criteria
-     * @param request servlet request
      */
     public void
         outputReservations(Map outputMap, List<Reservation> reservations) {
@@ -337,7 +336,7 @@ public class ListResRmiHandler {
      * Returns an abbreviated version of the full layer 2 topology identifier.
      * (adapted from bss.topology.URNParser)
      *
-     * @param topoId string with full topology identifier, for example
+     * @param topoIdent string with full topology identifier, for example
      * urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
      * @return string abbreviation such as es.net:bnl-mr1:TenGigabitEthernet1/3
      */

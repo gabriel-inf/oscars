@@ -18,7 +18,7 @@ public class PermissionDAO extends GenericHibernateDAO<Permission, Integer> {
      * given an permission name, return the permission id
      * 
      * @param permissionName String name of the permission
-     * @returns an Integer containing the permission id
+     * @return an Integer containing the permission id
      */
     public Integer getIdByName(String permissionName) throws AAAException {
         Permission permission = super.queryByParam("name", permissionName);

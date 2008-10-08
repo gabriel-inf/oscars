@@ -161,7 +161,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     /**
      * cancelReservationOverride
      * @param inputMap HashMap<String, String[]> - contains input from web request
-     * @param String userName - authenticated login name of user
+     * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
@@ -237,7 +237,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      * modifyStatus
      *
      * @param inputMap HashMap<String, String[]> - contains input from web request
-     * @param String userName - authenticated login name of user
+     * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException

@@ -17,7 +17,7 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
      * Given an attribute id, return the attribute name
      * 
      * @param attrId  int with attribute id
-     * @returns a string with name of attribute
+     * @return a string with name of attribute
      * 
      * This is currently only called by AuthorizationDAO.listAuthByUser 
      */
@@ -34,7 +34,7 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
      * given an attribute name, return the attribute id
      * 
      * @param attrName string name of the attribute
-     * @returns an Integer containing the attribute id
+     * @return an Integer containing the attribute id
      */
     public Integer getIdByName(String attrName) throws AAAException {
         Attribute attr = super.queryByParam("name", attrName);

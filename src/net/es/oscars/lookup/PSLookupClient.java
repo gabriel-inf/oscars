@@ -186,7 +186,7 @@ public class PSLookupClient {
     /**
      * Registers the local IDC with the lookup service
      * 
-     * @param url the URL of the service to register
+     * @param nbURL the URL of the service to register
      * @param nodeKeys 
      * @param serviceKeys 
      */

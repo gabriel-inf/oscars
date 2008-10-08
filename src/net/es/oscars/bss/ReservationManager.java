@@ -184,7 +184,7 @@ public class ReservationManager {
      * @param gri the GRI of the reservation being confirmed
      * @param pathInfo the confirmed path
      * @param producerID the URN of the domain that produced this event
-     * @reqStatus the required status of the reservation to perform this operation
+     * @param reqStatus the required status of the reservation to perform this operation
      * @param confirm true if confirmed event, false if completed event
      * @throws BSSException
      */
@@ -309,7 +309,7 @@ public class ReservationManager {
      * @param producerID the URN of the domain that produced this event
      * @param errorSrc the IDC the originated the error
      * @param errorCode the error code of this event
-     * @param errorMessahe the error message describing the event
+     * @param errorMsg the error message describing the event
      * @param reqStatus the requried status of the reservation for this to be valid
      * @throws BSSException
      */
@@ -576,7 +576,6 @@ public class ReservationManager {
      * @param institution string with institution of caller
      *          if null reservations from any site may be modified
      *          if set only reservations starting or ending at that site may be modified
-     * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
     public Reservation submitModify(Reservation resv, String loginConstraint, 
@@ -1372,7 +1371,7 @@ public class ReservationManager {
      * Returns the name of the institution of the an end point of the reservation
      *
      * @param resv Reservation for which we want to find an end point institution
-     * @param boolean source: true returns the source , false returns the destination
+     * @param source - true returns the source , false returns the destination
      * @return institution String name of the end point
      */
     public String endPointSite(Reservation resv, Boolean source) {
@@ -1411,7 +1410,7 @@ public class ReservationManager {
      * Returns Domain of the institution of the an end point of the reservation
      *
      * @param resv Reservation for which we want to find an end point institution
-     * @param boolean source: true returns the source , false returns the destination
+     * @param source - true returns the source , false returns the destination
      * @return institution String name of the end point
      */
     public Domain endPointDomain(Reservation resv, Boolean source) {
@@ -1697,8 +1696,8 @@ public class ReservationManager {
      *  finds the reservations that matches all the constraints
      *
      *  @param gri String global reservation Id identifies the reservation
-     *  @param String loginConstraint = reservation must be owned by this login
-     *  @param String institutionConstraint - reservation must belong to this institution
+     *  @param loginConstraint reservation must be owned by this login
+     *  @param institutionConstraint reservation must belong to this institution
      *
      *  @return Reservation - a reservation that meets the constraint,
      *  @throws PSSException if no such reservation exists

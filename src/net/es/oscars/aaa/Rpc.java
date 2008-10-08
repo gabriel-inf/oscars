@@ -57,7 +57,7 @@ public class Rpc extends HibernateBean implements Serializable {
     public int getConstraintId() { return this.constraintId; }
 
     /**
-     * @param attrId An Integer containing a constraint table row primary key
+     * @param constraintId int containing a constraint table row primary key
      */ 
     public void setConstraintId(int constraintId) {
         this.constraintId = constraintId;

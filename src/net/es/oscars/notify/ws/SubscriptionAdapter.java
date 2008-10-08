@@ -815,7 +815,7 @@ public class SubscriptionAdapter{
      * supports the SimpleTopic, ConcreteTopic, and FullTopic(partially)
      * specifications. 
      *
-     * @param topicFilter the TopicExpression to parse
+     * @param topicFilters the TopicExpression to parse
      * @return an array of strings containing each Topic
      * @throws InvalidTopicExpressionFault
      * @throws TopicExpressionDialectUnknownFault

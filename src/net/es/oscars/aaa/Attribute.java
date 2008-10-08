@@ -50,12 +50,12 @@ public class Attribute extends HibernateBean implements Serializable {
     }
 
     /**
-     * @return name a string with the attribute description
+     * @return description a string with the attribute description
      */ 
     public String getDescription() { return this.description; }
 
     /**
-     * @param name A string with the attribute description
+     * @param description A string with the attribute description
      */ 
     public void setDescription(String description) {
         this.description = description;

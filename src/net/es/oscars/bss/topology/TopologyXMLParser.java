@@ -58,7 +58,7 @@ public class TopologyXMLParser {
      * objects appropriate for insertion into the local OSCARS topology
      * database.
      *
-     * @param node the XML element for the "topology" element
+     * @param topology the XML element for the "topology" element
      * @param operation the operation to perform (currently ignored)
      */
     public Topology parse(Element topology, String operation) {

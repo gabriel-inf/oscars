@@ -326,7 +326,7 @@ public class AuthorizationDAO
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
      * @param constraintId - int with primary key of constraint, could be null
-     * @param constaintValue - String with value of constraint, could be null
+     * @param constraintValue - String with value of constraint, could be null
      */
     
     public void create(int attrId, int resourceId, int permissionId,
@@ -387,8 +387,8 @@ public class AuthorizationDAO
     /**
      * getConstraintName returns the constraint name for an authorization
      * 
-     * @param Authorization auth
-     * @return String constraintName
+     * @param auth an Authorization instance
+     * @return constraintName string with name of constraint
      * 
      */
     public String getConstraintName(Authorization auth) {
