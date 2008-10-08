@@ -60,7 +60,8 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 public class PSGenericPathfinder extends GenericPathfinder {
     private Logger log;
     private TSLookupClient TSClient;
-   
+
+    private static final boolean FORCE_OPAQUE = false;
     private static final String KNOWN_TOPOLOGY_TYPE = "http://ogf.org/schema/network/topology/ctrlPlane/20080828/";
 
     public PSGenericPathfinder() throws HttpException, IOException {
@@ -76,7 +77,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
 
         for ( String section : sections) {
 
-		System.out.println("Handling section: "+section);
+                this.log.debug("Handling section: "+section);
 
                 PropHandler propHandler = new PropHandler("oscars.properties");
                 Properties props = propHandler.getPropertyGroup(section, true);
@@ -160,7 +161,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
     protected Domain lookupDomain(String id) {
         Element topoXML;
 
-        System.out.println("Looking up domain: "+id);
+        this.log.debug("Looking up domain: "+id);
 
         try {
             topoXML = this.TSClient.getDomain(id, KNOWN_TOPOLOGY_TYPE);
@@ -174,7 +175,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
             return null;
         }
 
-        System.out.println("topoXML: "+topoXML);
+        this.log.debug("topoXML: "+topoXML);
 
         TopologyXMLParser parser = new TopologyXMLParser(null);
         Topology topology = parser.parse(topoXML, null);
@@ -183,17 +184,53 @@ public class PSGenericPathfinder extends GenericPathfinder {
             return null;
         }
 
-        System.out.println("Parsed topology");
+        this.log.debug("Parsed topology");
+
+        Domain retDomain = null;
 
         List<Domain> domains = topology.getDomains();
         for (Domain dom : domains) {
             String domFQTI = dom.getFQTI();
 
             if (domFQTI.equals(id)) {
-                return dom;
+                retDomain = dom;
+                break;
             }
         }
 
-        return null;
+        if (this.FORCE_OPAQUE) {
+            Iterator<Node> nodeIter = retDomain.getNodes().iterator();
+            while(nodeIter.hasNext()) {
+                Node node = nodeIter.next();
+    
+                Iterator<Port> portIter = node.getPorts().iterator();
+                while(portIter.hasNext()) {
+                    Port port = portIter.next();
+    
+                    Iterator<Link> linkIter = port.getLinks().iterator();
+                    while(linkIter.hasNext()) {
+                        Link link = linkIter.next();
+
+                        if (link.getRemoteLink() == null) {
+                            linkIter.remove();
+                        } else if (link.getRemoteLink().getPort().getNode().getDomain() == retDomain) {
+                            link.getRemoteLink().getPort().removeLink(link.getRemoteLink());
+
+                            linkIter.remove();
+                        }
+                    }
+
+                    if (port.getLinks().isEmpty()) {
+                        portIter.remove();
+                    }
+                }
+
+                if (node.getPorts().isEmpty()) {
+                    nodeIter.remove();
+                }
+            }
+        }
+
+        return retDomain;
     }
 }

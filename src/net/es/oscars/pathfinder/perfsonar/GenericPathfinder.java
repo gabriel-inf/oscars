@@ -67,6 +67,8 @@ public class GenericPathfinder implements Comparator {
     private Map<String, Double> elementWeights;
     private Map<String, Double> elementBandwidths;
     private Set<String> ignoredElements;
+    private Set<String> opaqueDomains;
+    private boolean cacheFailures;
  
     public GenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
@@ -75,14 +77,79 @@ public class GenericPathfinder implements Comparator {
         this.elementWeights = new HashMap<String, Double>();
         this.elementBandwidths = new HashMap<String, Double>();
         this.ignoredElements = new HashSet<String>();
+        this.opaqueDomains = new HashSet<String>();
+        this.cacheFailures = true;
     }
 
     public void addDomain(Domain domain) {
-        if (this.domains.get(domain.getFQTI()) != null)
+        if (this.domains.get(domain.getFQTI()) != null) {
+            // XXX: this should remove that domain and re-add it.
             return;
+        }
+
+        boolean isOpaque = true;
+
+        // Calculate if it's an opaque topology, i.e. a domain whose internal
+        // links have been removed. This allows one to keep topology secret
+        // while still permitting basic pathfinding to occur.
+        Set<Node> nodes = domain.getNodes();
+        for (Node node : nodes) {
+
+            Set<Port> ports = node.getPorts();
+            for (Port port : ports) {
+
+                Set<Link> links = port.getLinks();
+                for (Link link : links) {
+                    if (link.getRemoteLink() == null)
+                        continue;
+
+                    String remLinkFQTI = link.getRemoteLink().getFQTI();
+
+                    Hashtable<String, String> currURN = URNParser.parseTopoIdent(remLinkFQTI);
+                    if (currURN.get("error") != null) {
+                        this.log.error("Parsing failed "+currURN.get("error"));
+                    } else if (currURN.get("domainFQID").equals(domain.getFQTI())) {
+                        // we found an internal link
+                        isOpaque = false;
+                        this.log.error("We found an internal link: "+remLinkFQTI);
+                        break;
+                    }
+                }
+
+                if (isOpaque == false)
+                    break;
+            }
+
+            if (isOpaque == false)
+                break;
+        }
+
+        if (isOpaque) {
+            this.opaqueDomains.add(domain.getFQTI());
+        }
 
         this.domains.put(domain.getFQTI(), domain);
-        this.updateGraph(domain);
+        this.addDomainToGraph(domain, isOpaque);
+
+        if (this.log.isDebugEnabled()) {
+            this.log.debug("Domains: ");
+            Iterator<String> iter = this.domains.keySet().iterator();
+            int i = 0;
+            while(iter.hasNext()) {
+                String key = iter.next();
+                this.log.debug(i+"). "+key);
+                i++;
+            }
+
+            this.log.debug("Opaque Domains: ");
+            Iterator<String> iter2 = this.opaqueDomains.iterator();
+            int j = 0;
+            while(iter2.hasNext()) {
+                String key = iter2.next();
+                this.log.debug(j+"). "+key);
+                j++;
+            }
+        }
     }
 
     public void ignoreElement(String element) {
@@ -113,63 +180,27 @@ public class GenericPathfinder implements Comparator {
         this.elementBandwidths.put(element, new Double(bandwidth));
     }
 
-    private void updateGraph(Domain domain) {
-        System.out.println("updateGraph.start");
+    private void addDomainToGraph(Domain domain, boolean isOpaque) {
+        this.log.debug("addDomainToGraph.start");
 
         DefaultEdge edge;
         Set<Node> nodes;
-
-        boolean isOpaque = true;
 
         // This won't link together the remoteLinkIds and the port, so we do a
         // two phase approach. First, go through and add all the ports to the
         // graph, and then do a subsequent pass to link the ports together.
         String domFQTI = domain.getFQTI();
 
-        // Calculate if it's an opaque topology, i.e. a domain whose internal
-        // links have been removed. This allows one to keep topology secret
-        // while still permitting basic pathfinding to occur.
-        nodes = domain.getNodes();
-        for (Node node : nodes) {
-
-            Set<Port> ports = node.getPorts();
-            for (Port port : ports) {
-
-                Set<Link> links = port.getLinks();
-                for (Link link : links) {
-                    if (link.getRemoteLink() == null)
-                        continue;
-
-                    String remLinkFQTI = link.getRemoteLink().getFQTI();
-
-                    Hashtable<String, String> currURN = URNParser.parseTopoIdent(remLinkFQTI);
-                    if (currURN.get("error") != null) {
-                        this.log.error("Parsing failed "+currURN.get("error"));
-                    } else if (currURN.get("domainFQID").equals(domFQTI)) {
-                        // we found an internal link
-                        isOpaque = false;
-                        break;
-                    }
-                }
-
-                if (isOpaque == false)
-                    break;
-            }
-
-            if (isOpaque == false)
-                break;
-        }
- 
         // we need to add the domains so that searches can be done like
         // "how do i get from domain A to domain B".
-        System.out.println("Adding vertex "+domFQTI);
+        this.log.debug("Adding vertex "+domFQTI);
         this.graph.addVertex(domFQTI);
 
         nodes = domain.getNodes();
         for (Node node : nodes) {
             String nodeFQTI = node.getFQTI();
 
-            System.out.println("Adding vertex "+nodeFQTI);
+            this.log.debug("Adding vertex "+nodeFQTI);
             this.graph.addVertex(nodeFQTI);
 
             // The edges will only be one way though, node -> domain. If
@@ -181,7 +212,7 @@ public class GenericPathfinder implements Comparator {
 
             // If it's an opaque instance, we won't know any internal links, so
             // we have to assume that if we can get to a domain, we can get out
-            // of it via an external link.
+            // of it via any external link.
             if (isOpaque) {
                 this.graph.addEdge(domFQTI, nodeFQTI);
             }
@@ -200,7 +231,7 @@ public class GenericPathfinder implements Comparator {
 
                 this.elementBandwidths.put(portFQTI, new Double(capacity));
 
-                System.out.println("Adding vertex "+portFQTI);
+                this.log.debug("Adding vertex "+portFQTI);
                 this.graph.addVertex(portFQTI);
 
                 this.graph.addEdge(nodeFQTI, portFQTI);
@@ -210,7 +241,7 @@ public class GenericPathfinder implements Comparator {
                 for (Link link : links) {
                     String linkFQTI = link.getFQTI();
 
-                    System.out.println("Adding vertex "+linkFQTI);
+                    this.log.debug("Adding vertex "+linkFQTI);
                     this.graph.addVertex(linkFQTI);
 
                     this.graph.addEdge(linkFQTI, portFQTI);
@@ -248,14 +279,14 @@ public class GenericPathfinder implements Comparator {
                         edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
                     }
 
-                    System.out.println("Adding edge "+linkFQTI+"->"+remLinkFQTI);
+                    this.log.debug("Adding edge "+linkFQTI+"->"+remLinkFQTI);
                     this.graph.addEdge(linkFQTI, remLinkFQTI);
                     this.elementWeights.put(linkFQTI, edgeWeight);
                 }
             }
         }
 
-        System.out.println("updateGraph.finish");
+        this.log.debug("addDomainToGraph.finish");
     }
 
     public List<String> lookupPath(String src, String dst, double bandwidth) throws PathfinderException {
@@ -263,8 +294,79 @@ public class GenericPathfinder implements Comparator {
         Map<String, String> prevMap = new HashMap<String, String>();
         this.costs = new HashMap<String, Double>(); // reset the costs
 
+        List<String> header = new ArrayList<String>(); // reset the costs
+        List<String> footer = new ArrayList<String>(); // reset the costs
+
         this.log.info("Looking up path between "+src+" and "+dst);
-        System.out.println("Looking up path between "+src+" and "+dst);
+
+        long startTime = System.currentTimeMillis();
+
+        // if the source is opaque, we have to assume that any element we're
+        // given exists in the domain. 
+        boolean srcOpaque = false;
+        Hashtable<String, String> srcURN = URNParser.parseTopoIdent(src);
+        if (srcURN.get("error") != null) {
+            this.log.error("Parsing failed "+srcURN.get("error"));
+            throw new PathfinderException("Couldn't parse identifier: "+src);
+        }
+
+        if (this.opaqueDomains.contains(srcURN.get("domainFQID"))) {
+            // the source is opaque, so we add any elements in the that exist
+            // in our URN, but don't exist in our knowledge of the domain, to a
+            // header. These will get added to the front of our returned path.
+            // We then set the src to an element that does exist. After we have
+            // done the search, we will put the header back onto the returned
+            // path.
+
+            String[] types = { "linkFQID", "portFQID", "nodeFQID", "domainFQID" };
+            for( String elementType : types) {
+                String elementId = srcURN.get(elementType);
+
+                if (elementId == null) {
+                    continue;
+                }
+
+                if (this.graph.containsVertex(elementId) == false) {
+                    header.add(elementId);
+                } else {
+                    this.log.debug("New src: "+src);
+                    src = elementId;
+                }
+            }
+        }
+
+        // if the destination is opaque, we have to assume that any element
+        // we're given exists in the domain. 
+        boolean dstOpaque = false;
+        Hashtable<String, String> dstURN = URNParser.parseTopoIdent(dst);
+        if (dstURN.get("error") != null) {
+            this.log.error("Parsing failed "+dstURN.get("error"));
+            throw new PathfinderException("Couldn't parse identifier: "+dst);
+        }
+
+        if (this.opaqueDomains.contains(dstURN.get("domainFQID"))) {
+            // the destination is opaque, so we add any elements in the that
+            // exist in our URN, but don't exist in our knowledge of the
+            // domain, to a header. These will get added to the front of our
+            // returned path.  We then set the dst to an element that does
+            // exist. After we have done the search, we will put the header
+            // back onto the returned path.
+            String[] types = { "linkFQID", "portFQID", "nodeFQID", "domainFQID" };
+            for( String elementType : types) {
+                String elementId = dstURN.get(elementType);
+
+                if (elementId == null) {
+                    continue;
+                }
+
+                if (this.graph.containsVertex(elementId) == false) {
+                    footer.add(0, elementId);
+                } else {
+                    dst = elementId;
+                    this.log.debug("New dst: "+dst);
+                }
+            }
+        }
 
         String id;
 
@@ -272,18 +374,18 @@ public class GenericPathfinder implements Comparator {
         elements.add(src);
 
         while ((id = elements.poll()) != null) {
-            System.out.println("Found element: "+id+" -- "+bandwidth);
+            this.log.debug("Found element: "+id+" -- "+bandwidth);
 
             if (this.elementBandwidths.get(id) != null) {
                 Double elemBandwidth = this.elementBandwidths.get(id);
                 if (elemBandwidth.doubleValue() < bandwidth) {
-                    System.out.println("Selected element "+id+" does not have enough bandwidth to satisfy the request: "+elemBandwidth.doubleValue()+" < "+bandwidth);
+                    this.log.debug("Selected element "+id+" does not have enough bandwidth to satisfy the request: "+elemBandwidth.doubleValue()+" < "+bandwidth);
                     continue;
                 }
             }
 
             if (id.equals(src) == false && id.equals(dst) == false && this.ignoredElements.contains(id) == true) {
-                System.out.println("Selected element "+id+" is being ignored.");
+                this.log.debug("Selected element "+id+" is being ignored.");
                 continue;
             }
 
@@ -291,36 +393,37 @@ public class GenericPathfinder implements Comparator {
                 break;
             }
 
-            int i;
+            if (this.log.isDebugEnabled()) {
+                int i;
 
-            System.out.println("Selected "+id);
-            System.out.println("Priority("+elements.size()+"/"+costs.size()+"): ");
-            Iterator<String> iter = elements.iterator();
-            i = 0;
-            while(iter.hasNext()) {
-                String key = iter.next();
-                System.out.println(i+"). "+key+" -- "+costs.get(key));
-                i++;
+                this.log.debug("Selected "+id);
+                this.log.debug("Priority("+elements.size()+"/"+costs.size()+"): ");
+                Iterator<String> iter = elements.iterator();
+                i = 0;
+                while(iter.hasNext()) {
+                    String key = iter.next();
+                    this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                    i++;
+                }
+
+                this.log.debug("Costs("+costs.size()+"): ");
+                Iterator<String> iter2 = costs.keySet().iterator();
+                i = 0;
+                while(iter2.hasNext()) {
+                    String key = iter2.next();
+                    this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                    i++;
+                }
+
+                this.log.debug("Domains("+this.domains.size()+"): ");
+                Iterator<String> iter3 = domains.keySet().iterator();
+                i = 0;
+                while(iter3.hasNext()) {
+                    String key = iter3.next();
+                    this.log.debug(i+"). "+key);
+                    i++;
+                }
             }
-
-            System.out.println("Costs("+costs.size()+"): ");
-            Iterator<String> iter2 = costs.keySet().iterator();
-            i = 0;
-            while(iter2.hasNext()) {
-                String key = iter2.next();
-                System.out.println(i+"). "+key+" -- "+costs.get(key));
-                i++;
-            }
-
-            System.out.println("Domains("+this.domains.size()+"): ");
-            Iterator<String> iter3 = domains.keySet().iterator();
-            i = 0;
-            while(iter3.hasNext()) {
-                String key = iter3.next();
-                System.out.println(i+"). "+key);
-                i++;
-            }
-
 
             Hashtable<String, String> currURN = URNParser.parseTopoIdent(id);
             if (currURN.get("error") != null) {
@@ -330,10 +433,50 @@ public class GenericPathfinder implements Comparator {
 
             String currDomain = currURN.get("domainFQID");
             if (this.domains.get(currDomain) == null) {
+		long stime1 = System.currentTimeMillis();
+
                 Domain domain = lookupDomain(currDomain);
-                if (domain != null) {
-                    this.updateGraph(domain);
+                if (domain == null) {
+                    if (this.cacheFailures) {
+                        Domain junk = new Domain();
+                        this.domains.put(currDomain, junk);
+                    }
+                } else {
+                    this.addDomain(domain);
+
+                    this.log.debug("Destination domain: "+dstURN.get("domainFQID"));
+
+                    if (this.opaqueDomains.contains(dstURN.get("domainFQID"))) {
+                        // the destination is opaque, so we add any elements in the that
+                        // exist in our URN, but don't exist in our knowledge of the
+                        // domain, to a header. These will get added to the front of our
+                        // returned path.  We then set the dst to an element that does
+                        // exist. After we have done the search, we will put the header
+                        // back onto the returned path.
+                        this.log.debug("Opaque domains now contains what we're looking for");
+
+                        String[] types = { "linkFQID", "portFQID", "nodeFQID", "domainFQID" };
+                        for( String elementType : types) {
+                            String elementId = dstURN.get(elementType);
+
+                            this.log.debug("Element ID: "+elementId+" -- "+elementType);
+
+                            if (elementId == null) {
+                                    continue;
+                            }
+
+                            if (this.graph.containsVertex(elementId) == false) {
+                                    footer.add(0, elementId);
+                            } else {
+                                    dst = elementId;
+                                    this.log.debug("New dst: "+dst);
+                            }
+                        }
+                    }
                 }
+
+		long etime1 = System.currentTimeMillis();
+		System.out.println("Time to get "+currDomain +": "+((etime1-stime1)/1000));
             }
 
             if (this.graph.containsVertex(id) == false) {
@@ -345,15 +488,13 @@ public class GenericPathfinder implements Comparator {
             for (DefaultEdge e : this.graph.edgesOf(id)) {
                 String target = this.graph.getEdgeTarget(e);
 
-                System.out.println("Found target: "+target);
-
                 if (costs.get(target) == null) {
                     Double targetConst = this.elementWeights.get(target);
                     if (targetConst == null) {
                         targetConst = new Double(0);
                     }
 
-                    System.out.println("Adding '"+target+"' to queue: "+(cost.longValue() + this.graph.getEdgeWeight(e)));
+                    this.log.debug("Adding '"+target+"' to queue: "+(cost.longValue() + this.graph.getEdgeWeight(e)));
                     costs.put(target, new Double(cost.doubleValue() + targetConst));
                     prevMap.put(target, id);
                     elements.remove(target);
@@ -368,12 +509,25 @@ public class GenericPathfinder implements Comparator {
 
         List<String> retIds = new ArrayList<String>();
         retIds.add(0, dst);
-        System.out.println("Adding(dst): "+dst);
         id = dst;
         while((id = prevMap.get(id)) != null) {
-            System.out.println("Adding: "+id);
             retIds.add(0, id);
         }
+
+        retIds.addAll(0, header);
+        retIds.addAll(footer);
+
+        if (this.log.isDebugEnabled()) {
+            int i = 0;
+            for(String currId : retIds) {
+                this.log.debug("Path("+i+"): "+currId);
+                i++;
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Time: "+((startTime-endTime)/1000));
 
         return retIds;
     }
