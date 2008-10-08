@@ -61,7 +61,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
     private Logger log;
     private TSLookupClient TSClient;
 
-    private static final boolean FORCE_OPAQUE = false;
+    private static final boolean FORCE_OPAQUE = true;
     private static final String KNOWN_TOPOLOGY_TYPE = "http://ogf.org/schema/network/topology/ctrlPlane/20080828/";
 
     public PSGenericPathfinder() throws HttpException, IOException {
@@ -171,7 +171,7 @@ public class PSGenericPathfinder extends GenericPathfinder {
         }
 
         if (topoXML == null) {
-            this.log.error("Couldn't get find domain "+id+" in topology service");
+            this.log.warn("Couldn't find domain "+id+" in topology service");
             return null;
         }
 

@@ -111,7 +111,6 @@ public class GenericPathfinder implements Comparator {
                     } else if (currURN.get("domainFQID").equals(domain.getFQTI())) {
                         // we found an internal link
                         isOpaque = false;
-                        this.log.error("We found an internal link: "+remLinkFQTI);
                         break;
                     }
                 }
@@ -476,7 +475,6 @@ public class GenericPathfinder implements Comparator {
                 }
 
 		long etime1 = System.currentTimeMillis();
-		System.out.println("Time to get "+currDomain +": "+((etime1-stime1)/1000));
             }
 
             if (this.graph.containsVertex(id) == false) {
@@ -526,8 +524,6 @@ public class GenericPathfinder implements Comparator {
         }
 
         long endTime = System.currentTimeMillis();
-
-        System.out.println("Time: "+((startTime-endTime)/1000));
 
         return retIds;
     }
