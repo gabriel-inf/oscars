@@ -1,9 +1,15 @@
 <html>
 <body>
- <p>Provides Juniper label-switched path functionality for OSCARS.</p>
- <p>
- This package contains functionality for LSP circuit setup using Juniper router
- configuration.
- </p>
+<p>Handles configuring Juniper routers for circuit
+   set up, teardown, and status checking.</p>
+
+<p>Provides functionality for circuit set up, teardown, and status
+checking using Juniper routers.  Router configuration templates in Junoscript
+XML format contain placeholders for the parameters to be used in the specific
+circuit operation.  This package fills in these parameters for a specific
+instance, ssh's into a particular router, and writes the instance to the router.
+An LSP is set up, torn down, or has its status checked as a result.
+Results are returned as XML files.
+</p>
 </body>
 </html>

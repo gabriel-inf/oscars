@@ -3,41 +3,50 @@
 <p>Top-level package for OSCARS.</p>
 
 <p>
-The classes in this package provide core functionality (logging,
-property handling, etc).  There are a number of sub-packages which
+The classes in this package provide common functionality (for example
+property handling).  There are a number of sub-packages which
 instantiate the various OSCARS components.
 </p>
 
 <ul>
+<li><strong>oscars</strong> contains the OSCARS core service, contacted both
+ by Axis2 SOAP clients, and by servlets.</li>
+
 <li><strong>aaa</strong> provides functionality for authentication,
 authorization, and user administration.</li>
 
-<li><strong>bss</strong> contains classes for reservation scheduling.</li>
-
-<li><strong>pathfinder</strong> contains various classes, implementing a
-common interface, for finding a path between a source and destination.
-Currently they are designed to be library calls (to start out simply), but
-could be generated from a WSDL description in the future, as in AMPS.</li>
-
-<li><strong>pss</strong> contains functionality for circuit setup.</li>
-
-<li><strong>database</strong> provides common functionality for
-data access object (DAO) operations.</li>
-
-<li><strong>oscars</strong> classes were
-originally skeletons generated using the WSDL2Java package on the OSCARS.wsdl
-file, and have been filled in with OSCARS functionality.  These classes
-are called on the server side when the client API is used.</li>
-
-<li><strong>servlets</strong> contains the servlet code contacted
-by the browser interface.</li>
+<li><strong>bss</strong> contains classes for reservation handling.</li>
 
 <li><strong>client</strong> contains functionality used by clients of
 OSCARS, currently the example clients and the forwarder client.</li>
 
+<li><strong>database</strong> provides common functionality for
+data access object (DAO) operations.</li>
+
 <li><strong>interdomain</strong> contains classes to forward a message to
-the next domain, if any. At some point they may be generated from a
-WSDL description, as in AMPS.</li>
+the next domain, if any.
+</li>
+
+<li><strong>lookup</strong> provides functionality associated with
+the perfSONAR lookup service.</li>
+
+<li><strong>notify</strong> provides a notification broker service.</li>
+
+<li><strong>pathfinder</strong> contains sub-packages implementing several
+ways of determining a path through the local domain.<li>
+
+<li><strong>pss</strong> contains functionality for circuit setup and teardown.
+</li>
+
+<li><strong>rmi</strong> contains RMI client and server code for passing
+requests from the servlets to the OSCARS core.</li>
+
+<li><strong>scheduler</strong> schedules reservation related jobs.</li>
+
+<li><strong>servlets</strong> contains the servlet code contacted
+by the browser interface.</li>
+
+<li><strong>tss</strong> implements a traffic engineering database.</li>
 
 <li><strong>wsdlTypes</strong> contains wsdl2java generated 
 classes that are used by both client and server code.</li>
