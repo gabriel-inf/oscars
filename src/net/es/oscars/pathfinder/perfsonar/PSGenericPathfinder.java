@@ -1,59 +1,35 @@
 package net.es.oscars.pathfinder.perfsonar;
 
-import java.util.Hashtable;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.Map;
-import java.util.Comparator;
+import org.apache.log4j.*;
 
 import java.io.IOException;
 import org.apache.commons.httpclient.HttpException;
 
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.RouteElem;
-import net.es.oscars.bss.topology.DomainDAO;
+import edu.internet2.perfsonar.*;
+
+import net.es.oscars.bss.topology.TopologyXMLParser;
+
+import net.es.oscars.bss.topology.Topology;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Link;
-import net.es.oscars.bss.topology.TopologyUtil;
-import net.es.oscars.pathfinder.*;
-import net.es.oscars.pathfinder.traceroute.*;
-import net.es.oscars.wsdlTypes.*;
+
 import net.es.oscars.PropHandler;
 
-import net.es.oscars.pathfinder.perfsonar.util.PSGraphEdge;
-import net.es.oscars.bss.topology.URNParser;
+import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Iterator;
 
 import org.jdom.*;
 
-import edu.internet2.perfsonar.*;
-
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.oscars.*;
-
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-
-import java.util.List;
-import org.apache.log4j.*;
-
-import org.jgrapht.*;
-import org.jgrapht.graph.DefaultDirectedWeightedGraph;
-
-
 /**
- * PSPathfinder finds the route through the domain and toward the destination
- * by consulting a perfSONAR Topology service. It contacts the service and
- * downloads the topology for all domains. It then constructs a graph of the
- * topology and uses dijkstra's shortest path algorithm to finds a path through
- * the domain that follows any path requested by the end user. The user
- * requested paths can consist of domain, node, port and link identifiers.
+ * PSGenericPathfinder exteds the GenericPathfinder class to support looking up
+ * new domains using the perfSONAR Information Services. It uses the perfSONAR
+ * Topology Client to lookup the topology using the specified Global Lookup
+ * Services, Home Lookup Services or Topology Services. There is a compile-time
+ * option that can be set to force the returned Domain to be opaque.
  *
  * @author Aaron Brown (aaron@internet2.edu)
  */
@@ -152,6 +128,11 @@ public class PSGenericPathfinder extends GenericPathfinder {
         this.TSClient.setUseGlobalLS(setUseGlobalLS);
     }
 
+    /**
+     * Looks up the given domain using the perfSONAR Information
+     * Infrastructure. This method uses the perfSONAR Information
+     * Infrastructure to find the desired domain.
+     */
     protected Domain lookupDomain(String id) {
         Element topoXML;
 

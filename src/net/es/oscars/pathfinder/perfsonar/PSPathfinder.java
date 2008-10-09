@@ -36,11 +36,11 @@ import org.jgrapht.alg.*;
 
 /**
  * PSPathfinder finds the route through the domain and toward the destination
- * by consulting a perfSONAR Topology service. It contacts the service and
- * downloads the topology for all domains. It then constructs a graph of the
- * topology and uses dijkstra's shortest path algorithm to finds a path through
- * the domain that follows any path requested by the end user. The user
- * requested paths can consist of domain, node, port and link identifiers.
+ * by consulting a perfSONAR Topology service. The pathfinder uses the
+ * perfSONAR Information Services to lookup topologies from other domains and
+ * does a search through those domains to find the path needed to get to the
+ * destination. It then returns the intradomain path and the hop in the next
+ * domain along the path.
  *
  * @author Aaron Brown (aaron@internet2.edu)
  */

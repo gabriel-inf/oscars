@@ -28,7 +28,6 @@ import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 
-import net.es.oscars.pathfinder.perfsonar.util.PSGraphEdge;
 import net.es.oscars.bss.topology.URNParser;
 
 import org.jdom.*;
@@ -50,12 +49,11 @@ import org.jgrapht.graph.DefaultEdge;
 
 
 /**
- * PSPathfinder finds the route through the domain and toward the destination
- * by consulting a perfSONAR Topology service. It contacts the service and
- * downloads the topology for all domains. It then constructs a graph of the
- * topology and uses dijkstra's shortest path algorithm to finds a path through
- * the domain that follows any path requested by the end user. The user
- * requested paths can consist of domain, node, port and link identifiers.
+ * GenericPathfinder is a Pathfinding class that, given a topology, can be used
+ * to find paths between specified pair of points. By default this class can
+ * only find paths between domains that it has been told about. However, the
+ * class can be subclassed and the 'lookupDomain' function overridden to allow
+ * it to look up domains as it is searching.
  *
  * @author Aaron Brown (aaron@internet2.edu)
  */
@@ -64,7 +62,7 @@ public class GenericPathfinder implements Comparator {
     private HashMap<String, Domain> domains;
     private DefaultDirectedWeightedGraph<String, DefaultEdge> graph;
     private Map<String, Double> costs;
-    private Map<String, Double> elementWeights;
+    private Map<String, Double> elementCosts;
     private Map<String, Double> elementBandwidths;
     private Set<String> ignoredElements;
     private Set<String> opaqueDomains;
@@ -74,13 +72,19 @@ public class GenericPathfinder implements Comparator {
         this.log = Logger.getLogger(this.getClass());
         this.domains = new HashMap<String, Domain>();
         this.graph = new DefaultDirectedWeightedGraph<String, DefaultEdge>(DefaultEdge.class);
-        this.elementWeights = new HashMap<String, Double>();
+        this.elementCosts = new HashMap<String, Double>();
         this.elementBandwidths = new HashMap<String, Double>();
         this.ignoredElements = new HashSet<String>();
         this.opaqueDomains = new HashSet<String>();
         this.cacheFailures = true;
     }
 
+    /**
+     * Adds the specified Domain object to the set of graphs to search. This
+     * function will check whether the given Domain is opaque, take note of
+     * that fact and then adds it to the internal graph that it builds of the
+     * connections between elements.
+     */
     public void addDomain(Domain domain) {
         if (this.domains.get(domain.getFQTI()) != null) {
             // XXX: this should remove that domain and re-add it.
@@ -151,22 +155,43 @@ public class GenericPathfinder implements Comparator {
         }
     }
 
+    /**
+     * Tells the pathfinder to not use that element when searching for paths.
+     * @param element A topology identifier for the element to ignore
+     */
     public void ignoreElement(String element) {
         this.ignoredElements.add(element);
     }
 
-    public double getElementWeight(String element) {
-        if (this.elementWeights.get(element) != null) {
-            return this.elementWeights.get(element).doubleValue();
+    /**
+     * Retrieves the current cost assigned to the element
+     * @param element A topology identifier for the element to ignore
+     */
+    public double getElementCost(String element) {
+        if (this.elementCosts.get(element) != null) {
+            return this.elementCosts.get(element).doubleValue();
         }
 
         return 0;
     }
 
-    public void setElementWeight(String element, double weight) {
-        this.elementWeights.put(element, weight);
+    /**
+     * Sets the cost of the specified element
+     * @param element The topology identifier for the element
+     * @param cost A double containing the specified cost
+     */
+    public void setElementCost(String element, double cost) {
+        this.elementCosts.put(element, cost);
     }
 
+    /**
+     * Retrieves the bandwidth for the specified element. This bandwidth is
+     * used to see whether or not a given element can be used when calculating
+     * a path with a certain bandwidth. If set to 0, the bandwidth is assumed
+     * infinite.
+     *
+     * @param element The topology identifier for the element
+     */
     public double getElementBandwidth(String element) {
         if (this.elementBandwidths.get(element) != null) {
             return this.elementBandwidths.get(element).doubleValue();
@@ -175,119 +200,34 @@ public class GenericPathfinder implements Comparator {
         return 0;
     }
 
+    /**
+     * Sets the bandwidth for the specified element. This bandwidth will
+     * be used to see whether or not a given element can be used when
+     * calculating a path with a certain bandwidth. If set to 0, the bandwidth
+     * is assumed infinite.
+     *
+     * @param element The topology identifier for the element
+     * @param cost A double containing the specified cost
+     */
     public void setElementBandwidth(String element, double bandwidth) {
         this.elementBandwidths.put(element, new Double(bandwidth));
     }
 
-    private void addDomainToGraph(Domain domain, boolean isOpaque) {
-        this.log.debug("addDomainToGraph.start");
-
-        DefaultEdge edge;
-        Set<Node> nodes;
-
-        // This won't link together the remoteLinkIds and the port, so we do a
-        // two phase approach. First, go through and add all the ports to the
-        // graph, and then do a subsequent pass to link the ports together.
-        String domFQTI = domain.getFQTI();
-
-        // we need to add the domains so that searches can be done like
-        // "how do i get from domain A to domain B".
-        this.log.debug("Adding vertex "+domFQTI);
-        this.graph.addVertex(domFQTI);
-
-        nodes = domain.getNodes();
-        for (Node node : nodes) {
-            String nodeFQTI = node.getFQTI();
-
-            this.log.debug("Adding vertex "+nodeFQTI);
-            this.graph.addVertex(nodeFQTI);
-
-            // The edges will only be one way though, node -> domain. If
-            // they went both ways, a valid path could be found by finding
-            // a path to one node in the domain and finding a path from a
-            // different node in the domain, even though there was no path
-            // between the two nodes.
-            this.graph.addEdge(nodeFQTI, domFQTI);
-
-            // If it's an opaque instance, we won't know any internal links, so
-            // we have to assume that if we can get to a domain, we can get out
-            // of it via any external link.
-            if (isOpaque) {
-                this.graph.addEdge(domFQTI, nodeFQTI);
-            }
-
-            Set<Port> ports = node.getPorts();
-            for (Port port : ports) {
-                String portFQTI = port.getFQTI();
-
-                Long capacity = port.getMaximumReservableCapacity();
-                if (capacity == 0L) {
-                    capacity = port.getCapacity();
-                }
-
-                if (capacity == 0L)
-                    continue;
-
-                this.elementBandwidths.put(portFQTI, new Double(capacity));
-
-                this.log.debug("Adding vertex "+portFQTI);
-                this.graph.addVertex(portFQTI);
-
-                this.graph.addEdge(nodeFQTI, portFQTI);
-                this.graph.addEdge(portFQTI, nodeFQTI);
-
-                Set<Link> links = port.getLinks();
-                for (Link link : links) {
-                    String linkFQTI = link.getFQTI();
-
-                    this.log.debug("Adding vertex "+linkFQTI);
-                    this.graph.addVertex(linkFQTI);
-
-                    this.graph.addEdge(linkFQTI, portFQTI);
-                    this.graph.addEdge(portFQTI, linkFQTI);
-                }
-            }
-        }
-
-        nodes = domain.getNodes();
-        for (Node node : nodes) {
-
-            Set<Port> ports = node.getPorts();
-            for (Port port : ports) {
-                String portFQTI = port.getFQTI();
-
-                Set<Link> links = port.getLinks();
-                for (Link link : links) {
-                    if (link.getRemoteLink() == null)
-                        continue;
-
-                    String linkFQTI = link.getFQTI();
-                    String remLinkFQTI = link.getRemoteLink().getFQTI();
-
-                    if (graph.containsVertex(linkFQTI) == false)
-                        continue;
-
-                    // add empty links so that we know when we'll need to
-                    // lookup the next domain.
-                    if (graph.containsVertex(remLinkFQTI) == false) {
-                        this.graph.addVertex(remLinkFQTI);
-                    }
-
-                    Double edgeWeight = 10d;
-                    if (link.getTrafficEngineeringMetric() != null) {
-                        edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
-                    }
-
-                    this.log.debug("Adding edge "+linkFQTI+"->"+remLinkFQTI);
-                    this.graph.addEdge(linkFQTI, remLinkFQTI);
-                    this.elementWeights.put(linkFQTI, edgeWeight);
-                }
-            }
-        }
-
-        this.log.debug("addDomainToGraph.finish");
-    }
-
+    /**
+     * Finds a path between the source and destination with the specified
+     * bandwidth. This function performs a Dijkstra's search of the given
+     * domains, retrieving new ones automatically if the lookupDomain function
+     * has been overridden. If either the source or the destination domains are
+     * opaque, the pathfinder assumes that the specified hierarchy of elements
+     * exist in the opaque domains even if one of more of the elements is not
+     * known to the pathfinders. Thus, a returned path may include elements
+     * that do not actually exist in the known domain.
+     *
+     * @param src The topology identifier for the starting point
+     * @param dst The topology identifier for the ending point
+     * @param bandwidth The bandwidth required for this path
+     * @return A List containing the identifiers, in order, for the path between the source and destination
+     */
     public List<String> lookupPath(String src, String dst, double bandwidth) throws PathfinderException {
         PriorityQueue<String> elements = new PriorityQueue<String>(this.graph.vertexSet().size() + 1, this);
         Map<String, String> prevMap = new HashMap<String, String>();
@@ -297,8 +237,6 @@ public class GenericPathfinder implements Comparator {
         List<String> footer = new ArrayList<String>(); // reset the costs
 
         this.log.info("Looking up path between "+src+" and "+dst);
-
-        long startTime = System.currentTimeMillis();
 
         // if the source is opaque, we have to assume that any element we're
         // given exists in the domain. 
@@ -432,7 +370,6 @@ public class GenericPathfinder implements Comparator {
 
             String currDomain = currURN.get("domainFQID");
             if (this.domains.get(currDomain) == null) {
-		long stime1 = System.currentTimeMillis();
 
                 Domain domain = lookupDomain(currDomain);
                 if (domain == null) {
@@ -473,8 +410,6 @@ public class GenericPathfinder implements Comparator {
                         }
                     }
                 }
-
-		long etime1 = System.currentTimeMillis();
             }
 
             if (this.graph.containsVertex(id) == false) {
@@ -487,13 +422,13 @@ public class GenericPathfinder implements Comparator {
                 String target = this.graph.getEdgeTarget(e);
 
                 if (costs.get(target) == null) {
-                    Double targetConst = this.elementWeights.get(target);
-                    if (targetConst == null) {
-                        targetConst = new Double(0);
+                    Double targetCost = this.elementCosts.get(target);
+                    if (targetCost == null) {
+                        targetCost = new Double(0);
                     }
 
-                    this.log.debug("Adding '"+target+"' to queue: "+(cost.longValue() + this.graph.getEdgeWeight(e)));
-                    costs.put(target, new Double(cost.doubleValue() + targetConst));
+                    this.log.debug("Adding '"+target+"' to queue: "+(cost.longValue() + targetCost));
+                    costs.put(target, new Double(cost.doubleValue() + targetCost));
                     prevMap.put(target, id);
                     elements.remove(target);
                     elements.add(target);
@@ -523,20 +458,151 @@ public class GenericPathfinder implements Comparator {
             }
         }
 
-        long endTime = System.currentTimeMillis();
-
         return retIds;
     }
 
-    double parseTEM(String trafficEngineeringMetric) {
-        double weight = new Double(trafficEngineeringMetric).doubleValue();
-        return weight;
+    /**
+     * Adds the specified domain to the internal graph. This
+     * method iterates through the domain, placing each element as a vertex in
+     * the graph, and describing each connection between them with an edge.
+     *
+     * @param isOpaque A boolean stating whether the given Domain is opaque
+     */
+    private void addDomainToGraph(Domain domain, boolean isOpaque) {
+        this.log.debug("addDomainToGraph.start");
+
+        DefaultEdge edge;
+        Set<Node> nodes;
+
+        // This won't link together the remoteLinkIds and the port, so we do a
+        // two phase approach. First, go through and add all the ports to the
+        // graph, and then do a subsequent pass to link the ports together.
+        String domFQTI = domain.getFQTI();
+
+        // we need to add the domains so that searches can be done like
+        // "how do i get from domain A to domain B".
+        this.log.debug("Adding vertex "+domFQTI);
+        this.graph.addVertex(domFQTI);
+
+        nodes = domain.getNodes();
+        for (Node node : nodes) {
+            String nodeFQTI = node.getFQTI();
+
+            this.log.debug("Adding vertex "+nodeFQTI);
+            this.graph.addVertex(nodeFQTI);
+
+            // The edges will only be one way though, node -> domain. If
+            // they went both ways, a valid path could be found by finding
+            // a path to one node in the domain and finding a path from a
+            // different node in the domain, even though there was no path
+            // between the two nodes.
+            this.graph.addEdge(nodeFQTI, domFQTI);
+
+            // If it's an opaque instance, we won't know any internal links, so
+            // we have to assume that if we can get to a domain, we can reach
+            // any node inside that domain.
+            if (isOpaque) {
+                this.graph.addEdge(domFQTI, nodeFQTI);
+            }
+
+            Set<Port> ports = node.getPorts();
+            for (Port port : ports) {
+                String portFQTI = port.getFQTI();
+
+                Long capacity = port.getMaximumReservableCapacity();
+                if (capacity == 0L) {
+                    capacity = port.getCapacity();
+                }
+
+                if (capacity == 0L)
+                    continue;
+
+                this.elementBandwidths.put(portFQTI, new Double(capacity));
+
+                this.log.debug("Adding vertex "+portFQTI);
+                this.graph.addVertex(portFQTI);
+
+                this.graph.addEdge(nodeFQTI, portFQTI);
+                this.graph.addEdge(portFQTI, nodeFQTI);
+
+                Set<Link> links = port.getLinks();
+                for (Link link : links) {
+                    String linkFQTI = link.getFQTI();
+
+                    this.log.debug("Adding vertex "+linkFQTI);
+                    this.graph.addVertex(linkFQTI);
+
+                    this.graph.addEdge(linkFQTI, portFQTI);
+                    this.graph.addEdge(portFQTI, linkFQTI);
+                }
+            }
+        }
+
+        nodes = domain.getNodes();
+        for (Node node : nodes) {
+
+            Set<Port> ports = node.getPorts();
+            for (Port port : ports) {
+                String portFQTI = port.getFQTI();
+
+                Set<Link> links = port.getLinks();
+                for (Link link : links) {
+                    if (link.getRemoteLink() == null)
+                        continue;
+
+                    String linkFQTI = link.getFQTI();
+                    String remLinkFQTI = link.getRemoteLink().getFQTI();
+
+                    if (graph.containsVertex(linkFQTI) == false)
+                        continue;
+
+                    // add empty links so that we know when we'll need to
+                    // lookup the next domain.
+                    if (graph.containsVertex(remLinkFQTI) == false) {
+                        this.graph.addVertex(remLinkFQTI);
+                    }
+
+                    Double edgeCost = 10d;
+                    if (link.getTrafficEngineeringMetric() != null) {
+                        edgeCost = this.parseTEM(link.getTrafficEngineeringMetric());
+                    }
+
+                    this.log.debug("Adding edge "+linkFQTI+"->"+remLinkFQTI);
+                    this.graph.addEdge(linkFQTI, remLinkFQTI);
+                    this.elementCosts.put(linkFQTI, edgeCost);
+                }
+            }
+        }
+
+        this.log.debug("addDomainToGraph.finish");
     }
 
+    /**
+     * Parses a traffic engineering metric into a cost.
+     *
+     * @param trafficEngineeringMetric A string containing the specified TEM
+     */
+    private double parseTEM(String trafficEngineeringMetric) {
+        double cost = new Double(trafficEngineeringMetric).doubleValue();
+        return cost;
+    }
+
+    /**
+     * Looks up the specified domain. This method is
+     * meant to be overridden by subclasses. 
+     *
+     * @param id The topology identifier for the desired domain
+     */
     protected Domain lookupDomain(String id) {
         return null;
     }
 
+    /**
+     * Compares the cost between two identifiers. This method is called by the
+     * Priority Queue to compare the costs between two elements.
+     *
+     * @param id The topology identifier for the desired domain
+     */
     public int compare(Object left, Object right) {
         String left_str = (String) left;
         String right_str = (String) right;
