@@ -401,6 +401,11 @@ public class PathSetupManager{
                            "aaa.institution and bss.sites table.");
             return;
         }
+
+		if(StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
+        	this.log.warn("Reservation " + gri + " already failed so skipping.");
+        	return;
+        }
         
         eventProducer.addEvent(failedType, login, errorSrc, resv, errorCode, errorMsg);
         /** Teardown the reservation. It may be in the queue so detecting
