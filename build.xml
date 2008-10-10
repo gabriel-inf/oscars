@@ -64,7 +64,7 @@
         <artifact:localRepository id="local.repository" path="${maven.repo}" layout="default"/>
         <artifact:remoteRepository id="remote.repository.i2" url="http://hopibruw.internet2.edu/maven"/>
         <artifact:remoteRepository id="remote.repository.mvn" url="http://repo1.maven.org/maven2"/>
-	<artifact:remoteRepository id="remote.repository.java" url="http://download.java.net/maven/1/" layout="legacy"/>
+        <artifact:remoteRepository id="remote.repository.java" url="http://download.java.net/maven/1/" layout="legacy"/>
     </target>
     <target name="jarRemoteCopy" depends="initMaven">
         <artifact:dependencies>
@@ -84,7 +84,7 @@
             <localRepository refid="local.repository"/>
             <remoteRepository refid="remote.repository.java"/>
         </artifact:dependencies>
-	<copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
+        <copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
     </target>
     <!-- Using Axis2, generates code in net.es.oscars.oscars and
 net.es.oscars.wsdlTypes.  Also, OSCARS.wsdl is copied into resources,
@@ -110,6 +110,7 @@ Adding a -sd switch generates resources/services.xml -->
                 <fileset dir="${build.lib}" includes="*.jar"/>
                 <fileset dir="${build.axis2.lib}" includes="*.jar"/>
             </classpath>
+            <arg value="--noBuildXML"/>
             <arg value="-uri"/>
             <arg file="conf/server/OSCARS.wsdl"/>
             <arg value="--server-side"/>
@@ -474,6 +475,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </classpath>
             <arg value="-uri"/>
             <arg file="conf/notify-server/OSCARS-Notify.wsdl"/>
+            <arg value="--noBuildXML"/>
             <arg value="--server-side"/>
             <arg value="--serverside-interface"/>
             <arg value="--sync"/>

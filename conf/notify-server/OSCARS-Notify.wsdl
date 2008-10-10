@@ -4,6 +4,7 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/"
+    xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
     xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
     xmlns:wsnt-br="http://docs.oasis-open.org/wsn/br-2"
     xmlns:wsrf-r="http://docs.oasis-open.org/wsrf/r-2"
@@ -16,6 +17,80 @@
         certificate of the signing entity. The timestamp, certificate
         and message body are all signed. DRAFT V1.0 Nov 2006
     </wsdl:documentation>
+    
+    <!--  TODO figurout  how to include the security policy 
+   <xsd:schema>
+       <xsd:include schemaLocation="OSCARS-security-policy.xml"/> 
+   </xsd:schema>
+    -->
+<!--  security policy definitions 
+     these could be a wsp:PolicyReference URI="..." or maybe an import -->
+
+    <wsp:Policy  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" 
+             xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy"
+             xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+             wsu:Id="X509BindingPolicy">
+      <wsp:ExactlyOne>
+        <wsp:All>
+        <sp:AsymmetricBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+             <wsp:Policy>
+               <sp:InitiatorToken>
+                 <wsp:Policy>
+                   <sp:X509Token
+                     sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                     <wsp:Policy>
+                       <sp:WssX509V3Token10 />
+                       <sp:RequireThumbprintReference/> 
+                     </wsp:Policy>
+                   </sp:X509Token>
+                 </wsp:Policy>
+               </sp:InitiatorToken>
+               <sp:RecipientToken>
+                 <wsp:Policy>
+                   <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Never">
+                     <wsp:Policy>
+                       <sp:WssX509V3Token10 />
+                       <sp:RequireThumbprintReference/>
+                     </wsp:Policy>
+                   </sp:X509Token>
+                 </wsp:Policy>
+               </sp:RecipientToken>
+               <sp:AlgorithmSuite>
+                 <wsp:Policy>
+                   <sp:TripleDesRsa15 />
+                 </wsp:Policy>
+               </sp:AlgorithmSuite>
+               <sp:Layout>
+                 <wsp:Policy>
+                   <sp:Strict />
+                 </wsp:Policy>
+               </sp:Layout>
+               <sp:IncludeTimestamp />
+               <sp:OnlySignEntireHeadersAndBody /> 
+             </wsp:Policy>
+           </sp:AsymmetricBinding>
+           <sp:Wss10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+             <wsp:Policy>
+               <sp:MustSupportRefKeyIdentifier />
+               <sp:MustSupportRefIssuerSerial />
+             </wsp:Policy>
+           </sp:Wss10>
+        </wsp:All>
+      </wsp:ExactlyOne>
+    </wsp:Policy>
+    <wsp:Policy
+     	  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+     	  xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy"
+     	  xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+     	  wsu:Id="signedMsgPolicy">
+      <wsp:ExactlyOne>
+        <wsp:All>
+          <sp:SignedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+     	    <sp:Body />
+          </sp:SignedParts>
+        </wsp:All>
+      </wsp:ExactlyOne>
+    </wsp:Policy>
 
     <!-- Element definitons -->
     <wsdl:types>
@@ -369,6 +444,7 @@
     </wsdl:portType>
 
     <wsdl:binding name="OSCARSNOTIFYSOAP" type="tns:OSCARSNotify">
+    <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
         <soap:binding style="document"
             transport="http://schemas.xmlsoap.org/soap/http" />
             
@@ -384,6 +460,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/Subscribe" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="SubscribeRequest" />
             </wsdl:input>
             <wsdl:output>
@@ -435,6 +512,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/Renew" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="RenewRequest" />
             </wsdl:input>
             <wsdl:output>
@@ -456,6 +534,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/Unsubscribe" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="UnsubscribeRequest" />
             </wsdl:input>
             <wsdl:output>
@@ -477,6 +556,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/PauseSubscription" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="PauseSubscriptionRequest" />
             </wsdl:input>
             <wsdl:output>
@@ -498,6 +578,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/ResumeSubscription" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="ResumeSubscriptionRequest" />
             </wsdl:input>
             <wsdl:output>
@@ -519,6 +600,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/RegisterPublisher" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="RegisterPublisherRequest" />
             </wsdl:input>
             <wsdl:output>
@@ -549,6 +631,7 @@
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/DestroyRegistration" />
             <wsdl:input>
+                <wsp:PolicyReference URI="#signedMsgPolicy" />
                 <soap:body use="literal" parts="DestroyRegistrationRequest" />
             </wsdl:input>
             <wsdl:output>

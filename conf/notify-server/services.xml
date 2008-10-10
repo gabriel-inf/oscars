@@ -12,18 +12,108 @@
         <parameter name="useOriginalwsdl">true</parameter>
         <parameter name="modifyUserWSDLPortAddress">true</parameter>
         <parameter name="ServiceTCCL" locked="false">composite</parameter>
-        <parameter name="InflowSecurity">
-           <action>
-               <items>Timestamp Signature</items>
-               <signaturePropFile>server/sec-server.properties</signaturePropFile>
-           </action>
-        </parameter>
-        <parameter  name="OutflowSecurity">
-           <action>
-               <items>Timestamp</items>
-            </action>
-        </parameter>
-        
+        <!-- policy copied from http://ws.apache.org/rampart/samples/policy/sample02.xml -->
+        <wsp:PolicyAttachment xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
+          <wsp:AppliesTo>
+            <policy-subject identifier="binding:soap11" />
+            <policy-subject identifier="binding:soap12" />
+          </wsp:AppliesTo>
+    
+          <wsp:Policy wsu:Id="X509EndPointPolicy" 
+      				xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" 
+      				xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+      				xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+            <wsp:ExactlyOne>
+              <wsp:All>
+                <sp:AsymmetricBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                     <wsp:Policy>
+                       <sp:InitiatorToken>
+                         <wsp:Policy>
+                           <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                             <wsp:Policy>
+                               <sp:WssX509V3Token10 />
+                               <sp:RequireThumbprintReference/> <!-- needed for V1 certs -->
+                             </wsp:Policy>
+                           </sp:X509Token>
+                         </wsp:Policy>
+                       </sp:InitiatorToken>
+                       <sp:RecipientToken>
+                         <wsp:Policy>
+                           <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Always">
+                             <wsp:Policy>
+                               <sp:WssX509V3Token10 />
+                               <sp:RequireThumbprintReference/>
+                             </wsp:Policy>
+                           </sp:X509Token>
+                         </wsp:Policy>
+                       </sp:RecipientToken>
+                       <sp:AlgorithmSuite>
+                         <wsp:Policy>
+                           <sp:TripleDesRsa15 />
+                         </wsp:Policy>
+                       </sp:AlgorithmSuite>
+                       <sp:Layout>
+                         <wsp:Policy>
+                           <sp:Strict />
+                         </wsp:Policy>
+                       </sp:Layout>
+                       <sp:IncludeTimestamp />
+                       <sp:OnlySignEntireHeadersAndBody />
+                     </wsp:Policy>
+                   </sp:AsymmetricBinding>
+                   <sp:Wss10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                     <wsp:Policy>
+                       <sp:MustSupportRefKeyIdentifier />
+                       <sp:MustSupportRefIssuerSerial />
+                     </wsp:Policy>
+                   </sp:Wss10>
+                   <ramp:RampartConfig xmlns:ramp="http://ws.apache.org/rampart/policy">
+          		     <ramp:user>oscars-dev-service</ramp:user>
+          		     <ramp:passwordCallbackClass>net.es.oscars.client.security.PWCallback</ramp:passwordCallbackClass>
+          		     <ramp:signatureCrypto>
+          		        <ramp:crypto provider="org.apache.ws.security.components.crypto.Merlin">
+          		            <ramp:property name="org.apache.ws.security.crypto.merlin.keystore.type">jks</ramp:property>
+          		            <ramp:property name="org.apache.ws.security.crypto.merlin.file">server/sec-server.jks</ramp:property>
+          		            <ramp:property name="org.apache.ws.security.crypto.merlin.keystore.password">password</ramp:property>
+          		        </ramp:crypto>
+          		    </ramp:signatureCrypto>
+                  </ramp:RampartConfig>
+                </wsp:All>
+              </wsp:ExactlyOne>
+          </wsp:Policy>
+        </wsp:PolicyAttachment>
+        <wsp:PolicyAttachment xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
+           <wsp:AppliesTo>
+      	     <policy-subject identifier="binding:soap11/operation:Subscribe/in" />
+      	     <policy-subject identifier="binding:soap12/operation:Subscribe/in" />
+      	     <policy-subject identifier="binding:soap11/operation:Renew/in" />
+      	     <policy-subject identifier="binding:soap12/operation:Renew/in" />
+             <policy-subject identifier="binding:soap11/operation:Unsubscribe/in" />
+      	     <policy-subject identifier="binding:soap12/operation:Unsubscribe/in" />
+      	     <policy-subject identifier="binding:soap11/operation:PauseSubscription/in" />
+      	     <policy-subject identifier="binding:soap12/operation:PauseSubscription/in" />
+      	     <policy-subject identifier="binding:soap11/operation:ResumeSubscription/in" />
+      	     <policy-subject identifier="binding:soap12/operation:ResumeSubscription/in" />
+      	     <policy-subject identifier="binding:soap11/operation:RegisterPublisher/in" />
+      	     <policy-subject identifier="binding:soap12/operation:RegisterPublisher/in" />
+      	     <policy-subject identifier="binding:soap11/operation:DestroyRegistration/in" />
+      	     <policy-subject identifier="binding:soap12/operation:DestroyRegistration/in" />
+ 
+          </wsp:AppliesTo>
+          <wsp:Policy wsu:id="signedMsgPolicy"
+        			xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" 
+      			xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+      			xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+      	   <wsp:ExactlyOne>
+               <wsp:All>
+                  <sp:SignedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                      <sp:Body/>
+                  </sp:SignedParts>
+                </wsp:All>
+              </wsp:ExactlyOne>  
+          </wsp:Policy>
+        </wsp:PolicyAttachment>
+ 
         <operation name="Notify" mep="http://www.w3.org/ns/wsdl/in-only">
             <actionMapping>http://oscars.es.net/OSCARS/Notify</actionMapping>
         </operation>
