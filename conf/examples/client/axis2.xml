@@ -67,7 +67,7 @@
            <sp:Body />
          </sp:SignedParts>
         <ramp:RampartConfig xmlns:ramp="http://ws.apache.org/rampart/policy">
-		    <ramp:user>oscars-dev-service</ramp:user>
+		    <ramp:user>alice</ramp:user>
 		    <ramp:passwordCallbackClass>net.es.oscars.client.security.PWCallback</ramp:passwordCallbackClass>
 		    <ramp:signatureCrypto>
 		        <ramp:crypto provider="org.apache.ws.security.components.crypto.Merlin">
