@@ -44,7 +44,7 @@
         <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
-            <fileset dir="conf/server" includes="*.cfg.xml, log4j.properties"/>
+            <fileset dir="conf/server" includes="c3p0.properties, *.cfg.xml, log4j.properties"/>
         </copy>
         <!-- Copy to prevent non-fatal warning on Tomcat start-up -->
         <copy todir="conf/notify-server">
