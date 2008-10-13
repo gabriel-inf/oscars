@@ -35,7 +35,7 @@ public class ServiceManager {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("external.service", true);
-        Properties nbProps = propHandler.getPropertyGroup("notifybroker", true); 
+        Properties nbProps = propHandler.getPropertyGroup("notify.ws.broker", true); 
         this.serviceJobs = new ArrayList<Class>();
         this.core = OSCARSNotifyCore.getInstance();
         String localhost = null;
