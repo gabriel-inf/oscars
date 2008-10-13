@@ -94,7 +94,7 @@ public class RegisterPublisherJob implements Job{
                            " you may ignore this message.\n\nTIPS: Please " +
                            "verify that the notification broker is running at " + 
                            dataMap.getString("url") + ". If this URL is not " +
-                           "correct then please set notifybroker.url to " +
+                           "correct then please set notify.ws.broker.url to " +
                            "the correct value in oscars.properties. " +
                            "Additionally, you should verify that you have "+
                            "created a user for the local IDC that is " +
