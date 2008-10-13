@@ -25,6 +25,7 @@ import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.TopologyUtil;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.traceroute.*;
+import net.es.oscars.pathfinder.perfsonar.util.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 
@@ -57,7 +58,7 @@ import org.jgrapht.graph.DefaultEdge;
  *
  * @author Aaron Brown (aaron@internet2.edu)
  */
-public class GenericPathfinder implements Comparator {
+public class GenericPathfinder {
     private Logger log;
     private HashMap<String, Domain> domains;
     private DefaultDirectedWeightedGraph<String, DefaultEdge> graph;
@@ -67,6 +68,10 @@ public class GenericPathfinder implements Comparator {
     private Set<String> ignoredElements;
     private Set<String> opaqueDomains;
     private boolean cacheFailures;
+    private ArrayList<DomainFinder> domainFinders;
+    private final double DEFAULT_NONLINK_COST = 0.01;
+    private final double DEFAULT_LINK_COST = 10;
+    private final double OPAQUE_ESTIMATED_DOMAIN_LINKS = 7;
  
     public GenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
@@ -77,6 +82,19 @@ public class GenericPathfinder implements Comparator {
         this.ignoredElements = new HashSet<String>();
         this.opaqueDomains = new HashSet<String>();
         this.cacheFailures = true;
+        this.domainFinders = new ArrayList<DomainFinder>();
+    }
+
+    public void addDomainFinder(DomainFinder df) {
+        this.domainFinders.add(df);
+    }
+
+    public void addDomainFinder(DomainFinder df, int priority) {
+        this.domainFinders.add(priority, df);
+    }
+
+    public void removeDomainFinder(DomainFinder df) {
+        this.domainFinders.remove(df);
     }
 
     /**
@@ -229,7 +247,8 @@ public class GenericPathfinder implements Comparator {
      * @return A List containing the identifiers, in order, for the path between the source and destination
      */
     public List<String> lookupPath(String src, String dst, double bandwidth) throws PathfinderException {
-        PriorityQueue<String> elements = new PriorityQueue<String>(this.graph.vertexSet().size() + 1, this);
+        ElementCostComparator comparator = new ElementCostComparator();
+        PriorityQueue<String> elements = new PriorityQueue<String>(this.graph.vertexSet().size() + 1, comparator);
         Map<String, String> prevMap = new HashMap<String, String>();
         this.costs = new HashMap<String, Double>(); // reset the costs
 
@@ -370,15 +389,28 @@ public class GenericPathfinder implements Comparator {
 
             String currDomain = currURN.get("domainFQID");
             if (this.domains.get(currDomain) == null) {
+                Domain retDomain = null;
 
-                Domain domain = lookupDomain(currDomain);
-                if (domain == null) {
+		long measSTime = System.currentTimeMillis();
+                for(DomainFinder df : this.domainFinders) {
+                    Domain domain = df.lookupDomain(currDomain);
+
+                    if (domain != null) {
+                        retDomain = domain;
+                        break;
+                    }
+                }
+		long measETime = System.currentTimeMillis();
+
+		System.out.println("Time to discover "+currDomain+": "+(measETime-measSTime));
+
+                if (retDomain == null) {
                     if (this.cacheFailures) {
                         Domain junk = new Domain();
                         this.domains.put(currDomain, junk);
                     }
                 } else {
-                    this.addDomain(domain);
+                    this.addDomain(retDomain);
 
                     this.log.debug("Destination domain: "+dstURN.get("domainFQID"));
 
@@ -423,10 +455,8 @@ public class GenericPathfinder implements Comparator {
 
                 if (costs.get(target) == null) {
                     Double targetCost = this.elementCosts.get(target);
-                    if (targetCost == null) {
-                        targetCost = new Double(0);
-                    }
 
+                    this.log.debug("Adding '"+target+"' to queue");
                     this.log.debug("Adding '"+target+"' to queue: "+(cost.longValue() + targetCost));
                     costs.put(target, new Double(cost.doubleValue() + targetCost));
                     prevMap.put(target, id);
@@ -480,9 +510,22 @@ public class GenericPathfinder implements Comparator {
         String domFQTI = domain.getFQTI();
 
         // we need to add the domains so that searches can be done like
-        // "how do i get from domain A to domain B".
+        // "how do i get from domain A to domain B" or "how do I get to some
+        // element X in the opaque domain Y"
         this.log.debug("Adding vertex "+domFQTI);
+
         this.graph.addVertex(domFQTI);
+
+        double domCost;
+        if (isOpaque) {
+            // each bidirectional link consists of, on average, 5 elements: 2 ports, 2 uni-links and 1 node.
+            domCost = this.DEFAULT_LINK_COST * (this.OPAQUE_ESTIMATED_DOMAIN_LINKS * 2) +
+                                this.DEFAULT_NONLINK_COST * (this.OPAQUE_ESTIMATED_DOMAIN_LINKS * 3);
+        } else {
+            domCost = DEFAULT_NONLINK_COST;
+        }
+
+        this.elementCosts.put(domFQTI, new Double(domCost));
 
         nodes = domain.getNodes();
         for (Node node : nodes) {
@@ -490,6 +533,8 @@ public class GenericPathfinder implements Comparator {
 
             this.log.debug("Adding vertex "+nodeFQTI);
             this.graph.addVertex(nodeFQTI);
+
+            this.elementCosts.put(nodeFQTI, new Double(this.DEFAULT_NONLINK_COST));
 
             // The edges will only be one way though, node -> domain. If
             // they went both ways, a valid path could be found by finding
@@ -521,6 +566,7 @@ public class GenericPathfinder implements Comparator {
 
                 this.log.debug("Adding vertex "+portFQTI);
                 this.graph.addVertex(portFQTI);
+                this.elementCosts.put(portFQTI, new Double(this.DEFAULT_NONLINK_COST));
 
                 this.graph.addEdge(nodeFQTI, portFQTI);
                 this.graph.addEdge(portFQTI, nodeFQTI);
@@ -531,6 +577,13 @@ public class GenericPathfinder implements Comparator {
 
                     this.log.debug("Adding vertex "+linkFQTI);
                     this.graph.addVertex(linkFQTI);
+
+                    double linkCost = this.DEFAULT_LINK_COST;
+                    if (link.getTrafficEngineeringMetric() != null) {
+                        linkCost = this.parseTEM(link.getTrafficEngineeringMetric());
+                    }
+
+                    this.elementCosts.put(linkFQTI, linkCost);
 
                     this.graph.addEdge(linkFQTI, portFQTI);
                     this.graph.addEdge(portFQTI, linkFQTI);
@@ -560,16 +613,12 @@ public class GenericPathfinder implements Comparator {
                     // lookup the next domain.
                     if (graph.containsVertex(remLinkFQTI) == false) {
                         this.graph.addVertex(remLinkFQTI);
-                    }
 
-                    Double edgeCost = 10d;
-                    if (link.getTrafficEngineeringMetric() != null) {
-                        edgeCost = this.parseTEM(link.getTrafficEngineeringMetric());
+                        this.elementCosts.put(remLinkFQTI, this.DEFAULT_LINK_COST);
                     }
 
                     this.log.debug("Adding edge "+linkFQTI+"->"+remLinkFQTI);
                     this.graph.addEdge(linkFQTI, remLinkFQTI);
-                    this.elementCosts.put(linkFQTI, edgeCost);
                 }
             }
         }
@@ -584,33 +633,27 @@ public class GenericPathfinder implements Comparator {
      */
     private double parseTEM(String trafficEngineeringMetric) {
         double cost = new Double(trafficEngineeringMetric).doubleValue();
+        this.log.debug("parsed TEM: "+cost);
         return cost;
     }
 
-    /**
-     * Looks up the specified domain. This method is
-     * meant to be overridden by subclasses. 
-     *
-     * @param id The topology identifier for the desired domain
-     */
-    protected Domain lookupDomain(String id) {
-        return null;
-    }
+    private class ElementCostComparator implements Comparator {
+        /**
+         * Compares the cost between two identifiers. This method is called by the
+         * Priority Queue to compare the costs between two elements.
+         *
+         * @param left A string containing a topology identifier
+         * @param right A string containing a topology identifier
+         */
+        public int compare(Object left, Object right) {
+            String left_str = (String) left;
+            String right_str = (String) right;
+            int res = (int) (costs.get(left) - costs.get(right));
+          
+            if (res == 0)
+                res = left_str.compareTo(right_str); 
 
-    /**
-     * Compares the cost between two identifiers. This method is called by the
-     * Priority Queue to compare the costs between two elements.
-     *
-     * @param id The topology identifier for the desired domain
-     */
-    public int compare(Object left, Object right) {
-        String left_str = (String) left;
-        String right_str = (String) right;
-        int res = (int) (this.costs.get(left) - this.costs.get(right));
-      
-        if (res == 0)
-            res = left_str.compareTo(right_str); 
-
-        return res;
+            return res;
+        }
     }
 }

@@ -15,6 +15,8 @@ import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 
+import net.es.oscars.pathfinder.perfsonar.util.*;
+
 import net.es.oscars.bss.topology.URNParser;
 
 import org.jdom.*;
@@ -33,6 +35,7 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.*;
 
+import edu.internet2.perfsonar.*;
 
 /**
  * PSPathfinder finds the route through the domain and toward the destination
@@ -48,7 +51,8 @@ public class PSPathfinder extends Pathfinder implements PCE {
     private Logger log;
     private Domain localDomain;
     private TypeConverter tc;
- 
+    static private PerfSONARDomainFinder psdf = null;
+
     /**
      * Constructor
      *
@@ -63,6 +67,78 @@ public class PSPathfinder extends Pathfinder implements PCE {
         this.localDomain = domDAO.getLocalDomain();
 
         this.tc = OSCARSCore.getInstance().getTypeConverter();
+
+        if (this.psdf == null) {
+            String[] gLSs = null;
+            String[] hLSs = null;
+            String[] TSs = null;
+            String hints = null;
+
+            String[] sections = { "topology", "lookup" };
+
+            for ( String section : sections) {
+
+                this.log.debug("Handling section: "+section);
+
+                PropHandler propHandler = new PropHandler("oscars.properties");
+                Properties props = propHandler.getPropertyGroup(section, true);
+
+                if (hints == null) {
+                    hints = props.getProperty("hints");
+                }
+
+                int i;
+
+                if (gLSs == null) {
+                    i = 1;
+                    ArrayList<String> gLSList = new ArrayList<String>();
+                    while(props.getProperty("global." + i) != null){
+                        gLSList.add(props.getProperty("global." + i));
+                        i++;
+                    }
+                    if(!gLSList.isEmpty()){
+                        gLSs = gLSList.toArray(new String[gLSList.size()]);
+                    }
+                }
+
+                if (hLSs == null) {
+                    i = 1;
+                    ArrayList<String> hLSList = new ArrayList<String>();
+                    while(props.getProperty("home." + i) != null){
+                        hLSList.add(props.getProperty("home." + i));
+                        i++;
+                    }
+                    if(!hLSList.isEmpty()){
+                        hLSs = hLSList.toArray(new String[hLSList.size()]);
+                    }
+                }
+
+                if (TSs == null) {
+                    i = 1;
+                    ArrayList<String> TSList = new ArrayList<String>();
+                    while(props.getProperty("topology." + i) != null){
+                        TSList.add(props.getProperty("topology." + i));
+                        i++;
+                    }
+                    if(!TSList.isEmpty()){
+                        TSs = TSList.toArray(new String[TSList.size()]);
+                    }
+                }
+            }
+
+            try {
+                if(gLSs != null || hLSs != null || TSs != null){
+                    this.psdf = new PerfSONARDomainFinder(gLSs, hLSs, TSs);
+                }else if(hints != null){
+                    this.psdf = new PerfSONARDomainFinder(hints);
+                }else{
+                    this.log.warn("No lookup service information specified, using defaults");
+                    this.psdf = new PerfSONARDomainFinder("http://www.perfsonar.net/gls.root.hints");
+                }
+            } catch(Exception e) {
+                this.log.error(e.getMessage());
+            }
+        }
     }
 
     /**
@@ -73,6 +149,10 @@ public class PSPathfinder extends Pathfinder implements PCE {
      * @return the ingress linkId of the path
      */
     public String findIngress(PathInfo pathInfo) throws PathfinderException {
+        if (this.psdf == null) {
+            this.log.error("The perfSONAR pathfinder is not properly configured.");
+        }
+
         Layer2Info l2Info = pathInfo.getLayer2Info();
 
         //need to convert to URN
@@ -103,6 +183,9 @@ public class PSPathfinder extends Pathfinder implements PCE {
      * @throws PathfinderException
      */
     public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
+        if (this.psdf == null) {
+            this.log.error("The perfSONAR pathfinder is not properly configured.");
+        }
 
         CtrlPlanePathContent interPath = pathInfo.getPath();
         CtrlPlanePathContent intraPath = null;
@@ -186,12 +269,14 @@ public class PSPathfinder extends Pathfinder implements PCE {
     private CtrlPlanePathContent buildNewPath(PathInfo pathInfo, Reservation reservation)
         throws PathfinderException, BSSException {
 
-        PSGenericPathfinder pf;
+        GenericPathfinder pf;
         try {
-            pf = new PSGenericPathfinder();
+            pf = new GenericPathfinder();
         } catch (Exception e) {
             throw new PathfinderException("Couldn't initialize Generic perfSONAR pathfinder");
         }
+
+        pf.addDomainFinder(psdf);
 
         pf.addDomain(this.localDomain);
 
