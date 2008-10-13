@@ -18,54 +18,10 @@
 <axisconfig name="AxisJava2.0">
 
 <module ref="rampart" />
-<!-- policy copied from http://ws.apache.org/rampart/samples/policy/sample02.xml -->
+<!-- only rampart config needs to be here. The message and binding policy is in the WSDL -->
 <wsp:Policy wsu:Id="SigOnly" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
     <wsp:ExactlyOne>
       <wsp:All>
-      <sp:AsymmetricBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
-           <wsp:Policy>
-             <sp:InitiatorToken>
-               <wsp:Policy>
-                 <sp:X509Token
-                   sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Always">
-                   <wsp:Policy>
-                     <sp:WssX509V3Token10 />
-                   </wsp:Policy>
-                 </sp:X509Token>
-               </wsp:Policy>
-             </sp:InitiatorToken>
-             <sp:RecipientToken>
-               <wsp:Policy>
-                 <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Always">
-                   <wsp:Policy>
-                     <sp:WssX509V3Token10 />
-                   </wsp:Policy>
-                 </sp:X509Token>
-               </wsp:Policy>
-             </sp:RecipientToken>
-             <sp:AlgorithmSuite>
-               <wsp:Policy>
-                 <sp:TripleDesRsa15 />
-               </wsp:Policy>
-             </sp:AlgorithmSuite>
-             <sp:Layout>
-               <wsp:Policy>
-                 <sp:Strict />
-               </wsp:Policy>
-             </sp:Layout>
-             <sp:IncludeTimestamp />
-             <sp:OnlySignEntireHeadersAndBody />
-           </wsp:Policy>
-         </sp:AsymmetricBinding>
-         <sp:Wss10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
-           <wsp:Policy>
-             <sp:MustSupportRefKeyIdentifier />
-             <sp:MustSupportRefIssuerSerial />
-           </wsp:Policy>
-         </sp:Wss10>
-         <sp:SignedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
-           <sp:Body />
-         </sp:SignedParts>
         <ramp:RampartConfig xmlns:ramp="http://ws.apache.org/rampart/policy">
 		    <ramp:user>alice</ramp:user>
 		    <ramp:passwordCallbackClass>net.es.oscars.client.security.PWCallback</ramp:passwordCallbackClass>
@@ -165,6 +121,7 @@
 </phaseOrder>
 
 <phaseOrder type="InFaultFlow">
+    <phase name="Security" />
     <phase name="PreDispatch" />
     <phase name="Dispatch" class="org.apache.axis2.engine.DispatchPhase">
         <handler name="RequestURIBasedDispatcher"
@@ -185,7 +142,6 @@
         </handler>
     </phase>
     <phase name="OperationInFaultPhase" />
-    <phase name="Security" />
     <phase name="soapmonitorPhase" />
 </phaseOrder>
 
@@ -193,8 +149,8 @@
     <phase name="soapmonitorPhase" />
     <phase name="OperationOutFaultPhase" />
     <phase name="PolicyDetermination" />
-    <phase name="Security" />
     <phase name="MessageOut" />
+    <phase name="Security" />
 </phaseOrder>
 
 </axisconfig>
