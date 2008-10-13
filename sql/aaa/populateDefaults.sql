@@ -571,6 +571,16 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="Publishers"),
+     (select id from permissions where name="create"),
+     (select id from constraints where name="none"),NULL); 
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="Publishers"),
+     (select id from permissions where name="modify"),
+     (select id from constraints where name="none"),NULL);
      
 -- NOC operators
 -- List and query all reservations
