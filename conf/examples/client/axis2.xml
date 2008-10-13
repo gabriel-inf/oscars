@@ -72,7 +72,7 @@
 		    <ramp:signatureCrypto>
 		        <ramp:crypto provider="org.apache.ws.security.components.crypto.Merlin">
 		            <ramp:property name="org.apache.ws.security.crypto.merlin.keystore.type">jks</ramp:property>
-		            <ramp:property name="org.apache.ws.security.crypto.merlin.file">server/sec-server.jks</ramp:property>
+		            <ramp:property name="org.apache.ws.security.crypto.merlin.file">repo/sec-client.jks</ramp:property>
 		            <ramp:property name="org.apache.ws.security.crypto.merlin.keystore.password">password</ramp:property>
 		        </ramp:crypto>
 		    </ramp:signatureCrypto>
