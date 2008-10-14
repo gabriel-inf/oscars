@@ -35,8 +35,6 @@ public class TopologyXMLParser {
     private Namespace ns;
     private Properties props;
 
-    private String localDomainId;
-
     private Topology topology;
 
     private Hashtable<String, String> remoteLinkMap;
@@ -476,22 +474,6 @@ public class TopologyXMLParser {
             addrDB.setLink(linkDB);
             linkDB.addIpaddr(addrDB);
         }
-    }
-
-    /**
-     * localDomainId getter
-     * @return the value of localDomainId
-     */
-    public String getLocalDomainId() {
-        return this.localDomainId;
-    }
-
-    /**
-     * localDomainId setter
-     * @param domainId The value to be set
-     */
-    public void setLocalDomainId(String domainId) {
-        this.localDomainId = domainId;
     }
 
     private List<Element> getElementChildren(Element e, String name) {

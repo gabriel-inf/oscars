@@ -35,7 +35,6 @@ public class TopologyXMLImporter {
     private Properties props;
 
     private String rootTopoId;
-    private String localDomainId;
     private String nsUri;
     private String nsPrefix;
 
@@ -61,7 +60,6 @@ public class TopologyXMLImporter {
         this.setNsUri(this.props.getProperty("nsuri").trim());
         this.setNsPrefix(this.props.getProperty("nsprefix").trim());
         this.setRootTopoId(this.props.getProperty("roottopoid").trim());
-        this.setLocalDomainId(this.props.getProperty("localdomain").trim());
 
         this.ns = Namespace.getNamespace(this.getNsPrefix(), this.getNsUri());
         this.dbname = dbname;
@@ -90,6 +88,7 @@ public class TopologyXMLImporter {
         this.remoteLinkMap = new Hashtable<String, String>();
 
         Iterator domainIt = topoXML.getChildren("domain", ns).iterator();
+        String localDomainId = this.topoManager.getLocalDomain();
         while (domainIt.hasNext()) {
             Element domXML = (Element) domainIt.next();
 
@@ -107,7 +106,7 @@ public class TopologyXMLImporter {
 
             domDB.setTopologyIdent(domTopoIdent);
             domDB.setName(domainId);
-            if (domainId.equals(this.localDomainId)) {
+            if (domainId.equals(localDomainId)) {
                 domDB.setLocal(true);
             }
 
@@ -607,21 +606,4 @@ public class TopologyXMLImporter {
     public void setNsPrefix(String prefix) {
         this.nsPrefix = prefix;
     }
-
-    /**
-     * localDomainId getter
-     * @return the value of localDomainId
-     */
-    public String getLocalDomainId() {
-        return this.localDomainId;
-    }
-
-    /**
-     * localDomainId setter
-     * @param domainId The value to be set
-     */
-    public void setLocalDomainId(String domainId) {
-        this.localDomainId = domainId;
-    }
-
 }
