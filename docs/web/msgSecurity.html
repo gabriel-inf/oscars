@@ -69,56 +69,87 @@ site.
 <h3><a class="mozTocH3" name="mozTocId414171"></a>Configuration Files</h3>
 <ul>
   <li><b>axis2.xml</b> Used by OSCARS client. <br>
-Names the security properties file (sec-client.properties); the user
-who will sign the message; specifies that <span
- style="font-style: italic;">outflow messages</span> are to be signed
-and time stamped and that <span style="font-style: italic;">inflow
-messages</span> are to be time stamped. This file is found by setting
+    <span style="color: rgb(204, 0, 0);">[OLD:Names the security
+properties file (sec-client.properties); the user
+who will sign the message; specifies that </span><span
+ style="font-style: italic; color: rgb(204, 0, 0);">outflow messages</span><span
+ style="color: rgb(204, 0, 0);"> are to be signed
+and time stamped and that </span><span
+ style="font-style: italic; color: rgb(204, 0, 0);">inflow
+messages</span><span style="color: rgb(204, 0, 0);"> are to be time
+stamped.] </span>Has a ws-policy description of the rampart
+configuration. Includes the user to run as and the keystore&nbsp; and
+its password and thus needs to be edited for the site/user. This file
+is found by setting
 the -Daxis2.xml=&lt;pathname&gt; Java option, or programatically by a
 System.setProperty("axis2.xml",&lt;pathname&gt; ). The pathname must be
 on the classpath. An absolute pathname does not seem to work.
     <p> </p>
   </li>
-  <li><b>services.xml</b> Used by OSCARS service. <br>
-Names the security.properties file to use on the server side
-(sec-server.properties). Specifies that <span
- style="font-style: italic;">inflow messages</span> are signed and time
-stamped and <span style="font-style: italic;">outflow messages</span>
-are time stamped. Copied from conf/server to the oscars.aar file in
+  <li><b>services.xml</b> Used by OSCARS and OSCARSNotify services. <br>
+    <span style="color: rgb(204, 0, 0);">[OLD: Names the
+security.properties file to use on the server side
+(sec-server.properties). Specifies that </span><span
+ style="font-style: italic; color: rgb(204, 0, 0);">inflow messages</span><span
+ style="color: rgb(204, 0, 0);"> are signed and time
+stamped and </span><span
+ style="font-style: italic; color: rgb(204, 0, 0);">outflow messages</span><span
+ style="color: rgb(204, 0, 0);">
+are time stamped.]</span> Has the ws-policy describing message security
+and the rampart configuration. Includes the user the service will run
+as and the keystore file and password. Needs to be edited to be site
+specific. Has a list of each of the operations in the service, and what
+policy applies to them. Copied from conf/server to the oscars.aar file
+in
 META-INF/services.xml by the ant <span
- style="font-weight: bold; font-style: italic;">aar</span> target.
+ style="font-weight: bold; font-style: italic;">aar</span> target. Also
+copied from conf/notify-server to the oscars-notify.aar by the ant <span
+ style="font-weight: bold; font-style: italic;">notifyaar</span>
+target/
     <p> </p>
   </li>
-  <li><b>sec-client.properties </b> Used by OSCARS client. <br>
-Contains the name and password of the keystore that the client uses
-when signing a message. Its name is specified in axis2.xml. This file
-must be on the classpath of the client.
+  <li><b style="color: rgb(204, 0, 0);">[OLD: sec-client.properties </b><span
+ style="color: rgb(204, 0, 0);"> Used by OSCARS client. </span><br
+ style="color: rgb(204, 0, 0);">
+    <span style="color: rgb(204, 0, 0);">Contains the name and password
+of the keystore that the client uses
+when signing a message.]</span> No longer used, this information is now
+in axis2.xml..
     <p> </p>
   </li>
-  <li><b>sec-server.properties </b> Used by OSCARS service. <br>
-Contains the name and password of the keystore that the server will use
+  <li><b style="color: rgb(204, 0, 0);">[OLD: sec-server.properties </b><span
+ style="color: rgb(204, 0, 0);"> Used by OSCARS service. </span><br
+ style="color: rgb(204, 0, 0);">
+    <span style="color: rgb(204, 0, 0);">Contains the name and password
+of the keystore that the server will use
 to verify signed messages. Its name is specified in services.xml. This
 file must be on the services's classpath. It is copied from
 [conf/examples|$DOMAIN_HOME]/server/ to
-$CATALINA_HOME/shared/classes/server by the <span
- style="font-style: italic; font-weight: bold;">setupServer</span> ant
-task.
-    <p> </p>
+$CATALINA_HOME/shared/classes/server by the </span><span
+ style="font-style: italic; font-weight: bold; color: rgb(204, 0, 0);">setupServer</span><span
+ style="color: rgb(204, 0, 0);"> ant
+task.]</span> No longer used.</li>
+  <li>This information is in services.xml.</li>
+  <li><br>
   </li>
-  <li><b>repo/sec-client.properties </b> Used by the OSCARS service
+  <li><b style="color: rgb(204, 0, 0);">[OLD:
+repo/sec-client.properties </b><span style="color: rgb(204, 0, 0);">
+Used by the OSCARS service
 when it is acting as a client when forwarding a request to an adjacent
-domain. <br>
-Contains the name and password of the keystore used when signing a
+domain. </span><br style="color: rgb(204, 0, 0);">
+    <span style="color: rgb(204, 0, 0);">Contains the name and password
+of the keystore used when signing a
 forwarded message. On the ESnet servers the messages are signed by the
 server credential:
 oscars-dev.es.net or oscars-test.es.net. The name of this file is
-specified in $CATALINA_HOME/shared/classes/repo/axis2.xml). This file
-must be on the classpath of the server. It is also used by the
-scheduler when contacting an adjacent domain to instantiate the routing
-request. The&nbsp; <span style="font-weight: bold; font-style: italic;">setupServer</span>
+specified in $CATALINA_HOME/shared/classes/repo/axis2.xml). ] </span>This
+file
+is no longer used, as the information is now in repo/axis2.xml.
+repo/axis2.xml must be on the classpath of the server.&nbsp; The&nbsp; <span
+ style="font-weight: bold; font-style: italic;">setupServer</span>
 ant task will copy it from [conf/examples|$DOMAIN_HOME]/server to&nbsp;
-$CATALINA_HOME/shared/classes/repo.
-    <p> </p>
+$CATALINA_HOME/shared/classes/repo.]</li>
+  <li><br>
   </li>
 </ul>
 <h3><a class="mozTocH3" name="mozTocId209738"></a> Keystore files</h3>
@@ -136,7 +167,8 @@ classpath.
   <li><b>sec-server.jks</b> Used by OSCARS service. <br>
 Contains the <span style="font-style: italic;">trustedCertEtries</span>
 for any trusted CAs, e.g. any CAs in the chain that signed the users
-certificate. File is named in <code>sec-server.properties</code>. Must
+certificate. Also contains a keyEntry for the server which is used to
+sign the response messages. Must
 be on the classpath. It is copied from
 [conf/examples|$DOMAIN_HOME]/server/ to
 $CATALINA_HOME/shared/classes/server by the <span
@@ -183,9 +215,15 @@ Sets the name and the password for the client-side <code>ssl-keystore.jks</code>
 file. </li>
 </ul>
 <h3><a class="mozTocH3" name="mozTocId845833"></a>Client side</h3>
-Needs an <code>axis2.xml</code> file to generate signed messages.
-<p> Needs <code>sec-client.properties</code> to define the keystore
-file and password. </p>
+Needs an <code>axis2.xml</code> file to generate signed messages.<br>
+<br>
+The OSCARS[Notify] wsdl now specifies the message security properties.
+That information is included in the OSCARS[Notify]Stub.java by
+wsdl2java.<br>
+<p><span style="color: rgb(204, 0, 0);">[OLD: Needs </span><code
+ style="color: rgb(204, 0, 0);">sec-client.properties</code><span
+ style="color: rgb(204, 0, 0);"> to define the keystore
+file and password.]</span> </p>
 <p> Needs <code>sec-client.jks</code> with the <span
  style="font-style: italic;">keyEntry</span> for the user who will be
 signing messages and the <span style="font-style: italic;">trustedCertEntries</span>
@@ -209,9 +247,11 @@ See <a href="keytool.html">keytool.html</a>
 for instructions on how to do this.<br>
 </p>
 <h3><a class="mozTocH3" name="mozTocId734881"></a>Server side</h3>
-OSCARS needs the properties and keystore referenced in <code>OSCARS.aar:META-INF/services.xml</code>.<br>
+<span style="color: rgb(204, 0, 0);">[OLD: OSCARS needs the properties
+and keystore referenced in </span><code style="color: rgb(204, 0, 0);">OSCARS.aar:META-INF/services.xml</code><span
+ style="color: rgb(204, 0, 0);">.]</span><br>
 <code> Services.xml</code> comes from <code>conf/server/services.xml</code>.
-The properties and keystore files are installed at
+The services.xml and keystore files are installed at
 ${catalina_home}/shared/classes/server and are domain specific. The
 ones for ESnet are checked into
 https://oscars.es.net/esnet/domain. The ant target "setupServer" will
@@ -221,9 +261,10 @@ them from <span style="font-family: monospace;"></span><code>examples|$DOMAIN_HO
 Examples of
 these files can be found in <code>examples/conf/server</code>. The
 server
-keystore only needs <span style="font-style: italic;">trustedCertEntries</span>
-for all the authorized user's certificate issuers since response
-messages are not signed.
+keystore needs <span style="font-style: italic;">trustedCertEntries</span>
+for all the authorized user's certificate issuers to validate request
+messages and keyEntry for the service to sign response
+messages.
 <p> Tomcat needs the keystore referenced in<code>
 ${catalina.home}/conf/server.xml</code> to do server-side ssl. <br>
 If no keystoreFile entry is specified in the https connector element of
@@ -241,8 +282,7 @@ Needs a client keystore with <span style="font-style: italic;">trustedCertEnties
 and service <span style="font-style: italic;">keyEntry</span>.
 The ant task "<span style="font-style: italic;">setupServer</span>"
 will create the <code>${catalina.home}/shared/classes/repo</code>
-directory. The files&nbsp; <code>axis2.xml,
-sec-client.properties, sec-client.jks</code> and <code>ssl-keystore.jks</code>
+directory. The files&nbsp; <code>axis2.xml, sec-client.jks</code> and <code>ssl-keystore.jks</code>
 will&nbsp; be either copied from examples/conf/client or
 $DOMAIN_HOME/conf/client by the <span
  style="font-weight: bold; font-style: italic;">setupServer</span> ant
