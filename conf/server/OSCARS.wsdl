@@ -339,11 +339,12 @@
     </wsdl:portType>
     
  <wsdl:binding name="OSCARSSOAP" type="tns:OSCARS">
-    <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
+    
         <soap:binding style="document"
             transport="http://schemas.xmlsoap.org/soap/http" />
 
         <wsdl:operation name="createReservation">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/createReservation" />
             <wsdl:input>
@@ -363,6 +364,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="queryReservation">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/queryReservation" />
             <wsdl:input>
@@ -382,6 +384,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="listReservations">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/listReservations" />
             <wsdl:input>
@@ -401,6 +404,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="cancelReservation">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation
                 soapAction="http://oscars.es.net/OSCARS/cancelReservation" />
             <wsdl:input>
@@ -420,6 +424,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="modifyReservation">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/modifyReservation" />
             <wsdl:input>
@@ -439,6 +444,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="getNetworkTopology">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/getNetworkTopology" />
             <wsdl:input>
@@ -458,6 +464,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="initiateTopologyPull">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/initiateTopologyPull" />
             <wsdl:input>
@@ -477,6 +484,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="createPath">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/createPath" />
             <wsdl:input>
@@ -496,6 +504,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="refreshPath">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/refreshPath" />
             <wsdl:input>
@@ -515,6 +524,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="teardownPath">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/teardownPath" />
             <wsdl:input>
@@ -535,6 +545,7 @@
 
 
         <wsdl:operation name="forward">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation
                 soapAction="http://oscars.es.net/OSCARS/forward" />
             <wsdl:input>

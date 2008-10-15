@@ -14,8 +14,33 @@
         <!-- policy copied from http://ws.apache.org/rampart/samples/policy/sample02.xml -->
         <wsp:PolicyAttachment xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
             <wsp:AppliesTo>
+            <!--  
                 <policy-subject identifier="binding:soap11" />
                 <policy-subject identifier="binding:soap12" />
+                -->
+               <policy-subject identifier="binding:soap11/operation:createReservation" />
+               <policy-subject identifier="binding:soap12/operation:createReservation" />
+               <policy-subject identifier="binding:soap11/operation:cancelReservation" />
+               <policy-subject identifier="binding:soap12/operation:cancelReservation" />
+               <policy-subject identifier="binding:soap11/operation:modifyReservation" />
+               <policy-subject identifier="binding:soap12/operation:modifyReservation" />
+               <policy-subject identifier="binding:soap11/operation:queryReservation" />
+               <policy-subject identifier="binding:soap12/operation:queryReservation" />
+               <policy-subject identifier="binding:soap11/operation:listReservations" />
+               <policy-subject identifier="binding:soap12/operation:listReservations" />
+               <policy-subject identifier="binding:soap11/operation:getNetworkTopology" />
+               <policy-subject identifier="binding:soap12/operation:getNetworkTopology" /> 
+               <policy-subject identifier="binding:soap11/operation:initiateTopologyPull" />
+               <policy-subject identifier="binding:soap12/operation:initiateTopologyPull" />
+               <policy-subject identifier="binding:soap11/operation:createPath" />
+               <policy-subject identifier="binding:soap12/operation:createPath" />
+               <policy-subject identifier="binding:soap11/operation:refreshPath" />
+               <policy-subject identifier="binding:soap12/operation:refreshPath" />
+               <policy-subject identifier="binding:soap11/operation:teardownPath" />
+               <policy-subject identifier="binding:soap12/operation:teardownPath" />
+               <policy-subject identifier="binding:soap11/operation:forward" />
+               <policy-subject identifier="binding:soap12/operation:forward" />        
+                
             </wsp:AppliesTo>
         
             <wsp:Policy wsu:Id="X509EndPointPolicy" 

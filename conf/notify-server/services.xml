@@ -15,8 +15,24 @@
         <!-- policy copied from http://ws.apache.org/rampart/samples/policy/sample02.xml -->
         <wsp:PolicyAttachment xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
           <wsp:AppliesTo>
+          <!--  
             <policy-subject identifier="binding:soap11" />
             <policy-subject identifier="binding:soap12" />
+            -->
+            <policy-subject identifier="binding:soap11/operation:Subscribe" />
+      	    <policy-subject identifier="binding:soap12/operation:Subscribe" />
+      	    <policy-subject identifier="binding:soap11/operation:Renew" />
+      	    <policy-subject identifier="binding:soap12/operation:Renew" />
+            <policy-subject identifier="binding:soap11/operation:Unsubscribe" />
+      	    <policy-subject identifier="binding:soap12/operation:Unsubscribe" />
+      	    <policy-subject identifier="binding:soap11/operation:PauseSubscription" />
+      	    <policy-subject identifier="binding:soap12/operation:PauseSubscription" />
+      	    <policy-subject identifier="binding:soap11/operation:ResumeSubscription" />
+      	    <policy-subject identifier="binding:soap12/operation:ResumeSubscription" />
+      	    <policy-subject identifier="binding:soap11/operation:RegisterPublisher" />
+      	    <policy-subject identifier="binding:soap12/operation:RegisterPublisher" />
+      	    <policy-subject identifier="binding:soap11/operation:DestroyRegistration" />
+      	    <policy-subject identifier="binding:soap12/operation:DestroyRegistration" />:
           </wsp:AppliesTo>
     
           <wsp:Policy wsu:Id="X509EndPointPolicy" 

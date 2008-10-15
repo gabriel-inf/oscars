@@ -444,7 +444,7 @@
     </wsdl:portType>
 
     <wsdl:binding name="OSCARSNOTIFYSOAP" type="tns:OSCARSNotify">
-    <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
+    
         <soap:binding style="document"
             transport="http://schemas.xmlsoap.org/soap/http" />
             
@@ -457,6 +457,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="Subscribe">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/Subscribe" />
             <wsdl:input>
@@ -509,6 +510,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="Renew">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/Renew" />
             <wsdl:input>
@@ -531,6 +533,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="Unsubscribe">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/Unsubscribe" />
             <wsdl:input>
@@ -553,6 +556,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="PauseSubscription">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/PauseSubscription" />
             <wsdl:input>
@@ -575,6 +579,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="ResumeSubscription">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/ResumeSubscription" />
             <wsdl:input>
@@ -597,6 +602,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="RegisterPublisher">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/RegisterPublisher" />
             <wsdl:input>
@@ -628,6 +634,7 @@
         </wsdl:operation>
 
         <wsdl:operation name="DestroyRegistration">
+            <wsp:PolicyReference URI="#X509BindingPolicy"  /> 
             <soap:operation style="document"
                 soapAction="http://oscars.es.net/OSCARS/DestroyRegistration" />
             <wsdl:input>
