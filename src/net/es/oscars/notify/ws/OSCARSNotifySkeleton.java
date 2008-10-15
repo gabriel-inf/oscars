@@ -276,9 +276,15 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             throw new PublisherRegistrationRejectedFault(e.getMessage());
         }
         /* Get authorizations */
+        UserManager.AuthValue authVal = null;
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Publishers", "create");
+        try{
+        	authVal = this.userMgr.checkAccess(login, "Publishers", "create");
+        }catch(Exception e){
+        	aaa.getTransaction().rollback();
+        	throw new PublisherRegistrationRejectedFault(e.getMessage());
+        }
         if (authVal.equals(AuthValue.DENIED)) {
         	 aaa.getTransaction().rollback();
             throw new PublisherRegistrationRejectedFault("You do not have permission to publish notifications.");
@@ -297,9 +303,15 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         HashMap<String, String> permissionMap = new HashMap<String, String>();
 
         /* Get authorizations */
+        UserManager.AuthValue modifyAuthVal = null;
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
-        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Publishers", "modify");
+        try{
+        	modifyAuthVal = this.userMgr.checkAccess(login, "Publishers", "modify");
+        }catch(Exception e){
+        	aaa.getTransaction().rollback();
+        	throw new AAAFaultMessage(e.getMessage());
+        }
         if (modifyAuthVal.equals(AuthValue.DENIED)) {
         	aaa.getTransaction().rollback();
             throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
@@ -401,11 +413,11 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
-
+        String origDN = "";
         // lookup up using input DN first
-        String origDN = this.certSubject.getName();
-        this.log.debug("checkUser: " + origDN);
         try {
+        	origDN = this.certSubject.getName();
+            this.log.debug("checkUser: " + origDN);
             login = this.userMgr.loginFromDN(origDN);
             if (login == null) {
                 // if that fails try the reverse of the elements in the DN
