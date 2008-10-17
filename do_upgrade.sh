@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #Check current directory
 echo "  ";
@@ -22,7 +22,7 @@ echo "  ";
 
 #Upgrade Axis2 
 INSTALL_HOME=`pwd`;
-sh conf/axis2/axis2_install.sh $INSTALL_HOME
+bash conf/axis2/axis2_install.sh $INSTALL_HOME
 if [ $? != 0 ]; then
     exit 1;
 fi
