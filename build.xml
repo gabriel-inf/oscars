@@ -31,7 +31,7 @@
         <copy todir="lib">
             <fileset dir="${tomcat.loc}" includes="servlet-api.jar"/>
         </copy>
-    </target>
+    </target>    
     <!-- parent directories automatically created -->
     <target name="prepare" depends="axis2LocalCopy, tomcatLocalCopy, jarRemoteCopy">
         <!-- a bit of a kludge -->
@@ -226,7 +226,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <jar destfile="build/OSCARS.aar">
             <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*"/>
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
-            <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml"/>
+            <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml,rampConfig.xml"/>
         </jar>
     </target>
     <!-- Client API section -->
@@ -297,26 +297,43 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
     </target>
     <target name="copydomain" if="domain.exists" depends="copyMailTemplates">
+    	<!-- don't let new value of OSCARS.jks  over write existing ones -->
+    	<available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks" 
+    		value="true" />
+      	<!-- let  new value of rampConfig.xml over write existing one, but warn the user -->
+    	<uptodate property="rampConfig.xml.uptodate" targetfile="${catalina.home}/shared/classes/repo/rampConfig.xml" 
+    	    		srcfile="${domain.home}/server/rampConfig.xml" />
+        <uptodate property="axis2.xml.uptodate" targetfile="${catalina.home}/shared/classes/repo/axis2.xml" 
+            	    		srcfile="${domain.home}/client/axis2.xml" />
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${domain.home}/client" includes="axis2.xml,axis2-norampart.xml, ssl-keystore.jks"/>
-            <fileset dir="${domain.home}/server" includes="sec-client.*"/>
+            <fileset dir="${domain.home}/server">
+                <include name="rampConfig.xml"/>
+                <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
+            </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
-            <fileset dir="${domain.home}/server/" includes="*key, sec-server.*, oscars.properties, test.properties, idc-topic*"/>
+            <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
         </copy>
+  
     </target>
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
+        <property name="axis2.xml.uptodate" value="true" />
+        <property name="rampConfig.xml.uptodate" value="true" />
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
         <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true"/>
-        <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
+        <!-- <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
         <available property="sec-client.properties.exists" file="${catalina.home}/shared/classes/repo/sec-client.properties" value="true"/>
         <available property="sec-client.jks.exists" file="${catalina.home}/shared/classes/repo/sec-client.jks" value="true"/>
         <available property="sec-server.jks.exists" file="${catalina.home}/shared/classes/server/sec-server.jks" value="true"/>
         <available property="sec-server.properties.exists" file="${catalina.home}/shared/classes/server/sec-server.properties" value="true"/>
-        <available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
+        -->
+    	<available property="rampConfig.xml.exists" file="${catalina.home}/shared/classes/repo/rampConfig.xml" value="true" />
+    	<available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"  value="true" />
+    	<available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
         <available property="test.properties.exists" file="${catalina.home}/shared/classes/server/test.properties" value="true"/>
         <available property="idc-topicnamespace.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicnamespace.xml" value="true"/>
         <available property="idc-topicset.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicset.xml" value="true"/>
@@ -328,14 +345,15 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
                 <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists"/>
             </fileset>
             <fileset dir="${defaultKeys}/server">
-                <include name="sec-client.properties" unless="sec-client.properties.exists"/>
-                <include name="sec-client.jks" unless="sec-client.jks.exists"/>
+                <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
             </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${defaultKeys}/server/">
+            	<!--
                 <include name="sec-server.properties" unless="sec-server.properties.exists"/>
                 <include name="sec-server.jks" unless="sec-server.jks.exists"/>
+                -->
                 <include name="oscars.properties" unless="oscars.properties.exists"/>
                 <include name="test.properties" unless="test.properties.exists"/>
                 <include name="idc-topicnamespace.xml" unless="idc-topicnamespace.xml.exists"/>
@@ -343,10 +361,22 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </fileset>
         </copy>
     </target>
-    <target name="setupServer" description="populate the shared/classes directory" depends="copydomain,copydefaults">
-        <mkdir dir="${catalina.home}/shared/classes/server"/>
+    <target name="warn1" unless="rampConfig.xml.uptodate">
+        <echo level="warning"> A new rampConfig.xml file has been copied to 
+  ${catalina.home}/shared/classes/repo. 
+  Please edit the user and password.
+        </echo>
+    </target>
+    <target name="warn2" unless="axis2.xml.uptodate">
+        <echo level="warning">  A new axis2.xml file has been copied to 
+  ${catalina.home}/shared/classes/repo. 
+  Please edit the path name for the rampConfig inlcude.
+   	    </echo>
+    </target>
+    <target name="setupServer" description="populate the shared/classes directory" 
+    	              depends="copydomain,copydefaults,warn1,warn2">
+    	<!-- <mkdir dir="${catalina.home}/shared/classes/server"/> -->
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
-        <!-- <copy file="conf/rampart-1.*.mar" todir="${catalina.home}/shared/classes/repo/modules"/> -->
         <copy todir="${catalina.home}/shared/classes/repo/modules/">
             <fileset dir="conf/" includes="rampart*.mar"/>
         </copy>

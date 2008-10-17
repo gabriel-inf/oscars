@@ -5,12 +5,14 @@
 <property name="lib" location="../../lib" />
 <property name="repo" location="./repo" />
 <property name="src" location="../../src" />
-<property name="defaultKeys" location="../../conf/examples/client"/>
+<property name="defaultKeys" location="../../conf/examples"/>
 <available property="domain.exists" file="${env.DOMAIN_HOME}"/>
-<property name="domain" location="${env.DOMAIN_HOME}/client" />
+<property name="domain" location="${env.DOMAIN_HOME}" />
 <property name="public" location="../../conf" />
 <property name="url"
           value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
+
+	
 
 
 <path id="client.path">
@@ -21,20 +23,42 @@
 </path>
 
 <target name="copydomain"  if="domain.exists">
+	<uptodate property="editAxisxml" targetfile="${repo}/axis2.xml" srcfile="${domain}/client/axis2.xml" />
+
+	<uptodate property="editRampConfig" targetfile="${repo}/rampConfig.xml" srcfile="${domain}/server/rampConfig.xml" />
+    <available property="OSCARS.jks.exists" file="${repo}/OSCARS.jks" value="true" />
     <!-- Copy domain keys to repo -->
     <mkdir dir="${repo}"/>
     <copy todir="${repo}" >
-        <fileset dir="${domain}" includes="*.*"  />
+        <fileset dir="${domain}/client" includes="*.*" />
+        <fileset dir="${domain}/server">
+            <include name="rampConfig.xml"/>
+            <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
+        </fileset>
     </copy>
 </target>
 <target name="copydefaults"  unless="domain.exists">
+	<uptodate property="editAxisxml" targetfile="${repo}/axis2.xml" srcfile="${defaultKeys}/client/axis2.xml"/>
+	<uptodate property="editRampConfig" targetfile="${repo}/rampConfig.xml" srcfile="${defaultKeys}/server/rampConfig.xml" />
+    <available property="OSCARS.jks.exists" file="${repo}/OSCARS.jks" value="true" />
     <!-- Copy default keys to repo -->
     <mkdir dir="${repo}"/>
     <copy todir="${repo}" >
-        <fileset dir="${defaultKeys}" includes="*.*"  />
+        <fileset dir="${defaultKeys}/client" includes="*.*" />
+        <fileset dir="${defaultKeys}/server">
+            <include name="rampConfig.xml"/>
+            <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
+        </fileset>
     </copy>
 </target>
-<target name="prepare" depends="copydomain,copydefaults">
+<target name="warn1" unless="editAxisxml">
+	<echo message="a new axis2.xml was copied to repo, please edit it to correct the pathname for rampConfig.xml"/>
+</target>
+<target name="warn2" unless="editRampConfig">
+	<echo message="a new rampConfig.xml was copied to repo, please edit it to correct the user name and password"/>
+</target>
+		
+<target name="prepare" depends="copydomain,copydefaults,warn1,warn2">
     <mkdir dir="${repo}/modules" />
     <mkdir dir="${build}/classes" />
     <copy todir="${repo}">
@@ -42,7 +66,7 @@
     </copy>
     <!-- Copy public material to repo -->
     <copy todir="${repo}/modules">
-        <fileset dir="${public}" includes="*rampart-1.4*.mar" />
+        <fileset dir="${public}" includes="*rampart-SNAPSHOT.mar" />
     </copy>
 
 </target>
