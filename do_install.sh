@@ -38,11 +38,11 @@ if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 fi
 
 #Update services.xml
-CATALINA_HOME_LEN=`expr length "$CATALINA_HOME"`;
 if [ `echo $CATALINA_HOME | egrep "/$"` ]; then
-    CATALINA_HOME_LEN=`expr $CATALINA_HOME_LEN - 1`;
+    CATALINA_HOME_ESC=${CATALINA_HOME%?};
+else
+    CATALINA_HOME_ESC=$CATALINA_HOME;
 fi
-CATALINA_HOME_ESC=`expr substr "$CATALINA_HOME" 1 $CATALINA_HOME_LEN`;
 CATALINA_HOME_ESC=`echo $CATALINA_HOME_ESC | sed -e 's/\//\\\\\//g'`;
 sed -i -e "s/<\!ENTITY rampConfig SYSTEM \".*\">/<\!ENTITY rampConfig SYSTEM \"$CATALINA_HOME_ESC\/shared\/classes\/repo\/rampConfig.xml\">/" conf/server/services.xml;
 if [ $? != 0 ]; then
