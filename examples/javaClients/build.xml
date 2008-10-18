@@ -37,13 +37,19 @@
     </copy>
 </target>
 <target name="warn1" unless="editAxisxml">
-	<echo message="a new axis2.xml was copied to repo, please edit it to correct the pathname for rampConfig.xml"/>
+	<echo level="warning"> **** a new axis2.xml was copied to repo **** 
+**** please edit it to correct the pathname for rampConfig.xml **** 
+	 </echo>
 </target>
 <target name="warn2" unless="editRampConfig">
-	<echo message="a new rampConfig.xml was copied to repo, please edit it to correct the user name and password"/>
+	<echo level="warning">**** a new rampConfig.xml was copied to repo. **** 
+**** You must set the user name and password **** 
+	 </echo>
 </target>
 <target name="warn3" unless="OSCARS.jks.exists">
-    <echo message="a new OSCARS.jks was copied to repo, please add a KeyEntry for yourself"/>
+    <echo level="warning">**** a new OSCARS.jks was copied to repo. ****
+**** You must add a KeyEntry for yourself. ****
+    </echo>
 </target>
 		
 <target name="prepare" depends="copydefaults,warn1,warn2,warn3">

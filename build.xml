@@ -6,7 +6,6 @@
     <available property="domain.exists" file="${env.DOMAIN_HOME}"/>
     <property name="domain.home" value="${env.DOMAIN_HOME}"/>
     <property name="defaultKeys" location="conf/examples"/>
-    <!-- <property file="${domain.home}/ant.properties"/> -->
     <property name="catalina.home" value="${env.CATALINA_HOME}"/>
     <property name="app.name" value="oscars"/>
     <property name="app.version" value="0.5-dev"/>
@@ -39,8 +38,7 @@
         <fail unless="axis2.found" message="Axis2 library not found. Please either build and deploy axis2.war with rampart support, or manually copy the necessary .jar files to lib/axis2. See documentation for details."/>
         <available file="lib/jta.jar" property="jta.found"/>
         <fail if="jta.found" message="jta.jar library must be removed from lib."/>
-        <!-- <available file="lib/axis2/rampart-core-1.3.jar" property="rampart.found"/> -->
-        <available file="lib/axis2/rampart-core-1.4.jar" property="rampart.found"/>
+        <available file="lib/axis2/rampart-core-SNAPSHOT.jar" property="rampart.found"/>
         <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
@@ -246,7 +244,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <zipfileset dir="examples/javaClients" includes="example.l2.properties, example.l3.properties, run.sh" prefix="OSCARS-client-api/examples"/>
             <zipfileset dir="examples/javaClients" includes="*.java" excludes="InitiateTopologyPullClient.java" prefix="OSCARS-client-api/examples/src"/>
             <zipfileset dir="conf/examples/client" includes="*.*" prefix="OSCARS-client-api/examples/repo"/>
-            <zipfileset dir="conf" includes="rampart-1.3.mar" prefix="OSCARS-client-api/examples/repo/modules"/>
+            <zipfileset dir="conf" includes="rampart-SNAPSHOT.mar" prefix="OSCARS-client-api/examples/repo/modules"/>
         </zip>
     </target>
     <!-- Dojo WBUI section ************************************************* -->
@@ -274,7 +272,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </target>
     <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs">
         <copy todir="tmplib" flatten="true">
-            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-*.jar, axis2/opensaml-1.1.jar, axis2/rampart-core-1.*.jar,axis2/rampart-policy-1.*.jar,axis2/rampart-trust-1.*.jar, axis2/wss4j-1.5.*.jar,axis2/xmlsec-1.4.*.jar, axis2/log4j-1.2.*.jar"/>
+            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-*.jar, axis2/opensaml-1.1.jar, axis2/rampart-core-*.jar,axis2/rampart-policy-*.jar,axis2/rampart-trust-*.jar, axis2/wss4j-*.jar,axis2/xmlsec-1.4.*.jar, axis2/log4j-1.2.*.jar"/>
         </copy>
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml"/>
@@ -304,11 +302,11 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     	<uptodate property="rampConfig.xml.uptodate" targetfile="${catalina.home}/shared/classes/repo/rampConfig.xml" 
     	    		srcfile="${domain.home}/server/rampConfig.xml" />
         <uptodate property="axis2.xml.uptodate" targetfile="${catalina.home}/shared/classes/repo/axis2.xml" 
-            	    		srcfile="${domain.home}/client/axis2.xml" />
+            	    		srcfile="${defaultKeys}/client/axis2.xml" />
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
-            <fileset dir="${domain.home}/client" includes="axis2.xml,axis2-norampart.xml, ssl-keystore.jks"/>
+            <fileset dir="${defaultKeys}/client" includes="axis2.xml,axis2-norampart.xml, ssl-keystore.jks"/>
             <fileset dir="${domain.home}/server">
                 <include name="rampConfig.xml"/>
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
@@ -325,12 +323,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
         <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true"/>
-        <!-- <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
-        <available property="sec-client.properties.exists" file="${catalina.home}/shared/classes/repo/sec-client.properties" value="true"/>
-        <available property="sec-client.jks.exists" file="${catalina.home}/shared/classes/repo/sec-client.jks" value="true"/>
-        <available property="sec-server.jks.exists" file="${catalina.home}/shared/classes/server/sec-server.jks" value="true"/>
-        <available property="sec-server.properties.exists" file="${catalina.home}/shared/classes/server/sec-server.properties" value="true"/>
-        -->
+        <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
     	<available property="rampConfig.xml.exists" file="${catalina.home}/shared/classes/repo/rampConfig.xml" value="true" />
     	<available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"  value="true" />
     	<available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
@@ -350,10 +343,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${defaultKeys}/server/">
-            	<!--
-                <include name="sec-server.properties" unless="sec-server.properties.exists"/>
-                <include name="sec-server.jks" unless="sec-server.jks.exists"/>
-                -->
                 <include name="oscars.properties" unless="oscars.properties.exists"/>
                 <include name="test.properties" unless="test.properties.exists"/>
                 <include name="idc-topicnamespace.xml" unless="idc-topicnamespace.xml.exists"/>
@@ -362,19 +351,25 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
     </target>
     <target name="warn1" unless="rampConfig.xml.uptodate">
-        <echo level="warning"> A new rampConfig.xml file has been copied to 
-  ${catalina.home}/shared/classes/repo. 
-  Please edit the user and password.
+        <echo level="warning"> **** A new rampConfig.xml file has been copied to 
+  **** ${catalina.home}/shared/classes/repo. ****  
+  **** You must set the user and password. ****
         </echo>
     </target>
     <target name="warn2" unless="axis2.xml.uptodate">
-        <echo level="warning">  A new axis2.xml file has been copied to 
-  ${catalina.home}/shared/classes/repo. 
-  Please edit the path name for the rampConfig inlcude.
+        <echo level="warning">  **** A new axis2.xml file has been copied to  ****
+  **** ${catalina.home}/shared/classes/repo.  ****
+  **** Please edit the path name for the rampConfig inlcude.  ****
    	    </echo>
     </target>
+    <target name="warn3" unless="OSCARS.jks.exists">
+            <echo level="warning">  **** A new OSCARS.jsk file has been copied to  ****
+  **** ${catalina.home}/shared/classes/repo.  ****
+  **** You must add a KeyEntry for the service. ****
+       	    </echo>
+        </target>
     <target name="setupServer" description="populate the shared/classes directory" 
-    	              depends="copydomain,copydefaults,warn1,warn2">
+    	              depends="copydomain,copydefaults,warn1,warn2,warn3">
     	<!-- <mkdir dir="${catalina.home}/shared/classes/server"/> -->
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
         <copy todir="${catalina.home}/shared/classes/repo/modules/">
@@ -412,7 +407,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <property name="test.classes" value="build/test"/>
     <path id="test.compile.path">
         <fileset dir="${build.lib}" includes="*.jar"/>
-        <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-1.*.jar"/>
+        <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-*.jar"/>
         <pathelement location="${build.classes}"/>
     </path>
     <path id="test.path">
