@@ -19,6 +19,7 @@
 <a href="#Installation">Installation</a><br>
 <div style="margin-left: 40px;"><a href="RampartLoad">Rampart fails to
 load</a><br>
+<a href="#EPR_error">Service cannot be found at end point</a><br>
 </div>
 <a href="#Maintenance">Maintenance</a><br>
 <div style="margin-left: 40px;"><a href="#CodeChanges">Code changes
@@ -69,25 +70,25 @@ Tomcat shared library folder won't work. Locate the following files: <br>
     <pre>From rampart-SNAPSHOT or the distibution lib/axis2 :<br>	bcprov-jdk15-140.jar    <br>	opensaml-1.1.jar     <br>	rampart-core-SNAPSHOT.jar    <br>	rampart-trust-SNAPSHOT.jar   <br>	rampart-policy-SNAPSHOT.jar  <br>	wss4j-SNAPSHOT.jar<br>	xmlsec-1.4.1.jar		<br></pre>
 Copy all the above to CATALINA_HOME/webapps/axis2/WEB-INF/lib/ , and
 restart Tomcat.
-Rampart should work now. Note this should have been automatically
-during the<br>
+Rampart should work now. Note: Use the conf/axis2/axis2_build.sh script
+to build a correct axis2.war.<br>
   </li>
   <br>
   <hr style="width: 75%; height: 2px;"> <li>Alternatively build an
 axis2.war file that contains rampart.</li>
   <ul>
-    <li>Download the axis2 1.3 standard binary distribution and the
-rampart 1.3 packages from Apache and
+    <li>Download the axis2 1.4.1standard binary distribution and the
+rampart 1.4 packages from Apache and
 unzip them in a common directory.</li>
     <br>
     <li>Set the AXIS2_HOME environment variable to the directory in
 which axis2 was put.</li>
     <br>
-    <li>Run ant in the rampart-1.3 directory. This will copy the
+    <li>Run ant in the rampart-1.4&nbsp; directory. This will copy the
 rampart
 jars to axis2 lib.</li>
     <br>
-    <li>In the axis2-1.3/webapp directory, edit the create.war target
+    <li>In the axis2-1.4.1/webapp directory, edit the create.war target
 in
 build.xml to remove the lines:
       <pre>     &lt;exclude name="axis2-adb-codegen*.jar"/&gt;<br>     &lt;exclude name="axis2-codegen*.jar"/&gt;<br>     &lt;exclude name="jibx-bind*.jar"/&gt;</pre>
@@ -97,7 +98,19 @@ and its required classes.</li>
     <li><br>
     </li>
     <li>Install the axis2.war in $CATALINA_HOME/webapps.</li>
+    <li><br>
+    </li>
   </ul>
+  <li><span style="font-weight: bold;"><a name="EPR_error"></a> The
+service cannot be found for
+the endpoint reference (EPR)
+https://&lt;host&gt;:&lt;port&gt;/axis2/services/OSCARS</span> <br>
+  </li>
+  <li><br>
+The OSCARS.aar has not been deployed to
+$CATALINA_HOME/webapps/axis2/WEB-INF/services. Or if it has been copied
+there,&nbsp; you
+may need to restart the Tomcat server to get it deployed by axis </li>
 </ul>
 <h2><a name="Configuration"></a>Configuration</h2>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
