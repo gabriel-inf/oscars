@@ -48,7 +48,7 @@ public class CopyKeyEntry {
                 }
                 i = i + 2;
             }
-            if ((aliasName == null) | (inKeyStore == null) | (outKeyStore == null)) {
+            if ((aliasName == null) || (inKeyStore == null) || (outKeyStore == null)) {
                 System.out
                 .println("usage:  CopyKeyEntry -a alias  -in <oldKeystore> -out <newKeystore>");
                 System.exit(1);
@@ -64,7 +64,7 @@ public class CopyKeyEntry {
 
             System.out.print("input password for KeyEntry " + aliasName + " if different from keystore password: ");
             inKeyPassword = br.readLine().trim();
-            if ( (inKeyPassword == null) |
+            if ( (inKeyPassword == null) ||
                  (inKeyPassword.length() == 0)){
                 inKeyPassword = inPassword;
             }
