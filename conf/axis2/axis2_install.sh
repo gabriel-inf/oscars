@@ -38,8 +38,8 @@ fi
 
 FOUND_RAMPART1_4=0;
 
-if [ -f $FOUND_AXIS1_4/rampart-core-1.4.jar ]; then
-	FOUND_RAMPART1_4="$FOUND_AXIS1_4/rampart-core-1.4.jar";
+if [ -f $FOUND_AXIS1_4/rampart-core-SNAPSHOT.jar ]; then
+	FOUND_RAMPART1_4="$FOUND_AXIS1_4/rampart-core-SNAPSHOT.jar";
 	echo "    Found rampart library at $FOUND_RAMPART1_4";
 else
 	echo "    Rampart library not found.";
@@ -54,7 +54,7 @@ if [ $FOUND_AXIS1_4 == 0 ] || [ $FOUND_RAMPART1_4 == 0 ] || [ $DEPLOYED_AXIS1_4 
 	READ_BUILDAXIS=0;
 	while [ $READ_BUILDAXIS == 0 ]; do
 	    echo "";
-		echo -n "- Axis2-1.4.1 installation not detected. Should I build it for you y/n? "
+		echo -n "- Axis2-1.4.1 with Rampart-SNAPSHOT installation not detected. Should I build it for you y/n? "
 		read READ_BUILDAXIS;
 		if [ "$READ_BUILDAXIS" != "y" ] && [ "$READ_BUILDAXIS" != "Y" ] && [ "$READ_BUILDAXIS" != "n" ] && [ "$READ_BUILDAXIS" != "N" ]; then
 			READ_BUILDAXIS=0;
@@ -112,18 +112,21 @@ if [ $BUILD_AXIS ]; then
 	else
 		echo "    Axis2 already downloaded and unzipped";
 	fi
-	if [ ! -d dists/rampart-1.4 ]; then
-		if [ ! -f dists/rampart-dist-1.4-bin.zip ]; then
+	if [ ! -d dists/rampart-SNAPSHOT ]; then
+		if [ ! -f dists/rampart-SNAPSHOT.zip ]; then
 			echo "    Downloading Rampart...";
-			`wget -P dists http://apache.ziply.com/ws/rampart/1_4/rampart-dist-1.4-bin.zip  `;
+			# need an address on the wiki 
+			# `wget -P dists http://apache.ziply.com/ws/rampart/1_4/rampart-dist-1.4-bin.zip  `;
+
+			cp /Users/mrt/packages/rampart-SNAPSHOT.zip dists
 			if [ $? != 0 ]; then
                 exit 1;
             fi
 		fi
 		echo "    Rampart  downloaded. Unzipping...";
-		`unzip -qq -d dists dists/rampart-dist-1.4-bin.zip`;
+		`unzip -qq -d dists dists/rampart-SNAPSHOT.zip`;
 		echo "--- Downloading bouncyCastle crypto provider "
-	    `wget -P dists/rampart-1.4/lib http://www.bouncycastle.org/download/bcprov-jdk15-140.jar `;
+	    `wget -P dists/rampart-SNAPSHOT/lib http://www.bouncycastle.org/download/bcprov-jdk15-140.jar `;
 	    if [ $? != 0 ]; then
 		    exit 1;
 		fi

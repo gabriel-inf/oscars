@@ -38,18 +38,18 @@
 <project basedir="../" default="create.war">
         <property name="dist" value="dist" />
         <property name="temp" value="${dist}/temp" />
-        <property name="rampart_dir" value="CHANGE_THIS/rampart-1.4" />
+        <property name="rampart_dir" value="CHANGE_THIS/rampart-SNAPSHOT" />
         <property name="rampart_lib" value="${rampart_dir}/lib" />
-        <property name="rampart_mar" value="rampart-1.4.mar" />
+        <property name="rampart_mar" value="rampart-SNAPSHOT.mar" />
 
         <target name="init">
                 <mkdir dir="${dist}" />
                 <mkdir dir="${temp}" />
                 <copy toDir="${temp}">
-                        <fileset dir="webapp">
-                                <include name="**/**" />
-                                <exclude name="**/web.xml"/>
-                        </fileset>
+                    <fileset dir="webapp">
+                        <include name="**/**" />
+                        <exclude name="**/web.xml"/>
+                    </fileset>
                 </copy>
                 <copy toDir="${temp}/WEB-INF/modules">
                         <fileset dir="${rampart_dir}/modules">
