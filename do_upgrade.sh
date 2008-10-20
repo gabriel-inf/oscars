@@ -34,7 +34,7 @@ if [ -f "$CATALINA_HOME/shared/classes/server/sec-server.jks" ]; then
     OLD_KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $CATALINA_HOME/shared/classes/server/sec-server.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
     #copy axis2.xml and rampConfig.xml to repo
     cp conf/examples/client/axis2.xml $CATALINA_HOME/shared/classes/repo/axis2.xml
-    cp conf/examples/client/rampConfig.xml $CATALINA_HOME/shared/classes/repo/rampConfig.xml
+    cp conf/examples/server/rampConfig.xml $CATALINA_HOME/shared/classes/repo/rampConfig.xml
     #put sec-server.props password in axis2.xml
     sed -i -e "s/<ramp:property name=\"org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password\">.*<\/ramp:property>/<ramp:property name=\"org.apache.ws.security.crypto.merlin.keystore.password\">$OLD_KS_PASS<\/ramp:property>/" $CATALINA_HOME/shared/classes/repo/rampConfig.xml;
     if [ $? != 0 ]; then 
