@@ -13,8 +13,6 @@ import java.io.IOException;
 
 import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane.*;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.quartz.*;
 
 import net.es.oscars.lookup.LookupException;
@@ -37,7 +35,8 @@ public class ReservationAdapter {
     private TypeConverter tc;
     private String dbname;
     private OSCARSCore core;
-
+    private static HashMap<String, String> payloadSender;
+    
     public ReservationAdapter() {
 
         this.log = Logger.getLogger(this.getClass());
@@ -66,7 +65,6 @@ public class ReservationAdapter {
         this.log.info("create.start");
         this.logCreateParams(params);
         Reservation resv = this.tc.contentToReservation(params);
-        
         if (!this.core.initialized) {
             this.log.error("Core has not been initialized!");
             throw new BSSException("Core has not been initialized!");
@@ -75,7 +73,7 @@ public class ReservationAdapter {
         PathInfo pathInfo = params.getPathInfo();
         CreateReply reply = null;
         EventProducer eventProducer = new EventProducer();
-
+        this.setPayloadSender(resv);
         try {
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, login, "API", resv, pathInfo);
             this.rm.submitCreate(resv, login, pathInfo);
@@ -97,8 +95,8 @@ public class ReservationAdapter {
 
         return reply;
     }
-    
-    /**
+
+	/**
      * Extracts important information from Notify messages related to
      * creating a reservation and schedules them for execution.
      *
@@ -498,4 +496,31 @@ public class ReservationAdapter {
 
         return errMsg;
     }
+    
+    /**
+     * Adds a payload sender to the global hash map
+     * @param gri the GRI of the reservation being created
+     * @param sender the original sender of the createReservation message
+     */
+    static synchronized public void addPayloadSender(String gri, String sender){
+    	if(ReservationAdapter.payloadSender == null){
+    		ReservationAdapter.payloadSender = new HashMap<String,String>();
+    	}
+    	ReservationAdapter.payloadSender.put(gri, sender);
+    }
+    /**
+     * Sets the payload sender of a reservation
+     * @param resv the reservation with the payload to set
+     */
+    private synchronized void setPayloadSender(Reservation resv) {
+    	String gri = resv.getGlobalReservationId();
+		if(gri == null || ReservationAdapter.payloadSender == null){
+			return;
+		}
+		
+		if(ReservationAdapter.payloadSender.containsKey(gri)){
+			resv.setPayloadSender(ReservationAdapter.payloadSender.get(gri));
+			ReservationAdapter.payloadSender.remove(gri);
+		}
+	}
 }

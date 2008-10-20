@@ -52,7 +52,9 @@
            @hibernate.property not-null="true"
         </meta>    
     </property>
-
+	
+	<property name="payloadSender" />
+	
     <property name="status" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"

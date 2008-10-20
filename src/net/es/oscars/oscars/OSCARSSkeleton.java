@@ -607,6 +607,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             CreateReservation message = new CreateReservation();
             ResCreateContent params = forwardPayload.getCreateReservation();
             message.setCreateReservation(params);
+            ReservationAdapter.addPayloadSender(params.getGlobalReservationId(), payloadSender);
             CreateReservationResponse response = this.createReservation(message);
             CreateReply reply = response.getCreateReservationResponse();
             forwardReply.setCreateReservation(reply);

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS reservations (
         -- user making the reservation
     login               TEXT NOT NULL,
         -- pending, active, failed, precancel, or cancelled
+    payloadSender		TEXT,
     status              TEXT NOT NULL,
     localStatus         TINYINT(1) DEFAULT 0,
     description         TEXT,

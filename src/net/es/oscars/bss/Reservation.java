@@ -31,8 +31,11 @@ public class Reservation extends HibernateBean implements Serializable {
 
     /** persistent field */
     private String login;
-
+    
     /** persistent field */
+    private String payloadSender;
+
+	/** persistent field */
     private String status;
     
     /** persistent field */
@@ -112,7 +115,20 @@ public class Reservation extends HibernateBean implements Serializable {
      */
     public void setLogin(String login) { this.login = login; }
 
+    /**
+	 * @return the payloadSender
+	 */
+	public String getPayloadSender() {
+		return payloadSender;
+	}
 
+	/**
+	 * @param payloadSender the payloadSender to set
+	 */
+	public void setPayloadSender(String payloadSender) {
+		this.payloadSender = payloadSender;
+	}
+	
     /**
      * @return status A String with the reservation's current status
      */
