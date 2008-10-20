@@ -2,6 +2,7 @@
 
 <property environment="env" />
 <property name="build" location="../../build/examples" />
+<property name="catalina.home" value="${env.CATALINA_HOME}"/>
 <property name="lib" location="../../lib" />
 <property name="repo" location="./repo" />
 <property name="src" location="../../src" />
@@ -34,21 +35,45 @@
         </fileset>
     </copy>
 </target>
-<target name="edit_axis2.xml" unless="editAxisxml">
-    <replace file="repo/axis2.xml" token="/usr/local/tomcat/shared/classes/" summary="true"/>
+<target name="checkLocalRampConfig" unless="editAxisxml">
+    <input
+        message=
+"Do you wish to use the rampConfig.xml in the repo subdirectory in axis2.xml to be able to customize the user key (as opposed to using the default ? " 
+        validargs="y,n"
+        addproperty="do.local"
+    />
+    <condition property="do.local.set">
+        <equals arg1="${do.local}" arg2="y"/>
+    </condition>
 </target>
-<target name="warn2" unless="editRampConfig">
-	<echo level="warning">**** a new rampConfig.xml was copied to repo. **** 
-**** You must set the user name and password **** 
-	 </echo>
+<target name="useLocalRampConfig" if="do.local.set" depends="checkLocalRampConfig" unless="editAxisxml">
+    <dirname property="antfile.dir" file="repo" />
+    <replace file="repo/axis2.xml" token="**tomcat**/shared/classes" summary="true" value="${antfile.dir}" />
+</target>
+<target name="useCatalinaRampConfig" unless="do.local.set" depends="checkLocalRampConfig">
+    <replace file="repo/axis2.xml" token="**tomcat**" summary="true" value="${catalina.home}" />
+</target>
+<target name="addUserAlias" unless="editRampConfig">
+    <input
+        message="Please enter the user name to be used by the client." 
+        addproperty="user.alias"
+    />
+    <replace file="repo/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
+</target>
+<target name="addKeystorePassword" unless="editRampConfig">
+    <input
+        message="Please enter the password for the client keystore." 
+        addproperty="keystore.password"
+    />
+    <replace file="repo/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
 </target>
 <target name="warn3" unless="OSCARS.jks.exists">
     <echo level="warning">**** a new OSCARS.jks was copied to repo. ****
-**** You must add a KeyEntry for yourself. ****
+	    **** You must add a KeyEntry for yourself using tools/utils/copyKey.sh.  Use copyKey.sh -h for help. ****
     </echo>
 </target>
 		
-<target name="prepare" depends="copydefaults,edit_axis2.xml,warn2,warn3">
+<target name="prepare" depends="copydefaults,useLocalRampConfig,useCatalinaRampConfig,addUserAlias,addKeystorePassword,warn3">
     <mkdir dir="${repo}/modules" />
     <mkdir dir="${build}/classes" />
     <copy todir="${repo}">

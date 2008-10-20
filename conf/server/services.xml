@@ -1,6 +1,7 @@
 <!DOCTYPE page [
-<!ENTITY rampConfig SYSTEM "/usr/local/tomcat/shared/classes/repo/rampConfig.xml"> 
+<!ENTITY rampConfig SYSTEM "**tomcat**/shared/classes/repo/rampConfig.xml"> 
 ]>
+<!-- NOTE:  path above is changed during deployment -->
 <!-- This file was auto-generated from WSDL -->
 <!-- by the Apache Axis2 version: #axisVersion# #today# -->
 <serviceGroup>
