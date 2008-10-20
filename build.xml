@@ -340,6 +340,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </fileset>
             <fileset dir="${defaultKeys}/server">
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
+                <include name="rampConfig.xml" unless="rampConfig.xml.exists"/>
             </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
