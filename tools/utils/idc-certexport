@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###############################################################################
 # USAGE: idc-certexport
 # 
@@ -12,24 +12,21 @@ fi
 
 KS_PATH="";
 KS_PASS="";
+REPO_PATH="$CATALINA_HOME/shared/classes/repo";
 
 while [ 1 ]; do
     echo "Choose the keystore with the certificate you'd like to export:";
-    echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
-    echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
-    echo "    3. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
+    echo "    1. OSCARS.jks - stores the private key for sending and public key for receiving messages from other IDCs";
+    echo "    2. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
     
     printf "Enter choice: ";
     read OPCHOICE;
     
     if [ "$OPCHOICE" == "1" ]; then
-        KS_PATH="$CATALINA_HOME/shared/classes/repo/sec-client";
+        KS_PATH="$REPO_PATH/OSCARS";
         break;
     elif [ "$OPCHOICE" == "2" ]; then
-        KS_PATH="$CATALINA_HOME/shared/classes/server/sec-server";
-        break;
-    elif [ "$OPCHOICE" == "3" ]; then
-        KS_PATH="$CATALINA_HOME/shared/classes/repo/ssl-keystore";
+        KS_PATH="$REPO_PATH/ssl-keystore";
         KS_PASS="oscars";
         break;
     else
@@ -38,7 +35,7 @@ while [ 1 ]; do
 done
 
 if [ -z "$KS_PASS" ]; then 
-    KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $KS_PATH.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+    KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $REPO_PATH/rampConfig.xml | sed -e 's/\s*<ramp:property name="org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password">\(.*\)<\/ramp:property>/\1/'`;
     if [ $? != 0 ]; then
         echo "-- Error while trying to determine keystore password. Please check error message above and try running idc-certadd again.";
         exit 1;

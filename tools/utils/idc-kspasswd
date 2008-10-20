@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###############################################################################
 # USAGE: idc-kspasswd
 # 
@@ -11,25 +11,9 @@ if [ -z "$CATALINA_HOME" ]; then
 	exit 1;
 fi
 
-KS_PATH="";
-
-while [ 1 ]; do
-    echo "Choose the keystore with the password you'd like to change:";
-    echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
-    echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
-    printf "Enter choice: ";
-    read OPCHOICE;
-    
-    if [ "$OPCHOICE" == "1" ]; then
-        KS_PATH="$CATALINA_HOME/shared/classes/repo/sec-client";
-        break;
-    elif [ "$OPCHOICE" == "2" ]; then
-        KS_PATH="$CATALINA_HOME/shared/classes/server/sec-server";
-        break;
-    else
-       echo "Invalid choice. Please choose 1 or 2."; 
-    fi
-done
+KS_PATH="$CATALINA_HOME/shared/classes/repo/OSCARS.jks";
+KS_CONF="$CATALINA_HOME/shared/classes/repo/axis2.xml";
+RAMP_CONF="$CATALINA_HOME/shared/classes/repo/rampConfig.xml";
 
 while [ 1 ]; do
     OLD_PASSWD="";
@@ -54,7 +38,7 @@ while [ 1 ]; do
     echo "";
     
     if [ "$NEW_PASSWD" != "" ] && [ "$NEW_PASSWD2" != "" ] && [ "$NEW_PASSWD" == "$NEW_PASSWD2" ]; then
-        keytool -storepasswd -keystore $KS_PATH.jks -new $NEW_PASSWD -storepass $OLD_PASSWD
+        keytool -storepasswd -keystore $KS_PATH -new $NEW_PASSWD -storepass $OLD_PASSWD
     else
         echo "-- New password fields do not match. Please try again...";
         continue;
@@ -65,9 +49,9 @@ while [ 1 ]; do
         continue;
     fi
     
-    sed -i -e "s/org.apache.ws.security.crypto.merlin.keystore.password=.*/org.apache.ws.security.crypto.merlin.keystore.password=$NEW_PASSWD/" $KS_PATH.properties;
+    sed -i -e "s/<ramp:property name=\"org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password\">.*<\/ramp:property>/<ramp:property name=\"org.apache.ws.security.crypto.merlin.keystore.password\">$NEW_PASSWD<\/ramp:property>/" $RAMP_CONF;
     if [ $? != 0 ]; then 
-        echo "-- Sed returned an error when updating '$KS_PATH.properties'. Please manually add the line org.apache.ws.security.crypto.merlin.keystore.password=YOUR_NEW_PASSWORD to $KS_PATH.properties.";
+        echo "-- Sed returned an error when updating '$RAMP_CONF'. Please manually change the field org.apache.ws.security.crypto.merlin.keystore.password=YOUR_NEW_PASSWORD in $RAMP_CONF to your new password.";
         exit;
     fi
     
