@@ -22,12 +22,29 @@ echo "  ";
 
 #Move keystores if not in right place
 if [ -f "$CATALINA_HOME/shared/classes/server/sec-server.jks" ]; then
+    echo "- An old keystore has been detected at $CATALINA_HOME/shared/classes/server/sec-server.jks";
+    echo " --Version 0.4 consolidates the contents of sec-server.jks and sec-client.jks to a new keystore, OSCARS.jks";
+    echo " --This script will automatically copy and rename sec-server.jks to OSCARS.jks";
+    echo " --NOTE: You will need to have your certificate in sec-client.jks re-issued because it uses a DSA private key"
+    echo "   and the WS-Policy spec now used by OSCARS requires an RSA private key. Please run tools/utils/idc-certadd after this script completes.";
+    echo "";
+    echo "<Press any key to continue>";
+    read JUNK;
     #get sec-server.properties password
-    #copy axis2.xml to repo
+    OLD_KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $CATALINA_HOME/shared/classes/server/sec-server.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+    #copy axis2.xml and rampConfig.xml to repo
+    cp conf/examples/client/axis2.xml $CATALINA_HOME/shared/classes/repo/axis2.xml
+    cp conf/examples/client/rampConfig.xml $CATALINA_HOME/shared/classes/repo/rampConfig.xml
     #put sec-server.props password in axis2.xml
-    #delete sec-server.properties
+    sed -i -e "s/<ramp:property name=\"org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password\">.*<\/ramp:property>/<ramp:property name=\"org.apache.ws.security.crypto.merlin.keystore.password\">$OLD_KS_PASS<\/ramp:property>/" $CATALINA_HOME/shared/classes/repo/rampConfig.xml;
+    if [ $? != 0 ]; then 
+        echo "-- Sed returned an error when updating '$CATALINA_HOME/shared/classes/repo/rampConfig.xml'. Please manually change the field org.apache.ws.security.crypto.merlin.keystore.password=YOUR_NEW_PASSWORD in '$CATALINA_HOME/shared/classes/repo/rampConfig.xml' to your old password for sec-server.jks.";
+        exit;
+    fi
+    #move old keystore and delete sec-server.properties
     mv $CATALINA_HOME/shared/classes/server/sec-server.jks $CATALINA_HOME/shared/classes/repo/OSCARS.jks
-    echo -n "Moved $CATALINA_HOME/shared/classes/server/sec-server.jks to $CATALINA_HOME/shared/classes/repo/OSCARS.jks" ;
+    rm $CATALINA_HOME/shared/classes/server/sec-server.properties
+    echo "Keystore successfully upgraded" ;
 fi
 
 #Upgrade Axis2 
