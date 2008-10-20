@@ -113,18 +113,29 @@ if [ $BUILD_AXIS ]; then
 		echo "    Axis2 already downloaded and unzipped";
 	fi
 	if [ ! -d dists/rampart-SNAPSHOT ]; then
-		if [ ! -f dists/rampart-SNAPSHOT.zip ]; then
+		if [ ! -f dists/rampart-SNAPSHOT.tar.gz ]; then
 			echo "    Downloading Rampart...";
-			# need an address on the wiki 
 			# `wget -P dists http://apache.ziply.com/ws/rampart/1_4/rampart-dist-1.4-bin.zip  `;
-
-			cp /Users/mrt/packages/rampart-SNAPSHOT.zip dists
+            `wget --no-check-certificate -P dists https://wiki.internet2.edu/confluence/download/attachments/19074/rampart-SNAPSHOT.tar.gz`
 			if [ $? != 0 ]; then
                 exit 1;
             fi
 		fi
 		echo "    Rampart  downloaded. Unzipping...";
-		`unzip -qq -d dists dists/rampart-SNAPSHOT.zip`;
+		cd dists
+		gunzip rampart-SNAPSHOT.tar.gz;
+		if [ $? != 0 ]; then
+		    exit 1;
+		fi
+		tar -xvf rampart-SNAPSHOT.tar;
+		if [ $? != 0 ]; then
+		    exit 1;
+		fi
+		cd ../
+		cp dists/rampart-SNAPSHOT/lib/rampart-core-SNAPSHOT.jar lib/axis2/rampart-core-SNAPSHOT.jar;
+		if [ $? != 0 ]; then
+		    exit 1;
+		fi
 		echo "--- Downloading bouncyCastle crypto provider "
 	    `wget -P dists/rampart-SNAPSHOT/lib http://www.bouncycastle.org/download/bcprov-jdk15-140.jar `;
 	    if [ $? != 0 ]; then

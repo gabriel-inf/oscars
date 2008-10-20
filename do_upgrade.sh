@@ -20,9 +20,20 @@ fi
 echo "  ";
 echo "  ";
 
+#Move keystores if not in right place
+if [ -f "$CATALINA_HOME/shared/classes/server/sec-server.jks" ]; then
+    #get sec-server.properties password
+    #copy axis2.xml to repo
+    #put sec-server.props password in axis2.xml
+    #delete sec-server.properties
+    mv $CATALINA_HOME/shared/classes/server/sec-server.jks $CATALINA_HOME/shared/classes/repo/OSCARS.jks
+    echo -n "Moved $CATALINA_HOME/shared/classes/server/sec-server.jks to $CATALINA_HOME/shared/classes/repo/OSCARS.jks" ;
+fi
+
 #Upgrade Axis2 
 INSTALL_HOME=`pwd`;
 bash conf/axis2/axis2_install.sh $INSTALL_HOME
+
 if [ $? != 0 ]; then
     exit 1;
 fi
@@ -35,14 +46,19 @@ while [ $AXIS2_ANS == 0 ]; do
     fi
 done
 if [ "$AXIS2_ANS" = "y" ] || [ "$AXIS2_ANS" = "Y" ]; then
-    #Update axis2.xml
-    REPO_PATH="$CATALINA_HOME/shared/classes/repo";
-    CERT_ALIAS=`grep "<user>.*</user>" $REPO_PATH/axis2.xml | sed -e 's/.*<user>\(.*\)<\/user>.*/\1/'`;
-    sed -i -e "s/<user>.*<\/user>/<user>$CERT_ALIAS<\/user>/g" conf/examples/client/axis2.xml
-    cp conf/examples/client/axis2.xml $REPO_PATH/axis2.xml
+    if [ -d "$CATALINA_HOME/webapps/axis2" ]; then
+        echo "Axis2 ready, no restart required...";
+    else
+        `$CATALINA_HOME/bin/shutdown.sh`;
+        echo "Waiting for Tomcat to shutdown..."
+        sleep 5;
+        `$CATALINA_HOME/bin/startup.sh`;
+        echo "Waiting for Tomcat to startup..."
+    fi
     
     #Re-install TERCE if applicable
     if [ -f "../terce/do_install.sh" ]; then
+       
         cd ../terce
         sh do_install.sh;
         cd $INSTALL_HOME;
