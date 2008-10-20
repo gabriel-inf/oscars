@@ -137,8 +137,11 @@ public class PSLookupClient {
         	}
         	
         	//Only register IDC if doesn't exist or exists and have a key
-        	String existingIDCUrl = this.lookup(domainId);
-        	if(existingIDCUrl != null && serviceKeys.isEmpty() && existingIDCUrl.equals(url)){
+        	String[] existingIDCUrls = null;
+        	try{
+        		existingIDCUrls = this.client.lookupIDCUrl(domainId);
+        	}catch(Exception e){}
+        	if(serviceKeys.isEmpty() && this.urlMatches(url, existingIDCUrls)){
         		return keys;
         	}
         	
@@ -184,6 +187,25 @@ public class PSLookupClient {
     }
     
     /**
+     * Checks if URL is in string list
+     * 
+     * @param url the URL to match
+     * @param existingIDCUrls the set of possible matches
+     * @return true if there is a match
+     */
+    private boolean urlMatches(String url, String[] existingIDCUrls) {
+    	if(existingIDCUrls == null){
+    		return false;
+    	}
+    	for(String existingIDCUrl : existingIDCUrls){
+    		if(existingIDCUrl.equals(url)){
+    			return true;
+    		}
+    	}
+		return false;
+	}
+
+	/**
      * Registers the local IDC with the lookup service
      * 
      * @param nbURL the URL of the service to register
