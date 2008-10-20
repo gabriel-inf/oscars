@@ -53,14 +53,14 @@
 <target name="useCatalinaRampConfig" unless="do.local.set" depends="checkLocalRampConfig">
     <replace file="repo/axis2.xml" token="**tomcat**" summary="true" value="${catalina.home}" />
 </target>
-<target name="addUserAlias" unless="editRampConfig">
+<target name="addUserAlias" if="do.local.set" unless="editRampConfig">
     <input
         message="Please enter the user name to be used by the client." 
         addproperty="user.alias"
     />
     <replace file="repo/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
 </target>
-<target name="addKeystorePassword" unless="editRampConfig">
+<target name="addKeystorePassword" if="do.local.set" unless="editRampConfig">
     <input
         message="Please enter the password for the client keystore." 
         addproperty="keystore.password"
