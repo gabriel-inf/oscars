@@ -3,7 +3,6 @@
 <project xmlns:artifact="urn:maven-artifact-ant" name="OSCARS" default="all">
     <!-- properties section for main targets ******************************** -->
     <property environment="env"/>
-    <available property="domain.exists" file="${env.DOMAIN_HOME}"/>
     <property name="domain.home" value="${env.DOMAIN_HOME}"/>
     <property name="defaultKeys" location="conf/examples"/>
     <property name="catalina.home" value="${env.CATALINA_HOME}"/>
@@ -51,6 +50,8 @@
         <copy todir="conf/server">
             <fileset dir="conf/notify-server" includes="b-2-idc.xsd,bf-2-idc.xsd,r-2-idc.xsd,ws-addr-idc.xsd"/>
         </copy>
+        <replace summary="true" file="conf/server/services.xml" token="/usr/local/tomcat" value="${catalina.home}"/>
+        <replace summary="true" file="conf/notify-server/services.xml" token="/usr/local/tomcat" value="${catalina.home}"/>
     </target>
     <target name="initMaven">
         <path id="maven.classpath">
@@ -350,26 +351,24 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </fileset>
         </copy>
     </target>
+    <target name="edit_axis2.xml" unless="axis2.xml.uptodate, axis2.xml.exists">
+        <replace file="${catalina.home}/shared/classes/repo/axis2.xml" token="/usr/local/tomcat"
+           		value="${catalina.home}" summary="true"/> 
+    </target>
     <target name="warn1" unless="rampConfig.xml.uptodate">
-        <echo level="warning"> **** A new rampConfig.xml file has been copied to 
-  **** ${catalina.home}/shared/classes/repo. ****  
-  **** You must set the user and password. ****
-        </echo>
-    </target>
-    <target name="warn2" unless="axis2.xml.uptodate">
-        <echo level="warning">  **** A new axis2.xml file has been copied to  ****
-  **** ${catalina.home}/shared/classes/repo.  ****
-  **** Please edit the path name for the rampConfig inlcude.  ****
-   	    </echo>
-    </target>
-    <target name="warn3" unless="OSCARS.jks.exists">
-            <echo level="warning">  **** A new OSCARS.jsk file has been copied to  ****
+          <echo level="warning"> **** A new rampConfig.xml file has been copied to 
+    **** ${catalina.home}/shared/classes/repo. ****  
+    **** You must set the user and password. ****
+          </echo>
+      </target>
+    <target name="warn2" unless="OSCARS.jks.exists">
+            <echo level="warning">  **** A new OSCARS.jks file has been copied to  ****
   **** ${catalina.home}/shared/classes/repo.  ****
   **** You must add a KeyEntry for the service. ****
        	    </echo>
         </target>
     <target name="setupServer" description="populate the shared/classes directory" 
-    	              depends="copydomain,copydefaults,warn1,warn2,warn3">
+    	              depends="copydomain,copydefaults,warn1,warn2,edit_axis2.xml">
     	<!-- <mkdir dir="${catalina.home}/shared/classes/server"/> -->
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
         <copy todir="${catalina.home}/shared/classes/repo/modules/">

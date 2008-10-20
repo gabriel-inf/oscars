@@ -12,8 +12,6 @@
 <property name="url"
           value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
 
-	
-
 
 <path id="client.path">
     <fileset dir="${lib}/axis2" includes="*.jar" />
@@ -36,10 +34,8 @@
         </fileset>
     </copy>
 </target>
-<target name="warn1" unless="editAxisxml">
-	<echo level="warning"> **** a new axis2.xml was copied to repo **** 
-**** please edit it to correct the pathname for rampConfig.xml **** 
-	 </echo>
+<target name="edit_axis2.xml" unless="editAxisxml">
+    <replace file="repo/axis2.xml" token="/usr/local/tomcat/shared/classes/" summary="true"/>
 </target>
 <target name="warn2" unless="editRampConfig">
 	<echo level="warning">**** a new rampConfig.xml was copied to repo. **** 
@@ -52,7 +48,7 @@
     </echo>
 </target>
 		
-<target name="prepare" depends="copydefaults,warn1,warn2,warn3">
+<target name="prepare" depends="copydefaults,edit_axis2.xml,warn2,warn3">
     <mkdir dir="${repo}/modules" />
     <mkdir dir="${build}/classes" />
     <copy todir="${repo}">
