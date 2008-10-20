@@ -54,7 +54,7 @@ public class UserSession {
                       "Please try logging in again.";
             errorMap.put("status", status);
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
-            out.println("/* " + jsonObject + " */");
+            out.println("{}&&" + jsonObject);
             return null;
         }
         Session aaa =
@@ -75,7 +75,7 @@ public class UserSession {
                          "for user " + cookieUserName + ".  Please check " +
                          "with a system administrator.");
             JSONObject jsonObject = JSONObject.fromObject(errorMap);
-            out.println("/* " + jsonObject + " */");
+            out.println("{}&&" + jsonObject);
         }
         return userName;
     }

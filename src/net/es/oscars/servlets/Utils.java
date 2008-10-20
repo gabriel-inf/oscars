@@ -28,7 +28,7 @@ public class Utils {
         errorMap.put("status", message);
         errorMap.put("method", method);
         JSONObject jsonObject = JSONObject.fromObject(errorMap);
-        out.println("/* " + jsonObject + " */");
+        out.println("{}&&" + jsonObject);
         return;
     }
     
