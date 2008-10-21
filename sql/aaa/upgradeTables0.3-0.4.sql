@@ -26,7 +26,7 @@ INSERT INTO constraints VALUES (NULL, "specify-gri", "boolean", "allows a gri to
 
 -- INSTITUTIONS TABLES
 -- expand number of characters used in index
-ALTER TABLE institutions DROP INDEX instName;
+-- ALTER TABLE institutions DROP INDEX instName;
 CREATE UNIQUE INDEX instName ON institutions(name(15));
 
 -- RESOURCES TABLE
@@ -213,12 +213,12 @@ CREATE UNIQUE INDEX permName on permissions (name(6));
 
 -- ATTRIBUTES TABLE
 
-ALTER TABLE attributes DROP INDEX attrName;
+-- ALTER TABLE attributes DROP INDEX attrName;
 CREATE UNIQUE INDEX attrName ON attributes(name(15));                    
 -- Add description description for attributes
 ALTER IGNORE TABLE attributes ADD COLUMN description TEXT NOT NULL;
 UPDATE attributes SET attrType="role" WHERE attrType="group";
-UPDATE attributes SET name="OSCARS-site-administrator" where name="OSCARS-siteAdmin";
+INSERT INTO attributes VALUES(NULL, "OSCARS-site-administrator", "role", "manage all reservations starting or ending at site");
 
 UPDATE  attributes SET description="make reservations" WHERE name="OSCARS-user" ;
 UPDATE  attributes SET description="manage all reservations, view and update topology" WHERE name="OSCARS-engineer";
