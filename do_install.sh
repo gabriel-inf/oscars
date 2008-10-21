@@ -37,24 +37,6 @@ if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 	STATUS2=", server configured"
 fi
 
-#Update services.xml
-if [ `echo $CATALINA_HOME | egrep "/$"` ]; then
-    CATALINA_HOME_ESC=${CATALINA_HOME%?};
-else
-    CATALINA_HOME_ESC=$CATALINA_HOME;
-fi
-CATALINA_HOME_ESC=`echo $CATALINA_HOME_ESC | sed -e 's/\//\\\\\//g'`;
-sed -i -e "s/<\!ENTITY rampConfig SYSTEM \".*\">/<\!ENTITY rampConfig SYSTEM \"$CATALINA_HOME_ESC\/shared\/classes\/repo\/rampConfig.xml\">/" conf/server/services.xml;
-if [ $? != 0 ]; then
-    echo "Error modifying conf/server/services.xml"
-    exit 1;
-fi
-sed -i -e "s/<\!ENTITY rampConfig SYSTEM \".*\">/<\!ENTITY rampConfig SYSTEM \"$CATALINA_HOME_ESC\/shared\/classes\/repo\/rampConfig.xml\">/" conf/notify-server/services.xml;
-if [ $? != 0 ]; then
-    echo "Error modifying conf/notify-server/services.xml"
-    exit 1;
-fi
-
 #Deploy IDC
 echo "--- Deploying IDC...";
 ant deployall;
