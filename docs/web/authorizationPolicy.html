@@ -803,6 +803,21 @@ Authorizations Table</h3>
       <td style="background-color: rgb(255, 255, 204);">true </td>
     </tr>
     <tr>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">specify-path-elements<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      </td>
+    </tr>
+    <tr>
       <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-engineer&gt;</td>
       <td style="background-color: rgb(255, 255, 204);">reservations </td>
       <td style="background-color: rgb(255, 255, 204);">signal </td>
@@ -857,78 +872,285 @@ Authorizations Table</h3>
       </td>
     </tr>
     <tr>
-      <td>&lt;OSCARS-operator&gt; </td>
-      <td>users </td>
-      <td>query </td>
-      <td>none [1] </td>
-      <td> <br>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations </td>
+      <td style="background-color: rgb(255, 255, 255);">list </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
       </td>
     </tr>
     <tr>
-      <td>&lt;OSCARS-operator&gt;</td>
-      <td>users</td>
-      <td>modify </td>
-      <td>none [1] </td>
-      <td> <br>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations</td>
+      <td style="background-color: rgb(255, 255, 255);">query </td>
+      <td style="background-color: rgb(255, 255, 255);">my-site </td>
+      <td style="background-color: rgb(255, 255, 255);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations</td>
+      <td style="background-color: rgb(255, 255, 255);">create </td>
+      <td style="background-color: rgb(255, 255, 255);">specify-path-elements
+      </td>
+      <td style="background-color: rgb(255, 255, 255);">true </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">&lt;OSCARS-service&gt;</td>
+      <td style="vertical-align: top;">reservations</td>
+      <td style="vertical-align: top;">create<br>
+      </td>
+      <td style="vertical-align: top;">specify-gri<br>
+      </td>
+      <td style="vertical-align: top;">true<br>
       </td>
     </tr>
     <tr>
-      <td>&lt;OSCARS-operator&gt;</td>
-      <td>reservations </td>
-      <td>list </td>
-      <td>all-users</td>
-      <td>true </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-operator&gt;</td>
-      <td>reservations</td>
-      <td>query </td>
-      <td>all-users</td>
-      <td>true </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-operator&gt; </td>
-      <td>subscriptions</td>
-      <td>create</td>
-      <td><br>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations</td>
+      <td style="background-color: rgb(255, 255, 255);">modify </td>
+      <td style="background-color: rgb(255, 255, 255);">
+specify-path-elements<br>
       </td>
-      <td> <br>
+      <td style="background-color: rgb(255, 255, 255);">true<br>
       </td>
     </tr>
     <tr>
-      <td>&lt;OSCARS-operator&gt; </td>
-      <td>subscriptions</td>
-      <td>modify</td>
-      <td><br>
+      <td style="vertical-align: top;">&lt;OSCARS-service&gt;</td>
+      <td style="vertical-align: top;">reservations</td>
+      <td style="vertical-align: top;">modify<br>
       </td>
-      <td> <br>
+      <td style="vertical-align: top;">specify-gri</td>
+      <td style="vertical-align: top;">true<br>
       </td>
     </tr>
     <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-site-administrator&gt;
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations </td>
+      <td style="background-color: rgb(255, 255, 255);">signal </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
       </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 255);">domains </td>
+      <td style="background-color: rgb(255, 255, 255);">view </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 255);">domains </td>
+      <td style="background-color: rgb(255, 255, 255);">modify </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 255);">subscriptions </td>
+      <td style="background-color: rgb(255, 255, 255);">create </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-service&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 255);">subscriptions </td>
+      <td style="background-color: rgb(255, 255, 255);">modify </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">&lt;OSCARS-service&gt;</td>
+      <td style="vertical-align: top;">publishers<br>
+      </td>
+      <td style="vertical-align: top;">create<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">&lt;OSCARS-servicer&gt;</td>
+      <td style="vertical-align: top;">publishers<br>
+      </td>
+      <td style="vertical-align: top;">modify<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">users<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">true<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 204);">users </td>
+      <td style="background-color: rgb(255, 255, 204);">query </td>
+      <td style="background-color: rgb(255, 255, 204);">none [1] </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">users</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);">none [1] </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;</td>
       <td style="background-color: rgb(255, 255, 204);">reservations </td>
       <td style="background-color: rgb(255, 255, 204);">list </td>
-      <td style="background-color: rgb(255, 255, 204);">my-site </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users</td>
       <td style="background-color: rgb(255, 255, 204);">true </td>
     </tr>
     <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;</td>
       <td style="background-color: rgb(255, 255, 204);">reservations</td>
       <td style="background-color: rgb(255, 255, 204);">query </td>
-      <td style="background-color: rgb(255, 255, 204);">my-site </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users</td>
       <td style="background-color: rgb(255, 255, 204);">true </td>
     </tr>
     <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-site-administrator&gt;</td>
-      <td style="background-color: rgb(255, 255, 204);">reservations</td>
-      <td style="background-color: rgb(255, 255, 204);">modify </td>
-      <td style="background-color: rgb(255, 255, 204);">my-site </td>
-      <td style="background-color: rgb(255, 255, 204);">true </td>
-    </tr>
-    <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;
+      </td>
       <td style="background-color: rgb(255, 255, 204);">subscriptions</td>
+      <td style="background-color: rgb(255, 255, 204);">create</td>
+      <td style="background-color: rgb(255, 255, 204);"><br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-operator&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 204);">subscriptions</td>
+      <td style="background-color: rgb(255, 255, 204);">modify</td>
+      <td style="background-color: rgb(255, 255, 204);"><br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-site-administrator&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 255);">reservations </td>
+      <td style="background-color: rgb(255, 255, 255);">list </td>
+      <td style="background-color: rgb(255, 255, 255);">my-site </td>
+      <td style="background-color: rgb(255, 255, 255);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations</td>
+      <td style="background-color: rgb(255, 255, 255);">query </td>
+      <td style="background-color: rgb(255, 255, 255);">my-site </td>
+      <td style="background-color: rgb(255, 255, 255);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">reservations</td>
+      <td style="background-color: rgb(255, 255, 255);">modify </td>
+      <td style="background-color: rgb(255, 255, 255);">my-site </td>
+      <td style="background-color: rgb(255, 255, 255);">true </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="vertical-align: top;">reservations<br>
+      </td>
+      <td style="vertical-align: top;">create<br>
+      </td>
+      <td style="vertical-align: top;">my-site<br>
+      </td>
+      <td style="vertical-align: top;">true<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="vertical-align: top;">reservations<br>
+      </td>
+      <td style="vertical-align: top;">signal<br>
+      </td>
+      <td style="vertical-align: top;">my-site<br>
+      </td>
+      <td style="vertical-align: top;">true<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">subscriptions</td>
+      <td style="background-color: rgb(255, 255, 255);">create </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">subscriptions</td>
+      <td style="background-color: rgb(255, 255, 255);">modify </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;
+      </td>
+      <td style="background-color: rgb(255, 255, 204);">users </td>
+      <td style="background-color: rgb(255, 255, 204);">list </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users </td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">users</td>
+      <td style="background-color: rgb(255, 255, 204);">query </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users</td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">users</td>
+      <td style="background-color: rgb(255, 255, 204);">modify </td>
+      <td style="background-color: rgb(255, 255, 204);">all-users</td>
+      <td style="background-color: rgb(255, 255, 204);">true </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">users </td>
       <td style="background-color: rgb(255, 255, 204);">create </td>
       <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
@@ -936,96 +1158,59 @@ Authorizations Table</h3>
       </td>
     </tr>
     <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-site-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">AAA </td>
+      <td style="background-color: rgb(255, 255, 204);">list </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;</td>
+      <td style="background-color: rgb(255, 255, 204);">AAA</td>
+      <td style="background-color: rgb(255, 255, 204);">modify</td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 204);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;
+      </td>
       <td style="background-color: rgb(255, 255, 204);">subscriptions</td>
-      <td style="background-color: rgb(255, 255, 204);">modify </td>
-      <td style="background-color: rgb(255, 255, 204);"> <br>
+      <td style="background-color: rgb(255, 255, 204);">modify</td>
+      <td style="background-color: rgb(255, 255, 204);"><br>
       </td>
       <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td>&lt;OSCARS-administrator&gt; </td>
-      <td>users </td>
-      <td>list </td>
-      <td>all-users </td>
-      <td>true </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt;</td>
-      <td>users</td>
-      <td>query </td>
-      <td>all-users</td>
-      <td>true </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt;</td>
-      <td>users</td>
-      <td>modify </td>
-      <td>all-users</td>
-      <td>true </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt;</td>
-      <td>users </td>
-      <td>create </td>
-      <td> <br>
+      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-administrator&gt;
       </td>
-      <td> <br>
-      </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt;</td>
-      <td>AAA </td>
-      <td>list </td>
-      <td> <br>
-      </td>
-      <td> <br>
-      </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt;</td>
-      <td>AAA</td>
-      <td>modify</td>
-      <td> <br>
-      </td>
-      <td> <br>
-      </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt; </td>
-      <td>subscriptions</td>
-      <td>modify</td>
-      <td><br>
-      </td>
-      <td> <br>
-      </td>
-    </tr>
-    <tr>
-      <td>&lt;OSCARS-administrator&gt; </td>
-      <td>publishers</td>
-      <td>modify</td>
-      <td><br>
-      </td>
-      <td> <br>
-      </td>
-    </tr>
-    <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-publisher&gt;</td>
       <td style="background-color: rgb(255, 255, 204);">publishers</td>
-      <td style="background-color: rgb(255, 255, 204);">create </td>
-      <td style="background-color: rgb(255, 255, 204);"> <br>
+      <td style="background-color: rgb(255, 255, 204);">modify</td>
+      <td style="background-color: rgb(255, 255, 204);"><br>
       </td>
       <td style="background-color: rgb(255, 255, 204);"> <br>
       </td>
     </tr>
     <tr>
-      <td style="background-color: rgb(255, 255, 204);">&lt;OSCARS-publisher&gt;</td>
-      <td style="background-color: rgb(255, 255, 204);">publishers</td>
-      <td style="background-color: rgb(255, 255, 204);">modify </td>
-      <td style="background-color: rgb(255, 255, 204);"> <br>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-publisher&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">publishers</td>
+      <td style="background-color: rgb(255, 255, 255);">create </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
       </td>
-      <td style="background-color: rgb(255, 255, 204);"> <br>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: rgb(255, 255, 255);">&lt;OSCARS-publisher&gt;</td>
+      <td style="background-color: rgb(255, 255, 255);">publishers</td>
+      <td style="background-color: rgb(255, 255, 255);">modify </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
+      </td>
+      <td style="background-color: rgb(255, 255, 255);"> <br>
       </td>
     </tr>
     <tr>

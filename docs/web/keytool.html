@@ -28,6 +28,13 @@ that
 comes with the jetty release that we have used. There may be tools in
 the Sun suite as well.<br>
 </p>
+<p>OSCARS provides wrappers in <a href="msgSecurity.html#idcCommands">tools/utils</a>
+that simplify the use keytool by suggesting the location of the
+keystore and finding the password from the related configuration file.
+These wrappers should be used to edit
+$CATALINA_HOME/shared/classes/repo/{OSCARS.jks, ssl-keystore.jks}. You
+can use keytool to edit keystores in other locations.<br>
+</p>
 <h3>Finding an CA certificate</h3>
 Ask whoever is running the service that you want
 to connect to, to send you the CA certificate that signed its web site
@@ -45,7 +52,7 @@ In IE the following is reputed to work.<br>
 <i>View certificate -&gt; certificate details -&gt;</i> <i>copy to file</i>
 <br>
 <br>
-For Firefox you need the following extension.<br>
+For Firefox you may need the following extension.<br>
 <br>
 https://addons.mozilla.org/en-US/firefox/addon/1964<br>
 <br>
@@ -65,39 +72,31 @@ openssl:<br>
  style="font-style: italic;">'CAcert.der'</span> -inform DER -outform PEM -out <span
  style="font-style: italic;">'CAcert.pem'</span></pre>
 To import into a keystore:<br>
+<br>
+<span style="font-weight: bold;">tools/users/idc-certadd&nbsp;</span> <br>
+<br>
+or <br>
 <pre style="font-weight: bold;">keytool -import -keystore <span
- style="font-style: italic;">'sec-client.jks'</span> -file <span
+ style="font-style: italic;">'OSCARS.jks'</span> -file <span
  style="font-style: italic;">'CAcert.pem'</span> -trustcacerts -alias <span
  style="font-style: italic;">'CA'</span></pre>
-<h4>Input a pkcs12 file to a key store</h4>
-Used when you have a user certificate that was generated outside of the
-keystore and you<br>
-wish to import as a keyEntry.<br>
-<pre>#NOTE:<br># Need both the cert and private key in the keystore so...<br># need to be in pem format so if it is in DER format convert to pem first<br><br>#use openssl to make ONE pkcs12 file (combine both cert &amp; private key)<br><span
- style="font-weight: bold;">openssl pkcs12 -inkey <span
- style="font-style: italic;">'jason.key.pem'</span> -in <span
- style="font-style: italic;">'jason.cert.pem'</span>  -export -out <span
- style="font-style: italic;">'jason.pkcs12'</span></span><br><br># use jetty to load it (from http://jetty.mortbay.org/)<br># with  jetty-6.0.2 the command is<br><span
- style="font-weight: bold;">java -cp org.mortbay.jetty-6.0.2.jar org.mortbay.jetty.security.PKCS12Import <span
- style="font-style: italic;">'jason.pkcs12' 'sec-client.jks</span></span><span
- style="font-style: italic;">'</span><br><br></pre>
-<p>Now to rename the alias use:</p>
-<pre><span style="font-weight: bold;">keytool -keyclone -alias 1 -dest <span
- style="font-style: italic;">'jason'</span> -keystore <span
- style="font-style: italic;">'sec-client.jks'</span></span><br
- style="font-weight: bold;"><span style="font-weight: bold;">keytool -delete -alias 1 -keystore <span
- style="font-style: italic;">'sec-client.jks'</span></span><br></pre>
-<p>Then to import the DOEGrids CA cert:</p>
-<pre><span style="font-weight: bold;">keytool -import -keystore <span
- style="font-style: italic;">'sec-client.jks'</span> -file <span
- style="font-style: italic;">'doeGridsCA.pem'</span> -trustcacerts -alias <span
- style="font-style: italic;">'DOEGridsCA'</span></span><br
- style="font-weight: bold;"><span style="font-weight: bold;">keytool -import -keystore <span
- style="font-style: italic;">'sec-client.jks'</span> -file <span
- style="font-style: italic;">'esnetRoot.pem'</span> -trustcacerts -alias <span
- style="font-style: italic;">'esnetRoot'</span></span><br></pre>
-<!--#include virtual="footer.html" -->
+<h4>Create a keyEntry from an indpendently obtained private key, and
+signed certificate.<br>
+</h4>
+utils/tools/importKeyEntry <code>KEYSTORE CERTS KEY ALIAS <br>
 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KEYSTORE is the name
+of the file containing the Java keystore <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CERTS is the name of a
+file containing a chain of one or more<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; concatenated
+DER-encoded X.509 certificates <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KEY is the name of a
+file containing a DER-encoded PKCS#8 RSA <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+private key <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ALIAS is the alias for
+the private key entry in the keystore </code><br>
 <br>
 </body>
 </html>
