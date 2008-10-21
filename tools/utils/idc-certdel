@@ -16,9 +16,9 @@ REPO_PATH="$CATALINA_HOME/shared/classes/repo";
 
 while [ 1 ]; do
     echo "Choose the keystore with the certificate you'd like to delete:";
-    echo "    1. OSCARS.jks - stores the private key for sending and public key for receiving messages from other IDCs";
-    echo "    2. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
-    
+    echo "    1. OSCARS.jks - stores the private key for sending or the public key for receiving messages from other IDCs";
+    echo "    2. ssl-keystore.jks - stores the public SSL certificate of other IDCs running HTTPS";
+
     printf "Enter choice: ";
     read OPCHOICE;
     
@@ -30,7 +30,7 @@ while [ 1 ]; do
         KS_PASS="oscars";
         break;
     else
-       echo "Invalid choice. Please choose 1, 2, or 3."; 
+       echo "Invalid choice. Please choose 1 or 2."; 
     fi
 done
 
