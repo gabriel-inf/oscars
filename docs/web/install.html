@@ -86,10 +86,10 @@ toolkit library used by our new browser interface</li>
         <li><a href="tomcat.html">Apache Tomcat 5.5</a>
 servlet
 container</li>
-        <li><a href="axis2.html">Apache Axis2 1.3 </a>Web
+        <li><a href="axis2.html">Apache Axis2 1.4.1 </a>Web
 service container</li>
         <li><a href="axis2.html">Apache
-Rampart 1.3 </a>- for Web service message security</li>
+Rampart 1.4/SNAPSHOT </a>- for Web service message security</li>
       </ul>
 The persistent data for
 reservations, topology and user information is stored in <a
@@ -103,12 +103,30 @@ Installation
 Manual</a> also covers installation of these packages in section 1 and
 2.<br>
       <br>
-There is also a shell script included in the distribution, <span
- style="font-weight: bold; font-style: italic;">do_build.sh</span>,
-that will attempt to download axis2 and rampart and build a properly
-configured axis2.war file. If mysql is found on your PATH, it will also
-create and populate the databases and tables that OSCARS uses. <br>
-      <h2><a class="mozTocH2" name="mozTocId277748"></a>Download OSCARS</h2>
+There are several shell scripts included in the distribution: <span
+ style="font-weight: bold; font-style: italic;"><br>
+      </span>
+      <ul>
+        <li><span style="font-weight: bold; font-style: italic;">do_build.sh</span>
+which will check for prerequsites,&nbsp; download axis2 and rampart if
+they are&nbsp; missing. build and deploy axis2.war, create and populate
+the databases and build a properly
+configured axis2.war file.<br>
+        </li>
+        <li><span style="font-weight: bold;">do_install.sh</span> which
+is run after do_build and sets some OCSARS configuration variables in
+the deployed axis2, installs the OSCARS keystores, deploys the
+OSCARS.war, OSCARS.aar and OSCARSNotify.aar, and builds the tools/utils
+directory.<br>
+        </li>
+        <li><span style="font-weight: bold;">do_upgrade.sh</span> which
+will upgrade a DCN release 0.3 to 0.4. It will update the</li>
+        <li>version of axis2 to 1.4.1, update OSCARS security
+configuration and keystores and update the mysql data bases.<br>
+        </li>
+      </ul>
+      <h2><a class="mozTocH2" name="mozTocId277748"></a>Download
+OSCARS</h2>
       <br>
 See the <a href="download.html">Download</a> page for instructions on
 how to download the OSCARS source code from either the code repository
@@ -139,10 +157,10 @@ password must match what you put in the oscars.properties file as
 hibernate.connection.username and password.<br>
       <br>
 Create databases named <span style="font-style: italic;">aaa, bss,
-testaaa</span> and <span style="font-style: italic;">testbss</span>,
+notify, testaaa</span> and <span style="font-style: italic;">testbss</span>,
 create the IDC user if it does not already exist, and grant it "<code>ALL
 PRIVILEGES" <span style="font-family: verdana,arial,sans-serif;">on
-the four databases. Initialize the aaa database with standard
+the five databases. Initialize the aaa database with standard
 permissions, attributes and resources.</span></code><br>
       <br>
 Do not confuse these two mysql users with the OSCARS users that you
@@ -192,7 +210,22 @@ database as it deletes all the existing tables and starts over. If you
 wish to just delete information about reservations use the
 cleanReservations.sql script.<br>
       <br>
-Creating and granting access to a user for the IDC<br>
+      <span style="font-weight: bold;">Creating the notify Database</span><br>
+The notification server handles the notifications about reservation
+state changes between different IDCs and users. It&nbsp; keeps a
+database of event publishishers, subscriptions and subscription
+filters. To create the database adn a set of empty tables&nbsp; issue
+these commands:<br>
+      <br>
+      <div style="margin-left: 40px;"><span style="font-weight: bold;">cd
+sql/notify;</span><br style="font-weight: bold;">
+      <span style="font-weight: bold;">mysql -u root -p &lt;
+createTables.sq</span>l<br>
+      </div>
+      <br>
+      <br>
+      <span style="font-weight: bold;">Creating and granting access to
+a user for the IDC</span><br>
       <br>
       <code>shell&gt; <strong>mysql -u root</strong><br>
 mysql&gt; <strong>GRANT ALL PRIVILEGES ON aaa.* TO '<italic
@@ -244,10 +277,7 @@ example users and credentials that are in the conf/examples directory
 or you can start setting up access for your real users.<br>
       <br>
 To do the former:<br>
-Check to see that <span style="font-weight: bold; font-style: italic;">examples/server/oscars.properties</span><span
- style="font-weight: bold;"></span>:hibernate.connection.user/password
-are set correctly (see <a href="#editProperties">above</a>)&nbsp; and
-then run the <span style="font-weight: bold; font-style: italic;">do_install.sh</span>
+Run the <span style="font-weight: bold; font-style: italic;">do_install.sh</span>
 command and answer yes to the question about copying keyfiles and
 configuration files.<br>
       <br>
@@ -301,89 +331,53 @@ able to use the browser interface to create more users and eventually
 to create resesrvations.<br>
       <br>
       <h2><a class="mozTocH2" name="mozTocId78259"></a>Setting up
-Server Keystores</h2>
+Server Keystore</h2>
       <br>
-It is recommended that you read the <a href="msgSecurity.html">message
+In order to make interdomain reservations or to use the SOAP api from
+the comand line clients in the examples directory, the OSCARS.jks
+keystore must have a keyEntry for the service.&nbsp; It is recommended
+that you read the <a href="msgSecurity.html">message
 security page</a> for an general explantion of the various keystores
-and properties files that you will need to edit.<br>
+and configuration files that are site specific. The ant task
+setupServer promted for the alias of the service . Now you
+must add a KeyEntry for this service user who will sign response
+message
+and forwarded messages.<br>
       <br>
-Before a client can connect to your server using the web services API
-you will need to edit the files&nbsp;
-$DOMAIN_HOME/server/{sec-server.properties, sec-server.jks}. Java
-keystores can be edited using the <a href="keytool.html"><span
- style="font-weight: bold; font-style: italic;">keytool</span></a>
-command.<br>
+You can add a user KeyEntry to the keystore in several ways. If you are
+running a standalone server, use<span style="font-weight: bold;"> <a
+ href="msgSecurity.html#idcCommands">tools/utils/idc-certadd</a></span>
+and chose option 1. This
+will create a keyEntry with the alias you give and a self-signed
+certificate. If you are going to be connected to the Internet2 or ESnet
+IDC's you will need a certificate that is signed by a trusted CA. Use
+icd-certadd and chose option 2 which will add a keyEntry and also
+generate a certificate signing request that can be sent to a trusted CA.<br>
       <br>
-In sec-server.properties the keystore type and name can remain the
-same, but the password field should be changed.<br>
-      <br>
-After you change the password given in the properties file, you will
-need to change the password on the keystore file: sec-server.jks. <br>
-      <br>
-      <code>&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">keytool
-      </span></code><code><span style="font-weight: bold;">-storepasswd
-      </span></code><code><span style="font-weight: bold;">-keystore
-sec-server.jks -storepass password -new '<span
- style="font-style: italic;">new-password</span>'</span></code><br>
-      <br>
-You will then need to add a trustedCertEntry for the issuer of any
-certificate that will be used by an authorized user to connect to your
-OSCARS web service. When you add a new user to the system, you should
-get his certificate and the certificate for the issuer of his
-certificate. Then add the DN of the subject and issuer to the aaa:users
-table certSubject and certIssuer and add the issuer certificate to
-$DOMAIN_HOME/server/sec-server.jks, followed by ant setupServer to copy
-it to $CATALINA_HOME/shared/classes/server. <br>
-      <br>
-Use the following command to add a <span style="font-style: italic;">trustedCertEntry</span>
-for the CA represented by <span style="font-style: italic;">cert.pem</span>
-to the keystore <span style="font-style: italic;">sec-server.jks</span>.<br>
-      <br>
-&nbsp;&nbsp;&nbsp;&nbsp; <code><span style="font-weight: bold;">keytool
--import -keystore
-sec-server.jks -file '<span style="font-style: italic;">cert.pem</span>'
--trustcacerts -alias '<span style="font-style: italic;">CAname</span>'</span>
-      <br>
-      </code>
-      <h2><a class="mozTocH2" name="mozTocId660439"></a>Setting
+      <h2>Setting
 up Client Keystores</h2>
       <span style="font-weight: bold;"><br>
-axis2.xml - </span>edit the line<br>
+      </span>If you wish to use the command line clients in
+examples/javaClients you<br>
+will&nbsp; need to setup the keystore there.<br>
       <br>
-      <code>&lt;user&gt;alice&lt;/user&gt;<br>
+      <div style="margin-left: 40px;"><code>cd examples/javaClients</code><br>
+      <code>ant </code><br>
+      </div>
       <br>
-      </code>to set name of the user who will be making
-requests tothe OSCARS service. The user name should be the alias that
-is in the keystore.<br>
-      <span style="font-weight: bold;"></span><br>
-      <span style="font-weight: bold;">sec-client.properties</span> -
-As in the case of the server, this should&nbsp; be edited to have to
-change the&nbsp; password for the
-keystore file (sec-client.jks).<br>
+Will copy and edit the axis2.xml and rampConfig.xml files into
+examples/javaClients/repo. If you answered y to the question<br>
       <br>
-      <span style="font-weight: bold;">sec-client.jks</span> -
-Change&nbsp; the password as above if you have edited
-sec-client.properties. Add a keyEntry for the client making web service
-requests to the OSCARS
-server. (see <a href="keytool.html">keytool</a> for several ways to do
-this.)<br>
+      <span style="font-style: italic;">Do you wish to use the
+rampConfig.xml in the repo subdirectory in axis2.xml to be able to
+customize the user key (as opposed to using the default ? (y,n)<br>
       <br>
-      <span style="font-weight: bold;">ssl-keystore.jks</span> -If you
-will be connecting to a server other than: <br>
+      </span>you will need to add a keyEntry to repo/OSCARS.jks. If you
+answered no, the clients will use the same keystore that the server
+uses.<br>
       <br>
-oscars.es.net, oscars-dev.es.net - signed for by <br>
-CN=ESnet SSL Server Certificates, OU=Certificate Authorities, DC=ES,
-DC=net<br>
-ndb3-blmt.abilene.ucaid.edu -signed for by<br>
-CN=DCSTest, OU=DCS Test, O=DCS Test, L=Ann Arbor, ST=Michigan, C=US<br>
-      <br>
-you will need to add either the site certificate or the issuer's
-certificate of&nbsp; the Tomcat
-server to which the client will be connecting. The password for
-conf/examples/ssl-keystore.jks is "oscars".<br>
-(see <a href="keytool.html">keytool</a> for suggestions on how to find
-the site certificate for a https enabled website.)<br>
-      <br>
+      <span style="font-style: italic;"></span><span
+ style="font-weight: bold;"></span>
       <h2><a class="mozTocH2" name="mozTocId718338"></a><a
  name="antTasks"></a>Description of
 major tasks in the build process<br>
