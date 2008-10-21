@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# Checks for prerequisites: ant, a Tomcat installation, mysql
+# Downloads and builds axis2 with rampart if it not already here
+# updates the hostname in oscars.properties
+# creates and populates the data bases with default values
+# compiles the OSCARS services
+
 echo "  ";
 echo "--- Checking prerequisites...";
 if [ -d src/net/es/oscars ]; then

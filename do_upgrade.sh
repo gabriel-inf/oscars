@@ -1,4 +1,10 @@
 #!/bin/bash
+# Script to upgrade from DCN release 0.3 to 0.4
+# if you do not have a DCN installation run do_build.sh
+# Switches to the new keystore and message configuration files
+# updates your version of axis to axis2-1.4.1 with a new rampartSNAPSHOT.
+# Updates the database tables
+
 
 #Check current directory
 echo "  ";

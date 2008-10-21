@@ -50,7 +50,9 @@
         <copy todir="conf/server">
             <fileset dir="conf/notify-server" includes="b-2-idc.xsd,bf-2-idc.xsd,r-2-idc.xsd,ws-addr-idc.xsd"/>
         </copy>
+        <copy file="conf/server/services.xml.template" tofile="conf/server/services.xml"/>
         <replace summary="true" file="conf/server/services.xml" token="**tomcat**" value="${catalina.home}"/>
+        <copy file="conf/notify-server/services.xml.template" tofile="conf/notify-server/services.xml"/>
         <replace summary="true" file="conf/notify-server/services.xml" token="**tomcat**" value="${catalina.home}"/>
     </target>
     <target name="initMaven">
