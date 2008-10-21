@@ -171,7 +171,8 @@ public class SubscribeJob implements Job{
         try{
             response = this.sendSubscribe(subscribeURL, neighborURL);
         }catch(Exception e){
-            this.log.error(e);
+            this.log.error("Error sending Subscribe message to " +
+            		subscribeURL + ": " + e);
             e.printStackTrace();
         }
         
@@ -271,7 +272,6 @@ public class SubscribeJob implements Job{
             return;
         }
         
-        String neighborURL = neighbor.getUrl();
         String subscribeURL = this.lookup(neighbor);
         RenewResponse response = null;
         try{
@@ -279,6 +279,8 @@ public class SubscribeJob implements Job{
         }catch(Exception e){
             //if fails, try creating a new subscription
             dataMap.remove("renew");
+            this.log.warn("Error sending Renew message to " +
+            		subscribeURL + ": " + e.getMessage());
             this.subscribe(dataMap, neighbor);
             return;
         }
