@@ -2,7 +2,6 @@ package net.es.oscars.pathfinder.db.util;
 
 import java.util.*;
 
-import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
@@ -18,7 +17,6 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 public class DBGraphAdapter {
     private SessionFactory sf;
     private String dbname;
-    private Properties props;
     private String localDomain;
     private Logger log;
 
@@ -34,13 +32,8 @@ public class DBGraphAdapter {
         initializer.initDatabase(dbnames);
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         */
-
-
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("topo", true);
-
-        this.localDomain = this.props.getProperty("localdomain").trim();
-
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        this.localDomain = domainDAO.getLocalDomain().getTopologyIdent();
     }
 
     public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth,

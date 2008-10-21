@@ -2,10 +2,12 @@ package net.es.oscars.tss.oscars;
 
 import net.es.oscars.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.tss.*;
 import net.es.oscars.wsdlTypes.*;
 
 import org.apache.log4j.*;
+import org.hibernate.*;
 
 import org.jdom.*;
 
@@ -49,7 +51,11 @@ public class OSCARSDatabase implements TEDB {
         this.log = Logger.getLogger(this.getClass());
         this.setNsUri(this.props.getProperty("nsuri"));
         this.setNsPrefix(this.props.getProperty("nsprefix"));
-        this.setLocaldomain(this.props.getProperty("localdomain"));
+        SessionFactory sf = HibernateUtil.getSessionFactory(this.dbname);
+        sf.getCurrentSession().beginTransaction();
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        this.setLocaldomain(domainDAO.getLocalDomain().getTopologyIdent());
+        sf.getCurrentSession().getTransaction().commit();
         this.ns = Namespace.getNamespace(this.getNsPrefix(), this.getNsUri());
     }
 
