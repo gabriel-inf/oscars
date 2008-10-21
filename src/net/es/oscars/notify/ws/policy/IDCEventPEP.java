@@ -80,6 +80,7 @@ public class IDCEventPEP implements NotifyPEP{
         HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> institutionList = new ArrayList<String>();
+        HashMap<String,String> domainInsts = new HashMap<String,String>();
         String userLogin = null;
         String resvLogin = null;
         EventContent event = null;
@@ -96,17 +97,24 @@ public class IDCEventPEP implements NotifyPEP{
         
         //Add user
         userList.add("ALL");
-        if(userLogin != null && (!userLogin.trim().equals(""))){
+    	if(userLogin != null && (!userLogin.trim().equals(""))){
             this.log.debug("Adding user login '"+ userLogin + "'");
             userList.add(userLogin);
+            this.addInst(userLogin, institutionList);
         }
         if(resvLogin != null && (!resvLogin.trim().equals("")) &&
                 (!resvLogin.equals(userLogin))){
             this.log.debug("Adding resv login '"+ resvLogin + "'");
             userList.add(resvLogin);
+            this.addInst(resvLogin, institutionList);
         }
-        permissionMap.put("IDC_RESV_USER", userList);
         
+        permissionMap.put("IDC_RESV_USER", userList);
+        if(!institutionList.isEmpty()){
+            permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
+        }
+        
+        //Check path for end site institutions that may have not yet been added
         Session bss = null;
         try{
             bss = this.core.getBssSession();
@@ -119,7 +127,7 @@ public class IDCEventPEP implements NotifyPEP{
                 return permissionMap;   
             }
             CtrlPlaneHopContent[] hops = event.getResDetails().getPathInfo().getPath().getHop();
-            HashMap<String,String> domainInsts = new HashMap<String,String>();
+            
             for(CtrlPlaneHopContent hop : hops){
                 CtrlPlaneLinkContent link = hop.getLink();
                 if(link == null){
@@ -156,7 +164,7 @@ public class IDCEventPEP implements NotifyPEP{
             return;
         }
         Site site = domain.getSite();
-        if(site == null){
+        if(site == null || insts.contains(site.getName())){
             return;
         }
         domainInsts.put(domainId, site.getName());
@@ -178,12 +186,23 @@ public class IDCEventPEP implements NotifyPEP{
         if(domainInsts.containsKey(remoteDomain.getTopologyIdent())){
             return;
         }
+        
         Site site = remoteDomain.getSite();
-        if(site == null){
+        if(site == null || insts.contains(site.getName())){
             return;
         }
         domainInsts.put(remoteDomain.getTopologyIdent(), site.getName());
         insts.add(site.getName());
         this.log.debug("site=" + site.getName());
+    }
+    
+    private void addInst(String userName, ArrayList<String> insts){
+    	if(userName == null){ return; }
+    	UserDAO userDAO = new UserDAO(this.core.getAaaDbName());
+    	User user = userDAO.queryByParam("login", userName);
+        if(user == null){ return; }
+        Institution inst = user.getInstitution();
+        if(inst == null) { return; }
+    	insts.add(inst.getName());
     }
 }

@@ -176,6 +176,14 @@ public class OSCARSNotifyCore{
     public String getBssDbName() {
         return bssDbName;
     }
+    
+    /**
+     * @return the aaDbName
+     */
+    public String getAaaDbName() {
+        return aaaDbName;
+    }
+
 
     public ArrayList<NotifyPEP> getNotifyPEPs() {
         return this.notifyPEPs;
