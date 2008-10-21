@@ -9,7 +9,10 @@
         <property name="connection.driver_class">com.mysql.jdbc.Driver
         </property>
         <property name="connection.url">jdbc:mysql:///bss</property>
-
+        <property name="connection.provider_class">
+            org.hibernate.connection.C3P0ConnectionProvider
+        </property>
+        
         <property name="query.substitutions">yes 'Y', no 'N'</property>
         <!-- <property name="show_sql">true</property> -->
         <!-- <property name="format_sql">true</property> -->
@@ -18,18 +21,18 @@
         <property name="transaction.factory_class">
             org.hibernate.transaction.JDBCTransactionFactory</property>
         <property name="current_session_context_class">thread</property>
-	<property name="hibernate.generate_statistics">true</property>
+        <property name="hibernate.generate_statistics">true</property>
 
         <!-- connection pool section -->
-	<!-- See http://www.mchange.com/projects/c3p0/index.html before
-	     making any changes -->
+        <!-- See http://www.mchange.com/projects/c3p0/index.html before
+         making any changes -->
         <property name="hibernate.c3p0.acquire_increment">3</property>
-	<property name="hibernate.c3p0.idle_test_period">1800</property>
-	<property name="hibernate.c3p0.timeout">3600</property>
-	<property name="hibernate.c3p0.max_size">21</property>
-	<property name="hibernate.c3p0.max_statements">50</property>
+        <property name="hibernate.c3p0.idle_test_period">1800</property>
+        <property name="hibernate.c3p0.timeout">3600</property>
+        <property name="hibernate.c3p0.max_size">21</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
         <property name="hibernate.c3p0.min_size">3</property>
-	
+    
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
         <property name="jdbc.batch_versioned_data">true</property>
