@@ -18,6 +18,26 @@ Security</a>
 </div>
 <h2><a class="mozTocH2" name="mozTocId599890"></a>OSCARS Message
 Security</h2>
+<ol id="mozToc">
+<!--mozToc h2 2 h3 3 h5 5 h6 6--><li><a href="#mozTocId599890">OSCARS
+Message
+Security</a>
+    <ol>
+      <li>
+        <ol>
+          <li><a href="#mozTocId581238">Overview</a></li>
+          <li><a href="#mozTocId414171">Configuration Files</a></li>
+          <li><a href="#mozTocId209738"> Keystore files</a></li>
+          <li><a href="#mozTocId293790"> Class Files </a></li>
+          <li><a href="#mozTocId495270">Keystore Management Tools</a></li>
+          <li><a href="#mozTocId734881">Server side</a></li>
+          <li><a href="#mozTocId75136">Client
+side</a></li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+</ol>
 <h3><a class="mozTocH3" name="mozTocId581238"></a>Overview</h3>
 The OSCARS Web pages and Web Services are run within a Tomcat container
 which uses SSL connections
@@ -57,34 +77,37 @@ server and client configurations.
 are kept in Java keystore files, and the configuration information is
 kept in properties files.
 </p>
+<ol id="mozToc">
+<!--mozToc h2 1 h3 2 h6 6-->
+</ol>
 <p>The rampart configuration file and keystore files contain
 information
 that is private to a domain
 or user. The source code available from our <a href="subversion.html">code
 repository</a> includes
-samples of these files in the conf/examples directory. They
-will need to be edited&nbsp;
+samples of these files in the conf/examples directory. They need to be
+edited&nbsp;
 to add the host and server certificates and user keys from your own
 site.
 </p>
 <h3><a class="mozTocH3" name="mozTocId414171"></a>Configuration Files</h3>
 <ul>
-  <li><b>axis2.xml</b> Used by OSCARS client. <br>
+  <li><b>axis2.xml</b> Used by OSCARS client and services <br>
     <span style="color: rgb(204, 0, 0);"></span><span
  style="color: rgb(204, 0, 0);"></span>Includes rampConfig.xml by
-absolute pathname <span style="color: rgb(204, 0, 0);">which needs to
-be edited by the site</span>.&nbsp; This file
+absolute pathname <span style="color: rgb(204, 0, 0);">(edited for the
+site by ant setupServer)</span>.&nbsp; This file
 is found by setting
 the -Daxis2.xml=&lt;pathname&gt; Java option, or programatically by a
 System.setProperty("axis2.xml",&lt;pathname&gt; ). The pathname must be
-on the classpath. An absolute pathname does not seem to work.
-    <p> </p>
-  </li>
+on the classpath. An absolute pathname does not seem to work.</li>
+</ul>
+<ul>
   <li><b>services.xml</b> Used by OSCARS and OSCARSNotify services. <br>
     <span style="color: rgb(204, 0, 0);"></span>Has the ws-policy
 describing message security
 and includes rampConfig.xml by absolute path name <span
- style="color: rgb(204, 0, 0);">which needs to be edited for the site</span>.&nbsp;
+ style="color: rgb(204, 0, 0);">(edited for the site by ant setupServer)</span>.&nbsp;
 Has a list of each of the operations in the service, and what
 policy applies to them. Copied from conf/server to the oscars.aar file
 in
@@ -98,18 +121,18 @@ target.
   <li> <span style="font-weight: bold;">rampConfig.xml</span> Used by
 the
 OSCARS
-client and server. Contains rampart specific ws-policy for message
+client and services. Contains rampart specific ws-policy for message
 security.
 Contains the user alias, the keystore filename and password. <span
- style="color: rgb(204, 0, 0);">Needs to
-be
-edited for the site.</span>
+ style="color: rgb(204, 0, 0);">(edited for the site by ant
+setupServer)</span>.
     <p> </p>
   </li>
 </ul>
 <h3><a class="mozTocH3" name="mozTocId209738"></a> Keystore files</h3>
 <ul>
-  <li><b>OSCARS.jks</b> Used by OSCARS client and the server when
+  <li><b>$CATALINA_HOME/shared/classes/repo/OSCARS.jks</b> Used by
+OSCARS&nbsp; server when signing response messages and when
 forwarding a request to another domain. Contains a <span
  style="font-style: italic;">keyEntry</span> for the entity that is
 signing the message and <span style="font-style: italic;">trustedCertEntries&nbsp;
@@ -129,16 +152,18 @@ contains trustedCertEntries for all the currently recognized CAs. <span
 the local service.</span>
     <p> </p>
   </li>
-  <li><b>OSCARS.jks</b> Used by api client.<br>
-Contains the KeyEntry for the client. Contains the <span
- style="font-style: italic;">trustedCertEtries</span>
+  <li><b>examples/javaClients/reop/OSCARS.jks</b> May be used by api
+client.<br>
+Contains the <span style="font-style: italic;">keyEntry</span> for the
+client. Contains the <span style="font-style: italic;">trustedCertEtries</span>
 for any trusted CAs, e.g. any CAs in the chain that signed the users
 certificate. Also contains a keyEntry for the server which is used to
 sign the response messages. Must
 be on the classpath. It is copied from
 [conf/examples|$DOMAIN_HOME]/server/ to examples/javaClients.repo&nbsp;
 by examples/javaClients/build.xml. File is named in
-examples/javaClients/repo/rampConf.xml. <span
+examples/javaClients/repo/rampConf.xml which may either point to
+$CATALINA_HOME/shared/classes/repo/OSCARS.jks or to repo/OSCARS.jks. <span
  style="color: rgb(204, 0, 0);">The site must add the KeyEntries for
 local api users.</span>
     <p> </p>
@@ -179,44 +204,78 @@ Must be on classpath.
   <li><b>net/es/oscars/client/security/KeyManagement.java</b>&nbsp;
 setKeyStore called by Client.setup and Forwarder.setup <br>
 Sets the name and the password for the client-side <code>ssl-keystore.jks</code>
-file. </li>
+file.</li>
 </ul>
-<h3><a class="mozTocH3" name="mozTocId845833"></a>Client side</h3>
-Needs an <code>axis2.xml</code> file to generate signed messages.<br>
+<h3><a class="mozTocH3" name="mozTocId495270"></a><span
+ style="font-weight: bold;">Keystore Management Tools</span></h3>
 <br>
-The OSCARS[Notify] wsdl now specifies the message security properties.
-That information is included in the OSCARS[Notify]Stub.java by
-wsdl2java.<br>
-<p> Needs <span style="font-family: monospace;">OSCARS</span><code>.jks</code>
-with the <span style="font-style: italic;">keyEntry</span> for the
-user who will be
-signing messages and the <span style="font-style: italic;">trustedCertEntries</span>
-for the issuers who signed the client cert and the certs of the OSCARS
-service that he is contacting. <a href="keytool.html">Keytool</a> can
-be used to create a keyEntry and to enter <span
- style="font-style: italic;">trustedCertEntries</span>.
-tools/utils/copyKey.sh can be used to copy a keyEntry from an existing
-key store.&nbsp; tool/utils/importKeyEntry.sh can be used to import a
-keyEntry from a privateKey file in DER format and a cerificate chain in
-DER format.<br>
-</p>
-<p> Needs <code>ssl-keystore.jks</code> to hold the <span
- style="font-style: italic;">trustedCertEntries</span> for the ssl
-connection to the Tomcat server. The name and the password for this
-file are hard-coded into<i> </i><code>net.es.oscars.client.security.KeyManagement.</code>
-Use <a href="keytool.html">keytool</a> to add a <span
- style="font-style: italic;">trustedCertEntr</span>y for this
-certificate. </p>
-<p> The default ant task in examples/javaClients/build.xml will create
-and populate a repo directory with all these pieces. The user may will
-need
-to edit <span style="font-family: monospace;">rampConfig</span><code>.xml</code>
-to chose a a user to sign
-the message and may want to add additional <span
- style="font-style: italic;">keyEntries</span> to <code>OSCARS.jks</code>.<br>
-See <a href="keytool.html">keytool.html</a>
-for instructions on how to do this.<br>
-</p>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">keytool</span>:
+available as part of the Java security package<br>
+This is a general purpose keystore management program. use keytool -h
+for a complete list of functions. It can be used to create a new
+self-signed keyEntry, or to export a certificate signing request for
+the new entries certificate to be sent to a CA for signing, and then
+import the signed certificate back to the keyEntry. It can also import
+a CA certificate to a trustedCertEntry,&nbsp; change the keystore
+password and list the contents of a keystore.&nbsp; <br>
+<br>
+<span style="font-weight: bold;">tools/utils commands.<br>
+</span>These commands are wrappers to keytool that operate on either of
+${CATALINA_HOME}/shared/classes/repo/{OSCARS.jks,ssl-keystore}. They
+take no arguments and prompt for the keystore, the alias you want to
+see or modify and find the keystore password from the&nbsp;
+rampConfig.xml file. <span style="font-weight: bold;"><br
+ style="font-weight: bold;">
+</span><span style="font-weight: bold;">idc-addcert:</span> creates a
+new keyEntry, either with a signed or unsigned<br>
+certificate, or imports a trusted CA certificate.<br>
+<span style="font-weight: bold;">idc-certdel:</span> deletes a
+trustedCertEntry or keyEntry from a keystore<br>
+i<span style="font-weight: bold;">dc-export</span>: exports a pem
+format X.509 certificate from either a trustedCertEntry or keyEntry.<br>
+<span style="font-weight: bold;">idc-signreq:</span> exports a
+certificate signing request for a keyEntry that currently contains a
+self-signed certificate.<br>
+<span style="font-weight: bold;">idc-certview:</span> views the
+certificate associated with either a keyEntry or a TrustedCert entry.<br>
+<span style="font-weight: bold;">idc-kspasswd:</span> Changes the
+OSCARS.jks keystore password.<br>
+<br>
+<span style="font-weight: bold;">tools/utils/copyKey:<br>
+</span>Used to copy a keyEntry from one keystore to another. Useful
+when upgrading from DCN release 0.3 to 0.4.<br>
+<br>
+<code>copyKey.sh -a &lt;alias of keyEntry&gt; -in &lt;filename of input
+keyStore&gt; -out &lt;filename of output keystore&gt;<br>
+<br>
+</code>It will prompt for the password of the input keystore, the
+password of the keyEntry in the input keystore and the password for the
+output key store. Normally the password of a keyEntry is the same the
+keystore. If this is the case just reply with a CR.<br>
+<br>
+<span style="font-weight: bold;">tools/utils/importKeyEntry.sh </span><br>
+Used to import a keyEntry to a java keystore from a DER certificate
+file and a pkcs#8-rsa key file. Can be used if you have a certificate
+that was obtained by some means other than from keytool. <br>
+&nbsp;<br>
+<code>importKeyEntry.sh KEYSTORE CERTS KEY ALIAS <br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KEYSTORE is the name
+of the file containing the Java keystore <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CERTS is the name of a
+file containing a chain of one or more<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; concatenated
+DER-encoded X.509 certificates <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KEY is the name of a
+file containing a DER-encoded PKCS#8 RSA <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+private key <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ALIAS is the alias for
+the private key entry in the keystore </code><br>
+<br>
+&nbsp;use openssl to convert certificate and key files into the
+expected format. <br>
+<code></code><code><span style="font-weight: bold;"></span></code></div>
 <h3><a class="mozTocH3" name="mozTocId734881"></a>Server side</h3>
 <span style="color: rgb(204, 0, 0);"></span><span
  style="color: rgb(204, 0, 0);"></span><br>
@@ -249,19 +308,48 @@ On the oscars servers the keystoreFile element is specified as
 oscars/oscars.es.net
 cert/key with alias tomcat and the <span style="font-style: italic;">trustedCertEntries</span>
 for the CAs in its certificate chain. </p>
-<h3><a class="mozTocH3" name="mozTocId557506"></a>Server acting as
-client, e.g when forwarding request to next Domain</h3>
-Needs a client keystore with <span style="font-style: italic;">trustedCertEnties</span>
-and service <span style="font-style: italic;">keyEntry</span>.
-The ant task "<span style="font-style: italic;">setupServer</span>"
-will create the <code>${catalina.home}/shared/classes/repo</code>
-directory. The files&nbsp; <code>axis2.xml, rampConfig.xml, OSCARS.jks</code>
-and <code>ssl-keystore.jks</code>
-will&nbsp; be either copied from examples/conf/client or
-$DOMAIN_HOME/conf/client by the <span
- style="font-weight: bold; font-style: italic;">setupServer</span> ant
-task.<br>
-<!--#include virtual="footer.html" -->
+<br>
+<h3><a class="mozTocH3" name="mozTocId75136"></a><code><a
+ class="mozTocH3" name="mozTocId845833"></a></code>Client
+side</h3>
+Needs <code>axis2.xml</code>, rampConfig.xml and OSCARS.jks files to
+generate signed messages.<br>
+<br>
+The OSCARS[Notify] wsdl now specifies most of the message security
+properties.
+That information is included in the OSCARS[Notify]Stub.java by
+wsdl2java.&nbsp; rampConfig.xml specifies the Rampart specific message
+security properties, e.g. the location of the keystore to use, the user
+alias and password. axis2.xml imports rampConfig.xml<br>
+<p> <span style="font-family: monospace;">OSCARS</span><code>.jks</code>
+has the <span style="font-style: italic;">keyEntry</span> for the
+user who will be
+signing messages and the <span style="font-style: italic;">trustedCertEntries</span>
+for the issuers who signed the client cert and the certs of the OSCARS
+service that he is contacting. <a href="keytool.html">Keytool</a> can
+be used to create a keyEntry and to enter <span
+ style="font-style: italic;">trustedCertEntries</span>.
+tools/utils/copyKey.sh can be used to copy a keyEntry from an existing
+key store.&nbsp; tool/utils/importKeyEntry.sh can be used to import a
+keyEntry from a privateKey file in DER format and a cerificate chain in
+DER format.<br>
+</p>
+<p> Needs <code>ssl-keystore.jks</code> to hold the <span
+ style="font-style: italic;">trustedCertEntries</span> for the ssl
+connection to the Tomcat server. The name and the password for this
+file are hard-coded into<i> </i><code>net.es.oscars.client.security.KeyManagement.</code>
+Use <a href="keytool.html">keytool</a> to add a <span
+ style="font-style: italic;">trustedCertEntr</span>y for this
+certificate. </p>
+The default ant task in examples/javaClients/build.xml will create
+and populate a repo directory with all these pieces. The user may will
+need
+to edit <span style="font-family: monospace;">rampConfig</span><code>.xml</code>
+to chose a a user to sign
+the message and may want to add additional <span
+ style="font-style: italic;">keyEntries</span> to <code>OSCARS.jks</code>.<br>
+See <a href="keytool.html">keytool.html</a>
+for instructions on how to do this.
 <br>
 <br>
 </body>
