@@ -9,6 +9,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.lookup.*;
+import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.oscars.TypeConverter;
 
 /**
@@ -166,8 +167,8 @@ public class ParamValidator {
                 continue;
             }
             /* Lookup name via perfSONAR Lookup Service */
-            LookupFactory lookupFactory = new LookupFactory();
-            PSLookupClient lsClient = lookupFactory.getPSLookupClient();
+            OSCARSCore core = OSCARSCore.getInstance();
+            PSLookupClient lsClient = core.getLookupClient();
             try {
                 String urn = lsClient.lookup(child);
                 hop.setLinkIdRef(urn);
@@ -224,8 +225,8 @@ public class ParamValidator {
         }
 
         /* Lookup name via perfSONAR Lookup Service */
-        LookupFactory lookupFactory = new LookupFactory();
-        PSLookupClient lsClient = lookupFactory.getPSLookupClient();
+        OSCARSCore core = OSCARSCore.getInstance();
+        PSLookupClient lsClient = core.getLookupClient();
         try {
             urn = lsClient.lookup(endpoint);
         } catch(LookupException e){
