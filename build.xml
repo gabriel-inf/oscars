@@ -35,7 +35,7 @@
         <!-- a bit of a kludge -->
         <available file="lib/axis2/mail-1.4.jar" property="axis2.found"/>
         <fail unless="axis2.found" message="Axis2 library not found. Please either build and deploy axis2.war with rampart support, or manually copy the necessary .jar files to lib/axis2. See documentation for details."/>
-        <available file="lib/jta.jar" property="jta.found"/>
+        <available file="lib/jta-1.1.jar" property="jta.found"/>
         <fail if="jta.found" message="jta.jar library must be removed from lib."/>
         <available file="lib/axis2/rampart-core-SNAPSHOT.jar" property="rampart.found"/>
         <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
