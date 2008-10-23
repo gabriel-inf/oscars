@@ -6,14 +6,18 @@ for f in "$AXIS2_HOME"/lib/*.jar
 do
  OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
+for f in ../lib/*.jar
+do
+ OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
+done
 OSCARS_CLASSPATH="$OSCARS_CLASSPATH":../OSCARS-client-api.jar:OSCARS-client-examples.jar
 
 url=$2
 
-if [  $# -lt 2  ]
+if [  $# -lt 1  ]
  then
     echo "run.sh createReservation|signal|list|query|cancel|subscribe|renew|pause|ressume|unsubscribe|regpublisher|destroyreg|notifylistener [request-specific-params]"
-elif [ $1 == "createReservation" ] && [ $2 == "-pf" ]
+elif [ $1 == "createReservation" ] && [ "$2" == "-pf" ]
  then
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationClient $*
 elif [  $1 == "createReservation"  ]
