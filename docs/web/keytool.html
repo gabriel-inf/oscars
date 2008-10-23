@@ -23,10 +23,7 @@ Complete documentation can be found at <a
 The keytool command will do most of what you need: listing contents,
 setting aliases, adding new trust certificates. The one thing it does
 not
-do is to import a trusted entry, e.g. cert and key. There is a class
-that
-comes with the jetty release that we have used. There may be tools in
-the Sun suite as well.<br>
+do (prior to Java 6) is to import a trusted entry, e.g. cert and key.<br>
 </p>
 <p>OSCARS provides wrappers in <a href="msgSecurity.html#idcCommands">tools/utils</a>
 that simplify the use keytool by suggesting the location of the
@@ -80,23 +77,24 @@ or <br>
  style="font-style: italic;">'OSCARS.jks'</span> -file <span
  style="font-style: italic;">'CAcert.pem'</span> -trustcacerts -alias <span
  style="font-style: italic;">'CA'</span></pre>
-<h4>Create a keyEntry from an indpendently obtained private key, and
-signed certificate.<br>
+<h4>Addin existing keyEntries to your OSCARS.jks keystore.<br>
 </h4>
-utils/tools/importKeyEntry <code>KEYSTORE CERTS KEY ALIAS <br>
+<span style="font-weight: bold;">tools/utils/copyKey:<br>
+</span>Used to copy a keyEntry from one keystore to another. Useful
+when upgrading from DCN release 0.3 to 0.4 or when importing a keyEntry
+from an externally obtained pkcs12 file.<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KEYSTORE is the name
-of the file containing the Java keystore <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CERTS is the name of a
-file containing a chain of one or more<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; concatenated
-DER-encoded X.509 certificates <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KEY is the name of a
-file containing a DER-encoded PKCS#8 RSA <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-private key <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ALIAS is the alias for
-the private key entry in the keystore </code><br>
+<code>copyKey.sh -a &lt;alias of keyEntry&gt; <br>
+[-inpkcs12 &lt;filename of input
+keyStore&gt;&nbsp; | -injks </code><code>&lt;filename of input
+keyStore&gt; ]</code><br>
+<code>-out &lt;filename of output keystore&gt;<br>
 <br>
+</code>It will prompt for the password of the input keystore, the
+password of the keyEntry in the input keystore and the password for the
+output key store. Normally the password of a keyEntry is the same the
+keystore. If this is the case just reply with a CR. If the -inpkcs12
+option is used the entry will be imported from a pkcs12 file. If -injks
+is used it will be imported from another jks keystore.
 </body>
 </html>

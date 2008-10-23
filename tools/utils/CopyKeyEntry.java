@@ -24,16 +24,19 @@ public class CopyKeyEntry {
         String outPassword = null;
         String outKeyPassword = null;
         String outKeyStore = null;
+        Boolean isPKCS12 = false;
+        String usageMsg = "usage:  CopyKeyEntry -a alias  [-injks <oldKeystore> | -inpkcs12 <oldKeystore>] -out <newKeystore>";
+        java.security.cert.Certificate[] chain = null;
         
         try {
             KeyStore inKS = KeyStore.getInstance("jks");      
             KeyStore outKS = KeyStore.getInstance("jks");
+            KeyStore inP12 = KeyStore.getInstance("PKCS12");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             Key keyEntry = null;
 
             if (args.length < 3) {
-                System.out
-                .println("usage:  CopyKeyEntry -a alias  -in <oldKeystore> -out <newKeystore>");
+                System.out.println(usageMsg);
                 System.exit(1);
             }
 
@@ -41,16 +44,19 @@ public class CopyKeyEntry {
             while (i < args.length) {
                 if (args[i].equals("-a")) {
                     aliasName = args[i + 1];
-                } else if (args[i].equals("-in")) {
+                } else if (args[i].equals("-injks")) {
                     inKeyStore = args[i + 1];
+                    isPKCS12 = false;
+                } else if (args[i].equals("-inpkcs12")) {
+                    inKeyStore = args[i + 1];
+                    isPKCS12= true;
                 } else if (args[i].equals("-out")) {
                     outKeyStore = args[i + 1];
                 }
                 i = i + 2;
             }
             if ((aliasName == null) || (inKeyStore == null) || (outKeyStore == null)) {
-                System.out
-                .println("usage:  CopyKeyEntry -a alias  -in <oldKeystore> -out <newKeystore>");
+                System.out.println(usageMsg);
                 System.exit(1);
             }
 
@@ -59,30 +65,52 @@ public class CopyKeyEntry {
             
             System.out.print("input password for " + inKeyStore + " : ");
             inPassword = br.readLine().trim();
-            inKS.load(in,inPassword.toCharArray());
-            in.close();
-
-            System.out.print("input password for KeyEntry " + aliasName + " if different from keystore password: ");
-            inKeyPassword = br.readLine().trim();
-            if ( (inKeyPassword == null) ||
-                 (inKeyPassword.length() == 0)){
-                inKeyPassword = inPassword;
-            }
-            
-            if (inKS.isKeyEntry(aliasName)) {
-                keyEntry = inKS.getKey(aliasName,inKeyPassword.toCharArray());
+            inKeyPassword = inPassword;
+            if (isPKCS12) {
+                inP12.load(in,inPassword.toCharArray());
+                Enumeration<String> aliases = inP12.aliases();
+                while (aliases.hasMoreElements()) {
+                    String name = aliases.nextElement(); 
+                    System.out.println("pkcs12 alias is: " + name);
+                    System.out.print("input password for KeyEntry " + name + " if different from keystore password: ");
+                    inKeyPassword = br.readLine().trim();
+                    if ( (inKeyPassword == null) ||
+                            (inKeyPassword.length() == 0)){
+                        inKeyPassword = inPassword;
+                    }
+                    Key privKey = inP12.getKey(name, inKeyPassword.toCharArray());
+                    if (privKey != null) {
+                        keyEntry = privKey;
+                        //System.out.println(keyEntry.toString());
+                        chain = inP12.getCertificateChain(name);
+                        if (chain != null) {
+                            //System.out.println(chain[0].toString());
+                        }
+                    }
+                }
             } else {
-                System.out.println(aliasName + "is not a KeyEntry");
-                System.exit(0);
+                inKS.load(in,inPassword.toCharArray());
+
+                System.out.print("input password for KeyEntry " + aliasName + " if different from keystore password: ");
+                inKeyPassword = br.readLine().trim();
+                if ( (inKeyPassword == null) ||
+                        (inKeyPassword.length() == 0)){
+                    inKeyPassword = inPassword;
+                }
+                if (inKS.isKeyEntry(aliasName)) {
+                    keyEntry = inKS.getKey(aliasName,inKeyPassword.toCharArray());
+                } else {
+                    System.out.println(aliasName + "is not a KeyEntry");
+                    System.exit(0);
+                }
+                chain = inKS.getCertificateChain(aliasName);
             }
-            java.security.cert.Certificate[] chain = inKS.getCertificateChain(aliasName);
-            
             in = new FileInputStream(outKeyStore);
             System.out.print("input password for " + outKeyStore + " : ");
             outPassword = br.readLine().trim();
             outKS.load(in,outPassword.toCharArray());
             in.close();
-            
+
             outKS.setKeyEntry(aliasName, keyEntry, inKeyPassword.toCharArray(), chain);
             
             FileOutputStream out = new FileOutputStream(outKeyStore);
