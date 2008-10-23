@@ -337,7 +337,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${defaultKeys}/client">
-                <include name="axis2.xml" unless="axis2.xml.exists"/>
+                <include name="axis2.xml"/>
                 <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists"/>
                 <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists"/>
             </fileset>
