@@ -15,6 +15,14 @@ CREATE TABLE IF NOT EXISTS domainServices (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+CREATE TABLE IF NOT EXISTS sites (
+    id                  INT NOT NULL AUTO_INCREMENT,
+        -- site name, matches a name in the aaa institutions table
+    name                TEXT NOT NULL,
+        -- key of corresponding domain in domains table
+    domainId            INT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
 
 ALTER TABLE reservations ADD localStatus TINYINT(1) DEFAULT 0 AFTER status;
 ALTER TABLE reservations ADD payloadSender TEXT AFTER login;
