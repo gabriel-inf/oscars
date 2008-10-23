@@ -116,13 +116,14 @@ if [ $BUILD_AXIS ]; then
 		if [ ! -f dists/rampart-SNAPSHOT.tar.gz ]; then
 			echo "    Downloading Rampart...";
 			# `wget -P dists http://apache.ziply.com/ws/rampart/1_4/rampart-dist-1.4-bin.zip  `;
-            `wget --no-check-certificate -P dists https://wiki.internet2.edu/confluence/download/attachments/19074/rampart-SNAPSHOT.tar.gz`
+			cd dists
+            `wget --no-check-certificate https://wiki.internet2.edu/confluence/download/attachments/19074/rampart-SNAPSHOT.tar.gz`
 			if [ $? != 0 ]; then
                 exit 1;
             fi
 		fi
 		echo "    Rampart  downloaded. Unzipping...";
-		cd dists
+		
 		gunzip rampart-SNAPSHOT.tar.gz;
 		if [ $? != 0 ]; then
 		    exit 1;
