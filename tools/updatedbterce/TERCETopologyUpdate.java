@@ -393,7 +393,8 @@ public class TERCETopologyUpdate{
             dbL2SwcapData.setVlanRangeAvailability(
                 specInfo.getVlanRangeAvailability());
             dbL2SwcapData.setInterfaceMTU(specInfo.getInterfaceMTU());
-        
+            dbL2SwcapData.setVlanTranslation(specInfo.getVlanTranslation());
+            
             bss.save(dbL2SwcapData);
         }
         
