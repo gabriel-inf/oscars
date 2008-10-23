@@ -52,9 +52,9 @@ elif [ $1 == "regpublisher"  ]
 elif [ $1 == "destroyreg"  ]
  then
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true DestroyRegistrationClient $*
-elif [ $1 == "notfiylistener"  ]
+elif [ $1 == "notifylistener"  ]
  then
-    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true -Djavax.net.ssl.keyStore=repo/sec-client.jks -Djavax.net.ssl.keyStorePassword=password NotifyEchoHandler $*
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true -Djavax.net.ssl.keyStore=repo/OSCARS.jks -Djavax.net.ssl.keyStorePassword=password NotifyEchoHandler $*
 else
     echo "Invalid operation specified. Usage: "
     echo "run.sh createReservation|signal|list|query|cancel|subscribe|renew|pause|ressume|unsubscribe|regpublisher|dstroyreg|notifylistener [request-specific-params]"
