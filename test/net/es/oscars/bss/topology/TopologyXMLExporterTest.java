@@ -45,6 +45,7 @@ public class TopologyXMLExporterTest {
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain localDomain = domainDAO.getLocalDomain();
+        // save it for import test
         CommonParams.localDomainId = localDomain.getTopologyIdent();
         // Material having to do with the ipaddrs table is for the
         // tests only.  That table is not part of the network

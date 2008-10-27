@@ -38,9 +38,7 @@ public class TopologyXMLFileReaderTest {
     public void importTopology() {
         System.err.println("Starting import of bss topology.  This may take " +
                            "a minute or two.");
-
-        this.sf.getCurrentSession().beginTransaction();
-        String line = null;
+        // use localDomain that was saved during export test
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain d = new Domain();
         d.setTopologyIdent(CommonParams.localDomainId);
@@ -52,6 +50,8 @@ public class TopologyXMLFileReaderTest {
         domainDAO.flush();
         this.sf.getCurrentSession().getTransaction().commit();
 
+
+        String line = null;
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         domainDAO = new DomainDAO(this.dbname);
 
