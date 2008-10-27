@@ -10,6 +10,7 @@ import org.jdom.*;
 import org.jdom.output.*;
 
 import net.es.oscars.GlobalParams;
+import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.database.*;
 
 /**
@@ -37,13 +38,14 @@ public class TopologyXMLExporterTest {
         initializer.initDatabase(dbnames);
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
-        
+
   @Test
     public void exportTopology() throws java.io.IOException {
 
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain localDomain = domainDAO.getLocalDomain();
+        CommonParams.localDomainId = localDomain.getTopologyIdent();
         // Material having to do with the ipaddrs table is for the
         // tests only.  That table is not part of the network
         // topology.
@@ -72,7 +74,7 @@ public class TopologyXMLExporterTest {
         //String urn = "urn:ogf:network:domain=" + localDomain.getTopologyIdent();
         String urn = localDomain.getTopologyIdent();
         TopologyXMLExporter exporter = new TopologyXMLExporter(this.dbname);
-        
+
         Document doc = exporter.getTopology(urn);
         this.sf.getCurrentSession().getTransaction().commit();
 

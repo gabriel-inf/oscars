@@ -9,6 +9,8 @@ import java.io.*;
 import org.hibernate.*;
 
 import net.es.oscars.GlobalParams;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -31,11 +33,28 @@ public class TopologyXMLFileReaderTest {
         this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
-        
+
   @Test
     public void importTopology() {
         System.err.println("Starting import of bss topology.  This may take " +
                            "a minute or two.");
+
+        this.sf.getCurrentSession().beginTransaction();
+        String line = null;
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        Domain d = new Domain();
+        d.setTopologyIdent(CommonParams.localDomainId);
+        d.setName("test local domain");
+        d.setLocal(true);
+        d.setAbbrev("test");
+        d.setUrl("test URL");
+        domainDAO.create(d);
+        domainDAO.flush();
+        this.sf.getCurrentSession().getTransaction().commit();
+
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        domainDAO = new DomainDAO(this.dbname);
+
         String fname = GlobalParams.getExportedTopologyFname();
         // has its own session factory
         TopologyXMLFileReader reader = new TopologyXMLFileReader(this.dbname);
@@ -50,9 +69,7 @@ public class TopologyXMLFileReaderTest {
             Assert.fail(e.getMessage());
         }
         this.sf.getCurrentSession().beginTransaction();
-        String line = null;
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
+
         try {
             while ((line=ipaddrReader.readLine()) != null) {
                 Ipaddr ipaddr = new Ipaddr();

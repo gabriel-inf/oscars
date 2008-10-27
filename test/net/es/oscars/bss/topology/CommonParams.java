@@ -45,4 +45,6 @@ public class CommonParams {
     public static int getInterdomainPreference() {
         return 100;
     }
+
+    public static String localDomainId;
 }
