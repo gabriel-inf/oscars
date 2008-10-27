@@ -38,6 +38,7 @@ public class TopologyXMLFileReaderTest {
     public void importTopology() {
         System.err.println("Starting import of bss topology.  This may take " +
                            "a minute or two.");
+        this.sf.getCurrentSession().beginTransaction();
         // use localDomain that was saved during export test
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain d = new Domain();
@@ -80,7 +81,7 @@ public class TopologyXMLFileReaderTest {
                 boolean valid = new Boolean(fields[0].trim()).booleanValue();
                 ipaddr.setValid(valid);
                 ipaddr.setIP(fields[1].trim());
-                Link link = domainDAO.getFullyQualifiedLink(fields[2]);
+                Link link = domainDAO.getFullyQualifiedLink(fields[2].trim());
                 ipaddr.setLink(link);
                 if (link == null) {
                     Assert.fail("cannot get link for ipaddr");
