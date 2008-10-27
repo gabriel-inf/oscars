@@ -45,8 +45,8 @@ public class PSSScheduler {
             try {
                 // call PSS to schedule LSP setup(s)
                 String pathSetupMode = resv.getPath().getPathSetupMode();
-                this.log.info("pendingReservation: " + resv.getGlobalReservationId());
                 if (pathSetupMode.equals("timer-automatic")) {
+                    this.log.info("pendingReservation: " + resv.getGlobalReservationId());
                     // resv must be set to proper status inside PSS
                     //TODO: Throw RESV_PERIOD_STARTED for signal-xml only once
                     eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_STARTED, "", "SCHEDULER", resv);
