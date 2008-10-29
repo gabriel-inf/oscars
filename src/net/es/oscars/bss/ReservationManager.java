@@ -42,7 +42,7 @@ public class ReservationManager {
     public String GEN_TOKEN;
     public String DEFAULT_SWCAP_TYPE;
     public String DEFAULT_ENC_TYPE;
-    
+
     /** Constructor. */
     public ReservationManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
@@ -55,7 +55,7 @@ public class ReservationManager {
         this.se = this.core.getStateEngine();
         this.initGlobals();
     }
-    
+
     /** Initializes global variables */
     private void initGlobals(){
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -158,7 +158,12 @@ public class ReservationManager {
         // this modifies the path to include internal hops with layer 2,
         // and finds the complete path with traceroute
         Path path = this.getPath(resv, pathInfo);
+        Path oldPath = resv.getPath();
         resv.setPath(path);
+
+        // need to remove old entries
+        PathDAO pathDAO = new PathDAO(core.getBssDbName());
+        pathDAO.remove(oldPath);
 
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
@@ -176,9 +181,9 @@ public class ReservationManager {
         this.log.info("create.finish");
         this.rsvLogger.stop();
     }
-    
+
     /**
-     * Verifies a RESERATION_*_CONFIRMED and RESERATION_*_COMPLETED 
+     * Verifies a RESERATION_*_CONFIRMED and RESERATION_*_COMPLETED
      * event is valid and then schedules it for execution.
      *
      * @param gri the GRI of the reservation being confirmed
@@ -188,7 +193,7 @@ public class ReservationManager {
      * @param confirm true if confirmed event, false if completed event
      * @throws BSSException
      */
-    public void submitResvJob(String gri, PathInfo pathInfo, 
+    public void submitResvJob(String gri, PathInfo pathInfo,
                               String producerID, String reqStatus,
                               boolean confirm) throws BSSException{
         ReservationDAO dao = new ReservationDAO(this.dbname);
@@ -199,7 +204,7 @@ public class ReservationManager {
             op = "confirm";
             targetNeighbor = "next";
         }
-        
+
         /* Find job type */
         Class jobClass = null;
         String prefix = "";
@@ -220,26 +225,26 @@ public class ReservationManager {
             this.log.error("Unknown job type");
             return;
         }
-        
+
         if(resv == null){
             this.log.error("Reservation " + gri + " not found");
             return;
         }
         String login = resv.getLogin();
-        
+
         if(requirePath && pathInfo.getPath() == null){
-            this.log.error("Recieved " + op + " event from " + producerID + 
+            this.log.error("Recieved " + op + " event from " + producerID +
                           " with no path element.");
              return;
         }else if(requirePath && pathInfo.getPath().getHop() == null){
-            this.log.error("Recieved " + op + " event from " + producerID + 
+            this.log.error("Recieved " + op + " event from " + producerID +
                           " with a path element containing no hops");
              return;
         }
-        
+
         String status = this.se.getStatus(resv);
         if((!reqStatus.equals(status)) && (!status.equals(altStatus))){
-            this.log.info("Trying to " + op + " a reservation that doesn't" + 
+            this.log.info("Trying to " + op + " a reservation that doesn't" +
                           " have status " + reqStatus);
             return;
         }
@@ -247,39 +252,39 @@ public class ReservationManager {
             int newLocalStatus = this.se.getLocalStatus(resv) + 1;
             this.se.canUpdateLocalStatus(resv, newLocalStatus);
         }
-        
+
         Domain neighborDomain = this.endPointDomain(resv, !confirm);
         if(neighborDomain == null || neighborDomain.isLocal()){
-            this.log.error("Could not identify " + targetNeighbor + 
+            this.log.error("Could not identify " + targetNeighbor +
                            " domain in path.");
             return;
         }else if(!neighborDomain.getTopologyIdent().equals(producerID)){
             this.log.debug("The event is from " + producerID + " not the " +
-                           targetNeighbor + " domain " + 
+                           targetNeighbor + " domain " +
                            neighborDomain.getTopologyIdent() + " so discarding");
             return;
         }
-        
+
         /* Get the institution */
         Site site = neighborDomain.getSite();
         if(site == null){
-            this.log.error("No site associated with domain " +  
+            this.log.error("No site associated with domain " +
                            neighborDomain.getTopologyIdent() + ". Please specify" +
                            " institution associated with domain in your " +
                            "bss.sites table.");
             return;
         }
-        
+
         String institution = site.getName();
         if(institution == null){
-            this.log.error("No institution associated with domain " +  
+            this.log.error("No institution associated with domain " +
                            neighborDomain.getTopologyIdent() + ". Please specify" +
                            " institution associated with domain in your " +
                            "aaa.institution and bss.sites table.");
             return;
         }
-        
-        /* Submitting a job to the resource scheduling queue 
+
+        /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = prefix+"-"+op+"-"+resv.hashCode();
@@ -300,7 +305,7 @@ public class ReservationManager {
             ex.printStackTrace();
         }
     }
-    
+
     /**
      * Handles a RESERVATION_*_FAILED event
      *
@@ -313,9 +318,9 @@ public class ReservationManager {
      * @param reqStatus the requried status of the reservation for this to be valid
      * @throws BSSException
      */
-    public void submitFailed(String gri, PathInfo pathInfo, String producerID, 
-                             String errorSrc, String errorCode, 
-                             String errorMsg, String reqStatus) 
+    public void submitFailed(String gri, PathInfo pathInfo, String producerID,
+                             String errorSrc, String errorCode,
+                             String errorMsg, String reqStatus)
                              throws BSSException{
         /* Find job type */
         Class jobClass = null;
@@ -333,26 +338,26 @@ public class ReservationManager {
             this.log.error("Unknown job type");
             return;
         }
-        
+
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
         if(resv == null){
             this.log.error("Reservation " + gri + " not found");
             return;
         }
-        
+
         String status = this.se.getStatus(resv);
         if(!reqStatus.equals(status)){
-            this.log.info("Trying to fail a reservation that doesn't" + 
+            this.log.info("Trying to fail a reservation that doesn't" +
                           " have status " + reqStatus);
             return;
         }
-        
+
         Domain prevDomain = this.endPointDomain(resv, true);
         Domain nextDomain = this.endPointDomain(resv, false);
         Domain neighborDomain = null;
         if(nextDomain == null && prevDomain == null){
-            throw new BSSException("Reservation " + gri + 
+            throw new BSSException("Reservation " + gri +
                                    " is not an interdomain reservation so it" +
                                    " can't be failed by a Notification.");
         }else if(prevDomain != null && prevDomain.getTopologyIdent().equals(producerID)){
@@ -365,27 +370,27 @@ public class ReservationManager {
                            " in the path");
             return;
         }
-        
+
         /* Get the institution */
         Site site = neighborDomain.getSite();
         if(site == null){
-            this.log.error("No site associated with domain " +  
+            this.log.error("No site associated with domain " +
                            neighborDomain.getTopologyIdent() + ". Please specify" +
                            " institution associated with domain in your " +
                            "bss.sites table.");
             return;
         }
-        
+
         String institution = site.getName();
         if(institution == null){
-            this.log.error("No institution associated with domain " +  
+            this.log.error("No institution associated with domain " +
                            neighborDomain.getTopologyIdent() + ". Please specify" +
                            " institution associated with domain in your " +
                            "aaa.institution and bss.sites table.");
             return;
         }
-        
-        /* Submitting a job to the resource scheduling queue 
+
+        /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = prefix+"-failed-"+resv.hashCode();
@@ -406,7 +411,7 @@ public class ReservationManager {
         } catch (SchedulerException ex) {
             this.log.error("Unable to schedule failure job");
             ex.printStackTrace();
-        }                       
+        }
     }
 
     /**
@@ -441,7 +446,7 @@ public class ReservationManager {
         this.log.info("store.finish");
         this.rsvLogger.stop();
     }
-    
+
     /**
      * Submits a cancel job for execution
      *
@@ -450,24 +455,24 @@ public class ReservationManager {
      * @param institution the sender's institution
      * @throws BSSException
      */
-    public void submitCancel(Reservation resv, String loginConstraint, 
+    public void submitCancel(Reservation resv, String loginConstraint,
                         String login, String institution) throws BSSException{
         String gri = resv.getGlobalReservationId();
         String status = this.se.getStatus(resv);
-        
+
         //can't cancel a reservation in a terminal state
-        if(StateEngine.CANCELLED.equals(status) || 
-            StateEngine.FINISHED.equals(status) || 
+        if(StateEngine.CANCELLED.equals(status) ||
+            StateEngine.FINISHED.equals(status) ||
             StateEngine.FAILED.equals(status)){
             throw new BSSException("Can't cancel a reservation in the state "
                                    + status);
         }
-        
-        /* don't worry about any other states because that will be detected 
+
+        /* don't worry about any other states because that will be detected
            when it's actually in the queue */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "submitCancel-"+resv.hashCode();
-        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", 
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING",
                                             CancelReservationJob.class);
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
@@ -484,7 +489,7 @@ public class ReservationManager {
             throw new BSSException(ex);
         }
     }
-    
+
     /**
      * Given a reservation GRI, cancels the corresponding reservation.
      * (Can only cancel a pending or active reservation.)
@@ -536,7 +541,7 @@ public class ReservationManager {
             this.se.updateStatus(resv, newStatus);
             this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         }
-        
+
         this.log.info("cancel.finish: " + resv.getGlobalReservationId());
         this.rsvLogger.stop();
     }
@@ -578,10 +583,10 @@ public class ReservationManager {
      *          if set only reservations starting or ending at that site may be modified
      * @throws BSSException
      */
-    public Reservation submitModify(Reservation resv, String loginConstraint, 
+    public Reservation submitModify(Reservation resv, String loginConstraint,
                        String login, String institution) throws  BSSException {
 
-        this.log.info("modify.start: login: " +  loginConstraint + 
+        this.log.info("modify.start: login: " +  loginConstraint +
                       " institution: " +  institution );
         String gri = resv.getGlobalReservationId();
         Reservation persistentResv = this.getConstrainedResv(gri,loginConstraint,institution);
@@ -589,7 +594,7 @@ public class ReservationManager {
         // leave it the same, do not set to current user
         resv.setLogin(persistentResv.getLogin());
         resv.setCreatedTime(persistentResv.getCreatedTime());
-        
+
         ParamValidator paramValidator = new ParamValidator();
         StringBuilder errorMsg = paramValidator.validate(resv, null);
         if (errorMsg.length() > 0) {
@@ -604,7 +609,7 @@ public class ReservationManager {
         if (resv.getStartTime() > resv.getEndTime()) {
             throw new BSSException("Cannot modify: start time after end time!");
         }
-        
+
         //Schedule job
         HashMap resvMap = this.tc.reservationToHashMap(resv, null);
         Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -625,17 +630,17 @@ public class ReservationManager {
         } catch (SchedulerException ex) {
             throw new BSSException(ex);
         }
-        
+
         int localStatus = 0;
         if(this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)){
             localStatus = StateEngine.MODIFY_ACTIVE;
         }
         this.se.updateStatus(persistentResv, StateEngine.INMODIFY);
         this.se.updateLocalStatus(persistentResv, localStatus);
-        
+
         return persistentResv;
     }
-    
+
     /**
      * Modifies the reservation, given a partially filled in reservation
      * instance and additional parameters.
@@ -644,7 +649,7 @@ public class ReservationManager {
      * @param persistentResv
      * @throws BSSException
      */
-    public void modify(Reservation resv, Reservation persistentResv) 
+    public void modify(Reservation resv, Reservation persistentResv)
                               throws BSSException{
         Long now = System.currentTimeMillis()/1000;
         if (persistentResv.getStatus().equals(StateEngine.ACTIVE)) {
@@ -663,7 +668,7 @@ public class ReservationManager {
                 resv.setStartTime(now);
             }
         }
-        
+
         // since pathInfo is null we should keep the stored path
         PathInfo pathInfo = tc.getPathInfo(persistentResv);
         if (pathInfo == null) {
@@ -707,7 +712,7 @@ public class ReservationManager {
 
    /**
      * @param numRequested int with the number of reservations to return
-     * @param resOffset int with the offset into the list 
+     * @param resOffset int with the offset into the list
      *
      * @param login String with user's login name
      *          if null any user's reservation may be listed
@@ -805,15 +810,15 @@ public class ReservationManager {
         if (intraPath == null || intraPath.getPath() == null) {
             throw new BSSException("Pathfinder could not find a path!");
         }
-        
+
         //Convert any local hops that are still references to link objects
         this.expandLocalHops(pathInfo);
         this.expandLocalHops(intraPath);
-        
+
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
         this.policyMgr.checkOversubscribed(reservations, pathInfo, intraPath.getPath(), resv);
-        
+
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get next external hop (first past egress) from the complete path
@@ -834,9 +839,9 @@ public class ReservationManager {
         path.setExplicit(isExplicit);
         return path;
     }
-    
+
     /**
-     * Expands any local linkIdRef elements in a given path and 
+     * Expands any local linkIdRef elements in a given path and
      * converts them to links
      *
      * @param pathInfo the pathInfo containg the path to expand
@@ -853,7 +858,7 @@ public class ReservationManager {
         if(hops == null || hops.length == 0 ){
             throw new BSSException("Cannot expand path because no hops given");
         }
-        
+
         for(CtrlPlaneHopContent hop : hops){
             String urn = this.tc.hopToURN(hop);
             //if not link then add to path
@@ -872,7 +877,7 @@ public class ReservationManager {
                 throw new BSSException("Cannot expand hop because it contains " +
                                    "a hop that's not a link: " + urn);
             }
-            
+
             Link dbLink = domainDAO.getFullyQualifiedLink(urn);
             CtrlPlaneHopContent expandedHop = new CtrlPlaneHopContent();
             CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
@@ -894,14 +899,14 @@ public class ReservationManager {
             link.setId(urn);
             link.setTrafficEngineeringMetric(dbLink.getTrafficEngineeringMetric());
             link.setSwitchingCapabilityDescriptors(swcap);
-                
+
             expandedHop.setId(hop.getId());
             expandedHop.setLink(link);
             expandedPath.setId(path.getId());
             expandedPath.addHop(expandedHop);
-            
+
         }
-        
+
         pathInfo.setPath(expandedPath);
     }
 
@@ -925,7 +930,7 @@ public class ReservationManager {
         Link link = null;
         this.log.debug("buildInitialPath.pathInfo=" + pathInfo.hashCode());
         PathInfo refOnlyPathInfo = this.tc.createRefPath(pathInfo);
-        
+
         //Build path containing only the ingress link id
         try{
             ingressLink = this.pceMgr.findIngress(refOnlyPathInfo);
@@ -939,7 +944,7 @@ public class ReservationManager {
         String pathSetupMode = pathInfo.getPathSetupMode();
         if (pathSetupMode == null) {
             pathSetupMode = "timer-automatic";
-        } 
+        }
         if ( pathSetupMode.equals("timer-automatic")  || pathSetupMode.equals("signal-xml")) {
             path.setPathSetupMode(pathSetupMode);
         } else {
@@ -1006,7 +1011,7 @@ public class ReservationManager {
         }
 
         List<PathElem> pathElems = new ArrayList<PathElem>();
-        
+
         // set pathSetupMode, default to timer-automatic
         if (pathSetupMode == null) {
             pathSetupMode = "timer-automatic";
@@ -1072,7 +1077,7 @@ public class ReservationManager {
                 }
             }
             pathElem.setLink(link);
-            
+
             /* Hold suggested VLAN tags */
             if(layer2Info != null &&
                 link.getL2SwitchingCapabilityData() != null) {
@@ -1129,9 +1134,9 @@ public class ReservationManager {
     }
 
     /**
-     * Converts the path in a pathInfo object to a PathElem bean. If an 
-     * existing pathElem object is given then it is updated rather than creating 
-     * a new one from scratch. This is useful for storing the inter-domain 
+     * Converts the path in a pathInfo object to a PathElem bean. If an
+     * existing pathElem object is given then it is updated rather than creating
+     * a new one from scratch. This is useful for storing the inter-domain
      * path and updating VLANs when a reservation completes.
      *
      * @param pathInfo the pathInfo element containing the interdomain path
@@ -1140,15 +1145,15 @@ public class ReservationManager {
      * @return first PathElem of converted path
      * @throws BSSException
      */
-    public PathElem convertPathElem(PathInfo pathInfo, PathElem currPathElem, 
-                                    boolean isInter) 
+    public PathElem convertPathElem(PathInfo pathInfo, PathElem currPathElem,
+                                    boolean isInter)
                 throws BSSException{
         CtrlPlanePathContent path = pathInfo.getPath();
         if(path == null){ return null; }
         CtrlPlaneHopContent[] hops = path.getHop();
         PathElem prevPathElem = null;
         HashMap<String, PathElem> savedElems = new HashMap<String, PathElem>();
-        
+
         while(currPathElem != null){
             Link link = currPathElem.getLink();
             if(link != null){
@@ -1156,7 +1161,7 @@ public class ReservationManager {
             }
             currPathElem = currPathElem.getNextElem();
         }
-        
+
         for(int i = (hops.length - 1); i >= 0; i--){
             String urn = this.tc.hopToURN(hops[i]);
             Link link = null;
@@ -1178,9 +1183,9 @@ public class ReservationManager {
             if(currPathElem.getNextElem() == null && prevPathElem != null){
                 currPathElem.setNextElem(prevPathElem);
             }
-            if(link.getL2SwitchingCapabilityData() != null && 
+            if(link.getL2SwitchingCapabilityData() != null &&
                     hops[i].getLink() != null){
-                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
                                      hops[i].getLink()
                                      .getSwitchingCapabilityDescriptors()
                                      .getSwitchingCapabilitySpecificInfo();
@@ -1322,7 +1327,7 @@ public class ReservationManager {
         this.log.debug("getNextExternalHop.end");
         return nextHop;
     }
-    
+
     /**
      * Returns the last hop before the current domain
      *
@@ -1346,7 +1351,7 @@ public class ReservationManager {
             prevHop = hop;
         }
         this.log.debug("getPrevExternalHop.start");
-        
+
         return prevHop;
      }
 
@@ -1405,7 +1410,7 @@ public class ReservationManager {
         }
         return institutionName;
     }
-    
+
     /**
      * Returns Domain of the institution of the an end point of the reservation
      *
@@ -1467,7 +1472,7 @@ public class ReservationManager {
         if(link == null){
             return;
         }
-        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
                                     link.getSwitchingCapabilityDescriptors()
                                         .getSwitchingCapabilitySpecificInfo();
         String vlanRange = swcapInfo.getVlanRangeAvailability();
@@ -1478,7 +1483,7 @@ public class ReservationManager {
             pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
         }
     }
-    
+
     /**
      * Picks a VLAN tag from a range of VLANS given a suggested VLAN Range
      *
@@ -1502,7 +1507,7 @@ public class ReservationManager {
 
         return this.chooseVlanTag(mask);
     }
-    
+
     /**
      * Picks a VLAN tag from a range of VLANS
      *
@@ -1513,7 +1518,7 @@ public class ReservationManager {
     public String chooseVlanTag(byte[] mask) throws BSSException{
         //Never pick untagged
         mask[0] &= (byte) 127;
-        
+
         //pick one
         ArrayList<Integer> vlanPool = new ArrayList<Integer>();
         for(int i=0; i < mask.length; i++){
@@ -1524,7 +1529,7 @@ public class ReservationManager {
                 }
             }
         }
-        
+
         int index = 0;
         if(vlanPool.size() > 1){
             Random rand = new Random();
@@ -1532,7 +1537,7 @@ public class ReservationManager {
         }else if(vlanPool.size() == 0){
             return null;
         }
-        
+
         return vlanPool.get(index).toString();
     }
 
@@ -1544,14 +1549,14 @@ public class ReservationManager {
      * @param resv reservation to be stored in database
      * @param pathInfo reservation path information
      */
-    public void finalizeResv(Reservation resv, PathInfo pathInfo, boolean confirm) 
+    public void finalizeResv(Reservation resv, PathInfo pathInfo, boolean confirm)
             throws BSSException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
         Path path = resv.getPath();
         int localStatus = this.se.getLocalStatus(resv);
         CtrlPlaneHopContent nextExtHop = this.getNextExternalHop(pathInfo);
-        
+
         /* if user signaled and last domain create token, otherwise store
            token returned in confirm message */
         if (confirm){
@@ -1586,7 +1591,7 @@ public class ReservationManager {
             }
 
             /* Find the next hop(if any) and see if it uses the suggested VLAN.
-               If not then try to choose another by doing the oversubscription 
+               If not then try to choose another by doing the oversubscription
                check again. */
             String nextVlan = null;
             if(nextExtHop != null && nextExtHop.getLink() != null){
@@ -1595,16 +1600,16 @@ public class ReservationManager {
                                      .getSwitchingCapabilitySpecificInfo()
                                      .getVlanRangeAvailability();
             }
-            
+
             if(nextVlan != null && (!egrSuggestedVLAN.equals(nextVlan))){
                 ReservationDAO dao = new ReservationDAO(this.dbname);
                 List<Reservation> active = dao.overlappingReservations(
                                        resv.getStartTime(), resv.getEndTime());
-                this.policyMgr.checkOversubscribed(active, pathInfo, 
+                this.policyMgr.checkOversubscribed(active, pathInfo,
                                                    intraPath, resv);
             }
             for(CtrlPlaneHopContent hop : hops){
-                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
                              hop.getLink().getSwitchingCapabilityDescriptors()
                                           .getSwitchingCapabilitySpecificInfo();
                 String sug = swcapInfo.getSuggestedVLANRange();
@@ -1614,10 +1619,10 @@ public class ReservationManager {
             this.tc.mergePathInfo(intraPathInfo, pathInfo, true);
             this.convertPathElem(intraPathInfo, path.getPathElem(), false);
         }
-        
+
         /* Store or update interdomain path */
         try {
-            PathElem interPathElem = this.convertPathElem(pathInfo, 
+            PathElem interPathElem = this.convertPathElem(pathInfo,
                                                 path.getInterPathElem(), true);
             path.setInterPathElem(interPathElem);
         } catch(BSSException e) {
