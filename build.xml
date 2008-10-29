@@ -3,6 +3,7 @@
 <project xmlns:artifact="urn:maven-artifact-ant" name="OSCARS" default="all">
     <!-- properties section for main targets ******************************** -->
     <property environment="env"/>
+    <available property="domain.exists" file="${env.DOMAIN_HOME}"/>
     <property name="domain.home" value="${env.DOMAIN_HOME}"/>
     <property name="defaultKeys" location="conf/examples"/>
     <property name="catalina.home" value="${env.CATALINA_HOME}"/>
@@ -35,7 +36,7 @@
         <!-- a bit of a kludge -->
         <available file="lib/axis2/mail-1.4.jar" property="axis2.found"/>
         <fail unless="axis2.found" message="Axis2 library not found. Please either build and deploy axis2.war with rampart support, or manually copy the necessary .jar files to lib/axis2. See documentation for details."/>
-        <available file="lib/jta-1.1.jar" property="jta.found"/>
+        <available file="lib/jta.jar" property="jta.found"/>
         <fail if="jta.found" message="jta.jar library must be removed from lib."/>
         <available file="lib/axis2/rampart-core-SNAPSHOT.jar" property="rampart.found"/>
         <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
@@ -302,10 +303,11 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     	<!-- don't let new value of OSCARS.jks  over write existing ones -->
     	<available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks" 
     		value="true" />
-      	<!-- let  new value of rampConfig.xml over write existing one, but warn the user -->
-    	<uptodate property="rampConfig.xml.uptodate" targetfile="${catalina.home}/shared/classes/repo/rampConfig.xml" 
+      	<!-- let  new value of rampConfig.xml over write existing one, but edit the target in addUserAlias -->
+    	<uptodate property="rampConfig.xml.exists" targetfile="${catalina.home}/shared/classes/repo/rampConfig.xml" 
     	    		srcfile="${domain.home}/server/rampConfig.xml" />
-        <uptodate property="axis2.xml.uptodate" targetfile="${catalina.home}/shared/classes/repo/axis2.xml" 
+    	<!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
+        <uptodate property="axis2.xml.exists" targetfile="${catalina.home}/shared/classes/repo/axis2.xml" 
             	    		srcfile="${defaultKeys}/client/axis2.xml" />
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
@@ -322,8 +324,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
   
     </target>
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
-        <property name="axis2.xml.uptodate" value="true" />
-        <property name="rampConfig.xml.uptodate" value="true" />
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
         <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true"/>
@@ -355,7 +355,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </fileset>
         </copy>
     </target>
-    <target name="edit_axis2.xml" unless="axis2.xml.uptodate, axis2.xml.exists">
+    <target name="edit_axis2.xml" unless="axis2.xml.exists">
         <replace file="${catalina.home}/shared/classes/repo/axis2.xml" token="**tomcat**"
            		value="${catalina.home}" summary="true"/> 
     </target>

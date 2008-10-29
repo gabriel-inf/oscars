@@ -58,10 +58,11 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
             rmiIpaddr = props.getProperty("serverIpaddr");
         }
-
+        InetAddress ipAddr = null;
+        AnchorSocketFactory sf = null;
         try {
-            InetAddress ipAddr = InetAddress.getByName(rmiIpaddr);
-            AnchorSocketFactory sf = new AnchorSocketFactory(ipAddr);
+            ipAddr = InetAddress.getByName(rmiIpaddr);
+            sf = new AnchorSocketFactory(ipAddr);
             this.registry = LocateRegistry.createRegistry(port, null, sf);
         } catch (UnknownHostException ex) {
 
@@ -74,7 +75,8 @@ public class CoreRmiServer  implements CoreRmiInterface  {
                 port = Integer.decode(props.getProperty("serverPort"));
             } catch (NumberFormatException e) { }
         }
-        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, port);
+        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, port,
+                null,sf);
         this.registry.rebind("IDCRMIServer", this.stub);
         this.createHandler = new CreateResRmiHandler();
         this.queryHandler = new QueryResRmiHandler();
