@@ -110,8 +110,17 @@ public class CopyKeyEntry {
             outPassword = br.readLine().trim();
             outKS.load(in,outPassword.toCharArray());
             in.close();
+            
+            System.out.print("Do you want the key password in " + outKeyStore +
+                    " to be different from " + outPassword + "? [y/n]: ");  
+            if (br.readLine().trim().equals("y")) {
+                System.out.print("input new key password: ");
+                outKeyPassword = br.readLine().trim();  
+            } else {
+                outKeyPassword = outPassword;
+            }
 
-            outKS.setKeyEntry(aliasName, keyEntry, inKeyPassword.toCharArray(), chain);
+            outKS.setKeyEntry(aliasName, keyEntry, outKeyPassword.toCharArray(), chain);
             
             FileOutputStream out = new FileOutputStream(outKeyStore);
             outKS.store(out,outPassword.toCharArray());
