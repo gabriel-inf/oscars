@@ -212,8 +212,8 @@ shared/classes/sec-security.jks keystore for the target web service.<br>
 <p style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="sigError"></a>Error in signature with X509Token<br>
 </span>Will occur when the alias specified in rampConfig.xml does not
-have KeyEntry in<br>
-OSCARS.jks.<br>
+have KeyEntry in OSCARS.jks. Can also occur if the keyPassword for an entry is 
+different from the keyStore password.<br>
 </p>
 <p style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="badpassword"></a>java.io.IOException: Keystore was tampered
