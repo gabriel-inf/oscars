@@ -58,7 +58,7 @@ echo "--- Your kit looks good.";
 echo -n "- Input the hostname for this IDC. Leave blank for \"$IDC_HOSTNAME\": "
 read READ_HOSTNAME;
 if [ $READ_HOSTNAME ]; then
-    IDC_HOSTNAME=READ_HOSTNAME;
+    IDC_HOSTNAME="$READ_HOSTNAME";
 fi
 echo "    Using $IDC_HOSTNAME . ";
 #set defaults but still inform users that they may change these in documentation
