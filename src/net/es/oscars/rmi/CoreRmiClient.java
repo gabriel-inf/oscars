@@ -1,9 +1,6 @@
 package net.es.oscars.rmi;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -25,14 +22,18 @@ public class CoreRmiClient implements CoreRmiInterface {
 
     /**
      * init
+     *   By default initializes the RMI server registry  port to 1099 (the default)
+     *   This can be overridden by the oscars.properties rmi.registryPort and must 
+     *   match the port that CoreRmiServer.init used.
      *
      * @throws RemoteException
      */
     public void init() throws RemoteException {
         this.remote = null;
-        this.log.debug("init.start");
+        this.log.debug("RMIClientInit.start");
         this.connected = true;
         int port = 1099;  // default rmi registry port
+
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi", true);
         if (props.getProperty("registryPort") != null ) {
@@ -42,21 +43,19 @@ public class CoreRmiClient implements CoreRmiInterface {
         }
         try {
             String rmiIpaddr = "127.0.0.1";
+
             if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
                 rmiIpaddr = props.getProperty("serverIpaddr");
             }
-            System.setProperty("java.rmi.server.hostname",rmiIpaddr);
-            InetAddress ipAddr = InetAddress.getByName(rmiIpaddr);
-            AnchorSocketFactory sf = new AnchorSocketFactory(ipAddr);
-
-            Registry registry = LocateRegistry.getRegistry(rmiIpaddr, port, sf);
+            Registry registry = LocateRegistry.getRegistry(rmiIpaddr, port);
 
             this.remote = (CoreRmiInterface) registry.lookup("IDCRMIServer");
+            this.log.debug("Got remote object \n" + remote.toString());
             this.connected = true;
             this.log.debug("Connected to IDC RMI server");
         } catch (RemoteException e) {
             this.connected = false;
-            this.log.warn("Remote exception from RMI server: ", e);
+            this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
             throw e;
         } catch (NotBoundException e) {
             this.connected = false;

@@ -41,10 +41,16 @@ public class CoreRmiServer  implements CoreRmiInterface  {
 
     /**
      * init
+     *   By default initializes the RMI server registry to listen on port 1099 (the default)
+     *   the RMI server to listen on a random port, and both to listen only on the loopback
+     *   interface. These values can be overidden by oscars.properties.
+     *   Setting the serverIpaddr to localhost will allow access from remote hosts and
+     *   invalidate our security assumptions. 
+     *   
      * @throws remoteException
      */
     public void init() throws RemoteException {
-        this.log.debug("init.start");
+        this.log.debug("RMIServerInit.start");
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi", true);
         int port = 1099;
@@ -58,16 +64,22 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
             rmiIpaddr = props.getProperty("serverIpaddr");
         }
+        this.log.info("RMIsever listening on " + rmiIpaddr);
+        if (!rmiIpaddr.equals("127.0.0.1")){
+            this.log.warn("RMI listening on " + rmiIpaddr + "Possible security vulnerability");
+        }
         InetAddress ipAddr = null;
         AnchorSocketFactory sf = null;
+        // Causes the endPoint of the remote sever object to match the interface that is listened on
+        System.setProperty("java.rmi.server.hostname",rmiIpaddr);
         try {
             ipAddr = InetAddress.getByName(rmiIpaddr);
+            // creates a custom socket that only listens on ipAddr
             sf = new AnchorSocketFactory(ipAddr);
             this.registry = LocateRegistry.createRegistry(port, null, sf);
         } catch (UnknownHostException ex) {
 
         }
-            // LocateRegistry.createRegistry(port);
 
         port = 0;
         if (props.getProperty("serverPort") != null) {
@@ -86,7 +98,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
         this.unsafeCreatePathHandler = new UnsafeCreatePathRmiHandler();
         this.unsafeModifyStatusHandler = new UnsafeModifyStatusRmiHandler();
-        this.log.debug("init.end");
+        this.log.debug("RMIServerInit.end");
     }
 
     /**
@@ -256,19 +268,21 @@ public class CoreRmiServer  implements CoreRmiInterface  {
 
     /**
      * Check that rmi call came from the local host
+     * and log a warning if it did not.
+     * If the RMI server is properly configured all calls should
+     * come from 127.0.0.1
      * @return true/false
      */
     private boolean checkClientHost() {
         try {
             String remoteHost = RemoteServer.getClientHost();
             String localHost = InetAddress.getLocalHost().getHostAddress();
-            //this.log.info("client host for list reservations is: " + remoteHost);
-            //this.log.info ("local host ipAddr is " + localHost );
-            if (remoteHost.equals(localHost)) {
+            if (remoteHost.equals("127.0.0.1") || 
+                    remoteHost.equals(localHost)) {
                 return true;
             }
             this.log.warn("rmiServer called by non-local host: " + remoteHost);
-            return false;
+            return true;
         } catch (ServerNotActiveException e) {
             this.log.warn ("Can't get client host in listReservations");
             return false;
