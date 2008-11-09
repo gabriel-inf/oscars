@@ -12,7 +12,7 @@
         <property name="connection.provider_class">
             org.hibernate.connection.C3P0ConnectionProvider
         </property>
-        
+
         <property name="query.substitutions">yes 'Y', no 'N'</property>
         <!-- <property name="show_sql">true</property> -->
         <!-- <property name="format_sql">true</property> -->
@@ -32,7 +32,7 @@
         <property name="hibernate.c3p0.max_size">21</property>
         <property name="hibernate.c3p0.max_statements">50</property>
         <property name="hibernate.c3p0.min_size">3</property>
-    
+
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
         <property name="jdbc.batch_versioned_data">true</property>
@@ -41,13 +41,19 @@
         <property name="jdbc.use_get_generated_keys">true</property>
         <!-- set a prefix for cache region names -->
         <property name="cache.region_prefix">hibernate.test</property>
+
+
         <property name="cache.provider_class">
                   org.hibernate.cache.HashtableCacheProvider</property>
 
-<!--
-        <mapping resource="net/es/oscars/bss/History.hbm.xml"/>
-        <mapping resource="net/es/oscars/bss/Job.hbm.xml"/>
+<!-- ehcache config - still being tested
+        <property name="hibernate.cache.use_second_level_cache">true</property>
+        <property name="hibernate.cache.use_query_cache">true</property>
+        <property name="cache.provider_class">net.sf.ehcache.hibernate.EhCacheProvider</property>
+         <property name="net.sf.ehcache.configurationResourceName">/ehcache-bss.cfg.xml</property>
 -->
+
+
         <mapping resource="net/es/oscars/bss/Reservation.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/IdSequence.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/Token.hbm.xml"/>

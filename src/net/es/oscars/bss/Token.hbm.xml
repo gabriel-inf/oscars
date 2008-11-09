@@ -2,9 +2,9 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
-<!-- 
+<!--
     Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
 
     http://boss.bekk.no/boss/middlegen/
@@ -16,6 +16,8 @@
        @hibernate.class table="tokens"
     </meta>
 
+    <cache usage="read-write" />
+
     <id name="id">
         <meta attribute="field-description">
            @hibernate.id generator-class="identity"
@@ -26,12 +28,12 @@
     <property name="value" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <!-- Associations -->
     <many-to-one name="reservation" column="reservationId"
-	    class="net.es.oscars.bss.Reservation" not-null="true" />
+        class="net.es.oscars.bss.Reservation" not-null="true" />
 
 </class>
 </hibernate-mapping>

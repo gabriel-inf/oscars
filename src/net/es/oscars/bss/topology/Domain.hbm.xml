@@ -2,13 +2,15 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
 
 <class name="net.es.oscars.bss.topology.Domain" table="domains">
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="domains"
     </meta>
+
+    <cache usage="read-write" />
 
     <id name="id">
         <meta attribute="field-description">
@@ -20,31 +22,31 @@
     <property name="topologyIdent" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="name" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="url" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="abbrev" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="local" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <!-- Associations -->
@@ -60,8 +62,8 @@
     </set>
 
     <one-to-one name="site"
-	    class="net.es.oscars.bss.topology.Site"
-	    property-ref="domain" />
+        class="net.es.oscars.bss.topology.Site"
+        property-ref="domain" />
 
 </class>
 </hibernate-mapping>

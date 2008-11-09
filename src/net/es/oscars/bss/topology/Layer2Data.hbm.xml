@@ -2,16 +2,18 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
 
 <class name="net.es.oscars.bss.topology.Layer2Data" table="layer2Data"
                                                     lazy="false">
 
- 
+
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="reservations"
     </meta>
+
+    <cache usage="read-write" />
 
     <id name="id">
         <meta attribute="field-description">
@@ -23,13 +25,13 @@
     <property name="srcEndpoint" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="destEndpoint" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <!-- Associations -->

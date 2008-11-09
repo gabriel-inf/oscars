@@ -16,6 +16,8 @@
        @hibernate.class table="routeElems"
     </meta>
 
+    <cache usage="read-write" />
+
     <id name="id">
         <meta attribute="field-description">
            @hibernate.id generator-class="identity"

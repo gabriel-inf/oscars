@@ -2,9 +2,9 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
-<!-- 
+<!--
     Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
 
     http://boss.bekk.no/boss/middlegen/
@@ -16,6 +16,8 @@
        @hibernate.class table="ports"
     </meta>
 
+    <cache usage="read-write" />
+
     <id name="id">
         <meta attribute="field-description">
            @hibernate.id generator-class="identity"
@@ -26,38 +28,38 @@
     <property name="valid" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
         <column sql-type="BOOLEAN" name="valid" />
     </property>
 
     <property name="snmpIndex" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="topologyIdent" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="capacity" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="maximumReservableCapacity" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="minimumReservableCapacity" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="granularity" />
@@ -65,7 +67,7 @@
     <property name="unreservedCapacity" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
-        </meta>    
+        </meta>
     </property>
 
     <property name="alias" />
@@ -74,7 +76,7 @@
     <!-- Associations -->
 
     <many-to-one name="node" column="nodeId"
-	    class="net.es.oscars.bss.topology.Node" not-null="true" />
+        class="net.es.oscars.bss.topology.Node" not-null="true" />
 
     <set name="links" inverse="true" cascade="all, delete-orphan">
         <key column="portId" />
