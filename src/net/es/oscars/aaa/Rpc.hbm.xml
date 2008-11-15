@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
 
 <class name="net.es.oscars.aaa.Rpc" table="rpcs">
@@ -16,26 +16,13 @@
         </meta>
         <generator class="identity" />
     </id>
-
-    <property name="resourceId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
-    <property name="permissionId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-    
-    <property name="constraintId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-    
     <!-- Associations -->
+    <many-to-one name="constraint" column="constraintId"
+        class="net.es.oscars.aaa.Constraint" />
+    <many-to-one name="resource" column="resourceId"
+        class="net.es.oscars.aaa.Resource" />
+    <many-to-one name="permission" column="permissionId"
+        class="net.es.oscars.aaa.Permission" />
 
 </class>
 </hibernate-mapping>

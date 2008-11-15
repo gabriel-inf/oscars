@@ -1,8 +1,8 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 /**
  * rmi handler for modifyReservation. Interfaces to ReservationManager.modifyReservation
- * 
+ *
  * @author Evangelos Chaniotakis, David Robertson
  */
 
@@ -39,13 +39,13 @@ public class ModifyResRmiHandler {
 
     /**
      * modifyReservation rmi handler; interfaces between servlet and ReservationManager.
-     * 
+     *
      * @param userName String - name of user  making request
      * @param inputMap HashMap - contains start and end times, bandwidth, description,
      *          productionType, pathinfo
      * @return HashMap - contains gri and sucess or error status
      */
-    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName) 
+    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName)
         throws IOException {
         this.log.debug("modify.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -53,12 +53,12 @@ public class ModifyResRmiHandler {
         String methodName = "ModifyReservation";
         String institution = null;
         String loginConstraint = null;
- 
+
         TypeConverter tc = core.getTypeConverter();
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-        
-        Session aaa = core.getAaaSession();  
+
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
 
@@ -88,20 +88,20 @@ public class ModifyResRmiHandler {
         }
 
         Reservation resv = this.toReservation(simpleInputMap);
-        try {   
+        try {
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, userName, "RMI", resv);
             Reservation persistentResv = rm.submitModify(resv, loginConstraint, userName, institution);
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, userName, "RMI", resv);
         } catch (Exception e) {
             String errMessage = e.getMessage();
             this.log.debug("Modify  failed: " + errMessage);
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, loginConstraint, 
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, loginConstraint,
                 "RMI", resv, "", errMessage);
             result.put("error", errMessage);
             bss.getTransaction().rollback();
             return result;
         }
- 
+
         result.put("status", "modified reservation with GRI " + resv.getGlobalReservationId());
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);

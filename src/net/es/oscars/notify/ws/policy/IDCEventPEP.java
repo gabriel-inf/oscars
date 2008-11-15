@@ -11,7 +11,7 @@ import net.es.oscars.notify.ws.OSCARSNotifyCore;
 import net.es.oscars.aaa.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.notify.ws.AAAFaultMessage;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.wsdlTypes.EventContent;
 
 
@@ -31,12 +31,12 @@ public class IDCEventPEP implements NotifyPEP{
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSNotifyCore.getInstance();
     }
-    
+
     public void init(String dbname){
         this.userMgr = OSCARSNotifyCore.getInstance().getUserManager();
         this.dbname = dbname;
     }
-    
+
     public boolean matches(ArrayList<String> topics){
         for(String topic : topics){
             if(topic.startsWith("idc:")){
@@ -45,10 +45,10 @@ public class IDCEventPEP implements NotifyPEP{
         }
         return false;
     }
-    
+
     public HashMap<String,String> prepare(String subscriberLogin) throws AAAFaultMessage{
         HashMap<String,String> permissionMap = new HashMap<String,String>();
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
+        AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("Subscriber " + subscriberLogin +
                     "does not have permission to view this notification.");
@@ -60,10 +60,10 @@ public class IDCEventPEP implements NotifyPEP{
         }else{
             permissionMap.put("IDC_RESV_USER", "ALL");
         }
-        
+
         return permissionMap;
     }
-    
+
     public HashMap<String, ArrayList<String>> enforce(OMElement[] omEvents) throws AAAFaultMessage{
         HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
         for(OMElement omEvent : omEvents){
@@ -74,7 +74,7 @@ public class IDCEventPEP implements NotifyPEP{
         }
         return permissionMap;
     }
-    
+
     public HashMap<String, ArrayList<String>> enforce(OMElement omEvent) throws AAAFaultMessage{
         this.log.debug("prepare.start");
         HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
@@ -94,10 +94,10 @@ public class IDCEventPEP implements NotifyPEP{
             this.log.debug("notification not an idc:event");
             return permissionMap;
         }
-        
+
         //Add user
         userList.add("ALL");
-    	if(userLogin != null && (!userLogin.trim().equals(""))){
+        if(userLogin != null && (!userLogin.trim().equals(""))){
             this.log.debug("Adding user login '"+ userLogin + "'");
             userList.add(userLogin);
             this.addInst(userLogin, institutionList);
@@ -108,26 +108,26 @@ public class IDCEventPEP implements NotifyPEP{
             userList.add(resvLogin);
             this.addInst(resvLogin, institutionList);
         }
-        
+
         permissionMap.put("IDC_RESV_USER", userList);
         if(!institutionList.isEmpty()){
             permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
         }
-        
+
         //Check path for end site institutions that may have not yet been added
         Session bss = null;
         try{
             bss = this.core.getBssSession();
             bss.beginTransaction();
-            
-            if(event.getResDetails() == null || 
+
+            if(event.getResDetails() == null ||
                event.getResDetails().getPathInfo().getPath() == null ||
                event.getResDetails().getPathInfo().getPath().getHop() == null){
                 this.log.debug("prepare.end");
-                return permissionMap;   
+                return permissionMap;
             }
             CtrlPlaneHopContent[] hops = event.getResDetails().getPathInfo().getPath().getHop();
-            
+
             for(CtrlPlaneHopContent hop : hops){
                 CtrlPlaneLinkContent link = hop.getLink();
                 if(link == null){
@@ -146,11 +146,11 @@ public class IDCEventPEP implements NotifyPEP{
             e.printStackTrace();
             this.log.info("Ignoring error");
         }
-        
+
         this.log.debug("prepare.end");
         return permissionMap;
     }
-    
+
     private void addInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
         DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
@@ -171,7 +171,7 @@ public class IDCEventPEP implements NotifyPEP{
         insts.add(site.getName());
         this.log.debug("site=" + site.getName());
     }
-    
+
     private void addRemoteInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
         DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
         Link link = domainDAO.getFullyQualifiedLink(urn);
@@ -186,7 +186,7 @@ public class IDCEventPEP implements NotifyPEP{
         if(domainInsts.containsKey(remoteDomain.getTopologyIdent())){
             return;
         }
-        
+
         Site site = remoteDomain.getSite();
         if(site == null || insts.contains(site.getName())){
             return;
@@ -195,14 +195,14 @@ public class IDCEventPEP implements NotifyPEP{
         insts.add(site.getName());
         this.log.debug("site=" + site.getName());
     }
-    
+
     private void addInst(String userName, ArrayList<String> insts){
-    	if(userName == null){ return; }
-    	UserDAO userDAO = new UserDAO(this.core.getAaaDbName());
-    	User user = userDAO.queryByParam("login", userName);
+        if(userName == null){ return; }
+        UserDAO userDAO = new UserDAO(this.core.getAaaDbName());
+        User user = userDAO.queryByParam("login", userName);
         if(user == null){ return; }
         Institution inst = user.getInstitution();
         if(inst == null) { return; }
-    	insts.add(inst.getName());
+        insts.add(inst.getName());
     }
 }

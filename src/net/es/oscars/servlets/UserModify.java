@@ -2,38 +2,37 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.Attribute;
+import net.es.oscars.aaa.User;
+import net.es.oscars.aaa.Institution;
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.aaa.AAAException;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 
 public class UserModify extends HttpServlet {
-    private Logger log;
-    
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response)
+    private Logger log = Logger.getLogger(UserModify.class);
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        this.log = Logger.getLogger(this.getClass());
         String methodName = "UserModify";
-        this.log.info("servlet.start");
+        this.log.info("UserModify.start");
 
-        UserManager mgr = null;
-        User user = null;
-        int userId;
         //User requester = null;
         boolean self = false; // is user modifying own profile
-        boolean setPassword = false; 
-        List<String> attrNames = new ArrayList<String>();
-        AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
+        boolean setPassword = false;
+
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
@@ -44,16 +43,12 @@ public class UserModify extends HttpServlet {
             return;
         }
 
-        mgr = new UserManager(Utils.getDbName());
         String profileName = request.getParameter("profileName");
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        
-        Map outputMap = new HashMap();
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         if (profileName != null) { // get here by clicking on a name in the users list
-            if (profileName.equals(userName)) { 
-                self =true; 
+            if (profileName.equals(userName)) {
+                self = true;
             } else {
                 self = false;
             }
@@ -67,30 +62,33 @@ public class UserModify extends HttpServlet {
         } else {
             outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
-        AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
-        if (self) {attrNames = mgr.getAttrNames();}
-        else {attrNames = mgr.getAttrNames(profileName);}
- 
-        
-        if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
-              user= mgr.query(profileName);
-              userId=user.getId();
-         } else {
-            Utils.handleFailure(out,"no permission to modify users", 
-                                methodName, aaa);
-            return;
-        }
 
-        if (user == null) {
-            String msg = "User " + profileName + " does not exist";
-            Utils.handleFailure(out, msg, methodName, aaa);
-        }
+        User user = null;
+        ArrayList<Integer> newRoles = new ArrayList<Integer>();
+        ArrayList<Integer> curRoles = new ArrayList<Integer>();
 
         try {
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+
+            AuthValue authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+            if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
+                user = Utils.getUser(profileName, rmiClient, out, log);
+            } else {
+                Utils.handleFailure(out,"no permission to modify users", methodName);
+                return;
+            }
+
+            if (user == null) {
+                String msg = "User " + profileName + " does not exist";
+                Utils.handleFailure(out, msg, methodName);
+            }
+
+            List<Attribute> attributesForUser = Utils.getAttributesForUser(profileName, rmiClient, out, log);
+            List<Attribute> allAttributes = Utils.getAllAttributes(rmiClient, out, log);
+
             this.convertParams(request, user);
             String password = request.getParameter("password");
-            String confirmationPassword =
-            request.getParameter("passwordConfirmation");
+            String confirmationPassword = request.getParameter("passwordConfirmation");
 
             // handle password modification if necessary
             // checkpassword will return null, if password is  not to be changed
@@ -99,8 +97,7 @@ public class UserModify extends HttpServlet {
                 user.setPassword(newPassword);
                 setPassword = true;
             }
-            mgr.update(user,setPassword);
-            
+
             // see if any attributes need to be added or removed
             if (authVal == AuthValue.ALLUSERS) {
                 RoleUtils roleUtils = new RoleUtils();
@@ -108,54 +105,41 @@ public class UserModify extends HttpServlet {
                 for (int i=0; i < roles.length; i++) {
                     roles[i] = Utils.dropDescription(roles[i].trim());
                 }
-                ArrayList<Integer> newRoles = null;
                 if (roles[0].equals("None")) {
                     log.info("AddUser: roles = null");
                     newRoles = new ArrayList<Integer>();
                 } else {
                     this.log.info("number of roles input is " + roles.length);
-                    newRoles = roleUtils.convertRoles(roles);
+                    newRoles = roleUtils.convertRoles(roles, allAttributes);
                 }
-                ArrayList<Integer> curRoles = new ArrayList<Integer>();
-                for (String s : attrNames) {
-                    curRoles.add(attrDAO.getIdByName(s));
+                for (Attribute attr : attributesForUser) {
+                    curRoles.add(attr.getId());
                 }
-                /*
-                 * For all the current attributes, need to compare these
-                 * against the new ones from the form.
-                 */
-                 for (Integer newRoleItem : newRoles) {
-                     int intNewRoleItem = newRoleItem.intValue();
-                     if (!curRoles.contains(intNewRoleItem)) {
-                         this.log.info("add attrId " + intNewRoleItem);
-                         this.addUserAttribute(intNewRoleItem, userId);
-                     }
-                 }
-                 for (Integer curRoleItem : curRoles){
-                    int intCurRoleItem  = curRoleItem.intValue();
-                    if (!newRoles.contains(intCurRoleItem)) {
-                         this.log.info("delete attrId " + intCurRoleItem);
-                         UserAttributeDAO userAttrDAO =
-                             new UserAttributeDAO(Utils.getDbName());
-                         userAttrDAO.remove(userId, intCurRoleItem);
-                     }
-                 }
-             }             
-        } catch (AAAException e) {
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+             }
+
+            HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+            rmiParams.put("user", user);
+            rmiParams.put("newRoles", newRoles);
+            rmiParams.put("curRoles", curRoles);
+            rmiParams.put("objectType", ModelObject.USER);
+            rmiParams.put("operation", ModelOperation.MODIFY);
+            HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+
+
+        } catch (Exception e) {
+            Utils.handleFailure(out, e.getMessage(), methodName);
             return;
         }
-        outputMap.put("status", "Profile for user " +
-                                profileName + " successfully modified");
+        outputMap.put("status", "Profile for user " + profileName + " successfully modified");
         // user may have changed his own attributes
         //authVal = mgr.checkAccess(userName, "Users", "modify");
         // or user may  have changed a target users attributes
-        //attrNames =  mgr.getAttrNames(profileName); 
+        //attrNames =  mgr.getAttrNames(profileName);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
         this.log.info("servlet.end");
     }
 
@@ -168,29 +152,24 @@ public class UserModify extends HttpServlet {
 
     /**
      * Changes the value of user to correspond to the new input values
-     * 
+     *
      * @param request - input from modifyUser form
      * @param user in/out as the current user specified in profile name
      *        modified by the parameters in the request.
      * @throws AAAException
      */
-    public void convertParams(HttpServletRequest request,
-                              User user) 
-        throws AAAException {
+    public void convertParams(HttpServletRequest request, User user) throws AAAException {
 
         String strParam = null;
         String DN = null;
 
         strParam = request.getParameter("institutionName");
         if (strParam != null) {
-            InstitutionDAO institutionDAO =
-                new InstitutionDAO(Utils.getDbName());
-            Institution institution =
-                institutionDAO.queryByParam("name", strParam);
-            if (institution != null) {
-                user.setInstitution(institution);
-            }
+            Institution institution = new Institution();
+            institution.setName(strParam);
+            user.setInstitution(institution);
         }
+
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = Utils.checkDN(strParam);
@@ -234,13 +213,4 @@ public class UserModify extends HttpServlet {
         }
     }
 
-    private void addUserAttribute(int attrId, int userId){
-
-        UserAttributeDAO userAttrDAO = new UserAttributeDAO(Utils.getDbName());
-        UserAttribute userAttr = new UserAttribute();
-
-        userAttr.setAttributeId(attrId);
-        userAttr.setUserId(userId);
-        userAttrDAO.create(userAttr);
-    }
 }

@@ -1,59 +1,54 @@
 package net.es.oscars.servlets;
 
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.Attribute;
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.aaa.User;
+import net.es.oscars.aaa.Institution;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 
 public class UserQuery extends HttpServlet {
-    private Logger log;
-    
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response)
+    private Logger log = Logger.getLogger(UserQuery.class);
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        this.log = Logger.getLogger(this.getClass());
         String methodName = "UserQuery";
-        this.log.debug("servlet.start");
+        this.log.debug("UserQuery.start");
 
-        User targetUser = null;
         boolean self =  false; // is query about the current user
         boolean modifyAllowed = false;
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
-        List<Institution> institutions = null;
-        List<String> attrNames = new ArrayList<String>();
 
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
+
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
             return;
         }
 
         String profileName = request.getParameter("profileName");
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
 
         // get here by clicking on a name in the users list
         if ((profileName != null) && !profileName.equals("")) {
             this.log.info("profileName: " + profileName);
-            if (profileName.equals(userName)) { 
-                self =true; 
+            if (profileName.equals(userName)) {
+                self = true;
             } else {
                 self = false;
             }
@@ -62,46 +57,75 @@ public class UserQuery extends HttpServlet {
             profileName = userName;
             self=true;
         }
-        Map outputMap = new HashMap();
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         if (!self) {
             outputMap.put("userDeleteDisplay", Boolean.TRUE);
         } else {
             outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
-        AuthValue authVal = mgr.checkAccess(userName, "Users", "query");
-        
-        if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
-              targetUser= mgr.query(profileName);
-         } else {
-            Utils.handleFailure(out,"no permission to query users",
-                                methodName, aaa);
+
+
+        try {
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = Utils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
+
+            if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
+                // either have permission to see others OR see self
+             } else {
+                Utils.handleFailure(out,"no permission to query users", methodName);
+                return;
+            }
+
+            /* check to see if user has modify permission for this user
+             *     used by contentSection to set the action on submit
+             */
+            authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+
+            if ((authVal == AuthValue.ALLUSERS) ||
+                (self && (authVal == AuthValue.SELFONLY))) {
+                modifyAllowed = true;
+            } else {
+                modifyAllowed = false;
+            }
+
+
+            User targetUser = null;
+
+
+            List<Attribute> attributesForUser = null;
+
+            if (self) {
+                attributesForUser = Utils.getAttributesForUser(userName, rmiClient, out, log);
+                targetUser = Utils.getUser(userName, rmiClient, out, log);
+            } else {
+                attributesForUser = Utils.getAttributesForUser(profileName, rmiClient, out, log);
+                targetUser = Utils.getUser(profileName, rmiClient, out, log);
+            }
+
+            List<Attribute> allAtributes = Utils.getAllAttributes(rmiClient, out, log);
+            List<Institution> institutions = Utils.getAllInstitutions(rmiClient, out, log);
+
+            this.contentSection( outputMap, targetUser, modifyAllowed,
+                    (authVal == AuthValue.ALLUSERS),
+                    institutions, attributesForUser, allAtributes);
+
+        } catch (RemoteException ex) {
             return;
         }
-        /* check to see if user has modify permission for this user
-         *     used by conentSection to set the action on submit
-         */
-        authVal = mgr.checkAccess(userName, "Users", "modify");
-        if (self) {attrNames = mgr.getAttrNames();}
-        else {attrNames = mgr.getAttrNames(profileName);}
-        
-        if ((authVal == AuthValue.ALLUSERS) ||
-            (self && (authVal == AuthValue.SELFONLY))) {
-            modifyAllowed = true;
-        } else {
-            modifyAllowed = false;;
-        }
-        institutions = mgr.getInstitutions();
+
+
+
+
+
+
         outputMap.put("status", "Profile for user " + profileName);
-        this.contentSection(
-                outputMap, targetUser, modifyAllowed,
-                (authVal == AuthValue.ALLUSERS),
-                institutions, attrNames);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        this.log.debug("servlet.end");
+
+        this.log.debug("UserQuery.end");
     }
 
     public void doPost(HttpServletRequest request,
@@ -113,20 +137,20 @@ public class UserQuery extends HttpServlet {
 
     /**
      * writes out the parameter values that are the result of a user query
-     * 
+     *
      * @param outputMap map with parameter values for userPane
-     * @param user the user whose information is being displayed 
-     * @param modifyAllowed - true if the  user displaying this information has 
+     * @param user the user whose information is being displayed
+     * @param modifyAllowed - true if the  user displaying this information has
      *                        permission to modify it
-     * @param modifyRights true if the  user displaying this information has 
+     * @param modifyRights true if the  user displaying this information has
      *                     permission to modify the target user's attributes
      * @param insts list of all institutions (a constant?)
      * @param attrNames all the attributes of the target user
      */
     public void
-        contentSection(Map outputMap, User user, boolean modifyAllowed,
+        contentSection(Map<String, Object> outputMap, User user, boolean modifyAllowed,
                        boolean modifyRights, List<Institution> insts,
-                       List<String> attrNames) {
+                       List<Attribute> attributesForUser, List<Attribute> allAttributes) {
 
         this.log.debug("contentSection: start");
         if (modifyAllowed) {
@@ -136,12 +160,6 @@ public class UserQuery extends HttpServlet {
         } else {
             outputMap.put("allowModify", Boolean.FALSE);
             outputMap.put("userHeader", "Profile for user: " + user.getLogin());
-        } 
-        if (attrNames == null) {
-            this.log.debug("contentSection: attrNames is null");
-        }
-        if (attrNames.isEmpty()) {
-            this.log.debug("contentSection: attrNames is empty");
         }
 
         String strParam = user.getLogin();
@@ -171,8 +189,8 @@ public class UserQuery extends HttpServlet {
            outputMap.put("certIssuer", strParam);
         }
         this.outputInstitutionMenu(outputMap, insts, user);
-        this.outputAttributeMenu(outputMap, attrNames, modifyRights);
-        
+        this.outputAttributeMenu(outputMap, attributesForUser, allAttributes, modifyRights);
+
         strParam = user.getDescription();
         if (strParam != null) {
            outputMap.put("description", strParam);
@@ -196,9 +214,7 @@ public class UserQuery extends HttpServlet {
         this.log.debug("contentSection: finish");
     }
 
-    public void
-        outputInstitutionMenu(Map outputMap, List<Institution> insts,
-                              User user) {
+    public void outputInstitutionMenu(Map<String, Object> outputMap, List<Institution> insts, User user) {
 
         Institution userInstitution = null;
         String institutionName = "";
@@ -223,23 +239,27 @@ public class UserQuery extends HttpServlet {
         }
         outputMap.put("institutionMenu", institutionList);
     }
-    
-    public void outputAttributeMenu(Map outputMap, List<String> attrNames,
-                                    boolean modify) {
 
-        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
-        List<Attribute> attributes = dao.list();
+    public void outputAttributeMenu(Map<String, Object> outputMap, List<Attribute> attributesForUser,
+            List<Attribute> allAttributes, boolean modify) {
+
         List<String> attributeList = new ArrayList<String>();
-        // default is none 
+        // default is none
         attributeList.add("None");
-        if (attrNames.isEmpty()) {
+        if (attributesForUser.isEmpty()) {
             attributeList.add("true");
         } else {
             attributeList.add("false");
         }
-        for (Attribute a: attributes) {
+        for (Attribute a: allAttributes) {
             attributeList.add(a.getName() + " -> " + a.getDescription());
-            if (attrNames.contains(a.getName())) {
+            boolean foundForUser = false;
+            for (Attribute aa : attributesForUser) {
+                if (a.getName().equals(aa.getName())) {
+                    foundForUser = true;
+                }
+            }
+            if (foundForUser) {
                 attributeList.add("true");
             } else {
                 attributeList.add("false");

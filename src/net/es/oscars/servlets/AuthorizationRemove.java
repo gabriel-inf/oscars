@@ -1,71 +1,83 @@
 package net.es.oscars.servlets;
 
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 
 public class AuthorizationRemove extends HttpServlet {
-
+    private Logger log = Logger.getLogger(AuthorizationRemove.class);
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
-        Logger log = Logger.getLogger(this.getClass());
-        log.debug("servlet.start");
+        log.debug("AuthorizationRemove.start");
 
+        UserSession userSession = new UserSession();
         String methodName = "AuthorizationRemove";
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
+
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             log.error("No user session: cookies invalid");
             return;
         }
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
-        if (authVal == AuthValue.DENIED)  { 
-            log.error("Not allowed to remove an authorization");
-            Utils.handleFailure(out, "not allowed to remove an authorization",
-                                methodName, aaa);
+
+        String attributeName = request.getParameter("authAttributeName");
+        String permissionName = request.getParameter("permissionName");
+        String resourceName = request.getParameter("resourceName");
+        String constraintName = request.getParameter("constraintName");
+
+        log.debug("Removing attribute: " + attributeName +" resource: " + resourceName + " permission: "
+                + permissionName + " constraintName: " + constraintName );
+
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("attributeName", attributeName);
+        rmiParams.put("permissionName", permissionName);
+        rmiParams.put("resourceName", resourceName);
+        rmiParams.put("constraintName", constraintName);
+
+        rmiParams.put("objectType", ModelObject.AUTHORIZATION);
+        rmiParams.put("operation", ModelOperation.DELETE);
+
+
+
+        try {
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+
+            if (authVal == AuthValue.DENIED)  {
+                String errorMsg = "User "+userName+" not allowed to remove authorizations";
+                log.error(errorMsg);
+                Utils.handleFailure(out, errorMsg, methodName);
+                return;
+            }
+
+            HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        } catch (RemoteException e) {
             return;
         }
-        String attribute = request.getParameter("authAttributeName");
-        String permission = request.getParameter("permissionName");
-        String resource = request.getParameter("resourceName");
-        String constraintName = request.getParameter("constraintName");
-        
-        log.debug("Removing attribute: " + attribute +" resource: " + resource + " permission: "
-                + permission + " constraintName: " + constraintName );
-        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
-        try {
-            authDAO.remove(attribute, resource, permission, constraintName);
-        } catch ( AAAException e) {
-            log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
-            return;           
-        }
-        Map outputMap = new HashMap();
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "authorization deleted");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        log.debug("servlet.end");      
+        log.debug("AuthorizationRemove.end");
     }
 
     public void

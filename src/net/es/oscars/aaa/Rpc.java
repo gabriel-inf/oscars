@@ -18,21 +18,30 @@ public class Rpc extends HibernateBean implements Serializable {
 
     /** persistent field */
     private int permissionId;
-    
+
     /** persistent field */
     private int constraintId;
+
+    /** associated object*/
+    private Constraint constraint;
+
+    /** associated object*/
+    private Permission permission;
+
+    /** associated object*/
+    private Resource resource;
 
     /** default constructor */
     public Rpc() { }
 
     /**
      * @return resourceId An Integer with a resource table primary key
-     */ 
+     */
     public int getResourceId() { return this.resourceId; }
 
     /**
      * @param resourceId An Integer with a resource table primary key
-     */ 
+     */
     public void setResourceId(int resourceId) {
         this.resourceId = resourceId;
     }
@@ -40,12 +49,12 @@ public class Rpc extends HibernateBean implements Serializable {
 
     /**
      * @return permissionId An Integer with a permission table primary key
-     */ 
+     */
     public int getPermissionId() { return this.permissionId; }
 
     /**
      * @param permissionId An Integer with a permission table primary key
-     */ 
+     */
     public void setPermissionId(int permissionId) {
         this.permissionId = permissionId;
     }
@@ -53,12 +62,12 @@ public class Rpc extends HibernateBean implements Serializable {
     /**
      * @return constraintId An Integer containing a constraint table row
      *         primary key
-     */ 
+     */
     public int getConstraintId() { return this.constraintId; }
 
     /**
      * @param constraintId int containing a constraint table row primary key
-     */ 
+     */
     public void setConstraintId(int constraintId) {
         this.constraintId = constraintId;
     }
@@ -70,5 +79,47 @@ public class Rpc extends HibernateBean implements Serializable {
             .append("permissionId", getPermissionId())
             .append("constraintId", getConstraintId())
             .toString();
+    }
+
+    /**
+     * @return the constraint
+     */
+    public Constraint getConstraint() {
+        return constraint;
+    }
+
+    /**
+     * @param constraint the constraint to set
+     */
+    public void setConstraint(Constraint constraint) {
+        this.constraint = constraint;
+    }
+
+    /**
+     * @return the permission
+     */
+    public Permission getPermission() {
+        return permission;
+    }
+
+    /**
+     * @param permission the permission to set
+     */
+    public void setPermission(Permission permission) {
+        this.permission = permission;
+    }
+
+    /**
+     * @return the resource
+     */
+    public Resource getResource() {
+        return resource;
+    }
+
+    /**
+     * @param resource the resource to set
+     */
+    public void setResource(Resource resource) {
+        this.resource = resource;
     }
 }

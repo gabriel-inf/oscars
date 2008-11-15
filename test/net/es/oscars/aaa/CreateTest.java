@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
+import net.es.oscars.aaa.Authorization;
+import net.es.oscars.aaa.User;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.PropHandler;
 
@@ -109,6 +111,11 @@ public class CreateTest {
         this.sf.getCurrentSession().beginTransaction();
         String ulogin = this.props.getProperty("login");
         String password = this.props.getProperty("password");
+        String institutionName = this.props.getProperty("institutionName");
+
+        Institution institution = new Institution();
+        institution.setName(institutionName);
+
         User user = new User();
         user.setCertIssuer(null);
         user.setCertSubject(this.props.getProperty("dn"));
@@ -121,7 +128,7 @@ public class CreateTest {
         user.setPassword(password);
         user.setDescription(DESCRIPTION);
         user.setStatus(STATUS);
-        String institutionName = this.props.getProperty("institutionName");
+        user.setInstitution(institution);
         try {
             mgr.create(user, institutionName);
         } catch (AAAException ex) {
@@ -152,8 +159,8 @@ public class CreateTest {
         Attribute attr = (Attribute) attrDAO.queryByParam("name", attrName);
         User user = (User) userDAO.queryByParam("login", login);
         UserAttribute userAttr = new UserAttribute();
-        userAttr.setUserId(user.getId());
-        userAttr.setAttributeId(attr.getId());
+        userAttr.setUser(user);
+        userAttr.setAttribute(attr);
         userAttrDAO.create(userAttr);
         this.sf.getCurrentSession().getTransaction().commit();
         assert userAttr.getId() != null;
@@ -174,16 +181,13 @@ public class CreateTest {
         Authorization auth = new Authorization();
         this.sf.getCurrentSession().beginTransaction();
         Attribute attr = (Attribute) attrDAO.queryByParam("name", attrName);
-        Permission permission = (Permission)
-                permissionDAO.queryByParam("name", permissionName);
-        Resource resource = (Resource) resourceDAO.queryByParam("name",
-                resourceName);
-        Constraint constraint = (Constraint) constraintDAO.queryByParam("name",
-                constraintName);
-        auth.setAttrId(attr.getId());
-        auth.setResourceId(resource.getId());
-        auth.setPermissionId(permission.getId());
-        auth.setConstraintId(constraint.getId());
+        Permission permission = (Permission) permissionDAO.queryByParam("name", permissionName);
+        Resource resource = (Resource) resourceDAO.queryByParam("name", resourceName);
+        Constraint constraint = (Constraint) constraintDAO.queryByParam("name", constraintName);
+        auth.setAttribute(attr);
+        auth.setResource(resource);
+        auth.setPermission(permission);
+        auth.setConstraint(constraint);
         authDAO.create(auth);
         this.sf.getCurrentSession().getTransaction().commit();
         assert auth.getId() != null;

@@ -30,7 +30,7 @@
         <copy todir="lib">
             <fileset dir="${tomcat.loc}" includes="servlet-api.jar"/>
         </copy>
-    </target>    
+    </target>
     <!-- parent directories automatically created -->
     <target name="prepare" depends="axis2LocalCopy, tomcatLocalCopy, jarRemoteCopy">
         <!-- a bit of a kludge -->
@@ -275,17 +275,28 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="docs/papers" includes="*.pdf"/>
         </copy>
     </target>
-    <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs">
+
+    <target name="rmijar" description="Create jar with RMI classes" depends="compile">
+        <jar destfile="${build.home}/oscars-rmi.jar">
+             <fileset dir="${build.classes}" includes="**/oscars/rmi/**/*.class, **/oscars/rmi/*.class" />
+        </jar>
+    </target>
+
+    <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
         <copy todir="tmplib" flatten="true">
-            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-*.jar, axis2/opensaml-1.1.jar, axis2/rampart-core-*.jar,axis2/rampart-policy-*.jar,axis2/rampart-trust-*.jar, axis2/wss4j-*.jar,axis2/xmlsec-1.4.*.jar, axis2/log4j-1.2.*.jar"/>
+
+            <fileset dir="lib" includes="hibernate*.jar, json-lib-*.jar, ezmorph-*.jar, commons-lang-*.jar, commons-collections-*.jar, commons-beanutils.jar axis2/log4j-1.2.*.jar  "/>
+            <fileset dir="build" includes="oscars-rmi.jar" />
         </copy>
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
-            <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml"/>
-            <classes dir="${build.classes}" includes="**/*" excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class, **/oscars/ReservationAdapter.class"/>
+            <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, *.tar.gz" />
+            <fileset dir="conf/rmi" includes="rmi.properties" />
+            <classes dir="${build.classes}" includes="**/oscars/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class"/>
             <lib dir="tmplib" includes="*.jar"/>
         </war>
         <delete dir="tmplib"/>
     </target>
+
     <!-- deployment section  *********************************************** -->
     <!-- Note that this requires that Axis2 has already been deployed. -->
     <target name="deploylibs" description="copy all libraries used by the aar and war to shared/lib">
@@ -300,15 +311,15 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
     </target>
     <target name="copydomain" if="domain.exists" depends="copyMailTemplates">
-    	<!-- don't let new value of OSCARS.jks  over write existing ones -->
-    	<available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks" 
-    		value="true" />
-      	<!-- let  new value of rampConfig.xml over write existing one, but edit the target in addUserAlias -->
-    	<uptodate property="rampConfig.xml.exists" targetfile="${catalina.home}/shared/classes/repo/rampConfig.xml" 
-    	    		srcfile="${domain.home}/server/rampConfig.xml" />
-    	<!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
-        <uptodate property="axis2.xml.exists" targetfile="${catalina.home}/shared/classes/repo/axis2.xml" 
-            	    		srcfile="${defaultKeys}/client/axis2.xml" />
+        <!-- don't let new value of OSCARS.jks  over write existing ones -->
+        <available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"
+            value="true" />
+          <!-- let  new value of rampConfig.xml over write existing one, but edit the target in addUserAlias -->
+        <uptodate property="rampConfig.xml.exists" targetfile="${catalina.home}/shared/classes/repo/rampConfig.xml"
+                    srcfile="${domain.home}/server/rampConfig.xml" />
+        <!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
+        <uptodate property="axis2.xml.exists" targetfile="${catalina.home}/shared/classes/repo/axis2.xml"
+                            srcfile="${defaultKeys}/client/axis2.xml" />
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
@@ -321,16 +332,16 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
         </copy>
-  
+
     </target>
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
         <available property="axis2.norampart.xml.exists" file="${catalina.home}/shared/classes/repo/axis2-norampart.xml" value="true"/>
         <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
-    	<available property="rampConfig.xml.exists" file="${catalina.home}/shared/classes/repo/rampConfig.xml" value="true" />
-    	<available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"  value="true" />
-    	<available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
+        <available property="rampConfig.xml.exists" file="${catalina.home}/shared/classes/repo/rampConfig.xml" value="true" />
+        <available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"  value="true" />
+        <available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
         <available property="test.properties.exists" file="${catalina.home}/shared/classes/server/test.properties" value="true"/>
         <available property="idc-topicnamespace.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicnamespace.xml" value="true"/>
         <available property="idc-topicset.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicset.xml" value="true"/>
@@ -357,18 +368,18 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </target>
     <target name="edit_axis2.xml" unless="axis2.xml.exists">
         <replace file="${catalina.home}/shared/classes/repo/axis2.xml" token="**tomcat**"
-           		value="${catalina.home}" summary="true"/> 
+                   value="${catalina.home}" summary="true"/>
     </target>
     <target name="addUserAlias" unless="rampConfig.xml.exists">
         <input
-            message="Please enter the service user name to be used when it acts as a client." 
+            message="Please enter the service user name to be used when it acts as a client."
             addproperty="user.alias"
         />
         <replace file="${catalina.home}/shared/classes/repo/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
     </target>
     <target name="addKeystorePassword" unless="rampConfig.xml.exists">
         <input
-            message="Please enter the password for the client keystore." 
+            message="Please enter the password for the client keystore."
             addproperty="keystore.password"
         />
     <replace file="${catalina.home}/shared/classes/repo/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
@@ -377,11 +388,11 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <echo level="warning">  **** A new OSCARS.jks file has been copied to  ****
   **** ${catalina.home}/shared/classes/repo.  ****
   **** You must add a KeyEntry for the service. ****
-       	    </echo>
+               </echo>
         </target>
-    <target name="setupServer" description="populate the shared/classes directory" 
-    	              depends="copydomain,copydefaults,addUserAlias,addKeystorePassword,warn2,edit_axis2.xml">
-    	<!-- <mkdir dir="${catalina.home}/shared/classes/server"/> -->
+    <target name="setupServer" description="populate the shared/classes directory"
+                      depends="copydomain,copydefaults,addUserAlias,addKeystorePassword,warn2,edit_axis2.xml">
+        <!-- <mkdir dir="${catalina.home}/shared/classes/server"/> -->
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
         <copy todir="${catalina.home}/shared/classes/repo/modules/">
             <fileset dir="conf/" includes="rampart*.mar"/>
@@ -401,9 +412,9 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
         <copy file="conf/server/axis2.log4j.properties" tofile="${webservice.home}/../classes/log4j.properties"/>
         <!-- these jars need to be in shared/lib to avoid classNotFound
-         errors ...They now come from lib/axis2  mrt/912/08 	
+         errors ...They now come from lib/axis2  mrt/912/08
         <copy todir="${webapp.home}/../shared/lib">
-            <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/> 
+            <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/>
         </copy> -->
         <!-- Since wss4j is there the PWCallback class needs to be there as well -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>

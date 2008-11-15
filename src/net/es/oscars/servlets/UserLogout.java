@@ -8,17 +8,17 @@ import net.sf.json.*;
 import org.apache.log4j.Logger;
 
 public class UserLogout extends HttpServlet {
+    private Logger log = Logger.getLogger(UserLogout.class);
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-        Logger log = Logger.getLogger(this.getClass());
-        log.info("servlet.start");
+        log.info("UserLogout.start");
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         UserSession userSession = new UserSession();
-        Map outputMap = new HashMap();
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("method", "UserLogout");
         outputMap.put("success", Boolean.TRUE);
         outputMap.put("status", "User logged out.");
@@ -26,7 +26,7 @@ public class UserLogout extends HttpServlet {
         out.println("{}&&" + jsonObject);
         userSession.expireCookie("userName", "", response);
         userSession.expireCookie("sessionName", "", response);
-        log.info("servlet.end");
+        log.info("UserLogout.end");
     }
 
     public void doPost(HttpServletRequest request,

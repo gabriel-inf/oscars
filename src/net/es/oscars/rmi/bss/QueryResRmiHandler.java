@@ -1,8 +1,8 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 /**
  * Interface between rmi queryReservation and ReservationManager.queryReservation
- * 
+ *
  * @author Mary Thompson, David Robertson
  */
 
@@ -37,7 +37,7 @@ public class QueryResRmiHandler {
 
     /**
      * Finds reservation based on information passed from servlet.
-     * 
+     *
      * @param inputMap HashMap contains the gri of the reservation
      * @param userName String - name of user  making request
      * @return HashMap contains: gri, status, user, description
@@ -45,7 +45,7 @@ public class QueryResRmiHandler {
      * @throws IOException
      */
     public HashMap<String, Object>
-          queryReservation(HashMap<String, String[]> inputMap, String userName) 
+          queryReservation(HashMap<String, String[]> inputMap, String userName)
             throws IOException {
         this.log.debug("query.start");
         String methodName = "QueryReservation";
@@ -78,7 +78,7 @@ public class QueryResRmiHandler {
         } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = userName;
         }
-        // check to see if user is allowed to see the buttons allowing 
+        // check to see if user is allowed to see the buttons allowing
         // reservation modification
         authVal = userMgr.checkAccess(userName, "Reservations", "modify");
         if (authVal != AuthValue.DENIED) {
@@ -88,7 +88,7 @@ public class QueryResRmiHandler {
             result.put("resvModifyDisplay", Boolean.FALSE);
             result.put("resvCautionDisplay", Boolean.FALSE);
         }
-        // check to see if user is allowed to see the clone button, which 
+        // check to see if user is allowed to see the clone button, which
         // requires generic reservation create authorization
         authVal = userMgr.checkModResAccess(userName, "Reservations", "create",
                                      0, 0, false, false);
@@ -120,7 +120,7 @@ public class QueryResRmiHandler {
                 result.put("error", ": invalid LSP name");
                 bss.getTransaction().rollback();
                 this.log.debug("query failed: invalid LSP name");
-                return result;       
+                return result;
             }
         }
         try {
@@ -129,13 +129,13 @@ public class QueryResRmiHandler {
             result.put("error",  e.getMessage());
             bss.getTransaction().rollback();
             this.log.debug("query failed: " + e.getMessage());
-            return result;  
+            return result;
         }
         if (reservation == null) {
             result.put("error", "reservation does not exist");
             bss.getTransaction().rollback();
             this.log.debug("query failed: reservation does not exist");
-            return result;  
+            return result;
         }
         result.put("status", "Reservation details for " +
                 reservation.getGlobalReservationId());

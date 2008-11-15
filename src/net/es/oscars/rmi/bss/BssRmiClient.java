@@ -1,4 +1,4 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -11,48 +11,61 @@ import net.es.oscars.PropHandler;
 
 import org.apache.log4j.Logger;
 
-public class CoreRmiClient implements CoreRmiInterface {
+public class BssRmiClient implements BssRmiInterface  {
     private Logger log;
-    private CoreRmiInterface remote;
+    private BssRmiInterface remote;
     private boolean connected;
 
-    public CoreRmiClient() {
+    public BssRmiClient() {
         this.log = Logger.getLogger(this.getClass());
     }
 
     /**
-     * init
-     *   By default initializes the RMI server registry  port to 1099 (the default)
-     *   This can be overridden by the oscars.properties rmi.registryPort and must 
-     *   match the port that CoreRmiServer.init used.
+     * Initializes the client and connects to the BSS RMI registry.
+     *
+     * DO NOT use this yet; currently only here for completeness
      *
      * @throws RemoteException
      */
     public void init() throws RemoteException {
         this.remote = null;
-        this.log.debug("RMIClientInit.start");
+        this.log.debug("BssRmiClient.init().start");
         this.connected = true;
-        int port = 1099;  // default rmi registry port
 
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("rmi", true);
-        if (props.getProperty("registryPort") != null ) {
+        // default rmi registry port
+        int rmiPort = BssRmiInterface.registryPort;
+        // default rmi registry address
+        String rmiIpaddr = BssRmiInterface.registryAddress;
+        // default rmi registry name
+        String rmiRegName = BssRmiInterface.registryName;
+
+
+        PropHandler propHandler = new PropHandler("rmi.properties");
+        Properties props = propHandler.getPropertyGroup("aaa", true);
+        if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
             try {
-                port = Integer.decode(props.getProperty("registryPort"));
-            } catch (NumberFormatException e) { }
-        }
-        try {
-            String rmiIpaddr = "127.0.0.1";
-
-            if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
-                rmiIpaddr = props.getProperty("serverIpaddr");
+                rmiPort = Integer.decode(props.getProperty("registryPort"));
+            } catch (NumberFormatException e) {
+                this.log.warn(e);
             }
-            Registry registry = LocateRegistry.getRegistry(rmiIpaddr, port);
+        }
 
-            this.remote = (CoreRmiInterface) registry.lookup("IDCRMIServer");
+        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
+            rmiIpaddr = props.getProperty("registryAddress");
+        }
+
+        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
+            rmiRegName = props.getProperty("registryName");
+        }
+
+
+        try {
+            Registry registry = LocateRegistry.getRegistry(rmiIpaddr, rmiPort);
+            this.remote = (BssRmiInterface) registry.lookup(rmiRegName);
+
             this.log.debug("Got remote object \n" + remote.toString());
             this.connected = true;
-            this.log.debug("Connected to IDC RMI server");
+            this.log.debug("Connected to "+rmiRegName+" server");
         } catch (RemoteException e) {
             this.connected = false;
             this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
@@ -64,8 +77,10 @@ public class CoreRmiClient implements CoreRmiInterface {
             this.connected = false;
             this.log.warn("Could not connect", e);
         }
-        this.log.debug("init.end");
+
+        this.log.debug("BssRmiClient.init().end");
     }
+
 
     /**
      * createReservation
@@ -82,14 +97,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug("createReservation.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CreateReservation";
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
         try {
@@ -121,14 +130,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug("queryReservation.start");
         HashMap<String, Object> result =  new HashMap<String, Object>();
         String methodName = "QueryReservation";
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
         try {
@@ -160,14 +163,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug(" listReservations.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "ListReservations";
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
 
@@ -199,14 +196,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug(" cancelReservation.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
 
@@ -239,14 +230,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug("modifyReservation.start");
         String methodName = "ModifyReservation";
         HashMap<String, Object> result = new HashMap<String, Object>();
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
         try {
@@ -278,14 +263,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug("createPath.start");
         String methodName = "CreatePath";
         HashMap<String, Object> result = new HashMap<String, Object>();
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
         try {
@@ -316,14 +295,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug("teardownPath.start");
         String methodName = "TeardownPath";
         HashMap<String, Object> result = new HashMap<String, Object>();
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
         try {
@@ -355,14 +328,8 @@ public class CoreRmiClient implements CoreRmiInterface {
         this.log.debug("modifyStatus.start");
         String methodName = "ModifyStatus";
         HashMap<String, Object> result = new HashMap<String, Object>();
-        if (this.remote == null) {
-            this.log.error("Remote object not found");
-            result.put("error", methodName + ": Remote object not found");
-            return result;
-        }
-        if (!this.connected) {
-            this.log.error("Not connected to RMI server");
-            result.put("error", methodName + ": Could not connect to RMI server");
+        result = this.checkConnectionErrors(methodName);
+        if (result != null) {
             return result;
         }
         try {
@@ -378,4 +345,51 @@ public class CoreRmiClient implements CoreRmiInterface {
         }
         return result;
     }
+
+    /**
+     * @return the remote
+     */
+    public BssRmiInterface getRemote() {
+        return remote;
+    }
+
+    /**
+     * @param remote the remote to set
+     */
+    public void setRemote(BssRmiInterface remote) {
+        this.remote = remote;
+    }
+
+
+    public HashMap<String, Object> checkConnectionErrors(String methodName) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        if (this.remote == null) {
+            this.log.error("Remote object not found");
+            result.put("error", methodName + ": Remote object not found");
+            return result;
+        }
+        if (!this.connected) {
+            this.log.error("Not connected to RMI server");
+            result.put("error", methodName + ": Could not connect to RMI server");
+            return result;
+        }
+        return null;
+    }
+
+    /**
+     * @return the connected
+     */
+    public boolean isConnected() {
+        return connected;
+    }
+
+    /**
+     * @param connected the connected to set
+     */
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+
+
 }

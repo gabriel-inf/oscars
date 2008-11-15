@@ -29,7 +29,7 @@ import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.tss.TSSException;
@@ -139,7 +139,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.beginTransaction();
 
         GlobalReservationId params = request.getCancelReservation();
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("cancelReservation: permission denied");
         }
@@ -189,7 +189,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.beginTransaction();
 
         GlobalReservationId gri = request.getQueryReservation();
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "query");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "query");
         if (authVal.equals(AuthValue.DENIED)) {
                 throw new AAAFaultMessage("queryReservation: permission denied");
         }
@@ -239,7 +239,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session aaa = core.getAaaSession();
 
         aaa.beginTransaction();
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("modifyReservation: permission denied");
         }
@@ -293,7 +293,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("listReservations: permission denied");
         }
@@ -342,7 +342,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         /* Check user attributes. Must have query permissions
            on Domains resources */
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "query");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "query");
         aaa.getTransaction().commit();
 
        if (authVal.equals(AuthValue.DENIED)) {
@@ -386,7 +386,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         /* Check user attributes. Must have modify permissions
            on Domains resources */
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "modify");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "modify");
         aaa.getTransaction().commit();
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
@@ -432,7 +432,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         /* Check user attributes. Must have signal permissions
            on Reservations resources */
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
             throw new AAAFaultMessage("OSCARSSkeleton:createPath: permission denied");
@@ -446,7 +446,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
-            responseContent = this.pathSetupAdapter.create(requestContent, 
+            responseContent = this.pathSetupAdapter.create(requestContent,
                                         loginConstraint, login, institution);
             response.setCreatePathResponse(responseContent);
         } catch(PSSException e) {
@@ -460,7 +460,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("createPath: " + e.getMessage());
         }
         bss.getTransaction().commit();
-        
+
         return response;
     }
 
@@ -486,7 +486,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         /* Check user attributes. Must have signal permissions
            on Reservations resources */
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
             throw new AAAFaultMessage("OSCARSSkeleton:refreshPath: permission denied");
@@ -512,7 +512,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bss.getTransaction().rollback();
             throw new AAAFaultMessage("refreshPath: " + e.getMessage());
         }
-        
+
         bss.getTransaction().commit();
         return response;
     }
@@ -539,7 +539,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         /* Check user attributes. Must have signal permissions
            on Reservations resources */
-        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
+        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
             throw new AAAFaultMessage("OSCARSSkeleton:teardownPath: permission denied");
@@ -553,7 +553,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         try{
-            responseContent = this.pathSetupAdapter.teardown(requestContent, 
+            responseContent = this.pathSetupAdapter.teardown(requestContent,
                                           loginConstraint, login, institution);
             response.setTeardownPathResponse(responseContent);
         } catch(PSSException e) {
@@ -567,7 +567,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("teardownPath: " + e.getMessage());
         }
         bss.getTransaction().commit();
-        
+
         return response;
     }
 
@@ -672,7 +672,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         forwardResponse.setForwardResponse(forwardReply);
         return forwardResponse;
     }
-    
+
     /**
      * The Notify message is passed from other IDCs to indicate status changes.
      * Used by resource scheduling and signaling.
@@ -708,19 +708,19 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     }else if(eventType.contains("PATH_SETUP")){
                         this.pathSetupAdapter.handleEvent(event, producerId, StateEngine.INSETUP);
                     }else if(eventType.contains("PATH_REFRESH")){
-                        
+
                     }else if(eventType.contains("PATH_TEARDOWN")){
                         this.pathSetupAdapter.handleEvent(event, producerId, StateEngine.INTEARDOWN);
                     }else{
                         this.log.debug("Received unkown event " + eventType);
                     }
-                }catch(Exception e){ 
+                }catch(Exception e){
                     e.printStackTrace();
                     continue;
                 }
              }
              bss.getTransaction().commit();
-        } 
+        }
     }
 
     /**
@@ -893,8 +893,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.log.debug("checkUser.end");
         return login;
     }
-    
-    /** 
+
+    /**
      * Checks subscription ID in Notify message
      *
      * @param address the producer URL
@@ -927,7 +927,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             this.log.error("Found " +msgSubId+", expected " + subId);
             return null;
         }
-        
+
         return producer.getTopologyIdent();
      }
 

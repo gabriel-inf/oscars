@@ -2,28 +2,30 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.*;
 
 
 public class UserAddForm extends HttpServlet {
+    private Logger log = Logger.getLogger(UserAddForm.class);
 
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
+
+
         List<Institution> institutions = null;
-        Logger log = Logger.getLogger(this.getClass());
         log.debug("servlet.start");
 
         String methodName = "UserAddForm";
@@ -34,28 +36,33 @@ public class UserAddForm extends HttpServlet {
             log.error("No user session: cookies invalid");
             return;
         }
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
+
+
+        AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+        AuthValue authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+
         if (authVal != AuthValue.ALLUSERS) {
-            log.error("Not allowed to add a new user");
-            Utils.handleFailure(out, "not allowed to add a new user",
-                                methodName, aaa);
+            String errorMsg = "User "+userName+" is not allowed to add a new user";
+            log.error(errorMsg);
+            Utils.handleFailure(out, errorMsg, methodName);
             return;
         }
-        institutions = mgr.getInstitutions();
 
-        Map outputMap = new HashMap();
+        Map<String, Object> outputMap = new HashMap<String, Object>();
+        try {
+            this.outputAttributeMenu(outputMap, rmiClient, out);
+            this.outputInstitutionMenu(outputMap, rmiClient, out);
+        } catch (RemoteException ex) {
+            return;
+        }
+
+
         outputMap.put("status", "Add a user");
-        this.outputAttributeMenu(outputMap);
-        this.outputInstitutionMenu(outputMap, institutions);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        log.debug("servlet.end");      
+        log.debug("servlet.end");
     }
 
     public void
@@ -65,13 +72,17 @@ public class UserAddForm extends HttpServlet {
         this.doGet(request, response);
     }
 
-    public void
-        outputAttributeMenu(Map outputMap) {
 
-        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
-        List<Attribute> attributes = dao.list();
+
+
+    public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+
+        String methodName = "UserAddForm.outputAttributeMenu";
+        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+
+
         List<String> attributeList = new ArrayList<String>();
-        // default is none 
+        // default is none
         attributeList.add("None");
         attributeList.add("true");
         for (Attribute a: attributes) {
@@ -81,13 +92,15 @@ public class UserAddForm extends HttpServlet {
         outputMap.put("newAttributeNameMenu", attributeList);
     }
 
-    public void
-        outputInstitutionMenu(Map outputMap, List<Institution> insts) {
+    public void outputInstitutionMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "UserAddForm.outputInstitutionMenu";
+
+        List<Institution> institutions = Utils.getAllInstitutions(rmiClient, out, log);
 
         List<String> institutionList = new ArrayList<String>();
         int ctr = 0;
         // default is first in list
-        for (Institution i: insts) {
+        for (Institution i: institutions) {
             institutionList.add(i.getName());
             if (ctr == 0) {
                 institutionList.add("true");

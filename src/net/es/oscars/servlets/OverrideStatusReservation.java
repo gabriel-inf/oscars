@@ -8,17 +8,15 @@ import javax.servlet.http.*;
 import org.apache.log4j.*;
 import net.sf.json.*;
 
-import net.es.oscars.rmi.CoreRmiClient;
-import net.es.oscars.rmi.CoreRmiInterface;
+import net.es.oscars.rmi.bss.BssRmiInterface;
 
 
 public class OverrideStatusReservation extends HttpServlet {
-    private Logger log;
+    private Logger log = Logger.getLogger(OverrideStatusReservation.class);
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
-        this.log = Logger.getLogger(this.getClass());
         String methodName = "OverrideStatusReservation";
         this.log.info("servlet.start");
         UserSession userSession = new UserSession();
@@ -32,28 +30,20 @@ public class OverrideStatusReservation extends HttpServlet {
         }
         HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        
+
         Enumeration e = request.getParameterNames();
         while (e.hasMoreElements()) {
             String paramName = (String) e.nextElement();
             String[] paramValues = request.getParameterValues(paramName);
             inputMap.put(paramName, paramValues);
         }
+
         try {
-            CoreRmiInterface rmiClient = new CoreRmiClient();
-            rmiClient.init();
+            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.modifyStatus(inputMap, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
-            Utils.handleFailure(out,
-                    "OverrideStatusReservation not completed: " +
-                    ex.getMessage(), methodName, null);
-            return;
-        }
-        String errorMsg = (String)outputMap.get("error");
-        if (errorMsg != null) {
-            this.log.error(errorMsg);
-            Utils.handleFailure(out, errorMsg, methodName, null);
+            Utils.handleFailure(out, "OverrideStatusReservation not completed: " + ex.getMessage(), methodName);
             return;
         }
 
@@ -67,5 +57,5 @@ public class OverrideStatusReservation extends HttpServlet {
         this.doGet(request, response);
     }
 
-   
+
 }

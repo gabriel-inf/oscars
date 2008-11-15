@@ -1,114 +1,108 @@
 package net.es.oscars.servlets;
 
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
-
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.aaa.Attribute;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 public class Attributes extends HttpServlet {
-    private Logger log;
-    
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response)
+    private Logger log = Logger.getLogger(Attributes.class);
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        this.log.debug("Attributes.start");
 
-        this.log = Logger.getLogger(this.getClass());
         String methodName = "Attributes";
-        this.log.debug("servlet.start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
-        String[] ops = request.getQueryString().split("=");
-        if (ops.length != 2) {
-            this.log.error("Incorrect input from Attributes page");
-            Utils.handleFailure(out, "incorrect input from Attributes page",
-                                methodName, null);
-            return;
-        }
-        String opName = ops[1];
 
-        response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();     
-        UserManager mgr = new UserManager(Utils.getDbName());
-        
-        AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
-        if (authVal == AuthValue.DENIED) {
-            this.log.error("No permission to modify Attributes table.");
-            Utils.handleFailure(out, "no permission to modify Attributes table",
-                                methodName, aaa);
+
+        String[] ops = request.getQueryString().split("=");
+        if (ops.length != 2) {
+            this.log.error("Incorrect input from Attributes page");
+            Utils.handleFailure(out, "incorrect input from Attributes page", methodName);
             return;
         }
-        Map outputMap = new HashMap();
+        String opName = ops[1];
+
+        response.setContentType("application/json");
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         String saveAttrName = request.getParameter("saveAttrName");
         if (saveAttrName != null) {
             saveAttrName = saveAttrName.trim();
         }
+
         String attributeEditName = request.getParameter("attributeEditName").trim();
-        String attributeEditDescr =
-            request.getParameter("attributeEditDescription").trim();
-        String attributeEditType =
-            request.getParameter("attributeTypes").trim();
+        String attributeEditDescr = request.getParameter("attributeEditDescription").trim();
+        String attributeEditType = request.getParameter("attributeTypes").trim();
+
         try {
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+
+            if (authVal != null && authVal == AuthValue.DENIED) {
+                String errorMsg = "User "+userName+" does not have permission to modify attributes.";
+                this.log.error(errorMsg);
+                Utils.handleFailure(out, errorMsg, methodName);
+                return;
+            }
+
+
+
             if (opName.equals("add")) {
                 methodName = "AttributeAdd";
-                this.addAttribute(attributeEditName, attributeEditDescr,
-                                  attributeEditType);
-                outputMap.put("status", "Added attribute: " +
-                                         attributeEditName);
+                this.addAttribute(attributeEditName, attributeEditDescr, attributeEditType, rmiClient, out);
+                outputMap.put("status", "Added attribute: " + attributeEditName);
             } else if (opName.equals("modify")) {
                 methodName = "AttributeModify";
-                this.modifyAttribute(saveAttrName, attributeEditName,
-                                     attributeEditDescr, attributeEditType);
+                this.modifyAttribute(saveAttrName, attributeEditName, attributeEditDescr, attributeEditType, rmiClient, out);
                 if (!saveAttrName.equals(attributeEditName)) {
-                    outputMap.put("status", "Changed attribute name from " +
-                                       saveAttrName + " to " + attributeEditName);
+                    outputMap.put("status", "Changed attribute name from " + saveAttrName + " to " + attributeEditName);
                 } else {
-                    outputMap.put("status", "Modified attribute " +
-                                            saveAttrName);
+                    outputMap.put("status", "Modified attribute " + saveAttrName);
                 }
             } else if (opName.equals("delete")) {
                 methodName = "AttributeDelete";
-                this.deleteAttribute(attributeEditName);
-                outputMap.put("status", "Deleted attribute: " +
-                                         attributeEditName);
+                this.deleteAttribute(attributeEditName,  rmiClient, out);
+                outputMap.put("status", "Deleted attribute: " + attributeEditName);
             } else {
                 methodName = "AttributeList";
                 outputMap.put("status", "Attributes management");
             }
-        } catch (AAAException e) {
+            this.outputAttributes(outputMap, rmiClient, out);
+        } catch (RemoteException e) {
             this.log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
             return;
         }
         // always output latest list
-        this.outputAttributes(outputMap);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        this.log.debug("servlet.end");
+
+
+        this.log.debug("Attributes.end");
     }
 
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         this.doGet(request, response);
@@ -116,16 +110,17 @@ public class Attributes extends HttpServlet {
 
     /**
      * outputAttributes - gets the initial list of attributes.
-     *  
+     *
      * @param outputMap Map containing JSON data
      */
-    public void outputAttributes(Map outputMap) {
+    public void outputAttributes(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "Attributes.outputAttributes";
 
-        AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
-        List<Attribute> attributes = attributeDAO.list();
-        ArrayList attributeList = new ArrayList();
+        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+
+        ArrayList<ArrayList<String>> attributeList = new ArrayList<ArrayList<String>>();
         for (Attribute attribute: attributes) {
-            ArrayList attributeEntry = new ArrayList();
+            ArrayList<String> attributeEntry = new ArrayList<String>();
             attributeEntry.add(attribute.getName());
             attributeEntry.add(attribute.getDescription());
             attributeEntry.add(attribute.getAttrType());
@@ -136,98 +131,76 @@ public class Attributes extends HttpServlet {
 
     /**
      * addAttribute - add an attribute if it doesn't already exist.
-     *  
+     *
      * @param newName string with name of new attribute
      * @param newDescription string with description of new attribute
      * @param newType string with type of new attribute
      * @throws AAAException
      */
-    public void addAttribute(String newName, String newDescription,
-                             String newType)
-            throws AAAException {
+    public void addAttribute(String newName, String newDescription, String newType, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException{
+        String methodName = "Attributes.addAttribute";
 
-        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
-        Attribute oldAttribute = dao.queryByParam("name", newName);
-        if (oldAttribute != null) {
-            throw new AAAException("Attribute " + newName +
-                                   " already exists");
-        }
+
         Attribute attribute = new Attribute();
         attribute.setName(newName);
         attribute.setDescription(newDescription);
         attribute.setAttrType(newType);
-        dao.create(attribute);
+
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("objectType", ModelObject.ATTRIBUTE);
+        rmiParams.put("operation", ModelOperation.ADD);
+        rmiParams.put("attribute", attribute);
+
+        HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
     }
 
     /**
      * modifyAttribute - change an attribute's name, description, and/or type.
-     *  
+     *
      * @param oldName string with old name of attribute
      * @param newName string new name of attribute
      * @param descr string with attribute description
      * @param attrType string with type of attribute
      * @throws AAAException
      */
-    public void modifyAttribute(String oldName, String newName, String descr,
-                                String attrType)
-           throws AAAException {
+    public void modifyAttribute(String oldName, String newName, String descr, String attrType, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "Attributes.modifyAttribute";
 
-        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
-        Attribute attribute = dao.queryByParam("name", oldName);
-        if (attribute == null) {
-            throw new AAAException("Attribute " + oldName +
-                                   " does not exist to be modified");
-        }
+        Attribute attribute = new Attribute();
         attribute.setName(newName);
         attribute.setDescription(descr);
         attribute.setAttrType(attrType);
-        dao.update(attribute);
+
+
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("objectType", ModelObject.ATTRIBUTE);
+        rmiParams.put("operation", ModelOperation.MODIFY);
+        rmiParams.put("attribute", attribute);
+        rmiParams.put("oldName", oldName);
+
+        HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+
     }
 
     /**
      * deleteAttribute - delete an attribute, but only if no users
      *     currently belong to it
-     *  
+     *
      * @param attributeName string with name of attribute to delete
      * @throws AAAException
      */
-    public void deleteAttribute(String attributeName)
-           throws AAAException {
+    public void deleteAttribute(String attributeName, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "Attributes.deleteAttribute";
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("objectType", ModelObject.ATTRIBUTE);
+        rmiParams.put("operation", ModelOperation.DELETE);
+        rmiParams.put("name", attributeName);
 
-        boolean existingUsers = false;
-        boolean existingAuthorizations = false;
-        AttributeDAO dao = new AttributeDAO(Utils.getDbName());
-        UserAttributeDAO userAttributeDAO =
-            new UserAttributeDAO(Utils.getDbName());
-        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
-        Attribute attribute = dao.queryByParam("name", attributeName);
-        if (attribute == null) {
-            throw new AAAException("Attribute " + attributeName +
-                                   " does not exist to be deleted");
-        }
-        List<User> users = userAttributeDAO.getUsersByAttribute(attributeName);
-        StringBuilder sb = new StringBuilder();
-        if (users.size() != 0) {
-            sb.append(attributeName + " has existing users: ");
-            for (User user: users) {
-                sb.append(user.getLogin() + " ");
-            }
-            existingUsers = true;
-        }
-        List<Authorization> auths = authDAO.listAuthByAttr(attributeName);
-        if (auths.size() != 0) {
-            if (existingUsers) {
-                sb.append(".  There are " + auths.size() + " existing authorizations " +
-                    "with this attribute.");
-            } else {
-                sb.append(attributeName + " has " + auths.size() +
-                          " associated authorizations.  Cannot delete.");
-            }
-            existingAuthorizations = true;
-        }
-        if (existingUsers || existingAuthorizations) {
-            throw new AAAException(sb.toString());
-        }
-        dao.remove(attribute);
+        HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+
+
     }
 }

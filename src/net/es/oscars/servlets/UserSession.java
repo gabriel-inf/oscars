@@ -2,15 +2,14 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
-import javax.servlet.*;
+import java.rmi.RemoteException;
+
 import javax.servlet.http.*;
 
-import org.hibernate.*;
-import net.sf.json.*;
+import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.UserManager;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class UserSession {
 
@@ -18,6 +17,7 @@ public class UserSession {
     private String sessionCookieName;
     private boolean secureCookie;
     private String guestLogin;
+    private Logger log = Logger.getLogger(UserSession.class);
 
     public  UserSession() {
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -34,14 +34,12 @@ public class UserSession {
         }
     }
 
-    public String checkSession(PrintWriter out, HttpServletRequest request,
-                               String methodName) {
+    public String checkSession(PrintWriter out, HttpServletRequest request, String methodName) {
         String userName = this.getCookie(this.userCookieName, request);
         String sessionName = this.getCookie(this.sessionCookieName, request);
+        String errorMsg;
+
         if ((userName == null) || (sessionName == null)) {
-            Map errorMap = new HashMap();
-            errorMap.put("method", methodName);
-            errorMap.put("success", Boolean.FALSE);
             String status = "";
             if ((userName == null) && (sessionName == null)) {
                 status = "Login cookies are not set. ";
@@ -52,30 +50,27 @@ public class UserSession {
             }
             status += "Your login session has expired. " +
                       "Please try logging in again.";
-            errorMap.put("status", status);
-            JSONObject jsonObject = JSONObject.fromObject(errorMap);
-            out.println("{}&&" + jsonObject);
+            Utils.handleFailure(out, status, methodName);
+
             return null;
         }
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        aaa.beginTransaction();
-        UserManager userMgr = new UserManager("aaa");
-        String cookieUserName = userName;
-        if (!userMgr.validSession(userName, sessionName)) {
-            userName = null;
+
+
+        Boolean validSession = false;
+        AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+        try {
+            validSession = rmiClient.validSession(userName, sessionName);
+        } catch (RemoteException ex) {
+            Utils.handleFailure(out, "internal error: " + ex.getMessage(), methodName);
+            return null;
         }
-        aaa.getTransaction().commit();
-        // servlet returns immediately in this case
-        if (userName == null) {
-            Map errorMap = new HashMap();
-            errorMap.put("method", methodName);
-            errorMap.put("success", Boolean.FALSE);
-            errorMap.put("status", "There is a problem with the login " +
-                         "for user " + cookieUserName + ".  Please check " +
-                         "with a system administrator.");
-            JSONObject jsonObject = JSONObject.fromObject(errorMap);
-            out.println("{}&&" + jsonObject);
+
+        String cookieUserName = userName;
+        if (!validSession) {
+            userName = null;
+             errorMsg = "There is a problem with the login for user " + cookieUserName + "." +
+                          " Please check with a system administrator.";
+            Utils.handleFailure(out, "internal error: " + errorMsg, methodName);
         }
         return userName;
     }

@@ -1,4 +1,4 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.util.*;

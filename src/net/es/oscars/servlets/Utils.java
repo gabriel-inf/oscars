@@ -1,39 +1,207 @@
 package net.es.oscars.servlets;
 
 import java.io.PrintWriter;
-import javax.servlet.http.*;
 import java.util.*;
+import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
+
 import net.sf.json.*;
 
 import net.es.oscars.aaa.AAAException;
-import net.es.oscars.aaa.AttributeDAO;
-
+import net.es.oscars.aaa.Attribute;
+import net.es.oscars.aaa.Authorization;
+import net.es.oscars.aaa.Constraint;
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.aaa.Permission;
+import net.es.oscars.aaa.Resource;
+import net.es.oscars.aaa.Rpc;
+import net.es.oscars.aaa.Institution;
+import net.es.oscars.aaa.User;
+import net.es.oscars.rmi.core.*;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
+import net.es.oscars.rmi.aaa.*;
 
 public class Utils {
 
-    public static String getDbName() {
-        // hard-wire in only one place
-        return "aaa";
+    public static CoreRmiInterface getCoreRmiClient(String methodName, Logger log, PrintWriter out) {
+        CoreRmiInterface rmiClient;
+        rmiClient = new CoreRmiClient();
+        try {
+            rmiClient.init();
+        } catch (RemoteException ex) {
+            Utils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
+            return null;
+        }
+        return rmiClient;
     }
 
-    public static void handleFailure(PrintWriter out, String message,
-                                     String method, Session aaa) {
+    public static AuthValue getAuth(String userName, String resourceName, String permissionName, AaaRmiInterface rmiClient, String methodName, Logger log, PrintWriter out) {
+        HashMap<String, Object> authResult = new HashMap<String, Object>();
+        AuthValue authVal;
+        try {
+            authVal = rmiClient.checkAccess(userName, resourceName, permissionName);
+        } catch (RemoteException ex) {
+            log.error("RMI exception:  " + ex.getMessage());
+            Utils.handleFailure(out, methodName + " RMI exception: " + ex.getMessage(), methodName);
+            authVal = AuthValue.DENIED;
+        }
+        return authVal;
+    }
 
-        if (aaa != null) { aaa.getTransaction().rollback(); }
-        Map errorMap = new HashMap();
+
+    public static HashMap<String, Object> manageAaaObject(AaaRmiInterface rmiClient, String callerMethodName, Logger log, PrintWriter out, HashMap<String, Object> parameters) throws RemoteException {
+        HashMap<String, Object> result = null;
+        try {
+            result = rmiClient.manageAaaObjects(parameters);
+        } catch (RemoteException e) {
+            log.warn("RMI exception: " + e.getMessage(), e);
+            Utils.handleFailure(out, callerMethodName + " internal error: " + e.getMessage(), callerMethodName);
+            throw e;
+        }
+
+        return result;
+    }
+
+    public static User getUser(String username, AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getUser";
+        HashMap<String, Object> userRmiParams = new HashMap<String, Object>();
+        userRmiParams.put("objectType", ModelObject.USER);
+        userRmiParams.put("operation", ModelOperation.FIND);
+        userRmiParams.put("findBy", "username");
+        userRmiParams.put("username", username);
+        HashMap<String, Object> userRmiResult = new HashMap<String, Object>();
+        userRmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, userRmiParams);
+
+        User user = (User) userRmiResult.get("user");
+
+        return user;
+    }
+
+
+    public static List<Attribute> getAttributesForUser(String username, AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllObjects";
+
+        HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("objectType", ModelObject.ATTRIBUTE);
+        rmiParams.put("operation", ModelOperation.LIST);
+        rmiParams.put("listBy", "username");
+        rmiParams.put("username", username);
+        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+
+
+        List<Attribute> attributes = (List<Attribute>) rmiResult.get("attributes");
+        if (attributes == null) {
+            attributes = new ArrayList<Attribute>();
+        }
+        return attributes;
+
+    }
+
+
+
+
+    private static Object getAllObjects(ModelObject model, String objectName, AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllObjects";
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("objectType", model);
+        rmiParams.put("operation", ModelOperation.LIST);
+        HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        return rmiResult.get(objectName);
+    }
+
+    public static List<Permission> getAllPermissions(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllPermissions";
+        List<Permission> objects = (List<Permission>) Utils.getAllObjects(ModelObject.PERMISSION, "permissions", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Permission>();
+        }
+        return objects;
+    }
+    public static List<Attribute> getAllAttributes(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllAttributes";
+        List<Attribute> objects = (List<Attribute>) Utils.getAllObjects(ModelObject.ATTRIBUTE, "attributes", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Attribute>();
+        }
+        return objects;
+    }
+    public static List<Constraint> getAllConstraints(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllConstraints";
+        List<Constraint> objects = (List<Constraint>) Utils.getAllObjects(ModelObject.CONSTRAINT, "constraints", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Constraint>();
+        }
+        return objects;
+    }
+
+    public static List<Resource> getAllResources(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllResources";
+        List<Resource> objects = (List<Resource>) Utils.getAllObjects(ModelObject.RESOURCE, "resources", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Resource>();
+        }
+        return objects;
+    }
+
+    public static List<Rpc> getAllRpcs(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllRpcs";
+        List<Rpc> objects = (List<Rpc>) Utils.getAllObjects(ModelObject.RPC, "rpcs", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Rpc>();
+        }
+        return objects;
+    }
+
+
+    public static List<Authorization> getAllAuthorizations(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllAuthorizations";
+        List<Authorization> objects = (List<Authorization>) Utils.getAllObjects(ModelObject.AUTHORIZATION, "authorizations", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Authorization>();
+        }
+        return objects;
+    }
+
+
+    public static List<Institution> getAllInstitutions(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllInstitutions";
+        List<Institution> objects = (List<Institution>) Utils.getAllObjects(ModelObject.INSTITUTION, "institutions", rmiClient, out, log);
+        if (objects == null) {
+            objects = new ArrayList<Institution>();
+        }
+        return objects;
+    }
+
+    public static List<User> getAllUsers(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
+        String methodName = "Utils.getAllUsers";
+        List<User> objects = (List<User>) Utils.getAllObjects(ModelObject.USER, "users", rmiClient, out, log);
+
+        if (objects == null) {
+            objects = new ArrayList<User>();
+        }
+        return objects;
+    }
+
+
+    public static void handleFailure(PrintWriter out, String message, String method) {
+
+        Map<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("success", Boolean.FALSE);
         errorMap.put("status", message);
         errorMap.put("method", method);
         JSONObject jsonObject = JSONObject.fromObject(errorMap);
-        out.println("{}&&" + jsonObject);
+        if (out != null) {
+            out.println("{}&&" + jsonObject);
+        }
         return;
     }
-    
+
     /**
-     * Checks for proper confirmation of password change. 
+     * Checks for proper confirmation of password change.
      *
      * @param password  A string with the desired password
      * @param confirmationPassword  A string with the confirmation password
@@ -56,12 +224,12 @@ public class Utils {
             } else if (!confirmationPassword.equals(password)) {
                 throw new AAAException(
                      "Password and password confirmation do not match");
-            } 
+            }
            return password;
         }
         return null;
     }
-    
+
     /**
      * CheckDN  check for the input DN to be in comma separated format starting
      *    with the CN element.
@@ -69,15 +237,15 @@ public class Utils {
      * @return String returning the DN, possibily in reverse order
      * @throws AAAException if the DN is not in comma separated form.
      */
-    public static String checkDN(String DN) 
+    public static String checkDN(String DN)
         throws AAAException {
 
         String[] dnElems = null;
-        
+
         dnElems = DN.split(",");
         if (dnElems.length < 2)  {
             /* TODO look for / separated elements */
-            throw  new AAAException 
+            throw  new AAAException
                     ("Please input cert issuer and subject names as comma separated elements");
          }
         if (dnElems[0].startsWith("CN")) { return DN;}
@@ -85,11 +253,11 @@ public class Utils {
         String dn = " " + dnElems[0];
         for (int i = 1; i < dnElems.length; i++) {
             dn = dnElems[i] + "," + dn;
-        }       
+        }
         dn = dn.substring(1);
         return dn;
     }
-    
+
     /**
      * removes the description part of the authorization input form fields
      * @param inputField A string with the complete field.

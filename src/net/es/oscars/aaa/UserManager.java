@@ -10,16 +10,13 @@ import net.es.oscars.PropHandler;
  * UserManager handles all AAA method calls at this time, and makes
  * all calls to data access objects.
  *
- * @author David Robertson, Mary Thompson, Jason Lee
+ * @author David Robertson, Mary Thompson, Jason Lee, Evangelos Chaniotakis
  */
 public class UserManager {
     private Logger log;
     private String salt;
     private String dbname;
-    private List<UserAttribute> userAttrs = null; // set by checkAccess, checkModResAccess
-    private int resourceId;
-    private int permissionId;
-    
+
     public UserManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
@@ -28,7 +25,7 @@ public class UserManager {
         this.salt = props.getProperty("salt");
     }
 
-    /** Creates a system user. 
+    /** Creates a system user.
      * This constructor is used by the test suite
      *
      * @param user a user instance containing user parameters
@@ -37,7 +34,7 @@ public class UserManager {
     public void create(User user, String institutionName)
             throws AAAException {
 
-        this.create(user, institutionName, null);
+        this.create(user, new ArrayList<Integer>());
     }
 
     /** Creates a system user.
@@ -46,25 +43,31 @@ public class UserManager {
      * @param institutionName a string with the new user's affiliation
      * @param roles a list of attributes for the user
      */
-    public void create(User user, String institutionName, List<Integer> roles)
+    public void create(User user, List<Integer> roles)
             throws AAAException {
 
         User currentUser = null;
+        String institutionName = user.getInstitution().getName();
 
         this.log.info("create.start: " + user.getLogin());
         this.log.debug("create.institution: " + institutionName);
 
         String userName = user.getLogin();
+        this.log.debug("create.userName: " + userName);
+
         UserDAO userDAO = new UserDAO(this.dbname);
         currentUser = userDAO.query(userName);
-        this.log.debug("create.userName: " + userName);
-        // check whether this entity is already in the database
         if (currentUser != null) {
             throw new AAAException("User " + userName + " already exists.");
         }
+
         InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
-        Institution inst =
-            institutionDAO.queryByParam("name", institutionName);
+        Institution inst = institutionDAO.queryByParam("name", institutionName);
+
+        if (inst == null) {
+            throw new AAAException("Institution "+institutionName+" not found!");
+        }
+
         user.setInstitution(inst);
         // encrypt the password before persisting it to the database
         String encryptedPwd = Jcrypt.crypt(this.salt, user.getPassword());
@@ -74,7 +77,7 @@ public class UserManager {
         // add any attributes for this user to the UserAttributes table
         if (roles != null) {
             int UserId = user.getId();
-            UserAttributeDAO uaDAO = new UserAttributeDAO(this.dbname);  
+            UserAttributeDAO uaDAO = new UserAttributeDAO(this.dbname);
             for (int attrID : roles) {
                 UserAttribute ua = new UserAttribute();
                 ua.setUserId(UserId);
@@ -132,7 +135,7 @@ public class UserManager {
     }
 
     /**
-     * Removes a reservation system user and all their attributes
+     * Removes a user and all their attributes
      *
      * @param userName a string with the user's login name
      */
@@ -141,7 +144,7 @@ public class UserManager {
         this.log.info("remove.start: " + userName);
         UserDAO userDAO = new UserDAO(this.dbname);
         UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
-        
+
         User user = userDAO.query(userName); // check to make sure user exists
         if (user == null) {
             throw new AAAException("Cannot remove user " + userName +
@@ -192,7 +195,7 @@ public class UserManager {
      * Check to see that the user has at least one attribute.
      *
      * @param dn a string with the distinguished name from a certificate
-     * @return the login id of the user if found, null if user is not found 
+     * @return the login id of the user if found, null if user is not found
      */
     public String loginFromDN(String dn)  throws AAAException {
 
@@ -202,7 +205,7 @@ public class UserManager {
         if (user == null) { return null; }
         String login = user.getLogin();
         this.log.debug("got login: " + login);
-        
+
         UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
         List<UserAttribute> userAttributes =
                 userAttrDAO.getAttributesByUser(user.getId());
@@ -213,19 +216,22 @@ public class UserManager {
         this.log.debug("loginFromDN.end");
         return login;
     }
-    
+
     /**
      * Returns the institution of the user
-     * 
+     *
      * @param login String login name of the user
-     * 
-     * @return String name of the institution of the user
+     *
+     * @return String name of the institution of the user, null if user not found
      */
     public String getInstitution (String login){
-	UserDAO userDAO = new UserDAO(this.dbname);
-	User user = userDAO.query(login);
-	return user.getInstitution().getName();
-	}
+        UserDAO userDAO = new UserDAO(this.dbname);
+        User user = userDAO.query(login);
+        if (user == null) {
+            return null;
+        }
+        return user.getInstitution().getName();
+    }
 
     /**
      * Authenticates user via login name and password.
@@ -237,8 +243,7 @@ public class UserManager {
      * @param sessionName a string with session name to set if auth successful
      * @return a string with the login name if verification was successful
      */
-    public String verifyLogin(String userName, String password,
-                              String sessionName)
+    public String verifyLogin(String userName, String password, String sessionName)
             throws AAAException {
 
         User user = null;
@@ -277,7 +282,7 @@ public class UserManager {
         this.log.debug("verifyLogin.end: " + userName);
         return userName;
     }
-    
+
     /**
      * Checks session cookie for validity.
      *
@@ -291,67 +296,38 @@ public class UserManager {
         return valid;
     }
 
-    /* return a list of the user's attributes
-     * 
-     * @returns a list of the attribute names for user associated with 
-     *     manager instance
-     */
-    public List <String> getAttrNames () {
-        this.log.debug("getAttrNames: start");
-        ArrayList <String> attrNames = new ArrayList<String>();
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        if (this.userAttrs != null){
-            for (UserAttribute ua : this.userAttrs){
-                attrNames.add(attrDAO.getAttributeName(ua.getAttributeId()));
-            }   
-        }
-        this.log.debug("getAttrNames: finish");
-        return attrNames;
-    }
-
-    /* return a list of the user's attributes
-     * 
-     * @param userlogin string containing a user login name
-     * @returns a list of the attribute names for this  user
-     */
-    public List <String> getAttrNames (String targetUser) {
-        this.log.debug("getAttrNames: start");
-        ArrayList <String> attrNames = new ArrayList<String>();
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
-        UserDAO userDAO = new UserDAO(this.dbname);
-
-        User user = userDAO.query(targetUser);
-        if (user == null) { return attrNames; }
-        this.userAttrs = userAttrDAO.getAttributesByUser(user.getId());
-        if (this.userAttrs != null) {
-            for (UserAttribute ua : this.userAttrs) {
-                attrNames.add(attrDAO.getAttributeName(ua.getAttributeId()));
-            }   
-        }
-        this.log.debug("getAttrNames: finish");
-        return attrNames;
-    }
-
     /**
-     * Authorization values returned by checkAccess. <br>
-     * DENIED means the requested action is not allowed<br>
-     * ALLUSERS means the requested action is allowed on objects that belong
-     *     to any user<br>
-     * MYSITE means the requested actions is allowed only on objects that 
-     * 	    belong to the same site as the requester<br>
-     * SELFONLY  means the requested action is allowed only on objects that
-     *      belong to the requester.    
-     * @author mrt
+     * Gets all the Attributes associated with a user
      *
+     * @param userName string with user's login name
+     * @return List<Attribute> attributes for user
      */
-    public enum AuthValue { DENIED, ALLUSERS, MYSITE, SELFONLY};
-    
-   
+
+    public List <Attribute> getAttributesForUser(String targetUser) {
+        this.log.debug("getUserAttributes: start");
+        List <Attribute> attributes = new ArrayList<Attribute>();
+        UserDAO userDAO = new UserDAO(this.dbname);
+        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
+        User user = userDAO.query(targetUser);
+        if (user == null) {
+            return attributes;
+        }
+        List <UserAttribute> userAttributes = userAttrDAO.getAttributesByUser(user.getId());
+        if (userAttributes == null) {
+            return attributes;
+        }
+        for (UserAttribute ua : userAttributes) {
+            attributes.add(ua.getAttribute());
+        }
+
+        return attributes;
+    }
+
+
     /**
      * Checks to make sure that that user has the permission to use the
      *     resource by checking for the corresponding triplet in the
-     *     authorizations table. This method is called for everything except 
+     *     authorizations table. This method is called for everything except
      *     createReservation, so the constraints of interest are 'allUsers' and 'mySite'.
      *     The least restrained access that any of the user's attributes grants
      *     is returned, where ALLUSERS > SITEONLY > SELFONLY > DENIED. If there is only an
@@ -362,68 +338,62 @@ public class UserManager {
      * @param permissionName a string identifying a permission
      * @return one of DENIED, SELFONLY, SITEONLY, ALLUSERS
      */
-    public AuthValue checkAccess(String userName, String resourceName,
-                                 String permissionName) {
+    public AuthValue checkAccess(String userName, String resourceName, String permissionName) {
+        this.log.debug("checkAccess.start");
+
+        AuthValue retVal = null;
+        String retValSt = "DENIED";
 
         List<Authorization> auths = null;
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
-        UserAttribute currentAttr = null;
-        AuthValue retVal =null;
-        String retValSt = "DENIED";
+
         Boolean site = false;
         Boolean self = false;
-         
-        this.log.info("checkAccess.start");
-        if (!this.getIds(userName, resourceName, permissionName)) {
-            // user has  no attributes 
+
+        HashMap<String, Object> urp = this.getURPObjects(userName, resourceName, permissionName);
+        if (urp == null) {
+            // user has  no attributes or other error
             return AuthValue.DENIED;
         }
+
+        Permission permission = (Permission) urp.get("permission");
+        Resource resource = (Resource) urp.get("resource");
+        User user = (User) urp.get("user");
+
         /* check to see if any of the users attributes grants this
          * authorization, and look for a selfOnly or MySite constraint
          */
-        Iterator attrIter = this.userAttrs.iterator();
-        while (attrIter.hasNext()) {
-            currentAttr = (UserAttribute) attrIter.next();
-          /* 
-            this.log.debug("attrId: " + currentAttr.getAttributeId() +
-                           ", resourceId: " + this.resourceId +
-                           ", permissionId: " + this.permissionId);
-         */ 
-            auths = authDAO.query(currentAttr.getAttributeId(),
-                                  this.resourceId, this.permissionId);
-            if (auths.isEmpty()) { 
+        List<Attribute> attributes = this.getAttributesForUser(userName);
+        for (Attribute attribute : attributes) {
+            auths = authDAO.query(attribute.getId(), resource.getId(), permission.getId());
+            if (auths.isEmpty()) {
                // this.log.debug("attrId:  no authorization" );
                 continue;
-            } 
-            Iterator authItr = auths.iterator();
-            Authorization auth = null;
-            while (authItr.hasNext()){
-                auth = (Authorization) authItr.next();
-                String constraintName = authDAO.getConstraintName(auth);
+            }
+            for (Authorization auth : auths) {
+                String constraintName = auth.getConstraint().getName();
                 if (constraintName.equals("none")) {
                     // found an authorization with no constraints,
-                    // user is allowed for self only 
+                    // user is allowed for self only
                     // this.log.debug("attrId: authorized for SELFONLY");
-                    self=true;
+                    self = true;
                 } else if (constraintName.equals("my-site")) {
                     //if (auth.getConstraintValue().equals("true") {
                         // found a constrained authorization, remember it
-                        site=true;
+                        site = true;
                         // this.log.debug("checkAccess MYSITE access");
                     //}
-                }
-                else if (constraintName.equals("all-users")) {
+                } else if (constraintName.equals("all-users")) {
                     // leave this test in for historic reasons, the value should always be true
                     if (auth.getConstraintValue().equals("true")) {
                         // found an authorization with allUsers allowed,
                         // highest level access, so return it
-                        this.log.info("checkAccess:finish ALLUSERS access for "
-                                + permissionName + " on " + resourceName);
+                        this.log.info("checkAccess: " +userName + ":" + resourceName + ":" + resourceName + ":ALLUSERS");
                         return AuthValue.ALLUSERS;
                    } else {
                         // found a self-only constrained authorization, remember it
                         self=true;
-                    } 
+                    }
                 }
             } // end of all authorizations for this attribute
         } // end of all attributes
@@ -434,18 +404,17 @@ public class UserManager {
         }
 
         if (retVal == null ) {
-            this.log.info("No authorizations found for user " + userName +
-                          ", permission " + permissionName +
-                          ", resource " + resourceName);
+            this.log.info("checkAccess: no auth found for " +userName + ":" + resourceName + ":" + resourceName);
             retVal = AuthValue.DENIED;
         }
         retValSt = retVal.toString();
-        this.log.info("checkAccess.finish: " + retValSt + " access for " 
-                + permissionName + " on " + resourceName);
+        this.log.info("checkAccess: " +userName + ":" + resourceName + ":" + resourceName + ":" + retValSt);
         return retVal;
-    } 
+    }
+
+
     /**
-     * Checks to make sure that that user has the permission to 
+     * Checks to make sure that that user has the permission to
      * perform "unsafe" operations on reservations.
      *
      * @param userName a string with the login name of the user
@@ -453,32 +422,23 @@ public class UserManager {
      */
     public boolean checkAccessForUnsafe(String userName) {
 
-        UserDAO userDAO = new UserDAO(this.dbname);
-        User user = userDAO.query(userName);
-        if (user == null) { return false; }
- 
         // get list of  attributes for this user
-        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
-        this.userAttrs = userAttrDAO.getAttributesByUser(user.getId());
-       
-        if (this.userAttrs.isEmpty())  {
-            // this.log.info("checkAccessForUnsafe: userAttrs is empty");
-            return false;
-        } else {
-            AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        List<Attribute> attributes = this.getAttributesForUser(userName);
 
-            UserAttribute currentAttr = null;
-            Iterator attrIter = this.userAttrs.iterator();
-            while (attrIter.hasNext()) {
-                currentAttr = (UserAttribute) attrIter.next();
-                String attrName = attrDAO.getAttributeName(currentAttr.getId());
-                if (attrName.equals("OSCARS-engineer")){
-                    return true;
-                }
-            }   
+        if (attributes.isEmpty())  {
+            return false;
+        }
+
+        for (Attribute attribute: attributes) {
+            if (attribute.getName().equals("OSCARS-engineer")){
+                return true;
+            }
         }
         return false;
     }
+
+
+
     /**
      * Checks to make sure that that user has the permission to use the
      *     resource by checking for the corresponding quadruplet in the
@@ -493,121 +453,92 @@ public class UserManager {
      * @param reqDuration int with reservation duration, -1 means persistent
      * @param specPathElems boolean, true means pathElements have been input
      * @return one of DENIED, SELFONLY, ALLUSERS
-     * 
-     * Note: SELFONLY and ALLUSERS don't make sense and aren't used 
+     *
+     * Note: SELFONLY and ALLUSERS don't make sense and aren't used
      *       MYSITE might make sense -mrt
      */
     public AuthValue checkModResAccess(String userName, String resourceName,
-            String permissionName, int reqBandwidth, int reqDuration, 
+            String permissionName, int reqBandwidth, int reqDuration,
                                    boolean specPathElems, boolean specGRI) {
 
-        List<Authorization> auths = null;
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
-        UserAttribute currentAttr = null;
         // set default values
         boolean bandwidthAllowed = true;
         boolean durationAllowed = true;
         boolean specifyPE = false;
         boolean specifyGRI = false;
         AuthValue retVal = AuthValue.DENIED;
-         
+
         this.log.info("checkModResAccess.start");
-        if (!this.getIds(userName, resourceName, permissionName)) {
-            // no attributes found for user
-            return retVal;
+        HashMap<String, Object> urp = this.getURPObjects(userName, resourceName, permissionName);
+        if (urp == null) {
+            // user has  no attributes or other error
+            return AuthValue.DENIED;
         }
+        Permission permission = (Permission) urp.get("permission");
+        Resource resource = (Resource) urp.get("resource");
+        User user = (User) urp.get("user");
+
+
         /* check to see if any of the users attributes grants this
          * authorization and look for a all-users constraint */
-        Iterator attrIter = this.userAttrs.iterator();
-        while (attrIter.hasNext()) {
-            currentAttr = (UserAttribute) attrIter.next();
-           /*
-            this.log.debug("looking up authorization for attrId: " +
-                           currentAttr.getAttributeId());
-           */
-            auths = authDAO.query(currentAttr.getAttributeId(),
-                                  this.resourceId, this.permissionId);
-            if (auths.isEmpty()) {                   
-		/*
-                this.log.debug("no authorization for attrId: " +
-                               currentAttr.getAttributeId());
-		*/
+        List<Attribute> attributes = this.getAttributesForUser(userName);
+
+        for (Attribute attribute: attributes) {
+            List<Authorization> auths = authDAO.query(attribute.getId(), resource.getId(), permission.getId());
+            if (auths.isEmpty()) {
                 continue;
-            } 
-            
-            Iterator authItr = auths.iterator();
-            while (authItr.hasNext()) {
-                Authorization auth = (Authorization) authItr.next();
+            }
+            for (Authorization auth : auths) {
+
                 retVal = AuthValue.SELFONLY;  // minimum authorization
-                String constraintName = authDAO.getConstraintName(auth);
-		/*
-                this.log.debug("constraint for attrId " + currentAttr.getAttributeId() +
-                	" is " + constraintName);
-               */ 
+                String constraintName = auth.getConstraint().getName();
                 if (constraintName.equals("none")) {
                     continue;
                 }
                 if (constraintName.equals("max-bandwidth")) {
-		/*
-                    this.log.debug("Allowed bandwidth: " +
-                                   auth.getConstraintValue() +
-                                   ", requested bandwidth: " + reqBandwidth);
-		*/
                     if (reqBandwidth > Integer.parseInt(auth.getConstraintValue()) ) {
-                        // found an authorization that limits the bandwidth
                         bandwidthAllowed = false;
                     }
                 } else if (constraintName.equals("max-duration")) {
-		/*
-                    this.log.debug("Allowed duration: " +
-                                   auth.getConstraintValue() +
-                                   ", requested duration: " + reqDuration);
-		*/
                     if (reqDuration > Integer.parseInt(auth.getConstraintValue()) ) {
-                        // found an authorization that limits the duration
                         durationAllowed = false;
                     }
-                } else if (constraintName.equals(
-                                                    "specify-path-elements")) {
-                    //if (auth.getConstraintValue().equals("true")) {
-                        specifyPE = true;
-                    //}
+                } else if (constraintName.equals("specify-path-elements")) {
+                    specifyPE = true;
                 } else if (constraintName.equals("specify-gri")){
-                    //if (auth.getConstraintValue().equals("true")) {
-                        specifyGRI = true;
-                    //}
+                    specifyGRI = true;
                 } else if (constraintName.equals("all-users")){
-                    // leave test for historic reasons, value should always be true
                     if (auth.getConstraintValue().equals("true")) {
-                     retVal = AuthValue.ALLUSERS; 
+                        retVal = AuthValue.ALLUSERS;
                     }
-                } // end of looking at constraint
-            }     // end of loop over authorizations for one attribute
+                }
+            }
         }
 
-        if (!bandwidthAllowed || !durationAllowed) { 
+        if (!bandwidthAllowed || !durationAllowed) {
             this.log.info("denied, over bandwidth or duration limits");
             retVal= AuthValue.DENIED;
-        }  
+        }
         if (specPathElems && !specifyPE) {
             this.log.info("denied, not permitted to specify path");
-            retVal = AuthValue.DENIED; 
+            retVal = AuthValue.DENIED;
         }
         if (specGRI && !specifyGRI) {
             this.log.info("denied, not permitted to specify GRI");
-            retVal = AuthValue.DENIED; 
+            retVal = AuthValue.DENIED;
         }
-        
+
         this.log.info("checkModResAccess.finish: " + retVal);
         return retVal;
-    }   
-       
-    /** 
+    }
+
+    /**
      *  Checks that the user, resource and permission all exist and get the
      *  list of attributes associated with the user. If all is well the
      *  resourceId, attibuteId and attribute list parameters are set and true
      *  is returned.
-     *  
+     *
      *  side-effects - resourceId is set to the db id of the resource
      *                 permissionid is set to the db id of the permission
      *                 userAttributes is set to the list of all user attributes
@@ -617,37 +548,25 @@ public class UserManager {
      * @param permissionName a string identifying a permission
      * @return true if everything was found, false otherwise.
      */
-    private boolean getIds(String userName, String resourceName,
-                           String permissionName) {
+    private HashMap<String, Object> getURPObjects(String userName, String resourceName, String permissionName) {
+
+        HashMap<String, Object> result = new HashMap<String, Object>();
+
 
         UserDAO userDAO = new UserDAO(this.dbname);
         User user = userDAO.query(userName);
-        if (user == null) { return false; }
+        if (user == null) { return null; }
+        result.put("user", user);
 
         ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
-        Resource resource =
-                (Resource) resourceDAO.queryByParam("name", resourceName);
-        if (resource == null) { return false; }
-        this.resourceId = resource.getId();
+        Resource resource = (Resource) resourceDAO.queryByParam("name", resourceName);
+        if (resource == null) { return null; }
+        result.put("resource", resource);
 
         PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
-        Permission permission = (Permission)
-                permissionDAO.queryByParam("name", permissionName);
-        if (permission == null) { return false; }
-        this.permissionId = permission.getId();
-
-        // get list of  attributes for this user
-        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
-        this.userAttrs = userAttrDAO.getAttributesByUser(user.getId());
-        /*
-        this.log.info("getIds: userId, " + user.getId() + " permissionId, " +
-                      this.permissionId + " resourceId, " + this.resourceId);
-        */
-        if (this.userAttrs.isEmpty())  {
-            this.log.info("getIds: userAttrs is empty");
-            return false;
-        } else {
-            return true;
-        }
+        Permission permission = (Permission) permissionDAO.queryByParam("name", permissionName);
+        if (permission == null) { return null; }
+        result.put("permission", permission);
+        return result;
     }
 }

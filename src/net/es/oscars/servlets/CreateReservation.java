@@ -2,24 +2,26 @@ package net.es.oscars.servlets;
 
 /**
  * CreateReservation servlet
- * 
- * @author David Robertson, Evangelos Chaniotak
- * 
+ *
+ * @author David Robertson, Evangelos Chaniotakis
+ *
  */
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.apache.log4j.*;
-import net.es.oscars.rmi.*;
+
+import net.es.oscars.rmi.bss.BssRmiInterface;
 import net.sf.json.JSONObject;
 
 public class CreateReservation extends HttpServlet {
-    private Logger log;
+    private Logger log = Logger.getLogger(CreateReservation.class);
 
     /**
      * doGet
-     * 
+     *
      * @param request HttpServlerRequest - contains start and end times, bandwidth, description,
      *          productionType, pathinfo
      * @param response HttpServler Response - contain gri and success or error status
@@ -27,9 +29,8 @@ public class CreateReservation extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
-        this.log = Logger.getLogger(this.getClass());
         String methodName= "CreateReservation";
-        this.log.info("servlet.start");
+        this.log.info("CreateReservation.start");
 
         PrintWriter out = response.getWriter();
         UserSession userSession = new UserSession();
@@ -49,25 +50,18 @@ public class CreateReservation extends HttpServlet {
             String[] paramValues = request.getParameterValues(paramName);
             inputMap.put(paramName, paramValues);
         }
+
         try {
-            CoreRmiInterface rmiClient = new CoreRmiClient();
-            rmiClient.init();
+            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.createReservation(inputMap, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed with " + ex.getMessage());
-            Utils.handleFailure(out, "CreateReservation not completed: " +
-                    ex.getMessage(), methodName, null);
-            return;
-        }
-        String errorMsg = (String)outputMap.get("error");
-        if (errorMsg != null) {
-            this.log.error(errorMsg);
-            Utils.handleFailure(out, errorMsg, methodName, null);
+            Utils.handleFailure(out, "CreateReservation not completed: " + ex.getMessage(), methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("servlet.end");
+        this.log.info("CreateReservation.end");
         return;
     }
 

@@ -18,7 +18,7 @@ import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.EndpointReferenceType;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notify.ws.policy.*;
 
 /**
@@ -81,21 +81,21 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                 Session aaa = this.core.getAAASession();
                 aaa.beginTransaction();
                 try{
-	                OMElement[] omElems = holder.getMessage().getExtraElement();
-	                for(NotifyPEP notifyPep : this.notifyPEPs){
-	                    if(!notifyPep.matches(topics)){
-	                        continue;
-	                    }
-	                    HashMap<String, ArrayList<String>> pepMap = notifyPep.enforce(omElems);
-	                    if(pepMap != null){
-	                        permissionMap.putAll(pepMap);
-	                    }
-	                }
-	                aaa.getTransaction().commit();
+                    OMElement[] omElems = holder.getMessage().getExtraElement();
+                    for(NotifyPEP notifyPep : this.notifyPEPs){
+                        if(!notifyPep.matches(topics)){
+                            continue;
+                        }
+                        HashMap<String, ArrayList<String>> pepMap = notifyPep.enforce(omElems);
+                        if(pepMap != null){
+                            permissionMap.putAll(pepMap);
+                        }
+                    }
+                    aaa.getTransaction().commit();
                 }catch(Exception e){
-                	aaa.getTransaction().rollback();
-                	this.log.error(e.getMessage());
-                	return;
+                    aaa.getTransaction().rollback();
+                    this.log.error(e.getMessage());
+                    return;
                 }
                 this.sa.schedProcessNotify(holder, permissionMap);
             }
@@ -117,8 +117,8 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         String login = this.checkUser();
         HashMap<String, String> permissionMap = new HashMap<String, String>();
         /* NOTE: Requires a filter and topic to specified.
-         * Filter and TopicExpression are checked here and not in 
-         * schema because this is an optional behavior defined in the 
+         * Filter and TopicExpression are checked here and not in
+         * schema because this is an optional behavior defined in the
          * WS-Notification spec. It also allows for a better error.
          * See http://docs.oasis-open.org/wsn/wsn-ws_base_notification-1.3-spec-os.pdf line 544-545.
          */
@@ -131,30 +131,30 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         }
         TopicExpressionType[] topicFilters = filter.getTopicExpression();
         ArrayList<String> topics = this.sa.parseTopics(topicFilters);
-        
+
         /* Get authorizations */
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-	        UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Subscriptions", "create");
-	        if (authVal.equals(AuthValue.DENIED)) {
-	            throw new AAAFaultMessage("You do not have permission to create subscriptions.");
-	        }
-	        //TODO: Limit which topics someone can subscribe to?
-	        //Set resource specific matching conditions
-	        for(NotifyPEP notifyPep : this.notifyPEPs){
-	            if(!notifyPep.matches(topics)){
-	                continue;
-	            }
-	            HashMap<String,String> pepMap = notifyPep.prepare(login);
-	            if(pepMap != null){
-	                permissionMap.putAll(pepMap);
-	            }
-	        }
-	        aaa.getTransaction().commit();
+            AuthValue authVal = this.userMgr.checkAccess(login, "Subscriptions", "create");
+            if (authVal.equals(AuthValue.DENIED)) {
+                throw new AAAFaultMessage("You do not have permission to create subscriptions.");
+            }
+            //TODO: Limit which topics someone can subscribe to?
+            //Set resource specific matching conditions
+            for(NotifyPEP notifyPep : this.notifyPEPs){
+                if(!notifyPep.matches(topics)){
+                    continue;
+                }
+                HashMap<String,String> pepMap = notifyPep.prepare(login);
+                if(pepMap != null){
+                    permissionMap.putAll(pepMap);
+                }
+            }
+            aaa.getTransaction().commit();
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new AAAFaultMessage(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new AAAFaultMessage(e.getMessage());
         }
         SubscribeResponse response = this.sa.subscribe(request, login, permissionMap);
 
@@ -170,17 +170,17 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-	        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-	        if (modifyAuthVal.equals(AuthValue.DENIED)) {
-	            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-	        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-	            permissionMap.put("modifyLoginConstraint", login);
-	        }
-	        //TODO: Re-run notifyPEP
-	        aaa.getTransaction().commit();
+            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+            if (modifyAuthVal.equals(AuthValue.DENIED)) {
+                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+                permissionMap.put("modifyLoginConstraint", login);
+            }
+            //TODO: Re-run notifyPEP
+            aaa.getTransaction().commit();
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new AAAFaultMessage(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new AAAFaultMessage(e.getMessage());
         }
         RenewResponse response = this.sa.renew(request, permissionMap);
 
@@ -196,16 +196,16 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-	        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-	        if (modifyAuthVal.equals(AuthValue.DENIED)) {
-	            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-	        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-	            permissionMap.put("modifyLoginConstraint", login);
-	        }
-	        aaa.getTransaction().commit();
+            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+            if (modifyAuthVal.equals(AuthValue.DENIED)) {
+                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+                permissionMap.put("modifyLoginConstraint", login);
+            }
+            aaa.getTransaction().commit();
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new AAAFaultMessage(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new AAAFaultMessage(e.getMessage());
         }
         UnsubscribeResponse response = this.sa.unsubscribe(request, login, permissionMap);
 
@@ -221,16 +221,16 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-	        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-	        if (modifyAuthVal.equals(AuthValue.DENIED)) {
-	            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-	        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-	            permissionMap.put("modifyLoginConstraint", login);
-	        }
-	        aaa.getTransaction().commit();
+            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+            if (modifyAuthVal.equals(AuthValue.DENIED)) {
+                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+                permissionMap.put("modifyLoginConstraint", login);
+            }
+            aaa.getTransaction().commit();
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new AAAFaultMessage(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new AAAFaultMessage(e.getMessage());
         }
         PauseSubscriptionResponse response = this.sa.pause(request, permissionMap);
 
@@ -247,16 +247,16 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-	        UserManager.AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-	        if (modifyAuthVal.equals(AuthValue.DENIED)) {
-	            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-	        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-	            permissionMap.put("modifyLoginConstraint", login);
-	        }
-	        aaa.getTransaction().commit();
+            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
+            if (modifyAuthVal.equals(AuthValue.DENIED)) {
+                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
+            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
+                permissionMap.put("modifyLoginConstraint", login);
+            }
+            aaa.getTransaction().commit();
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new AAAFaultMessage(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new AAAFaultMessage(e.getMessage());
         }
         ResumeSubscriptionResponse response = this.sa.resume(request, permissionMap);
 
@@ -276,17 +276,17 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
             throw new PublisherRegistrationRejectedFault(e.getMessage());
         }
         /* Get authorizations */
-        UserManager.AuthValue authVal = null;
+        AuthValue authVal = null;
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-        	authVal = this.userMgr.checkAccess(login, "Publishers", "create");
+            authVal = this.userMgr.checkAccess(login, "Publishers", "create");
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new PublisherRegistrationRejectedFault(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new PublisherRegistrationRejectedFault(e.getMessage());
         }
         if (authVal.equals(AuthValue.DENIED)) {
-        	 aaa.getTransaction().rollback();
+             aaa.getTransaction().rollback();
             throw new PublisherRegistrationRejectedFault("You do not have permission to publish notifications.");
         }
         aaa.getTransaction().commit();
@@ -303,20 +303,20 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         HashMap<String, String> permissionMap = new HashMap<String, String>();
 
         /* Get authorizations */
-        UserManager.AuthValue modifyAuthVal = null;
+        AuthValue modifyAuthVal = null;
         Session aaa = this.core.getAAASession();
         aaa.beginTransaction();
         try{
-        	modifyAuthVal = this.userMgr.checkAccess(login, "Publishers", "modify");
+            modifyAuthVal = this.userMgr.checkAccess(login, "Publishers", "modify");
         }catch(Exception e){
-        	aaa.getTransaction().rollback();
-        	throw new AAAFaultMessage(e.getMessage());
+            aaa.getTransaction().rollback();
+            throw new AAAFaultMessage(e.getMessage());
         }
         if (modifyAuthVal.equals(AuthValue.DENIED)) {
-        	aaa.getTransaction().rollback();
+            aaa.getTransaction().rollback();
             throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
         }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-        	aaa.getTransaction().commit();
+            aaa.getTransaction().commit();
             permissionMap.put("modifyLoginConstraint", login);
         }
 
@@ -416,7 +416,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         String origDN = "";
         // lookup up using input DN first
         try {
-        	origDN = this.certSubject.getName();
+            origDN = this.certSubject.getName();
             this.log.debug("checkUser: " + origDN);
             login = this.userMgr.loginFromDN(origDN);
             if (login == null) {

@@ -2,40 +2,32 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.User;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.Attribute;
-import net.es.oscars.aaa.AttributeDAO;
+import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 public class UserAdd extends HttpServlet {
-    private Logger log;
-    
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response)
+    private Logger log = Logger.getLogger(UserAdd.class);
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+        this.log.info("UserAdd.start");
 
-        User newUser = null;
-        String newRole = null;
-        Session aaa;
-        ArrayList <Integer> addRoles = null;
 
-        this.log = Logger.getLogger(this.getClass());
         String methodName = "UserAdd";
-        this.log.info("servlet.start");
-
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
-        AttributeDAO attrDAO = new AttributeDAO(Utils.getDbName());
 
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -45,52 +37,68 @@ public class UserAdd extends HttpServlet {
             return;
         }
         String profileName = request.getParameter("profileName");
-        aaa = HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        try {
-            RoleUtils roleUtils = new RoleUtils();
-            AuthValue authVal = mgr.checkAccess(userName, "Users", "create");
-            if ((authVal != AuthValue.DENIED) && 
-                        (profileName != userName)) {
-                newUser = this.toUser(out, profileName, request);
-                String roles[] = request.getParameterValues("attributeName");
-                for (int i=0; i < roles.length; i++) {
-                    roles[i] = Utils.dropDescription(roles[i].trim());
-                }
-                // will be only one parameter value due to constraints
-                // on client side
-                if (roles[0].equals("None")) { 
-                    this.log.debug("roles = null");
-                    addRoles = new ArrayList<Integer>();
-                } else {
-                    this.log.debug("number of roles input is "+roles.length);
-                    addRoles = roleUtils.convertRoles(roles);
-                }
-                mgr.create(newUser, request.getParameter("institutionName"),
-                           addRoles);  
-            }  else {
-                // this also makes sure won't list users either if don't
-                // have permission
-                this.log.error("Not allowed to add a new user");
-                Utils.handleFailure(out, "not allowed to add a new user",
-                                    methodName, aaa);
-                return;
-            }
-        } catch (AAAException e) {
-            this.log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+
+        AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+        AuthValue authVal = Utils.getAuth(userName, "Users", "create", rmiClient, methodName, log, out);
+        RoleUtils roleUtils = new RoleUtils();
+
+        if ((authVal == AuthValue.DENIED) || (profileName != userName)) {
+            this.log.error("Not allowed to add a new user");
+            Utils.handleFailure(out, "not allowed to add a new user", methodName);
             return;
         }
-        Map outputMap = new HashMap();
-        outputMap.put("status", "User " + profileName +
-                                " successfully created");
+        User newUser = null;
+        try {
+            newUser = this.toUser(out, profileName, request);
+        } catch (AAAException e) {
+            this.log.error(e.getMessage());
+            Utils.handleFailure(out, e.getMessage(), methodName);
+            return;
+        }
+
+
+        try {
+            List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+            ArrayList <Integer> addRoles = null;
+            String roles[] = request.getParameterValues("attributeName");
+            for (int i=0; i < roles.length; i++) {
+                roles[i] = Utils.dropDescription(roles[i].trim());
+            }
+            // will be only one parameter value due to constraints
+            // on client side
+            if (roles[0].equals("None")) {
+                this.log.debug("roles = null");
+                addRoles = new ArrayList<Integer>();
+            } else {
+                this.log.debug("number of roles input is "+roles.length);
+                addRoles = roleUtils.convertRoles(roles, attributes);
+            }
+
+            HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+            rmiParams.put("user", newUser);
+            rmiParams.put("addRoles", addRoles);
+            rmiParams.put("objectType", ModelObject.USER);
+            rmiParams.put("operation", ModelOperation.ADD);
+            HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+
+
+        } catch (RemoteException e) {
+            this.log.error(e.getMessage());
+            Utils.handleFailure(out, e.getMessage(), methodName);
+            return;
+        }
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
+        outputMap.put("status", "User " + profileName +  " successfully created");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
         this.log.info("servlet.end");
     }
+
+
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
@@ -99,15 +107,20 @@ public class UserAdd extends HttpServlet {
         this.doGet(request, response);
     }
 
-    public User toUser(PrintWriter out, String userName,
-                       HttpServletRequest request)  
+    public User toUser(PrintWriter out, String userName, HttpServletRequest request)
          throws AAAException {
 
         String strParam;
         String DN;
         String password;
- 
+
         User user = new User();
+
+        Institution institution = new Institution();
+        institution.setName(request.getParameter("institutionName"));
+        user.setInstitution(institution);
+
+
         user.setLogin(userName);
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
@@ -126,9 +139,8 @@ public class UserAdd extends HttpServlet {
         user.setFirstName(request.getParameter("firstName"));
         user.setEmailPrimary(request.getParameter("emailPrimary"));
         user.setPhonePrimary(request.getParameter("phonePrimary"));
-        password = Utils.checkPassword(request.getParameter("password"),
-                request.getParameter("passwordConfirmation"));
-        user.setPassword(password); 
+        password = Utils.checkPassword(request.getParameter("password"), request.getParameter("passwordConfirmation"));
+        user.setPassword(password);
         // doesn't matter if blank
         user.setDescription(request.getParameter("description"));
         user.setEmailSecondary(request.getParameter("emailSecondary"));

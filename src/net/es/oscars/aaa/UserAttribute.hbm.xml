@@ -2,9 +2,9 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
-<!-- 
+<!--
     Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
 
     http://boss.bekk.no/boss/middlegen/
@@ -23,19 +23,13 @@
         <generator class="identity" />
     </id>
 
-    <property name="userId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
-  <property name="attributeId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-  
     <!-- Associations -->
+    <many-to-one name="user" column="userId"
+        class="net.es.oscars.aaa.User" />
+
+    <many-to-one name="attribute" column="attributeId"
+        class="net.es.oscars.aaa.Attribute" />
+
 
 </class>
 </hibernate-mapping>

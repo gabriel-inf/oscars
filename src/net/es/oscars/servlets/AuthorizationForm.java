@@ -1,17 +1,24 @@
 package net.es.oscars.servlets;
 
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.aaa.Resource;
+import net.es.oscars.aaa.Permission;
+import net.es.oscars.aaa.Constraint;
+import net.es.oscars.aaa.Rpc;
+import net.es.oscars.aaa.Attribute;
+
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.*;
 
 
 /**
@@ -20,16 +27,16 @@ import net.es.oscars.aaa.UserManager.AuthValue;
  * modified.  Initially called on user login.
  */
 public class AuthorizationForm extends HttpServlet {
+    private Logger log = Logger.getLogger(AuthorizationForm.class);
 
-    public void
-        doGet(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
-        Logger log = Logger.getLogger(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
         String methodName = "AuthorizationForm";
         log.debug("servlet.start");
+
 
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -39,64 +46,67 @@ public class AuthorizationForm extends HttpServlet {
             return;
         }
 
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
-        if (authVal == AuthValue.DENIED) {
-            log.error("Not authorized to perform admin operations");
-            Utils.handleFailure(out,
-                    "not authorized to perform admin operations",
-                    methodName, aaa);
-            return;
-        }
         String attrsUpdated = request.getParameter("authAttrsUpdated");
         if (attrsUpdated != null) {
             attrsUpdated = attrsUpdated.trim();
         } else {
             attrsUpdated = "";
         }
-        Map outputMap = new HashMap();
-        this.outputAttributeMenu(outputMap);
-        String rpcParam = request.getParameter("rpc");
-        // Make sure to update these exactly once.
-        // rpc being unset makes sure they get updated in the beginning.
-        // If just the attributes have been updated, don't redisplay.
-        if (((rpcParam == null) || (rpcParam.trim().equals("")) ||
-                attrsUpdated.equals(""))) {
-            this.outputResourceMenu(outputMap);
-            this.outputPermissionMenu(outputMap);
-            this.outputConstraintMenu(outputMap);
-        }
-        if ((rpcParam == null) || rpcParam.trim().equals("")) {
-            this.outputRpcs(outputMap);
+        Map<String, Object> outputMap = new HashMap<String, Object>();
+
+
+        try {
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+
+            if (authVal == null || authVal == AuthValue.DENIED) {
+                log.error("Not authorized to perform admin operations");
+                Utils.handleFailure(out, "not authorized to perform admin operations", methodName);
+                return;
+            }
+
+            this.outputAttributeMenu(outputMap, rmiClient, out);
+            String rpcParam = request.getParameter("rpc");
+
+            // Make sure to update these exactly once.
+            // rpc being unset makes sure they get updated in the beginning.
+            // If just the attributes have been updated, don't redisplay.
+            if (((rpcParam == null) || (rpcParam.trim().equals("")) ||
+                    attrsUpdated.equals(""))) {
+                this.outputResourceMenu(outputMap, rmiClient, out);
+                this.outputPermissionMenu(outputMap, rmiClient, out);
+                this.outputConstraintMenu(outputMap, rmiClient, out);
+            }
+            if ((rpcParam == null) || rpcParam.trim().equals("")) {
+                this.outputRpcs(outputMap, rmiClient, out);
+            }
+        } catch (RemoteException ex) {
+            this.log.error(ex.getMessage());
+            return;
         }
         outputMap.put("method", methodName);
         // this form does not reset status
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        log.debug("servlet.end");      
+        log.debug("servlet.end");
     }
 
-    public void
-        doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         this.doGet(request, response);
     }
 
-    public void
-        outputAttributeMenu(Map outputMap) {
 
-        AttributeDAO attributeDAO = new AttributeDAO(Utils.getDbName());
-        List<Attribute> attributes = attributeDAO.list();
+    public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "AuthorizationForm.outputAttributeMenu";
+        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+
         List<String> attributeList = new ArrayList<String>();
-        RoleUtils utils = new RoleUtils();
         int ctr = 0;
-        for (Attribute attr: attributes) {
-            attributeList.add(attr.getName());
+        for (Attribute attribute: attributes) {
+            attributeList.add(attribute.getName());
             if (ctr == 0) {
                 attributeList.add("true");
             } else {
@@ -107,11 +117,11 @@ public class AuthorizationForm extends HttpServlet {
         outputMap.put("authAttributeNameMenu", attributeList);
     }
 
-    public void
-        outputResourceMenu(Map outputMap) {
+    public void outputResourceMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "AuthorizationForm.outputResourceMenu";
 
-        ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
-        List<Resource> resources = resourceDAO.list();
+        List<Resource> resources = Utils.getAllResources(rmiClient, out, log);
+
         List<String> resourceList = new ArrayList<String>();
         int ctr = 0;
         for (Resource resource: resources) {
@@ -126,11 +136,11 @@ public class AuthorizationForm extends HttpServlet {
         outputMap.put("resourceNameMenu", resourceList);
     }
 
-    public void
-        outputPermissionMenu(Map outputMap) {
+    public void outputPermissionMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "AuthorizationForm.outputPermissionMenu";
 
-        PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
-        List<Permission> permissions = permissionDAO.list();
+        List<Permission> permissions = Utils.getAllPermissions(rmiClient, out, log);
+
         List<String> permissionList = new ArrayList<String>();
         int ctr = 0;
         for (Permission permission: permissions) {
@@ -146,10 +156,11 @@ public class AuthorizationForm extends HttpServlet {
     }
 
     public void
-        outputConstraintMenu(Map outputMap) {
+        outputConstraintMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException  {
+        String methodName = "AuthorizationForm.outputConstraintMenu";
 
-        ConstraintDAO constraintDAO = new ConstraintDAO(Utils.getDbName());
-        List<Constraint> constraints = constraintDAO.list();
+        List<Constraint> constraints = Utils.getAllConstraints(rmiClient, out, log);
+
         List<String> constraintList = new ArrayList<String>();
         int ctr = 0;
         for (Constraint constraint: constraints) {
@@ -170,45 +181,32 @@ public class AuthorizationForm extends HttpServlet {
      * eventually be used in a split container on the right side of the
      * authorization details page, assuming the grid would display in
      * such a case.
-     *  
+     *
      * @param outputMap Map containing JSON data
      */
-    public void outputRpcs(Map outputMap) {
+    public void outputRpcs(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+        String methodName = "AuthorizationForm.outputRpcs";
 
-        RpcDAO rpcDAO = new RpcDAO(Utils.getDbName());
-        List<Rpc> rpcs = rpcDAO.list();
-        ResourceDAO resourceDAO = new ResourceDAO(Utils.getDbName());
-        PermissionDAO permissionDAO = new PermissionDAO(Utils.getDbName());
-        ConstraintDAO constraintDAO= new ConstraintDAO(Utils.getDbName());
-        int id = -1;
-        
-        ArrayList rpcList = new ArrayList();
+        List<Rpc> rpcs = Utils.getAllRpcs(rmiClient, out, log);
+
+        ArrayList<ArrayList<String>> rpcList = new ArrayList<ArrayList<String>>();
         for (Rpc rpc: rpcs) {
-            ArrayList rpcEntry = new ArrayList();
-            // ignore illegal triplets
-            Resource resource = resourceDAO.findById(rpc.getResourceId(),
-                                                     false);
-            if (resource != null) {
-                rpcEntry.add(resource.getName());
+            ArrayList<String> rpcEntry = new ArrayList<String>();
+            if (rpc.getResource() != null) {
+                rpcEntry.add(rpc.getResource().getName());
             } else {
                 this.log("couldn't find resource: " + rpc.getResourceId());
                 continue;
             }
-            Permission perm = permissionDAO.findById(rpc.getPermissionId(),
-                                                     false);
-            if (perm != null) {
-                rpcEntry.add(perm.getName());
+            if (rpc.getPermission() != null) {
+                rpcEntry.add(rpc.getPermission().getName());
             } else {
                 this.log("couldn't find permission: " + rpc.getPermissionId());
                 continue;
             }
-            // null constraints are added on the client side; rpc table
-            // has constraintId as not null, so one here would be an error.
-            Constraint constraint =
-                constraintDAO.findById(rpc.getConstraintId(), false);
-            if (constraint != null) {
-                rpcEntry.add(constraint.getName());
-                rpcEntry.add(constraint.getType());
+            if (rpc.getConstraint() != null) {
+                rpcEntry.add(rpc.getConstraint().getName());
+                rpcEntry.add(rpc.getConstraint().getType());
             } else {
                 this.log("couldn't find constraint: " + rpc.getConstraintId());
                 continue;

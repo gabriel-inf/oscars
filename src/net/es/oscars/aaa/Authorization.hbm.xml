@@ -2,9 +2,9 @@
 <!DOCTYPE hibernate-mapping PUBLIC
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
-    
+
 <hibernate-mapping>
-<!-- 
+<!--
     Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
 
     http://boss.bekk.no/boss/middlegen/
@@ -27,31 +27,20 @@
 
     <property name="updateTime" />
 
-    <property name="attrId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
+    <!-- Associations -->
+    <many-to-one name="attribute" column="attrId"
+        class="net.es.oscars.aaa.Attribute"  />
 
-    <property name="resourceId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
+    <many-to-one name="constraint" column="constraintId"
+        class="net.es.oscars.aaa.Constraint" />
 
-    <property name="permissionId" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-    
-    <property name="constraintId" not-null="true"> 
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>  
-    </property>
-    
-    <property name="constraintValue"/> 
+    <many-to-one name="resource" column="resourceId"
+        class="net.es.oscars.aaa.Resource" />
+
+    <many-to-one name="permission" column="permissionId"
+        class="net.es.oscars.aaa.Permission"  />
+
+    <property name="constraintValue"/>
 
     <!-- Associations -->
 

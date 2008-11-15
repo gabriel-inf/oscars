@@ -1,13 +1,29 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface CoreRmiInterface extends Remote {
+public interface BssRmiInterface extends Remote {
 
-    public void init()  throws RemoteException;
+     /**
+     * Default registry port
+     */
+    static int registryPort = 1099;
+    /**
+     * Default registry address
+     */
+    static String registryAddress = "127.0.0.1";
+    /**
+     * Default registry name
+     */
+    static String registryName = "BSSRMIServer";
+
+
+
+    public void init() throws RemoteException;
+
 
     /**
      * Creates reservation given information from servlet.

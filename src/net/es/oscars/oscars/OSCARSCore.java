@@ -16,11 +16,15 @@ import net.es.oscars.lookup.*;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.scheduler.*;
-import net.es.oscars.rmi.*;
+import net.es.oscars.rmi.core.*;
 import net.es.oscars.bss.policy.*;
 
 import org.quartz.SchedulerException;
 
+/**
+ * OSCARS main object
+ * @author Evangelos Chaniotakis
+ */
 public class OSCARSCore {
 
     private Logger log;
@@ -32,7 +36,7 @@ public class OSCARSCore {
     // Hardcoded but one can set them for tests etc
     private String bssDbName = "bss";
     private String aaaDbName = "aaa";
-    
+
     private StateEngine stateEngine = null;
     private ReservationManager reservationManager = null;
     private TopologyManager topologyManager = null;
@@ -52,15 +56,19 @@ public class OSCARSCore {
     private Forwarder forwarder = null;
     private ScheduleManager scheduleManager = null;
     private ServiceManager serviceManager = null;
-    
-    private CoreRmiServer rmiServer = null;
 
+    private CoreRmiServer coreRmiServer = null;
 
+    /**
+     * Constructor - private because this is a Singleton
+     */
     private OSCARSCore() {
         this.log = Logger.getLogger(this.getClass());
-        // singleton class!
     }
 
+    /**
+     * @return the OSCARSCore singleton instance
+     */
     public static OSCARSCore getInstance() {
         if (OSCARSCore.instance == null) {
             OSCARSCore.instance = new OSCARSCore();
@@ -68,6 +76,10 @@ public class OSCARSCore {
         return OSCARSCore.instance;
     }
 
+    /**
+     * Initializer
+     * @return the OSCARSCore singleton instance
+     */
     public static OSCARSCore init() {
         if (OSCARSCore.instance == null) {
             OSCARSCore.instance = new OSCARSCore();
@@ -78,6 +90,9 @@ public class OSCARSCore {
         return instance;
     }
 
+    /**
+     * Initializes all the modules
+     */
     public void initAll() {
         this.log.debug("initAll.start");
 
@@ -107,6 +122,9 @@ public class OSCARSCore {
         this.log.debug("initAll.end");
     }
 
+    /**
+     * Shuts down all modules
+     */
     public void shutdown() {
         this.log.info("shutdown.start");
         try {
@@ -114,13 +132,15 @@ public class OSCARSCore {
         } catch (SchedulerException ex) {
             this.log.error("Scheduler error shutting down", ex);
         }
-        this.rmiServer.shutdown();
+        this.coreRmiServer.shutdown();
         HibernateUtil.closeSessionFactory(this.aaaDbName);
         HibernateUtil.closeSessionFactory(this.bssDbName);
         this.log.info("shutdown.end");
     }
 
-    
+    /**
+     * Initializes the DB module
+     */
     public void initDatabases() {
         this.log.debug("initDatabases.start");
         ArrayList<String> dbnames = new ArrayList<String>();
@@ -131,13 +151,19 @@ public class OSCARSCore {
         this.log.debug("initDatabases.end");
     }
 
-    
+
+    /**
+     * Initializes the StateEngine module
+     */
     public void initStateEngine() {
         this.log.debug("initStateEngine.start");
         this.stateEngine = new StateEngine();
         this.log.debug("initStateEngine.end");
     }
-    
+
+    /**
+     * Initializes the ReservationManager module
+     */
     public void initReservationManager() {
         this.log.debug("initReservationManager.start");
         this.reservationManager = new ReservationManager(this.bssDbName);
@@ -145,6 +171,9 @@ public class OSCARSCore {
     }
 
 
+    /**
+     * Initializes the LookupClient module
+     */
     public void initLookupClient() {
         this.log.debug("initLookupClient.start");
         LookupFactory lookupFactory = new LookupFactory();
@@ -152,6 +181,9 @@ public class OSCARSCore {
         this.log.debug("initLookupClient.end");
     }
 
+    /**
+     * Initializes the Notifier module
+     */
     public void initNotifier()  {
         this.log.debug("initNotifier.start");
         this.notifier = new NotifyInitializer();
@@ -163,89 +195,132 @@ public class OSCARSCore {
         this.log.debug("initNotifier.end");
     }
 
+    /**
+     * Initializes the PCEManager module
+     */
     public void initPCEManager() {
         this.log.debug("initPCEManager.start");
         this.pceManager = new PCEManager(this.bssDbName);
         this.log.debug("initPCEManager.end");
     }
 
+    /**
+     * Initializes the PathSetupManager module
+     */
     public void initPathSetupManager() {
         this.log.debug("initPathSetupManager.start");
         this.pathSetupManager = new PathSetupManager(this.bssDbName);
         this.log.debug("initPathSetupManager.end");
     }
 
+    /**
+     * Initializes the TopologyManager module
+     */
     public void initTopologyManager() {
         this.log.debug("initTopologyManager.start");
         this.topologyManager = new TopologyManager(this.bssDbName);
         this.log.debug("initTopologyManager.end");
     }
 
+    /**
+     * Initializes the UserManager module
+     */
     public void initUserManager() {
         this.log.debug("initUserManager.start");
         this.userManager = new UserManager(this.aaaDbName);
         this.log.debug("initUserManager.end");
     }
 
+    /**
+     * Initializes the TopologyExchangeManager module
+     */
     public void initTopologyExchangeManager() {
         this.log.debug("initTopologyExchangeManager.start");
         this.topologyExchangeManager = new TopologyExchangeManager();
         this.log.debug("initTopologyExchangeManager.end");
     }
 
+    /**
+     * Initializes the ReservationAdapter module
+     */
     public void initReservationAdapter() {
         this.log.debug("initReservationAdapter.start");
         this.reservationAdapter = new ReservationAdapter();
         this.log.debug("initReservationAdapter.end");
     }
 
+    /**
+     * Initializes the TopologyExchangeAdapter module
+     */
     public void initTopologyExchangeAdapter() {
         this.log.debug("initTopologyExchangeAdapter.start");
         this.topologyExchangeAdapter = new TopologyExchangeAdapter();
         this.log.debug("initTopologyExchangeAdapter.end");
     }
 
+    /**
+     * Initializes the PathSetupAdapter module
+     */
     public void initPathSetupAdapter() {
         this.log.debug("initPathSetupAdapter.start");
         this.pathSetupAdapter = new PathSetupAdapter();
         this.log.debug("initPathSetupAdapter.end");
     }
 
+    /**
+     * Initializes the TypeConverter module
+     */
     public void initTypeConverter() {
         this.log.debug("initTypeConverter.start");
         this.typeConverter = new TypeConverter();
         this.log.debug("initTypeConverter.end");
     }
 
+    /**
+     * Initializes the Forwarder module
+     */
     public void initForwarder() {
         this.log.debug("initForwarder.start");
         this.forwarder = new Forwarder();
         this.log.debug("initForwarder.end");
     }
 
+    /**
+     * Initializes the ScheduleManager module
+     */
     synchronized public void initScheduleManager() {
         this.log.debug("initScheduleManager.start");
         this.scheduleManager = ScheduleManager.getInstance();
         this.log.debug("initScheduleManager.end");
     }
+    /**
+     * Initializes the PolicyManager module
+     */
     public void initPolicyManager() {
         this.log.debug("initPolicyManager.start");
         this.policyManager = new PolicyManager(this.bssDbName);
         this.log.debug("initPolicyManager.end");
     }
 
+    /**
+     * Initializes the RMIServer module
+     */
     public void initRMIServer() {
-        this.log.debug("initRMIServer.start");
+        this.log.info("initRMIServer.start");
         try {
-            this.rmiServer = new CoreRmiServer();
-            this.rmiServer.init();
+            this.coreRmiServer = new CoreRmiServer();
+            this.coreRmiServer.init();
         } catch (RemoteException ex) {
             this.log.error("Error initializing RMI server", ex);
-            this.rmiServer = null;
+            this.coreRmiServer.shutdown();
+            this.coreRmiServer = null;
         }
-        this.log.debug("initRMIServer.end");
+        this.log.info("initRMIServer.end");
     }
-    
+
+    /**
+     * Initializes the ServiceManager module
+     */
     public void initServiceManager() {
         this.log.debug("initServiceManager.start");
         this.serviceManager = new ServiceManager();
@@ -253,10 +328,13 @@ public class OSCARSCore {
     }
 
 
+    /**
+     * @return the current AAA DB session for the current thread
+     */
     public Session getAaaSession() {
         Session aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
         if (aaa == null || !aaa.isOpen()) {
-            this.log.debug("opening AAA session");
+            this.log.info("opening AAA session");
             HibernateUtil.getSessionFactory(this.aaaDbName).openSession();
             aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
         }
@@ -267,6 +345,9 @@ public class OSCARSCore {
         return aaa;
     }
 
+    /**
+     * @return Grabs the current AAA DB session for the current thread
+     */
     public Session getBssSession() {
         Session bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
         if (bss == null || !bss.isOpen()) {
@@ -308,7 +389,7 @@ public class OSCARSCore {
     public void setAaaDbName(String aaaDbName) {
         this.aaaDbName = aaaDbName;
     }
-    
+
     /**
      * @return the stateEngine
      */
@@ -319,7 +400,7 @@ public class OSCARSCore {
 
         return this.stateEngine;
     }
-    
+
     /**
      * @return the reservationManager
      */
@@ -579,30 +660,14 @@ public class OSCARSCore {
         this.policyManager = policyManager;
     }
 
-    /**
-     * @return the rmiServer
-     */
-    public CoreRmiServer getRmiServer() {
-        if (this.rmiServer == null) {
-            this.initRMIServer();
-        }
-        return rmiServer;
-    }
 
-    /**
-     * @param rmiServer the rmiServer to set
-     */
-    public void setRmiServer(CoreRmiServer rmiServer) {
-        this.rmiServer = rmiServer;
-    }
-    
     /**
      * @return the ServiceManager
      */
     public ServiceManager getServiceManager(){
         return this.serviceManager;
     }
-    
+
     /**
      * @param sm the ServiceManager to set
      */

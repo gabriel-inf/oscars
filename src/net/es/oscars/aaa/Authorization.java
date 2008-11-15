@@ -6,7 +6,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import net.es.oscars.database.HibernateBean;
 
 /**
- *  is adapted from a Middlegen class automatically generated 
+ *  is adapted from a Middlegen class automatically generated
  * from the schema for the aaa.authorizations table.
  */
 public class Authorization extends HibernateBean implements Serializable {
@@ -28,35 +28,45 @@ public class Authorization extends HibernateBean implements Serializable {
 
     /** persistent field */
     private int permissionId;
-    
+
     /** persistent field */
     private int constraintId;
-    
+
     /** nullable persistent field */
     private String constraintValue;
+
+    /** associated object */
+    private Constraint constraint;
+    /** associated object */
+    private Permission permission;
+    /** associated object */
+    private Resource resource;
+    /** associated object */
+    private Attribute attribute;
+
 
     /** default constructor */
     public Authorization() { }
 
     /**
      * @return context A String corresponding to a currently unused field
-     */ 
+     */
     public String getContext() { return this.context; }
 
     /**
      * @param context A String corresponding to a currently unused field
-     */ 
+     */
     public void setContext(String context) { this.context = context; }
 
 
     /**
      * @return updateTime A Long instance with the last update time
-     */ 
+     */
     public Long getUpdateTime() { return this.updateTime; }
 
     /**
      * @param updateTime A Long instance with the last update time
-     */ 
+     */
     public void setUpdateTime(Long updateTime) {
         this.updateTime = updateTime;
     }
@@ -64,23 +74,23 @@ public class Authorization extends HibernateBean implements Serializable {
 
     /**
      * @return attrId An Integer containing a user table row primary key
-     */ 
+     */
     public int getAttrId() { return this.attrId; }
 
     /**
      * @param attrId An Integer containing a user table row primary key
-     */ 
+     */
     public void setAttrId(int attrId) { this.attrId = attrId; }
 
 
     /**
      * @return resourceId An Integer with a resource table primary key
-     */ 
+     */
     public int getResourceId() { return this.resourceId; }
 
     /**
      * @param resourceId An Integer with a resource table primary key
-     */ 
+     */
     public void setResourceId(int resourceId) {
         this.resourceId = resourceId;
     }
@@ -88,34 +98,34 @@ public class Authorization extends HibernateBean implements Serializable {
 
     /**
      * @return permissionId An Integer with a permission table primary key
-     */ 
+     */
     public int getPermissionId() { return this.permissionId; }
 
     /**
      * @param permissionId An Integer with a permission table primary key
-     */ 
+     */
     public void setPermissionId(int permissionId) {
         this.permissionId = permissionId;
     }
 
     /**
      * @return constraintId an Integer corresponding to a constraint for this authorization
-     */ 
+     */
     public int getConstraintId() { return this.constraintId; }
 
     /**
      * @param constraintId an Integer corresponding to a constraint value for this authorization
-     */ 
+     */
     public void setConstraintId(int constraintId ) { this.constraintId = constraintId; }
 
     /**
      * @return constraintValue A String corresponding to a constraintValue for this authorization
-     */ 
+     */
     public String getConstraintValue() { return this.constraintValue; }
 
     /**
      * @param constraintValue A String corresponding to a constraint for this authorization
-     */ 
+     */
     public void setConstraintValue(String constraintValue ) { this.constraintValue = constraintValue; }
 
 
@@ -128,5 +138,61 @@ public class Authorization extends HibernateBean implements Serializable {
             .append("ConstraintId",getConstraintId())
             .append("ConstraintValue",getConstraintValue())
             .toString();
+    }
+
+    /**
+     * @return the constraint
+     */
+    public Constraint getConstraint() {
+        return constraint;
+    }
+
+    /**
+     * @param constraint the constraint to set
+     */
+    public void setConstraint(Constraint constraint) {
+        this.constraint = constraint;
+    }
+
+    /**
+     * @return the permission
+     */
+    public Permission getPermission() {
+        return permission;
+    }
+
+    /**
+     * @param permission the permission to set
+     */
+    public void setPermission(Permission permission) {
+        this.permission = permission;
+    }
+
+    /**
+     * @return the resource
+     */
+    public Resource getResource() {
+        return resource;
+    }
+
+    /**
+     * @param resource the resource to set
+     */
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+
+    /**
+     * @return the attribute
+     */
+    public Attribute getAttribute() {
+        return attribute;
+    }
+
+    /**
+     * @param attribute the attribute to set
+     */
+    public void setAttribute(Attribute attribute) {
+        this.attribute = attribute;
     }
 }

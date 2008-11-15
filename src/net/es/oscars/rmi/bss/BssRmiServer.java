@@ -1,26 +1,27 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.util.*;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-//import java.rmi.server.UnicastRemoteObject;
-import java.rmi.server.*;
+
 import java.rmi.*;
+import java.rmi.server.*;
+import java.rmi.registry.*;
 import java.net.*;
 import java.net.UnknownHostException;
 
+
+import net.es.oscars.rmi.AnchorSocketFactory;
 import net.es.oscars.PropHandler;
 
 import org.apache.log4j.*;
 
-public class CoreRmiServer  implements CoreRmiInterface  {
-    private Logger log;
+public class BssRmiServer  implements BssRmiInterface {
+    private Logger log = Logger.getLogger(BssRmiServer.class);
     private Registry registry;
 
     /* Make remote object static so GarbageCollector doesn't delete it */
-    public static  CoreRmiServer staticObject;
-    private CoreRmiInterface stub;
+    public static BssRmiServer staticObject;
+    private BssRmiInterface stub;
     private CreateResRmiHandler createHandler;
     private QueryResRmiHandler queryHandler;
     private ListResRmiHandler listHandler;
@@ -34,9 +35,8 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      * CoreRmiServer constructor
      * @throws RemoteException
      */
-    public CoreRmiServer() throws RemoteException {
-        this.log = Logger.getLogger(this.getClass());
-        CoreRmiServer.staticObject = this;
+    public BssRmiServer() throws RemoteException {
+        BssRmiServer.staticObject = this;
     }
 
     /**
@@ -45,29 +45,39 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      *   the RMI server to listen on a random port, and both to listen only on the loopback
      *   interface. These values can be overidden by oscars.properties.
      *   Setting the serverIpaddr to localhost will allow access from remote hosts and
-     *   invalidate our security assumptions. 
-     *   
+     *   invalidate our security assumptions.
+     *
      * @throws remoteException
      */
     public void init() throws RemoteException {
-        this.log.debug("RMIServerInit.start");
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("rmi", true);
-        int port = 1099;
-        if (props.getProperty("registryPort") != null) {
+        this.log.debug("BssRmiServer.init().start");
+        PropHandler propHandler = new PropHandler("rmi.properties");
+        Properties props = propHandler.getPropertyGroup("bss", true);
+
+        // default rmi registry port
+        int rmiPort = BssRmiInterface.registryPort;
+        // default rmi registry address
+        String rmiIpaddr = BssRmiInterface.registryAddress;
+        // default rmi registry name
+        String rmiRegName = BssRmiInterface.registryName;
+
+        if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
             try {
-                port = Integer.decode(props.getProperty("registryPort"));
-            } catch (NumberFormatException e) { }
+                rmiPort = Integer.decode(props.getProperty("registryPort"));
+            } catch (NumberFormatException e) {
+                this.log.warn(e);
+            }
         }
 
-        String rmiIpaddr = "127.0.0.1";
-        if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
-            rmiIpaddr = props.getProperty("serverIpaddr");
+        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
+            rmiIpaddr = props.getProperty("registryAddress");
         }
-        this.log.info("RMIsever listening on " + rmiIpaddr);
-        if (!rmiIpaddr.equals("127.0.0.1")){
-            this.log.warn("RMI listening on " + rmiIpaddr + "Possible security vulnerability");
+
+        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
+            rmiRegName = props.getProperty("registryName");
         }
+
+
         InetAddress ipAddr = null;
         AnchorSocketFactory sf = null;
         // Causes the endPoint of the remote sever object to match the interface that is listened on
@@ -76,20 +86,18 @@ public class CoreRmiServer  implements CoreRmiInterface  {
             ipAddr = InetAddress.getByName(rmiIpaddr);
             // creates a custom socket that only listens on ipAddr
             sf = new AnchorSocketFactory(ipAddr);
-            this.registry = LocateRegistry.createRegistry(port, null, sf);
+            this.registry = LocateRegistry.createRegistry(rmiPort, null, sf);
         } catch (UnknownHostException ex) {
-
+            this.log.error(ex);
         }
 
-        port = 0;
-        if (props.getProperty("serverPort") != null) {
-            try {
-                port = Integer.decode(props.getProperty("serverPort"));
-            } catch (NumberFormatException e) { }
-        }
-        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, port,
-                null,sf);
-        this.registry.rebind("IDCRMIServer", this.stub);
+        this.stub = (BssRmiInterface) UnicastRemoteObject.exportObject(BssRmiServer.staticObject, rmiPort, null, sf);
+        this.registry.rebind(rmiRegName, this.stub);
+        this.initHandlers();
+        this.log.debug("BssRmiServer.init().end");
+    }
+
+    public void initHandlers() {
         this.createHandler = new CreateResRmiHandler();
         this.queryHandler = new QueryResRmiHandler();
         this.listHandler = new ListResRmiHandler();
@@ -98,7 +106,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
         this.unsafeCreatePathHandler = new UnsafeCreatePathRmiHandler();
         this.unsafeModifyStatusHandler = new UnsafeModifyStatusRmiHandler();
-        this.log.debug("RMIServerInit.end");
     }
 
     /**
@@ -106,14 +113,14 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      */
     public void shutdown() {
         try {
-            java.rmi.server.UnicastRemoteObject.unexportObject(CoreRmiServer.staticObject, true);
+            java.rmi.server.UnicastRemoteObject.unexportObject(BssRmiServer.staticObject, true);
             java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
-            this.registry.unbind("IDCRMIServer");
+            this.registry.unbind(registryName);
         } catch (RemoteException ex) {
-            this.log.error("Remote exception shutting down RMI server", ex);
+            this.log.error("Remote exception shutting down BSS RMI server", ex);
 
         } catch (NotBoundException ex) {
-            this.log.error("RMI Server already unbound", ex);
+            this.log.error("BSS RMI Server already unbound", ex);
         }
     }
 
@@ -130,9 +137,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         createReservation(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
 
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.createHandler.createReservation(inputMap, userName);
     }
 
@@ -149,9 +153,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         queryReservation(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
 
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.queryHandler.queryReservation(inputMap, userName);
     }
 
@@ -165,10 +166,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     public HashMap<String, Object>
         listReservations(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
-
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.listHandler.listReservations(inputMap, userName);
     }
 
@@ -184,9 +181,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         cancelReservation(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
 
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.cancelHandler.cancelReservation(inputMap, userName);
     }
 
@@ -203,9 +197,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         modifyReservation(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
 
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.modifyHandler.modifyReservation(inputMap, userName);
     }
 
@@ -221,10 +212,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     public HashMap<String, Object>
         createPath(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
-
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.unsafeCreatePathHandler.createPath(inputMap, userName);
     }
 
@@ -241,9 +228,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         teardownPath(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
 
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.unsafeTeardownPathHandler.teardownPath(inputMap, userName);
     }
 
@@ -260,35 +244,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         modifyStatus(HashMap<String, String[]> inputMap, String userName)
             throws IOException, RemoteException {
 
-        if (!checkClientHost()){
-            throw new RemoteException("rmi call from non-local host");
-        }
         return this.unsafeModifyStatusHandler.modifyStatus(inputMap, userName);
     }
 
-    /**
-     * Check that rmi call came from the local host
-     * and log a warning if it did not.
-     * If the RMI server is properly configured all calls should
-     * come from 127.0.0.1
-     * @return true/false
-     */
-    private boolean checkClientHost() {
-        try {
-            String remoteHost = RemoteServer.getClientHost();
-            String localHost = InetAddress.getLocalHost().getHostAddress();
-            if (remoteHost.equals("127.0.0.1") || 
-                    remoteHost.equals(localHost)) {
-                return true;
-            }
-            this.log.warn("rmiServer called by non-local host: " + remoteHost);
-            return true;
-        } catch (ServerNotActiveException e) {
-            this.log.warn ("Can't get client host in listReservations");
-            return false;
-        } catch (UnknownHostException e) {
-            this.log.warn("Can't get localHost Ipaddr");
-            return false;
-        }
-    }
 }

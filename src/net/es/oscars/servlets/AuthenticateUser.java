@@ -2,59 +2,47 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
-import org.hibernate.*;
 import net.sf.json.*;
 
 import org.apache.log4j.*;
 
-import net.es.oscars.database.Initializer;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.aaa.AAAException;
-
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.aaa.AuthMultiValue;
+import net.es.oscars.aaa.Resource;
+import net.es.oscars.aaa.Permission;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class AuthenticateUser extends HttpServlet {
+    private Logger log = Logger.getLogger(AuthenticateUser.class);
 
-    // This is only called once, the first time this servlet is
-    // called.
-    public void init() throws ServletException {
-        Logger log = Logger.getLogger(this.getClass());
-        log.info("init.start");
-        Initializer initializer = new Initializer();
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add(Utils.getDbName());
-        initializer.initDatabase(dbnames);
-        log.info("init.end");
-    }
-
-    // This is only called once, when the server is brought down.
-    public void destroy() {
-        Logger log = Logger.getLogger(this.getClass());
-        log.info("destroy.start");
-        HibernateUtil.closeSessionFactory(Utils.getDbName());
-        log.info("destroy.end");
-    }
-
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-
-        PrintWriter out = null;
-
+        log.debug("AuthenticateUser.start");
         String methodName = "AuthenticateUser";
-        UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
-        Logger log = Logger.getLogger(this.getClass());
-        log.info("servlet.start");
 
-        out = response.getWriter();
-        String userName = request.getParameter("userName");
+        HashMap<String, Object> outputMap = new HashMap<String, Object>();
+        PrintWriter out = response.getWriter();
+        response.setContentType("application/json");
+
+        UserSession userSession = new UserSession();
+        String userName;
+        String sesUserName = userSession.checkSession(null, request, methodName);
+        if (sesUserName != null) {
+            userName = sesUserName;
+        } else {
+            userName = request.getParameter("userName");
+        }
+
+        String password = request.getParameter("initialPassword");
+
         String guestLogin = userSession.getGuestLogin();
+
         String sessionName = "";
-        if (userName != null && guestLogin != null && 
+        if (userName != null && guestLogin != null &&
             userName.equals(guestLogin)) {
             sessionName = "1234567890";
         } else {
@@ -62,40 +50,45 @@ public class AuthenticateUser extends HttpServlet {
             int r = generator.nextInt();
             sessionName = String.valueOf(r);
         }
-        response.setContentType("application/json");
-        Session aaa = 
-            HibernateUtil.getSessionFactory(
-                    Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
+
         try {
-            String unused =
-                mgr.verifyLogin(userName,
-                                request.getParameter("initialPassword"),
-                                sessionName);
-        } catch (AAAException e) {
-            log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            String loginUserName = rmiClient.verifyLogin(userName, password, sessionName);
+
+            userName = (String) loginUserName;
+            if (userName == null) {
+                Utils.handleFailure(out, "Login not allowed", methodName);
+                return;
+            }
+
+            this.handleDisplay(rmiClient, userName, outputMap, out);
+        } catch (RemoteException ex) {
+            this.log.error("AuthenticateUser failed with " + ex.getMessage());
+            Utils.handleFailure(out, "Internal error: " + ex.getMessage(), methodName);
             return;
         }
-        Map outputMap = new HashMap();
-        this.handleDisplay(mgr, userName, outputMap);
+
+
         log.info("setting cookie name to " + userName);
         userSession.setCookie("userName", userName, response);
         log.info("setting session name to " + sessionName);
         userSession.setCookie("sessionName", sessionName, response);
+
+        log.debug("hello");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
-        outputMap.put("status", userName + " signed in.  Use tabs " +
-                    "to navigate to different pages.");
+        outputMap.put("status", userName + " signed in.  Use tabs " + "to navigate to different pages.");
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
+        log.debug("there");
         log.info("{}&&" + jsonObject);
         out.println("{}&& " + jsonObject);
-        aaa.getTransaction().commit();
-        log.info("servlet.end: user " + userName + " logged in");
+
+        log.info("AuthenticateUser: user " + userName + " logged in");
+        log.debug("AuthenticateUser.end");
+
     }
 
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         this.doGet(request, response);
@@ -111,38 +104,91 @@ public class AuthenticateUser extends HttpServlet {
      * @param outputMap map indicating what information to display based on
      *                  user authorization
      */
-    public void handleDisplay(UserManager mgr, String userName,
-                              Map outputMap) {
+    public void handleDisplay(AaaRmiInterface rmiClient, String userName, Map<String, Object> outputMap, PrintWriter out) throws RemoteException {
+        String methodName = "handleDisplay";
 
-        Map authorizedTabs = new HashMap();
+        Map<String, Object> authorizedTabs = new HashMap<String, Object>();
+
+
         // for special cases where user may be able to view grid but not
         // go to a different tab upon selecting a row
-        Map selectableRows = new HashMap();
-        AuthValue authVal = mgr.checkAccess(userName, "Reservations", "list");
-        if (authVal != AuthValue.DENIED)  { 
+        Map<String, Object> selectableRows = new HashMap<String, Object>();
+
+        HashMap<String, ArrayList<String>> permsToCheck = new HashMap<String, ArrayList<String>>();
+
+        ArrayList<String> lqcPerms = new ArrayList<String>();
+        lqcPerms.add("list");
+        lqcPerms.add("query");
+        lqcPerms.add("create");
+
+        ArrayList<String> modPerms = new ArrayList<String>();
+        modPerms.add("modify");
+        permsToCheck.put("Reservations", lqcPerms);
+        permsToCheck.put("Users", lqcPerms);
+        permsToCheck.put("AAA", modPerms);
+
+        AuthMultiValue resourcePerms = rmiClient.checkMultiAccess(userName, permsToCheck);
+        AuthValue createResAuth = rmiClient.checkModResAccess(userName, "Reservations", "create", 0, 0, false, false);
+
+        this.log.info("Resources:");
+        Iterator<String> resIt = resourcePerms.keySet().iterator();
+        while (resIt.hasNext()) {
+            String res = resIt.next();
+            this.log.info(res);
+        }
+
+
+        AuthValue authVal = resourcePerms.get("Reservations").get("list");
+        if (authVal == null) {
+            authVal = AuthValue.DENIED;
+        }
+        if (authVal != AuthValue.DENIED)  {
             authorizedTabs.put("reservationsPane", Boolean.TRUE);
             outputMap.put("reservationsDisplay", Boolean.TRUE);
         } else {
             outputMap.put("reservationsDisplay", Boolean.FALSE);
         }
-        authVal = mgr.checkAccess(userName, "Reservations", "query");
-        if (authVal != AuthValue.DENIED)  { 
+
+
+        authVal = resourcePerms.get("Reservations").get("query");
+        if (authVal == null) {
+            authVal = AuthValue.DENIED;
+        }
+        this.log.info("Reservations:query:"+authVal.toString());
+
+        if (authVal != AuthValue.DENIED)  {
             authorizedTabs.put("reservationDetailsPane", Boolean.TRUE);
         }
-        authVal = mgr.checkModResAccess(userName, "Reservations",
-                "create", 0, 0, false, false);
-        if (authVal != AuthValue.DENIED)  { 
+
+        if (createResAuth  == null) {
+            createResAuth = AuthValue.DENIED;
+        }
+        if (createResAuth != AuthValue.DENIED)  {
             authorizedTabs.put("reservationCreatePane", Boolean.TRUE);
             outputMap.put("createReservationDisplay", Boolean.TRUE);
         } else {
             outputMap.put("createReservationDisplay", Boolean.FALSE);
         }
-        AuthValue authQueryVal = mgr.checkAccess(userName, "Users", "query");
-        if (authQueryVal != AuthValue.DENIED)  { 
+
+
+
+        AuthValue authQueryVal = resourcePerms.get("Users").get("query");
+        if (authQueryVal == null) {
+            authQueryVal = AuthValue.DENIED;
+        }
+        this.log.info("Users:query:"+authVal.toString());
+
+        if (authQueryVal != AuthValue.DENIED)  {
             authorizedTabs.put("userProfilePane", Boolean.TRUE);
         }
-        authVal = mgr.checkAccess(userName, "Users", "list");
-        if (authVal == AuthValue.ALLUSERS)  { 
+
+        authVal = resourcePerms.get("Users").get("list");
+        if (authVal == null) {
+            authVal = AuthValue.DENIED;
+        }
+        this.log.info("Users:list:"+authVal.toString());
+
+        if (authVal == AuthValue.ALLUSERS)  {
             authorizedTabs.put("userListPane", Boolean.TRUE);
             if (authQueryVal == AuthValue.ALLUSERS) {
                 selectableRows.put("users", Boolean.TRUE);
@@ -159,15 +205,25 @@ public class AuthenticateUser extends HttpServlet {
             outputMap.put("authUsersDisplay", Boolean.FALSE);
             outputMap.put("unAuthUsersDisplay", Boolean.FALSE);
         }
-        authVal = mgr.checkAccess(userName, "Users", "create");
-        if (authVal != AuthValue.DENIED)  { 
+
+        authVal = resourcePerms.get("Users").get("create");
+        this.log.info("Users:create:"+authVal.toString());
+        if (authVal == null) {
+            authVal = AuthValue.DENIED;
+        }
+        if (authVal != AuthValue.DENIED)  {
             authorizedTabs.put("userAddPane", Boolean.TRUE);
             outputMap.put("addUserDisplay", Boolean.TRUE);
         } else {
             outputMap.put("addUserDisplay", Boolean.FALSE);
         }
-        authVal = mgr.checkAccess(userName, "AAA", "modify");
-        if (authVal != AuthValue.DENIED)  { 
+
+        authVal = (AuthValue) resourcePerms.get("AAA").get("modify");
+        this.log.info("AAA:modify:"+authVal.toString());
+        if (authVal == null) {
+            authVal = AuthValue.DENIED;
+        }
+        if (authVal != AuthValue.DENIED)  {
             authorizedTabs.put("institutionsPane", Boolean.TRUE);
             authorizedTabs.put("attributesPane", Boolean.TRUE);
             authorizedTabs.put("authorizationsPane", Boolean.TRUE);

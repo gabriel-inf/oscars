@@ -1,8 +1,8 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 /**
  * Interface between rmi listReservations call and reservationManager.listReservations
- * 
+ *
  * @author Mary Thompson, David Robertson
  */
 
@@ -16,13 +16,8 @@ import java.util.regex.Pattern;
 import org.apache.log4j.*;
 import org.hibernate.*;
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
-import net.es.oscars.bss.topology.Layer2Data;
-import net.es.oscars.bss.topology.Layer3Data;
-import net.es.oscars.bss.topology.Link;
-import net.es.oscars.bss.topology.Path;
-import net.es.oscars.bss.topology.TopologyUtil;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.oscars.*;
 
 public class ListResRmiHandler {
@@ -52,7 +47,7 @@ public class ListResRmiHandler {
         List<String> vlans = this.getVlanTags(inputMap);
         String description = this.getDescription(inputMap);
         List<Link> inLinks = null;
-        
+
         List<Reservation> reservations = null;
         if (inputMap.get("startTimeSeconds") != null) {
             String startTimeStr = inputMap.get("startTimeSeconds")[0];
@@ -86,8 +81,7 @@ public class ListResRmiHandler {
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
 
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
-                "list");
+        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "list");
 
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to list Reservations");
@@ -126,7 +120,7 @@ public class ListResRmiHandler {
                 result.put("error",  errMessage);
                 bss.getTransaction().rollback();
                 this.log.debug("list failed: " + errMessage);
-                return result;  
+                return result;
             }
         }
         outputReservations(result, reservations);
@@ -172,13 +166,13 @@ public class ListResRmiHandler {
                         this.log.error("Could not get link for string: [" +
                                    s.trim()+"], error: ["+ex.getMessage()+"]");
                         throw new BSSException ("invalid link" + s.trim() );
-                    }                   
+                    }
                 }
             }
         }
         return inLinks;
     }
- 
+
     /**
      * Gets description search parameter and sets to blank field if empty.
      *
@@ -188,7 +182,7 @@ public class ListResRmiHandler {
     public String getDescription(HashMap<String, String[]> request) {
 
         String description = "";
-        String descriptions [] = request.get("resvDescription"); 
+        String descriptions [] = request.get("resvDescription");
         if (descriptions != null) {
             description = descriptions[0];
         }
@@ -198,7 +192,7 @@ public class ListResRmiHandler {
     /**
      * Gets reservation statuses to search for.
      *
-     * @param request HashMap passed from servlet 
+     * @param request HashMap passed from servlet
      * @return list of statuses to send to BSS
      */
     public List<String> getStatuses(HashMap<String, String[]> request) {
@@ -249,7 +243,7 @@ public class ListResRmiHandler {
         String source = null;
         String hostName = null;
         String destination = null;
-        
+
         net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils(core.getBssDbName());
         ArrayList resvList = new ArrayList();
 
@@ -331,7 +325,7 @@ public class ListResRmiHandler {
         }
         outputMap.put("resvData", resvList);
     }
-    
+
     /**
      * Returns an abbreviated version of the full layer 2 topology identifier.
      * (adapted from bss.topology.URNParser)

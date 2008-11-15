@@ -1,4 +1,4 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 /**
  * Interface between rmi cancelReservation and ReservationManager.cancelReservation

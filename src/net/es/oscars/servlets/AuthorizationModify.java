@@ -1,28 +1,29 @@
 package net.es.oscars.servlets;
 
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
-
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 public class AuthorizationModify extends HttpServlet {
+    private Logger log = Logger.getLogger(AuthorizationModify.class);
 
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
-        Logger log = Logger.getLogger(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
         log.debug("servlet.start");
 
         String methodName = "AuthorizationModify";
@@ -33,49 +34,64 @@ public class AuthorizationModify extends HttpServlet {
             log.error("No user session: cookies invalid");
             return;
         }
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
-        if (authVal == AuthValue.DENIED)  { 
-            log.error("Not allowed to modify an authorization");
-            Utils.handleFailure(out, "not allowed to modify an authorization",
-                                methodName, aaa);
-            return;
-        }
-        String attribute = request.getParameter("authAttributeName");
-        String permission = request.getParameter("permissionName");
-        String resource = request.getParameter("resourceName");
+
+
+        String attributeName = request.getParameter("authAttributeName");
+        String permissionName  = request.getParameter("permissionName");
+        String resourceName  = request.getParameter("resourceName");
         String constraintName = request.getParameter("constraintName");
         String constraintValue = request.getParameter("constraintValue");
-        String origAttribute = request.getParameter("oldAuthAttributeName");
-        String origPermission = request.getParameter("oldPermissionName");
-        String origResource = request.getParameter("oldResourceName");
-        String origConstraint = request.getParameter("oldConstraintName");
-        
-        log.debug("modifying attribute: " + origAttribute + " to "+ attribute +
-                " resource: " + origResource + " to " + resource + 
-                " permission: " + origPermission + " to " + permission + 
-                " constraintName: " + origConstraint + " to " + constraintName );
-        
-        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+        String oldAttributeName = request.getParameter("oldAuthAttributeName");
+        String oldPermissionName = request.getParameter("oldPermissionName");
+        String oldResourceName  = request.getParameter("oldResourceName");
+        String oldConstraintName  = request.getParameter("oldConstraintName");
+
+        log.debug("modifying attribute: " + oldAttributeName + " to "+ attributeName +
+                " resource: " + oldResourceName  + " to " + resourceName  +
+                " permission: " + oldPermissionName  + " to " + permissionName  +
+                " constraintName: " + oldConstraintName + " to " + constraintName );
+
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("oldAttributeName", oldAttributeName);
+        rmiParams.put("oldPermissionName", oldPermissionName);
+        rmiParams.put("oldResourceName", oldResourceName);
+        rmiParams.put("oldConstraintName", oldConstraintName);
+        rmiParams.put("attributeName", attributeName);
+        rmiParams.put("permissionName", permissionName);
+        rmiParams.put("resourceName", resourceName);
+        rmiParams.put("constraintName", constraintName);
+        rmiParams.put("constraintValue", constraintValue);
+
+        rmiParams.put("objectType", ModelObject.AUTHORIZATION);
+        rmiParams.put("operation", ModelOperation.MODIFY);
+
+
+
         try {
-            Authorization auth = authDAO.query(origAttribute,origResource,origPermission, 
-                    origConstraint);
-            authDAO.update(auth,attribute,resource,permission,constraintName, constraintValue);
-        } catch ( AAAException e) {
-            log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
-            return;           
+            HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = Utils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
+
+            if (authVal == AuthValue.DENIED)  {
+                log.error("Not allowed to modify an authorization");
+                Utils.handleFailure(out, "not allowed to modify an authorization", methodName);
+                return;
+            }
+            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        } catch (RemoteException e) {
+            return;
         }
-        Map outputMap = new HashMap();
+
+
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "Authorization modified");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        log.debug("servlet.end");      
+        log.debug("servlet.end");
     }
 
     public void
@@ -84,6 +100,6 @@ public class AuthorizationModify extends HttpServlet {
 
         this.doGet(request, response);
     }
-    
-  
+
+
 }

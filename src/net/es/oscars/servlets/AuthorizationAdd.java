@@ -2,26 +2,27 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.*;
+
 
 
 public class AuthorizationAdd extends HttpServlet {
-    private Logger log;
+    private Logger log = Logger.getLogger(AuthorizationAdd.class);
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager(Utils.getDbName());
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("servlet.start");
 
@@ -33,46 +34,57 @@ public class AuthorizationAdd extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        Session aaa = 
-            HibernateUtil.getSessionFactory(Utils.getDbName()).getCurrentSession();
-        aaa.beginTransaction();
-        AuthValue authVal = mgr.checkAccess(userName, "AAA", "modify");
-        if (authVal == AuthValue.DENIED)  { 
-            this.log.error("Not allowed to add an authorization");
-            Utils.handleFailure(out, "not allowed to add an authorization",
-                                methodName, aaa);
-            return;
-        }
-        try {
-        String attribute = request.getParameter("authAttributeName");
-        String permission = request.getParameter("permissionName");
-        String resource = request.getParameter("resourceName");
+
+        String attributeName = request.getParameter("authAttributeName");
+        String permissionName  = request.getParameter("permissionName");
+        String resourceName  = request.getParameter("resourceName");
         String constraintName = request.getParameter("constraintName");
         String constraintValue = null;
+
         if (constraintName != null) {
             constraintValue = request.getParameter("constraintValue");
         }
-        this.log.debug("Adding attribute: " + attribute +" resource: " + resource + " permission: "
-                + permission + " constraintName: " + constraintName + " constraintValue: " + constraintValue);
-        AuthorizationDAO authDAO = new AuthorizationDAO(Utils.getDbName());
+
+        this.log.debug("Adding attribute: " + attributeName  +" resource: " + resourceName  + " permission: "
+                + permissionName  + " constraintName: " + constraintName + " constraintValue: " + constraintValue);
+
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("attributeName", attributeName);
+        rmiParams.put("permissionName", permissionName);
+        rmiParams.put("resourceName", resourceName);
+        rmiParams.put("constraintName", constraintName);
+        rmiParams.put("constraintValue", constraintValue);
+
+        rmiParams.put("objectType", ModelObject.AUTHORIZATION);
+        rmiParams.put("operation", ModelOperation.ADD);
+
+
         try {
-            authDAO.create(attribute, resource, permission, constraintName, constraintValue);
-        } catch ( AAAException e) {
-            this.log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName, aaa);
-            return;           
+            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+
+            if (authVal == AuthValue.DENIED)  {
+                String errorMsg = "User "+userName+" is not allowed to add an authorization";
+                this.log.error(errorMsg);
+                Utils.handleFailure(out, errorMsg, methodName);
+                return;
+            }
+
+
+            HashMap<String, Object> rmiResult = new HashMap<String, Object>();
+
+            rmiResult = Utils.manageAaaObject(rmiClient, "addAuthorization", log, out, rmiParams);
+        } catch (RemoteException e) {
+            return;
         }
-        } catch (Exception e) {
-            this.log.error ("caught exception" + e.getMessage());
-        }
-        Map outputMap = new HashMap();
+
+        Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "Added authorization");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        aaa.getTransaction().commit();
-        this.log.debug("servlet.end");      
+        this.log.debug("servlet.end");
     }
 
     public void

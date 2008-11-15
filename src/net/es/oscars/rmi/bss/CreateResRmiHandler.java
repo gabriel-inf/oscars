@@ -1,4 +1,4 @@
-package net.es.oscars.rmi;
+package net.es.oscars.rmi.bss;
 
 /**
  * rmi handler for createReservation. Interfaces to ReservationManager.createReservation
