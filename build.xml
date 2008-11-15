@@ -290,7 +290,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, *.tar.gz" />
-            <fileset dir="conf/rmi" includes="rmi.properties" />
+            <fileset dir="conf/wbui" includes="rmi.properties" />
             <classes dir="${build.classes}" includes="**/oscars/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class"/>
             <lib dir="tmplib" includes="*.jar"/>
         </war>
