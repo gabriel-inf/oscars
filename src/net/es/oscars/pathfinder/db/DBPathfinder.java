@@ -85,12 +85,11 @@ public class DBPathfinder extends Pathfinder implements PCE {
             throw new PathfinderException("An ERO must have associated layer 2 or layer 3 info");
         }
         //Restores any link objects in original path that were replaced by IDRefs
-        try{
+        try {
             tc.mergePathInfo(pathInfo, refPathInfo, false);
-        }catch(BSSException e){
+        } catch(BSSException e) {
             throw new PathfinderException(e.getMessage());
         }
-
         this.log.debug("findPath.End");
         return pathInfo;
     }
@@ -136,7 +135,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
         PathInfo tracePathInfo = tracePF.findPath(pathInfo, reservation);
         CtrlPlaneHopContent[] traceHops = tracePathInfo.getPath().getHop();
 
-
         boolean foundIngress = false;
         String ingress = "";
         String egress = "";
@@ -156,7 +154,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
             throw new PathfinderException("Could not find any local hops!");
         }
 
-
         Long bandwidth = reservation.getBandwidth();
         Long startTime = reservation.getStartTime();
         Long endTime = reservation.getEndTime();
@@ -167,59 +164,47 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (foundPath == null) {
             throw new PathfinderException("Could not find path!");
         }
-
-        PathElem pathElem = foundPath.getPathElem();
-        if (pathElem == null) {
+        List<PathElem> pathElems = foundPath.getPathElems();
+        if (pathElems.isEmpty()) {
             throw new PathfinderException("Could not find path!");
         }
         int totalHops = 0;
-        while (pathElem.getNextElem() != null) {
+        for (PathElem pathElem: pathElems) {
             tmpHops[totalHops] = new CtrlPlaneHopContent();
             tmpHops[totalHops].setLinkIdRef(pathElem.getLink().getFQTI());
             totalHops++;
-            pathElem = pathElem.getNextElem();
         }
         tmpHops[totalHops] = new CtrlPlaneHopContent();
-        tmpHops[totalHops].setLinkIdRef(pathElem.getLink().getFQTI());
-
+        PathElem egressPathElem = pathElems.get(pathElems.size()-1);
+        tmpHops[totalHops].setLinkIdRef(egressPathElem.getLink().getFQTI());
         CtrlPlaneHopContent[] hops = new CtrlPlaneHopContent[totalHops];
-
         for (int i = 0; i < totalHops; i++) {
             hops[i] = tmpHops[i];
         }
-
         newPathContent.setHop(hops);
         pathInfo.setPath(newPathContent);
-        reservation.getPath().setExplicit(true);
-
-
+        reservation.getPath("intra").setExplicit(true);
         this.log.debug("handleLayer3ERO.end");
     }
 
-
     private void handleLayer2ERO(PathInfo pathInfo, Reservation reservation)
             throws PathfinderException {
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
 
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
         Hashtable<String, String> parseResults;
         String fqti = null;
 
         String srcEndpoint = layer2Info.getSrcEndpoint();
         String destEndpoint = layer2Info.getDestEndpoint();
-
         this.log.debug(srcEndpoint);
         this.log.debug(destEndpoint);
-
         this.log.debug("handleLayer2ERO.endpoints");
 
         srcEndpoint = this.resolveToFQTI(srcEndpoint);
         destEndpoint = this.resolveToFQTI(destEndpoint);
-
         this.log.debug("handleLayer2ERO.resolved");
 
-
         Domain domain = domDAO.getLocalDomain();
-
         Long bandwidth = reservation.getBandwidth();
         Long startTime = reservation.getStartTime();
         Long endTime = reservation.getEndTime();
@@ -231,10 +216,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         } else {
             hops = null;
         }
-
         this.log.debug("handleLayer2ERO.initialized");
-
-
         if (hops != null) {
             if (hops.length == 0) {
                 hops = new CtrlPlaneHopContent[2];
@@ -254,7 +236,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
 
         this.log.debug("handleLayer2ERO.normalized");
-
         // an array to hold the local portion of the path
         ArrayList<String> localLinkIds = new ArrayList<String>();
         int localLinkIndex = 0;
@@ -262,12 +243,10 @@ public class DBPathfinder extends Pathfinder implements PCE {
         // store where the local stuff begins and ends
         int firstLocalHopIndex = 0;
         int lastLocalHopIndex = 0;
-
         String localIngress = "";
         String localEgress = "";
 
         boolean foundLocalSegment = false;
-
         for (int i=0; i < hops.length; i++) {
             CtrlPlaneHopContent ctrlPlaneHop = hops[i];
             String hopId = ctrlPlaneHop.getLinkIdRef();
@@ -277,7 +256,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
                     "LINK topology identifiers");
             }
             this.log.debug("hop id (original):["+hopId+"]");
-
             parseResults = URNParser.parseTopoIdent(hopId);
             fqti = parseResults.get("fqti");
             String domainId = parseResults.get("domainId");
@@ -294,7 +272,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 lastLocalHopIndex = i;
                 localEgress = fqti;
             }
-
             // reset id ref to local topology identifier
             ctrlPlaneHop.setLinkIdRef(fqti);
             // make schema validator happy
@@ -303,8 +280,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.log.debug("first local hop is: "+firstLocalHopIndex);
         this.log.debug("last local hop is: "+lastLocalHopIndex);
 
-
-
         // Calculate path
         // case 1: we get passed NO local links
         // we need to know our ingress at the very least,
@@ -312,7 +287,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (!foundLocalSegment) {
             throw new PathfinderException("Path must contain at least the ingress link to local domain ["+domain.getTopologyIdent()+"]");
         }
-
 
         // case 2: We get passed ONE or MORE local links
         // The very first one should be our ingress
@@ -331,7 +305,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
             }
         }
         this.log.debug("handleEro.foundLocalPath");
-
 
         if (lastLocalHopIndex < hops.length - 1) {
             String lastLocalLink = localLinkIds.get(localLinkIndex -1);
@@ -352,13 +325,12 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         this.log.debug("handleEro.injectedPrevious");
 
-
         String nextDomainIngress = "";
         boolean foundNextIngress = false;
         // inject local bits of the calculated path to the reservation localPath
         int j = firstLocalHopIndex;
-        PathElem pathElem = localPath.getPathElem();
-        while (pathElem != null) {
+        List<PathElem> pathElems = localPath.getPathElems();
+        for (PathElem pathElem: pathElems) {
             String linkId = pathElem.getLink().getFQTI();
 
             parseResults = URNParser.parseTopoIdent(linkId);
@@ -380,13 +352,10 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 nextDomainIngress = fqti;
                 foundNextIngress = true;
             }
-            pathElem = pathElem.getNextElem();
         }
         this.log.debug("handleEro.injectedIntoLocal");
 
-
         for (int i = lastLocalHopIndex + 1; i < hops.length; i++) {
-
             if (foundNextIngress && i == lastLocalHopIndex + 1) {
                 String nextInPath = hops[i].getLinkIdRef();
                 if (!nextInPath.equals(nextDomainIngress)) {
@@ -405,72 +374,49 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         this.log.debug("handleEro.injectedNext");
 
-
-
         String finalPath = "Path is:\n";
-
         CtrlPlaneHopContent[] resultHops = new CtrlPlaneHopContent[totalHops];
         for (int i = 0; i < totalHops; i++) {
             resultHops[i] = tmpHops[i];
             finalPath += resultHops[i].getLinkIdRef()+"\n";
         }
         this.log.debug(finalPath);
-
-
         newPath.setHop(resultHops);
-
         pathInfo.setPath(newPath);
 
         String altPathStr = "Local alternate path\n";
         Path altPath = this.findLocalAltPath(localIngress, localEgress, bandwidth, startTime, endTime, reservation, "L2", localPath);
         if (altPath != null) {
-            PathElem ape = altPath.getPathElem();
-            while (ape != null) {
+            List<PathElem> apes = altPath.getPathElems();
+            for (PathElem ape: apes) {
                 String altFqti = ape.getLink().getFQTI();
                 altPathStr += altFqti+"\n";
-                ape = ape.getNextElem();
             }
         } else {
             this.log.info("No alt path:\n\n");
         }
         this.log.debug(altPathStr);
-
-
         this.log.debug("handleExplicitRouteObject.finish");
     }
 
     private Path joinPaths(Path pathA, Path pathB) {
 
         Path result = new Path();
-        if (pathA.getPathElem() != null) {
-            // very first element of the first path
-            PathElem firstOfA = pathA.getPathElem();
-            if (pathB.getPathElem() != null) {
-                // find very last element of the first path
-                PathElem lastOfA = pathA.getPathElem();
-                while (lastOfA.getNextElem() != null) {
-                    lastOfA = lastOfA.getNextElem();
+        if (!pathA.getPathElems().isEmpty()) {
+            // if need to join
+            if (!pathB.getPathElems().isEmpty()) {
+                // probably safer than the shorter version with setPathElems
+                List<PathElem> pathAElems = pathA.getPathElems();
+                for (PathElem pathAElem: pathAElems) {
+                    result.addPathElem(pathAElem);
                 }
-                Link lastLinkOfA = lastOfA.getLink();
-
-                // first path element of the second path
-                PathElem firstOfB = pathB.getPathElem();
-                Link firstLinkOfB = firstOfB.getLink();
-                while (lastLinkOfA.equalsTopoId(firstLinkOfB)) {
-                    firstOfB = firstOfB.getNextElem();
-                    firstLinkOfB = firstOfB.getLink();
+                List<PathElem> pathBElems = pathB.getPathElems();
+                for (PathElem pathBElem: pathBElems) {
+                    result.addPathElem(pathBElem);
                 }
-
-                lastOfA.setNextElem(firstOfB);
+                // FIXME: check for sane path
             } else {
                 result = pathA;
-            }
-
-            // ok, joined the two, now setPath() for all the pathElems
-            result.setPathElem(firstOfA);
-            while (firstOfA.getNextElem() != null) {
-                firstOfA.setPath(result);
-                firstOfA = firstOfA.getNextElem();
             }
         } else {
             result = pathB;
@@ -478,11 +424,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         return result;
     }
 
-
-
-
     public Path directPath(Link src, Link dst) throws PathfinderException {
-
         this.log.debug("checking if "+src.getFQTI()+" and "+dst.getFQTI()+" are directly connected");
         boolean linked = false;
         if (!src.isValid()) {
@@ -504,30 +446,25 @@ public class DBPathfinder extends Pathfinder implements PCE {
             Path newPath = new Path();
             PathElem pathElemSrc = new PathElem();
             pathElemSrc.setLink(src);
+            newPath.addPathElem(pathElemSrc);
 
             PathElem pathElemDst = new PathElem();
             pathElemDst.setLink(dst);
-            pathElemSrc.setNextElem(pathElemDst);
-
-            newPath.setPathElem(pathElemSrc);
+            newPath.addPathElem(pathElemDst);
 
             return(newPath);
-        } else {
-            this.log.debug(" no, are not connected");
-            return null;
         }
+        this.log.debug(" no, are not connected");
+        return null;
     }
 
-
-
     public Path findPathBetween(String src, String dst, Long bandwidth,
-                                Long startTime, Long endTime, Reservation reservation, String layer)
+                                Long startTime, Long endTime,
+                                Reservation reservation, String layer)
             throws PathfinderException {
+
         this.log.debug("findPathBetween.start");
-
-
         DomainDAO domDAO = new DomainDAO(this.dbname);
-
         if (layer.equals("L2")) {
             Link srcLink = domDAO.getFullyQualifiedLink(src);
             Link dstLink = domDAO.getFullyQualifiedLink(dst);
@@ -544,7 +481,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
 
         Path path = new Path();
-
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph =
             dbga.dbToGraph(bandwidth, startTime, endTime, reservation, this.objectsToReweigh, null);
         src = URNParser.parseTopoIdent(src).get("fqti");
@@ -557,27 +493,15 @@ public class DBPathfinder extends Pathfinder implements PCE {
         } catch (Exception ex) {
             throw new PathfinderException(ex.getMessage());
         }
-
         if ((sp == null) || (sp.getPathEdgeList() == null)) {
             return null;
         }
-
-
         peIt = sp.getPathEdgeList().iterator();
 
         PathElem pathElem = null;
-        PathElem prvPathElem = null;
-        boolean firstEdge = true;
-        boolean lastEdge = false;
-
         while (peIt.hasNext()) {
             DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
-            if (!peIt.hasNext()) {
-                lastEdge = true;
-            }
-
             String[] cols = edge.toString().split("\\s\\:\\s");
-
             Double weight = graph.getEdgeWeight(edge);
             this.log.debug(edge);
 
@@ -589,36 +513,25 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 Link link = domDAO.getFullyQualifiedLink(topoId);
                 pathElem = new PathElem();
                 pathElem.setLink(link);
-                if (firstEdge) {
-                    firstEdge = false;
-                    path.setPathElem(pathElem);
-                } else {
-                    prvPathElem.setNextElem(pathElem);
-                }
-                prvPathElem = pathElem;
+                path.addPathElem(pathElem);
             }
         }
-
         Link lastLink = domDAO.getFullyQualifiedLink(dst);
         PathElem lastPathElem = new PathElem();
         lastPathElem.setLink(lastLink);
-        prvPathElem.setNextElem(lastPathElem);
-
-
+        path.addPathElem(lastPathElem);
         this.log.debug("findPathBetween.end");
         return path;
-
     }
 
 
     public Path findLocalAltPath(String src, String dst, Long bandwidth,
-            Long startTime, Long endTime, Reservation reservation, String layer, Path primaryPath)
+            Long startTime, Long endTime, Reservation reservation,
+            String layer, Path primaryPath)
                 throws PathfinderException {
+
         this.log.debug("findLocalAltPath.start");
-
-
         DomainDAO domDAO = new DomainDAO(this.dbname);
-
         if (layer.equals("L2")) {
             Link srcLink = domDAO.getFullyQualifiedLink(src);
             Link dstLink = domDAO.getFullyQualifiedLink(dst);
@@ -628,11 +541,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 throw new PathfinderException("Could not locate link in DB for string: "+dst);
             }
         }
-
         HashMap<String, Long> alreadyReserved = new HashMap<String, Long>();
-        PathElem ppe = primaryPath.getPathElem();
-
-        while (ppe != null) {
+        List<PathElem> ppes = primaryPath.getPathElems();
+        for (PathElem ppe: ppes) {
             Link link = ppe.getLink();
             Port port = link.getPort();
             Node node = port.getNode();
@@ -646,11 +557,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
             } else {
                 alreadyReserved.put(portFQTI, bandwidth);
             }
-            ppe = ppe.getNextElem();
         }
-
         Path path = new Path();
-
 
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph =
                 dbga.dbToGraph(bandwidth, startTime, endTime, reservation, this.objectsToReweigh, alreadyReserved);
@@ -665,28 +573,16 @@ public class DBPathfinder extends Pathfinder implements PCE {
             this.log.error(ex);
             throw new PathfinderException(ex.getMessage());
         }
-
         if ((sp == null) || (sp.getPathEdgeList() == null)) {
             this.log.info("No alternate path found");
             return null;
         }
-
-
         peIt = sp.getPathEdgeList().iterator();
-
         PathElem pathElem = null;
-        PathElem prvPathElem = null;
-        boolean firstEdge = true;
-        boolean lastEdge = false;
 
         while (peIt.hasNext()) {
             DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
-            if (!peIt.hasNext()) {
-                lastEdge = true;
-            }
-
             String[] cols = edge.toString().split("\\s\\:\\s");
-
             Double weight = graph.getEdgeWeight(edge);
             this.log.debug(edge);
 
@@ -698,22 +594,13 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 Link link = domDAO.getFullyQualifiedLink(topoId);
                 pathElem = new PathElem();
                 pathElem.setLink(link);
-                if (firstEdge) {
-                    firstEdge = false;
-                    path.setPathElem(pathElem);
-                } else {
-                    prvPathElem.setNextElem(pathElem);
-                }
-                prvPathElem = pathElem;
+                path.addPathElem(pathElem);
             }
         }
-
         Link lastLink = domDAO.getFullyQualifiedLink(dst);
         PathElem lastPathElem = new PathElem();
         lastPathElem.setLink(lastLink);
-        prvPathElem.setNextElem(lastPathElem);
-
-
+        path.addPathElem(lastPathElem);
         this.log.debug("findLocalAltPath.end");
         return path;
     }
@@ -736,6 +623,4 @@ public class DBPathfinder extends Pathfinder implements PCE {
     public void setObjectsToReweigh(HashMap<String, Double> objectsToReweigh) {
         this.objectsToReweigh = objectsToReweigh;
     }
-
-
 }

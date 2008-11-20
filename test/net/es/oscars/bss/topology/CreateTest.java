@@ -2,12 +2,14 @@ package net.es.oscars.bss.topology;
 
 import org.testng.annotations.*;
 
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import org.hibernate.*;
 
 import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
+import net.es.oscars.bss.CommonReservation;
 import net.es.oscars.bss.BSSException;
 
 /**
@@ -206,12 +208,16 @@ public class CreateTest {
         assert interdomainRoute != null;
     }
 
-  // sets up all path structure in this method to test cascading save
-  // as well as path creation
+  // Sets up all path structure in this method to test cascading save
+  // as well as path creation.  Note that path has to be created as part
+  // of reservation.
   @Test(dependsOnMethods={ "portCreate" })
     public void pathCreate() throws BSSException {
         this.sf.getCurrentSession().beginTransaction();
-        PathDAO pathDAO = new PathDAO(this.dbname);
+        ReservationDAO reservationDAO = new ReservationDAO(this.dbname);
+        Reservation resv = new Reservation();
+        CommonReservation common = new CommonReservation();
+        common.setParameters(resv, "path test");
         Path path = new Path();
         path.setExplicit(false);
 
@@ -235,6 +241,7 @@ public class CreateTest {
         path.setLayer3Data(layer3Data);
 
         LinkDAO linkDAO = new LinkDAO(this.dbname);
+        List<PathElem> pathElems = new ArrayList<PathElem>();
 
         // create ingress and egress elements in path
         PathElem ingressPathElem = new PathElem();
@@ -256,6 +263,7 @@ public class CreateTest {
         link0.setPort(port);
         linkDAO.create(link0);
         ingressPathElem.setLink(link0);
+        pathElems.add(ingressPathElem);
 
         PathElem egressPathElem = new PathElem();
         egressPathElem.setDescription("egress");
@@ -275,12 +283,13 @@ public class CreateTest {
         ipaddr1.setLink(link1);
         linkDAO.create(link1);
         egressPathElem.setLink(link1);
+        pathElems.add(egressPathElem);
 
-        // ingressPathElem.setNextElem(egressPathElem);
-        path.setPathElem(ingressPathElem);
-        pathDAO.create(path);
+        path.setPathElems(pathElems);
+        resv.setPath(path, "intra");
+        reservationDAO.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
-        assert path != null;
+        assert path.getId() != null;
     }
 
   @Test(dependsOnMethods={ "pathCreate" })

@@ -12,32 +12,31 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 public class BandwidthFilter implements PolicyFilter {
     private Logger log;
 
-	public BandwidthFilter() {
+    public BandwidthFilter() {
         this.log = Logger.getLogger(this.getClass());
-	}
+    }
 	
-	public void applyFilter(PathInfo pathInfo, 
-	        CtrlPlaneHopContent[] hops,
-			List<Link> localLinks,
-			Reservation newReservation, 
-			List<Reservation> activeReservations) throws BSSException {
+    public void applyFilter(PathInfo pathInfo, CtrlPlaneHopContent[] hops,
+			                      List<Link> localLinks, Reservation newReservation, 
+			                      List<Reservation> activeReservations)
+            throws BSSException {
 		
         List<BandwidthIntervalAggregator> aggrs =  null;
-        
+
         /* Create a hash with each link as the key, and the intervals it
         is in use as the value. Initialize with linkIntervals from the new path
-        and set the first interval to the reservation time.        
-        This is a special case because we want to put all the linkIntervals from the
+        and set the first interval to the reservation time. This
+        is a special case because we want to put all the linkIntervals from the
         new reservation in this map.
         */
         Map<Link,List<BandwidthIntervalAggregator>> linkIntervals =
-            this.getLocalLinkIntervals(pathInfo, localLinks, newReservation.getStartTime(),
+            this.getLocalLinkIntervals(pathInfo, localLinks,
+                          newReservation.getStartTime(),
                           newReservation.getEndTime(),
                           newReservation.getBandwidth());
-        
 
-        /* Insert into linkIntervals the intervals from the common links between the 
-         * new reservation and all the existing reservations */
+        /* Insert into linkIntervals the intervals from the common links between
+         * the new reservation and all the existing reservations */
         for (Reservation resv: activeReservations) {
             // make sure we don't check the reservation against itself!
             if (!resv.getGlobalReservationId().equals(newReservation.getGlobalReservationId())) {
@@ -45,12 +44,13 @@ public class BandwidthFilter implements PolicyFilter {
             }
         }
         
-        /* Go through each link in the path and check for oversubscription in the port */
+        /* Check each link in the path for oversubscription in the port */
         for (Link link: linkIntervals.keySet()) {
             // TODO:  handling where link capacity would be less
             Port port = link.getPort();
             if (port == null) {
-                BSSException ex = new BSSException("Database error: A hop in the path does NOT have an " +
+                BSSException ex =
+                    new BSSException("Database error: A hop in the path does NOT have an " +
                         "associated physical interface. Hop: ["+link.getFQTI()+"]");
                 this.log.error(ex);
                 throw ex;
@@ -75,11 +75,8 @@ public class BandwidthFilter implements PolicyFilter {
                   " bps > " + maximumReservableCapacity + " bps");
             }
         }
-       
-	}
+	 }
 
-	
-	
 	 /**
      * Retrieves link bandwidth intervals given a PathInfo instance.
      *
@@ -101,7 +98,7 @@ public class BandwidthFilter implements PolicyFilter {
         if (localLinks == null) {
             throw new BSSException("no local links provided to getLocalLinkIntervals");
         }
-        for (Link link : localLinks) {
+        for (Link link: localLinks) {
             // initialize aggregator array for link
             List<BandwidthIntervalAggregator> aggrs = new ArrayList<BandwidthIntervalAggregator>();
             //check granularity
@@ -113,7 +110,6 @@ public class BandwidthFilter implements PolicyFilter {
         this.log.info("getLocalLinkIntervals.end");
         return linkIntervals;
     }
-    
 
     /**
      * Add to list of Link instances matching linkIntervals in the new reservation.
@@ -124,14 +120,13 @@ public class BandwidthFilter implements PolicyFilter {
      * @throws BSSException
      */
     private void getMatchingLinkIntervals(Map<Link,List<BandwidthIntervalAggregator>> linkIntervals,
-                                  Reservation resv, Reservation newResv) throws BSSException{
+                                  Reservation resv, Reservation newResv)
+            throws BSSException{
 
         Link link = null;
-
-        // get start of path
-        PathElem pathElem = resv.getPath().getPathElem();
-
-        while (pathElem != null) {
+        // get path list
+        List<PathElem> pathElems = resv.getPath("intra").getPathElems();
+        for (PathElem pathElem: pathElems) {
             link = pathElem.getLink();
             if (linkIntervals.containsKey(link)) {
                 // update bandwidth resources
@@ -140,7 +135,6 @@ public class BandwidthFilter implements PolicyFilter {
                         resv.getEndTime(), newResv.getStartTime(),
                         newResv.getEndTime(), resv.getBandwidth()));
             }
-            pathElem = pathElem.getNextElem();
         }
     }
     
@@ -153,16 +147,14 @@ public class BandwidthFilter implements PolicyFilter {
      */
     private void checkGranularity(Link link, Long capacity) throws BSSException{
         long granularity = 1000000L;//default=1Mbps
-        if(link.getGranularity() != null && link.getGranularity() > 0){
+        if (link.getGranularity() != null && link.getGranularity() > 0) {
             granularity = link.getGranularity();
         }
         this.log.debug("capacity=" + capacity + ", granularity=" + granularity);
-        if((capacity % granularity) != 0){
+        if ((capacity % granularity) != 0) {
             throw new BSSException("Requested path only supports " +
                     "requests with a bandwidth granularity of " + 
                     (granularity/1000000) + "Mbps.");
         }
     }
-
-	
 }

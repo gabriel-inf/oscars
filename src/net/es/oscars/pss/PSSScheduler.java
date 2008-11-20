@@ -44,7 +44,7 @@ public class PSSScheduler {
         for (Reservation resv: reservations) {
             try {
                 // call PSS to schedule LSP setup(s)
-                String pathSetupMode = resv.getPath().getPathSetupMode();
+                String pathSetupMode = resv.getPath("intra").getPathSetupMode();
                 if (pathSetupMode.equals("timer-automatic")) {
                     this.log.info("pendingReservation: " + resv.getGlobalReservationId());
                     // resv must be set to proper status inside PSS

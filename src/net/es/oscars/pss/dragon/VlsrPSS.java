@@ -31,8 +31,8 @@ public class VlsrPSS implements PSS {
      */
     public String createPath(Reservation resv) throws PSSException{
         this.log.info("vlsrpss.create.start");
-        Path path = resv.getPath();
-        Link ingressLink = path.getPathElem().getLink();
+        Path path = resv.getPath("intra");
+        Link ingressLink = path.getPathElems().get(0).getLink();
         String queueName = this.generateQueueName(ingressLink);
         
         try {
@@ -65,8 +65,8 @@ public class VlsrPSS implements PSS {
     public String refreshPath(Reservation resv) throws PSSException{
         this.log.info("vlsrpss.refresh.start");
         this.log.info("vlsrpss.teardown.start");
-        Path path = resv.getPath();
-        Link ingressLink = path.getPathElem().getLink();
+        Path path = resv.getPath("intra");
+        Link ingressLink = path.getPathElems().get(0).getLink();
         String queueName = this.generateQueueName(ingressLink);
         try {
             String gri = resv.getGlobalReservationId();
@@ -96,8 +96,8 @@ public class VlsrPSS implements PSS {
      */
     public String teardownPath(Reservation resv, String newStatus) throws PSSException{
         this.log.info("vlsrpss.teardown.start");
-        Path path = resv.getPath();
-        Link ingressLink = path.getPathElem().getLink();
+        Path path = resv.getPath("intra");
+        Link ingressLink = path.getPathElems().get(0).getLink();
         String queueName = this.generateQueueName(ingressLink);
         try {
             String gri = resv.getGlobalReservationId();

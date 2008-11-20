@@ -46,7 +46,6 @@ public class ReservationTest {
         CommonReservation common = new CommonReservation();
         common.setParameters(resv, DESCRIPTION);
 
-        PathDAO pathDAO = new PathDAO(this.dbname);
         Path path = new Path();
         path.setExplicit(false);
 
@@ -119,9 +118,10 @@ public class ReservationTest {
         linkDAO.create(link);
         ipaddrDAO.create(ipaddr);
         ingressPathElem.setLink(link);
-
-        path.setPathElem(ingressPathElem);
-        resv.setPath(path);
+        List<PathElem> pathElems = new ArrayList<PathElem>();
+        pathElems.add(ingressPathElem);
+        path.setPathElems(pathElems);
+        resv.setPath(path, "intra");
         dao.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
     }

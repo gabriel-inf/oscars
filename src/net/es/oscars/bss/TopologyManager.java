@@ -47,6 +47,7 @@ public class TopologyManager {
     private SessionFactory sf;
     private String dbname;
     private ReservationManager rm;
+    private PathManager pathMgr;
     private Utils utils;
     private String localDomain;
 
@@ -925,12 +926,12 @@ public class TopologyManager {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.statusReservations(status);
         for (Reservation r : reservations) {
-            Path oldPath = r.getPath();
+            Path oldPath = r.getPath("intra");
 
             // find old ingress and egress IP's
             // TODO:  this may no longer be necessary
-            PathElem pathElem = oldPath.getPathElem();
-            while (pathElem != null) {
+            List<PathElem> pathElems = oldPath.getPathElems();
+            for (PathElem pathElem: pathElems) {
                 if (pathElem.getDescription() != null) {
                     if (pathElem.getDescription().equals("ingress")) {
                         link = pathElem.getLink();
@@ -950,7 +951,6 @@ public class TopologyManager {
                         }
                     }
                 }
-                pathElem = pathElem.getNextElem();
             }
 
             //TODO:  build layer-specific info from old path in database
@@ -959,7 +959,7 @@ public class TopologyManager {
             try {
                 TypeConverter tc = new TypeConverter();
                 // finds path and checks for oversubscription
-                path = this.rm.getPath(r, pathInfo);
+                path = this.pathMgr.getPath(r, pathInfo);
             } catch (BSSException e) {
                 String msg = "Reservation invalidated due to oversubscription.";
                 EventProducer eventProducer = new EventProducer();
@@ -971,7 +971,7 @@ public class TopologyManager {
                 continue;
             }
             if (status.equals("PENDING")) {
-                r.setPath(path);
+                r.setPath(path, "intra");
                 dao.update(r);
             } else if (status.equals("ACTIVE")) {
                 if (!this.isDuplicate(oldPath, path)) {
@@ -995,21 +995,6 @@ public class TopologyManager {
      */
     private void clean() {
         this.log.info("clean.start");
-        // remove any path that is not part of a reservation
-        this.log.info("removing paths that are no longer in use");
-
-        PathDAO pathDAO = new PathDAO(this.dbname);
-        List<Path> paths = pathDAO.list();
-
-        // TODO:  check to make sure this works or is needed
-        for (Path path : paths) {
-            Reservation resv = path.getReservation();
-
-            if (resv == null) {
-                pathDAO.remove(path);
-            }
-        }
-        this.log.info("finished removing paths that are no longer in use");
 
         // remove all invalid ipaddrs that are not part of any reservation
         // (ipaddrs associated with pending and active reservations are
@@ -1102,36 +1087,23 @@ public class TopologyManager {
             return false;
         }
         // first check that paths are the same length
-        int firstCtr = 0;
-        PathElem pathElem = savedPath.getPathElem();
-
-        while (pathElem != null) {
-            firstCtr++;
-            pathElem = pathElem.getNextElem();
-        }
-        int secondCtr = 0;
-        pathElem = checkPath.getPathElem();
-        while (pathElem != null) {
-            secondCtr++;
-            pathElem = pathElem.getNextElem();
-        }
-        if (firstCtr != secondCtr) {
+        List<PathElem> savedPathElems = savedPath.getPathElems();
+        List<PathElem> checkPathElems = checkPath.getPathElems();
+        if (savedPathElems.size() != checkPathElems.size()) {
             this.log.debug("two paths have different lengths");
 
             return false;
         }
+        int ctr = 0;
         // now that know paths are the same length,
         // check each element of the two paths for equality
-        pathElem = savedPath.getPathElem();
-        PathElem checkPathElem = checkPath.getPathElem();
-        while (pathElem != null) {
-            if (!pathElem.equals(checkPathElem)) {
+        for (PathElem pathElem: savedPathElems) {
+            if (!pathElem.equals(checkPathElems.get(ctr))) {
                 this.log.debug("two paths are different");
 
                 return false;
             }
-            pathElem = pathElem.getNextElem();
-            checkPathElem = checkPathElem.getNextElem();
+            ctr++;
         }
         // check to see if the layer-specific information is the same
         Layer2DataDAO layer2DataDAO = new Layer2DataDAO(this.dbname);

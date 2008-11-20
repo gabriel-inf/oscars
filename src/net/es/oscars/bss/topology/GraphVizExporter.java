@@ -188,7 +188,10 @@ public class GraphVizExporter {
        }
    }
 
-   public void addResvEdge(PathElem pe, String gri, HashMap<String, HashMap<String, HashMap<String, String>>> griToResvEdges, boolean isFirst, HashMap<String, ArrayList<String>> resvEndpointGroups) {
+   public void addResvEdge(PathElem pe, PathElem nextPe, String gri,
+           HashMap<String, HashMap<String, HashMap<String, String>>> griToResvEdges,
+           boolean isFirst,
+           HashMap<String, ArrayList<String>> resvEndpointGroups) {
        if (pe == null) {
            return;
        }
@@ -215,8 +218,7 @@ public class GraphVizExporter {
            addToGroup = true;
        }
 
-       if (pe.getNextElem() != null) {
-           PathElem nextPe = pe.getNextElem();
+       if (nextPe != null) {
            Link nextLink = nextPe.getLink();
            Port nextPort = nextLink.getPort();
            Node nextNode = nextPort.getNode();
@@ -313,33 +315,36 @@ public class GraphVizExporter {
 
 //           System.out.println(gri);
            resvNodes.add(gri);
-           Path path = resv.getPath();
-           PathElem pe = path.getPathElem();
-           if (pe != null) {
-               Link link = pe.getLink();
-               this.addResvEdge(pe, gri, griToResvEdges, true, resvEndpointGroups);
-               this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
-               while (pe.getNextElem() != null) {
-                   pe = pe.getNextElem();
-                   link = pe.getLink();
-                   this.addResvEdge(pe, gri, griToResvEdges, false, resvEndpointGroups);
-                   this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
+           Path path = resv.getPath("intra");
+           List<PathElem> pathElems = path.getPathElems();
+           PathElem nextPe = null;
+           for (int i = 0; i < pathElems.size(); i++) {
+               PathElem pe = pathElems.get(i);
+               if (i < pathElems.size()-1) {
+                  nextPe = pathElems.get(i+1);
+               } else {
+                  nextPe = null;
                }
-           }
-           /*
-           pe = path.getInterPathElem();
-           if (pe != null) {
                Link link = pe.getLink();
-               this.addResvEdge(pe, gri, griToResvEdges, true);
+               this.addResvEdge(pe, nextPe, gri, griToResvEdges, true,
+                                resvEndpointGroups);
                this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
-               while (pe.getNextElem() != null) {
-                   pe = pe.getNextElem();
-                   link = pe.getLink();
-                   this.addResvEdge(pe, gri, griToResvEdges, false);
-                   this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
-               }
            }
-           Layer2Data l2data = resv.getPath().getLayer2Data();
+           /* INTERDOMAIN:  FIXME (wasn't previously functional)
+           path = resv.getPath("inter");
+           pathElems = path.getPathElems();
+           for (int i = 0; i < pathElems.size(); i++) {
+               PathElem pe = pathElems.get(i);
+               if (i < pathElems.size()-1) {
+                  nextPe = pathElems.get(i+1);
+               } else {
+                  nextPe = null;
+               }
+               Link link = pe.getLink();
+               this.addResvEdge(pe, nextPe, gri, griToResvEdges, true);
+               this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
+           }
+           Layer2Data l2data = path.getLayer2Data();
            if (l2data != null) {
                String src = l2data.getSrcEndpoint();
                String dst = l2data.getDestEndpoint();

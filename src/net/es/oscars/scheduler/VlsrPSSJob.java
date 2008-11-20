@@ -121,11 +121,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         ArrayList<String> ero = null;
         ArrayList<String> subnetEro = null;
         Layer2Data layer2Data = path.getLayer2Data();
-        Link ingressLink = path.getPathElem().getLink();
+        Link ingressLink = path.getPathElems().get(0).getLink();
         Link egressLink= this.getEgressLink(path);
         int ingressLinkDescr = this.getLinkDescr(path, true);
         int egressLinkDescr = this.getLinkDescr(path, false);
@@ -273,21 +273,21 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             /* Create egress local id */
             if((!egressPortTopoId.startsWith("G")) && 
                     DragonLocalID.UNTAGGED_PORT_GROUP != egrLocalId.getType()){
-	            csa.deleteLocalId(egrLocalId);
-	            if(csa.createLocalId(egrLocalId, egrLocalIdIface)){
-	                this.log.info("Created local-id " + egrLocalId.getType() + " " +
-	                    egrLocalId.getNumber());
-	            }else{
-	                this.log.error("unable to create dest local-id " + 
-	                    lsp.getLSPName() + ": " + csa.getError());
-	                throw new PSSException("Unable to create LSP: Dest local-id " + 
-	                    csa.getError());
-	            }
-	    
-	            /* Remove port forwarding */
-	            if(sshPortForward){
-	                egressSshSess.disconnect();
-	            }
+                csa.deleteLocalId(egrLocalId);
+                if (csa.createLocalId(egrLocalId, egrLocalIdIface)) {
+                    this.log.info("Created local-id " + egrLocalId.getType() +
+                            " " + egrLocalId.getNumber());
+                } else {
+                    this.log.error("unable to create dest local-id " + 
+                            lsp.getLSPName() + ": " + csa.getError());
+                    throw new PSSException("Unable to create LSP: Dest local-id " + 
+                            csa.getError());
+                }
+
+                /* Remove port forwarding */
+                if (sshPortForward) {
+                    egressSshSess.disconnect();
+                }
             }
             
             /* Logout */
@@ -343,8 +343,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         
         /* Create ingress local-id */
         if(hasNarb && ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE &&
-        		(!ingressPortTopoId.startsWith("G")) && 
-        		DragonLocalID.UNTAGGED_PORT_GROUP != ingLocalId.getType()){
+            (!ingressPortTopoId.startsWith("G")) && 
+            DragonLocalID.UNTAGGED_PORT_GROUP != ingLocalId.getType()){
             
             /* Delete local-id if ingress and egress not the same */
             if(!(ingress.getHostAddress().equals(egress.getHostAddress()) && 
@@ -452,8 +452,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         String promptPattern = this.props.getProperty("promptPattern");
-        Path path = resv.getPath();
-        Link ingressLink = path.getPathElem().getLink(); 
+        Path path = resv.getPath("intra");
+        Link ingressLink = path.getPathElems().get(0).getLink(); 
         String telnetAddress = this.findTelnetAddress(ingressLink);
         int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
@@ -558,8 +558,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         String promptPattern = this.props.getProperty("promptPattern");
-        Path path = resv.getPath();
-        Link ingressLink = path.getPathElem().getLink();  
+        Path path = resv.getPath("intra");
+        Link ingressLink = path.getPathElems().get(0).getLink();  
         String gri = resv.getGlobalReservationId();
         String telnetAddress = this.findTelnetAddress(ingressLink);
         int port = this.findTelnetPort(sshPortForward);
@@ -657,15 +657,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      *
      */
     private Link getEgressLink(Path path){
-        PathElem elem = path.getPathElem();
-        PathElem prevElem = null;
-        
-        while(elem != null){
-            prevElem = elem;
-            elem = elem.getNextElem();
-        }
-        
-        return prevElem.getLink();
+        List<PathElem> elems = path.getPathElems();
+        return elems.get(elems.size()-1).getLink();
     }
     
     /**
@@ -678,19 +671,16 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      *
      */
     private int getLinkDescr(Path path, boolean isIngress){
-        PathElem elem = path.getPathElem();
-        PathElem prevElem = null;
-        String linkDescr = elem.getLinkDescr();
-        
-        while((!isIngress) && elem != null){
-            prevElem = elem;
-            linkDescr = prevElem.getLinkDescr();
-            elem = elem.getNextElem();
+        List<PathElem> elems = path.getPathElems();
+        String linkDescr = null;
+        if (isIngress) {
+            linkDescr = elems.get(0).getLinkDescr();
+        } else {
+            linkDescr = elems.get(elems.size()-1).getLinkDescr();
         }
-        
-        if(linkDescr == null){
+        if (linkDescr == null) {
             return -1;
-        }else{
+        } else {
             return Integer.parseInt(linkDescr);
         }
     }
@@ -707,12 +697,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         NodeAddress nodeAddr = node.getNodeAddress();
         InetAddress address = null;
         
-        try{
+        try {
             address = InetAddress.getByName(nodeAddr.getAddress());
-        }catch (UnknownHostException e) {
-			throw  new PSSException("unable to locate VLSR address");
-		}
-		
+        } catch (UnknownHostException e) {
+            throw  new PSSException("unable to locate VLSR address");
+        }
         return address;
     }
     
@@ -830,15 +819,14 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         DecimalFormat df = new DecimalFormat("#.###");
         boolean isSonet = false;
         
-        PathElem elem = path.getPathElem();
-        while(elem != null){
+        List<PathElem> elems = path.getPathElems();
+        for (PathElem elem: elems) {
             Link link = elem.getLink();
             if(link == null){ continue; }
             if(link.getL2SwitchingCapabilityData() == null){
                 isSonet = true;
                 break;
             }
-            elem = elem.getNextElem();
         }
         
         if(isSonet){
@@ -955,42 +943,35 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private ArrayList<String> pathToEro(Path path, boolean isSubnet)
             throws PSSException{
         ArrayList<String> ero = new ArrayList<String>();
-        PathElem elem = path.getPathElem();
+        List<PathElem> elems = path.getPathElems();
 
-        elem = elem.getNextElem();//dont add first hop
-        while(elem != null){
-            PathElem nextElem = elem.getNextElem();
-            //don't care about the last edge hop
-            if(nextElem == null){
-                break;
-            }
+        int ctr = 1; // don't add first hop
+        // don't care about the last edge hop
+        while (ctr < elems.size()-1) {
+            PathElem elem = elems.get(ctr);
+            PathElem nextElem = elems.get(ctr+1);
             Link link = elem.getLink();
             Port port = link.getPort();
             String linkId = link.getTopologyIdent();
             String portId = port.getTopologyIdent();
             
             /* Skip hops that are DTLs and not subnets or vice versa (XOR) */
-            if(((!isSubnet) && portId.startsWith("DTL")) || (isSubnet && 
-                (!portId.startsWith("DTL")))){
-                elem = nextElem;
+            if (((!isSubnet) && portId.startsWith("DTL")) || (isSubnet && 
+                (!portId.startsWith("DTL")))) {
+                ctr++;
                 continue;
             }
             
             /* Verify the link ID is an IPv4 address */
-            try{
+            try {
                 InetAddress address = InetAddress.getByName(linkId);
-            }catch (UnknownHostException e) {
-			    throw  new PSSException("Invalid link id " + linkId + 
-			        ". Link IDs must be IP addresses on IDCs running DRAGON.");
-		    }
-		    
-            if(nextElem != null){ //dont add last hop
-                ero.add(linkId);
-                this.log.info((isSubnet ? "SUBNET" : "") + "ERO: " + linkId);
+            } catch (UnknownHostException e) {
+                throw  new PSSException("Invalid link id " + linkId + 
+                    ". Link IDs must be IP addresses on IDCs running DRAGON.");
             }
-            elem = nextElem;
+            ero.add(linkId);
+            this.log.info((isSubnet ? "SUBNET" : "") + "ERO: " + linkId);
         }
-        
         if(ero.size() == 0){
             return null;
         }

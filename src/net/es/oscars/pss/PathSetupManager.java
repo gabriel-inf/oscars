@@ -107,7 +107,7 @@ public class PathSetupManager{
         try{
             se.updateStatus(resv, StateEngine.INSETUP);
             /* Get next domain */
-            Domain nextDomain = resv.getPath().getNextDomain();
+            Domain nextDomain = resv.getPath("intra").getNextDomain();
             if(nextDomain == null){
                 this.updateCreateStatus(2, resv);
             }else{
@@ -115,7 +115,8 @@ public class PathSetupManager{
             }
             
             /* Get previous domain */
-            PathElem firstElem= resv.getPath().getInterPathElem();
+            // INTERDOMAIN
+            PathElem firstElem= resv.getPath("inter").getPathElems().get(0);
             Domain firstDomain = null;
             if(firstElem != null && firstElem.getLink() != null){
                 firstDomain = firstElem.getLink().getPort().getNode().getDomain();
@@ -235,7 +236,7 @@ public class PathSetupManager{
             se.updateStatus(resv, StateEngine.INTEARDOWN);
             se.updateLocalStatus(resv, newStatusBits);
             /* Get next domain */
-            Domain nextDomain = resv.getPath().getNextDomain();
+            Domain nextDomain = resv.getPath("intra").getNextDomain();
             if(nextDomain == null){
                 this.updateTeardownStatus(2, resv);
             }else{
@@ -243,7 +244,8 @@ public class PathSetupManager{
             }
             
             /* Get previous domain */
-            PathElem firstElem= resv.getPath().getInterPathElem();
+            // INTERDOMAIN
+            PathElem firstElem= resv.getPath("inter").getPathElems().get(0);
             Domain firstDomain = null;
             if(firstElem != null && firstElem.getLink() != null){
                 firstDomain = firstElem.getLink().getPort().getNode().getDomain();

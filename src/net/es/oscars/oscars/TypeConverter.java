@@ -224,16 +224,17 @@ public class TypeConverter {
     public PathInfo getPathInfo(Reservation resv) {
         this.log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
-        if (resv.getPath() != null) {
-            pathInfo.setPathSetupMode(resv.getPath().getPathSetupMode());
-            pathInfo.setPath(this.pathToCtrlPlane(resv.getPath(), true));
+        Path path = resv.getPath("intra");
+        if (resv.getPath("intra") != null) {
+            pathInfo.setPathSetupMode(path.getPathSetupMode());
+            pathInfo.setPath(this.pathToCtrlPlane(path, true));
             // one of these is allowed to be null
-            Layer2Info layer2Info = this.pathToLayer2Info(resv.getPath());
+            Layer2Info layer2Info = this.pathToLayer2Info(path);
             pathInfo.setLayer2Info(layer2Info);
-            Layer3Info layer3Info = this.pathToLayer3Info(resv.getPath());
+            Layer3Info layer3Info = this.pathToLayer3Info(path);
             pathInfo.setLayer3Info(layer3Info);
             // allowed to be null
-            MplsInfo mplsInfo = this.pathToMplsInfo(resv.getPath());
+            MplsInfo mplsInfo = this.pathToMplsInfo(path);
             pathInfo.setMplsInfo(mplsInfo);
             this.log.debug("getPathInfo.end");
             return pathInfo;
@@ -297,14 +298,14 @@ public class TypeConverter {
      */
     public CtrlPlanePathContent pathToCtrlPlane(Path path, boolean confirmed) {
         this.log.debug("pathToCtrlPlane.start");
-        String swcapType = this.core.getReservationManager().DEFAULT_SWCAP_TYPE;
-        String encType = this.core.getReservationManager().DEFAULT_ENC_TYPE;
+        String swcapType = this.core.getPathManager().DEFAULT_SWCAP_TYPE;
+        String encType = this.core.getPathManager().DEFAULT_ENC_TYPE;
         Ipaddr ipaddr = null;
 
-        PathElem pathElem = path.getPathElem();
+        List<PathElem> pathElems = path.getPathElems();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
         int i = 1;
-        while (pathElem != null) {
+        for (PathElem pathElem: pathElems) {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
             CtrlPlaneLinkContent cpLink = new CtrlPlaneLinkContent();
             CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
@@ -349,7 +350,6 @@ public class TypeConverter {
             hop.setLink(cpLink);
             ctrlPlanePath.addHop(hop);
             i++;
-            pathElem = pathElem.getNextElem();
         }
         ctrlPlanePath.setId("unimplemented");
         this.log.debug("pathToCtrlPlane.end");
@@ -683,7 +683,7 @@ public class TypeConverter {
             map.put("token", this.genHashVal(token.getValue()));
         }
         //set path
-        map.putAll(this.pathToHashMap(resv.getPath(), pathInfo));
+        map.putAll(this.pathToHashMap(resv.getPath("intra"), pathInfo));
         return map;
     }
 
@@ -728,8 +728,8 @@ public class TypeConverter {
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
         MPLSData mplsData = path.getMplsData();
-        PathElem pathElem = path.getPathElem();
-        PathElem interPathElem = path.getInterPathElem();
+        List<PathElem> pathElems = path.getPathElems();
+        //PathElem interPathElem = path.getInterPathElem();
         ArrayList<String> intraPath = new ArrayList<String>();
         ArrayList<String> interPath = new ArrayList<String>();
         String src = null;
@@ -809,9 +809,10 @@ public class TypeConverter {
             l2Info = pathInfo.getLayer2Info();
             usePathInfo = true;
         }
-
-        if(!usePathInfo){
-            while(interPathElem != null){
+        if (!usePathInfo) {
+            // INTERDOMAIN
+            /*
+            for (PathElem pathElem: interPathElems) {
                 Link link = interPathElem.getLink();
                 if(link != null){
                     String linkId = link.getFQTI();
@@ -821,14 +822,14 @@ public class TypeConverter {
                 }else{
                     this.log.error("Could not locate a link for interPathElem, id: "+interPathElem.getId());
                 }
-                interPathElem = interPathElem.getNextElem();
             }
-        }else if(l2Info != null){
-            if(l2Info.getSrcVtag() != null){
+            */
+        } else if (l2Info != null) {
+            if (l2Info.getSrcVtag() != null) {
                 map.put("srcVtag", this.genHashVal(l2Info.getSrcVtag().getString()));
                 map.put("tagSrcPort", this.genHashVal(l2Info.getSrcVtag().getTagged() + ""));
             }
-            if(l2Info.getDestVtag() != null){
+            if (l2Info.getDestVtag() != null) {
                 map.put("destVtag", this.genHashVal(l2Info.getSrcVtag().getString()));
                 map.put("tagDestPort", this.genHashVal(l2Info.getDestVtag().getTagged() + ""));
             }
@@ -837,7 +838,7 @@ public class TypeConverter {
         map.put("interdomainHopInfo", interHopInfo.toArray(new String[interHopInfo.size()]));
 
         ArrayList<String> intraHopInfo = new ArrayList<String>();
-        while(pathElem != null){
+        for (PathElem pathElem: pathElems) {
             Link link = pathElem.getLink();
             if (link != null) {
                 String linkId = link.getFQTI();
@@ -847,7 +848,6 @@ public class TypeConverter {
             } else {
                 this.log.error("Could not locate a link for pathElem, id: "+pathElem.getId());
             }
-            pathElem = pathElem.getNextElem();
         }
         map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
         map.put("intradomainHopInfo", intraHopInfo.toArray(new String[intraHopInfo.size()]));
@@ -867,8 +867,8 @@ public class TypeConverter {
         L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
         String infoVal = link.getTrafficEngineeringMetric();
         OSCARSCore oc = OSCARSCore.getInstance();
-        String defaulSwcapType = oc.getReservationManager().DEFAULT_SWCAP_TYPE;
-        String defaulEncType = oc.getReservationManager().DEFAULT_ENC_TYPE;
+        String defaulSwcapType = oc.getPathManager().DEFAULT_SWCAP_TYPE;
+        String defaulEncType = oc.getPathManager().DEFAULT_ENC_TYPE;
         if(l2scData != null){
             //TEMetric;swcap;enc;MTU;VLANRangeAvail;SuggestedVLANRange
             infoVal += ";l2sc;ethernet";

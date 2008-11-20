@@ -70,8 +70,8 @@ public class VendorPSS implements PSS {
         String reverseRouterType = "";
         boolean doReverse = false;
 
-        Path path = resv.getPath();
-        lspData.setPathVars(path.getPathElem());
+        Path path = resv.getPath("intra");
+        lspData.setPathVars(path.getPathElems());
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
         String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
@@ -172,8 +172,8 @@ public class VendorPSS implements PSS {
         String status = null;
         LSPData lspData = new LSPData(dbname);
 
-        Path path = resv.getPath();
-        lspData.setPathVars(path.getPathElem());
+        Path path = resv.getPath("intra");
+        lspData.setPathVars(path.getPathElems());
         String sysDescr = this.getRouterType(lspData.getIngressLink());
         // when Juniper status works this will be sufficient for layer 2
         // since both directions need to be up
@@ -216,8 +216,8 @@ public class VendorPSS implements PSS {
         String reverseRouterType = "";
         boolean doReverse = false;
 
-        Path path = resv.getPath();
-        lspData.setPathVars(path.getPathElem());
+        Path path = resv.getPath("intra");
+        lspData.setPathVars(path.getPathElems());
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
         String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 

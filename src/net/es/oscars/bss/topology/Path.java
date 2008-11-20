@@ -1,7 +1,6 @@
 package net.es.oscars.bss.topology;
 
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -26,50 +25,25 @@ public class Path extends HibernateBean implements Serializable {
     private String pathSetupMode;
     
     /** persistent field */
-    private PathElem pathElem;
-    
-    /** persistent field */
-    private PathElem interPathElem;
+    private String pathType;
     
     /** nullable persistent field */
     private Domain nextDomain;
 
     /** nullable persistent field */
-    private Layer2Data layer2Data;
-    
-    /** nullable persistent field */
-    private Layer3Data layer3Data;
-    
-    /** nullable persistent field */
-    private MPLSData mplsData;
+    private String direction;
 
-    private Reservation reservation;
+    /** nullable persistent field */
+    private String grouping;
+
+    private List<PathElem> pathElems = new ArrayList<PathElem>();
+    private Set layer2DataSet = new HashSet<Layer2Data>();
+    private Set layer3DataSet = new HashSet<Layer3Data>();
+    private Set mplsDataSet = new HashSet<MPLSData>();
 
     /** default constructor */
     public Path() { }
 
-    /**
-     * @return pathElem the first path element (uses association) in the intradomain path
-     */ 
-    public PathElem getPathElem() { return this.pathElem; }
-
-    /**
-     * @param pathElem the first path element (uses association) in the intradomain path
-     */ 
-    public void setPathElem(PathElem pathElem) { this.pathElem = pathElem; }
-    
-    /**
-     * @return the first path element (uses association) in the interdomain path
-     */ 
-    public PathElem getInterPathElem() { return this.interPathElem; }
-
-    /**
-     * @param interPathElem the first path element (uses association) in the interdomain path
-     */ 
-    public void setInterPathElem(PathElem interPathElem){ 
-        this.interPathElem = interPathElem;
-    }
-    
     /**
      * @return explicit boolean indicating whether this path was explicitly set
      */ 
@@ -80,38 +54,6 @@ public class Path extends HibernateBean implements Serializable {
      */ 
     public void setExplicit(boolean explicit) { this.explicit = explicit; }
 
-
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
-    }
-
-    public Reservation getReservation() {
-        return this.reservation;
-    }
-
-    public void setLayer2Data(Layer2Data layer2Data) {
-        this.layer2Data = layer2Data;
-    }
-
-    public Layer2Data getLayer2Data() {
-        return this.layer2Data;
-    }
-
-    public void setLayer3Data(Layer3Data layer3Data) {
-        this.layer3Data = layer3Data;
-    }
-
-    public Layer3Data getLayer3Data() {
-        return this.layer3Data;
-    }
-
-    public void setMplsData(MPLSData mplsData) {
-        this.mplsData = mplsData;
-    }
-
-    public MPLSData getMplsData() {
-        return this.mplsData;
-    }
 
     /**
      * @return path starting path instance associated with reservation
@@ -124,15 +66,159 @@ public class Path extends HibernateBean implements Serializable {
     public void setNextDomain(Domain domain) { this.nextDomain = domain; }
     
     /**
-     * @return the way this reservation will be setup.
+     * @return the way this reservation will be set up.
      */ 
     public String getPathSetupMode() { return this.pathSetupMode; }
 
     /**
-     * @param pathSetupMode the way this reservation will be setup.
+     * @param pathSetupMode the way this reservation will be set up.
      */ 
     public void setPathSetupMode(String pathSetupMode) { 
         this.pathSetupMode = pathSetupMode; 
+    }
+
+    /**
+     * @return path type (currently intra or inter)
+     */ 
+    public String getPathType() { return this.pathType; }
+
+    /**
+     * @param pathType path type (currently intra or inter)
+     */ 
+    public void setPathType(String pathType) { 
+        this.pathType = pathType; 
+    }
+
+    /**
+     * @return the direction of the path.
+     */ 
+    public String getDirection() { return this.direction; }
+
+    /**
+     * @param direction the direction of the path.
+     */ 
+    public void setDirection(String direction) { 
+        this.direction = direction; 
+    }
+
+    /**
+     * @return future use.
+     */ 
+    public String getGrouping() { return this.grouping; }
+
+    /**
+     * @param grouping future use.
+     */ 
+    public void setGrouping(String grouping) { 
+        this.grouping = grouping; 
+    }
+
+    /**
+     * @return list of elements in this path.
+     */ 
+    public List<PathElem> getPathElems() {
+        return this.pathElems;
+    }
+
+    /**
+     * @param pathElems list of new path elements.  NOTE:  Don't use after
+     *                  path has been made persistent.
+     */ 
+    public void setPathElems(List<PathElem> pathElems) {
+        this.pathElems = pathElems;
+    }
+
+    /**
+     * @param pathElem new path element in list, can only be added sequentially.
+     */ 
+    public void addPathElem(PathElem pathElem) {
+        this.pathElems.add(pathElem);
+    }
+
+    public Set getLayer2DataSet() {
+        return this.layer2DataSet;
+    }
+
+    public void setLayer2DataSet(Set layer2DataSet) {
+        this.layer2DataSet = layer2DataSet;
+    }
+
+    public Set getLayer3DataSet() {
+        return this.layer3DataSet;
+    }
+
+    public void setLayer3DataSet(Set layer3DataSet) {
+        this.layer3DataSet = layer3DataSet;
+    }
+
+    public Set getMplsDataSet() {
+        return this.mplsDataSet;
+    }
+
+    public void setMplsDataSet(Set mplsDataSet) {
+        this.mplsDataSet = mplsDataSet;
+    }
+
+    // NOTE:  The following are a set of kludges to have a one-to-one
+    //    mapping along with the cascade option "delete-orphan".
+    //    Do not make the mapping unique in the configuration file on the *Data
+    //    side.  Hibernate does saves before deletes, so you'll get a duplicate
+    //    key error.
+    public Layer2Data getLayer2Data() {
+        if (this.layer2DataSet.isEmpty()) {
+            return null;
+        } else {
+            return (Layer2Data) this.layer2DataSet.iterator().next();
+        }
+    }
+
+    public void setLayer2Data(Layer2Data layer2Data) {
+        if (layer2Data == null) {
+            return;
+        }
+        if (!this.layer2DataSet.isEmpty()) {
+            this.layer2DataSet.clear();
+        }
+        this.layer2DataSet.add(layer2Data);
+        layer2Data.setPath(this);
+    }
+
+    public Layer3Data getLayer3Data() {
+        if (this.layer3DataSet.isEmpty()) {
+            return null;
+        } else {
+            return (Layer3Data) this.layer3DataSet.iterator().next();
+        }
+    }
+
+    public void setLayer3Data(Layer3Data layer3Data) {
+        if (layer3Data == null) {
+            return;
+        }
+        if (!this.layer3DataSet.isEmpty()) {
+            this.layer3DataSet.clear();
+        }
+        this.layer3DataSet.add(layer3Data);
+        layer3Data.setPath(this);
+    }
+
+    public MPLSData getMplsData() {
+        if (this.mplsDataSet.isEmpty()) {
+            return null;
+        } else {
+            return (MPLSData) this.mplsDataSet.iterator().next();
+        }
+    }
+
+    public void setMplsData(MPLSData mplsData) {
+        if (mplsData == null) {
+            return;
+        }
+        if (!this.mplsDataSet.isEmpty()) {
+            this.mplsDataSet.clear();
+        }
+        this.mplsDataSet.add(mplsData);
+        mplsData.setPath(this);
     }
 
     // need to override superclass because dealing with transient
@@ -153,26 +239,21 @@ public class Path extends HibernateBean implements Serializable {
         } else {
             return new EqualsBuilder()
                 .append(this.isExplicit(), castOther.isExplicit())
-                .append(this.getPathElem(), castOther.getPathElem())
+                .append(this.getPathElems().get(0), castOther.getPathElems().get(0))
                 .append(this.getNextDomain(), castOther.getNextDomain())
                 .isEquals();
         }
     }
     
     public boolean containsAnyOf(List<Link> links) {
-    	PathElem pe = this.getPathElem();
-    	for (Link link : links) {
-	    	if (pe.getLink().equals(link)) {
-	    		return true;
-	    	} 
-			while (pe.getNextElem() != null) {
-				pe = pe.getNextElem();
-		    	if (pe.getLink().equals(link)) {
-		    		return true;
-		    	} 
-	    	}
-    	}
-    	return false;
+        for (Link link : links) {
+            for (PathElem pe: this.pathElems) {
+                if (pe.getLink().equals(link)) {
+                    return true;
+                }
+            } 
+        }
+        return false;
     }
 
     // string representation is layer and client dependent; done

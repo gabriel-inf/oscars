@@ -248,7 +248,8 @@ public class ListResRmiHandler {
         ArrayList resvList = new ArrayList();
 
         for (Reservation resv: reservations) {
-            Path path = resv.getPath();
+            // INTERDOMAIN
+            Path path = resv.getPath("intra");
             String pathStr = utils.pathToString(path, false);
             String localSrc = null;
             String localDest = null;

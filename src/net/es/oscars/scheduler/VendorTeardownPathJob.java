@@ -46,9 +46,9 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             return;
         }
         LSPData lspData = new LSPData(bssDbName);
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         try {
-            lspData.setPathVars(path.getPathElem());
+            lspData.setPathVars(path.getPathElems());
         } catch (PSSException ex) {
             this.log.error(ex);
             try {

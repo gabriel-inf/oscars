@@ -219,7 +219,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         this.log.debug("confirm.start");
         EventProducer eventProducer = new EventProducer();
         String bssDbName = this.core.getBssDbName();
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         int localStatus = this.se.getLocalStatus(resv) + 1;
         this.se.updateLocalStatus(resv, localStatus);
         eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_CONFIRMED, login, "JOB", resv);

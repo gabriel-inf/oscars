@@ -36,18 +36,18 @@ public class DBGraphAdapter {
         this.localDomain = domainDAO.getLocalDomain().getTopologyIdent();
     }
 
-    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth,
-                    Long startTime, Long endTime, Reservation reservationToIgnore,
-                    HashMap<String, Double> objectsToReweigh, HashMap<String, Long> alreadyReserved) {
+    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>
+        dbToGraph(Long bandwidth, Long startTime, Long endTime,
+                  Reservation reservationToIgnore,
+                  HashMap<String, Double> objectsToReweigh,
+                  HashMap<String, Long> alreadyReserved) {
+
         this.log.debug("dbToGraph.start");
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
         // this.sf.getCurrentSession().beginTransaction();
-
         DomainDAO domainDAO = new DomainDAO(this.dbname);
-
-
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
         ArrayList<Reservation> reservations = new ArrayList<Reservation>(resvDAO.overlappingReservations(startTime, endTime));
         HashMap<Port, Long> portRsvBw = new HashMap<Port, Long>();
@@ -58,9 +58,9 @@ public class DBGraphAdapter {
             } else {
                 this.log.debug("Found overlapping reservation: "+resv.getGlobalReservationId());
                 Long bw = resv.getBandwidth();
-                Path path = resv.getPath();
-                PathElem pathElem = path.getPathElem();
-                while (pathElem != null) {
+                Path path = resv.getPath("intra");
+                List<PathElem> pathElems = path.getPathElems();
+                for (PathElem pathElem: pathElems) {
                     Link link = pathElem.getLink();
                     Port port = link.getPort();
                     if (portRsvBw.containsKey(port)) {
@@ -69,7 +69,6 @@ public class DBGraphAdapter {
                     } else {
                         portRsvBw.put(port, bw);
                     }
-                    pathElem = pathElem.getNextElem();
                 }
             }
         }
@@ -82,12 +81,9 @@ public class DBGraphAdapter {
         }
         */
 
-
         DefaultWeightedEdge edge;
-
         List<Domain> domains = domainDAO.list();
         for (Domain dom : domains) {
-
             Iterator nodeIt = dom.getNodes().iterator();
             while (nodeIt.hasNext()) {
                 Node node = (Node) nodeIt.next();
@@ -105,9 +101,7 @@ public class DBGraphAdapter {
                 if (!node.getDomain().isLocal()) {
                     nodeMult = 20d;
                 }
-
                 g.addVertex(nodeFQTI);
-
                 Iterator portIt = node.getPorts().iterator();
                 while (portIt.hasNext()) {
                     Port port = (Port) portIt.next();
@@ -122,41 +116,31 @@ public class DBGraphAdapter {
                     } else if (portMult == null) {
                         portMult = 1d;
                     }
-
                     Long portCapacity = port.getCapacity();
                     Long reservedCapacity = portRsvBw.get(port);
                     if (reservedCapacity == null) {
                         reservedCapacity = 0L;
                     }
-
                     if (alreadyReserved != null && alreadyReserved.get(portFQTI) != null) {
                         reservedCapacity += alreadyReserved.get(portFQTI);
                     }
-
                     Long remainingCapacity = portCapacity - reservedCapacity;
-
                     if (bandwidth > 0L && remainingCapacity < bandwidth) {
 //                        System.out.println("port: "+portFQTI+" rsv: "+reservedCapacity+" rem: "+remainingCapacity);
                         continue;
                     } else {
 //                        System.out.println("port: "+portFQTI+" in graph");
                     }
-
-
                     Double portEdgeCost = 0.1d * portMult;
-
-
                     g.addVertex(portFQTI);
                     edge = g.addEdge(nodeFQTI, portFQTI);
                     if (edge != null) {
                         g.setEdgeWeight(edge, portEdgeCost);
                     }
-
                     edge = g.addEdge(portFQTI, nodeFQTI);
                     if (edge != null) {
                         g.setEdgeWeight(edge, portEdgeCost);
                     }
-
                     Iterator linkIt = port.getLinks().iterator();
                     while (linkIt.hasNext()) {
                         Link link = (Link) linkIt.next();
@@ -171,18 +155,15 @@ public class DBGraphAdapter {
                             linkMult = 1d;
                         }
     //                	System.out.println(linkFQTI);
-
                         g.addVertex(linkFQTI);
                         edge = g.addEdge(linkFQTI, portFQTI);
                         if (edge != null) {
                             g.setEdgeWeight(edge, 0.1d);
                         }
-
                         edge = g.addEdge(portFQTI, linkFQTI);
                         if (edge != null) {
                             g.setEdgeWeight(edge, 0.1d);
                         }
-
                         if (link.getRemoteLink() != null) {
                             Link remLink = link.getRemoteLink();
                             String remLinkFQTI = remLink.getFQTI();
@@ -191,13 +172,9 @@ public class DBGraphAdapter {
                                 if (link.getTrafficEngineeringMetric() != null) {
                                     edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
                                 }
-
                                 // testing
                                 edgeWeight = edgeWeight * nodeMult * linkMult;
-
-
                                 g.addVertex(remLinkFQTI);
-
                                 edge = g.addEdge(linkFQTI, remLinkFQTI);
                                 if (edge != null) {
                                     g.setEdgeWeight(edge, edgeWeight);
@@ -208,19 +185,13 @@ public class DBGraphAdapter {
                 }
             }
         }
-
         this.log.debug("dbToGraph.start");
         // this.sf.getCurrentSession().getTransaction().commit();
         return g;
-
     }
-
 
     double parseTEM(String trafficEngineeringMetric) {
         double weight = new Double(trafficEngineeringMetric).doubleValue();
         return weight;
     }
-
-
 }
-

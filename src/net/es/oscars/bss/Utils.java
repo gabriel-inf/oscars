@@ -22,7 +22,74 @@ public class Utils {
     }
 
     /**
-     * Converts Hibernate path to a series of identifiers.  Used by servlets.
+     * Converts data associated with a Hibernate path to a series of strings.
+     *
+     * @param path path to convert to string
+     * @return pathDataStr path data in string format
+     */
+    public String pathDataToString(Path path) {
+        StringBuilder sb =  new StringBuilder();
+        if (path.getPathSetupMode() != null) {
+            sb.append("path setup mode: " + path.getPathSetupMode() + "\n");
+        }
+        Layer2Data layer2Data = path.getLayer2Data();
+        if (layer2Data != null) {
+            sb.append("layer: 2\n");
+            if (layer2Data.getSrcEndpoint() != null) {
+                sb.append("source endpoint: " +
+                      layer2Data.getSrcEndpoint() + "\n");
+            }
+            if (layer2Data.getDestEndpoint() != null) {
+                sb.append("dest endpoint: " +
+                          layer2Data.getDestEndpoint() + "\n");
+            }
+            List<PathElem> pathElems = path.getPathElems();
+            if (!pathElems.isEmpty()) {
+                String linkDescr = pathElems.get(0).getLinkDescr();
+                if (linkDescr != null) {
+                    sb.append("VLAN tag: " + linkDescr + "\n");
+                }
+            }
+        }
+        Layer3Data layer3Data = path.getLayer3Data();
+        if (layer3Data != null) {
+            sb.append("layer: 3\n");
+            if (layer3Data.getSrcHost() != null) {
+                sb.append("source host: " + layer3Data.getSrcHost() + "\n");
+            }
+            if (layer3Data.getDestHost() != null) {
+                sb.append("dest host: " + layer3Data.getDestHost() + "\n");
+            }
+            if (layer3Data.getProtocol() != null) {
+                sb.append("protocol: " + layer3Data.getProtocol() + "\n");
+            }
+            if ((layer3Data.getSrcIpPort() != null) &&
+                (layer3Data.getSrcIpPort() != 0)) {
+                sb.append("src IP port: " + layer3Data.getSrcIpPort() + "\n");
+            }
+            if ((layer3Data.getDestIpPort() != null) &&
+                (layer3Data.getDestIpPort() != 0)) {
+                sb.append("dest IP port: " +
+                          layer3Data.getDestIpPort() + "\n");
+            }
+            if (layer3Data.getDscp() != null) {
+                sb.append("dscp: " +  layer3Data.getDscp() + "\n");
+            }
+        }
+        MPLSData mplsData = path.getMplsData();
+        if (mplsData != null) {
+            if (mplsData.getBurstLimit() != null) {
+                sb.append("burst limit: " + mplsData.getBurstLimit() + "\n");
+            }
+            if (mplsData.getLspClass() != null) {
+                sb.append("LSP class: " + mplsData.getLspClass() + "\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts Hibernate path to a series of identifier strings.
      *
      * @param path path to convert to string
      * @param interDomain boolean for intra or interdomain path
@@ -33,19 +100,13 @@ public class Utils {
         Ipaddr ipaddr = null;
         String nodeName = null;
         String param = null;
-        PathElem pathElem = null;
-        int ctr = 0;
 
         // TODO:  more null checks may be necessary
         StringBuilder sb = new StringBuilder();
-        if (!interDomain) {
-            pathElem  = path.getPathElem();
-        } else {
-            pathElem = path.getInterPathElem();
-        }
+        List<PathElem> pathElems = path.getPathElems();
+        int sz = pathElems.size();
         int i = 0;
-        while (pathElem != null) {
-            ctr++;
+        for (PathElem pathElem: pathElems) {
             Link link = pathElem.getLink();
             if(i != 0){
                 sb.append("\n");
@@ -64,18 +125,17 @@ public class Utils {
                     sb.append(ipaddr.getIP());
                 }
             }
-            pathElem = pathElem.getNextElem();
             i++;
         }
         // in this case, all hops are local
-        if (interDomain && (ctr == 2)) {
+        if (interDomain && (sz == 2)) {
             return "";
         // internal path has not been set up
         // NOTE:  this depends on the current implementation sometimes having
         //        one hop in the path from when the reservation has been in
         //        the ACCEPTED state, but the path has not been or may never
         //        be set up.
-        } else if (!interDomain && (ctr == 1)) {
+        } else if (!interDomain && (sz == 1)) {
             return "";
         }
         String pathStr = sb.toString();
@@ -90,15 +150,14 @@ public class Utils {
      */
     public String getVlanTag(Path path) {
         String vlanTag = null;
-        PathElem pathElem = path.getPathElem();
-        while (pathElem != null) {
+        List<PathElem> pathElems = path.getPathElems();
+        for (PathElem pathElem: pathElems) {
             if (pathElem.getDescription() != null) {
                 if (pathElem.getDescription().equals("ingress")) {
                     vlanTag = pathElem.getLinkDescr();
                     break;
                 }
             }
-            pathElem = pathElem.getNextElem();
         }
         return vlanTag;
     }

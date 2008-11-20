@@ -33,6 +33,8 @@ public class Layer3Data extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private String dscp;
 
+    private Path path;
+
     /** default constructor */
     public Layer3Data() { }
 
@@ -103,6 +105,21 @@ public class Layer3Data extends HibernateBean implements Serializable {
     public void setDscp(String dscp) { this.dscp = dscp; }
 
 
+    /**
+     * @return path uniquely associated with this data
+     */ 
+    public Path getPath() {
+        return this.path;
+    }
+
+    /**
+     * @param path path uniquely associated with this data
+     */ 
+    public void setPath(Path path) {
+        this.path = path;
+    }
+
+    
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {

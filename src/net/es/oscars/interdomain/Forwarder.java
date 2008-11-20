@@ -57,7 +57,7 @@ public class Forwarder extends Client {
 
         CreateReply createReply = null;
         String login = resv.getLogin();
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         if (path == null) {
            throw new InterdomainException(
                   "no path provided to forwarder create");
@@ -82,8 +82,8 @@ public class Forwarder extends Client {
         String login = resv.getLogin();
          
         // currently get the next domain from the stored path
-        if (persistentResv.getPath() != null && persistentResv.getPath().getNextDomain() != null) {
-            url = persistentResv.getPath().getNextDomain().getUrl();
+        if (persistentResv.getPath("intra") != null && persistentResv.getPath("intra").getNextDomain() != null) {
+            url = persistentResv.getPath("intra").getNextDomain().getUrl();
         }
 
         if (url != null) {
@@ -105,8 +105,8 @@ public class Forwarder extends Client {
 
         String url = null;
 
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
+            url = resv.getPath("intra").getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("query forward to " + url);
@@ -118,8 +118,8 @@ public class Forwarder extends Client {
 
         String url = null;
         String login = resv.getLogin();
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
+            url = resv.getPath("intra").getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("cancel start forward to: " + url);
@@ -134,8 +134,8 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         String url = null;
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
+            url = resv.getPath("intra").getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("createPath forward to: " + url);
@@ -147,8 +147,8 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         String url = null;
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
+            url = resv.getPath("intra").getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("refreshPath forward to: " + url);
@@ -160,8 +160,8 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         String url = null;
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
+            url = resv.getPath("intra").getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("teardownPath forward to: " + url);

@@ -44,16 +44,16 @@ public class LSPData {
      * Given path, sets elements in path used in setting a number of
      * configuration variables.
      *
-     * @param pathElem beginning of reservation's path
+     * @param pathElems reservation's intradomain path
      * @throws PSSException
      */
-    public void setPathVars(PathElem pathElem)
+    public void setPathVars(List<PathElem> pathElems)
             throws PSSException {
 
         // Find ingress and egress path elements and associated links.
         // Reservation could not have been scheduled without these being
         // set.
-        while (pathElem != null) {
+        for (PathElem pathElem: pathElems) {
             if (pathElem.getDescription() != null) {
                 if (pathElem.getDescription().equals("ingress")) {
                     this.ingressPathElem = pathElem;
@@ -64,7 +64,6 @@ public class LSPData {
                 // used in finding next to last interface
                 this.lastXfacePathElem = pathElem;
             }
-            pathElem = pathElem.getNextElem();
         }
         this.ingressLink = this.ingressPathElem.getLink();
         this.egressLink = this.egressPathElem.getLink();
@@ -139,18 +138,18 @@ public class LSPData {
     /**
      * Gets IP addresses of all hops in path except ingress and egress.
      *
-     * @param pathElem beginning of reservation's path
+     * @param pathElems reservation's path list
      * @param direction string indicating whether forward or reverse direction
      * @param useLocalHops boolean indicating whether to use all hops in path
      * @throws PSSException
      */
-    public List<String> getHops(PathElem pathElem, String direction,
+    public List<String> getHops(List<PathElem> pathElems, String direction,
                                 boolean useLocalHops)
             throws PSSException {
 
         List<String> hops = new ArrayList<String>();
         List<String> restrictedHops = new ArrayList<String>();
-        while (pathElem != null) {
+        for (PathElem pathElem: pathElems) {
             Link link = pathElem.getLink();
             // this gets everything except the ingress and egress, which we
             // don't want
@@ -161,7 +160,6 @@ public class LSPData {
                 }
                 hops.add(ipaddr.getIP());
             }
-            pathElem = pathElem.getNextElem();
         }
         if (direction.equals("reverse")) {
             ArrayList<String> reverseHops = new ArrayList<String>();

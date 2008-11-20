@@ -26,7 +26,7 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
      */
     public List<Path> getPaths(Link link) {
         String sql = "select * from paths p " +
-                     "inner join pathElems pe on p.pathElemId = pe.id " +
+                     "inner join pathElems pe on p.id = pe.pathId " +
                      "inner join links l on pe.linkId = l.id " +
                      "where l.id = ?";
         List<Path> paths =

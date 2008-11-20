@@ -155,7 +155,7 @@ public class ReservationDAO
         if (links != null && !links.isEmpty()) {
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
             for (Reservation rsv : this.reservations) {
-                if (!rsv.getPath().containsAnyOf(links)) {
+                if (!rsv.getPath("intra").containsAnyOf(links)) {
                     this.log.debug("not returning: " + rsv.getGlobalReservationId());
                     removeThese.add(rsv);
                 }
@@ -385,7 +385,7 @@ public class ReservationDAO
         int minVtag = 100000;
         int maxVtag = -1;
         Utils utils = new Utils(this.dbname);
-        String tagStr = utils.getVlanTag(rsv.getPath());
+        String tagStr = utils.getVlanTag(rsv.getPath("intra"));
         // no associated VLAN
         if (tagStr == null) {
             return false;

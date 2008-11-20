@@ -29,36 +29,41 @@
 
     <property name="pathSetupMode" />
 
+    <property name="pathType" not-null="true" insert="false" update="false">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+    </property>
+
+    <property name="direction" />
+
+    <property name="grouping" />
+
     <!-- Associations -->
-
-    <many-to-one name="pathElem" column="pathElemId"
-        class="net.es.oscars.bss.topology.PathElem" cascade="all"
-        not-null="true" unique="true" />
-
-    <many-to-one name="interPathElem" column="interPathElemId"
-        class="net.es.oscars.bss.topology.PathElem" cascade="all"
-        not-null="false" unique="true" />
 
     <many-to-one name="nextDomain" column="nextDomainId"
         class="net.es.oscars.bss.topology.Domain" not-null="false" />
 
-    <one-to-one name="reservation" class="net.es.oscars.bss.Reservation"
-        property-ref="path" />
+    <list name="pathElems" cascade="all, delete-orphan">
+        <key column="pathId" not-null="true" />
+	<list-index column="seqNumber" />
+        <one-to-many class="net.es.oscars.bss.topology.PathElem" />
+    </list>
 
-    <!-- The following are for optional associations
-         between paths and layer-specific data -->
+    <set name="layer2DataSet" inverse="true" cascade="all, delete-orphan">
+        <key column="pathId" />
+        <one-to-many class="net.es.oscars.bss.topology.Layer2Data" />
+    </set>
 
-    <many-to-one name="layer2Data" column="layer2DataId"
-        class="net.es.oscars.bss.topology.Layer2Data" cascade="all"
-        unique="true" />
+    <set name="layer3DataSet" inverse="true" cascade="all, delete-orphan">
+        <key column="pathId" />
+        <one-to-many class="net.es.oscars.bss.topology.Layer3Data" />
+    </set>
 
-    <many-to-one name="layer3Data" column="layer3DataId"
-        class="net.es.oscars.bss.topology.Layer3Data" cascade="all"
-        unique="true" />
-
-    <many-to-one name="mplsData" column="mplsDataId"
-        class="net.es.oscars.bss.topology.MPLSData" cascade="all"
-        unique="true" />
+    <set name="mplsDataSet" inverse="true" cascade="all, delete-orphan">
+        <key column="pathId" />
+        <one-to-many class="net.es.oscars.bss.topology.MPLSData" />
+    </set>
 
 </class>
 </hibernate-mapping>

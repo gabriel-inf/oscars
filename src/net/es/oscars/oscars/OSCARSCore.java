@@ -39,6 +39,7 @@ public class OSCARSCore {
 
     private StateEngine stateEngine = null;
     private ReservationManager reservationManager = null;
+    private PathManager pathManager = null;
     private TopologyManager topologyManager = null;
     private TopologyExchangeManager topologyExchangeManager = null;
     private UserManager userManager = null;
@@ -86,7 +87,6 @@ public class OSCARSCore {
         }
         OSCARSCore instance = OSCARSCore.instance;
         instance.initAll();
-
         return instance;
     }
 
@@ -168,6 +168,16 @@ public class OSCARSCore {
         this.log.debug("initReservationManager.start");
         this.reservationManager = new ReservationManager(this.bssDbName);
         this.log.debug("initReservationManager.end");
+    }
+
+
+    /**
+     * Initializes the PathManager module
+     */
+    public void initPathManager() {
+        this.log.debug("initPathManager.start");
+        this.pathManager = new PathManager(this.bssDbName);
+        this.log.debug("initPathManager.end");
     }
 
 
@@ -341,7 +351,6 @@ public class OSCARSCore {
         if (aaa == null || !aaa.isOpen()) {
             this.log.error("AAA session is still closed!");
         }
-
         return aaa;
     }
 
@@ -397,7 +406,6 @@ public class OSCARSCore {
         if (this.stateEngine == null) {
             this.initStateEngine();
         }
-
         return this.stateEngine;
     }
 
@@ -408,7 +416,6 @@ public class OSCARSCore {
         if (this.reservationManager == null) {
             this.initReservationManager();
         }
-
         return reservationManager;
     }
 
@@ -417,6 +424,23 @@ public class OSCARSCore {
      */
     public void setReservationManager(ReservationManager reservationManager) {
         this.reservationManager = reservationManager;
+    }
+
+    /**
+     * @return the pathManager
+     */
+    public PathManager getPathManager() {
+        if (this.pathManager == null) {
+            this.initPathManager();
+        }
+        return pathManager;
+    }
+
+    /**
+     * @param pathManager the pathManager to set
+     */
+    public void setPathManager(PathManager pathManager) {
+        this.pathManager = pathManager;
     }
 
     /**

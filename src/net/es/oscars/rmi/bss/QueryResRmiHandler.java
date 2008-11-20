@@ -162,7 +162,8 @@ public class QueryResRmiHandler {
     net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
     // this will replace LSP name if one was given instead of a GRI
     String gri = resv.getGlobalReservationId();
-    Path path = resv.getPath();
+    // INTERDOMAIN
+    Path path = resv.getPath("intra");
     Layer2Data layer2Data = path.getLayer2Data();
     Layer3Data layer3Data = path.getLayer3Data();
     MPLSData mplsData = path.getMplsData();

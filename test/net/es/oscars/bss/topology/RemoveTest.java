@@ -7,6 +7,8 @@ import org.hibernate.*;
 
 import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
 
 /**
  * This class tests removal of BSS topology database entries, including the use
@@ -151,15 +153,11 @@ public class RemoveTest {
   @Test
     public void pathRemove() {
         this.sf.getCurrentSession().beginTransaction();
-        PathDAO dao = new PathDAO(this.dbname);
-        PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
-        LinkDAO linkDAO = new LinkDAO(this.dbname);
-        Link link = (Link)
-            linkDAO.queryByParam("topologyIdent", CommonParams.getPathIdentifier());
-        PathElem pathElem =
-            (PathElem) pathElemDAO.queryByParam("linkId", link.getId());
-        Path path = (Path) dao.queryByParam("pathElemId", pathElem.getId()); 
-        dao.remove(path);
+        // remove path by removing parent reservation
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        Reservation resv =
+            (Reservation) dao.queryByParam("description", "path test");
+        dao.remove(resv);
         // links created in pathCreate were deleted by cascade
         this.sf.getCurrentSession().getTransaction().commit();
     }

@@ -28,14 +28,19 @@ public class PathTest {
   @Test
     public void pathQuery() {
         this.sf.getCurrentSession().beginTransaction();
-        PathDAO dao = new PathDAO(this.dbname);
-        PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
         LinkDAO linkDAO = new LinkDAO(this.dbname);
         Link link = (Link)
             linkDAO.queryByParam("topologyIdent", CommonParams.getPathIdentifier());
-        PathElem pathElem = (PathElem) pathElemDAO.queryByParam("linkId",
-                                 link.getId());
-        Path path = (Path) dao.queryByParam("pathElemId", pathElem.getId()); 
+        String sql = "select * from paths p " +
+                     "inner join pathElems pe on p.id = pe.pathId " +
+                     "inner join links l on pe.linkId = l.id " +
+                     "where l.id = ?";
+
+        Path path = (Path) this.sf.getCurrentSession().createSQLQuery(sql)
+                                                    .addEntity(Path.class)
+                                                    .setInteger(0, link.getId())
+                                                    .setMaxResults(1)
+                                                    .uniqueResult();
         this.sf.getCurrentSession().getTransaction().commit();
         assert path != null;
     }

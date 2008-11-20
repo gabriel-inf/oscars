@@ -16,12 +16,11 @@ CREATE TABLE IF NOT EXISTS reservations (
         -- user making the reservation
     login               TEXT NOT NULL,
         -- pending, active, failed, precancel, or cancelled
-    payloadSender		TEXT,
+    payloadSender       TEXT,
     status              TEXT NOT NULL,
     localStatus         TINYINT(1) DEFAULT 0,
     description         TEXT,
     globalReservationId VARCHAR(63) UNIQUE,
-    pathId              INT NOT NULL UNIQUE,   -- foreign key
 PRIMARY KEY (id)
 ) type = MyISAM;
 
@@ -138,18 +137,14 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
 --
 CREATE TABLE IF NOT EXISTS paths (
     id                  INT NOT NULL AUTO_INCREMENT,
+    reservationId       INT NOT NULL,  -- foreign key
         -- whether path was explicitly given by user
     explicit            BOOLEAN NOT NULL,
     pathSetupMode       TEXT,
     nextDomainId        INT,           -- optional foreign key
-        -- first element in path
-    pathElemId          INT NOT NULL UNIQUE,  -- foreign key
-        -- couldn't get Hibernate optional one-to-one associations
-        -- working correctly
-    interPathElemId     INT UNIQUE,    -- optional foreign key
-    layer2DataId        INT UNIQUE,    -- optional foreign key
-    layer3DataId        INT UNIQUE,    -- optional foreign key
-    mplsDataId          INT UNIQUE,    -- optional foreign key
+    pathType            TEXT NOT NULL,
+    direction           TEXT,
+    grouping            TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -158,14 +153,16 @@ CREATE TABLE IF NOT EXISTS paths (
 --
 CREATE TABLE IF NOT EXISTS pathElems (
     id                  INT NOT NULL AUTO_INCREMENT,
+    pathId              INT NOT NULL, -- foreign key
+    seqNumber           INT NOT NULL,
+    urn                 TEXT,
+    userName            TEXT,
         -- currently ingress, egress, or null
     description         TEXT,
         -- what this path is made up of
     linkId              INT NOT NULL,  -- foreign key
         -- optional description of link (for things like VLAN id's)
     linkDescr           TEXT,
-        -- next element in path
-    nextId              INT UNIQUE,    -- maps back to this table
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -174,6 +171,7 @@ CREATE TABLE IF NOT EXISTS pathElems (
 --
 CREATE TABLE IF NOT EXISTS layer2Data (
     id                  INT NOT NULL AUTO_INCREMENT,
+    pathId              INT NOT NULL UNIQUE, -- foreign key
     srcEndpoint         TEXT NOT NULL,
     destEndpoint        TEXT NOT NULL,
     PRIMARY KEY (id)
@@ -184,6 +182,7 @@ CREATE TABLE IF NOT EXISTS layer2Data (
 --
 CREATE TABLE IF NOT EXISTS layer3Data (
     id                  INT NOT NULL AUTO_INCREMENT,
+    pathId              INT NOT NULL UNIQUE, -- foreign key
     srcHost             TEXT NOT NULL, 
     destHost            TEXT NOT NULL,
       -- the following are optional fields
@@ -202,6 +201,7 @@ CREATE TABLE IF NOT EXISTS layer3Data (
 --
 CREATE TABLE IF NOT EXISTS mplsData (
     id                 INT NOT NULL AUTO_INCREMENT,
+    pathId             INT NOT NULL UNIQUE, -- foreign key
         -- in bps
     burstLimit         BIGINT UNSIGNED NOT NULL,
     lspClass           TEXT NOT NULL,
@@ -223,10 +223,10 @@ CREATE TABLE IF NOT EXISTS nodeAddresses (
 -- Layer 2 edge table
 --
 CREATE TABLE IF NOT EXISTS l2SwitchingCapabilityData (
-    id			INT NOT NULL AUTO_INCREMENT,
-    linkId		INT NOT NULL UNIQUE,
+    id                  INT NOT NULL AUTO_INCREMENT,
+    linkId              INT NOT NULL UNIQUE,
     vlanRangeAvailability TEXT NOT NULL,
-    interfaceMTU	INT NOT NULL,
+    interfaceMTU        INT NOT NULL,
     vlanTranslation BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 ) type = MyISAM;

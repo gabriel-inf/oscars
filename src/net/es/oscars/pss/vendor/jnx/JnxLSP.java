@@ -92,12 +92,12 @@ public class JnxLSP {
                                     !direction.equals("reverse"))) {
             throw new PSSException("illegal circuit direction");
         }
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         this.log.info("path id: " + path.getId());
         MPLSData mplsData = path.getMplsData();
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
-        PathElem pathElem = path.getPathElem();
+        List<PathElem> pathElems = path.getPathElems();
         if (layer2Data != null) {
             if (lspData.getIngressLink() == null) {
                 throw new PSSException("createPath called before getting path endpoints");
@@ -149,8 +149,10 @@ public class JnxLSP {
                 this.setupLogin(lspData.getIngressLink(), hm);
             } else {
                 // get IP associated with first in-facing physical interface
+                PathElem ingressPathElem = lspData.getIngressPathElem();
+                int nextSeqNumber = ingressPathElem.getSeqNumber() + 1;
                 ipaddr =
-                    lspData.getIngressPathElem().getNextElem().getLink().getValidIpaddr();
+                    path.getPathElems().get(nextSeqNumber).getLink().getValidIpaddr();
                 if (ipaddr != null) {
                     lspRevTo = ipaddr.getIP();
                 } else {
@@ -195,8 +197,8 @@ public class JnxLSP {
         hm.put("lsp_reservation-priority", this.commonProps.getProperty("lsp_reservation-priority"));
 
         // reset to beginning
-        pathElem = path.getPathElem();
-        hops = lspData.getHops(pathElem, direction, false);
+        pathElems = path.getPathElems();
+        hops = lspData.getHops(pathElems, direction, false);
         this.setupLSP(hops, hm);
         this.log.info("jnx.createPath.end");
     }
@@ -232,7 +234,7 @@ public class JnxLSP {
                                     !direction.equals("reverse"))) {
             throw new PSSException("illegal circuit direction");
         }
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
         if (layer2Data != null) {

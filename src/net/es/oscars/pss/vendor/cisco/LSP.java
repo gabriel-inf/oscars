@@ -74,7 +74,7 @@ public class LSP {
         }
         // note that null checks are not necessary where database enforces
         // that a field is not null
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         Layer2Data layer2Data = path.getLayer2Data();
         // just handling layer 2 for Cisco's
         if (layer2Data == null) {
@@ -125,7 +125,9 @@ public class LSP {
         } else {
             // reverse direction
             // get IP associated with first in-facing physical interface
-            ipaddr = lspData.getIngressPathElem().getNextElem().getLink().getValidIpaddr();
+            PathElem ingressPathElem = lspData.getIngressPathElem();
+            int nextSeqNumber = ingressPathElem.getSeqNumber() + 1;
+            ipaddr = path.getPathElems().get(nextSeqNumber).getLink().getValidIpaddr();
             if (ipaddr != null) {
                 lspRevTo = ipaddr.getIP();
             } else {
@@ -138,7 +140,7 @@ public class LSP {
             hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
         }
         // reset to beginning, and get hops in correct direction
-        hops = lspData.getHops(path.getPathElem(), direction, true);
+        hops = lspData.getHops(path.getPathElems(), direction, true);
         this.setupLSP(hops, hm);
         // TODO:  makes assumption that forward will always be called first
         if (direction.equals("forward")) {

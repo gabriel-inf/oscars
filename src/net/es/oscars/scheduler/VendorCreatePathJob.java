@@ -52,9 +52,9 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
 
         // Prepare LSP data from path
         LSPData lspData = new LSPData(bssDbName);
-        Path path = resv.getPath();
+        Path path = resv.getPath("intra");
         try {
-            lspData.setPathVars(path.getPathElem());
+            lspData.setPathVars(path.getPathElems());
         } catch (PSSException ex) {
             this.log.error(ex);
             try {

@@ -295,9 +295,9 @@ public class PSPathfinder extends Pathfinder implements PCE {
             this.log.debug("Found overlapping reservation: "+resv.getGlobalReservationId());
 
             Double bw = new Double(resv.getBandwidth());
-            Path path = resv.getPath();
-            PathElem pathElem = path.getPathElem();
-            while (pathElem != null) {
+            Path path = resv.getPath("intra");
+            List<PathElem> pathElems = path.getPathElems();
+            for (PathElem pathElem: pathElems) {
                 Link link = pathElem.getLink();
                 Port port = link.getPort();
                 if (pf.getElementBandwidth(port.getFQTI()) > 0) {
@@ -309,12 +309,10 @@ public class PSPathfinder extends Pathfinder implements PCE {
 
                     pf.setElementBandwidth(port.getFQTI(), newBw);
                 }
-                pathElem = pathElem.getNextElem();
             }
         }
 
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph;
-
         CtrlPlanePathContent newInterPath = new CtrlPlanePathContent();
         CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
         CtrlPlaneHopContent[] currHops = pathInfo.getPath().getHop();

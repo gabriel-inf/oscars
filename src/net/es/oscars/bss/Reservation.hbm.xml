@@ -71,9 +71,11 @@
 
     <!-- Associations -->
 
-    <many-to-one name="path" column="pathId"
-        class="net.es.oscars.bss.topology.Path" cascade="all"
-        not-null="true" unique="true" />
+    <map name="pathMap" cascade="all, delete-orphan">
+        <key column="reservationId" not-null="true" />
+	<map-key column="pathType" type="string" />
+        <one-to-many class="net.es.oscars.bss.topology.Path" />
+    </map>
 
     <one-to-one name="token"
         class="net.es.oscars.bss.Token"

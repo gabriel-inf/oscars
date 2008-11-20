@@ -48,14 +48,12 @@ public class Reservation extends HibernateBean implements Serializable {
     private String globalReservationId;
 
     /** persistent field */
-    private Path path;
-
-    /** persistent field */
     private Token token;
 
     /** default constructor */
     public Reservation() { }
 
+    private Map<String,Path> pathMap = new HashMap<String,Path>();
 
     /**
      * @return startTime A Long with the reservation start time (Unix time)
@@ -175,15 +173,21 @@ public class Reservation extends HibernateBean implements Serializable {
         this.globalReservationId = globalReservationId;
     }
 
-    /**
-     * @return path starting path instance associated with reservation
-     */
-    public Path getPath() { return this.path; }
+    public Map<String,Path> getPathMap() {
+        return this.pathMap;
+    }
 
-    /**
-     * @param path path instance to associate with this reservation
-     */
-    public void setPath(Path path) { this.path = path; }
+    public void setPathMap(Map<String,Path> pathMap) {
+        this.pathMap = pathMap;
+    }
+
+    public Path getPath(String pathType) {
+        return this.pathMap.get(pathType);
+    }
+
+    public void setPath(Path path, String pathType) {
+        this.pathMap.put(pathType, path);
+    }
 
     /**
      * @return token instance associated with reservation
@@ -238,69 +242,19 @@ public class Reservation extends HibernateBean implements Serializable {
             sb.append("bandwidth: " + this.getBandwidth() + "\n");
         }
 
-        Path path= this.getPath();
+        Utils utils = new Utils(dbname);
+        Path path = this.getPath("intra");
         if (path == null) {
             return sb.toString();
         }
-        if (path.getPathSetupMode() != null) {
-            sb.append("path setup mode: " + path.getPathSetupMode() + "\n");
-        }
-        Layer2Data layer2Data = path.getLayer2Data();
-        if (layer2Data != null) {
-            sb.append("layer: 2\n");
-            if (layer2Data.getSrcEndpoint() != null) {
-                sb.append("source endpoint: " +
-                      layer2Data.getSrcEndpoint() + "\n");
-            }
-            if (layer2Data.getDestEndpoint() != null) {
-                sb.append("dest endpoint: " +
-                          layer2Data.getDestEndpoint() + "\n");
-            }
-            PathElem pathElem = path.getPathElem();
-            if (pathElem != null) {
-                String linkDescr = pathElem.getLinkDescr();
-                if (linkDescr != null) {
-                    sb.append("VLAN tag: " + linkDescr + "\n");
-                }
-            }
-        }
-        Layer3Data layer3Data = path.getLayer3Data();
-        if (layer3Data != null) {
-            sb.append("layer: 3\n");
-            if (layer3Data.getSrcHost() != null) {
-                sb.append("source host: " + layer3Data.getSrcHost() + "\n");
-            }
-            if (layer3Data.getDestHost() != null) {
-                sb.append("dest host: " + layer3Data.getDestHost() + "\n");
-            }
-            if (layer3Data.getProtocol() != null) {
-                sb.append("protocol: " + layer3Data.getProtocol() + "\n");
-            }
-            if ((layer3Data.getSrcIpPort() != null) &&
-                (layer3Data.getSrcIpPort() != 0)) {
-                sb.append("src IP port: " + layer3Data.getSrcIpPort() + "\n");
-            }
-            if ((layer3Data.getDestIpPort() != null) &&
-                (layer3Data.getDestIpPort() != 0)) {
-                sb.append("dest IP port: " +
-                          layer3Data.getDestIpPort() + "\n");
-            }
-            if (layer3Data.getDscp() != null) {
-                sb.append("dscp: " +  layer3Data.getDscp() + "\n");
-            }
-        }
-        MPLSData mplsData = path.getMplsData();
-        if (mplsData != null) {
-            if (mplsData.getBurstLimit() != null) {
-                sb.append("burst limit: " + mplsData.getBurstLimit() + "\n");
-            }
-            if (mplsData.getLspClass() != null) {
-                sb.append("LSP class: " + mplsData.getLspClass() + "\n");
-            }
-        }
+        sb.append(utils.pathDataToString(path));
         sb.append("intradomain hops: \n\n");
-        Utils utils = new Utils(dbname);
         sb.append(utils.pathToString(path, false));
+        path = this.getPath("inter");
+        if (path == null) {
+            return sb.toString();
+        }
+        sb.append(utils.pathDataToString(path));
         sb.append("\ninterdomain hops: \n\n");
         sb.append(utils.pathToString(path, true));
         sb.append("\n");

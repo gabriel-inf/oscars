@@ -18,6 +18,15 @@ public class PathElem extends HibernateBean implements Serializable {
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
 
+    /** persistent field */
+    private int seqNumber;
+    
+    /** nullable persistent field */
+    private String urn;
+    
+    /** nullable persistent field */
+    private String userName;
+    
     /** nullable persistent field */
     private String description;
     
@@ -27,13 +36,49 @@ public class PathElem extends HibernateBean implements Serializable {
     /** persistent field */
     private Link link;
 
-    /** nullable persistent field */
-    private PathElem nextElem;
-
-    private Path path;
-
     /** default constructor */
     public PathElem() { }
+
+
+    /**
+     * @return seqNumber int with this path element's position in list
+     */ 
+    public int getSeqNumber() {
+        return this.seqNumber;
+    }
+
+    /**
+     * @param num not actually settable
+     */ 
+    public void setSeqNumber(int num) {
+    }
+
+
+    /**
+     * @return urn a string with this path element's associated urn
+     */ 
+    public String getUrn() { return this.urn; }
+
+    /**
+     * @param urn string with path element's associated urn
+     */ 
+    public void setUrn(String urn) {
+        this.urn = urn;
+    }
+
+
+    /**
+     * @return userName a string with element's associated user name
+     */ 
+    public String getUserName() { return this.userName; }
+
+    /**
+     * @param userName string with path element's associated user name
+     */ 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
 
     /**
      * @return description a string with this path element's description
@@ -62,16 +107,6 @@ public class PathElem extends HibernateBean implements Serializable {
 
 
     /**
-     * @return nextElem the next path element (uses association)
-     */ 
-    public PathElem getNextElem() { return this.nextElem; }
-
-    /**
-     * @param nextElem the next path element (uses association)
-     */ 
-    public void setNextElem(PathElem nextElem) { this.nextElem = nextElem; }
-    
-    /**
      * @return link link instance associated with this path element
      */ 
     public Link getLink() { return this.link; }
@@ -80,18 +115,6 @@ public class PathElem extends HibernateBean implements Serializable {
      * @param link link instance associated with this path element
      */ 
     public void setLink(Link link) { this.link = link; }
-
-
-    /**
-     * @return path return path associated with this path element;
-     *              null except for first element in path
-     */ 
-    public Path getPath() { return this.path; }
-
-    /**
-     * @param path path instance associated with this path element
-     */ 
-    public void setPath(Path path) { this.path = path; }
 
 
     // need to override superclass because dealing with transient
