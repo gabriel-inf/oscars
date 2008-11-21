@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 
@@ -92,7 +93,12 @@ public class JnxLSP {
                                     !direction.equals("reverse"))) {
             throw new PSSException("illegal circuit direction");
         }
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+        	throw new PSSException(ex.getMessage());
+        }
         this.log.info("path id: " + path.getId());
         MPLSData mplsData = path.getMplsData();
         Layer2Data layer2Data = path.getLayer2Data();
@@ -234,7 +240,12 @@ public class JnxLSP {
                                     !direction.equals("reverse"))) {
             throw new PSSException("illegal circuit direction");
         }
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+        	throw new PSSException(ex.getMessage());
+        }
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
         if (layer2Data != null) {

@@ -5,6 +5,7 @@ import org.hibernate.*;
 
 import net.es.oscars.pss.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.PathType;;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
@@ -80,16 +81,20 @@ public class PathSetupAdapter{
         
         eventProducer.addEvent(OSCARSEvent.PATH_SETUP_RECEIVED, login, "API", resv);
         /* Check reservation parameters to make sure it can be created */
-        if (resv.getPath("intra").getPathSetupMode() == null) {
-            throw new PSSException("Path setup mode is null");
-        } else if (!resv.getPath("intra").getPathSetupMode().equals("signal-xml")) {
-            throw new PSSException("Path setup mode is not signal-xml");
-        } else if(currTime.compareTo(resv.getStartTime()) < 0){
-            throw new PSSException("Path cannot be created. Reservation " +
-            "start time not yet reached.");
-        } else if(currTime.compareTo(resv.getEndTime()) > 0){
-            throw new PSSException("Path cannot be created. Reservation " +
-            "end time has been reached.");
+        try {
+	        if (resv.getPath(PathType.INTRADOMAIN).getPathSetupMode() == null) {
+	            throw new PSSException("Path setup mode is null");
+	        } else if (!resv.getPath(PathType.INTRADOMAIN).getPathSetupMode().equals("signal-xml")) {
+	            throw new PSSException("Path setup mode is not signal-xml");
+	        } else if(currTime.compareTo(resv.getStartTime()) < 0){
+	            throw new PSSException("Path cannot be created. Reservation " +
+	            "start time not yet reached.");
+	        } else if(currTime.compareTo(resv.getEndTime()) > 0){
+	            throw new PSSException("Path cannot be created. Reservation " +
+	            "end time has been reached.");
+	        }
+        } catch (BSSException ex) {
+        	throw new PSSException(ex.getMessage());
         }
         
         /* Forward */
@@ -150,16 +155,20 @@ public class PathSetupAdapter{
 
         /* Connect to DB */
         Reservation resv = getConstrainedResv(gri,tokenValue,login,institution);
-
-        /* Check reservation parameters */
-        if(resv.getPath("intra").getPathSetupMode() == null ||
-            (!resv.getPath("intra").getPathSetupMode().equals("signal-xml")) ){
-            throw new PSSException("No reservations match request");
-        }else if(!resv.getStatus().equals("ACTIVE")){
-            throw new PSSException("Path cannot be refreshed. " +
-            "Reservation is not active. Please run createPath first.");
+        
+        try {
+		    /* Check reservation parameters */
+		    if(resv.getPath(PathType.INTRADOMAIN).getPathSetupMode() == null ||
+		        (!resv.getPath(PathType.INTRADOMAIN).getPathSetupMode().equals("signal-xml")) ){
+		        throw new PSSException("No reservations match request");
+		    }else if(!resv.getStatus().equals("ACTIVE")){
+		        throw new PSSException("Path cannot be refreshed. " +
+		        "Reservation is not active. Please run createPath first.");
+		    }
+        } catch (BSSException ex) {
+        	throw new PSSException(ex.getMessage());
         }
-
+		
         /* Refresh path */
         try {
             status = this.pm.refresh(resv, true);
@@ -217,9 +226,9 @@ public class PathSetupAdapter{
         }
         
         Forwarder forwarder = new Forwarder();
-        try{
-            if(resv.getPath("intra").getPathSetupMode() == null ||
-                (!resv.getPath("intra").getPathSetupMode().equals("signal-xml")) ){
+        try {
+            if(resv.getPath(PathType.INTRADOMAIN).getPathSetupMode() == null ||
+                (!resv.getPath(PathType.INTRADOMAIN).getPathSetupMode().equals("signal-xml")) ){
                 throw new PSSException("No reservations match request");
             }
             String currentStatus = StateEngine.getStatus(resv);
@@ -310,9 +319,13 @@ public class PathSetupAdapter{
            }
            if (institutionConstraint != null) {
                   //check the institution
+        	   try {
                   if (!this.rm.checkInstitution(resv, institutionConstraint) ) {
                       resv = null;
                   }
+        	   } catch (BSSException ex) {
+        		   throw new PSSException(ex.getMessage());
+        	   }
            }
        }
        if (resv == null && loginConstraint != null) {

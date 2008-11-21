@@ -58,7 +58,14 @@ public class DBGraphAdapter {
             } else {
                 this.log.debug("Found overlapping reservation: "+resv.getGlobalReservationId());
                 Long bw = resv.getBandwidth();
-                Path path = resv.getPath("intra");
+                Path path = null;
+                // FIXME: better error handling
+                try {
+                	path = resv.getPath(PathType.INTRADOMAIN);
+                } catch (BSSException ex) {
+                	this.log.error(ex);
+                	return null;
+                }
                 List<PathElem> pathElems = path.getPathElems();
                 for (PathElem pathElem: pathElems) {
                     Link link = pathElem.getLink();

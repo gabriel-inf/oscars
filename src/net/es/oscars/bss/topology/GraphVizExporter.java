@@ -315,7 +315,13 @@ public class GraphVizExporter {
 
 //           System.out.println(gri);
            resvNodes.add(gri);
-           Path path = resv.getPath("intra");
+           Path path = null;
+           try {
+        	   path = resv.getPath(PathType.INTRADOMAIN);
+           } catch (BSSException ex) {
+        	   // FIXME: do some error handling
+        	   return;
+           }
            List<PathElem> pathElems = path.getPathElems();
            PathElem nextPe = null;
            for (int i = 0; i < pathElems.size(); i++) {

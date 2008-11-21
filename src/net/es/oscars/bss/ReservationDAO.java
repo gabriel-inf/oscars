@@ -380,12 +380,12 @@ public class ReservationDAO
      *
      * @return whether first element in path has a matching VLAN
      */
-    private boolean containsVlan(Reservation rsv, List<String> vlanTags) {
+    private boolean containsVlan(Reservation rsv, List<String> vlanTags) throws BSSException {
         int checkVtag = -1;
         int minVtag = 100000;
         int maxVtag = -1;
         Utils utils = new Utils(this.dbname);
-        String tagStr = utils.getVlanTag(rsv.getPath("intra"));
+        String tagStr = utils.getVlanTag(rsv.getPath(PathType.INTRADOMAIN));
         // no associated VLAN
         if (tagStr == null) {
             return false;

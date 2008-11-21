@@ -119,7 +119,7 @@ public class TypeConverter {
      * @param resv A Hibernate Reservation instance
      * @return CreateReply instance
      */
-    public ModifyResReply reservationToModifyReply(Reservation resv) {
+    public ModifyResReply reservationToModifyReply(Reservation resv) throws BSSException {
         this.log.debug("reservationToModReply.start");
 
         ModifyResReply reply = new ModifyResReply();
@@ -159,7 +159,7 @@ public class TypeConverter {
      * @param resv A Hibernate reservation instance
      * @return ResDetails instance
      */
-    public ResDetails reservationToDetails(Reservation resv) {
+    public ResDetails reservationToDetails(Reservation resv) throws BSSException{
 
         this.log.debug("reservationToDetails.start");
         if (resv == null) {
@@ -178,7 +178,7 @@ public class TypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
-        reply.setPathInfo(this.getPathInfo(resv));
+    	reply.setPathInfo(this.getPathInfo(resv));
         this.log.debug("reservationToDetails.end");
         return reply;
     }
@@ -190,7 +190,7 @@ public class TypeConverter {
      * @param reservations A list of Hibernate Reservation beans
      * @return ListReply A list of Axis2 ListReply instances
      */
-    public ListReply reservationToListReply(List<Reservation> reservations) {
+    public ListReply reservationToListReply(List<Reservation> reservations) throws BSSException {
         ListReply reply = new ListReply();
         int ctr = 0;
 
@@ -221,11 +221,11 @@ public class TypeConverter {
      * @param resv a Reservation instance
      * @return pathInfo a filled in PathInfo Axis2 type
      */
-    public PathInfo getPathInfo(Reservation resv) {
+    public PathInfo getPathInfo(Reservation resv) throws BSSException {
         this.log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
-        Path path = resv.getPath("intra");
-        if (resv.getPath("intra") != null) {
+        Path path = resv.getPath(PathType.INTRADOMAIN);
+        if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
             pathInfo.setPath(this.pathToCtrlPlane(path, true));
             // one of these is allowed to be null
@@ -661,7 +661,8 @@ public class TypeConverter {
      * @param pathInfo the pathInfo to use in place of the resv path if provided
      * @return the converted HashMap
      */
-    public HashMap<String, String[]> reservationToHashMap(Reservation resv, PathInfo pathInfo){
+    public HashMap<String, String[]> reservationToHashMap(Reservation resv, PathInfo pathInfo)
+    		throws BSSException {
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         if(resv == null){
             return map;
@@ -683,7 +684,7 @@ public class TypeConverter {
             map.put("token", this.genHashVal(token.getValue()));
         }
         //set path
-        map.putAll(this.pathToHashMap(resv.getPath("intra"), pathInfo));
+        map.putAll(this.pathToHashMap(resv.getPath(PathType.INTRADOMAIN), pathInfo));
         return map;
     }
 

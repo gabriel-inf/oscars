@@ -705,8 +705,8 @@ public class PathManager {
      * @param source - true returns the source , false returns the destination
      * @return institution String name of the end point
      */
-    public String endPointSite(Reservation resv, Boolean source) {
-        Path path = resv.getPath("intra");
+    public String endPointSite(Reservation resv, Boolean source) throws BSSException {
+        Path path = resv.getPath(PathType.INTRADOMAIN);
         List<PathElem> hops = path.getPathElems();
         PathElem hop = null;
         if (source) {

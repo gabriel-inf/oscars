@@ -16,7 +16,6 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.PropHandler;
-import net.es.oscars.pss.PathSetupManager;
 import net.es.oscars.pss.*;
 
 public class VlsrPSSJob extends ChainingJob implements Job {
@@ -121,7 +120,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+        	return;
+       }
         ArrayList<String> ero = null;
         ArrayList<String> subnetEro = null;
         Layer2Data layer2Data = path.getLayer2Data();
@@ -452,7 +457,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         String promptPattern = this.props.getProperty("promptPattern");
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+        	return;
+       }
         Link ingressLink = path.getPathElems().get(0).getLink(); 
         String telnetAddress = this.findTelnetAddress(ingressLink);
         int port = this.findTelnetPort(sshPortForward);
@@ -558,7 +569,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         String promptPattern = this.props.getProperty("promptPattern");
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+        	return;
+       }
         Link ingressLink = path.getPathElems().get(0).getLink();  
         String gri = resv.getGlobalReservationId();
         String telnetAddress = this.findTelnetAddress(ingressLink);

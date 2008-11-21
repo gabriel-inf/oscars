@@ -249,7 +249,13 @@ public class ListResRmiHandler {
 
         for (Reservation resv: reservations) {
             // INTERDOMAIN
-            Path path = resv.getPath("intra");
+            Path path = null;
+            try {
+            	path = resv.getPath(PathType.INTERDOMAIN);
+            } catch (BSSException ex) {
+            	outputMap.put("error", ex.getMessage());
+            	return;
+            }
             String pathStr = utils.pathToString(path, false);
             String localSrc = null;
             String localDest = null;

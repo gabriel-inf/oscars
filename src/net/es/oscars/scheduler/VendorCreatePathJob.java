@@ -1,6 +1,7 @@
 package net.es.oscars.scheduler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
@@ -52,7 +53,13 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
 
         // Prepare LSP data from path
         LSPData lspData = new LSPData(bssDbName);
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+        	return;
+        }
         try {
             lspData.setPathVars(path.getPathElems());
         } catch (PSSException ex) {

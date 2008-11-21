@@ -10,6 +10,7 @@ import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 
@@ -74,7 +75,12 @@ public class LSP {
         }
         // note that null checks are not necessary where database enforces
         // that a field is not null
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+        	throw new PSSException(ex.getMessage());
+        }
         Layer2Data layer2Data = path.getLayer2Data();
         // just handling layer 2 for Cisco's
         if (layer2Data == null) {

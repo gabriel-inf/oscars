@@ -212,7 +212,7 @@ public class Reservation extends HibernateBean implements Serializable {
             .toString();
     }
 
-    public String toString(String dbname) {
+    public String toString(String dbname) throws BSSException {
         StringBuilder sb = new StringBuilder();
         String strParam = null;
 
@@ -249,14 +249,14 @@ public class Reservation extends HibernateBean implements Serializable {
         }
 
         Utils utils = new Utils(dbname);
-        Path path = this.getPath("intra");
+        Path path = this.getPath(PathType.INTRADOMAIN);
         if (path == null) {
             return sb.toString();
         }
         sb.append(utils.pathDataToString(path));
         sb.append("intradomain hops: \n\n");
         sb.append(utils.pathToString(path, false));
-        path = this.getPath("inter");
+        path = this.getPath(PathType.INTERDOMAIN);
         if (path == null) {
             return sb.toString();
         }

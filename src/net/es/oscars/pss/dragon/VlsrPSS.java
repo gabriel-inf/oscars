@@ -31,24 +31,30 @@ public class VlsrPSS implements PSS {
      */
     public String createPath(Reservation resv) throws PSSException{
         this.log.info("vlsrpss.create.start");
-        Path path = resv.getPath("intra");
-        Link ingressLink = path.getPathElems().get(0).getLink();
-        String queueName = this.generateQueueName(ingressLink);
-        
         try {
-            String gri = resv.getGlobalReservationId();
-            Scheduler sched = this.core.getScheduleManager().getScheduler();
-            String jobName = "pathsetup-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
-            this.log.debug("Adding job "+jobName);
-            jobDetail.setDurability(true);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("gri", gri);
-            jobDataMap.put("task", "create");
-            jobDetail.setJobDataMap(jobDataMap);
-            sched.addJob(jobDetail, false);
-        }catch (SchedulerException ex) {
-            this.log.error("Scheduler exception", ex);
+	        Path path = resv.getPath(PathType.INTRADOMAIN);
+	        Link ingressLink = path.getPathElems().get(0).getLink();
+	        String queueName = this.generateQueueName(ingressLink);
+	        
+	        try {
+	            String gri = resv.getGlobalReservationId();
+	            Scheduler sched = this.core.getScheduleManager().getScheduler();
+	            String jobName = "pathsetup-"+gri;
+	            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
+	            this.log.debug("Adding job "+jobName);
+	            jobDetail.setDurability(true);
+	            JobDataMap jobDataMap = new JobDataMap();
+	            jobDataMap.put("gri", gri);
+	            jobDataMap.put("task", "create");
+	            jobDetail.setJobDataMap(jobDataMap);
+	            sched.addJob(jobDetail, false);
+	        } catch (SchedulerException ex) {
+	            this.log.error("Scheduler exception", ex);
+	        }
+        } catch (BSSException ex) {
+        	this.log.error(ex);
+        	throw new PSSException(ex.getMessage());
+        	
         }
 
         this.log.info("vlsrpss.create.end");
@@ -65,23 +71,30 @@ public class VlsrPSS implements PSS {
     public String refreshPath(Reservation resv) throws PSSException{
         this.log.info("vlsrpss.refresh.start");
         this.log.info("vlsrpss.teardown.start");
-        Path path = resv.getPath("intra");
-        Link ingressLink = path.getPathElems().get(0).getLink();
-        String queueName = this.generateQueueName(ingressLink);
+        
         try {
-            String gri = resv.getGlobalReservationId();
-            Scheduler sched = this.core.getScheduleManager().getScheduler();
-            String jobName = "refresh-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
-            this.log.debug("Adding job "+jobName);
-            jobDetail.setDurability(true);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("gri", gri);
-            jobDataMap.put("task", "refresh");
-            jobDetail.setJobDataMap(jobDataMap);
-            sched.addJob(jobDetail, false);
-        }catch (SchedulerException ex) {
-            this.log.error("Scheduler exception", ex);
+	        Path path = resv.getPath(PathType.INTRADOMAIN);
+	        Link ingressLink = path.getPathElems().get(0).getLink();
+	        String queueName = this.generateQueueName(ingressLink);
+	        try {
+	            String gri = resv.getGlobalReservationId();
+	            Scheduler sched = this.core.getScheduleManager().getScheduler();
+	            String jobName = "refresh-"+gri;
+	            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
+	            this.log.debug("Adding job "+jobName);
+	            jobDetail.setDurability(true);
+	            JobDataMap jobDataMap = new JobDataMap();
+	            jobDataMap.put("gri", gri);
+	            jobDataMap.put("task", "refresh");
+	            jobDetail.setJobDataMap(jobDataMap);
+	            sched.addJob(jobDetail, false);
+	        } catch (SchedulerException ex) {
+	            this.log.error("Scheduler exception", ex);
+	        }
+        } catch (BSSException ex) {
+        	this.log.error(ex);
+        	throw new PSSException(ex.getMessage());
+        	
         }
         this.log.info("vlsrpss.refresh.end");
 
@@ -96,23 +109,29 @@ public class VlsrPSS implements PSS {
      */
     public String teardownPath(Reservation resv, String newStatus) throws PSSException{
         this.log.info("vlsrpss.teardown.start");
-        Path path = resv.getPath("intra");
-        Link ingressLink = path.getPathElems().get(0).getLink();
-        String queueName = this.generateQueueName(ingressLink);
         try {
-            String gri = resv.getGlobalReservationId();
-            Scheduler sched = this.core.getScheduleManager().getScheduler();
-            String jobName = "teardown-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
-            this.log.debug("Adding job "+jobName);
-            jobDetail.setDurability(true);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("gri", gri);
-            jobDataMap.put("task", "teardown");
-            jobDetail.setJobDataMap(jobDataMap);
-            sched.addJob(jobDetail, false);
-        }catch (SchedulerException ex) {
-            this.log.error("Scheduler exception", ex);
+	        Path path = resv.getPath(PathType.INTRADOMAIN);
+	        Link ingressLink = path.getPathElems().get(0).getLink();
+	        String queueName = this.generateQueueName(ingressLink);
+	        try {
+	            String gri = resv.getGlobalReservationId();
+	            Scheduler sched = this.core.getScheduleManager().getScheduler();
+	            String jobName = "teardown-"+gri;
+	            JobDetail jobDetail = new JobDetail(jobName, queueName, VlsrPSSJob.class);
+	            this.log.debug("Adding job "+jobName);
+	            jobDetail.setDurability(true);
+	            JobDataMap jobDataMap = new JobDataMap();
+	            jobDataMap.put("gri", gri);
+	            jobDataMap.put("task", "teardown");
+	            jobDetail.setJobDataMap(jobDataMap);
+	            sched.addJob(jobDetail, false);
+	        } catch (SchedulerException ex) {
+	            this.log.error("Scheduler exception", ex);
+	        }
+        } catch (BSSException ex) {
+        	this.log.error(ex);
+        	throw new PSSException(ex.getMessage());
+        	
         }
         this.log.info("vlsrpss.teardown.end");
 

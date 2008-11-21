@@ -19,6 +19,7 @@ import net.es.oscars.bss.topology.Layer2Data;
 import net.es.oscars.bss.topology.Layer3Data;
 import net.es.oscars.bss.topology.MPLSData;
 import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.database.*;
 import net.es.oscars.oscars.*;
 
@@ -163,7 +164,13 @@ public class QueryResRmiHandler {
     // this will replace LSP name if one was given instead of a GRI
     String gri = resv.getGlobalReservationId();
     // INTERDOMAIN
-    Path path = resv.getPath("intra");
+    Path path = null;
+    try {
+    	path = resv.getPath(PathType.INTERDOMAIN);
+    } catch (BSSException ex) {
+    	outputMap.put("error", ex.getMessage());
+    	return;
+    }
     Layer2Data layer2Data = path.getLayer2Data();
     Layer3Data layer3Data = path.getLayer3Data();
     MPLSData mplsData = path.getMplsData();

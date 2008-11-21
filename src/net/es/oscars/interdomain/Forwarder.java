@@ -11,6 +11,7 @@ import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
@@ -57,7 +58,12 @@ public class Forwarder extends Client {
 
         CreateReply createReply = null;
         String login = resv.getLogin();
-        Path path = resv.getPath("intra");
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
         if (path == null) {
            throw new InterdomainException(
                   "no path provided to forwarder create");
@@ -80,10 +86,18 @@ public class Forwarder extends Client {
 
         String url = null;
         String login = resv.getLogin();
+        
+        Path path = null;
+        try {
+        	path = persistentResv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
+
          
         // currently get the next domain from the stored path
-        if (persistentResv.getPath("intra") != null && persistentResv.getPath("intra").getNextDomain() != null) {
-            url = persistentResv.getPath("intra").getNextDomain().getUrl();
+        if (path != null && path.getNextDomain() != null) {
+            url = path.getNextDomain().getUrl();
         }
 
         if (url != null) {
@@ -104,9 +118,16 @@ public class Forwarder extends Client {
     public ResDetails query(Reservation resv) throws InterdomainException {
 
         String url = null;
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
 
-        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
-            url = resv.getPath("intra").getNextDomain().getUrl();
+        
+        if (path != null && path.getNextDomain() != null) {
+            url = path.getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("query forward to " + url);
@@ -118,9 +139,18 @@ public class Forwarder extends Client {
 
         String url = null;
         String login = resv.getLogin();
-        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
-            url = resv.getPath("intra").getNextDomain().getUrl();
+        
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
         }
+
+        if (path != null && path.getNextDomain() != null) {
+            url = path.getNextDomain().getUrl();
+        }
+        
         if (url == null) { return null; }
         this.log.info("cancel start forward to: " + url);
         EventProducer eventProducer = new EventProducer();
@@ -134,8 +164,15 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         String url = null;
-        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
-            url = resv.getPath("intra").getNextDomain().getUrl();
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
+
+        if (path != null && path.getNextDomain() != null) {
+            url = path.getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("createPath forward to: " + url);
@@ -147,8 +184,15 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         String url = null;
-        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
-            url = resv.getPath("intra").getNextDomain().getUrl();
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
+
+        if (path != null && path.getNextDomain() != null) {
+            url = path.getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("refreshPath forward to: " + url);
@@ -160,8 +204,15 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         String url = null;
-        if (resv.getPath("intra") != null && resv.getPath("intra").getNextDomain() != null) {
-            url = resv.getPath("intra").getNextDomain().getUrl();
+        Path path = null;
+        try {
+        	path = resv.getPath(PathType.INTERDOMAIN);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
+
+        if (path != null && path.getNextDomain() != null) {
+            url = path.getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("teardownPath forward to: " + url);

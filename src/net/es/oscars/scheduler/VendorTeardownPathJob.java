@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.*;
@@ -46,8 +47,15 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             return;
         }
         LSPData lspData = new LSPData(bssDbName);
-        Path path = resv.getPath("intra");
+        Path path = null;
         try {
+        	path = resv.getPath(PathType.INTRADOMAIN);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+            this.runNextJob(context);
+        	return;
+       }
+       try {
             lspData.setPathVars(path.getPathElems());
         } catch (PSSException ex) {
             this.log.error(ex);

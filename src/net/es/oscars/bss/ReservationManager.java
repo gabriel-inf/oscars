@@ -851,7 +851,7 @@ public class ReservationManager {
      * @return Boolean allowed
      */
 
-    public Boolean checkInstitution(Reservation resv, String institution) {
+    public Boolean checkInstitution(Reservation resv, String institution) throws BSSException {
         // get the site associated the source of the reservation
         String sourceSite = this.pathMgr.endPointSite(resv, true);
         // this.log.debug("checkInstitution: sourceSite is " + sourceSite);
@@ -875,8 +875,8 @@ public class ReservationManager {
      * @param source - true returns the source , false returns the destination
      * @return institution String name of the end point
      */
-    public Domain endPointDomain(Reservation resv, Boolean source) {
-        Path path = resv.getPath("intra");
+    public Domain endPointDomain(Reservation resv, Boolean source) throws BSSException {
+        Path path = resv.getPath(PathType.INTRADOMAIN);
         List<PathElem> hops = path.getPathElems();
         PathElem hop = null;
         if (source) {

@@ -183,7 +183,11 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         newPathContent.setHop(hops);
         pathInfo.setPath(newPathContent);
-        reservation.getPath("intra").setExplicit(true);
+        try {
+        	reservation.getPath(PathType.INTRADOMAIN).setExplicit(true);
+        } catch (BSSException ex) {
+        	throw new PathfinderException(ex.getMessage());
+        }
         this.log.debug("handleLayer3ERO.end");
     }
 

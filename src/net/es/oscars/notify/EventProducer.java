@@ -7,6 +7,7 @@ import org.apache.log4j.*;
 import org.quartz.*;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.scheduler.NotifyJob;
@@ -112,7 +113,12 @@ public class EventProducer{
                          String errorCode, String errorMessage){
         OSCARSEvent event = new OSCARSEvent();
         TypeConverter tc = new TypeConverter();
-        HashMap<String, String[]> resvParams = tc.reservationToHashMap(resv, pathInfo);
+        HashMap<String, String[]> resvParams;
+        try {
+        	resvParams = tc.reservationToHashMap(resv, pathInfo);
+        } catch (BSSException ex) {
+        	return;
+        }
         event.setType(type);
         event.setTimestamp(System.currentTimeMillis());
         event.setUserLogin(userLogin);
