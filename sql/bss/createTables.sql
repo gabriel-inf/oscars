@@ -331,18 +331,6 @@ CREATE TABLE IF NOT EXISTS sites (
 ) type=MyISAM;
 
 --
--- Table to look up an institution associated with a domain (for site admin
--- privileges)
-CREATE TABLE IF NOT EXISTS sites (
-    id                  INT NOT NULL AUTO_INCREMENT,
-        -- site name, matches a name in the aaa institutions table
-    name                TEXT NOT NULL,
-        -- key of corresponding domain in domains table
-    domainId            INT NOT NULL,
-    PRIMARY KEY (id)
-) type=MyISAM;
-
---
 -- Table to lookup external services associated with a domain
 -- Used as a backup to the perfSONAR LS
 CREATE TABLE IF NOT EXISTS domainServices (
