@@ -5,7 +5,7 @@ import org.hibernate.*;
 
 import net.es.oscars.pss.*;
 import net.es.oscars.bss.*;
-import net.es.oscars.bss.topology.PathType;;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
