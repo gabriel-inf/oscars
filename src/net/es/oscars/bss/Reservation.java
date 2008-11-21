@@ -31,13 +31,13 @@ public class Reservation extends HibernateBean implements Serializable {
 
     /** persistent field */
     private String login;
-    
+
     /** persistent field */
     private String payloadSender;
 
-	/** persistent field */
+    /** persistent field */
     private String status;
-    
+
     /** persistent field */
     private Integer localStatus;
 
@@ -114,19 +114,19 @@ public class Reservation extends HibernateBean implements Serializable {
     public void setLogin(String login) { this.login = login; }
 
     /**
-	 * @return the payloadSender
-	 */
-	public String getPayloadSender() {
-		return payloadSender;
-	}
+     * @return the payloadSender
+     */
+    public String getPayloadSender() {
+        return payloadSender;
+    }
 
-	/**
-	 * @param payloadSender the payloadSender to set
-	 */
-	public void setPayloadSender(String payloadSender) {
-		this.payloadSender = payloadSender;
-	}
-	
+    /**
+     * @param payloadSender the payloadSender to set
+     */
+    public void setPayloadSender(String payloadSender) {
+        this.payloadSender = payloadSender;
+    }
+
     /**
      * @return status A String with the reservation's current status
      */
@@ -181,11 +181,17 @@ public class Reservation extends HibernateBean implements Serializable {
         this.pathMap = pathMap;
     }
 
-    public Path getPath(String pathType) {
+    public Path getPath(String pathType) throws BSSException {
+        if (!PathType.isValid(pathType)) {
+            throw new BSSException("Invalid pathType: "+pathType);
+        }
         return this.pathMap.get(pathType);
     }
 
-    public void setPath(Path path, String pathType) {
+    public void setPath(Path path, String pathType) throws BSSException {
+        if (!PathType.isValid(pathType)) {
+            throw new BSSException("Invalid pathType: "+pathType);
+        }
         this.pathMap.put(pathType, path);
     }
 

@@ -8,6 +8,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.hibernate.Hibernate;
 
 import net.es.oscars.database.HibernateBean;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 
 /**
@@ -20,13 +21,13 @@ public class Path extends HibernateBean implements Serializable {
 
     /** persistent field */
     private boolean explicit;
-    
+
     /** persistent field */
     private String pathSetupMode;
-    
+
     /** persistent field */
     private String pathType;
-    
+
     /** nullable persistent field */
     private Domain nextDomain;
 
@@ -46,76 +47,82 @@ public class Path extends HibernateBean implements Serializable {
 
     /**
      * @return explicit boolean indicating whether this path was explicitly set
-     */ 
+     */
     public boolean isExplicit() { return this.explicit; }
 
     /**
      * @param explicit boolean indicating whether this path was explicitly set
-     */ 
+     */
     public void setExplicit(boolean explicit) { this.explicit = explicit; }
 
 
     /**
      * @return path starting path instance associated with reservation
-     */ 
+     */
     public Domain getNextDomain() { return this.nextDomain; }
 
     /**
      * @param domain Domain instance to associate with this reservation
-     */ 
+     */
     public void setNextDomain(Domain domain) { this.nextDomain = domain; }
-    
+
     /**
      * @return the way this reservation will be set up.
-     */ 
+     */
     public String getPathSetupMode() { return this.pathSetupMode; }
 
     /**
      * @param pathSetupMode the way this reservation will be set up.
-     */ 
-    public void setPathSetupMode(String pathSetupMode) { 
-        this.pathSetupMode = pathSetupMode; 
+     */
+    public void setPathSetupMode(String pathSetupMode) {
+        this.pathSetupMode = pathSetupMode;
     }
 
     /**
      * @return path type (currently intra or inter)
-     */ 
+     */
     public String getPathType() { return this.pathType; }
 
     /**
      * @param pathType path type (currently intra or inter)
-     */ 
-    public void setPathType(String pathType) { 
-        this.pathType = pathType; 
+     */
+    public void setPathType(String pathType) throws BSSException {
+        if (!PathType.isValid(pathType)) {
+            throw new BSSException("Invalid pathType: "+pathType);
+        }
+        this.pathType = pathType;
     }
 
     /**
      * @return the direction of the path.
-     */ 
+     */
     public String getDirection() { return this.direction; }
 
     /**
      * @param direction the direction of the path.
-     */ 
-    public void setDirection(String direction) { 
-        this.direction = direction; 
+     */
+    public void setDirection(String direction) throws BSSException {
+        if (!PathDirection.isValid(direction)) {
+            throw new BSSException("Invalid direction: "+direction);
+        }
+        this.direction = direction;
     }
 
     /**
      * @return future use.
-     */ 
+     */
     public String getGrouping() { return this.grouping; }
 
     /**
      * @param grouping future use.
-     */ 
-    public void setGrouping(String grouping) { 
-        this.grouping = grouping; 
+     */
+    public void setGrouping(String grouping) {
+        this.grouping = grouping;
     }
 
     /**
      * @return list of elements in this path.
-     */ 
+     */
     public List<PathElem> getPathElems() {
         return this.pathElems;
     }
@@ -123,14 +130,14 @@ public class Path extends HibernateBean implements Serializable {
     /**
      * @param pathElems list of new path elements.  NOTE:  Don't use after
      *                  path has been made persistent.
-     */ 
+     */
     public void setPathElems(List<PathElem> pathElems) {
         this.pathElems = pathElems;
     }
 
     /**
      * @param pathElem new path element in list, can only be added sequentially.
-     */ 
+     */
     public void addPathElem(PathElem pathElem) {
         this.pathElems.add(pathElem);
     }
@@ -244,14 +251,14 @@ public class Path extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
-    
+
     public boolean containsAnyOf(List<Link> links) {
         for (Link link : links) {
             for (PathElem pe: this.pathElems) {
                 if (pe.getLink().equals(link)) {
                     return true;
                 }
-            } 
+            }
         }
         return false;
     }
