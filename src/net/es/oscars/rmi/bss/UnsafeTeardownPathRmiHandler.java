@@ -5,7 +5,6 @@ import java.util.*;
 import org.apache.log4j.*;
 import org.hibernate.*;
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.*;
@@ -32,7 +31,7 @@ public class UnsafeTeardownPathRmiHandler {
 
         UserManager userMgr =  new UserManager("aaa");
         EventProducer eventProducer = new EventProducer();
-        Reservation reservation = null;
+        Reservation resv = null;
         result.put("method", methodName);
 
         Session aaa = core.getAaaSession();
@@ -52,12 +51,11 @@ public class UnsafeTeardownPathRmiHandler {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
-        /* UNCOMMENT THIS BLOCK FOR TESTING
         try {
             ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
-            Reservation resv = resvDAO.query(gri);
-            this.core.getPathSetupManager().teardown(resv, resv.getStatus(), false);
-            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, userName, "WBUI", reservation);
+            resv = resvDAO.query(gri);
+            this.core.getPathSetupManager().teardown(resv, resv.getStatus());
+            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, userName, "WBUI", resv);
         } catch (PSSException e) {
             errMessage = e.getMessage();
         } catch (BSSException e) {
@@ -66,18 +64,18 @@ public class UnsafeTeardownPathRmiHandler {
             if (errMessage != null) {
                 result.put("error", errMessage);
                 bss.getTransaction().rollback();
-                if (reservation != null){
-                    eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName, "WBUI", reservation, "", errMessage);
+                if (resv != null){
+                    eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName, "WBUI", resv, "", errMessage);
                 }
                 this.log.debug("teardownPath failed: " + errMessage);
                 return result;
             }
         }
-        result.put("gri", reservation.getGlobalReservationId());
-        result.put("status", "Manually tore down reservation with GRI " + reservation.getGlobalReservationId());
-        */
+        result.put("gri", resv.getGlobalReservationId());
+        result.put("status", "Manually tore down reservation with GRI " + resv.getGlobalReservationId());
+        
         /* REMOVE THIS LINE FOR TESTING */
-        result.put("status", "Not implemented yet");
+        //result.put("status", "Not implemented yet");
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 

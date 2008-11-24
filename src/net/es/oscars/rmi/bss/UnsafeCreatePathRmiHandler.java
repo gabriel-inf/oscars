@@ -7,7 +7,6 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
@@ -34,7 +33,7 @@ public class UnsafeCreatePathRmiHandler {
          String methodName = "CreatePath";
          UserManager userMgr =  new UserManager("aaa");
          EventProducer eventProducer = new EventProducer();
-         Reservation reservation = null;
+         Reservation resv = null;
          result.put("method", methodName);
 
          Session aaa = core.getAaaSession();
@@ -53,13 +52,12 @@ public class UnsafeCreatePathRmiHandler {
          Session bss = core.getBssSession();
          bss.beginTransaction();
          String errMessage = null;
-         /* UNCOMMENT THIS BLOCK TO TEST
          try {
              ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
-             Reservation resv = resvDAO.query(gri);
+             resv = resvDAO.query(gri);
              this.core.getPathSetupManager().create(resv, false);
 
-             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, userName, "WBUI", reservation);
+             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, userName, "WBUI", resv);
          } catch (PSSException e) {
              errMessage = e.getMessage();
          } catch (BSSException e) {
@@ -70,18 +68,17 @@ public class UnsafeCreatePathRmiHandler {
              if (errMessage != null) {
                  result.put("error", errMessage);
                  bss.getTransaction().rollback();
-                 if (reservation != null){
-                     eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName, "WBUI", reservation, "", errMessage);
+                 if (resv != null){
+                     eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName, "WBUI", resv, "", errMessage);
                  }
                  this.log.debug("createPath failed: " + errMessage);
                  return result;
              }
          }
-         result.put("gri", reservation.getGlobalReservationId());
-         result.put("status", "Manually set up path for GRI " + reservation.getGlobalReservationId());
-         */
+         result.put("gri", resv.getGlobalReservationId());
+         result.put("status", "Manually set up path for GRI " + resv.getGlobalReservationId());
          /* REMOVE THIS LINE FOR TESTING */
-         result.put("status", "Not implemented yet");
+         //result.put("status", "Not implemented yet");
          result.put("method", methodName);
          result.put("success", Boolean.TRUE);
 
