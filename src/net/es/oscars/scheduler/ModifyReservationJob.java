@@ -37,7 +37,6 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         this.log.debug("ModifyReservationJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
         this.se = this.core.getStateEngine();
-        TypeConverter tc = this.core.getTypeConverter();
         ReservationManager rm = this.core.getReservationManager();
         String idcURL = this.core.getServiceManager().getIdcURL();
         EventProducer eventProducer = new EventProducer();
@@ -73,7 +72,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                 origState = StateEngine.ACTIVE;
             }
             if (dataMap.containsKey("start")) {
-                Reservation resv = tc.hashMapToReservation(resvMap);
+                Reservation resv = TypeConverter.hashMapToReservation(resvMap);
                 resv.setLogin(persistentResv.getLogin());
                 Long[] times = new Long[2];
                 times[0] = persistentResv.getStartTime();

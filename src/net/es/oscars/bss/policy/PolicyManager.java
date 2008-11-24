@@ -82,7 +82,6 @@ public class PolicyManager {
 
         this.log.info("getLinksFromPath.start");
         ArrayList<Link> links= new ArrayList<Link>();
-        TypeConverter tc = new TypeConverter();
 
         if (ctrlPlanePath == null) {
             throw new BSSException("no path provided to initlinkIntervals");
@@ -91,7 +90,7 @@ public class PolicyManager {
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         for (int i = 0; i < hops.length; i++) {
-            String hopTopoId = tc.hopToURN(hops[i]);
+            String hopTopoId = TypeConverter.hopToURN(hops[i]);
             this.log.info(hopTopoId);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");

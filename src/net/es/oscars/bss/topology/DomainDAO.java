@@ -87,13 +87,12 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
         EdgeInfoDAO edgeInfoDAO = new EdgeInfoDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Domain nextDomain = null;
-        TypeConverter tc = new TypeConverter();
         
-        this.log.info("getNextDomain.start: " + tc.hopToURN(nextHop));
-        String[] componentList = tc.hopToURN(nextHop).split(":");
+        this.log.info("getNextDomain.start: " + TypeConverter.hopToURN(nextHop));
+        String[] componentList = TypeConverter.hopToURN(nextHop).split(":");
 
         if (componentList.length != 7) {
-            throw new BSSException("Hop " + tc.hopToURN(nextHop) + " must" +
+            throw new BSSException("Hop " + TypeConverter.hopToURN(nextHop) + " must" +
                 " be in format urn:ogf:network:domainId:nodeId:portId:linkId");
         }
 

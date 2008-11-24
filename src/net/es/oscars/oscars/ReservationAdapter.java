@@ -24,6 +24,10 @@ import net.es.oscars.scheduler.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.rmi.*;
+import net.es.oscars.rmi.bss.*;
+import net.es.oscars.rmi.aaa.*;
+import net.es.oscars.rmi.core.*;
 
 
 /**
@@ -43,7 +47,6 @@ public class ReservationAdapter {
         this.core = OSCARSCore.getInstance();
         this.dbname = this.core.getBssDbName();
         this.rm = this.core.getReservationManager();
-        this.tc = this.core.getTypeConverter();
 
     }
 
@@ -163,32 +166,27 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public ModifyResReply modify(ModifyResContent params, String loginConstraint,
-                                    String login, String institution)
+    public ModifyResReply modify(ModifyResContent request, String username, BssRmiInterface rmiClient)
             throws BSSException{
 
         this.log.info("modify.start");
-        EventProducer eventProducer = new EventProducer();
-        Reservation resv = this.tc.contentToReservation(params);
-        this.log.info("Reservation was: "+resv.getGlobalReservationId());
+
 
         ModifyResReply reply = null;
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("caller", "AAR");
+        // FIXME: map request to params
+        // FIXME: IMPORTANT
+        
         try {
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, login, "API", resv);
-            Reservation persistentResv = this.rm.submitModify(resv, loginConstraint, login, institution);
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, login, "API", resv);
-            reply = this.tc.reservationToModifyReply(persistentResv);
-        } catch (BSSException e) {
-            String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
-                resv, "", errMsg);
-            throw e;
-        } catch (Exception e) {
-            String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
-                resv, "", errMsg);
-            throw new BSSException(e.getMessage());
+        	result = rmiClient.modifyReservation(params, username);
+        } catch (Exception ex) {
+        	throw new BSSException(ex.getMessage());
         }
+        Reservation resv = (Reservation) result.get("reservation");
+        
+        reply = TypeConverter.reservationToModifyReply(resv);
 
         this.log.info("modify.finish");
         return reply;
@@ -204,29 +202,18 @@ public class ReservationAdapter {
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException
      */
-    public String cancel(GlobalReservationId params, String loginConstraint, 
-                         String login, String institution) throws BSSException{
-    	
-        EventProducer eventProducer = new EventProducer();
-        String gri = params.getGri();
-        Reservation resv = null;
-        try{
-            this.log.info("cancel.start: " + gri);
-            resv = this.rm.getConstrainedResv(gri, loginConstraint, institution);
-            this.rm.submitCancel(resv,loginConstraint, login, institution);
-            this.log.info("cancel.finish " + "GRI: " + gri + 
-                          ", status: "  + resv.getStatus());
-        }catch(BSSException e){
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API",
-                resv, "", e.getMessage());
-            throw e;
-        }catch(Exception e){
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API",
-                resv, "", e.getMessage());
-            throw new BSSException(e);
+    public String cancel(CancelReservation request, String username, BssRmiInterface rmiClient) throws BSSException {
+        String gri = request.getCancelReservation().getGri();
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("gri", gri);
+        params.put("caller", "AAR");
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        try {
+        	result = rmiClient.cancelReservation(params, username);
+        } catch (Exception ex) {
+        	throw new BSSException(ex.getMessage());
         }
-        
-        return resv.getStatus();
+        return (String) result.get("status");
     }
 
     /**
@@ -246,14 +233,27 @@ public class ReservationAdapter {
      * @throws BSSException
      */
     public ResDetails
-        query(GlobalReservationId params, String login, String institution)
-            throws BSSException, InterdomainException {
+        query(QueryReservation request, String username, BssRmiInterface rmiClient)
+            throws BSSException {
 
-        Reservation resv = null;
-        Forwarder forwarder = this.core.getForwarder();
-
-        String gri = params.getGri();
-        this.log.info("query.start: " + gri);
+        String gri = request.getQueryReservation().getGri();
+        
+        this.log.info("QueryReservation.start: " + gri);
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("gri", gri);
+        params.put("caller", "AAR");
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        try {
+        	result = rmiClient.queryReservation(params, username);
+        } catch (Exception ex) {
+        	throw new BSSException(ex.getMessage());
+        }
+        
+        Reservation resv = (Reservation) result.get("reservation");
+        
+        ResDetails reply = TypeConverter.reservationToDetails(resv);
+        
+/*
         resv = this.rm.query(gri, login, institution);
         ResDetails reply = this.tc.reservationToDetails(resv);
         // checks whether next domain should be contacted, forwards to
@@ -276,7 +276,8 @@ public class ReservationAdapter {
             // Add remote hops to returned explicitPath
             this.addHops(reply.getPathInfo(), forwardReply.getPathInfo());
         }
-        this.log.info("query.finish: " + reply.getGlobalReservationId());
+        */
+        this.log.info("QueryReservation.finish: " + reply.getGlobalReservationId());
         return reply;
     }
 

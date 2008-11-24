@@ -2,6 +2,7 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
@@ -26,8 +27,11 @@ public class ListReservations extends HttpServlet {
 
         String methodName = "ListReservations";
         this.log.info("servlet.start");
-        HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
+        
+        HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
+        params.put("style", "wbui");
+        
         UserSession userSession = new UserSession();
 
         PrintWriter out = response.getWriter();
@@ -42,12 +46,12 @@ public class ListReservations extends HttpServlet {
         while (e.hasMoreElements()) {
             String paramName = (String) e.nextElement();
             String[] paramValues = request.getParameterValues(paramName);
-            inputMap.put(paramName, paramValues);
+            params.put(paramName, paramValues);
         }
 
         try {
             BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            outputMap = rmiClient.listReservations(inputMap, userName);
+            outputMap = rmiClient.listReservations(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed with " + ex.getMessage());
             Utils.handleFailure(out, "ListReservations not completed: " + ex.getMessage(), methodName);

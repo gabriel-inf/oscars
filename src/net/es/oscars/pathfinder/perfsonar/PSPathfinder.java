@@ -50,7 +50,6 @@ import edu.internet2.perfsonar.*;
 public class PSPathfinder extends Pathfinder implements PCE {
     private Logger log;
     private Domain localDomain;
-    private TypeConverter tc;
     static private PerfSONARDomainFinder psdf = null;
 
     /**
@@ -66,7 +65,6 @@ public class PSPathfinder extends Pathfinder implements PCE {
         DomainDAO domDAO = new DomainDAO(dbname);
         this.localDomain = domDAO.getLocalDomain();
 
-        this.tc = OSCARSCore.getInstance().getTypeConverter();
 
         if (this.psdf == null) {
             String[] gLSs = null;
@@ -225,24 +223,24 @@ public class PSPathfinder extends Pathfinder implements PCE {
         /* build new LIDP from existing LIDP */
         try{
             //Convert to all references in path
-            PathInfo refPathInfo = this.tc.createRefPath(pathInfo);
+            PathInfo refPathInfo = TypeConverter.createRefPath(pathInfo);
             intraPath = this.buildNewPath(refPathInfo, reservation);
             intraPathInfo.setPath(intraPath);
             //restore any objects in path prior to conversion
-            this.tc.mergePathInfo(pathInfo, intraPathInfo, true);
-            this.tc.mergePathInfo(pathInfo, refPathInfo, false);
+            TypeConverter.mergePathInfo(pathInfo, intraPathInfo, true);
+            TypeConverter.mergePathInfo(pathInfo, refPathInfo, false);
         }catch(BSSException e){
             this.reportError(e.getMessage());
         }
 
         this.log.debug("Path Type: " + pathInfo.getPathType());
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
-            this.log.debug(this.tc.hopToURN(pathInfo.getPath().getHop()[i]));
+            this.log.debug(TypeConverter.hopToURN(pathInfo.getPath().getHop()[i]));
         }
 
         this.log.debug("Path Type: " + intraPathInfo.getPathType());
         for(int i = 0; i < intraPathInfo.getPath().getHop().length; i++){
-            this.log.debug(this.tc.hopToURN(intraPathInfo.getPath().getHop()[i]));
+            this.log.debug(TypeConverter.hopToURN(intraPathInfo.getPath().getHop()[i]));
         }
 
         /* Remove strict pathType for backward compatibility */
@@ -568,8 +566,8 @@ public class PSPathfinder extends Pathfinder implements PCE {
         String destURN = this.resolveToFQTI(dest);
 
         CtrlPlaneHopContent[] hops = interPath.getHop();
-        String firstHop = this.tc.hopToURN(hops[0], "link");
-        String lastHop = this.tc.hopToURN(hops[hops.length - 1], "link");
+        String firstHop = TypeConverter.hopToURN(hops[0], "link");
+        String lastHop = TypeConverter.hopToURN(hops[hops.length - 1], "link");
 
         if(firstHop == null || lastHop == null){
             this.reportError("The first and last hop of the given path must " +

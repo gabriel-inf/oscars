@@ -53,7 +53,6 @@ public class OSCARSCore {
     private TopologyExchangeAdapter topologyExchangeAdapter = null;
     private PathSetupAdapter pathSetupAdapter = null;
     private ReservationAdapter reservationAdapter = null;
-    private TypeConverter typeConverter = null;
     private Forwarder forwarder = null;
     private ScheduleManager scheduleManager = null;
     private ServiceManager serviceManager = null;
@@ -113,7 +112,6 @@ public class OSCARSCore {
         this.initReservationAdapter();
         this.initTopologyExchangeAdapter();
         this.initPathSetupAdapter();
-        this.initTypeConverter();
         this.initForwarder();
         this.initRMIServer();
         this.initServiceManager();
@@ -277,14 +275,6 @@ public class OSCARSCore {
         this.log.debug("initPathSetupAdapter.end");
     }
 
-    /**
-     * Initializes the TypeConverter module
-     */
-    public void initTypeConverter() {
-        this.log.debug("initTypeConverter.start");
-        this.typeConverter = new TypeConverter();
-        this.log.debug("initTypeConverter.end");
-    }
 
     /**
      * Initializes the Forwarder module
@@ -595,23 +585,6 @@ public class OSCARSCore {
      */
     public void setReservationAdapter(ReservationAdapter reservationAdapter) {
         this.reservationAdapter = reservationAdapter;
-    }
-
-    /**
-     * @return the typeConverter
-     */
-    public TypeConverter getTypeConverter() {
-        if (this.typeConverter == null) {
-            this.initTypeConverter();
-        }
-        return typeConverter;
-    }
-
-    /**
-     * @param typeConverter the typeConverter to set
-     */
-    public void setTypeConverter(TypeConverter typeConverter) {
-        this.typeConverter = typeConverter;
     }
 
     /**

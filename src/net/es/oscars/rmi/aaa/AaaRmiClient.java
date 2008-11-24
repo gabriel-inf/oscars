@@ -160,6 +160,28 @@ public class AaaRmiClient implements AaaRmiInterface {
     }
 
 
+    public String verifyDN(String dn) throws RemoteException {
+
+        String methodName = "verifyDN";
+        this.log.debug("verifyDN.start");
+
+        String result = null;
+        if (!this.verifyRmiConnection(methodName)) {
+            return result;
+        }
+
+        try {
+            result = this.remote.verifyDN(dn);
+        } catch (RemoteException e) {
+            this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+        } catch (Exception e) {
+            this.log.warn("Exception from RMI server" + e.getMessage(), e);
+        }
+        this.log.debug("verifyDN.end");
+        return result;
+    }
+    
+    
     public AuthValue checkAccess(String userName, String resourceName, String permissionName)
             throws RemoteException {
         String methodName = "checkAccess";

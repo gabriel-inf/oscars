@@ -9,17 +9,21 @@ import java.lang.reflect.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.aaa.*;
+import net.es.oscars.rmi.notify.*;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
 import net.es.oscars.aaa.Resource;
 
 import org.apache.log4j.Logger;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 public class CoreRmiClient implements CoreRmiInterface {
     private Logger log;
     private CoreRmiInterface remote;
     private AaaRmiClient aaaRmiClient;
     private BssRmiClient bssRmiClient;
+    private NotifyRmiClient notifyRmiClient;
 
 
     private boolean connected;
@@ -46,6 +50,7 @@ public class CoreRmiClient implements CoreRmiInterface {
 
         this.aaaRmiClient = new AaaRmiClient();
         this.bssRmiClient = new BssRmiClient();
+        this.notifyRmiClient = new NotifyRmiClient();
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi", true);
@@ -68,24 +73,29 @@ public class CoreRmiClient implements CoreRmiInterface {
 
             this.bssRmiClient.setRemote(remote);
             this.aaaRmiClient.setRemote(remote);
+            this.notifyRmiClient.setRemote(remote);
             this.bssRmiClient.setConnected(connected);
             this.aaaRmiClient.setConnected(connected);
+            this.notifyRmiClient.setConnected(connected);
             this.log.debug("Connected to "+registryName+" server");
         } catch (RemoteException e) {
             this.connected = false;
             this.bssRmiClient.setConnected(connected);
             this.aaaRmiClient.setConnected(connected);
+            this.notifyRmiClient.setConnected(connected);
             this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
             throw e;
         } catch (NotBoundException e) {
             this.connected = false;
             this.bssRmiClient.setConnected(connected);
             this.aaaRmiClient.setConnected(connected);
+            this.notifyRmiClient.setConnected(connected);
             this.log.warn("Trying to access unregistered remote object: ", e);
         } catch (Exception e) {
             this.connected = false;
             this.bssRmiClient.setConnected(connected);
             this.aaaRmiClient.setConnected(connected);
+            this.notifyRmiClient.setConnected(connected);
             this.log.warn("Could not connect", e);
         }
         this.log.debug("CoreRmiClientInit.end");
@@ -95,6 +105,9 @@ public class CoreRmiClient implements CoreRmiInterface {
 
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException {
         return this.aaaRmiClient.verifyLogin(userName, password, sessionName);
+    }
+    public String verifyDN(String dn) throws RemoteException {
+        return this.aaaRmiClient.verifyDN(dn);
     }
 
     public Boolean validSession(String userName, String sessionName) throws RemoteException {
@@ -106,8 +119,6 @@ public class CoreRmiClient implements CoreRmiInterface {
     }
 
     public AuthMultiValue checkMultiAccess(String userName, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException {
-
-
         return this.aaaRmiClient.checkMultiAccess(userName, resourcePermissions);
     }
 
@@ -121,51 +132,59 @@ public class CoreRmiClient implements CoreRmiInterface {
         return this.aaaRmiClient.manageAaaObjects(parameters);
     }
 
+    
+    // Notify RMI stuff.
 
-
-
-
-
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)
-        throws IOException, RemoteException {
-        return this.bssRmiClient.createReservation(inputMap, userName);
+    public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) throws RemoteException {
+    	return this.notifyRmiClient.checkSubscriptionId(address, msgSubRef);
+    }
+    
+    public void Notify(Notify request) throws RemoteException {
+    	this.notifyRmiClient.Notify(request);
     }
 
-    public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName)
+
+
+    public HashMap<String, Object> createReservation(HashMap<String, Object> params, String userName)
+        throws IOException, RemoteException {
+        return this.bssRmiClient.createReservation(params, userName);
+    }
+
+    public HashMap<String, Object> queryReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiClient.queryReservation(inputMap, userName);
+        return this.bssRmiClient.queryReservation(params, userName);
     }
 
 
-    public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> listReservations(HashMap<String, Object> params, String userName)
         throws IOException, RemoteException {
-        return this.bssRmiClient.listReservations(inputMap, userName);
+        return this.bssRmiClient.listReservations(params, userName);
     }
 
-    public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> cancelReservation(HashMap<String, Object> params, String userName)
         throws IOException, RemoteException {
-        return this.bssRmiClient.cancelReservation(inputMap, userName);
+        return this.bssRmiClient.cancelReservation(params, userName);
     }
 
-    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> modifyReservation(HashMap<String, Object> params, String userName)
         throws IOException, RemoteException {
-        return this.bssRmiClient.modifyReservation(inputMap, userName);
+        return this.bssRmiClient.modifyReservation(params, userName);
     }
 
-    public HashMap<String, Object> createPath(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> createPath(HashMap<String, Object> params, String userName)
         throws IOException, RemoteException {
-        return this.bssRmiClient.createPath(inputMap, userName);
+        return this.bssRmiClient.createPath(params, userName);
     }
 
 
-    public HashMap<String, Object> teardownPath(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> teardownPath(HashMap<String, Object> params, String userName)
         throws IOException, RemoteException {
-        return this.bssRmiClient.teardownPath(inputMap, userName);
+        return this.bssRmiClient.teardownPath(params, userName);
     }
 
-    public HashMap<String, Object> modifyStatus(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> modifyStatus(HashMap<String, Object> params, String userName)
         throws IOException, RemoteException {
-        return this.bssRmiClient.modifyStatus(inputMap, userName);
+        return this.bssRmiClient.modifyStatus(params, userName);
     }
 
 }

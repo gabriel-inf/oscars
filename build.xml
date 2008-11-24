@@ -20,17 +20,21 @@
     <property name="maven.repo" value="maven-repository"/>
     <available file="${axis2.loc}" property="axis2.local"/>
     <available file="${tomcat.loc}" property="tomcat.local"/>
+    
     <target name="all" depends="clean, compile" description="Recompile all source"/>
+    
     <target name="axis2LocalCopy" if="axis2.local">
         <copy todir="lib/axis2">
             <fileset dir="${axis2.loc}" includes="*.jar"/>
         </copy>
     </target>
+    
     <target name="tomcatLocalCopy" if="tomcat.local">
         <copy todir="lib">
             <fileset dir="${tomcat.loc}" includes="servlet-api.jar"/>
         </copy>
     </target>
+    
     <!-- parent directories automatically created -->
     <target name="prepare" depends="axis2LocalCopy, tomcatLocalCopy, jarRemoteCopy">
         <!-- a bit of a kludge -->
@@ -55,7 +59,8 @@
         <replace summary="true" file="conf/server/services.xml" token="**tomcat**" value="${catalina.home}"/>
         <copy file="conf/notify-server/services.xml.template" tofile="conf/notify-server/services.xml"/>
         <replace summary="true" file="conf/notify-server/services.xml" token="**tomcat**" value="${catalina.home}"/>
-    </target>
+    </target>	
+    
     <target name="initMaven">
         <path id="maven.classpath">
             <pathelement location="lib/maven-ant-tasks-2.0.7.jar"/>
@@ -68,6 +73,7 @@
         <artifact:remoteRepository id="remote.repository.mvn" url="http://repo1.maven.org/maven2"/>
         <artifact:remoteRepository id="remote.repository.java" url="http://download.java.net/maven/1/" layout="legacy"/>
     </target>
+    
     <target name="jarRemoteCopy" depends="initMaven">
         <artifact:dependencies>
             <dependency groupId="mysql" artifactId="mysql-connector-java" version="3.1.13"/>
@@ -88,6 +94,8 @@
         </artifact:dependencies>
         <copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
     </target>
+    
+    
     <!-- Using Axis2, generates code in net.es.oscars.oscars and
 net.es.oscars.wsdlTypes.  Also, OSCARS.wsdl is copied into resources,
 a services.xml file generated in resources, and a build.xml generated in the
@@ -126,7 +134,8 @@ Adding a -sd switch generates resources/services.xml -->
             <arg value="net.es.oscars.oscars"/>
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
-        </java>
+        </java>	
+        
         <echo>
   ***
   **** Changes to resources/services.xml must be merged with
@@ -134,15 +143,18 @@ Adding a -sd switch generates resources/services.xml -->
   ****
         </echo>
     </target>
+    
     <!-- Determine whether wsdl2java needs to be run because classes have not
 been generated yet. -->
     <fileset dir="src/net/es/oscars/wsdlTypes" id="wsdlTypes"/>
     <target name="wsdlType.check">
         <pathconvert refid="wsdlTypes" property="wsdlTypes.notempty" setonempty="false"/>
     </target>
+    
     <target name="org.check">
         <available file="src/org/ogf" property="org.avail"/>
     </target>
+    
     <!-- Determine whether WSDL or XSD files have changed -->
     <target name="schema.check">
         <!-- Couldn't get to work except with single file.  This one should
@@ -151,6 +163,7 @@ been generated yet. -->
             <srcfiles dir="conf/server" includes="*.wsdl, *.xsd"/>
         </uptodate>
     </target>
+    
     <!-- combine the two previous results -->
     <target name="genWsdl.check" depends="schema.check, wsdlType.check, org.check">
         <condition property="genWsdl">
@@ -167,6 +180,7 @@ been generated yet. -->
             </or>
         </condition>
     </target>
+    
     <!-- Compile everything except tests.  Various targets use portions they
 need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <!-- Added the debug flags to give us line numbers in stack traces -mrt -->
@@ -179,17 +193,20 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             </classpath>
         </javac>
     </target>
+    
     <!-- **** Document targets -->
     <!-- generate and copy the api docs files -->
     <available property="apiDocs.present" file="docs/api"/>
     <target name="populateApiDocs" unless="apiDocs.present">
         <antcall target="docs"/>
     </target>
+    
     <!-- generate and copy the client api docs files -->
     <available property="clientDocs.present" file="docs/client-api"/>
     <target name="populateClientDocs" unless="clientDocs.present">
         <antcall target="clientdocs"/>
     </target>
+    
     <target name="docs">
         <mkdir dir="docs/api"/>
         <javadoc destdir="docs/api" author="true">
@@ -200,6 +217,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             </classpath>
         </javadoc>
     </target>
+    
     <target name="clientdocs">
         <mkdir dir="docs/client-api"/>
         <javadoc destdir="docs/client-api" author="true">
@@ -211,26 +229,68 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             </classpath>
         </javadoc>
     </target>
+    
     <target name="clean" description="Empty build's classes and libs directories">
         <delete>
             <fileset dir="${build.classes}" includes="**/*"/>
         </delete>
         <delete dir="${test.classes}"/>
     </target>
+    
     <target name="docs.clean" description="Delete web/docs directory and the generated api docs">
         <delete dir="web/docs"/>
         <delete dir="docs/api"/>
         <delete dir="docs/client-api"/>
     </target>
+
+    <target name="jar" description="Main OSCARS jar file" depends="compile">
+        <jar destfile="build/OSCARS.jar">
+            <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*"/>
+            <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
+            <fileset dir="conf/server" includes="*.properties, *.wsdl, *.xsd, *.cfg.xml, services.xml,rampConfig.xml"/>
+        </jar>
+    </target>
+    
+    
+    <target name="rmijar" description="Create jar with RMI classes" depends="compile">
+        <jar destfile="${build.home}/oscars-rmi.jar">
+             <fileset dir="${build.classes}" includes="**/oscars/rmi/**/*.class, **/oscars/rmi/*.class" />
+        </jar>
+    </target>
+
+
+    <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
+        <copy todir="tmplib" flatten="true">
+            <fileset dir="lib" includes="hibernate*.jar, json-lib-*.jar, ezmorph-*.jar, commons-lang-*.jar, commons-collections-*.jar, commons-beanutils.jar axis2/log4j-1.2.*.jar  "/>
+            <fileset dir="build" includes="oscars-rmi.jar" />
+        </copy>
+        <war destfile="build/OSCARS.war" webxml="web/WEB-INF/web.xml">
+            <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, *.tar.gz" />
+            <fileset dir="conf/wbui" includes="rmi.properties" />
+            <classes dir="${build.classes}" 
+            	includes="**/oscars/*.class, **oscars/bss/*.class, **/oscars/bss/topology/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" 
+            	excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class, **/oscars/bss/*DAO.class, **/oscars/bss/*Manager.class, **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
+            <lib dir="tmplib" includes="*.jar"/>
+        </war>
+        <delete dir="tmplib"/>
+    </target>
+
+    
     <!-- OSCARS.aar file, gets copied into container-specific location.  For
 Tomcat, this is webapps/axis2/WEB-INF/services -->
-    <target name="aar" description="Create OSCARS.aar file" depends="compile">
+    <target name="aar" description="Create OSCARS.aar file" depends="compile, rmijar">
         <jar destfile="build/OSCARS.aar">
-            <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*"/>
-            <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
+			<fileset dir="${build.home}" includes="oscars-rmi.jar" />
+            <fileset dir="${build.classes}" 
+            	includes="**/oscars/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" 
+            	excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class"/>
+            <fileset dir="lib" includes="*.jar, **/*.jar"/>
             <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml,rampConfig.xml"/>
         </jar>
     </target>
+    
+    
+    
     <!-- Client API section -->
     <target name="clientapi" description="Create jar with client API classes" depends="compile">
         <jar destfile="build/OSCARS-client-api.jar">
@@ -238,6 +298,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml, perfSONAR-LSQuery.xml"/>
         </jar>
     </target>
+    
     <target name="clientapipack" description="Create zip with jars, docs, and examples for client" depends="clientapi, clientdocs">
         <available file="${build.home}/OSCARS-client-examples.jar" property="examples.found"/>
         <fail unless="examples.found" message="Cannot find OSCARS-client-examples.jar. Please run 'ant jar' in the examples/javaClients directory."/>
@@ -252,6 +313,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <zipfileset dir="conf" includes="rampart-SNAPSHOT.mar" prefix="OSCARS-client-api/examples/repo/modules"/>
         </zip>
     </target>
+    
+    
     <!-- Dojo WBUI section ************************************************* -->
     <property name="dojo" value="/usr/local/src/dojo"/>
     <available property="dojo.installed" file="web/lib/dojo"/>
@@ -261,6 +324,9 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <move file="web/lib/dojo-release-1.1.1" tofile="web/lib/dojo"/>
         <delete file="web/lib/dojo-release-1.1.1.tar"/>
     </target>
+    
+    
+    
     <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
         <mkdir dir="web/docs"/>
         <copy todir="web/docs">
@@ -276,26 +342,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
     </target>
 
-    <target name="rmijar" description="Create jar with RMI classes" depends="compile">
-        <jar destfile="${build.home}/oscars-rmi.jar">
-             <fileset dir="${build.classes}" includes="**/oscars/rmi/**/*.class, **/oscars/rmi/*.class" />
-        </jar>
-    </target>
 
-    <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
-        <copy todir="tmplib" flatten="true">
-
-            <fileset dir="lib" includes="hibernate*.jar, json-lib-*.jar, ezmorph-*.jar, commons-lang-*.jar, commons-collections-*.jar, commons-beanutils.jar axis2/log4j-1.2.*.jar  "/>
-            <fileset dir="build" includes="oscars-rmi.jar" />
-        </copy>
-        <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
-            <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, *.tar.gz" />
-            <fileset dir="conf/wbui" includes="rmi.properties" />
-            <classes dir="${build.classes}" includes="**/oscars/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class"/>
-            <lib dir="tmplib" includes="*.jar"/>
-        </war>
-        <delete dir="tmplib"/>
-    </target>
 
     <!-- deployment section  *********************************************** -->
     <!-- Note that this requires that Axis2 has already been deployed. -->
@@ -332,8 +379,9 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
         </copy>
-
     </target>
+    
+    
     <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
@@ -366,10 +414,13 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </fileset>
         </copy>
     </target>
+    
+    
     <target name="edit_axis2.xml" unless="axis2.xml.exists">
         <replace file="${catalina.home}/shared/classes/repo/axis2.xml" token="**tomcat**"
                    value="${catalina.home}" summary="true"/>
     </target>
+    
     <target name="addUserAlias" unless="rampConfig.xml.exists">
         <input
             message="Please enter the service user name to be used when it acts as a client."
@@ -377,19 +428,23 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         />
         <replace file="${catalina.home}/shared/classes/repo/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
     </target>
+    
     <target name="addKeystorePassword" unless="rampConfig.xml.exists">
         <input
             message="Please enter the password for the client keystore."
             addproperty="keystore.password"
         />
-    <replace file="${catalina.home}/shared/classes/repo/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
+    	<replace file="${catalina.home}/shared/classes/repo/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
     </target>
+    
+    
     <target name="warn2" unless="OSCARS.jks.exists">
-            <echo level="warning">  **** A new OSCARS.jks file has been copied to  ****
+		<echo level="warning">  **** A new OSCARS.jks file has been copied to  ****
   **** ${catalina.home}/shared/classes/repo.  ****
   **** You must add a KeyEntry for the service. ****
-               </echo>
-        </target>
+        </echo>
+	</target>
+	
     <target name="setupServer" description="populate the shared/classes directory"
                       depends="copydomain,copydefaults,addUserAlias,addKeystorePassword,warn2,edit_axis2.xml">
         <!-- <mkdir dir="${catalina.home}/shared/classes/server"/> -->
@@ -408,6 +463,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
         <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key, oscars.properties"/>
     </target>
+    
     <target name="deployaar" description="copy OSCARS.aar to axis2 services directory" depends="aar, setupServer, deploylibs">
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
         <copy file="conf/server/axis2.log4j.properties" tofile="${webservice.home}/../classes/log4j.properties"/>
@@ -419,12 +475,15 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <!-- Since wss4j is there the PWCallback class needs to be there as well -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
+    
     <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
         <delete file="${catalina.home}/webapps/OSCARS.war"/>
         <delete dir="${catalina.home}/webapps/OSCARS"/>
-        <copy file="OSCARS.war" todir="${webapp.home}"/>
+        <copy file="build/OSCARS.war" todir="${webapp.home}"/>
     </target>
-    <target name="deployall" description="deploy both aar and war files" depends="deployaar, deploywbui, deploynotifyaar"/>
+    
+    <target name="deployall" description="deploy both aar and war files" depends="deployaar, deploywbui, deploynotifyaar" />
+    
     <!-- TestNG test section *********************************************** -->
     <property name="test.classes" value="build/test"/>
     <path id="test.compile.path">
@@ -432,48 +491,59 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-*.jar"/>
         <pathelement location="${build.classes}"/>
     </path>
+    
     <path id="test.path">
         <path refid="test.compile.path"/>
         <pathelement location="${test.classes}"/>
     </path>
+    
     <target name="test.clean" description="Delete test server build directory">
         <delete dir="${test.classes}"/>
     </target>
+    
     <!-- delays until the jar's in its path are actually in the right place -->
     <target name="startupTestNG" depends="prepare">
         <taskdef name="testng" classpathref="test.path" classname="org.testng.TestNGAntTask"/>
     </target>
+    
     <target name="test.prepare">
         <mkdir dir="${test.classes}"/>
     </target>
+    
     <target name="test.compile" depends="compile, test.prepare" description="Compile all test cases">
         <javac srcdir="test" destdir="${test.classes}" debug="true" debuglevel="lines,vars,source" classpathref="test.compile.path"/>
     </target>
+    
     <!-- run a particular packages tests if t is set.  overriden by idc -->
     <target name="testpkg" if="t" unless="idc" depends="startupTestNG">
         <property name="groups" value="${t}, initdb"/>
         <property name="testsuite" value="${t}.suite"/>
     </target>
+    
     <!-- following section provides for testing all packages for a domain -->
     <target name="ESnet.check" if="idc">
         <condition property="ESnet.set">
             <equals arg1="${idc}" arg2="ESnet"/>
         </condition>
     </target>
+    
     <target name="testESnet" depends="startupTestNG, ESnet.check" if="ESnet.set">
         <property name="groups" value="aaa, bss, bss.topology, pathfinder.db, pathfinder.traceroute, pss, pss.jnx, pss.cisco, initdb"/>
         <property name="testsuite" value="ESnet.suite"/>
     </target>
+    
     <!-- following section provides for testing all packages specific to a domain -->
     <target name="I2.check" if="idc">
         <condition property="I2.set">
             <equals arg1="${idc}" arg2="I2"/>
         </condition>
     </target>
+    
     <target name="testI2" depends="startupTestNG, I2.check" if="I2.set">
         <property name="groups" value="aaa, bss, bss.topology, pathfinder.dragon, tss, pss.dragon, initdb "/>
         <property name="testsuite" value="I2.suite"/>
     </target>
+    
     <target name="test" depends="test.compile, testpkg, testESnet, testI2">
         <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/test" listeners="net.es.oscars.ITestListener" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
@@ -484,6 +554,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
+    
     <!-- Notification interface targets -->
     <target name="genAllWsdl.check" depends="genWsdl.check">
         <available file="src/org/oasis_open" property="wsn.avail"/>
@@ -506,6 +577,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             </or>
         </condition>
     </target>
+    
     <target name="notifywsdl2java" depends="prepare, genAllWsdl.check" if="genAllWsdl">
         <delete failonerror="true">
             <fileset dir="src/net/es/oscars/wsdlTypes" includes="*"/>
@@ -542,6 +614,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
   ****
         </echo>
     </target>
+    
     <target name="notifyaar" description="Create OSCARSNotify.aar file" depends="compile">
         <copy file="conf/notify-server/notify.cfg.xml" todir="${build.classes}"/>
         <jar destfile="build/OSCARSNotify.aar">
@@ -550,6 +623,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <metainf dir="conf/notify-server" includes="*.wsdl, *.xsd, services.xml"/>
         </jar>
     </target>
+    
     <target name="deploynotifyaar" description="copy OSCARSNotify.aar to axis2 services directory" depends="notifyaar,deploylibs">
         <copy file="${build.home}/OSCARSNotify.aar" todir="${webservice.home}"/>
         <copy file="conf/server/axis2.log4j.properties" tofile="${webservice.home}/../classes/log4j.properties"/>

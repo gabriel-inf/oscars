@@ -36,6 +36,9 @@ public interface AaaRmiInterface extends Remote {
      */
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException;
 
+    public String verifyDN(String dn) throws RemoteException;
+
+    
     /**
      * Verifies if a user has a valid session
      * @param userName The username to check

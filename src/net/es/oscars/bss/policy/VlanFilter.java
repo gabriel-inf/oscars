@@ -119,8 +119,7 @@ public class VlanFilter implements PolicyFilter {
         if (vtagRange == null || vtagRange.equals("")) {
             this.log.error("empty ingress vtagRange");
         }
-        TypeConverter tc = new TypeConverter();
-        byte[] vtagMask = tc.rangeStringToMask(vtagRange);
+        byte[] vtagMask = TypeConverter.rangeStringToMask(vtagRange);
         int usedVtag = -1;
         try {
             usedVtag = Integer.parseInt(linkDescr);
@@ -134,7 +133,7 @@ public class VlanFilter implements PolicyFilter {
         }
 
 
-        String newVtagRange = tc.maskToRangeString(vtagMask); 
+        String newVtagRange = TypeConverter.maskToRangeString(vtagMask); 
         if (newVtagRange.equals("")) {
             if (sameUserGRI != null){
                 throw new BSSException("Last VLAN in use by a reservation you previously placed (" + sameUserGRI + ")");
@@ -153,7 +152,6 @@ public class VlanFilter implements PolicyFilter {
     private void processEdgeVtags(Link ingressLink, Link egressLink,
                                   Layer2Info layer2Info) throws BSSException {
 
-        TypeConverter tc = new TypeConverter();
         L2SwitchingCapabilityData ingressL2scData =
             ingressLink.getL2SwitchingCapabilityData();
         L2SwitchingCapabilityData egressL2scData =
@@ -181,8 +179,8 @@ public class VlanFilter implements PolicyFilter {
             destVtag.setString("2-4094");
             destVtag.setTagged(true);
         }
-        byte[] ingressAvailVtagMask = tc.rangeStringToMask(ingressL2scData.getVlanRangeAvailability());
-        byte[] egressAvailVtagMask = tc.rangeStringToMask(egressL2scData.getVlanRangeAvailability());
+        byte[] ingressAvailVtagMask = TypeConverter.rangeStringToMask(ingressL2scData.getVlanRangeAvailability());
+        byte[] egressAvailVtagMask = TypeConverter.rangeStringToMask(egressL2scData.getVlanRangeAvailability());
 
         /* Check if link allows untagged VLAN */
         byte ingressCanBeUntagged = (byte) ((ingressAvailVtagMask[0] & 255) >> 7);
@@ -194,12 +192,12 @@ public class VlanFilter implements PolicyFilter {
         if((!destVtag.getTagged()) && egressCanBeUntagged != 1){
             throw new BSSException("Egress cannot be untagged");
         }
-        byte[] vtagMask = tc.rangeStringToMask(srcVtag.getString());
+        byte[] vtagMask = TypeConverter.rangeStringToMask(srcVtag.getString());
         for (int i = 0; i < vtagMask.length; i++) {
             vtagMask[i] &= egressAvailVtagMask[i];
         }
 
-        srcVtag.setString(tc.maskToRangeString(vtagMask));
+        srcVtag.setString(TypeConverter.maskToRangeString(vtagMask));
         destVtag.setString(srcVtag.getString());
         layer2Info.setSrcVtag(srcVtag);
         layer2Info.setDestVtag(destVtag);

@@ -124,6 +124,10 @@ public class AaaRmiServer  implements AaaRmiInterface  {
         return this.verifyLoginHandler.verifyLogin(userName, password, sessionName);
     }
 
+    public String verifyDN(String dn) throws RemoteException {
+        return this.verifyLoginHandler.verifyDN(dn);
+    }
+
     public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException {
         return this.checkAccessHandler.checkAccess(userName, resourceName, permissionName);
     }

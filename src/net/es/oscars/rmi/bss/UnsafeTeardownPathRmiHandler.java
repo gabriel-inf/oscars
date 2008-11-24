@@ -12,16 +12,15 @@ import net.es.oscars.pss.PSSException;
 
 public class UnsafeTeardownPathRmiHandler {
     private OSCARSCore core;
-    private Logger log;
+    private Logger log = Logger.getLogger(UnsafeTeardownPathRmiHandler.class);
 
 
     public UnsafeTeardownPathRmiHandler() {
-        this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
     }
 
     public
-        HashMap<String, Object> teardownPath(HashMap<String, String[]> inputMap,
+        HashMap<String, Object> teardownPath(HashMap<String, Object> params,
                                              String userName)
             throws IOException {
 
@@ -45,8 +44,7 @@ public class UnsafeTeardownPathRmiHandler {
         }
         aaa.getTransaction().commit();
 
-        String[] paramValues = inputMap.get("gri");
-        String gri = paramValues[0];
+        String gri = (String) params.get("gri");
 
         Session bss = core.getBssSession();
         bss.beginTransaction();

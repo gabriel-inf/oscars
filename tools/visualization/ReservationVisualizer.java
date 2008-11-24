@@ -52,7 +52,7 @@ public class ReservationVisualizer {
 
         try {
 
-            ge.exportTopology(topo, rm.list(null, null, statuses, null, null, null, null, null));
+            ge.exportTopology(topo, rm.list(null, null, statuses, "FNAL", null, null, null, null));
 
             String dot = ge.getDotSource();
             ge.writeDotSourceToFile(dot, graphFile);

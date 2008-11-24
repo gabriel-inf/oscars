@@ -15,10 +15,13 @@ import net.es.oscars.aaa.Resource;
 import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.bss.*;
+import net.es.oscars.rmi.notify.*;
 
 import net.es.oscars.PropHandler;
 
 import org.apache.log4j.*;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 public class CoreRmiServer  implements CoreRmiInterface  {
     private Logger log;
@@ -29,6 +32,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     private CoreRmiInterface stub;
     private BssRmiServer bssRmiServer;
     private AaaRmiServer aaaRmiServer;
+    private NotifyRmiServer notifyRmiServer;
 
     /**
      * CoreRmiServer constructor
@@ -94,6 +98,9 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         this.bssRmiServer.initHandlers();
         this.aaaRmiServer = new AaaRmiServer();
         this.aaaRmiServer.initHandlers();
+        
+        this.notifyRmiServer = new NotifyRmiServer();
+        this.notifyRmiServer.initHandlers();
 
         this.log.debug("CoreRmiServer.init().end");
     }
@@ -125,6 +132,10 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         return this.aaaRmiServer.verifyLogin(userName, password, sessionName);
     }
 
+    public String verifyDN(String dn) throws RemoteException {
+        return this.aaaRmiServer.verifyDN(dn);
+    }
+
     public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException {
         return this.aaaRmiServer.checkAccess(userName, resourceName, permissionName);
     }
@@ -146,122 +157,129 @@ public class CoreRmiServer  implements CoreRmiInterface  {
 
 
 
+    public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) throws RemoteException {
+    	return this.notifyRmiServer.checkSubscriptionId(address, msgSubRef);
+    }
+    
+    public void Notify(Notify request) throws RemoteException {
+    	this.notifyRmiServer.Notify(request);
+    }
 
 
     /**
      * createReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        createReservation(HashMap<String, String[]> inputMap, String userName)
+        createReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.createReservation(inputMap, userName);
+        return this.bssRmiServer.createReservation(params, userName);
     }
 
     /**
      * queryReservation
      *
-     * @param inputMap HashMap<String, String[]> - input from web request
+     * @param params HashMap<String, Object> - input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        queryReservation(HashMap<String, String[]> inputMap, String userName)
+        queryReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.queryReservation(inputMap, userName);
+        return this.bssRmiServer.queryReservation(params, userName);
     }
 
     /**
      * listReservations
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      */
     public HashMap<String, Object>
-        listReservations(HashMap<String, String[]> inputMap, String userName)
+        listReservations(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.listReservations(inputMap, userName);
+        return this.bssRmiServer.listReservations(params, userName);
     }
 
     /**
      * cancelReservationOverride
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        cancelReservation(HashMap<String, String[]> inputMap, String userName)
+        cancelReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.cancelReservation(inputMap, userName);
+        return this.bssRmiServer.cancelReservation(params, userName);
     }
 
     /**
      * modifyReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        modifyReservation(HashMap<String, String[]> inputMap, String userName)
+        modifyReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.modifyReservation(inputMap, userName);
+        return this.bssRmiServer.modifyReservation(params, userName);
     }
 
     /**
      * createPath
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        createPath(HashMap<String, String[]> inputMap, String userName)
+        createPath(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.createPath(inputMap, userName);
+        return this.bssRmiServer.createPath(params, userName);
     }
 
     /**
      * teardownPath
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        teardownPath(HashMap<String, String[]> inputMap, String userName)
+        teardownPath(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.teardownPath(inputMap, userName);
+        return this.bssRmiServer.teardownPath(params, userName);
     }
 
     /**
      * modifyStatus
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        modifyStatus(HashMap<String, String[]> inputMap, String userName)
+        modifyStatus(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.modifyStatus(inputMap, userName);
+        return this.bssRmiServer.modifyStatus(params, userName);
     }
 }

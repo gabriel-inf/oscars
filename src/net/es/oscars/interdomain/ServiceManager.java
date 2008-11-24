@@ -37,12 +37,17 @@ public class ServiceManager{
         this.serviceData = new HashMap<String, Object>();
         String localhost = null;
         this.idcURL = idcProps.getProperty("url");
+        
+        /* FIXME */
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
-        if (!catalinaHome.endsWith("/")) {
+        if (catalinaHome != null && !catalinaHome.endsWith("/")) {
             catalinaHome += "/";
+            this.repo = catalinaHome + "shared/classes/repo/";
+        } else {
+        	// this is a better place..
+        	this.repo = "conf/server";
         }
-        this.repo = catalinaHome + "shared/classes/repo/";
         this.axisConfig = this.repo + "axis2.xml";
         this.axisConfigNoRampart = this.repo + "axis2-norampart.xml";
         

@@ -265,8 +265,7 @@ public class WSObserver implements Observer {
     private EventContent oscarsEventToWSEvent(OSCARSEvent osEvent){
         EventContent event = new EventContent();
         HashMap<String, String[]> map = osEvent.getReservationParams();
-        TypeConverter tc = new TypeConverter();
-        ResDetails resDetails = tc.hashMaptoResDetails(osEvent.getReservationParams());
+        ResDetails resDetails = TypeConverter.hashMaptoResDetails(osEvent.getReservationParams());
         LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"), 
                                                          map.get("intradomainHopInfo"));
         Path path = new Path();
@@ -313,14 +312,13 @@ public class WSObserver implements Observer {
      */
     private LocalDetails getLocalDetails(String[] path, String[] hopInfo){
         if(path == null || path.length < 1){ return null; }
-        TypeConverter tc = new TypeConverter();
         LocalDetails localDetails = new LocalDetails();
         OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
         OMElement omPath = null;
         
         //Build path
         
-        CtrlPlanePathContent wsPath = tc.arrayToCtrlPlanePath(path, hopInfo);
+        CtrlPlanePathContent wsPath = TypeConverter.arrayToCtrlPlanePath(path, hopInfo);
         wsPath.setId("localPath");
         try{
             omPath = wsPath.getOMElement(Path.MY_QNAME, omFactory);

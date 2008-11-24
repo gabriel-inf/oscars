@@ -11,10 +11,10 @@ package net.es.oscars.oscars;
  */
 
 import java.util.*;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
+
+import java.rmi.RemoteException;
 
 import org.apache.axis2.context.*;
 import org.apache.ws.security.handler.*;
@@ -28,36 +28,30 @@ import org.oasis_open.docs.wsn.b_2.*;
 import org.w3.www._2005._08.addressing.*;
 
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.aaa.UserManager;
+
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.tss.TSSException;
 import net.es.oscars.pss.PSSException;
-import net.es.oscars.interdomain.ServiceManager;
-import net.es.oscars.interdomain.InterdomainException;
 import net.es.oscars.lookup.LookupException;
-import net.es.oscars.bss.StateEngine;
-import net.es.oscars.bss.topology.*;
+import net.es.oscars.interdomain.InterdomainException;
+
+import net.es.oscars.rmi.core.CoreRmiInterface;
+import net.es.oscars.rmi.RmiUtils;
+
 
 
 /**
  * OSCARS Axis2 service
  */
 public class OSCARSSkeleton implements OSCARSSkeletonInterface {
-    private Logger log;
-    private ReservationAdapter adapter;
+    private Logger log = Logger.getLogger(OSCARSSkeleton.class);
+    
     private TopologyExchangeAdapter topoAdapter;
     private PathSetupAdapter pathSetupAdapter;
-    private OSCARSCore core;
-    private UserManager userMgr;
-    private Principal certIssuer;
-    private Principal certSubject;
     // private X509Certificate cert;
 
-    public OSCARSSkeleton() {
-        this.log = Logger.getLogger(this.getClass());
-    }
 
 
     /**
@@ -69,33 +63,43 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public CreateReservationResponse
         createReservation(CreateReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
+    	
+        CreateReservationResponse response = new CreateReservationResponse();
+        
+        
+        // FIXME: move this to RMI
+    	/*
+    	String methodName = "createReservation";
 
-        if (this.core.initialized) {
-            this.log.debug("Core has been initialized");
-        }
+    	CoreRmiInterface rmiClient = null;
+    	try {
+    		rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+    	} catch (RemoteException ex) {
+    		throw new BSSFaultMessage(ex.getMessage());
+    	}
+        String login = this.checkUser(rmiClient);
 
-        TypeConverter tc = core.getTypeConverter();
+        ReservationAdapter resAdapter = new ReservationAdapter();
 
         CreateReply reply = null;
         CreateReservationResponse response = new CreateReservationResponse();
         ResCreateContent params = request.getCreateReservation();
-        String login = this.checkUser();
 
-//        Session aaa = HibernateUtil.getSessionFactory(core.getAaaDbName()).getCurrentSession();
-        Session aaa = core.getAaaSession();
-
-        aaa.beginTransaction();
+        
         // Check to see if user can create this  reservation
         int reqBandwidth = params.getBandwidth();
         // convert from milli-seconds to minutes
         int  reqDuration = (int)(params.getEndTime() - params.getStartTime())/6000;
 
-        boolean specifyPath = tc.checkPathAuth(params.getPathInfo());
+        boolean specifyPath = TypeConverter.checkPathAuth(params.getPathInfo());
         boolean specifyGRI = (params.getGlobalReservationId() != null);
-        AuthValue authVal = this.userMgr.checkModResAccess(login, "Reservations", "create",
-                                       reqBandwidth, reqDuration, specifyPath, specifyGRI);
-        // read-only
-        aaa.getTransaction().commit();
+        AuthValue authVal = AuthValue.DENIED;
+        try {
+        	authVal = rmiClient.checkModResAccess(login, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, specifyGRI);
+        } catch (RemoteException ex) {
+            throw new AAAFaultMessage(ex.getMessage());
+        }
+
         if (authVal == AuthValue.DENIED ) {
             this.log.info("denied");
             throw new AAAFaultMessage("createReservation: permission denied");
@@ -103,19 +107,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.log.debug("AAA complete");
 
 
-//        Session bss = HibernateUtil.getSessionFactory(core.getBssDbName()).getCurrentSession();
-        Session bss = core.getBssSession();
-
-        bss.beginTransaction();
         try {
-            reply = this.adapter.create(params, login);
+            reply = resAdapter.create(params, login);
         } catch (BSSException e) {
-            bss.getTransaction().rollback();
             this.log.error("createReservation: " + e.getMessage());
             throw new BSSFaultMessage("createReservation " + e.getMessage());
         }
         response.setCreateReservationResponse(reply);
-        bss.getTransaction().commit();
+        */
         return response;
     }
 
@@ -128,45 +127,32 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public CancelReservationResponse
         cancelReservation(CancelReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
-
-        // ResStatus reply = null;
+    	String methodName = "cancelReservation";
         String reply = null;
-        System.out.println("OSCARSSkeleton cancelReservation");
-        String login = this.checkUser();
-        String institution = null;
-        String loginConstraint = null;
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
+        log.info(methodName+".start");
 
-        GlobalReservationId params = request.getCancelReservation();
-        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
-        if (authVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("cancelReservation: permission denied");
-        }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            loginConstraint = login;
-        }
-        // read-only
-        aaa.getTransaction().commit();
-
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
+    	CoreRmiInterface rmiClient = null;
+    	try {
+    		rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+    	} catch (RemoteException ex) {
+    		throw new BSSFaultMessage(ex.getMessage());
+    	}
+        String username = this.checkUser(rmiClient);
+        
+        ReservationAdapter resAdapter = new ReservationAdapter();
+        
         try {
-            reply = this.adapter.cancel(params,loginConstraint,login,institution);
+            reply = resAdapter.cancel(request, username, rmiClient);
         } catch (BSSException e) {
-            bss.getTransaction().rollback();
             this.log.error("cancelReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
         } catch (Exception e) {
-            bss.getTransaction().rollback();
             this.log.error("cancelReservation caught Exception: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
         }
         CancelReservationResponse response = new CancelReservationResponse();
         response.setCancelReservationResponse(reply);
-        bss.getTransaction().commit();
+        log.info(methodName+".end");
         return response;
     }
 
@@ -176,45 +162,32 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public QueryReservationResponse
-        queryReservation(QueryReservation request)
+    public QueryReservationResponse queryReservation(QueryReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
+    	
+    	String methodName = "queryReservation";
+        log.info(methodName+".start");
 
+    	CoreRmiInterface rmiClient = null;
+    	try {
+    		rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+    	} catch (RemoteException ex) {
+    		throw new BSSFaultMessage(ex.getMessage());
+    	}
+        String username = this.checkUser(rmiClient);
+        
         ResDetails reply = null;
-
-        String login = this.checkUser();
-        String loginConstraint = null;
-        String institution = null;
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-
-        GlobalReservationId gri = request.getQueryReservation();
-        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "query");
-        if (authVal.equals(AuthValue.DENIED)) {
-                throw new AAAFaultMessage("queryReservation: permission denied");
-        }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            loginConstraint = login;
-        }
-        aaa.getTransaction().commit();
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
+        ReservationAdapter resAdapter = new ReservationAdapter();
         try {
-            reply = this.adapter.query(gri, loginConstraint, institution);
+            reply = resAdapter.query(request, username, rmiClient);
         } catch (BSSException e) {
-            bss.getTransaction().rollback();
-            this.log.error("queryReservation: " + e.getMessage());
-            throw new BSSFaultMessage("queryReservation: " + e.getMessage());
-        } catch (InterdomainException e) {
-            bss.getTransaction().rollback();
-            this.log.error("queryReservation interdomain error: " + e.getMessage());
-            throw new BSSFaultMessage("queryReservation interdomain error " + e.getMessage());
+            this.log.error(e.getMessage());
+            throw new BSSFaultMessage(e.getMessage());
         }
         QueryReservationResponse response = new QueryReservationResponse();
         response.setQueryReservationResponse(reply);
-        bss.getTransaction().commit();
+        
+        log.info(methodName+".end");
         return response;
     }
 
@@ -228,47 +201,33 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public ModifyReservationResponse
         modifyReservation(ModifyReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
+    	String methodName = "modifyReservation";
+        log.info(methodName+".start");
+
+    	CoreRmiInterface rmiClient = null;
+    	try {
+    		rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+    	} catch (RemoteException ex) {
+    		throw new BSSFaultMessage(ex.getMessage());
+    	}
+        String username = this.checkUser(rmiClient);
+
+        ReservationAdapter resAdapter = new ReservationAdapter();
 
         ModifyResReply reply = null;
         ModifyReservationResponse response = new ModifyReservationResponse();
         ModifyResContent params = request.getModifyReservation();
-        String loginConstraint = null;
-        String institution = null;
-        String login = this.checkUser();
 
-        Session aaa = core.getAaaSession();
-
-        aaa.beginTransaction();
-        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
-        if (authVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("modifyReservation: permission denied");
-        }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            loginConstraint = login;
-        }
-        aaa.getTransaction().commit();
-
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
         try {
-            reply = this.adapter.modify(params, loginConstraint, login, institution );
+            reply = resAdapter.modify(params, username, rmiClient);
         } catch (BSSException e) {
-            bss.getTransaction().rollback();
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         } catch (Exception e) {
-            bss.getTransaction().rollback();
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-
-            this.log.error("modifyReservation caught Exception: " + e.getMessage() + "\n" + sw.toString());
+            this.log.error("modifyReservation caught Exception: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         }
         response.setModifyReservationResponse(reply);
-        bss.getTransaction().commit();
         return response;
     }
 
@@ -284,8 +243,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public ListReservationsResponse
         listReservations(ListReservations request)
             throws AAAFaultMessage, BSSFaultMessage {
-
+        // FIXME: move this to RMI
+    	
         ListReply reply = null;
+        
+        /*
         String loginConstraint = null;
         String institution = null;
         String login = this.checkUser();
@@ -299,7 +261,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         if (authVal.equals(AuthValue.MYSITE)) {
             institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
+        } else if (authVal.equals(AuthValue.SELFONLY)){getSecurityPrincipals
             loginConstraint = login;
         }
         aaa.getTransaction().commit();
@@ -320,6 +282,10 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ListReservationsResponse response = new ListReservationsResponse();
         response.setListReservationsResponse(reply);
         bss.getTransaction().commit();
+        */
+        
+        ListReservationsResponse response = new ListReservationsResponse();
+        response.setListReservationsResponse(reply);
         return response;
     }
 
@@ -335,13 +301,13 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         GetTopologyContent requestContent = request.getGetNetworkTopology();
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
+        // FIXME: move this to RMI
+        
+        /*
         GetTopologyResponseContent responseContent = null;
         String login = this.checkUser();
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
-
-        /* Check user attributes. Must have query permissions
-           on Domains resources */
         AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "query");
         aaa.getTransaction().commit();
 
@@ -352,7 +318,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        /* Retrieve topology from TEDB */
         try {
             responseContent = this.topoAdapter.getNetworkTopology(requestContent);
             response.setGetNetworkTopologyResponse(responseContent);
@@ -364,6 +329,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("getNetworkTopology: " + e.getMessage());
         }
         bss.getTransaction().commit();
+        */
         return response;
     }
 
@@ -379,13 +345,13 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         InitiateTopologyPullContent requestContent = request.getInitiateTopologyPull();
         InitiateTopologyPullResponse response = new InitiateTopologyPullResponse();
+        // FIXME: move this to RMI
+        /*
         InitiateTopologyPullResponseContent responseContent = null;
         String login = this.checkUser();
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
-        /* Check user attributes. Must have modify permissions
-           on Domains resources */
         AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "modify");
         aaa.getTransaction().commit();
         if (authVal.equals(AuthValue.DENIED)) {
@@ -395,7 +361,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        /* Pull topology and store in TEDB */
         try{
             responseContent = this.topoAdapter.initiateTopologyPull(requestContent);
             response.setInitiateTopologyPullResponse(responseContent);
@@ -407,6 +372,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("initiateTopologyPull: " + e.getMessage());
         }
         bss.getTransaction().commit();
+        
+        */
 
         return response;
     }
@@ -423,6 +390,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         CreatePathContent requestContent = request.getCreatePath();
         CreatePathResponse response = new CreatePathResponse();
+        // FIXME: move this to RMI
+
+        /*        
         CreatePathResponseContent responseContent = null;
         String loginConstraint = null;
         String institution = null; // not used yet
@@ -430,8 +400,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
-        /* Check user attributes. Must have signal permissions
-           on Reservations resources */
         AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
@@ -460,6 +428,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("createPath: " + e.getMessage());
         }
         bss.getTransaction().commit();
+        */
 
         return response;
     }
@@ -477,6 +446,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         RefreshPathContent requestContent = request.getRefreshPath();
         RefreshPathResponse response = new RefreshPathResponse();
         RefreshPathResponseContent responseContent = null;
+        // FIXME: move this to RMI
+        
+        /*
 
         String loginConstraint = null;
         String institution = null;
@@ -484,8 +456,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
-        /* Check user attributes. Must have signal permissions
-           on Reservations resources */
         AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
@@ -514,6 +484,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
 
         bss.getTransaction().commit();
+        */
         return response;
     }
 
@@ -530,6 +501,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         TeardownPathContent requestContent = request.getTeardownPath();
         TeardownPathResponse response = new TeardownPathResponse();
         TeardownPathResponseContent responseContent = null;
+        // FIXME: move this to RMI
+        
+        /*
 
         String loginConstraint = null;
         String institution = null;
@@ -537,8 +511,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
-        /* Check user attributes. Must have signal permissions
-           on Reservations resources */
         AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         if (authVal.equals(AuthValue.DENIED)) {
             this.log.info("denied");
@@ -567,6 +539,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("teardownPath: " + e.getMessage());
         }
         bss.getTransaction().commit();
+        */
 
         return response;
     }
@@ -680,47 +653,27 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param request the Notify message
      */
     public void Notify(Notify request){
-        this.log.info("Received Notify");
-        NotificationMessageHolderType[] holders = request.getNotificationMessage();
-        for(NotificationMessageHolderType holder : holders){
-            EndpointReferenceType prodRef = holder.getProducerReference();
-            String address = prodRef.getAddress().toString();
-            Session bss = core.getBssSession();
-            bss.beginTransaction();
-            String producerId = this.checkSubscriptionId(address,
-                                holder.getSubscriptionReference());
-            if(producerId == null){
-                return;
-            }
-            this.log.info("Found subscription for " + address);
-            MessageType message = holder.getMessage();
-            OMElement[] omEvents = message.getExtraElement();
-            for(OMElement omEvent : omEvents){
-                try{
-                    EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
-                    String eventType = event.getType();
-                    if(eventType.startsWith("RESERVATION_CREATE")){
-                        this.adapter.handleEvent(event, producerId, StateEngine.INCREATE);
-                    }else if(eventType.startsWith("RESERVATION_MODIFY")){
-                        this.adapter.handleEvent(event, producerId, StateEngine.INMODIFY);
-                    }else if(eventType.startsWith("RESERVATION_CANCEL")){
-                        this.adapter.handleEvent(event, producerId, StateEngine.RESERVED);
-                    }else if(eventType.contains("PATH_SETUP")){
-                        this.pathSetupAdapter.handleEvent(event, producerId, StateEngine.INSETUP);
-                    }else if(eventType.contains("PATH_REFRESH")){
+     	String methodName = "checkSubscriptionId";
+        log.info(methodName+".start");
 
-                    }else if(eventType.contains("PATH_TEARDOWN")){
-                        this.pathSetupAdapter.handleEvent(event, producerId, StateEngine.INTEARDOWN);
-                    }else{
-                        this.log.debug("Received unkown event " + eventType);
-                    }
-                }catch(Exception e){
-                    e.printStackTrace();
-                    continue;
-                }
-             }
-             bss.getTransaction().commit();
+    	CoreRmiInterface rmiClient = null;
+    	try {
+    		rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+    	} catch (RemoteException e) {
+            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
+            return;
+    	}
+
+    	
+        try {
+            rmiClient.Notify(request);
+        } catch (RemoteException e) {
+            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
+        } catch (Exception e) {
+            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
         }
+        log.info(methodName+".end");
+
     }
 
     /**
@@ -732,42 +685,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param sc
      */
     public void init(ServiceContext sc) {
-
-        this.log = Logger.getLogger(this.getClass());
-        this.log.info("OSCARS init.start");
-        String catalinaHome = System.getProperty("catalina.home");
-        this.log.info("catalina.home is "+ catalinaHome);
-
-        OSCARSCore core = null;
-        core = OSCARSCore.init();
-
-        if (core == null) {
-            this.log.fatal("OSCARS core not initialized!");
-            return;
-        }
-
-        this.core = core;
-        this.userMgr = this.core.getUserManager();
-
-        this.adapter = this.core.getReservationAdapter();
-        this.topoAdapter = this.core.getTopologyExchangeAdapter();
-        this.pathSetupAdapter = this.core.getPathSetupAdapter();
-
-        this.log.info("OSCARS init.finish");
+        this.log.info("OSCARS AAR initialized");
     }
 
     public void destroy(ServiceContext sc) {
-        this.log.info("Axis2 destroy.start");
-        OSCARSCore core = OSCARSCore.getInstance();
-        core.shutdown();
-        this.log.info("Axis2 destroy.finish");
+        this.log.info("OSCARS AAR destroyed");
     }
-
-    public UserManager getUserManager() { return this.userMgr; }
-
-    public void setCertSubject(Principal DN) { this.certSubject = DN; }
-
-    public void setCertIssuer(Principal DN) { this.certIssuer = DN; }
 
     /**
      * Called from checkUser to get the DN out of the message context.
@@ -775,27 +698,25 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param opContext includes the MessageContext containing the message
      *                  signer
      */
-    private void setOperationContext() {
+    private HashMap<String, Principal> getSecurityPrincipals() {
 
-        this.log.debug("setOperationContext.start");
-        this.certSubject = null;
-        this.certIssuer = null;
+        this.log.debug("getSecurityPrincipals.start");
+        HashMap<String, Principal> result = new HashMap<String, Principal>();
+        
         try {
-            MessageContext inContext =
-                    MessageContext.getCurrentMessageContext();
+            MessageContext inContext = MessageContext.getCurrentMessageContext();
             // opContext.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
             if (inContext == null) {
-                this.log.debug("setOperationContext.start: context is NULL");
-                return;
+                this.log.debug("getSecurityPrincipals.start: context is NULL");
+                return null;
             }
-            Vector results = (Vector)
-                        inContext.getProperty(WSHandlerConstants.RECV_RESULTS);
+            Vector results = (Vector) inContext.getProperty(WSHandlerConstants.RECV_RESULTS);
+            
             for (int i = 0; results != null && i < results.size(); i++) {
                 WSHandlerResult hResult = (WSHandlerResult) results.get(i);
                 Vector hResults = hResult.getResults();
                 for (int j = 0; j < hResults.size(); j++) {
-                    WSSecurityEngineResult eResult =
-                            (WSSecurityEngineResult) hResults.get(j);
+                    WSSecurityEngineResult eResult = (WSSecurityEngineResult) hResults.get(j);
                     // An encryption or timestamp action does not have an
                     // associated principal. Only Signature and UsernameToken
                     // actions return a principal.
@@ -803,34 +724,41 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.SIGN) ||
                         (((java.lang.Integer) eResult.get(
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.UT)) {
-                    this.log.info("setOperationContext.getSecurityInfo, " +
-                        "Principal's name: " +
-                        ((Principal) eResult.get(
-                            WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
-                    this.setCertSubject(((X509Certificate) eResult.get(
-                            WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getSubjectDN());
-                    this.setCertIssuer(((X509Certificate) eResult.get(
-                            WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getIssuerDN());
-                } else if (((java.lang.Integer) eResult.get(
-                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.ENCR) {
-                    // Encryption action returns what ?
-                } else if (((java.lang.Integer) eResult.get(
-                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.TS) {
-                    // Timestamp action returns a Timestamp
-                    //System.out.println("Timestamp created: " +
-                    //eResult.getTimestamp().getCreated());
-                    //System.out.println("Timestamp expires: " +
-                    //eResult.getTimestamp().getExpires());
-                }
-            }
-
+	                    this.log.info("getSecurityPrincipals.getSecurityInfo, " +
+	                        "Principal's name: " +
+	                        ((Principal) eResult.get(
+	                            WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
+	                    
+	                    Principal subjectDN = ((X509Certificate) eResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getSubjectDN();
+	                    Principal issuerDN = ((X509Certificate) eResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getIssuerDN();
+	                    result.put("subject", subjectDN);
+	                    result.put("issuer", issuerDN);
+	                    return result;
+	                } else if (((java.lang.Integer) eResult.get(
+	                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.ENCR) {
+	                    // Encryption action returns what ?
+	                	return null;
+	                } else if (((java.lang.Integer) eResult.get(
+	                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.TS) {
+	                    // Timestamp action returns a Timestamp
+	                    //System.out.println("Timestamp created: " +
+	                    //eResult.getTimestamp().getCreated());
+	                    //System.out.println("Timestamp expires: " +
+	                    //eResult.getTimestamp().getExpires());
+	                	return null;
+	                }
+	            }
             }
         } catch (Exception e) {
-            this.log.error("setOperationContext.exception: " + e.getMessage());
+            log.error("getSecurityPrincipals.exception: " + e.getMessage());
+        	return null;
         }
-        this.log.debug("setOperationContext.finish");
+        log.debug("getSecurityPrincipals.finish");
+        return result;
     }
 
+    
+    
     /**
      *  Called from each of the messages to check that the user who signed the
      *  message is entered in the user table.
@@ -840,95 +768,69 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @return login A string with the login associated with the certSubject
      * @throws AAAFaultMessage
      */
-    public String checkUser() throws AAAFaultMessage {
+    public String checkUser(CoreRmiInterface rmiClient) throws AAAFaultMessage {
         this.log.debug("checkUser.start");
 
         String login = null;
-        String[] dnElems = null;
-        setOperationContext();
+        HashMap<String, Principal> principals = getSecurityPrincipals();
 
-        if (this.certSubject == null){
+        if (principals.get("subject") == null){
             this.log.error("checkUser: no certSubject found in message");
             AAAFaultMessage AAAErrorEx = new AAAFaultMessage(
                                  "checkUser: no certSubject found in message");
             throw AAAErrorEx;
         }
 
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-
         // lookup up using input DN first
-        String origDN = this.certSubject.getName();
+        String origDN = principals.get("subject").getName();
         this.log.info("checkUser original DN: " + origDN);
+        
         try {
-            login = this.userMgr.loginFromDN(origDN);
-            if (login == null) {
-                // if that fails try the reverse of the elements in the DN
-                dnElems = origDN.split(",");
-                String dn = " " + dnElems[0];
-                for (int i = 1; i < dnElems.length; i++) {
-                    dn = dnElems[i] + "," + dn;
-                }
-                dn = dn.substring(1);
-                this.log.debug("checkUser reverse DN: " + dn);
-
-                login = this.userMgr.loginFromDN(dn);
-                if (login == null) {
-                    this.log.error("checkUser invalid user: " + origDN);
-                    AAAFaultMessage AAAErrorEx =
-                        new AAAFaultMessage("checkUser: invalid user" + origDN);
-                    aaa.getTransaction().rollback();
-                    throw AAAErrorEx;
-                }
-            }
-        } catch (AAAException ex) {
-            this.log.error("checkUser: no attributes for user: " + origDN);
-            AAAFaultMessage AAAErrorEx =
-                new AAAFaultMessage("checkUser: no attributes for user " + origDN + " :  " + ex.getMessage());
-            aaa.getTransaction().rollback();
+            login = rmiClient.verifyDN(origDN);
+        } catch (Exception ex) {
+            this.log.error(ex.getMessage());
+            AAAFaultMessage AAAErrorEx = new AAAFaultMessage(ex.getMessage());
             throw AAAErrorEx;
         }
+        
         this.log.info("checkUser authenticated user: " + login);
-        aaa.getTransaction().commit();
         this.log.debug("checkUser.end");
         return login;
     }
 
-    /**
+    
+    
+    /**                
      * Checks subscription ID in Notify message
      *
      * @param address the producer URL
      * @param msgSubRef the SubscriptionReference in the Notify message
      * @return the domain ID of the producer, or null if subscription not found
      */
-     public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef){
-        ServiceManager sm = this.core.getServiceManager();
-        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
-        Domain producer = domainDAO.queryByParam("url", address);
-        if(producer == null){
-            this.log.error("Event producer not found in Notify message.");
-            return null;
-        }
-        EndpointReferenceType subRef = (EndpointReferenceType) sm.getServiceMapData("NB", producer.getTopologyIdent());
-        if(subRef == null){
-            this.log.error("Subscription in Notify message not found.");
-            return null;
-        }
-        ReferenceParametersType refParams = subRef.getReferenceParameters();
-        ReferenceParametersType msgSubRefParams = msgSubRef.getReferenceParameters();
-        if(refParams == null || msgSubRefParams == null){
-            this.log.error("No reference parameters for Notify message.");
-            return null;
-        }
-        String subId = refParams.getSubscriptionId();
-        String msgSubId = msgSubRefParams.getSubscriptionId();
-        if(subId == null || msgSubId == null || (!subId.equals(msgSubId))){
-            this.log.error("Subscription ID in Notify message invalid.");
-            this.log.error("Found " +msgSubId+", expected " + subId);
-            return null;
-        }
+     public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) {
+     	String methodName = "checkSubscriptionId";
+        log.info(methodName+".start");
 
-        return producer.getTopologyIdent();
+    	CoreRmiInterface rmiClient = null;
+    	try {
+    		rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+    	} catch (RemoteException e) {
+            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
+            return null;
+    	}
+
+    	String reply = null;
+    	
+        try {
+            reply = rmiClient.checkSubscriptionId(address, msgSubRef);
+        } catch (RemoteException e) {
+            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
+        } catch (Exception e) {
+            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
+        }
+        log.info(methodName+".end");
+        return reply;
+
      }
 
 }

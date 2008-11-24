@@ -85,13 +85,13 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * createReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        createReservation(HashMap<String, String[]> inputMap, String userName)
+        createReservation(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug("createReservation.start");
@@ -102,7 +102,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
-            result = this.remote.createReservation(inputMap, userName);
+            result = this.remote.createReservation(params, userName);
             this.log.debug("createReservation.end");
             return result;
         } catch (RemoteException e) {
@@ -118,13 +118,13 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * queryReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        queryReservation(HashMap<String, String[]> inputMap, String userName)
+        queryReservation(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug("queryReservation.start");
@@ -135,7 +135,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
-            result = this.remote.queryReservation(inputMap, userName);
+            result = this.remote.queryReservation(params, userName);
             this.log.debug("queryReservation.end");
             return result;
         } catch (RemoteException e) {
@@ -151,13 +151,13 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * listReservations
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        listReservations(HashMap<String, String[]> inputMap, String userName)
+        listReservations(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug(" listReservations.start");
@@ -169,7 +169,7 @@ public class BssRmiClient implements BssRmiInterface  {
         }
 
         try {
-            result = this.remote.listReservations(inputMap, userName);
+            result = this.remote.listReservations(params, userName);
             this.log.debug(" listReservations.end");
             return result;
         } catch (RemoteException e) {
@@ -184,13 +184,13 @@ public class BssRmiClient implements BssRmiInterface  {
 
     /**
      * cancelReservation
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        cancelReservation(HashMap<String, String[]> inputMap, String userName)
+        cancelReservation(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug(" cancelReservation.start");
@@ -202,7 +202,7 @@ public class BssRmiClient implements BssRmiInterface  {
         }
 
         try {
-            result = this.remote.cancelReservation(inputMap, userName);
+            result = this.remote.cancelReservation(params, userName);
             this.log.debug(" cancelReservation.end");
             return result;
         } catch (RemoteException e) {
@@ -218,13 +218,13 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * modifyReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        modifyReservation(HashMap<String, String[]> inputMap, String userName)
+        modifyReservation(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug("modifyReservation.start");
@@ -235,7 +235,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
-            result = this.remote.modifyReservation(inputMap, userName);
+            result = this.remote.modifyReservation(params, userName);
             this.log.debug("modifyReservation.end");
             return result;
         } catch (RemoteException e) {
@@ -251,13 +251,13 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * createPath
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        createPath(HashMap<String, String[]> inputMap, String userName)
+        createPath(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug("createPath.start");
@@ -268,7 +268,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
-            result = this.remote.createPath(inputMap, userName);
+            result = this.remote.createPath(params, userName);
             this.log.debug("createPath.end");
             return result;
         } catch (RemoteException e) {
@@ -284,12 +284,12 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * teardownPath
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      */
     public HashMap<String, Object>
-        teardownPath(HashMap<String, String[]> inputMap, String userName)
+        teardownPath(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug("teardownPath.start");
@@ -300,7 +300,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
-            result = this.remote.teardownPath(inputMap, userName);
+            result = this.remote.teardownPath(params, userName);
             this.log.debug("teardownPath.end");
             return result;
         } catch (RemoteException e) {
@@ -316,13 +316,13 @@ public class BssRmiClient implements BssRmiInterface  {
     /**
      * modifyStatus
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into JSON Object.
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        modifyStatus(HashMap<String, String[]> inputMap, String userName)
+        modifyStatus(HashMap<String, Object> params, String userName)
             throws RemoteException {
 
         this.log.debug("modifyStatus.start");
@@ -333,7 +333,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
-            result = this.remote.modifyStatus(inputMap, userName);
+            result = this.remote.modifyStatus(params, userName);
             this.log.debug("modifyStatus.end");
             return result;
         } catch (RemoteException e) {

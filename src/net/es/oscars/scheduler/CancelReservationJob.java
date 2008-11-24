@@ -25,7 +25,6 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         String jobName = context.getJobDetail().getFullName();
         this.init();
         this.log.debug("CancelReservationJob.start name:"+jobName);
-        TypeConverter tc = this.core.getTypeConverter();
         ReservationManager rm = this.core.getReservationManager();
         String idcURL = this.core.getServiceManager().getIdcURL();
         EventProducer eventProducer = new EventProducer();

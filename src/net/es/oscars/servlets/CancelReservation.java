@@ -42,15 +42,15 @@ public class CancelReservation extends HttpServlet {
             return;
         }
 
-        HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
+        HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
 
-        String[] paramValues = request.getParameterValues("gri");
-        inputMap.put("gri", paramValues);
-
+        params.put("gri", request.getParameterValues("gri"));
+        params.put("caller", "WBUI");
+        
         try {
             BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            outputMap = rmiClient.cancelReservation(inputMap, userName);
+            outputMap = rmiClient.cancelReservation(params, userName);
         } catch (Exception ex) {
             this.log.error(ex.getMessage());
             Utils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(), methodName);

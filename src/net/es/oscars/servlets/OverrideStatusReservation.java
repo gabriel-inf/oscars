@@ -28,19 +28,21 @@ public class OverrideStatusReservation extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
+        HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
+
+        params.put("style", "wbui");
 
         Enumeration e = request.getParameterNames();
         while (e.hasMoreElements()) {
             String paramName = (String) e.nextElement();
             String[] paramValues = request.getParameterValues(paramName);
-            inputMap.put(paramName, paramValues);
+            params.put(paramName, paramValues);
         }
 
         try {
             BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            outputMap = rmiClient.modifyStatus(inputMap, userName);
+            outputMap = rmiClient.modifyStatus(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
             Utils.handleFailure(out, "OverrideStatusReservation not completed: " + ex.getMessage(), methodName);

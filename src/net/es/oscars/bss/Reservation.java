@@ -261,21 +261,20 @@ public class Reservation extends HibernateBean implements Serializable {
             sb.append("bandwidth: " + this.getBandwidth() + "\n");
         }
 
-        Utils utils = new Utils(dbname);
         Path path = this.getPath(PathType.INTRADOMAIN);
         if (path == null) {
             return sb.toString();
         }
-        sb.append(utils.pathDataToString(path));
+        sb.append(BssUtils.pathDataToString(path));
         sb.append("intradomain hops: \n\n");
-        sb.append(utils.pathToString(path, false));
+        sb.append(BssUtils.pathToString(path, false));
         path = this.getPath(PathType.INTERDOMAIN);
         if (path == null) {
             return sb.toString();
         }
-        sb.append(utils.pathDataToString(path));
+        sb.append(BssUtils.pathDataToString(path));
         sb.append("\ninterdomain hops: \n\n");
-        sb.append(utils.pathToString(path, true));
+        sb.append(BssUtils.pathToString(path, true));
         sb.append("\n");
         return sb.toString();
     }

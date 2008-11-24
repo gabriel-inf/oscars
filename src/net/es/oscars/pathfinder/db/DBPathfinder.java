@@ -74,8 +74,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         this.log.debug("handling explicit route object");
         //Converts mixture of IDRefs and objects to all IDRefs
-        TypeConverter tc = OSCARSCore.getInstance().getTypeConverter();
-        PathInfo refPathInfo = tc.createRefPath(pathInfo);
+        PathInfo refPathInfo = TypeConverter.createRefPath(pathInfo);
         if (pathInfo.getLayer2Info() != null) {
            this.handleLayer2ERO(refPathInfo, reservation);
         } else if (pathInfo.getLayer3Info() != null) {
@@ -86,7 +85,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         //Restores any link objects in original path that were replaced by IDRefs
         try {
-            tc.mergePathInfo(pathInfo, refPathInfo, false);
+        	TypeConverter.mergePathInfo(pathInfo, refPathInfo, false);
         } catch(BSSException e) {
             throw new PathfinderException(e.getMessage());
         }

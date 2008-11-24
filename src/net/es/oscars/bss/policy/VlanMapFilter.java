@@ -28,7 +28,6 @@ import net.es.oscars.PropHandler;
 public class VlanMapFilter implements PolicyFilter{
     private Logger log;
     private OSCARSCore core;
-    private TypeConverter tc;
     private String scope;
     
     public static final String DOMAIN_SCOPE = "domain";
@@ -40,7 +39,6 @@ public class VlanMapFilter implements PolicyFilter{
     public VlanMapFilter(){
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-        this.tc = this.core.getTypeConverter();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("policy.vlanFilter", true);
         this.scope = props.getProperty("scope");
@@ -90,11 +88,11 @@ public class VlanMapFilter implements PolicyFilter{
             if(l2scData == null && "l2sc".equals(swcap.getSwitchingcapType())){
                 throw new BSSException("Specified layer 2 switching "+
                                        "capability for a non-layer2 link " + 
-                                       this.tc.hopToURN(hop));
+                                       TypeConverter.hopToURN(hop));
             }else if(l2scData == null){ 
                 continue;
             }
-            byte[] topoVlans = this.tc.rangeStringToMask(l2scData.getVlanRangeAvailability());
+            byte[] topoVlans = TypeConverter.rangeStringToMask(l2scData.getVlanRangeAvailability());
             String hopVlanStr = swcapInfo.getVlanRangeAvailability();
             if(vlanMap.containsKey(k(link))){
                 byte[] vlanMapMask = vlanMap.get(k(link));
@@ -104,18 +102,18 @@ public class VlanMapFilter implements PolicyFilter{
             }
             
             if(hopVlanStr != null){
-                byte[] hopVlans = this.tc.rangeStringToMask(hopVlanStr);
+                byte[] hopVlans = TypeConverter.rangeStringToMask(hopVlanStr);
                 for(int j = 0; j < hopVlans.length; j++){
                     topoVlans[j] &= hopVlans[j];
                 }
             }
-            String rangeStr = this.tc.maskToRangeString(topoVlans);
+            String rangeStr = TypeConverter.maskToRangeString(topoVlans);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN(s) " + hopVlanStr + 
-                            " not available for hop " + this.tc.hopToURN(hop));
+                            " not available for hop " + TypeConverter.hopToURN(hop));
             }else if("0".equals(rangeStr)){
                 untagMap.put(link.getFQTI(), true);
-                vlanMap.put(k(link), this.tc.rangeStringToMask(l2scData.getVlanRangeAvailability()));
+                vlanMap.put(k(link), TypeConverter.rangeStringToMask(l2scData.getVlanRangeAvailability()));
             }else{
                 untagMap.put(link.getFQTI(), false);
                 vlanMap.put(k(link), topoVlans);
@@ -154,15 +152,15 @@ public class VlanMapFilter implements PolicyFilter{
                                         .getVlanRangeAvailability();
             prevVlanString = (prevVlanString == null ? "any" : prevVlanString);
             byte[] ingrVlans = vlanMap.get(k(ingrLink));
-            byte[] prevVlans = this.tc.rangeStringToMask(prevVlanString);
+            byte[] prevVlans = TypeConverter.rangeStringToMask(prevVlanString);
             for(int j = 0; j < ingrVlans.length; j++){
                 ingrVlans[j] &= prevVlans[j];
             }
-            String remaining = this.tc.maskToRangeString(ingrVlans);
+            String remaining = TypeConverter.maskToRangeString(ingrVlans);
             if("".equals(remaining)){
                 throw new BSSException("No VLANs available in the range " +
                                        "specified by the previous hop " + 
-                                       this.tc.hopToURN(prevInterHop));
+                                       TypeConverter.hopToURN(prevInterHop));
             }else if("0".equals(remaining)){
                 untagMap.put(ingrLink.getFQTI(), true);
             }else{
@@ -177,15 +175,15 @@ public class VlanMapFilter implements PolicyFilter{
                                         .getVlanRangeAvailability();
             nextVlanString = (nextVlanString == null ? "any" : nextVlanString);
             byte[] egrVlans = vlanMap.get(k(egrLink));
-            byte[] nextVlans = this.tc.rangeStringToMask(nextVlanString);
+            byte[] nextVlans = TypeConverter.rangeStringToMask(nextVlanString);
             for(int j = 0; j < egrVlans.length; j++){
                 egrVlans[j] &= nextVlans[j];
             }
-            String remaining = this.tc.maskToRangeString(egrVlans);
+            String remaining = TypeConverter.maskToRangeString(egrVlans);
             if("".equals(remaining)){
                 throw new BSSException("No VLANs available in the range " +
                                        "specified by the next hop " + 
-                                       this.tc.hopToURN(nextInterHop));
+                                       TypeConverter.hopToURN(nextInterHop));
             }else if("0".equals(remaining)){
                 untagMap.put(egrLink.getFQTI(), true);
             }else{
@@ -226,8 +224,8 @@ public class VlanMapFilter implements PolicyFilter{
                previous link then no further filtering needed 
                if untagged make its own segment like translation. This assumes 
                that untagged can only happen on the edges */
-            String currHopRangeStr = this.tc.maskToRangeString(currHopMask);
-            String rangeStr = this.tc.maskToRangeString(currSegmentMask);
+            String currHopRangeStr = TypeConverter.maskToRangeString(currHopMask);
+            String rangeStr = TypeConverter.maskToRangeString(currSegmentMask);
             if(l2scData.getVlanTranslation() &&
                     (currLink.getRemoteLink() == null || 
                     (!currLink.getRemoteLink().equals(prevLink)))){
@@ -257,7 +255,7 @@ public class VlanMapFilter implements PolicyFilter{
         
         //NOTE: ignores suggested for hops beyond the first hop
         byte[] suggested = this.findSuggested(prevInterHop, hops[0]);
-        String globalRange = this.tc.maskToRangeString(globalMask);
+        String globalRange = TypeConverter.maskToRangeString(globalMask);
         String globalVlan = null;
         if(suggested.length > 0 && (!"".equals(globalRange))){
             globalVlan = this.chooseVlanTag(globalMask, suggested);
@@ -267,7 +265,7 @@ public class VlanMapFilter implements PolicyFilter{
         
         ///update intradomain path
         for(int i = 0; i < segments.size(); i++){
-            String vlanRange = this.tc.maskToRangeString(segmentMasks.get(i));
+            String vlanRange = TypeConverter.maskToRangeString(segmentMasks.get(i));
             String suggestedVlan = null;
             if(globalVlan != null){
                 suggestedVlan = globalVlan;
@@ -288,7 +286,7 @@ public class VlanMapFilter implements PolicyFilter{
                     swcapInfo.setVlanRangeAvailability(vlanRange);
                 }
                 swcapInfo.setSuggestedVLANRange(suggestedVlan);
-                this.log.info(this.tc.hopToURN(hop) + "(" + vlanRange + ")");
+                this.log.info(TypeConverter.hopToURN(hop) + "(" + vlanRange + ")");
             }
         }
         
@@ -297,7 +295,7 @@ public class VlanMapFilter implements PolicyFilter{
         CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
         intraPath.setHop(hops);
         intraPathInfo.setPath(intraPath);
-        this.tc.mergePathInfo(intraPathInfo, pathInfo,true);
+        TypeConverter.mergePathInfo(intraPathInfo, pathInfo,true);
     }
     
     /**
@@ -311,12 +309,12 @@ public class VlanMapFilter implements PolicyFilter{
                             HashMap<String, byte[]> vlanMap,
                             HashMap<String, Boolean> untagMap) throws BSSException{
         if(endVtag.getTagged()){
-            byte[] endVtagMask = this.tc.rangeStringToMask(endVtag.getString());
+            byte[] endVtagMask = TypeConverter.rangeStringToMask(endVtag.getString());
             byte[] vlanMapMask = vlanMap.get(k(endLink));
             for(int j = 0; j < vlanMapMask.length; j++){
                 vlanMapMask[j] &= endVtagMask[j];
             }
-            String rangeStr = this.tc.maskToRangeString(vlanMapMask);
+            String rangeStr = TypeConverter.maskToRangeString(vlanMapMask);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN not available for edge link " + 
                                        endLink.getFQTI());
@@ -324,10 +322,10 @@ public class VlanMapFilter implements PolicyFilter{
             vlanMap.put(k(endLink), vlanMapMask);
         }else{
             byte[] vlanMapMask = vlanMap.get(k(endLink));
-            byte[] endVtagMask = this.tc.rangeStringToMask("0");
+            byte[] endVtagMask = TypeConverter.rangeStringToMask("0");
             //check if untagged allowed
             endVtagMask[0] &= vlanMapMask[0];
-            String rangeStr = this.tc.maskToRangeString(endVtagMask);
+            String rangeStr = TypeConverter.maskToRangeString(endVtagMask);
             if("".equals(rangeStr)){
                 throw new BSSException("Link " + endLink.getFQTI() + 
                                        " cannot be untagged");
@@ -360,7 +358,7 @@ public class VlanMapFilter implements PolicyFilter{
                     pathElem.getLinkDescr() == null) {
                 continue;
             }
-            byte[] resvMask = this.tc.rangeStringToMask(pathElem.getLinkDescr());
+            byte[] resvMask = TypeConverter.rangeStringToMask(pathElem.getLinkDescr());
             boolean resvUntagged = false;
             try {
                 resvUntagged = (Integer.parseInt(pathElem.getLinkDescr()) < 0);
@@ -378,7 +376,7 @@ public class VlanMapFilter implements PolicyFilter{
             }   
             
             byte[] vlanMask = vlanMap.get(k(link));
-            String vlanMaskStr = this.tc.maskToRangeString(vlanMask);
+            String vlanMaskStr = TypeConverter.maskToRangeString(vlanMask);
             if (untagMap.containsKey(fqti) && untagMap.get(fqti)
                     && newLogin.equals(resv.getLogin())) {
                 throw new BSSException("Cannot set untagged because there is " +
@@ -402,7 +400,7 @@ public class VlanMapFilter implements PolicyFilter{
                 }
                 vlanMask[i] =(byte) newTags;
             }
-            String remainingVlans = this.tc.maskToRangeString(vlanMask);
+            String remainingVlans = TypeConverter.maskToRangeString(vlanMask);
             if ("".equals(remainingVlans) && newLogin.equals(resv.getLogin())) {
                 throw new BSSException("Last VLAN in use by a reservation " +
                                        "you previously placed (" + 
@@ -432,11 +430,11 @@ public class VlanMapFilter implements PolicyFilter{
             if(interLink == null){
                 throw new BSSException("Received hop from previous domain " +
                                        "that is not a link: " + 
-                                       this.tc.hopToURN(interHop));
+                                       TypeConverter.hopToURN(interHop));
             }
             CtrlPlaneSwcapContent swcap = 
                             interLink.getSwitchingCapabilityDescriptors();
-            String urn = this.tc.hopToURN(interHop);
+            String urn = TypeConverter.hopToURN(interHop);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
             String domainId = parseResults.get("domainId");
             if(domainDAO.isLocal(domainId)){
@@ -465,7 +463,7 @@ public class VlanMapFilter implements PolicyFilter{
         boolean hopFound = false;
 
         for (int i = 0; i < interHops.length; i++) {
-            String hopTopoId = this.tc.hopToURN(interHops[i]);
+            String hopTopoId = TypeConverter.hopToURN(interHops[i]);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -512,7 +510,7 @@ public class VlanMapFilter implements PolicyFilter{
                              .getSuggestedVLANRange();
         }
         if(sugVlan != null){
-            suggested = this.tc.rangeStringToMask(sugVlan);
+            suggested = TypeConverter.rangeStringToMask(sugVlan);
         }
         
         return suggested;
@@ -569,7 +567,7 @@ public class VlanMapFilter implements PolicyFilter{
         for (int i=0; i < suggested.length; i++) {
             suggested[i] &= mask[i];
         }
-        String remaining = this.tc.maskToRangeString(suggested);
+        String remaining = TypeConverter.maskToRangeString(suggested);
         if (!"".equals(remaining)) {
             mask = suggested;
         }

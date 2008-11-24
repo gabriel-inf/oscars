@@ -48,7 +48,6 @@ public class TopologyManager {
     private String dbname;
     private ReservationManager rm;
     private PathManager pathMgr;
-    private Utils utils;
     private String localDomain;
 
 
@@ -66,7 +65,6 @@ public class TopologyManager {
         this.dbname = dbname;
 
         this.rm = new ReservationManager(this.dbname);
-        this.utils = new Utils(this.dbname);
 
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
@@ -957,7 +955,6 @@ public class TopologyManager {
             //       assuming only the hops have the possibility of changing
             PathInfo pathInfo = new PathInfo();
             try {
-                TypeConverter tc = new TypeConverter();
                 // finds path and checks for oversubscription
                 path = this.pathMgr.getPath(r, pathInfo);
             } catch (BSSException e) {

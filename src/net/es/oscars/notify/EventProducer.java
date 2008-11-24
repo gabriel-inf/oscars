@@ -112,10 +112,9 @@ public class EventProducer{
                          Reservation resv, PathInfo pathInfo, 
                          String errorCode, String errorMessage){
         OSCARSEvent event = new OSCARSEvent();
-        TypeConverter tc = new TypeConverter();
         HashMap<String, String[]> resvParams;
         try {
-        	resvParams = tc.reservationToHashMap(resv, pathInfo);
+        	resvParams = TypeConverter.reservationToHashMap(resv, pathInfo);
         } catch (BSSException ex) {
         	return;
         }

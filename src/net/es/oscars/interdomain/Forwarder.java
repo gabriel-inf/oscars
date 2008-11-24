@@ -24,13 +24,11 @@ import net.es.oscars.notify.OSCARSEvent;
  */
 public class Forwarder extends Client {
     private Logger log;
-    private TypeConverter tc;
     private OSCARSCore core;
 
     public Forwarder() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-        this.tc = this.core.getTypeConverter();
     }
 
     private void setup(Reservation resv, String url)

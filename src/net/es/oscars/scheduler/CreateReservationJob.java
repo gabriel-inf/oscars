@@ -177,8 +177,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INCREATE);
             rm.create(resv, pathInfo);
-            TypeConverter tc = core.getTypeConverter();
-            tc.ensureLocalIds(pathInfo);
+            TypeConverter.ensureLocalIds(pathInfo);
 
             // FIXME: why does this sometimes get unset?
             pathInfo.getPath().setId(resv.getGlobalReservationId());

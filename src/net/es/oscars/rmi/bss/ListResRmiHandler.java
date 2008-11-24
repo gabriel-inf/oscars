@@ -30,7 +30,7 @@ public class ListResRmiHandler {
     }
 
     public HashMap<String, Object>
-           listReservations(HashMap<String, String[]> inputMap, String userName)
+           listReservations(HashMap<String, Object> params, String userName)
                throws IOException {
 
         this.log.debug("listReservations.start");
@@ -43,40 +43,35 @@ public class ListResRmiHandler {
         int numRowsReq =0;
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
-        List<String> statuses = this.getStatuses(inputMap);
-        List<String> vlans = this.getVlanTags(inputMap);
-        String description = this.getDescription(inputMap);
+        List<String> statuses = this.getStatuses(params);
+        List<String> vlans = this.getVlanTags(params);
+        String description = this.getDescription(params);
         List<Link> inLinks = null;
 
         List<Reservation> reservations = null;
-        if (inputMap.get("startTimeSeconds") != null) {
-            String startTimeStr = inputMap.get("startTimeSeconds")[0];
+        if (params.get("startTimeSeconds") != null) {
+            String startTimeStr = (String) params.get("startTimeSeconds");
             if ( !startTimeStr.equals("")) {
                 startTimeSeconds = Long.valueOf(startTimeStr.trim());
             }
         }
-        if (inputMap.get("endTimeSeconds") != null) {
-            String endTimeStr = inputMap.get("endTimeSeconds")[0];
+        if (params.get("endTimeSeconds") != null) {
+            String endTimeStr = (String) params.get("endTimeSeconds");
             if ( !endTimeStr.equals("")) {
                 endTimeSeconds = Long.valueOf(endTimeStr.trim());
             }
         }
-        String numRowsParam[] = inputMap.get("numRows");
-        if (numRowsParam != null) {
-            String numRowParam =numRowsParam[0].trim();
-            if (!numRowParam.equals("") && !numRowParam.equals("all")) {
-                numRowsReq = Integer.parseInt(numRowParam);
-            } else {
-                numRowsReq = 0;  // special case to get all results
-            }
+        String numRowParam = (String) params.get("numRows");
+        if (!numRowParam.equals("") && !numRowParam.equals("all")) {
+            numRowsReq = Integer.parseInt(numRowParam);
+        } else {
+            numRowsReq = 0;  // special case to get all results
         }
-        // won't be set unless user search input enabled
-        if (inputMap.get("resvLogin") != null) {
-            String loginEntered = inputMap.get("resvLogin")[0];
-            if (!loginEntered.equals("")) {
-                loginConstraint = loginEntered;
-            }
+        String loginEntered = (String) params.get("resvLogin");
+        if (!loginEntered.equals("")) {
+            loginConstraint = loginEntered;
         }
+        
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
@@ -105,7 +100,7 @@ public class ListResRmiHandler {
         bss.beginTransaction();
         String errMessage = null;
         try {
-            inLinks = this.getLinks(inputMap);
+            inLinks = this.getLinks(params);
             reservations =
                 rm.list(numRowsReq, 0, loginConstraint, institution, statuses,
                         description, inLinks, vlans,
@@ -143,12 +138,12 @@ public class ListResRmiHandler {
      * @return list of links to send to BSS
      * @throws BSSException
      */
-    public List<Link> getLinks(HashMap<String, String[]> request)
+    public List<Link> getLinks(HashMap<String, Object> request)
             throws BSSException {
 
         List<Link> inLinks = new ArrayList<Link>();
         String linkList;
-        String linkParam [] = request.get("linkIds");
+        String linkParam [] = (String[]) request.get("linkIds");
         if (linkParam != null) {
             linkList = linkParam[0].trim();
         } else {
@@ -179,13 +174,9 @@ public class ListResRmiHandler {
      * @param request servlet request
      * @return string with description
      */
-    public String getDescription(HashMap<String, String[]> request) {
+    public String getDescription(HashMap<String, Object> request) {
+        String description = (String) request.get("resvDescription");
 
-        String description = "";
-        String descriptions [] = request.get("resvDescription");
-        if (descriptions != null) {
-            description = descriptions[0];
-        }
         return description;
     }
 
@@ -195,10 +186,10 @@ public class ListResRmiHandler {
      * @param request HashMap passed from servlet
      * @return list of statuses to send to BSS
      */
-    public List<String> getStatuses(HashMap<String, String[]> request) {
+    public List<String> getStatuses(HashMap<String, Object> request) {
 
         List<String> statuses = new ArrayList<String>();
-        String paramStatuses[] = request.get("statuses");
+        String paramStatuses[] = (String[]) request.get("statuses");
         if (paramStatuses == null) {
             statuses.add("");
         } else {
@@ -216,10 +207,10 @@ public class ListResRmiHandler {
      * @param request servlet request
      * @return list of vlans and/or ranges to send to BSS
      */
-    public List<String> getVlanTags(HashMap<String, String[]> request) {
+    public List<String> getVlanTags(HashMap<String, Object> request) {
 
         List<String> vlanTags = new ArrayList<String>();
-        String vlanParam [] = request.get("vlanSearch");
+        String vlanParam [] = (String[]) request.get("vlanSearch");
         if ((vlanParam != null) && !vlanParam[0].equals("")) {
             String[] paramTags = vlanParam[0].trim().split(" ");
             for (int i=0; i < paramTags.length; i++) {
@@ -244,7 +235,6 @@ public class ListResRmiHandler {
         String hostName = null;
         String destination = null;
 
-        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils(core.getBssDbName());
         ArrayList resvList = new ArrayList();
 
         for (Reservation resv: reservations) {
@@ -256,7 +246,7 @@ public class ListResRmiHandler {
             	outputMap.put("error", ex.getMessage());
             	return;
             }
-            String pathStr = utils.pathToString(path, false);
+            String pathStr = BssUtils.pathToString(path, false);
             String localSrc = null;
             String localDest = null;
             if (pathStr != null) {
@@ -299,7 +289,7 @@ public class ListResRmiHandler {
             }
             // start of second sub-row
             resvEntry.add(resv.getLogin());
-            String vlanTag = utils.getVlanTag(path);
+            String vlanTag = BssUtils.getVlanTag(path);
             if (vlanTag != null) {
                 int vlanNum = Math.abs(Integer.parseInt(vlanTag));
                 resvEntry.add(vlanNum + "");

@@ -41,11 +41,11 @@ public class ModifyResRmiHandler {
      * modifyReservation rmi handler; interfaces between servlet and ReservationManager.
      *
      * @param userName String - name of user  making request
-     * @param inputMap HashMap - contains start and end times, bandwidth, description,
+     * @param params HashMap - contains start and end times, bandwidth, description,
      *          productionType, pathinfo
      * @return HashMap - contains gri and sucess or error status
      */
-    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> modifyReservation(HashMap<String, Object> params, String userName)
         throws IOException {
         this.log.debug("modify.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -54,7 +54,6 @@ public class ModifyResRmiHandler {
         String institution = null;
         String loginConstraint = null;
 
-        TypeConverter tc = core.getTypeConverter();
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
 
@@ -62,8 +61,7 @@ public class ModifyResRmiHandler {
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
 
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
-                "modify");
+        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
                 this.log.info("modify failed: no permission");
                 result.put("error", "modifyReservation: permission denied");
@@ -79,11 +77,11 @@ public class ModifyResRmiHandler {
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        Set <String> keys = inputMap.keySet();
-        Iterator it = keys.iterator();
+        Set <String> keys = params.keySet();
+        Iterator<String> it = keys.iterator();
         while (it.hasNext() ) {
             String paramName = (String)it.next();
-            String [] paramValues = inputMap.get(paramName);
+            String [] paramValues = (String[]) params.get(paramName);
             simpleInputMap.put(paramName, paramValues[0]);
         }
 

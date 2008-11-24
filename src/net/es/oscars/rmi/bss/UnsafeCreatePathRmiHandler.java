@@ -24,7 +24,7 @@ public class UnsafeCreatePathRmiHandler {
     }
 
     public
-        HashMap<String, Object> createPath(HashMap<String, String[]> inputMap,
+        HashMap<String, Object> createPath(HashMap<String, Object> params,
                                            String userName)
             throws IOException {
 
@@ -47,8 +47,7 @@ public class UnsafeCreatePathRmiHandler {
          }
          aaa.getTransaction().commit();
 
-         String[] paramValues = inputMap.get("gri");
-         String gri = paramValues[0];
+         String gri = (String) params.get("gri");
          Session bss = core.getBssSession();
          bss.beginTransaction();
          String errMessage = null;

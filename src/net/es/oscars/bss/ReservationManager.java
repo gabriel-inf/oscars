@@ -31,7 +31,6 @@ public class ReservationManager {
     private OSCARSCore core;
     private StateEngine se;
     private PathManager pathMgr;
-    private TypeConverter tc;
     private ReservationLogger rsvLogger;
     private String dbname;
     public String GEN_TOKEN;
@@ -40,7 +39,6 @@ public class ReservationManager {
     public ReservationManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.rsvLogger = new ReservationLogger(this.log);
-        this.tc = new TypeConverter();
         this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
         this.se = this.core.getStateEngine();
@@ -568,7 +566,7 @@ public class ReservationManager {
         }
 
         //Schedule job
-        HashMap resvMap = this.tc.reservationToHashMap(resv, null);
+        HashMap resvMap = TypeConverter.reservationToHashMap(resv, null);
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "submitModify-"+resv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", ModifyReservationJob.class);
@@ -625,12 +623,12 @@ public class ReservationManager {
         }
 
         // since pathInfo is null we should keep the stored path
-        PathInfo pathInfo = tc.getPathInfo(persistentResv);
+        PathInfo pathInfo = TypeConverter.getPathInfo(persistentResv);
         if (pathInfo == null) {
             throw new BSSException("No path provided or stored in DB for reservation "+
                                     resv.getGlobalReservationId());
         }
-        pathInfo = tc.toLocalPathInfo(pathInfo);
+        pathInfo = TypeConverter.toLocalPathInfo(pathInfo);
 
         // this will throw an exception if modification isn't possible
         Path path = this.pathMgr.getPath(resv, pathInfo);

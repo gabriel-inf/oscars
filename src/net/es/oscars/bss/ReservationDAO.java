@@ -87,13 +87,13 @@ public class ReservationDAO
         ArrayList<String> criteria = new ArrayList<String>();
         String loginQ = null;
         if (logins != null && !logins.isEmpty()) {
-            loginQ = "r.login IN ("+Utils.join(logins, ",", "'", "'")+") ";
+            loginQ = "r.login IN ("+BssUtils.join(logins, ",", "'", "'")+") ";
             criteria.add(loginQ);
         }
 
         String statusQ = null;
         if (statuses != null && !statuses.isEmpty()) {
-            statusQ = "r.status IN ("+Utils.join(statuses, ",", "'", "'")+") ";
+            statusQ = "r.status IN ("+BssUtils.join(statuses, ",", "'", "'")+") ";
             criteria.add(statusQ);
         }
 
@@ -116,7 +116,7 @@ public class ReservationDAO
 
         String hsql = "from Reservation r";
         if (!criteria.isEmpty()) {
-            hsql += " where " +Utils.join(criteria, " and ", "(", ")");
+            hsql += " where " +BssUtils.join(criteria, " and ", "(", ")");
         }
         hsql += " order by r.startTime desc";
 
@@ -384,8 +384,7 @@ public class ReservationDAO
         int checkVtag = -1;
         int minVtag = 100000;
         int maxVtag = -1;
-        Utils utils = new Utils(this.dbname);
-        String tagStr = utils.getVlanTag(rsv.getPath(PathType.INTRADOMAIN));
+        String tagStr = BssUtils.getVlanTag(rsv.getPath(PathType.INTRADOMAIN));
         // no associated VLAN
         if (tagStr == null) {
             return false;

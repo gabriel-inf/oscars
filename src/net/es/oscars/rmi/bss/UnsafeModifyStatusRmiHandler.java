@@ -20,7 +20,7 @@ public class UnsafeModifyStatusRmiHandler {
         this.core = OSCARSCore.getInstance();
     }
 
-    public HashMap<String, Object> modifyStatus(HashMap<String, String[]> inputMap, String userName)
+    public HashMap<String, Object> modifyStatus(HashMap<String, Object> params, String userName)
         throws IOException {
         this.log.debug("overrideStatus.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -40,11 +40,9 @@ public class UnsafeModifyStatusRmiHandler {
             return result;
         }
         aaa.getTransaction().commit();
-        String[] paramValues = inputMap.get("gri");
-        String gri = paramValues[0];
+        String gri = (String) params.get("gri");
 
-        paramValues = inputMap.get("forcedStatus");
-        String status = paramValues[0];
+        String status = (String) params.get("forcedStatus");
 
         Session bss = core.getBssSession();
         bss.beginTransaction();

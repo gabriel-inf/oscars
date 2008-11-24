@@ -12,13 +12,11 @@ import net.es.oscars.bss.topology.*;
  *
  * This class contains utility methods for use by the reservation manager.
  */
-public class Utils {
-    private String dbname;
-    private Logger log;
-
-    public Utils(String dbname) {
-        this.dbname = dbname;
-        this.log = Logger.getLogger(this.getClass());
+public class BssUtils {
+    private Logger log = Logger.getLogger(BssUtils.class);
+    
+    // utils class, do not instantiate
+    private BssUtils() {
     }
 
     /**
@@ -27,7 +25,7 @@ public class Utils {
      * @param path path to convert to string
      * @return pathDataStr path data in string format
      */
-    public String pathDataToString(Path path) {
+    public static String pathDataToString(Path path) {
         StringBuilder sb =  new StringBuilder();
         if (path.getPathSetupMode() != null) {
             sb.append("path setup mode: " + path.getPathSetupMode() + "\n");
@@ -95,7 +93,7 @@ public class Utils {
      * @param interDomain boolean for intra or interdomain path
      * @return pathStr converted path
      */
-    public String pathToString(Path path, boolean interDomain) {
+    public static String pathToString(Path path, boolean interDomain) {
 
         Ipaddr ipaddr = null;
         String nodeName = null;
@@ -148,7 +146,7 @@ public class Utils {
      * @param path Path with reservation's page
      * @return vlanTag string with VLAN tag, if any
      */
-    public String getVlanTag(Path path) {
+    public static String getVlanTag(Path path) {
         String vlanTag = null;
         List<PathElem> pathElems = path.getPathElems();
         for (PathElem pathElem: pathElems) {

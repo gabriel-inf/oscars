@@ -156,10 +156,9 @@ public class ParamValidator {
             return "";
         }
         //lookup hops in lookup service if not URNs
-        TypeConverter tc = new TypeConverter();
         for(CtrlPlaneHopContent hop:hops){
             /* If URN do no further checking */
-            String child = tc.hopToURN(hop);
+            String child = TypeConverter.hopToURN(hop);
             if(child == null){
                 return "No domain,node,port, or link specified in " +
                        "hop (directly or by reference";

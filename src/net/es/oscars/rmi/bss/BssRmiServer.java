@@ -127,124 +127,124 @@ public class BssRmiServer  implements BssRmiInterface {
     /**
      * createReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        createReservation(HashMap<String, String[]> inputMap, String userName)
+        createReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
 
-        return this.createHandler.createReservation(inputMap, userName);
+        return this.createHandler.createReservation(params, userName);
     }
 
     /**
      * queryReservation
      *
-     * @param inputMap HashMap<String, String[]> - input from web request
+     * @param params HashMap<String, Object> - input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        queryReservation(HashMap<String, String[]> inputMap, String userName)
+        queryReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
 
-        return this.queryHandler.queryReservation(inputMap, userName);
+        return this.queryHandler.queryReservation(params, userName);
     }
 
     /**
      * listReservations
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      */
     public HashMap<String, Object>
-        listReservations(HashMap<String, String[]> inputMap, String userName)
+        listReservations(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.listHandler.listReservations(inputMap, userName);
+        return this.listHandler.listReservations(params, userName);
     }
 
     /**
      * cancelReservationOverride
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        cancelReservation(HashMap<String, String[]> inputMap, String userName)
+        cancelReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
 
-        return this.cancelHandler.cancelReservation(inputMap, userName);
+        return this.cancelHandler.cancelReservation(params, userName);
     }
 
     /**
      * modifyReservation
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        modifyReservation(HashMap<String, String[]> inputMap, String userName)
+        modifyReservation(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
 
-        return this.modifyHandler.modifyReservation(inputMap, userName);
+        return this.modifyHandler.modifyReservation(params, userName);
     }
 
     /**
      * createPath
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        createPath(HashMap<String, String[]> inputMap, String userName)
+        createPath(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
-        return this.unsafeCreatePathHandler.createPath(inputMap, userName);
+        return this.unsafeCreatePathHandler.createPath(params, userName);
     }
 
     /**
      * teardownPath
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        teardownPath(HashMap<String, String[]> inputMap, String userName)
+        teardownPath(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
 
-        return this.unsafeTeardownPathHandler.teardownPath(inputMap, userName);
+        return this.unsafeTeardownPathHandler.teardownPath(params, userName);
     }
 
     /**
      * modifyStatus
      *
-     * @param inputMap HashMap<String, String[]> - contains input from web request
+     * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
      * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
     public HashMap<String, Object>
-        modifyStatus(HashMap<String, String[]> inputMap, String userName)
+        modifyStatus(HashMap<String, Object> params, String userName)
             throws IOException, RemoteException {
 
-        return this.unsafeModifyStatusHandler.modifyStatus(inputMap, userName);
+        return this.unsafeModifyStatusHandler.modifyStatus(params, userName);
     }
 
 }

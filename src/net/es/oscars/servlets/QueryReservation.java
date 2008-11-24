@@ -42,16 +42,16 @@ public class QueryReservation extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
+        HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
 
-        String[] paramValues = request.getParameterValues("gri");
-        inputMap.put("gri", paramValues);
+        params.put("gri", request.getParameterValues("gri"));
+        params.put("caller", "WBUI");
         // which sections of the page to display are controlled on the
         // RMI server side in the rmi module
         try {
             BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            outputMap = rmiClient.queryReservation(inputMap, userName);
+            outputMap = rmiClient.queryReservation(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
             Utils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);

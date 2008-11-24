@@ -8,6 +8,7 @@ bach) url="https://bach.lbl.gov:9090/axis2/services/OSCARS";;
 oscars-devint) url="https://oscars-devint.es.net:9090/axis2/services/OSCARS";;
 oscars-dev) url="https://oscars-dev.es.net/axis2/services/OSCARS";;
 hopi) url="https://hopibruw.internet2.edu:8443/axis2/services/OSCARS";;
+local) url="https://localhost:9090/axis2/services/OSCARS";;
 esac
 fi
 java -Daxis2.xml=repo/axis2.xml -Djava.net.preferIPv4Stack=true ListReservationsClient repo $url

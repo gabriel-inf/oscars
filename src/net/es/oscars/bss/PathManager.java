@@ -26,17 +26,15 @@ public class PathManager {
     private Logger log;
     private PCEManager pceMgr;
     private PolicyManager policyMgr;
-    private TypeConverter tc;
     private String dbname;
-    public String DEFAULT_SWCAP_TYPE;
-    public String DEFAULT_ENC_TYPE;
+    public static String DEFAULT_SWCAP_TYPE;
+    public static String DEFAULT_ENC_TYPE;
 
     /** Constructor. */
     public PathManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pceMgr = new PCEManager(dbname);
         this.policyMgr = new PolicyManager(dbname);
-        this.tc = new TypeConverter();
         this.dbname = dbname;
         this.initGlobals();
     }
@@ -102,7 +100,7 @@ public class PathManager {
             } else {
                 this.log.warn(
                         "Can't find domain url for nextExternalHop. Hop is: " +
-                        this.tc.hopToURN(nextExternalHop));
+                        TypeConverter.hopToURN(nextExternalHop));
             }
         }
         // convert to form for db
@@ -131,7 +129,7 @@ public class PathManager {
         }
 
         for(CtrlPlaneHopContent hop : hops){
-            String urn = this.tc.hopToURN(hop);
+            String urn = TypeConverter.hopToURN(hop);
             //if not link then add to path
             if(urn == null){
                 throw new BSSException("Cannot expand path because " +
@@ -197,7 +195,7 @@ public class PathManager {
         String ingressLink = null;
         Link link = null;
         this.log.debug("buildInitialPath.pathInfo=" + pathInfo.hashCode());
-        PathInfo refOnlyPathInfo = this.tc.createRefPath(pathInfo);
+        PathInfo refOnlyPathInfo = TypeConverter.createRefPath(pathInfo);
 
         //Build path containing only the ingress link id
         try{
@@ -220,9 +218,9 @@ public class PathManager {
                 path.setPathSetupMode("timer-automatic");
         }
         //Convert layer2/layer3/mplsInfo to Hibernate beans
-        path.setLayer2Data(this.tc.layer2InfoToData(layer2Info));
-        path.setLayer3Data(this.tc.layer3InfoToData(layer3Info));
-        path.setMplsData(this.tc.mplsInfoToData(mplsInfo));
+        path.setLayer2Data(TypeConverter.layer2InfoToData(layer2Info));
+        path.setLayer3Data(TypeConverter.layer3InfoToData(layer3Info));
+        path.setMplsData(TypeConverter.mplsInfoToData(mplsInfo));
 
         this.log.debug("buildInitialPath.end");
         return path;
@@ -284,9 +282,11 @@ public class PathManager {
             pathSetupMode = "timer-automatic";
         }
         path.setPathSetupMode(pathSetupMode);
+        
+        path.setPathType(PathType.INTERDOMAIN);
 
         for (int i = 0; i < hops.length; i++) {
-            String hopTopoId = this.tc.hopToURN(hops[i]);
+            String hopTopoId = TypeConverter.hopToURN(hops[i]);
             this.log.debug("convertPath: converting link: "+hopTopoId);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
@@ -307,13 +307,13 @@ public class PathManager {
             }
             link = domainDAO.getFullyQualifiedLink(hopTopoId);
             if (link == null) {
-                this.log.error("Couldn't find link in db for: ["+this.tc.hopToURN(hops[i])+"]");
-                throw new BSSException("Couldn't find link in db for: ["+this.tc.hopToURN(hops[i])+"]");
+                this.log.error("Couldn't find link in db for: ["+TypeConverter.hopToURN(hops[i])+"]");
+                throw new BSSException("Couldn't find link in db for: ["+TypeConverter.hopToURN(hops[i])+"]");
             } else if (!link.isValid()) {
-                this.log.error("Link is invalid in db for: ["+this.tc.hopToURN(hops[i])+"]");
-                throw new BSSException("Link is invalid in db for: ["+this.tc.hopToURN(hops[i])+"]");
+                this.log.error("Link is invalid in db for: ["+TypeConverter.hopToURN(hops[i])+"]");
+                throw new BSSException("Link is invalid in db for: ["+TypeConverter.hopToURN(hops[i])+"]");
             } else {
-                this.log.debug("Found link in db for: ["+this.tc.hopToURN(hops[i])+"]");
+                this.log.debug("Found link in db for: ["+TypeConverter.hopToURN(hops[i])+"]");
             }
             PathElem pathElem = new PathElem();
             if (!foundIngress) {
@@ -407,7 +407,7 @@ public class PathManager {
         CtrlPlaneHopContent nextExtHop = this.getNextExternalHop(pathInfo);
         //Retrieve the local path
         PathInfo intraPathInfo = new PathInfo();
-        intraPathInfo.setPath(this.tc.pathToCtrlPlane(path, false));
+        intraPathInfo.setPath(TypeConverter.pathToCtrlPlane(path, false));
         this.expandLocalHops(intraPathInfo);
         CtrlPlanePathContent intraPath = intraPathInfo.getPath();
         CtrlPlaneHopContent[] hops = intraPath.getHop();
@@ -457,7 +457,7 @@ public class PathManager {
             swcapInfo.setVlanRangeAvailability(sug);
             swcapInfo.setSuggestedVLANRange(null);
         }
-        this.tc.mergePathInfo(intraPathInfo, pathInfo, true);
+        TypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
         this.convertPathElemList(intraPathInfo, path.getPathElems(), false);
     }
 
@@ -491,7 +491,7 @@ public class PathManager {
         }
 
         for (int i = 0; i < hops.length; i++) {
-            String urn = this.tc.hopToURN(hops[i]);
+            String urn = TypeConverter.hopToURN(hops[i]);
             Link link = null;
             try {
                 link = TopologyUtil.getLink(urn, this.dbname);
@@ -567,7 +567,7 @@ public class PathManager {
                 pathCopy.addHop(hopCopy);
                 continue;
             }
-            String hopTopoId = this.tc.hopToURN(hops[i]);
+            String hopTopoId = TypeConverter.hopToURN(hops[i]);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -636,7 +636,7 @@ public class PathManager {
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
-            String hopTopoId = this.tc.hopToURN(hops[i]);
+            String hopTopoId = TypeConverter.hopToURN(hops[i]);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -667,7 +667,7 @@ public class PathManager {
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         CtrlPlaneHopContent prevHop = null;
         for (CtrlPlaneHopContent hop: hops) {
-            String urn = this.tc.hopToURN(hop);
+            String urn = TypeConverter.hopToURN(hop);
             Hashtable<String, String> parseResults =
                 URNParser.parseTopoIdent(urn);
             String domainId = parseResults.get("domainId");
