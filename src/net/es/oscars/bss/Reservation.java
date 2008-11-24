@@ -50,10 +50,10 @@ public class Reservation extends HibernateBean implements Serializable {
     /** persistent field */
     private Token token;
 
+    private Set paths = new HashSet<Path>();
+
     /** default constructor */
     public Reservation() { }
-
-    private Map<String,Path> pathMap = new HashMap<String,Path>();
 
     /**
      * @return startTime A Long with the reservation start time (Unix time)
@@ -173,27 +173,40 @@ public class Reservation extends HibernateBean implements Serializable {
         this.globalReservationId = globalReservationId;
     }
 
-    public Map<String,Path> getPathMap() {
-        return this.pathMap;
+    /**
+     * @return list of paths that are associated with this reservation
+     */
+    public Set getPaths() { return this.paths; }
+
+    /**
+     * @param paths probably never used
+     */
+    public void setPaths(Set paths) { this.paths = paths; }
+
+    public boolean addPath(Path path) {
+        if (this.paths.add(path)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public void setPathMap(Map<String,Path> pathMap) {
-        this.pathMap = pathMap;
-    }
+    // TEMPORARY SECTION to keep things compiling; noops
 
     public Path getPath(String pathType) throws BSSException {
         if (!PathType.isValid(pathType)) {
             throw new BSSException("Invalid pathType: "+pathType);
         }
-        return this.pathMap.get(pathType);
+        return null;
     }
 
     public void setPath(Path path, String pathType) throws BSSException {
         if (!PathType.isValid(pathType)) {
             throw new BSSException("Invalid pathType: "+pathType);
         }
-        this.pathMap.put(pathType, path);
     }
+
+    // END TEMPORARY SECTION
 
     /**
      * @return token instance associated with reservation

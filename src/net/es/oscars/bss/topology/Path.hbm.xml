@@ -29,13 +29,15 @@
 
     <property name="pathSetupMode" />
 
-    <property name="pathType" not-null="true" insert="false" update="false">
+    <property name="pathType" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>
     </property>
 
     <property name="direction" />
+
+    <property name="priority" />
 
     <property name="grouping" />
 

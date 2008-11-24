@@ -100,7 +100,8 @@ DROP TABLE intraPaths;
 DROP TABLE interPaths;
 
 ALTER TABLE paths ADD direction TEXT AFTER pathType;
-ALTER TABLE paths ADD grouping TEXT AFTER direction;
+ALTER TABLE paths ADD priority INT AFTER pathType;
+ALTER TABLE paths ADD grouping TEXT AFTER priority;
 
 -- stored procedure section
 

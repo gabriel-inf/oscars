@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS paths (
     nextDomainId        INT,           -- optional foreign key
     pathType            TEXT NOT NULL,
     direction           TEXT,
+    priority            INT,
     grouping            TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;
