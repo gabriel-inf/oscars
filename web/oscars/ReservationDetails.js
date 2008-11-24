@@ -125,7 +125,7 @@ oscars.ReservationDetails.forcedStatus = function () {
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     var menu = dojo.byId("forcedStatusMenu");
     var selectedChoice = menu.selectedIndex;
-    formNode.forcedStatus = menu.options[selectedChoice].value;
+    formNode.forcedStatus.value = menu.options[selectedChoice].value;
 };
 
 // Clones current reservation except for date/times, changing to the

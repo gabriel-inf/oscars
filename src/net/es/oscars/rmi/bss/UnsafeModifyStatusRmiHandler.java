@@ -7,7 +7,6 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.oscars.*;
 
@@ -28,7 +27,7 @@ public class UnsafeModifyStatusRmiHandler {
         String methodName = "OverrideStatus";
 
         UserManager userMgr =  new UserManager("aaa");
-        Reservation reservation = null;
+        Reservation resv = null;
         result.put("method", methodName);
 
         Session aaa = core.getAaaSession();
@@ -50,10 +49,9 @@ public class UnsafeModifyStatusRmiHandler {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
-        /* UNCOMMENT THIS BLOCK TO TEST
         try {
             ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
-            Reservation resv = resvDAO.query(gri);
+            resv = resvDAO.query(gri);
             resv.setStatus(status);
         } catch (BSSException e) {
             errMessage = e.getMessage();
@@ -65,11 +63,10 @@ public class UnsafeModifyStatusRmiHandler {
                 return result;
             }
         }
-        result.put("gri", reservation.getGlobalReservationId());
-        result.put("status", "Overrode status for reservation with GRI " + reservation.getGlobalReservationId());
-        */
+        result.put("gri", resv.getGlobalReservationId());
+        result.put("status", "Overrode status for reservation with GRI " + resv.getGlobalReservationId());
         /* REMOVE THIS LINE FOR TESTING */
-        result.put("status", "Not implemented yet");
+        //result.put("status", "Not implemented yet");
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 
