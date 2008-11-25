@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
+
 import org.apache.log4j.*;
 import org.hibernate.*;
 import net.es.oscars.aaa.*;
@@ -136,9 +137,15 @@ public class QueryResRmiHandler {
 	            this.log.debug("query failed: reservation does not exist");
 	            return result;
 	        }
-	        result.put("status", "Reservation details for " + reservation.getGlobalReservationId());
-	        this.contentSection(result, reservation, userName, internalIntradomainHops);
-	        result.put("success", Boolean.TRUE);
+	        try {
+		        result.put("status", "Reservation details for " + reservation.getGlobalReservationId());
+		        this.contentSection(result, reservation, userName, internalIntradomainHops);
+		        result.put("success", Boolean.TRUE);
+	        } catch (BSSException ex) {
+	        	log.error(ex);
+	            bss.getTransaction().rollback();
+	            throw new RemoteException(ex.getMessage());
+	        }
         } else if (caller.equals("API")) {
 	        try {
 	            reservation = rm.query(gri, loginConstraint, institution);
@@ -191,7 +198,7 @@ public class QueryResRmiHandler {
     }
 
     public void contentSection(Map outputMap, Reservation resv, String userName,
-                   boolean internalIntradomainHops) {
+                   boolean internalIntradomainHops) throws BSSException {
 	
 	    InetAddress inetAddress = null;
 	    String hostName = null;
@@ -201,14 +208,7 @@ public class QueryResRmiHandler {
 	
 	    // this will replace LSP name if one was given instead of a GRI
 	    String gri = resv.getGlobalReservationId();
-	    // INTERDOMAIN
-	    Path path = null;
-	    try {
-	    	path = resv.getPath(PathType.INTERDOMAIN);
-	    } catch (BSSException ex) {
-	    	outputMap.put("error", ex.getMessage());
-	    	return;
-	    }
+    	Path path = resv.getPath(PathType.INTRADOMAIN);
 	    Layer2Data layer2Data = path.getLayer2Data();
 	    Layer3Data layer3Data = path.getLayer3Data();
 	    MPLSData mplsData = path.getMplsData();
@@ -331,6 +331,5 @@ public class QueryResRmiHandler {
 	        outputMap.put("interPathReplace", sb.toString());
 	    }
 	}
-
 
 }

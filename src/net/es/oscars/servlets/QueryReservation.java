@@ -45,7 +45,7 @@ public class QueryReservation extends HttpServlet {
         HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
 
-        params.put("gri", request.getParameterValues("gri"));
+        params.put("gri", request.getParameterValues("gri")[0]);
         params.put("caller", "WBUI");
         // which sections of the page to display are controlled on the
         // RMI server side in the rmi module

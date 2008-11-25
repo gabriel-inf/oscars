@@ -10,9 +10,7 @@ import java.net.UnknownHostException;
 
 import net.es.oscars.PropHandler;
 
-import net.es.oscars.aaa.*;
 import net.es.oscars.rmi.*;
-import net.es.oscars.rmi.model.*;
 
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.Notify;

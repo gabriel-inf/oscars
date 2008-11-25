@@ -8,6 +8,7 @@ package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.log4j.*;
 import org.hibernate.*;
 import net.es.oscars.aaa.*;
@@ -71,8 +72,17 @@ public class CreateResRmiHandler {
         // convert from seconds to minutes
         int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 60;
 
-        Boolean specifyPath = (Boolean) params.get("explicitPath");
         
+        
+        boolean specifyPath = false;
+        String[] arrayParam = (String[]) params.get("explicitPath");
+        if (arrayParam != null) {
+            String strParam = arrayParam[0];
+            if ((strParam != null) && (!strParam.trim().equals(""))) {
+                specifyPath = true;
+            }
+        }
+
         
         AuthValue authVal = userMgr.checkModResAccess(userName, "Reservations",
                 "create", reqBandwidth, reqDuration, specifyPath, false);
@@ -116,7 +126,7 @@ public class CreateResRmiHandler {
         return result;
     }
 
-    private Reservation toReservation(String userName, HashMap<String, Object> params) {
+    private Reservation toReservation(String userName, HashMap<String, Object> inputMap) {
         String[] arrayParam = null;
         String strParam = null;
         Long bandwidth = null;
@@ -127,19 +137,51 @@ public class CreateResRmiHandler {
 
         // necessary type conversions performed here; validation done in
         // ReservationManager
-        seconds = (Long) params.get("startSeconds");
+        arrayParam = (String[]) inputMap.get("startSeconds");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                seconds = Long.parseLong(strParam);
+            }
+        }
         resv.setStartTime(seconds);
-        
-        seconds = (Long) params.get("endSeconds");
-        resv.setStartTime(seconds);
-        
-        bandwidth = (Long) params.get("bandwidth");
+
+        arrayParam = (String[]) inputMap.get("endSeconds");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                seconds = Long.parseLong(strParam);
+            }
+        }
+        resv.setEndTime(seconds);
+
+        arrayParam = (String[]) inputMap.get("bandwidth");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                bandwidth = Long.valueOf(strParam.trim()) * 1000000L;
+            } else {
+                bandwidth = 0L;
+            }
+        } else {
+            bandwidth = 0L;
+        }
         resv.setBandwidth(bandwidth);
 
-        String description = (String) params.get("description");
-        
-        Boolean isProduction =  (Boolean) params.get("productionType");
-        if (isProduction) {
+        String description = "";
+        arrayParam = (String[]) inputMap.get("description");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                description = strParam;
+            }
+        }
+
+        arrayParam = (String[]) inputMap.get("productionType");
+        // if not blank, check box indicating production circuit was checked
+        if ((arrayParam != null) && (arrayParam.length > 0) &&
+             (arrayParam[0] != null) &&
+             !arrayParam[0].trim().equals("")) {
             this.log.info("production circuit");
             description = "[PRODUCTION CIRCUIT] " + description;
         } else {
@@ -152,23 +194,29 @@ public class CreateResRmiHandler {
     /**
      * Takes form parameters and builds PathInfo structures.
      *
-     * @param params contains form request parameters
+     * @param inputMap contains form request parameters
      * @return pathInfo a PathInfo instance with layer 2 or 3 information
      */
-    public PathInfo handlePath(HashMap<String, Object> params)
+    public PathInfo handlePath(HashMap<String, Object> inputMap)
             throws BSSException {
+
+        String[] arrayParam = null;
+        String strParam = null;
 
         CtrlPlanePathContent path = null;
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("wbui", true);
         String defaultLayer = props.getProperty("defaultLayer");
-        
-        String source = (String) params.get("source");
-        String destination = (String) params.get("destination");
 
-        
         PathInfo pathInfo = new PathInfo();
-        String explicitPath = (String) params.get("explicitPath");
+        String explicitPath = "";
+        arrayParam = (String[]) inputMap.get("explicitPath");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                explicitPath = strParam;
+            }
+        }
         if ((explicitPath != null) && !explicitPath.trim().equals("")) {
             this.log.info("explicit path: " + explicitPath);
             path = new CtrlPlanePathContent();
@@ -191,12 +239,12 @@ public class CreateResRmiHandler {
             pathInfo.setPath(path);
         } else {
             // Add a path just composed of source and destination
-//            pathInfo.setPathType("loose");
+            pathInfo.setPathType("loose");
             path = new CtrlPlanePathContent();
             path.setId("userPath"); //id doesn't matter in this context
             String[] hops = new String[2];
-            hops[0] = source;
-            hops[1] = destination;
+            hops[0] = ((String[]) inputMap.get("source"))[0];
+            hops[1] = ((String[]) inputMap.get("destination"))[0];
             for (int i = 0; i < hops.length; i++) {
                 hops[i] = hops[i].trim();
                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
@@ -210,12 +258,32 @@ public class CreateResRmiHandler {
             pathInfo.setPath(path);
         }
 
-        String vlanTag = (String) params.get("vlanTag");
+        String vlanTag = "";
+        arrayParam = (String[]) inputMap.get("vlanTag");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                vlanTag = strParam;
+            }
+        }
 
-        String tagSrcPort = (String) params.get("tagSrcPort");
+        String tagSrcPort = "";
+        arrayParam = (String[]) inputMap.get("tagSrcPort");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                tagSrcPort = strParam;
+            }
+        }
 
-        String tagDestPort = (String) params.get("tagDestPort");
-        
+        String tagDestPort = "";
+        arrayParam = (String[]) inputMap.get("tagDestPort");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+            if (strParam != null && !strParam.equals("")) {
+                tagDestPort = strParam;
+            }
+        }
 
         //Set default to tagged if tagSrcPort and tagDestPort unspecified
         if ((tagSrcPort == null) || tagSrcPort.trim().equals("")) {
@@ -239,8 +307,25 @@ public class CreateResRmiHandler {
             srcVtagObject.setTagged(tagged);
             tagged = tagDestPort.equals("Tagged");
             destVtagObject.setTagged(tagged);
-            layer2Info.setSrcEndpoint(source);
-            layer2Info.setDestEndpoint(destination);
+
+            arrayParam = (String[]) inputMap.get("source");
+            if (arrayParam != null) {
+                strParam = arrayParam[0];
+            } else {
+                strParam = "";
+            }
+            strParam = strParam.trim();
+            layer2Info.setSrcEndpoint(strParam);
+
+
+            arrayParam = (String[]) inputMap.get("destination");
+            if (arrayParam != null) {
+                strParam = arrayParam[0];
+            } else {
+                strParam = "";
+            }
+            strParam = strParam.trim();
+            layer2Info.setDestEndpoint(strParam);
             layer2Info.setSrcVtag(srcVtagObject);
             layer2Info.setDestVtag(destVtagObject);
             pathInfo.setLayer2Info(layer2Info);
@@ -248,23 +333,71 @@ public class CreateResRmiHandler {
         }
 
         Layer3Info layer3Info = new Layer3Info();
+        arrayParam = (String[]) inputMap.get("source");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+        } else {
+            strParam = "";
+        }
+        strParam = strParam.trim();
+
         // VLAN id wasn't supplied with layer 2 id
-        if (source.startsWith("urn:ogf:network")) {
+        if (strParam.startsWith("urn:ogf:network")) {
             throw new BSSException("VLAN tag not supplied for layer 2 reservation");
         }
-        layer3Info.setSrcHost(source);
-        layer3Info.setDestHost(destination);
+        layer3Info.setSrcHost(strParam);
+        arrayParam = (String[]) inputMap.get("destination");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+        } else {
+            strParam = "";
+        }
+        strParam = strParam.trim();
+        layer3Info.setDestHost(strParam);
 
-        String srcPort = (String) params.get("srcPort");
-        layer3Info.setSrcIpPort(Integer.valueOf(srcPort));
+        arrayParam = (String[]) inputMap.get("srcPort");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+        } else {
+            strParam = "";
+        }
+        if ((strParam != null) && !strParam.trim().equals("")) {
+            layer3Info.setSrcIpPort(Integer.valueOf(strParam));
+        } else {
+            layer3Info.setSrcIpPort(0);
+        }
 
-        String destPort = (String) params.get("destPort");
-        layer3Info.setDestIpPort(Integer.valueOf(destPort));
-        
-        String protocol = (String) params.get("protocol");
-        layer3Info.setProtocol(protocol);
-        String dscp =  (String) params.get("dscp");
-        layer3Info.setDscp(dscp);
+        arrayParam = (String[]) inputMap.get("destPort");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+        } else {
+            strParam = "";
+        }
+        if ((strParam != null) && !strParam.trim().equals("")) {
+            layer3Info.setDestIpPort(Integer.valueOf(strParam));
+        } else {
+            layer3Info.setDestIpPort(0);
+        }
+
+        arrayParam = (String[]) inputMap.get("protocol");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+        } else {
+            strParam = "";
+        }
+        if ((strParam != null) && !strParam.trim().equals("")) {
+            layer3Info.setProtocol(strParam);
+        }
+
+        arrayParam = (String[]) inputMap.get("dscp");
+        if (arrayParam != null) {
+            strParam = arrayParam[0];
+        } else {
+            strParam = "";
+        }
+        if ((strParam != null) && !strParam.trim().equals("")) {
+            layer3Info.setDscp(strParam);
+        }
         pathInfo.setLayer3Info(layer3Info);
 
         MplsInfo mplsInfo = new MplsInfo();
