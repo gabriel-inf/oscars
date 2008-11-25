@@ -212,6 +212,7 @@ if [ -n "$OLD_PROP" ]; then
         fi
         if [ "$PS_ANS" = "y" ] || [ "$PS_ANS" = "Y" ]; then
             sed -i"" -e 's/pathfinder\.pathMethod=terce/pathfinder\.pathMethod=perfsonar,terce/g' $CATALINA_HOME/shared/classes/server/oscars.properties
+            echo "lookup.topology.1=http://packrat.internet2.edu:8012/perfSONAR_PS/services/topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
         fi
     done
 fi
