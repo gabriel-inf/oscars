@@ -247,7 +247,8 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
         <jar destfile="build/OSCARS.jar">
             <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*"/>
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
-            <fileset dir="conf/server" includes="*.properties, *.wsdl, *.xsd, *.cfg.xml, services.xml,rampConfig.xml"/>
+            <fileset dir="conf/server" includes="*.properties, *.wsdl, *.xsd, *.cfg.xml, services.xml, rampConfig.xml"/>
+            <fileset dir="conf/rmi" includes="rmi.properties"/>
         </jar>
     </target>
     
@@ -266,11 +267,11 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
         </copy>
         <war destfile="build/OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, *.tar.gz" />
-            <fileset dir="conf/wbui" includes="rmi.properties" />
             <classes dir="${build.classes}" 
             	includes="**/oscars/*.class, **oscars/bss/*.class, **/oscars/bss/topology/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" 
             	excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class, **/oscars/bss/*DAO.class, **/oscars/bss/*Manager.class, **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
             <lib dir="tmplib" includes="*.jar"/>
+            <fileset dir="conf/rmi" includes="rmi.properties" />
         </war>
         <delete dir="tmplib"/>
     </target>
