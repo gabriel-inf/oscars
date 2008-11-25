@@ -112,6 +112,9 @@ oscars.ReservationDetails.postTeardownPath = function (dialogFields) {
 oscars.ReservationDetails.postOverrideStatus = function (dialogFields) {
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     oscars.ReservationDetails.setCurrentGri(formNode);
+    if(formNode.forcedStatus.value == null || formNode.forcedStatus.value == ""){
+        oscars.ReservationDetails.forcedStatus();
+    }
     dojo.xhrPost({
         url: 'servlet/OverrideStatusReservation',
             handleAs: "json",
