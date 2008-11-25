@@ -254,7 +254,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     
     <target name="rmijar" description="Create jar with RMI classes" depends="compile">
         <jar destfile="${build.home}/oscars-rmi.jar">
-             <fileset dir="${build.classes}" includes="**/oscars/rmi/**/*.class, **/oscars/rmi/*.class" />
+             <fileset dir="${build.classes}" includes="**/oscars/rmi/**/*.class, **/oscars/rmi/*.class, **/org/oasis_open/docs/wsn/b_2/Notify.class, org/w3/www/_2005/_08/addressing/EndpointReferenceType.class" />
         </jar>
     </target>
 
