@@ -283,7 +283,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <jar destfile="build/OSCARS.aar">
 			<fileset dir="${build.home}" includes="oscars-rmi.jar" />
             <fileset dir="${build.classes}" 
-            	includes="**/oscars/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class" 
+            	includes="**/oscars/*.class, **/oscars/wsdlTypes/*.class, **/oscars/aaa/*.class, **/oscars/database/HibernateBean.class, **/oscars/servlets/**/*.class, org" 
             	excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class"/>
             <fileset dir="lib" includes="*.jar, **/*.jar"/>
             <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml,rampConfig.xml"/>
