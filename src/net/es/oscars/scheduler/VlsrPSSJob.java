@@ -24,6 +24,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private Properties props;
     private long DELAY = 30;
     
+    final private int INSERVICE_WAIT_ATTEMPTS= 24;
+    
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.init();
         this.log.info("VlsrPSSJob.start name:"+context.getJobDetail().getFullName());
@@ -385,7 +387,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
         
         /* Check lsp every few seconds */
-        for(int i = 1; i <= 12; i++){
+        for(int i = 1; i <= INSERVICE_WAIT_ATTEMPTS; i++){
             String status = null;
             lsp = csa.getLSPByName(gri);
             
@@ -405,7 +407,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 this.log.info(gri + " is IN SERVICE");
                 break;
             }else if(!(status.equals(DragonLSP.STATUS_COMMIT) || 
-                       status.equals(DragonLSP.STATUS_LISTENING)) || i == 12){
+                       status.equals(DragonLSP.STATUS_LISTENING)) || i == INSERVICE_WAIT_ATTEMPTS){
                 this.log.error("Path setup failed. Status=" + lsp.getStatus());
                 if(csa.teardownLSP(gri)){
                     this.log.info("Deleted " + gri + " LSP after error");
