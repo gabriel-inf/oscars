@@ -1,0 +1,64 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <!-- MySQL section -->
+        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="connection.driver_class">com.mysql.jdbc.Driver
+        </property>
+        <property name="connection.url">jdbc:mysql:///testbss</property>
+
+        <property name="query.substitutions">yes 'Y', no 'N'</property>
+        <!-- <property name="show_sql">true</property> -->
+        <!-- <property name="format_sql">true</property> -->
+        <property name="max_fetch_depth">1</property>
+        <property name="hibernate.query.factory_class">org.hibernate.hql.classic.ClassicQueryTranslatorFactory</property>
+        <property name="transaction.factory_class">
+            org.hibernate.transaction.JDBCTransactionFactory</property>
+        <property name="current_session_context_class">thread</property>
+
+        <!-- connection pool section -->
+        <property name="hibernate.c3p0.acquire_increment">3</property>
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+	<property name="hibernate.c3p0.timeout">300</property>
+	<property name="hibernate.c3p0.max_statements">50</property>
+	<property name="hibernate.c3p0.idle_test_period">3000</property>
+
+        <!-- miscellaneous settings section -->
+        <!-- enable batch updates even for versioned data -->
+        <property name="jdbc.batch_versioned_data">true</property>
+        <property name="jdbc.use_streams_for_binary">true</property>
+        <!-- use JDBC 3 PreparedStatement.getGeneratedKeys for id of row -->
+        <property name="jdbc.use_get_generated_keys">true</property>
+        <!-- set a prefix for cache region names -->
+        <property name="cache.region_prefix">hibernate.test</property>
+        <property name="cache.provider_class">
+                  org.hibernate.cache.HashtableCacheProvider</property>
+
+	<!-- never set this in the production database -->
+	<property name="hbm2ddl.auto">create-drop</property>
+
+        <mapping resource="net/es/oscars/bss/Reservation.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/IdSequence.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/Token.hbm.xml"/>
+	<mapping resource="net/es/oscars/bss/topology/Domain.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Node.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Port.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Link.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Ipaddr.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Path.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/PathElem.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Layer2Data.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Layer3Data.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/MPLSData.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/NodeAddress.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/EdgeInfo.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/L2SwitchingCapabilityData.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/InterdomainRoute.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/RouteElem.hbm.xml"/>
+	<mapping resource="net/es/oscars/bss/topology/Site.hbm.xml"/>
+    </session-factory>
+</hibernate-configuration>
