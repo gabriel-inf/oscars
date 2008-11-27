@@ -47,7 +47,7 @@ else
 fi
 
 # Axis2 retrieve & build
-bash conf/axis2/axis2_install.sh $INSTALL_HOME
+bash tools/axis2/axis2_install.sh $INSTALL_HOME
 if [ $? != 0 ]; then
     exit 1;
 fi
