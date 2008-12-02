@@ -318,7 +318,7 @@ echo "You may now run ./do_install.sh to complete your upgrade.";
 echo "";
 echo "You also need to complete the following steps:";
 echo "";
-echo "   1. Create a user account for the local domain as described in section '7.3 Activation Notifications' of the DCNSS install document";
+echo "   1. Create a user account for the local domain as described in section '7.3 Activating Notifications' of the DCNSS install document";
 echo "";
 echo "   2. Add the URL of each neighboring domain's NotificationBroker by running tools/utils/idc-serviceadd as described at the end of section '7.2 Making your IDC Aware of Other Domains' of the DCNSS install document";
 echo "";
