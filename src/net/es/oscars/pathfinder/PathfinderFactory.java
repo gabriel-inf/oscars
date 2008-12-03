@@ -29,4 +29,30 @@ public class PathfinderFactory {
         }
         return null;
     }
+    
+    
+    /**
+     * Factory method.
+     *
+     * @return interdomain pathfinder An instance of a class implementing the InterdomainPCE interface.
+     */
+    public InterdomainPCE getInterdomainPCE(String method) {
+    	if (method.equals("one")) {
+    	} else if (method.equals("another")) {
+    	}
+    	return null;
+    }
+
+    /**
+     * Factory method.
+     *
+     * @return local pathfinder An instance of a class implementing the LocalPCE interface.
+     */
+    public LocalPCE getLocalPCE(String method) {
+    	if (method.equals("one")) {
+    	} else if (method.equals("another")) {
+    	}
+    	return null;
+    }
+
 }
