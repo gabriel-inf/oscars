@@ -30,7 +30,7 @@ public class ListReservations extends HttpServlet {
         
         HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        params.put("style", "wbui");
+        params.put("caller", "WBUI");
         
         UserSession userSession = new UserSession();
 

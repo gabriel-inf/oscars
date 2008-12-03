@@ -34,40 +34,63 @@ public class ListResRmiHandler {
                throws IOException {
 
         this.log.debug("listReservations.start");
+        
+        String caller = (String) params.get("caller");
+        if (caller.equals("WBUI")) {
+            this.log.debug("listReservations.end");
+        	return this.handleWBUI(params, userName);
+        } else if (caller.equals("AAR")) {
+            this.log.debug("listReservations.end");
+        	return this.handleAAR(params, userName);
+        } else {
+        	throw new IOException("Invalid caller!");
+        }
+    } 
+    
+    public HashMap<String, Object> handleAAR(HashMap<String, Object> params, String userName)
+    	throws IOException {
+    	// FIXME: implement this part
+    	
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        return result;
+    }
+
+    public HashMap<String, Object> handleWBUI(HashMap<String, Object> params, String userName)
+        throws IOException {
         HashMap<String, Object> result = new HashMap<String, Object>();
         String institution = null;
         String loginConstraint = null;
         String methodName = "ListReservations";
         ReservationManager rm = core.getReservationManager();
+        
+        List<Link> inLinks = null;
+        List<Reservation> reservations = null;
 
+        
         int numRowsReq =0;
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
+        
         List<String> statuses = this.getStatuses(params);
         List<String> vlans = this.getVlanTags(params);
-        String description = this.getDescription(params);
-        List<Link> inLinks = null;
-
-        List<Reservation> reservations = null;
-        if (params.get("startTimeSeconds") != null) {
-            String startTimeStr = (String) params.get("startTimeSeconds");
-            if ( !startTimeStr.equals("")) {
-                startTimeSeconds = Long.valueOf(startTimeStr.trim());
-            }
+        String description = this.getSingleValue(params, "resvDescription");
+        String startTimeStr = this.getSingleValue(params, "startTimeSeconds");
+        String endTimeStr = this.getSingleValue(params, "endTimeSeconds");
+        String numRowParam = this.getSingleValue(params, "numRows");
+        String loginEntered = this.getSingleValue(params, "resvLogin");
+        
+        if ( !startTimeStr.equals("")) {
+            startTimeSeconds = Long.valueOf(startTimeStr.trim());
         }
-        if (params.get("endTimeSeconds") != null) {
-            String endTimeStr = (String) params.get("endTimeSeconds");
-            if ( !endTimeStr.equals("")) {
-                endTimeSeconds = Long.valueOf(endTimeStr.trim());
-            }
+        if ( !endTimeStr.equals("")) {
+            endTimeSeconds = Long.valueOf(endTimeStr.trim());
         }
-        String numRowParam = (String) params.get("numRows");
+        
         if (!numRowParam.equals("") && !numRowParam.equals("all")) {
             numRowsReq = Integer.parseInt(numRowParam);
         } else {
             numRowsReq = 0;  // special case to get all results
         }
-        String loginEntered = (String) params.get("resvLogin");
         if (!loginEntered.equals("")) {
             loginConstraint = loginEntered;
         }
@@ -120,7 +143,8 @@ public class ListResRmiHandler {
         }
         outputReservations(result, reservations);
         result.put("totalRowsReplace", "Total rows: " + reservations.size());
-        result.put("status", "list reservations successful ");
+        result.put("status", "list reservations successful ");        this.log.debug("listReservations.end");
+
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 
@@ -167,17 +191,16 @@ public class ListResRmiHandler {
         }
         return inLinks;
     }
+    
+    
+    public String getSingleValue(HashMap<String, Object> params, String paramName) {
+        String paramArgs[] = (String[]) params.get(paramName);
+        if (paramArgs == null) {
+        	return null;
+        } else {
+        	return (String) paramArgs[0];
+        }
 
-    /**
-     * Gets description search parameter and sets to blank field if empty.
-     *
-     * @param request servlet request
-     * @return string with description
-     */
-    public String getDescription(HashMap<String, Object> request) {
-        String description = (String) request.get("resvDescription");
-
-        return description;
     }
 
     /**
@@ -227,7 +250,7 @@ public class ListResRmiHandler {
      * @param reservations list of reservations satisfying search criteria
      */
     public void
-        outputReservations(Map outputMap, List<Reservation> reservations) {
+        outputReservations(Map<String, Object> outputMap, List<Reservation> reservations) {
 
         InetAddress inetAddress = null;
         String gri = "";
@@ -235,7 +258,7 @@ public class ListResRmiHandler {
         String hostName = null;
         String destination = null;
 
-        ArrayList resvList = new ArrayList();
+        ArrayList<Object> resvList = new ArrayList<Object>();
 
         for (Reservation resv: reservations) {
             // INTERDOMAIN
@@ -254,13 +277,18 @@ public class ListResRmiHandler {
                 localSrc = hops[0];
                 localDest = hops[hops.length-1];
             }
-            ArrayList resvEntry = new ArrayList();
+            ArrayList<Object> resvEntry = new ArrayList<Object>();
             gri = resv.getGlobalReservationId();
-            Layer3Data layer3Data = path.getLayer3Data();
-            Layer2Data layer2Data = path.getLayer2Data();
+            Layer3Data layer3Data = null;
+            Layer2Data layer2Data = null;
+            if (path != null ) {
+            	layer3Data = path.getLayer3Data();
+            	layer2Data = path.getLayer2Data();
+            }
             resvEntry.add(gri);
             resvEntry.add(resv.getStatus());
-            Long mbps = resv.getBandwidth()/1000000;
+            Long mbps = resv.getBandwidth()/1000000;    	
+
             String bandwidthField = mbps.toString() + "Mbps";
             resvEntry.add(bandwidthField);
             // entries are converted on the fly on the client to standard

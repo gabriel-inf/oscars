@@ -99,9 +99,16 @@ public class BssUtils {
         String nodeName = null;
         String param = null;
 
-        // TODO:  more null checks may be necessary
-        StringBuilder sb = new StringBuilder();
+        // FIXME:  more null checks may be necessary
+        if (path == null) {
+        	return "";
+        }
         List<PathElem> pathElems = path.getPathElems();
+        if (pathElems == null) {
+        	return "";
+        }
+        
+        StringBuilder sb = new StringBuilder();
         int sz = pathElems.size();
         int i = 0;
         for (PathElem pathElem: pathElems) {
