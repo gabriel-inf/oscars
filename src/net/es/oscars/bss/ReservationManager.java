@@ -874,7 +874,7 @@ public class ReservationManager {
      * @return institution String name of the end point
      */
     public Domain endPointDomain(Reservation resv, Boolean source) throws BSSException {
-        Path path = resv.getPath(PathType.INTRADOMAIN);
+        Path path = resv.getPath(PathType.LOCAL);
         List<PathElem> hops = path.getPathElems();
         PathElem hop = null;
         if (source) {

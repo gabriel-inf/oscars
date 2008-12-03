@@ -262,7 +262,7 @@ public class Reservation extends HibernateBean implements Serializable {
             sb.append("bandwidth: " + this.getBandwidth() + "\n");
         }
 
-        Path path = this.getPath(PathType.INTRADOMAIN);
+        Path path = this.getPath(PathType.LOCAL);
         if (path == null) {
             return sb.toString();
         }

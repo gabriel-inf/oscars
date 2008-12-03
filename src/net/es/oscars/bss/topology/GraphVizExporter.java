@@ -317,7 +317,7 @@ public class GraphVizExporter {
            resvNodes.add(gri);
            Path path = null;
            try {
-        	   path = resv.getPath(PathType.INTRADOMAIN);
+        	   path = resv.getPath(PathType.LOCAL);
            } catch (BSSException ex) {
         	   // FIXME: do some error handling
         	   return;

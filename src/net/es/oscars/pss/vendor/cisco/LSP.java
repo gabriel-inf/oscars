@@ -77,7 +77,7 @@ public class LSP {
         // that a field is not null
         Path path = null;
         try {
-        	path = resv.getPath(PathType.INTRADOMAIN);
+        	path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
         	throw new PSSException(ex.getMessage());
         }

@@ -124,7 +124,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         
         Path path = null;
         try {
-        	path = resv.getPath(PathType.INTRADOMAIN);
+        	path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
         	return;
@@ -461,7 +461,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String promptPattern = this.props.getProperty("promptPattern");
         Path path = null;
         try {
-        	path = resv.getPath(PathType.INTRADOMAIN);
+        	path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
         	return;
@@ -573,7 +573,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String promptPattern = this.props.getProperty("promptPattern");
         Path path = null;
         try {
-        	path = resv.getPath(PathType.INTRADOMAIN);
+        	path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
         	return;

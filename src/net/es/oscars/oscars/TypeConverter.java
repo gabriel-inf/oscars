@@ -186,12 +186,12 @@ public class TypeConverter {
      * @param reservations A list of Hibernate Reservation beans
      * @return ListReply A list of Axis2 ListReply instances
      */
-    public ListReply reservationToListReply(List<Reservation> reservations) throws BSSException {
+    public static ListReply reservationToListReply(List<Reservation> reservations) throws BSSException {
         ListReply reply = new ListReply();
         int ctr = 0;
 
         if ((reservations == null) || reservations.isEmpty()) {
-            this.log.info("toListReply, reservations is null or empty");
+            log.info("toListReply, reservations is null or empty");
             reply.setTotalResults(0);
             return reply;
         }
@@ -201,7 +201,7 @@ public class TypeConverter {
         reply.setTotalResults(listLength);
 
         for (Reservation resv : reservations) {
-            ResDetails details = this.reservationToDetails(resv);
+            ResDetails details = TypeConverter.reservationToDetails(resv);
             resList[ctr] = details;
             ctr++;
         }
@@ -220,7 +220,7 @@ public class TypeConverter {
     public static PathInfo getPathInfo(Reservation resv) throws BSSException {
         log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
-        Path path = resv.getPath(PathType.INTRADOMAIN);
+        Path path = resv.getPath(PathType.LOCAL);
         if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
             pathInfo.setPath(pathToCtrlPlane(path, true));
@@ -674,7 +674,7 @@ public class TypeConverter {
             map.put("token", genHashVal(token.getValue()));
         }
         //set path
-        map.putAll(pathToHashMap(resv.getPath(PathType.INTRADOMAIN), pathInfo));
+        map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL), pathInfo));
         return map;
     }
 

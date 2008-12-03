@@ -706,7 +706,7 @@ public class PathManager {
      * @return institution String name of the end point
      */
     public String endPointSite(Reservation resv, Boolean source) throws BSSException {
-        Path path = resv.getPath(PathType.INTRADOMAIN);
+        Path path = resv.getPath(PathType.LOCAL);
         List<PathElem> hops = path.getPathElems();
         PathElem hop = null;
         if (source) {

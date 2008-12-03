@@ -292,7 +292,6 @@ public class ReservationAdapter {
         ArrayList<String> statuses = new ArrayList<String>();
 
         // lookup name via perfSONAR Lookup Service
-        PSLookupClient lookupClient = core.getLookupClient();
 
         this.log.info("list.start");
         String[] linkIds = request.getLinkId();
@@ -308,12 +307,15 @@ public class ReservationAdapter {
                         if (s.startsWith("urn:ogf:network")) {
                             link = TopologyUtil.getLink(s, this.dbname);
                         } else {
+                        	/*
+                        	 * FIXME: this whole section needs cleanup
                             try {
                                 String urn = lookupClient.lookup(s);
                                 link = TopologyUtil.getLink(urn, this.dbname);
                             } catch(LookupException e){
                                 throw new BSSException(e.getMessage());
                             }
+                            */
 
                         }
                         inLinks.add(link);
@@ -355,7 +357,7 @@ public class ReservationAdapter {
                          login, institution, statuses, description, inLinks,
                          inVlanTags, startTime, endTime);
 
-        reply = this.tc.reservationToListReply(reservations);
+        reply = TypeConverter.reservationToListReply(reservations);
 
         this.log.info("list.finish: " + reply.toString());
         return reply;
@@ -407,7 +409,7 @@ public class ReservationAdapter {
             this.log.info("using ERO");
             CtrlPlaneHopContent[] hops = path.getHop();
             for (int i=0; i < hops.length; i++) {
-                this.log.info("hop: " + this.tc.hopToURN(hops[i]));
+                this.log.info("hop: " + TypeConverter.hopToURN(hops[i]));
             }
         }
         Layer2Info layer2Info = pathInfo.getLayer2Info();

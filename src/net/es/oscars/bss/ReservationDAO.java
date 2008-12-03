@@ -384,7 +384,7 @@ public class ReservationDAO
         int checkVtag = -1;
         int minVtag = 100000;
         int maxVtag = -1;
-        String tagStr = BssUtils.getVlanTag(rsv.getPath(PathType.INTRADOMAIN));
+        String tagStr = BssUtils.getVlanTag(rsv.getPath(PathType.LOCAL));
         // no associated VLAN
         if (tagStr == null) {
             return false;

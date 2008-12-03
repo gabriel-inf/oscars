@@ -95,7 +95,7 @@ public class JnxLSP {
         }
         Path path = null;
         try {
-        	path = resv.getPath(PathType.INTRADOMAIN);
+        	path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
         	throw new PSSException(ex.getMessage());
         }
@@ -242,7 +242,7 @@ public class JnxLSP {
         }
         Path path = null;
         try {
-        	path = resv.getPath(PathType.INTRADOMAIN);
+        	path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
         	throw new PSSException(ex.getMessage());
         }

@@ -61,7 +61,7 @@ public class DBGraphAdapter {
                 Path path = null;
                 // FIXME: better error handling
                 try {
-                	path = resv.getPath(PathType.INTRADOMAIN);
+                	path = resv.getPath(PathType.LOCAL);
                 } catch (BSSException ex) {
                 	this.log.error(ex);
                 	return null;

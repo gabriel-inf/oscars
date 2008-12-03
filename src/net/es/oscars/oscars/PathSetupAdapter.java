@@ -82,9 +82,9 @@ public class PathSetupAdapter{
         eventProducer.addEvent(OSCARSEvent.PATH_SETUP_RECEIVED, login, "API", resv);
         /* Check reservation parameters to make sure it can be created */
         try {
-	        if (resv.getPath(PathType.INTRADOMAIN).getPathSetupMode() == null) {
+	        if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null) {
 	            throw new PSSException("Path setup mode is null");
-	        } else if (!resv.getPath(PathType.INTRADOMAIN).getPathSetupMode().equals("signal-xml")) {
+	        } else if (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) {
 	            throw new PSSException("Path setup mode is not signal-xml");
 	        } else if(currTime.compareTo(resv.getStartTime()) < 0){
 	            throw new PSSException("Path cannot be created. Reservation " +
@@ -158,8 +158,8 @@ public class PathSetupAdapter{
         
         try {
 		    /* Check reservation parameters */
-		    if(resv.getPath(PathType.INTRADOMAIN).getPathSetupMode() == null ||
-		        (!resv.getPath(PathType.INTRADOMAIN).getPathSetupMode().equals("signal-xml")) ){
+		    if(resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
+		        (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
 		        throw new PSSException("No reservations match request");
 		    }else if(!resv.getStatus().equals("ACTIVE")){
 		        throw new PSSException("Path cannot be refreshed. " +
@@ -227,8 +227,8 @@ public class PathSetupAdapter{
         
         Forwarder forwarder = new Forwarder();
         try {
-            if(resv.getPath(PathType.INTRADOMAIN).getPathSetupMode() == null ||
-                (!resv.getPath(PathType.INTRADOMAIN).getPathSetupMode().equals("signal-xml")) ){
+            if(resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
+                (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
                 throw new PSSException("No reservations match request");
             }
             String currentStatus = StateEngine.getStatus(resv);
