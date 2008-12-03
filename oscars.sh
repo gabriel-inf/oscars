@@ -18,14 +18,13 @@ do
 done
 
 
-CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
-CLASSPATH=$CLASSPATH:build/OSCARS.jar
-
 export CATALINA_HOME=/usr/local/tomcat/;
 
+CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
+CLASSPATH=$CLASSPATH:build/OSCARS.jar:$CATALINA_HOME/shared/classes/
 
 export CLASSPATH=$CLASSPATH
-# echo CLASSPATH is $CLASSPATH
+#echo CLASSPATH is $CLASSPATH
 
 java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $*
 

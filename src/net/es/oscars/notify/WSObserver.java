@@ -81,8 +81,10 @@ public class WSObserver implements Observer {
         this.brokerPublisherRegMgrURL = wsNotifyProps.getProperty("broker.url");
         this.producerURL = idcProps.getProperty("url");
         String registerRetryAttempts = wsNotifyProps.getProperty("broker.registerRetryAttempts");
-        String catalinaHome = System.getProperty("catalina.home");
+        //String catalinaHome = System.getProperty("catalina.home");
+        String catalinaHome = System.getenv("CATALINA_HOME");
         // check for trailing slash
+        System.out.println("catalina.home is: " + catalinaHome);
         if (!catalinaHome.endsWith("/")) {
             catalinaHome += "/";
         }

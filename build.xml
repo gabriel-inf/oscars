@@ -48,8 +48,10 @@
         
         <jar destfile="build/OSCARS.jar">
             <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*"/>
+            <!-- can't be easily used 
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
             <fileset dir="${build.lib}/.." includes="lib/axis2/*.jar"/>
+            -->
             <fileset dir="conf/db" includes="c3p0.properties, bss.cfg.xml, aaa.cfg.xml"/>
             <fileset dir="conf/rmi" includes="rmi.properties"/>
             <fileset dir="conf/pss" includes="*.xml"/>
@@ -62,7 +64,7 @@
             
             
         </jar>
-        <delete dir="${build.home}/jar/" />
+        <!-- <delete dir="${build.home}/jar/" /> -->
     </target>
     
     
@@ -110,8 +112,8 @@
             <lib dir="${build.home}/war/lib" includes="*.jar"/>
             <fileset dir="${build.home}/war/" includes="log4j.properties" />
         </war>
-        <!-- clear out temporary directory -->
-        <delete dir="${build.home}/war/" />
+        <!-- clear out temporary directory 
+        <delete dir="${build.home}/war/" /> -->
     </target>
 
 
@@ -155,8 +157,8 @@
             <!-- include all the temporary files -->			  
             <fileset dir="${build.home}/aar/"/>
         </jar>
-        <!-- clear out temporary directory -->
-        <delete dir="${build.home}/aar"/>
+        <!-- clear out temporary directory 
+        <delete dir="${build.home}/aar"/> -->
     </target>
     
     
