@@ -6,5 +6,5 @@ import net.es.oscars.bss.Reservation;
 
 
 public interface LocalPCE {
-	List<Path> findLocalPath(Reservation resv);
+	List<Path> findLocalPath(Reservation resv) throws PathfinderException;
 }

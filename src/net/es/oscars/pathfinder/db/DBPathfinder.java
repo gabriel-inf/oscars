@@ -31,7 +31,7 @@ import org.apache.log4j.*;
  *
  * @author Evangelos Chaniotakis (haniotak@es.net)
  */
-public class DBPathfinder extends Pathfinder implements PCE {
+public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, InterdomainPCE {
     private Logger log;
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
@@ -58,6 +58,19 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         domDAO = new DomainDAO(dbname);
     }
+    
+    public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
+    	ArrayList<Path> paths = new ArrayList<Path>();
+    	Path path = new Path();
+    	return paths;
+    }
+
+    public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
+    	ArrayList<Path> paths = new ArrayList<Path>();
+    	Path path = new Path();
+    	return paths;
+    }
+
 
     /**
      * Finds a path given just source and destination or by expanding
