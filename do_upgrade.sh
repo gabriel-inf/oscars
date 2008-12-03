@@ -192,7 +192,18 @@ fi
 OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "perfsonar.topology_url"`;
 if [ -z "$OLD_PROP" ]; then
     echo "-- Adding default topology service URL";
-    echo "perfsonar.topology_url=http://packrat.internet2.edu:8012/perfSONAR_PS/services/topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+    echo "perfsonar.topology_url=http://dcn-ts.internet2.edu:8012/perfSONAR_PS/services/topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+fi
+
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "lookup.home.1"`;
+if [ -z "$OLD_PROP" ]; then
+    echo "-- Adding default hLS URL";
+    echo "lookup.home.1=http://dcn-ls.internet2.edu:8005/perfSONAR_PS/services/hLS" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+fi
+
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "lookup.topology.1"`;
+if [ -z "$OLD_PROP" ]; then
+    echo "lookup.topology.1=http://dcn-ts.internet2.edu:8012/perfSONAR_PS/services/topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
 fi
 
 OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | grep "notifybroker.pep.1=net.es.oscars.notify.ws.policy.IDCEventPEP"`;
@@ -212,7 +223,6 @@ if [ -n "$OLD_PROP" ]; then
         fi
         if [ "$PS_ANS" = "y" ] || [ "$PS_ANS" = "Y" ]; then
             sed -i"" -e 's/pathfinder\.pathMethod=terce/pathfinder\.pathMethod=perfsonar,terce/g' $CATALINA_HOME/shared/classes/server/oscars.properties
-            echo "lookup.topology.1=http://packrat.internet2.edu:8012/perfSONAR_PS/services/topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
         fi
     done
 fi
@@ -288,6 +298,57 @@ if [ -z "$OLD_PROP" ]; then
                 fi
             done
             echo "external.service.$COUNT=topology" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+        fi
+    done    
+fi
+
+SERV_ANS=0;
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "external\.service\.[0-9]+=lsRegister"`;
+if [ -z "$OLD_PROP" ]; then
+    while [ "$SERV_ANS" == "0" ]; do
+        echo -n "Would you like to register this IDC and NotificationBroker with the lookup service so other IDCs can automatically discover it? [y/n]  ";
+        read SERV_ANS;
+        if [ "$SERV_ANS" != "y" ] && [ "$SERV_ANS" != "Y" ] && [ "$SERV_ANS" != "n" ] && [ "$SERV_ANS" != "N" ]; then
+            SERV_ANS=0;
+        fi
+        if [ "$SERV_ANS" = "y" ] || [ "$SERV_ANS" = "Y" ]; then
+            LAST_FOUND=0;
+            COUNT=1;
+            while [ $LAST_FOUND == 0 ]; do
+                OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "^external\.service\.$COUNT=.+"`;
+                if [ -z "$OLD_PROP" ]; then
+                    LAST_FOUND=1;
+                else
+                    COUNT=`expr $COUNT + 1`;
+                fi
+            done
+            echo "external.service.$COUNT=lsRegister" >> $CATALINA_HOME/shared/classes/server/oscars.properties
+        fi
+    done    
+fi
+
+
+SERV_ANS=0;
+OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "external\.service\.[0-9]+=lsDomainUpdate"`;
+if [ -z "$OLD_PROP" ]; then
+    while [ "$SERV_ANS" == "0" ]; do
+        echo -n "Would you like to automatically discover the URL of neighboring IDCs and NotificationBrokers using the lookup service? [y/n]  ";
+        read SERV_ANS;
+        if [ "$SERV_ANS" != "y" ] && [ "$SERV_ANS" != "Y" ] && [ "$SERV_ANS" != "n" ] && [ "$SERV_ANS" != "N" ]; then
+            SERV_ANS=0;
+        fi
+        if [ "$SERV_ANS" = "y" ] || [ "$SERV_ANS" = "Y" ]; then
+            LAST_FOUND=0;
+            COUNT=1;
+            while [ $LAST_FOUND == 0 ]; do
+                OLD_PROP=`cat $CATALINA_HOME/shared/classes/server/oscars.properties | egrep "^external\.service\.$COUNT=.+"`;
+                if [ -z "$OLD_PROP" ]; then
+                    LAST_FOUND=1;
+                else
+                    COUNT=`expr $COUNT + 1`;
+                fi
+            done
+            echo "external.service.$COUNT=lsDomainUpdate" >> $CATALINA_HOME/shared/classes/server/oscars.properties
         fi
     done    
 fi
