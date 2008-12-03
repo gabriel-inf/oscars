@@ -704,6 +704,10 @@ Adding a -sd switch generates resources/services.xml -->
     
     <!-- TestNG test section *********************************************** -->
     <property name="test.classes" value="build/test"/>
+    <copy todir="${test.classes}">
+        <fileset dir="conf/db" includes="c3p0.properties, testaaa.cfg.xml, testbss.cfg.xml"/>
+    </copy>
+
     <path id="test.compile.path">
         <fileset dir="${build.lib}" includes="*.jar"/>
         <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-*.jar"/>
