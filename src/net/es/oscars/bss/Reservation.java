@@ -224,7 +224,8 @@ public class Reservation extends HibernateBean implements Serializable {
             .append("id", getId())
             .toString();
     }
-
+    
+    // FIXME: dbname is not used here
     public String toString(String dbname) throws BSSException {
         StringBuilder sb = new StringBuilder();
         String strParam = null;

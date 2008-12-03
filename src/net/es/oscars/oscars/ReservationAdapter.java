@@ -34,21 +34,11 @@ import net.es.oscars.rmi.core.*;
  * Acts as intermediary from Axis2 service to OSCARS library and Hibernate.
  */
 public class ReservationAdapter {
-    private Logger log;
+    private Logger log = Logger.getLogger(ReservationAdapter.class);
     private ReservationManager rm;
-    private TypeConverter tc;
     private String dbname;
-    private OSCARSCore core;
     private static HashMap<String, String> payloadSender;
     
-    public ReservationAdapter() {
-
-        this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
-        this.dbname = this.core.getBssDbName();
-        this.rm = this.core.getReservationManager();
-
-    }
 
     /**
      * Called by OSCARSSkeleton to create a reservation.
@@ -62,35 +52,33 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public CreateReply create(ResCreateContent params, String login)
+    public CreateReply create(ResCreateContent soapParams, String login, BssRmiInterface rmiClient)
             throws BSSException {
 
         this.log.info("create.start");
-        this.logCreateParams(params);
-        Reservation resv = this.tc.contentToReservation(params);
-        if (!this.core.initialized) {
-            this.log.error("Core has not been initialized!");
-            throw new BSSException("Core has not been initialized!");
-        }
+        this.logCreateParams(soapParams);
+        Reservation resv = TypeConverter.contentToReservation(soapParams);
 
-        PathInfo pathInfo = params.getPathInfo();
+        PathInfo pathInfo = soapParams.getPathInfo();
         CreateReply reply = null;
-        EventProducer eventProducer = new EventProducer();
+        
         this.setPayloadSender(resv);
+        
+        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+        rmiParams.put("reservation", resv);
         try {
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, login, "API", resv, pathInfo);
-            this.rm.submitCreate(resv, login, pathInfo);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, login, "API", resv, pathInfo);
+        	HashMap<String, Object> rmiResult = rmiClient.createReservation(rmiParams, login);
+        	resv = (Reservation) rmiResult.get("reservation");
 
             this.log.debug("create, to toReply");
-            reply = this.tc.reservationToReply(resv);
+            reply = TypeConverter.reservationToReply(resv);
             
             ///PathInfo is unchanged so just return the user-given pathInfo
             reply.setPathInfo(pathInfo);
-        } catch (BSSException e) {
+        } catch (IOException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", resv, pathInfo, "", errMsg);
+            this.log.error(errMsg);
             throw new BSSException(e.getMessage());
         }
 
@@ -253,30 +241,6 @@ public class ReservationAdapter {
         
         ResDetails reply = TypeConverter.reservationToDetails(resv);
         
-/*
-        resv = this.rm.query(gri, login, institution);
-        ResDetails reply = this.tc.reservationToDetails(resv);
-        // checks whether next domain should be contacted, forwards to
-        // the next domain if necessary, and returns the response
-        this.log.debug("query to forward");
-        ResDetails forwardReply = null;
-        InterdomainException interException = null;
-        try {
-            forwardReply = forwarder.query(resv);
-        } catch (InterdomainException e) {
-            interException = e;
-        } finally {
-            forwarder.cleanUp();
-            if (interException != null) {
-                throw interException;
-            }
-        }
-        this.log.debug("query, to toReply");
-        if (forwardReply != null && forwardReply.getPathInfo() != null) {
-            // Add remote hops to returned explicitPath
-            this.addHops(reply.getPathInfo(), forwardReply.getPathInfo());
-        }
-        */
         this.log.info("QueryReservation.finish: " + reply.getGlobalReservationId());
         return reply;
     }

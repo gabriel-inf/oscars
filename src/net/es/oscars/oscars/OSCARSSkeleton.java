@@ -22,8 +22,6 @@ import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSConstants;
 
 import org.apache.log4j.*;
-import org.apache.axiom.om.OMElement;
-import org.hibernate.*;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.w3.www._2005._08.addressing.*;
 
@@ -48,11 +46,6 @@ import net.es.oscars.rmi.RmiUtils;
 public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     private Logger log = Logger.getLogger(OSCARSSkeleton.class);
     
-    private TopologyExchangeAdapter topoAdapter;
-    private PathSetupAdapter pathSetupAdapter;
-    // private X509Certificate cert;
-
-
 
     /**
      * @param request CreateReservation instance with with request params
@@ -66,9 +59,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     	
         CreateReservationResponse response = new CreateReservationResponse();
         
-        
-        // FIXME: move this to RMI
-    	/*
     	String methodName = "createReservation";
 
     	CoreRmiInterface rmiClient = null;
@@ -78,21 +68,19 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     		throw new BSSFaultMessage(ex.getMessage());
     	}
         String login = this.checkUser(rmiClient);
-
-        ReservationAdapter resAdapter = new ReservationAdapter();
-
-        CreateReply reply = null;
-        CreateReservationResponse response = new CreateReservationResponse();
-        ResCreateContent params = request.getCreateReservation();
-
         
-        // Check to see if user can create this  reservation
+        CreateReply reply = null;
+        ResCreateContent params = request.getCreateReservation();
+        
+        
+        /* FIXME: we actually do this check again inside the RMI, is it worth it to do it again here ?*/
         int reqBandwidth = params.getBandwidth();
         // convert from milli-seconds to minutes
         int  reqDuration = (int)(params.getEndTime() - params.getStartTime())/6000;
-
-        boolean specifyPath = TypeConverter.checkPathAuth(params.getPathInfo());
+        boolean specifyPath = TypeConverter.pathSpecified(params.getPathInfo());
         boolean specifyGRI = (params.getGlobalReservationId() != null);
+        
+        // Check to see if user can create this  reservation
         AuthValue authVal = AuthValue.DENIED;
         try {
         	authVal = rmiClient.checkModResAccess(login, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, specifyGRI);
@@ -105,16 +93,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("createReservation: permission denied");
         }
         this.log.debug("AAA complete");
+        
+        
 
+        ReservationAdapter resAdapter = new ReservationAdapter();
 
         try {
-            reply = resAdapter.create(params, login);
+            reply = resAdapter.create(params, login, rmiClient);
         } catch (BSSException e) {
             this.log.error("createReservation: " + e.getMessage());
             throw new BSSFaultMessage("createReservation " + e.getMessage());
         }
         response.setCreateReservationResponse(reply);
-        */
+        
+        
         return response;
     }
 

@@ -133,7 +133,7 @@ public class TypeConverter {
      * @param resv A Hibernate Reservation instance
      * @return CreateReply instance
      */
-    public CreateReply reservationToReply(Reservation resv) {
+    public static CreateReply reservationToReply(Reservation resv) {
         CreateReply reply = new CreateReply();
         Token token = resv.getToken();
 
@@ -522,7 +522,7 @@ public class TypeConverter {
      * @param pathInfo a PathInfo instance
      * @return boolean indicating whether contains series of hops
      */
-    public static boolean checkPathAuth(PathInfo pathInfo) {
+    public static boolean pathSpecified(PathInfo pathInfo) {
 
         if (pathInfo.getLayer3Info() != null) {
             CtrlPlanePathContent path = pathInfo.getPath();

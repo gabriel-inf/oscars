@@ -14,6 +14,7 @@ import org.hibernate.*;
 import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
@@ -50,29 +51,39 @@ public class CreateResRmiHandler {
 
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-
-        Reservation resv = this.toReservation(userName, params);
+        
+        Reservation resv = null;
         PathInfo pathInfo = null;
-        try {
-            pathInfo = this.handlePath(params);
-        } catch (BSSException e) {
-            result.put("error", methodName + ": " + e.getMessage());
-            this.log.debug("create reservaton failed: " + e.getMessage());
-            return result;
+        
+        String caller = (String) params.get("caller");
+        if (caller.equals("WBUI")) {
+            resv = this.toReservation(userName, params);
+            try {
+                pathInfo = this.handlePath(params);
+            } catch (BSSException e) {
+                result.put("error", methodName + ": " + e.getMessage());
+                this.log.debug("create reservaton failed: " + e.getMessage());
+                return result;
+            }
+        } else if (caller.equals("AAR")) {
+        	resv = (Reservation) params.get("reservation");
+        } else {
+        	this.log.error("Invalid caller");
+        	throw new IOException("Invalid caller!");
         }
 
+
+        
+        // Check to see if this user can create this reservation
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
-
-        // Check to see if user can create this  reservation
+        
         // bandwidth limits are stored in megaBits
         int reqBandwidth = (int) (resv.getBandwidth() / 1000000);
 
         // convert from seconds to minutes
         int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 60;
-
-        
         
         boolean specifyPath = false;
         String[] arrayParam = (String[]) params.get("explicitPath");
@@ -83,26 +94,28 @@ public class CreateResRmiHandler {
             }
         }
 
-        
         AuthValue authVal = userMgr.checkModResAccess(userName, "Reservations",
                 "create", reqBandwidth, reqDuration, specifyPath, false);
 
         if (authVal == AuthValue.DENIED) {
             result.put("error", "createReservation permission denied");
             this.log.debug("createReservation failed permission denied");
+            aaa.getTransaction().rollback();
             return result;
         }
         aaa.getTransaction().commit();
 
+        
+        // submit reservation request
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
         try {
             // url returned, if not null, indicates location of next domain
             // manager
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, userName, "RMI", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, userName, caller, resv);
             rm.submitCreate(resv, userName, pathInfo);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, userName, "RMI", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, userName, caller, resv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {
@@ -110,16 +123,35 @@ public class CreateResRmiHandler {
             errMessage = e.getMessage();
         } finally {
             if (errMessage != null) {
-                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "RMI", resv, "", errMessage);
+                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, caller, resv, "", errMessage);
                 result.put("error", errMessage);
                 this.log.debug("createReservation failed: " + errMessage);
                 return result;
             }
         }
-        result.put("gri", resv.getGlobalReservationId());
-        result.put("status", "Submitted reservation with GRI " + resv.getGlobalReservationId());
-        result.put("method", methodName);
-        result.put("success", Boolean.TRUE);
+        
+        if (caller.equals("WBUI")) {
+            result.put("gri", resv.getGlobalReservationId());
+            result.put("status", "Submitted reservation with GRI " + resv.getGlobalReservationId());
+            result.put("method", methodName);
+            result.put("success", Boolean.TRUE);
+        } else if (caller.equals("AAR")) {
+        	Hibernate.initialize(resv);
+        	Iterator<Path> pathIt = resv.getPaths().iterator();
+        	while (pathIt.hasNext()) {
+        		Path path = pathIt.next();
+            	Hibernate.initialize(path);
+            	Hibernate.initialize(path.getLayer2Data());
+            	Hibernate.initialize(path.getLayer3Data());
+            	Hibernate.initialize(path.getNextDomain());
+            	List<PathElem> pelems = path.getPathElems();
+            	for (PathElem pe : pelems) {
+            		Hibernate.initialize(pe);
+            		Hibernate.initialize(pe.getLink());
+            	}
+        	}
+        	result.put("reservation", resv);
+        }
 
         bss.getTransaction().commit();
         this.log.debug("create.end - success");
