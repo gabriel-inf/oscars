@@ -32,7 +32,7 @@ import org.apache.log4j.*;
  * @author Evangelos Chaniotakis (haniotak@es.net)
  */
 public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, InterdomainPCE {
-    private Logger log;
+    private Logger log = Logger.getLogger(DBPathfinder.class);
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
     private HashMap<String, Double> objectsToReweigh;
@@ -44,33 +44,62 @@ public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, Interdoma
 
         this.dbga = new DBGraphAdapter(dbname);
         this.objectsToReweigh = new HashMap<String, Double>();
-        /*
-
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add(dbname);
-
-        Initializer initializer = new Initializer();
-        initializer.initDatabase(dbnames);
-
-        SessionFactory sf = HibernateUtil.getSessionFactory(dbname);
-        sf.getCurrentSession().beginTransaction();
-        */
-
         domDAO = new DomainDAO(dbname);
     }
     
     public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
-    	ArrayList<Path> paths = new ArrayList<Path>();
-    	Path path = new Path();
+    	List<Path> paths = new ArrayList<Path>();
+    	
+    	Path requestedPath = null;
+    	try {
+    		requestedPath = resv.getPath(PathType.REQUESTED);
+    	} catch (BSSException ex) {
+    		this.log.error(ex.getMessage());
+    		throw new PathfinderException(ex.getMessage());
+    	}
+    	
+    	Layer2Data l2data = requestedPath.getLayer2Data();
+    	Layer3Data l3data = requestedPath.getLayer3Data();
+    	
+    	if (l2data == null && l3data == null) {
+    		throw new PathfinderException("No L2 data or L3 data");
+    	} else if (l2data != null && l3data != null) {
+    		throw new PathfinderException("Both L2 data and L3 data were specified");
+    	} else if (l2data != null) {
+    		paths = this.findL2LocalPath(resv, requestedPath);
+    	} else if (l3data != null) {
+    		paths = this.findL3LocalPath(resv, requestedPath);
+    	}
     	return paths;
     }
+    
+    public List<Path> findL2LocalPath(Reservation resv, Path requestedPath) throws PathfinderException {
+    	ArrayList<Path> paths = new ArrayList<Path>();
+    	Path path = new Path();
+    	try {
+    		path.setPathType(PathType.LOCAL);
+    	} catch (BSSException ex) {
+    		this.log.error(ex.getMessage());
+    		throw new PathfinderException(ex.getMessage());
+    	}
+    	
+    	List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
+    	
+    	
+    	return paths;
+    }
+
+    public List<Path> findL3LocalPath(Reservation resv, Path requestedPath) throws PathfinderException {
+    	ArrayList<Path> paths = new ArrayList<Path>();
+    	return paths;
+    }
+    
 
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
     	ArrayList<Path> paths = new ArrayList<Path>();
-    	Path path = new Path();
     	return paths;
     }
-
+ 
 
     /**
      * Finds a path given just source and destination or by expanding

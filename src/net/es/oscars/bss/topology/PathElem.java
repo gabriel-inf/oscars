@@ -147,4 +147,20 @@ public class PathElem extends HibernateBean implements Serializable {
             .append("id", getId())
             .toString();
     }
+
+    /**
+     * Copies a pathElem; will not copy id and seqNumber.
+     * 
+     * @param pe the pathElem to copy
+     * @return the copy
+     */
+    public static PathElem copyPathElem(PathElem pathElem) {
+		PathElem copy = new PathElem();
+		copy.setDescription(pathElem.getDescription());
+		copy.setLink(pathElem.getLink());
+		copy.setUrn(pathElem.getUrn());
+		copy.setUserName(pathElem.getUserName());
+		copy.setLinkDescr(pathElem.getLinkDescr());
+		return copy;
+    }
 }
