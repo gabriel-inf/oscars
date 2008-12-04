@@ -52,8 +52,22 @@ public class Reservation extends HibernateBean implements Serializable {
 
     private Set paths = new HashSet<Path>();
 
+    private HashMap<String, Path> pathMap = new HashMap<String, Path>();
+
     /** default constructor */
     public Reservation() { }
+
+    public void initializePaths() {
+        if (!this.pathMap.isEmpty()) {
+            return;
+        }
+        Iterator pathIterator = this.paths.iterator();
+        while (pathIterator.hasNext()) {
+            Path path = (Path) pathIterator.next();
+            System.out.println(path.getPathType());
+            this.pathMap.put(path.getPathType(), path);
+        }
+    }
 
     /**
      * @return startTime A Long with the reservation start time (Unix time)
@@ -183,30 +197,29 @@ public class Reservation extends HibernateBean implements Serializable {
      */
     public void setPaths(Set paths) { this.paths = paths; }
 
-    public boolean addPath(Path path) {
+    public boolean addPath(Path path) throws BSSException {
+        if (path.getPathType() == null) {
+            throw new BSSException("Path can not have null type");
+        }
         if (this.paths.add(path)) {
+            this.pathMap.put(path.getPathType(), path);
             return true;
         } else {
             return false;
         }
     }
 
-    // TEMPORARY SECTION to keep things compiling; noops
+    public void removePath(Path path) {
+        this.paths.remove(path);
+        this.pathMap.remove(path);
+    }
 
     public Path getPath(String pathType) throws BSSException {
         if (!PathType.isValid(pathType)) {
-            throw new BSSException("Invalid pathType: "+pathType);
+            throw new BSSException("Invalid pathType: " + pathType);
         }
-        return null;
+        return this.pathMap.get(pathType);
     }
-
-    public void setPath(Path path, String pathType) throws BSSException {
-        if (!PathType.isValid(pathType)) {
-            throw new BSSException("Invalid pathType: "+pathType);
-        }
-    }
-
-    // END TEMPORARY SECTION
 
     /**
      * @return token instance associated with reservation

@@ -968,7 +968,7 @@ public class TopologyManager {
                 continue;
             }
             if (status.equals("PENDING")) {
-                r.setPath(path, "intra");
+                r.addPath(path);
                 dao.update(r);
             } else if (status.equals("ACTIVE")) {
                 if (!this.isDuplicate(oldPath, path)) {

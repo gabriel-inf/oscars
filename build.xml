@@ -705,7 +705,7 @@ Adding a -sd switch generates resources/services.xml -->
     <!-- TestNG test section *********************************************** -->
     <property name="test.classes" value="build/test"/>
     <copy todir="${test.classes}">
-        <fileset dir="conf/db" includes="c3p0.properties, testaaa.cfg.xml, testbss.cfg.xml"/>
+        <fileset dir="conf/db" includes="c3p0.properties, testaaa.cfg.xml, testbss.cfg.xml, bss.cfg.xml"/>
     </copy>
 
     <path id="test.compile.path">

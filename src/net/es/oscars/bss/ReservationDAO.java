@@ -40,6 +40,7 @@ public class ReservationDAO
         throws BSSException {
 
         Reservation reservation = this.queryByParam("globalReservationId", gri);
+        reservation.initializePaths();
         return reservation;
     }
 

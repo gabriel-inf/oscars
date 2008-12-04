@@ -83,7 +83,8 @@ public class ReservationManager {
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
         Path tempPath = this.pathMgr.buildInitialPath(pathInfo);
-        resv.setPath(tempPath, "intra");
+        tempPath.setPathType(PathType.LOCAL);
+        resv.addPath(tempPath);
 
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);
@@ -140,7 +141,7 @@ public class ReservationManager {
         // and finds the complete path with traceroute
         Path path = this.pathMgr.getPath(resv, pathInfo);
         Path oldPath = resv.getPath("intra");
-        resv.setPath(path, "intra");
+        resv.addPath(path);
 
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops

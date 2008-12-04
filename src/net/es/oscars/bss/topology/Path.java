@@ -102,7 +102,7 @@ public class Path extends HibernateBean implements Serializable {
      */
     public void setPathType(String pathType) throws BSSException {
         if (!PathType.isValid(pathType)) {
-            throw new BSSException("Invalid pathType: "+pathType);
+            throw new BSSException("Invalid pathType: " + pathType);
         }
         this.pathType = pathType;
     }
@@ -116,6 +116,11 @@ public class Path extends HibernateBean implements Serializable {
      * @param direction the direction of the path.
      */
     public void setDirection(String direction) throws BSSException {
+        // Hibernate does a setter for all fields, even if null, upon creation
+        // don't need to do this on pathType because it cannot be null
+        if (direction == null) {
+            return;
+        }
         if (!PathDirection.isValid(direction)) {
             throw new BSSException("Invalid direction: "+direction);
         }

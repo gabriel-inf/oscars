@@ -250,7 +250,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
    
     public boolean isFirstDomain(Reservation resv) throws BSSException{
         /* Not guaranteed interdomain path so try finding src */
-        Path path = resv.getPath("intra");
+        Path path = resv.getPath(PathType.LOCAL);
         String src = "";
         String bssDbName = this.core.getBssDbName();
         

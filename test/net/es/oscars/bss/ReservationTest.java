@@ -121,7 +121,8 @@ public class ReservationTest {
         List<PathElem> pathElems = new ArrayList<PathElem>();
         pathElems.add(ingressPathElem);
         path.setPathElems(pathElems);
-        resv.setPath(path, "intra");
+        path.setPathType(PathType.LOCAL);
+        resv.addPath(path);
         dao.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
     }
