@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS pathElems (
         -- currently ingress, egress, or null
     description         TEXT,
         -- what this path is made up of
-    linkId              INT NOT NULL,  -- foreign key
+    linkId              INT,  -- foreign key
         -- optional description of link (for things like VLAN id's)
     linkDescr           TEXT,
     PRIMARY KEY (id)
