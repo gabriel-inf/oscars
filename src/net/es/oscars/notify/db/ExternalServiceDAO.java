@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import net.es.oscars.bss.topology.DomainService;
 import net.es.oscars.database.GenericHibernateDAO;
 
 /**
@@ -13,7 +12,7 @@ import net.es.oscars.database.GenericHibernateDAO;
  *
  */
 public class ExternalServiceDAO extends GenericHibernateDAO<ExternalService, Integer> {
-	private Logger log;
+    private Logger log;
     private String dbname;
 
     public ExternalServiceDAO(String dbname) {
@@ -23,8 +22,8 @@ public class ExternalServiceDAO extends GenericHibernateDAO<ExternalService, Int
     }
     
     public List<ExternalService> getByType(String type){
-    	String sql = "SELECT * FROM externalServices WHERE type=?";
-    	return (List<ExternalService>) this.getSession().createSQLQuery(sql)
+        String sql = "SELECT * FROM externalServices WHERE type=?";
+        return (List<ExternalService>) this.getSession().createSQLQuery(sql)
                            .addEntity(ExternalService.class)
                            .setString(0, type)
                            .list();

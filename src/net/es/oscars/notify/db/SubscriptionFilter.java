@@ -1,20 +1,12 @@
 package net.es.oscars.notify.db;
 
 import net.es.oscars.database.HibernateBean;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-import org.hibernate.Hibernate;
-
 import java.io.Serializable;
-
-import java.util.*;
-
 
 /**
  * Port is adapted from a Middlegen class automatically generated
- * from the schema for the bss.ports table.
+ * from the schema for the notify.subscriptionFilters table.
  */
 public class SubscriptionFilter extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually

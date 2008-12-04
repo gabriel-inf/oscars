@@ -1,8 +1,6 @@
 package net.es.oscars.notify.db;
 
-import java.util.*;
 import org.apache.log4j.*;
-import org.hibernate.*;
 import net.es.oscars.database.GenericHibernateDAO;
 
 /**

@@ -9,7 +9,7 @@ import net.es.oscars.database.HibernateBean;
  * from the schema for the notify.externalServices table.
  */
 public class ExternalService  extends HibernateBean implements Serializable{
-	// TODO:  need to do this via Ant rather than manually
+    // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
 
@@ -23,26 +23,26 @@ public class ExternalService  extends HibernateBean implements Serializable{
     private String serviceKey;
     
     public String getType() {
-		return type;
-	}
+        return type;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public String getUrl() {
-		return url;
-	}
+    public String getUrl() {
+        return url;
+    }
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
-	public String getServiceKey() {
-		return serviceKey;
-	}
+    public String getServiceKey() {
+        return serviceKey;
+    }
 
-	public void setServiceKey(String serviceKey) {
-		this.serviceKey = serviceKey;
-	}
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
 }
