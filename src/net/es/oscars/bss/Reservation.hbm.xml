@@ -72,7 +72,7 @@
     <!-- Associations -->
 
     <set name="paths" inverse="true" cascade="all, delete-orphan">
-        <key column="pathId" />
+        <key column="reservationId" />
         <one-to-many class="net.es.oscars.bss.topology.Path" />
     </set>
 
