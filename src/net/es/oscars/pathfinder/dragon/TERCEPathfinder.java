@@ -64,8 +64,8 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
             Link srcLink = null;
             Link destLink = null;
             try{
-                srcLink = TopologyUtil.getLink(src,"bss");
-                destLink = TopologyUtil.getLink(dest,"bss");
+                srcLink = TopologyUtil.getLink(src,this.dbname);
+                destLink = TopologyUtil.getLink(dest,this.dbname);
             }catch(BSSException e){
                 throw new PathfinderException("Error processing " +
                     "intra-domain path: " +  e.getMessage());
