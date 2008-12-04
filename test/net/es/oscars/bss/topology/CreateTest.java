@@ -286,7 +286,7 @@ public class CreateTest {
         pathElems.add(egressPathElem);
 
         path.setPathElems(pathElems);
-        resv.setPath(path, "intra");
+        resv.setPath(path, PathType.LOCAL);
         reservationDAO.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
         assert path.getId() != null;

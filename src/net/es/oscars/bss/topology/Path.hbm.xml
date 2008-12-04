@@ -52,17 +52,17 @@
         <one-to-many class="net.es.oscars.bss.topology.PathElem" />
     </list>
 
-    <set name="layer2DataSet" inverse="true" cascade="all, delete-orphan">
+    <set name="layer2DataSet" cascade="all, delete-orphan">
         <key column="pathId" />
         <one-to-many class="net.es.oscars.bss.topology.Layer2Data" />
     </set>
 
-    <set name="layer3DataSet" inverse="true" cascade="all, delete-orphan">
+    <set name="layer3DataSet" cascade="all, delete-orphan">
         <key column="pathId" />
         <one-to-many class="net.es.oscars.bss.topology.Layer3Data" />
     </set>
 
-    <set name="mplsDataSet" inverse="true" cascade="all, delete-orphan">
+    <set name="mplsDataSet" cascade="all, delete-orphan">
         <key column="pathId" />
         <one-to-many class="net.es.oscars.bss.topology.MPLSData" />
     </set>

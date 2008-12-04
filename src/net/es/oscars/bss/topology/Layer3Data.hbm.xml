@@ -42,8 +42,5 @@
 
     <!-- Associations -->
 
-    <many-to-one name="path" column="pathId"
-	    class="net.es.oscars.bss.topology.Path" />
-
 </class>
 </hibernate-mapping>

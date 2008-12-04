@@ -201,7 +201,6 @@ public class Path extends HibernateBean implements Serializable {
             this.layer2DataSet.clear();
         }
         this.layer2DataSet.add(layer2Data);
-        layer2Data.setPath(this);
     }
 
     public Layer3Data getLayer3Data() {
@@ -220,7 +219,6 @@ public class Path extends HibernateBean implements Serializable {
             this.layer3DataSet.clear();
         }
         this.layer3DataSet.add(layer3Data);
-        layer3Data.setPath(this);
     }
 
     public MPLSData getMplsData() {
@@ -239,7 +237,6 @@ public class Path extends HibernateBean implements Serializable {
             this.mplsDataSet.clear();
         }
         this.mplsDataSet.add(mplsData);
-        mplsData.setPath(this);
     }
 
     // need to override superclass because dealing with transient

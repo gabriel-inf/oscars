@@ -21,8 +21,6 @@ public class MPLSData extends HibernateBean implements Serializable {
     /** persistent field */
     private String lspClass;
 
-    private Path path;
-
     /** default constructor */
     public MPLSData() { }
 
@@ -51,21 +49,6 @@ public class MPLSData extends HibernateBean implements Serializable {
     public void setLspClass(String lspClass) { this.lspClass = lspClass; }
 
 
-    /**
-     * @return path uniquely associated with this data
-     */ 
-    public Path getPath() {
-        return this.path;
-    }
-
-    /**
-     * @param path path uniquely associated with this data
-     */ 
-    public void setPath(Path path) {
-        this.path = path;
-    }
-
-    
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {

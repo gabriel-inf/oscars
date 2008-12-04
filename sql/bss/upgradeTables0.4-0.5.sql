@@ -63,8 +63,8 @@ INSERT INTO interPaths (reservationId, explicit, pathSetupMode, nextDomainId,
 	p.mplsDataId
     FROM paths p;
 
-UPDATE intraPaths set pathType = 'intra';
-UPDATE interPaths set pathType = 'inter';
+UPDATE intraPaths set pathType = 'local';
+UPDATE interPaths set pathType = 'interdomain';
 DROP TABLE paths;
 
 -- create paths table with some fields that are temporary
