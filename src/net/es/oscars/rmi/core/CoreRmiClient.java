@@ -83,7 +83,8 @@ public class CoreRmiClient implements CoreRmiInterface {
             this.bssRmiClient.setConnected(connected);
             this.aaaRmiClient.setConnected(connected);
             this.notifyRmiClient.setConnected(connected);
-            this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
+            String remoteStr = (this.remote != null ? this.remote.toString() : "RMI server but it is not running");
+            this.log.warn("Remote exception from RMI server: trying to access " + remoteStr, e);
             throw e;
         } catch (NotBoundException e) {
             this.connected = false;
