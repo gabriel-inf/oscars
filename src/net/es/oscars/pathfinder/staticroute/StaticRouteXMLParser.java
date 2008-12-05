@@ -16,6 +16,24 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
+/**
+ * Parses a given XML file containing static route entries.The general format
+ * of the XML file is as follows:
+ * 
+ * &lt;staticPathDatabase&gt;
+ *      &lt;staticPathEntry&gt;
+ *          &lt;srcEndpoint&gt;&lt;/srcEndpoint&gt;
+ *          &lt;destEndpoint&gt;&lt;/destEndpoint&gt;
+ *          &lt;path&gt;
+ *              &lt;hop&gt;urn:ogf:network:...&lt;/hop&gt;
+ *              &lt;hop&gt;urn:ogf:network:...&lt;/hop&gt;
+ *          &lt;/path&gt;
+ *      &lt;/staticPathEntry&gt;
+ *      ...
+ * &lt;/staticPathDatabase&gt;
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class StaticRouteXMLParser {
     private Logger log;
     private String staticRoutesFile;
@@ -30,6 +48,14 @@ public class StaticRouteXMLParser {
         }
     }
     
+    /**
+     * Opens the XML file and looks for a path with the given source and destination.
+     * 
+     * @param src the source of the path to find
+     * @param dest the destination of the path to find 
+     * @return the discovered path. If not path is found then an Exception is thrown
+     * @throws PathfinderException
+     */
     public List<PathElem> findPath(String src, String dest) throws PathfinderException{
         ArrayList<PathElem> path = new ArrayList<PathElem>();
         
@@ -72,13 +98,11 @@ public class StaticRouteXMLParser {
 
     /**
      * Utility function for parsing the &lt;staticPathDatabase&gt; element information
-     * in the static route file and converting it to a response to a findPath request
      *
      * @param elem the staticPathDatabase element to parse
      * @param src the source endpoint of the request
-     * @param returnVtags boolean value that is set to true if available vlan tags should be included in response
      * @param dest the destination endpoint of the request
-     * @return the findPath  response including the path in the format needed by Axis2
+     * @param path a List<PathElem> to store the calculated path
      */
     private void parseStaticPathDatabase(Node elem,
         String src, String dest, List<PathElem> path) {
@@ -104,7 +128,7 @@ public class StaticRouteXMLParser {
      * @param elem the staticPathEntry element to parse
      * @param requestSrc the source endpoint of the request
      * @param requestDest the destination endpoint of the request
-     * @return the findPath  response including the path in the format needed by Axis2
+     * @param path a List<PathElem> to store the calculated path
      */
     private void lookupPath(Node elem, String requestSrc,
         String requestDest, List<PathElem> path) {
@@ -137,19 +161,17 @@ public class StaticRouteXMLParser {
         entrySrc = entrySrc.replaceAll("\\s", "");
         entryDest = entryDest.replaceAll("\\s", "");
         
-        if ((requestSrc.equals(entrySrc) && requestDest.equals(entryDest)) || 
-                (requestSrc.equals(entryDest) && requestDest.equals(entrySrc))) {
+        if ((requestSrc.equals(entrySrc) && requestDest.equals(entryDest))) {
            this.log.debug("Found a path that matches!");
            path.addAll(entryRoute);
         }
     }
 
     /**
-     * Parses a path element in the static route file and returns the path
-     * as an object used in the Axis2 response
+     * Parses a path element in the static route file and returns a List of PathElems
      *
      * @param elem the path element to parse
-     * @return the path information in the format needed by Axis2
+     * @param path a List<PathElem> to store the calculated path
      */
     private List<PathElem> parsePath(Node elem) {
         ArrayList<PathElem> route = new ArrayList<PathElem>();
@@ -172,11 +194,10 @@ public class StaticRouteXMLParser {
     }
 
     /**
-     * Parses a &lt;node&gt; object and maps it to a CtrlPlaneNodeContent object
-     * for use in an Axis2 response
+     * Parses a &lt;hop&gt; object and converts it to a PathElem
      *
-     * @param elem the node element to parse
-     * @return CtrlPlaneNodeContent object for use in an Axis2 response
+     * @param elem the Node element to parse
+     * @return PathElem object containing the URN of the hop
      */
     private PathElem parseHop(Node elem) {
         PathElem hop = new PathElem();

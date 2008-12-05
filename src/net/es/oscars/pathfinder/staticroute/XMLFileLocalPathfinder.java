@@ -9,8 +9,11 @@ import net.es.oscars.bss.topology.*;
 import org.apache.log4j.*;
 
 /**
- * XMLFileLocalPathfinder that uses TERCE to calculate path
- *
+ * XMLFileLocalPathfinder uses an XML file to statically lookup a path. The file location
+ * is specified by the pathfinder.staticxml.file property in oscars.properties. It defaults
+ * to '$CATALINA_HOME/shared/classes/terce.conf' if the property is not specified to support
+ * older TERCE configurations.
+ *              
  * @author Andrew Lake (alake@internet2.edu), David Robertson (dwrobertson@lbl.gov)
  */
 public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
@@ -19,14 +22,14 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
     private StaticRouteXMLParser routeParser;
     
     /**
-     * Constructor that initializes TERCE properties from oscars.properties file
+     * Constructor
      *
      */
     public XMLFileLocalPathfinder(String dbname) {
         super(dbname);
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("staticxml", true);
+        this.props = propHandler.getPropertyGroup("pathfinder.staticxml", true);
         this.routeParser = new StaticRouteXMLParser(this.props.getProperty("file"));
     }
     
@@ -41,6 +44,15 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
         return results;
     }
     
+    /**
+     * Processed the interdomain path of a given Reservation and used it to
+     * the complete local path segment
+     * 
+     * @param resv the Reservation containing the interdomain path
+     * @return the complete local path
+     * @throws PathfinderException
+     * @throws BSSException
+     */
     public List<Path> localFromInter(Reservation resv) throws PathfinderException, BSSException{
         ArrayList<Path> results = new ArrayList<Path>();
         Path interPath = resv.getPath(PathType.INTERDOMAIN);
