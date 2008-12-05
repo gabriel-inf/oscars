@@ -46,60 +46,94 @@ public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, Interdoma
         this.objectsToReweigh = new HashMap<String, Double>();
         domDAO = new DomainDAO(dbname);
     }
-    
+
     public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
-    	List<Path> paths = new ArrayList<Path>();
-    	
-    	Path requestedPath = null;
-    	try {
-    		requestedPath = resv.getPath(PathType.REQUESTED);
-    	} catch (BSSException ex) {
-    		this.log.error(ex.getMessage());
-    		throw new PathfinderException(ex.getMessage());
-    	}
-    	
-    	Layer2Data l2data = requestedPath.getLayer2Data();
-    	Layer3Data l3data = requestedPath.getLayer3Data();
-    	
-    	if (l2data == null && l3data == null) {
-    		throw new PathfinderException("No L2 data or L3 data");
-    	} else if (l2data != null && l3data != null) {
-    		throw new PathfinderException("Both L2 data and L3 data were specified");
-    	} else if (l2data != null) {
-    		paths = this.findL2LocalPath(resv, requestedPath);
-    	} else if (l3data != null) {
-    		paths = this.findL3LocalPath(resv, requestedPath);
-    	}
-    	return paths;
+        List<Path> paths = new ArrayList<Path>();
+
+        Path requestedPath = null;
+        try {
+            requestedPath = resv.getPath(PathType.REQUESTED);
+        } catch (BSSException ex) {
+            this.log.error(ex.getMessage());
+            throw new PathfinderException(ex.getMessage());
+        }
+
+        Layer2Data l2data = requestedPath.getLayer2Data();
+        Layer3Data l3data = requestedPath.getLayer3Data();
+
+        if (l2data == null && l3data == null) {
+            throw new PathfinderException("No L2 data or L3 data");
+        } else if (l2data != null && l3data != null) {
+            throw new PathfinderException("Both L2 data and L3 data were specified");
+        } else if (l2data != null) {
+            paths = this.findL2LocalPath(resv, requestedPath);
+        } else if (l3data != null) {
+            paths = this.findL3LocalPath(resv, requestedPath);
+        }
+        return paths;
     }
-    
+
     public List<Path> findL2LocalPath(Reservation resv, Path requestedPath) throws PathfinderException {
-    	ArrayList<Path> paths = new ArrayList<Path>();
-    	Path path = new Path();
-    	try {
-    		path.setPathType(PathType.LOCAL);
-    	} catch (BSSException ex) {
-    		this.log.error(ex.getMessage());
-    		throw new PathfinderException(ex.getMessage());
-    	}
-    	
-    	List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
-    	
-    	
-    	return paths;
+        ArrayList<Path> paths = new ArrayList<Path>();
+        Path path = new Path();
+        try {
+            path.setPathType(PathType.LOCAL);
+        } catch (BSSException ex) {
+            this.log.error(ex.getMessage());
+            throw new PathfinderException(ex.getMessage());
+        }
+
+        String srcEndpoint = requestedPath.getLayer2Data().getSrcEndpoint();
+        String dstEndpoint = requestedPath.getLayer2Data().getDestEndpoint();
+        Link srcLink = domDAO.getFullyQualifiedLink(srcEndpoint);
+        Link dstLink = domDAO.getFullyQualifiedLink(dstEndpoint);
+
+        if (srcLink == null) {
+            throw new PathfinderException("Source link is unknown!");
+        }
+        if (dstLink == null) {
+            throw new PathfinderException("Destination link is unknown!");
+        }
+        if (!srcLink.getPort().getNode().getDomain().isLocal()) {
+            throw new PathfinderException("Source link is not local!");
+        }
+        if (!dstLink.getPort().getNode().getDomain().isLocal()) {
+            throw new PathfinderException("Destination link is not local!");
+        }
+
+        List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
+
+        if (localSegment == null) {
+            path = this.findPathBetween(srcLink.getFQTI(), dstLink.getFQTI(), resv, "L2");
+        } else {
+            for (int i = 0; i < localSegment.size() -1; i++) {
+                String src = localSegment.get(i).getLink().getFQTI();
+                String dst = localSegment.get(i+1).getLink().getFQTI();
+                this.log.debug("Finding path between: ["+src+"] ["+dst+"] ");
+                Path partialPath = findPathBetween(src, dst, resv, "L2");
+                if (partialPath == null) {
+                    throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
+                } else {
+                    path = joinPaths(path, partialPath);
+                }
+            }
+        }
+
+        paths.add(path);
+        return paths;
     }
 
     public List<Path> findL3LocalPath(Reservation resv, Path requestedPath) throws PathfinderException {
-    	ArrayList<Path> paths = new ArrayList<Path>();
-    	return paths;
+        ArrayList<Path> paths = new ArrayList<Path>();
+        return paths;
     }
-    
+
 
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
-    	ArrayList<Path> paths = new ArrayList<Path>();
-    	return paths;
+        ArrayList<Path> paths = new ArrayList<Path>();
+        return paths;
     }
- 
+
 
     /**
      * Finds a path given just source and destination or by expanding
@@ -127,7 +161,7 @@ public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, Interdoma
         }
         //Restores any link objects in original path that were replaced by IDRefs
         try {
-        	TypeConverter.mergePathInfo(pathInfo, refPathInfo, false);
+            TypeConverter.mergePathInfo(pathInfo, refPathInfo, false);
         } catch(BSSException e) {
             throw new PathfinderException(e.getMessage());
         }
@@ -225,9 +259,9 @@ public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, Interdoma
         newPathContent.setHop(hops);
         pathInfo.setPath(newPathContent);
         try {
-        	reservation.getPath(PathType.LOCAL).setExplicit(true);
+            reservation.getPath(PathType.LOCAL).setExplicit(true);
         } catch (BSSException ex) {
-        	throw new PathfinderException(ex.getMessage());
+            throw new PathfinderException(ex.getMessage());
         }
         this.log.debug("handleLayer3ERO.end");
     }
@@ -501,6 +535,18 @@ public class DBPathfinder extends Pathfinder implements PCE, LocalPCE, Interdoma
         }
         this.log.debug(" no, are not connected");
         return null;
+    }
+
+
+
+
+
+    public Path findPathBetween(String src, String dst, Reservation reservation, String layer)
+            throws PathfinderException{
+        Long bandwidth = reservation.getBandwidth();
+        Long startTime = reservation.getStartTime();
+        Long endTime = reservation.getEndTime();
+        return this.findPathBetween(src, dst, bandwidth, startTime, endTime, reservation, layer);
     }
 
     public Path findPathBetween(String src, String dst, Long bandwidth,

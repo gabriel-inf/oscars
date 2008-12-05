@@ -25,68 +25,72 @@ public class Pathfinder {
     }
 
     /**
-     * Determines if the path elements have been specified 
-     * 
+     * Determines if the path elements have been specified
+     *
      * @param requestedPath the path to examine
      * @return true if the path has been explicitly specified
      */
     protected boolean isPathSpecified(Path requestedPath) {
-    	List<PathElem> pathElems = requestedPath.getPathElems();
-    	return pathElems.isEmpty();
+        List<PathElem> pathElems = requestedPath.getPathElems();
+        return pathElems.isEmpty();
     }
-    
+
     /**
      * Extracts only the local segment of a path
-     * 
+     *
      * @param path a path to examine
      * @return an  list of the local pathElems in the order in which they were found
-     * @throws PathfinderException 
+     * @throws PathfinderException
      */
-    
-    protected List<PathElem> extractLocalSegment(Path path) throws PathfinderException {
-    	DomainDAO domDAO = new DomainDAO(this.dbname);
-    	List<PathElem> localSegment = new ArrayList<PathElem>();
-    	if (!isPathSpecified(path)) {
-    		return null;
-    	}
 
-    	boolean localSegmentStarted = false;
-    	boolean localSegmentFinished = false;
-    	for (PathElem pe : path.getPathElems()) {
-    		if (pe.getLink() != null) {
-    			if (pe.getLink().getPort().getNode().getDomain().isLocal()) {
-    				if (localSegmentFinished) {
-    					throw new PathfinderException("Two separate local segments detected");
-    				}
-    				localSegmentStarted = true;
-    				PathElem copy = PathElem.copyPathElem(pe);
-    				localSegment.add(copy);
-    			}
-    		} else if (pe.getUrn() != null) {
-    			String fqti = this.resolveToFQTI(pe.getUrn());
-    			Link link = domDAO.getFullyQualifiedLink(fqti);
-    			if (link != null && link.getPort().getNode().getDomain().isLocal()) {
-    				localSegmentStarted = true;
-    				if (localSegmentFinished) {
-    					throw new PathfinderException("Two separate local segments detected");
-    				}
-					PathElem copy = PathElem.copyPathElem(pe);
-					copy.setLink(link);
-					localSegment.add(copy);
-    			}
-    		} else if (localSegmentStarted) {
-    			localSegmentFinished = true;
-    		}
-    	}
-    	
-    	return localSegment;
+    protected List<PathElem> extractLocalSegment(Path path) throws PathfinderException {
+        DomainDAO domDAO = new DomainDAO(this.dbname);
+        List<PathElem> localSegment = new ArrayList<PathElem>();
+        if (!isPathSpecified(path)) {
+            return null;
+        }
+
+        boolean localSegmentStarted = false;
+        boolean localSegmentFinished = false;
+        for (PathElem pe : path.getPathElems()) {
+            if (pe.getLink() != null) {
+                if (pe.getLink().getPort().getNode().getDomain().isLocal()) {
+                    if (localSegmentFinished) {
+                        throw new PathfinderException("Two separate local segments detected");
+                    }
+                    localSegmentStarted = true;
+                    PathElem copy = PathElem.copyPathElem(pe);
+                    localSegment.add(copy);
+                }
+            } else if (pe.getUrn() != null) {
+                String fqti = this.resolveToFQTI(pe.getUrn());
+                Link link = domDAO.getFullyQualifiedLink(fqti);
+                if (link != null && link.getPort().getNode().getDomain().isLocal()) {
+                    localSegmentStarted = true;
+                    if (localSegmentFinished) {
+                        throw new PathfinderException("Two separate local segments detected");
+                    }
+                    PathElem copy = PathElem.copyPathElem(pe);
+                    copy.setLink(link);
+                    localSegment.add(copy);
+                }
+            } else if (localSegmentStarted) {
+                localSegmentFinished = true;
+            }
+        }
+
+        if (localSegment != null && localSegment.size() < 2) {
+            throw new PathfinderException("Local segment in requested path too short");
+        }
+
+        return localSegment;
     }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     /**
      * Convenience method for finding ingress. Subclass may call this by
      * converting the source to a fully-qualified link URN and converting
