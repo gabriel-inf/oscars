@@ -1,8 +1,8 @@
 package net.es.oscars.pathfinder;
 
-import net.es.oscars.pathfinder.dragon.TERCEPathfinder;
 import net.es.oscars.pathfinder.db.DBPathfinder;
 import net.es.oscars.pathfinder.perfsonar.PSPathfinder;
+import net.es.oscars.pathfinder.staticroute.XMLFileLocalPathfinder;
 
 /**
  * This class contains a factory method to create a Pathfinder instance
@@ -21,7 +21,7 @@ public class PathfinderFactory {
 
         // only three choices at the moment
         if (pathMethod.equals("terce")) {
-            return new TERCEPathfinder(dbname);
+            //return new XMLFileLocalPathfinder(dbname);
         } else if (pathMethod.equals("database")) {
             return new DBPathfinder(dbname);
         } else if (pathMethod.equals("perfsonar")) {

@@ -1,4 +1,4 @@
-package net.es.oscars.pathfinder.dragon;
+package net.es.oscars.bss.topology;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -77,7 +77,6 @@ public class TERCETopologyImport {
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         bss.beginTransaction();
         
-        DomainDAO domain = new DomainDAO(this.dbname);
         Domain localDomain = new Domain();
         localDomain.setTopologyIdent(this.props.getProperty("topologyIdent"));
         localDomain.setName("Local Domain");

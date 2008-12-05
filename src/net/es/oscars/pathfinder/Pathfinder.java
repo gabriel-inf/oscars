@@ -32,7 +32,7 @@ public class Pathfinder {
      */
     protected boolean isPathSpecified(Path requestedPath) {
         List<PathElem> pathElems = requestedPath.getPathElems();
-        return pathElems.isEmpty();
+        return (!pathElems.isEmpty());
     }
 
     /**
@@ -42,7 +42,6 @@ public class Pathfinder {
      * @return an  list of the local pathElems in the order in which they were found
      * @throws PathfinderException
      */
-
     protected List<PathElem> extractLocalSegment(Path path) throws PathfinderException {
         DomainDAO domDAO = new DomainDAO(this.dbname);
         List<PathElem> localSegment = new ArrayList<PathElem>();
