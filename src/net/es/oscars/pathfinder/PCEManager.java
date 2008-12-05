@@ -36,7 +36,7 @@ public class PCEManager {
      */
     public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
 
-	    PathInfo intraPath = null;
+        PathInfo intraPath = null;
 
         this.log.info("PCEManager.findPath.start");
 
@@ -63,7 +63,7 @@ public class PCEManager {
 
         return intraPath;
     }
-    
+
     /**
      * Finds the local ingress of a path
      *
@@ -73,7 +73,7 @@ public class PCEManager {
      */
     public String findIngress(PathInfo pathInfo) throws PathfinderException {
 
-	String ingress = null;
+    String ingress = null;
 
         this.log.info("PCEManager.findIngress.start");
 
@@ -125,18 +125,19 @@ public class PCEManager {
                 "No path computation method specified in oscars.properties.");
         }
 
-	String [] methods = pathMethod.split(",");
+        String [] methods = pathMethod.split(",");
 
-	ArrayList <String> retMethods = new ArrayList<String>();
+        ArrayList <String> retMethods = new ArrayList<String>();
 
-	for( String method : methods) {
-	    String newMethod = method.trim();
-
-            if (!newMethod.equals("traceroute") && !newMethod.equals("terce") && !newMethod.equals("database") && !newMethod.equals("perfsonar"))
+        for( String method : methods) {
+            String newMethod = method.trim();
+            if (!newMethod.equals(PCEMethod.DATABASE) &&
+                !newMethod.equals(PCEMethod.STATIC) &&
+                !newMethod.equals(PCEMethod.PERFSONAR)) {
                 throw new PathfinderException(
                     "Path computation method specified in oscars.properties " +
-                    "must be either traceroute, terce, database or perfsonar.");
-
+                    "must be one of: static, database or perfsonar.");
+            }
             retMethods.add(newMethod);
         }
 

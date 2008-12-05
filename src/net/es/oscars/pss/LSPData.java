@@ -2,7 +2,7 @@ package net.es.oscars.pss;
 
 import java.util.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.pathfinder.Utils;
+import net.es.oscars.pathfinder.PCEUtils;
 import net.es.oscars.pathfinder.PathfinderException;
 
 /**
@@ -90,7 +90,7 @@ public class LSPData {
         NodeAddress ingressNodeAddress =
         this.ingressLink.getPort().getNode().getNodeAddress();
         String ingressAddr = ingressNodeAddress.getAddress();
-        Utils utils = new Utils(this.dbname);
+        PCEUtils utils = new PCEUtils(this.dbname);
         this.ingressRtrLoopback = utils.getIP(ingressAddr);
         if (this.ingressRtrLoopback == null) {
             throw new PSSException("no ingress loopback in path");
@@ -117,7 +117,7 @@ public class LSPData {
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = null;
         ipaddr = ipaddrDAO.queryByParam("linkId", this.ingressLink.getId());
-        Utils utils = new Utils(this.dbname);
+        PCEUtils utils = new PCEUtils(this.dbname);
         try {
             this.ingressRtrLoopback = utils.getLoopback(ipaddr.getIP(),
                                                              sysDescr);

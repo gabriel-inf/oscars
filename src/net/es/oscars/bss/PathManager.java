@@ -282,7 +282,7 @@ public class PathManager {
             pathSetupMode = "timer-automatic";
         }
         path.setPathSetupMode(pathSetupMode);
-        
+
         path.setPathType(PathType.INTERDOMAIN);
 
         for (int i = 0; i < hops.length; i++) {
@@ -323,8 +323,7 @@ public class PathManager {
                     foundIngress = true;
                 } else {
                     // layer 3 currently requires a Juniper ingress
-                    net.es.oscars.pathfinder.Utils utils =
-                        new net.es.oscars.pathfinder.Utils(this.dbname);
+                    PCEUtils utils = new PCEUtils(this.dbname);
                     // assumes one to one relationship
                     Ipaddr ipaddr = ipaddrDAO.queryByParam("linkId", link.getId());
                     if (ipaddr == null) {

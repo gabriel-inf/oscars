@@ -20,11 +20,11 @@ import net.es.oscars.pss.PSSException;
  * Used in ReservationManager, TraceroutePathfinder and pss.  Too many
  * interpackage dependencies.
  */
-public class Utils {
+public class PCEUtils {
     private String dbname;
     private Logger log;
 
-    public Utils(String dbname) {
+    public PCEUtils(String dbname) {
         this.dbname = dbname;
         this.log = Logger.getLogger(this.getClass());
     }

@@ -4,6 +4,7 @@ import net.es.oscars.pathfinder.db.DBPathfinder;
 import net.es.oscars.pathfinder.perfsonar.PSPathfinder;
 import net.es.oscars.pathfinder.staticroute.XMLFileLocalPathfinder;
 
+
 /**
  * This class contains a factory method to create a Pathfinder instance
  * implementing the PCE interface.
@@ -13,6 +14,7 @@ import net.es.oscars.pathfinder.staticroute.XMLFileLocalPathfinder;
 public class PathfinderFactory {
 
     /**
+     * DEPRECATED
      * Factory method.
      *
      * @return pathfinder An instance of a class implementing the PCE interface.
@@ -36,8 +38,9 @@ public class PathfinderFactory {
      *
      * @return interdomain pathfinder An instance of a class implementing the InterdomainPCE interface.
      */
-    public InterdomainPCE getInterdomainPCE(String method) {
-        if (method.equals("one")) {
+    public InterdomainPCE getInterdomainPCE(String method, String dbname) {
+        if (method.equals(PCEMethod.DATABASE)) {
+            return new DBPathfinder(dbname);
         } else if (method.equals("another")) {
         }
         return null;
@@ -48,8 +51,9 @@ public class PathfinderFactory {
      *
      * @return local pathfinder An instance of a class implementing the LocalPCE interface.
      */
-    public LocalPCE getLocalPCE(String method) {
-        if (method.equals("one")) {
+    public LocalPCE getLocalPCE(String method, String dbname) {
+        if (method.equals(PCEMethod.DATABASE)) {
+            return new DBPathfinder(dbname);
         } else if (method.equals("another")) {
         }
         return null;
