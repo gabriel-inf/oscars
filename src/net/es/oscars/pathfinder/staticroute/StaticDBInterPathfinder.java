@@ -1,4 +1,4 @@
-package net.es.oscars.pathfinder.generic;
+package net.es.oscars.pathfinder.staticroute;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
@@ -30,7 +30,7 @@ import org.apache.log4j.*;
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class InterdomainPathfinder extends Pathfinder{
+public class StaticDBInterPathfinder extends Pathfinder{
     private Logger log;
     
     /**
@@ -38,7 +38,7 @@ public class InterdomainPathfinder extends Pathfinder{
      *
      * @param dbname the name of the database to use
      */
-    public InterdomainPathfinder(String dbname) {
+    public StaticDBInterPathfinder(String dbname) {
         super(dbname);
         this.log = Logger.getLogger(this.getClass());
     }
