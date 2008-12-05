@@ -24,7 +24,6 @@ import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.TopologyUtil;
 import net.es.oscars.pathfinder.*;
-import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.pathfinder.perfsonar.util.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
@@ -72,7 +71,7 @@ public class GenericPathfinder {
     private final double DEFAULT_NONLINK_COST = 0.01;
     private final double DEFAULT_LINK_COST = 10;
     private final double OPAQUE_ESTIMATED_DOMAIN_LINKS = 7;
- 
+
     public GenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
         this.domains = new HashMap<String, Domain>();
@@ -258,7 +257,7 @@ public class GenericPathfinder {
         this.log.info("Looking up path between "+src+" and "+dst);
 
         // if the source is opaque, we have to assume that any element we're
-        // given exists in the domain. 
+        // given exists in the domain.
         boolean srcOpaque = false;
         Hashtable<String, String> srcURN = URNParser.parseTopoIdent(src);
         if (srcURN.get("error") != null) {
@@ -292,7 +291,7 @@ public class GenericPathfinder {
         }
 
         // if the destination is opaque, we have to assume that any element
-        // we're given exists in the domain. 
+        // we're given exists in the domain.
         boolean dstOpaque = false;
         Hashtable<String, String> dstURN = URNParser.parseTopoIdent(dst);
         if (dstURN.get("error") != null) {
@@ -391,7 +390,7 @@ public class GenericPathfinder {
             if (this.domains.get(currDomain) == null) {
                 Domain retDomain = null;
 
-		long measSTime = System.currentTimeMillis();
+        long measSTime = System.currentTimeMillis();
                 for(DomainFinder df : this.domainFinders) {
                     Domain domain = df.lookupDomain(currDomain);
 
@@ -400,9 +399,9 @@ public class GenericPathfinder {
                         break;
                     }
                 }
-		long measETime = System.currentTimeMillis();
+        long measETime = System.currentTimeMillis();
 
-		System.out.println("Time to discover "+currDomain+": "+(measETime-measSTime));
+        System.out.println("Time to discover "+currDomain+": "+(measETime-measSTime));
 
                 if (retDomain == null) {
                     if (this.cacheFailures) {
@@ -649,9 +648,9 @@ public class GenericPathfinder {
             String left_str = (String) left;
             String right_str = (String) right;
             int res = (int) (costs.get(left) - costs.get(right));
-          
+
             if (res == 0)
-                res = left_str.compareTo(right_str); 
+                res = left_str.compareTo(right_str);
 
             return res;
         }

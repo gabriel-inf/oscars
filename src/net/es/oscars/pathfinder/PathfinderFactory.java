@@ -23,24 +23,24 @@ public class PathfinderFactory {
         if (pathMethod.equals("terce")) {
             //return new XMLFileLocalPathfinder(dbname);
         } else if (pathMethod.equals("database")) {
-            return new DBPathfinder(dbname);
+            // return new DBPathfinder(dbname);
         } else if (pathMethod.equals("perfsonar")) {
             return new PSPathfinder(dbname);
         }
         return null;
     }
-    
-    
+
+
     /**
      * Factory method.
      *
      * @return interdomain pathfinder An instance of a class implementing the InterdomainPCE interface.
      */
     public InterdomainPCE getInterdomainPCE(String method) {
-    	if (method.equals("one")) {
-    	} else if (method.equals("another")) {
-    	}
-    	return null;
+        if (method.equals("one")) {
+        } else if (method.equals("another")) {
+        }
+        return null;
     }
 
     /**
@@ -49,10 +49,10 @@ public class PathfinderFactory {
      * @return local pathfinder An instance of a class implementing the LocalPCE interface.
      */
     public LocalPCE getLocalPCE(String method) {
-    	if (method.equals("one")) {
-    	} else if (method.equals("another")) {
-    	}
-    	return null;
+        if (method.equals("one")) {
+        } else if (method.equals("another")) {
+        }
+        return null;
     }
 
 }

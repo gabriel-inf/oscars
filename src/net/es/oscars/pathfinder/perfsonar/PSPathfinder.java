@@ -11,7 +11,6 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.pathfinder.*;
-import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 
@@ -166,10 +165,13 @@ public class PSPathfinder extends Pathfinder implements PCE {
             return super.findIngress(srcURN, pathInfo.getPath());
 
         }
+        return null;
 
         //...if layer 3 request then pass to TraceroutePathfinder.findIngress
+        /* deprecated
         TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
         return tracePF.findIngress(pathInfo);
+        */
     }
 
     /**

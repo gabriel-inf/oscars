@@ -1,4 +1,4 @@
-package net.es.oscars.pathfinder.traceroute;
+package net.es.oscars.pathfinder.db.util;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,17 +17,14 @@ import net.es.oscars.pathfinder.PathfinderException;
  */
 public class JnxTraceroute {
     private ArrayList<String> rawHopData;
-    private ArrayList<String> hops;
     private Properties props;
-    private Logger log;
+    private Logger log = Logger.getLogger(JnxTraceroute.class);
 
     /**
      * Contructor for JnxTraceroute.
      */
     public JnxTraceroute() {
         this.rawHopData = new ArrayList<String>();
-        this.hops = new ArrayList<String>();
-        this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("traceroute", true);
     }
@@ -39,14 +36,15 @@ public class JnxTraceroute {
      * @param dst string containing destination IP
      * @throws IOException
      */
-    public String traceroute(String src, String dst)
+    public ArrayList<String> traceroute(String src, String dst)
             throws PathfinderException, IOException {
 
+        ArrayList<String> hops = new ArrayList<String>();
         String cmd = "";
         String hopInfo = "";
-        Pattern ipPattern = 
+        Pattern ipPattern =
             Pattern.compile(".*?\\((\\d+\\.\\d+\\.\\d+\\.\\d+)\\).*?");
-        
+
         Pattern errPattern = Pattern.compile(".*Operation timed out.*");
 
         if ((src == null) || (dst == null)) {
@@ -56,13 +54,15 @@ public class JnxTraceroute {
 
         // remove subnet mask if necessary,  e.g. 10.0.0.0/8 => 10.0.0.0
         dst = dst.replaceAll("/\\d*", "");
+
+
         String jnxKey = System.getenv("CATALINA_HOME") +
                         "/shared/classes/server/oscars.key";
 
         // prepare traceroute command
-        cmd = "ssh -x -a -i " + jnxKey + " -l " + 
+        cmd = "ssh -x -a -i " + jnxKey + " -l " +
                    this.props.getProperty("jnxUser") + " " + src +
-                   " traceroute " + dst + 
+                   " traceroute " + dst +
                    " wait " + this.props.getProperty("timeout") +
                    " ttl " + this.props.getProperty("ttl");
         //cmd = "traceroute " + dst;
@@ -70,37 +70,36 @@ public class JnxTraceroute {
         this.log.info("traceroute: " + cmd);
         // run traceroute command
         Process p = Runtime.getRuntime().exec(cmd);
-        BufferedReader tracerouteOuput = 
+        BufferedReader tracerouteOuput =
             new BufferedReader(new InputStreamReader(p.getInputStream()));
 
         BufferedReader tracerouteError =
-        	new BufferedReader(new InputStreamReader(p.getErrorStream()));
-        
+            new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
         String errInfo = tracerouteError.readLine();
-        if (errInfo != null )
-        {
-        	//this.log.warn("error stream: " + errInfo );
-        	if ( errPattern.matcher(errInfo).matches())
-        	{
+        if (errInfo != null ) {
+            //this.log.warn("error stream: " + errInfo );
+            if ( errPattern.matcher(errInfo).matches())
+            {
                 tracerouteOuput.close();
                 tracerouteError.close();
-        		throw new PathfinderException("Traceroute error: " + errInfo);
-        	}
+                throw new PathfinderException("Traceroute error: " + errInfo);
+            }
         }
-    	
+
         // parse the results
         while ((hopInfo = tracerouteOuput.readLine()) != null) {
-        	  this.log.debug("hop: " + hopInfo);
-       
+              this.log.debug("hop: " + hopInfo);
+
             this.rawHopData.add(hopInfo);
 
             Matcher m = ipPattern.matcher(hopInfo);
             if (m.matches()) {
-                this.hops.add(m.group(1));
+                hops.add(m.group(1));
             }
         }
         tracerouteOuput.close();
-        return src;
+        return hops;
     }
 
 
@@ -113,12 +112,4 @@ public class JnxTraceroute {
         return this.rawHopData;
     }
 
-    /**
-     * Returns traceroute hops.
-     *
-     * @return ArrayList<String> of hops
-     */
-    public ArrayList<String> getHops() {
-        return this.hops;
-    }
 }
