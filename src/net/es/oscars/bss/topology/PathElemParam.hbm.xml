@@ -11,9 +11,9 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.bss.topology.PathElem" table="pathElems">
+<class name="net.es.oscars.bss.topology.PathElemParam" table="pathElemParams">
     <meta attribute="class-description" inherit="false">
-       @hibernate.class table="pathElems"
+       @hibernate.class table="pathElemParams"
     </meta>
 
     <cache usage="read-write" />
@@ -25,29 +25,25 @@
         <generator class="identity" />
     </id>
 
-    <property name="seqNumber" not-null="true" insert="false" update="false">
+    <property name="swcap" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>
     </property>
 
-    <property name="urn" />
+    <property name="type" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+    </property>
 
-    <property name="userName" />
-
-    <property name="description" />
-
-    <property name="linkDescr" />
+    <property name="value" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+    </property>
 
     <!-- Associations -->
-
-    <set name="pathElemParams" cascade="all, delete-orphan">
-        <key column="pathElemId" />
-        <one-to-many class="net.es.oscars.bss.topology.PathElemParam" />
-    </set>
-
-    <many-to-one name="link" column="linkId"
-        class="net.es.oscars.bss.topology.Link" not-null="true" />
 
 </class>
 </hibernate-mapping>

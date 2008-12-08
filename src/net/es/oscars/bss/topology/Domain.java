@@ -112,7 +112,7 @@ public class Domain extends HibernateBean implements Serializable {
     public void setLocal(boolean local) { this.local = local; }
 
     /**
-     * @return list of nodes
+     * @return set of nodes
      */
     public Set getNodes() { return this.nodes; }
 
@@ -122,7 +122,7 @@ public class Domain extends HibernateBean implements Serializable {
     public void setNodes(Set nodes) { this.nodes = nodes; }
 
     /**
-     * @return list of paths that have this as next domain
+     * @return set of paths that have this as next domain
      */
     public Set getPaths() { return this.paths; }
 

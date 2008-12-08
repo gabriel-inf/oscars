@@ -168,6 +168,18 @@ CREATE TABLE IF NOT EXISTS pathElems (
 ) type=MyISAM;
 
 --
+-- table to store additional parameters relating to a pathElem
+--
+CREATE TABLE IF NOT EXISTS pathElemParams (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    pathElemId          INT NOT NULL, -- foreign key
+    swcap               TEXT NOT NULL,
+    type                TEXT NOT NULL,
+    value               TEXT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
+
+--
 -- table for layer 2 information
 --
 CREATE TABLE IF NOT EXISTS layer2Data (

@@ -54,6 +54,11 @@ public class Reservation extends HibernateBean implements Serializable {
 
     private HashMap<String, Path> pathMap = new HashMap<String, Path>();
 
+    /* TODO
+    private HashMap<String, HashMap<String, HashMap<Integer, Path>>> pathMaps =
+        new HashMap<String, HashMap<String, HashMap<Integer, Path>>>();
+    */
+
     /** default constructor */
     public Reservation() { }
 

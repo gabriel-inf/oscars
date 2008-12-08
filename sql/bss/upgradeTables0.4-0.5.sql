@@ -5,6 +5,18 @@ USE bss;
 -- temp
 DELETE FROM mplsData where id not in (select mplsDataId from paths where mplsDataId is not null);
 
+--
+-- table to store additional parameters relating to a pathElem
+--
+CREATE TABLE IF NOT EXISTS pathElemParams (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    pathElemId          INT NOT NULL, -- foreign key
+    swcap               TEXT NOT NULL,
+    type                TEXT NOT NULL,
+    value               TEXT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
+
 ALTER TABLE paths ADD reservationId INT AFTER id;
 ALTER TABLE paths ADD pathType TEXT AFTER nextDomainId;
 ALTER TABLE layer2Data ADD pathId INT AFTER id;

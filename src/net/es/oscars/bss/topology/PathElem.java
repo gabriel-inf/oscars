@@ -1,6 +1,6 @@
 package net.es.oscars.bss.topology;
 
-import java.util.Set;
+import java.util.*;
 import java.io.Serializable;
 
 import org.hibernate.Hibernate;
@@ -35,6 +35,8 @@ public class PathElem extends HibernateBean implements Serializable {
     
     /** persistent field */
     private Link link;
+
+    private Set pathElemParams = new HashSet<PathElemParam>();
 
     /** default constructor */
     public PathElem() { }
@@ -117,6 +119,32 @@ public class PathElem extends HibernateBean implements Serializable {
     public void setLink(Link link) { this.link = link; }
 
 
+    /**
+     * @return set of path elem parameters
+     */
+    public Set getPathElemParams() { return this.pathElemParams; }
+
+    /**
+     * @param pathElemParams set of path elem parameters
+     */
+    public void setPathElemParams(Set pathElemParams) {
+        this.pathElemParams = pathElemParams;
+    }
+
+    public boolean addPathElemParam(PathElemParam pathElemParam) {
+
+        if (this.pathElemParams.add(pathElemParam)) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public void removePathElemParam(PathElemParam pathElemParam) {
+        this.pathElemParams.remove(pathElemParam);
+    }
+
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
@@ -133,8 +161,6 @@ public class PathElem extends HibernateBean implements Serializable {
                 .append(this.getId(), castOther.getId())
                 .isEquals();
         } else {
-            // decided not to check nextElem; would lead to checking
-            // entire remaining path for each element in path
             return new EqualsBuilder()
                 .append(this.getLink(), castOther.getLink())
                 .append(this.getDescription(), castOther.getDescription())
@@ -155,12 +181,12 @@ public class PathElem extends HibernateBean implements Serializable {
      * @return the copy
      */
     public static PathElem copyPathElem(PathElem pathElem) {
-		PathElem copy = new PathElem();
-		copy.setDescription(pathElem.getDescription());
-		copy.setLink(pathElem.getLink());
-		copy.setUrn(pathElem.getUrn());
-		copy.setUserName(pathElem.getUserName());
-		copy.setLinkDescr(pathElem.getLinkDescr());
-		return copy;
+        PathElem copy = new PathElem();
+        copy.setDescription(pathElem.getDescription());
+        copy.setLink(pathElem.getLink());
+        copy.setUrn(pathElem.getUrn());
+        copy.setUserName(pathElem.getUserName());
+        copy.setLinkDescr(pathElem.getLinkDescr());
+        return copy;
     }
 }

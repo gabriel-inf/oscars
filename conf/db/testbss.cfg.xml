@@ -51,6 +51,7 @@
         <mapping resource="net/es/oscars/bss/topology/Ipaddr.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Path.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/PathElem.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/PathElemParam.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Layer2Data.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Layer3Data.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/MPLSData.hbm.xml"/>
