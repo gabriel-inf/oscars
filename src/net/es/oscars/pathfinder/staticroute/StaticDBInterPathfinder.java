@@ -40,19 +40,12 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
      * @throws PathfinderException
      */
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException{
-        Path reqPath = null;
-        try {
-            reqPath = resv.getPath(PathType.REQUESTED);
-        } catch (BSSException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
         ArrayList<Path> results = new ArrayList<Path>();
-        
-        try{
+        try {
+            Path reqPath = resv.getPath(PathType.REQUESTED);
             results.add(this.buildNewPath(reqPath));
-        }catch(BSSException e){
-            this.reportError(e.getMessage());
+        } catch (BSSException e) {
+            throw new PathfinderException(e.getMessage());
         }
 
         for(Path p : results){
@@ -73,24 +66,22 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
     private Path buildNewPath(Path reqPath)
         throws PathfinderException, BSSException{
 
+        List<PathElem> reqElems = reqPath.getPathElems();
         Path newPath = new Path();
-        List<PathElem> currHops = reqPath.getPathElems();
-        PathElem ingressHop = new PathElem();
-        PathElem egressHop = new PathElem();
+        PathElem ingressPE = null;
+        PathElem egressPE = null;
         int ingressIndex = -1;
+        int egressIndex = -1;
         int currHopIndex = -1;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
-        boolean ingressFound = false;
-        boolean isLocal = false;
-        String ingressURN = null;
-        String egressURN = null;
         String currHopURN = null;
         //TODO: Pull transient value from Path
         boolean strict = false;
-        Link ingressLink = null;
         boolean oneLocalHop = false;
         boolean onlyLocal = true;
-        
+        boolean isLocal = false;
+        boolean ingressFound = false;
+        int seqNumber = 0;
         
         //TODO: Check strict
         /* If strict then return */
@@ -99,25 +90,28 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
         }*/
         
         /* Copy each hop until reach egress or the last hop (destination) */
-        for(int i = 0; i < currHops.size(); i++){
-            PathElem currHop = currHops.get(i);
-            PathElem newHop = PathElem.copyPathElem(currHop);
+        for(int i = 0; i < reqElems.size(); i++){
+            PathElem reqHop = reqElems.get(i);
+            PathElem newHop = PathElem.copyPathElem(reqHop);
             currHopIndex = i;
-            currHopURN = currHop.getUrn();
+            currHopURN = reqHop.getUrn();
             if(currHopURN == null){
-                currHopURN = currHop.getLink().getFQTI();
+                currHopURN = reqHop.getLink().getFQTI();
+                newHop.setUrn(currHopURN);
             }
             
             String[] componentList = currHopURN.split(":");
             isLocal = domainDAO.isLocal(componentList[3]);
             if(isLocal && ingressFound){
-                egressURN = currHopURN;
+                egressPE = newHop;
+                egressIndex = i;
                 oneLocalHop = false;
                 continue;
             }else if(isLocal){
-                ingressURN = currHopURN;
+                ingressPE = newHop;
                 ingressIndex = i;
-                egressURN = currHopURN; //egress only null if no local hops
+                egressPE= PathElem.copyPathElem(newHop); //egress only null if no local hops
+                egressIndex = i;
                 oneLocalHop = true;
                 ingressFound = true;
                 continue;
@@ -127,43 +121,48 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
             }else{
                 onlyLocal = false;
             }
-
+            
+            newHop.setSeqNumber(++seqNumber);
             newPath.addPathElem(newHop);
         }
 
         /* If strict or local path return local ingress and egress  */
-        if(onlyLocal){
-            //TODO: is the following line still needed?
-            //pathInfo.setPathType("strict");
+        if(onlyLocal && strict){
+            ingressPE.setSeqNumber(++seqNumber);
+            newPath.addPathElem(ingressPE);
+            egressPE.setSeqNumber(++seqNumber);
+            newPath.addPathElem(egressPE);
             return newPath;
         }
 
         /* If loose path given find ingress... */
-        if(ingressURN == null){
-            ingressLink = this.findIngressFromPrevEgress(currHopURN, domainDAO);
-            ingressURN = this.urnFromLink(ingressLink);
+        if(ingressIndex < 0){
+            Link ingressLink = this.findIngressFromPrevEgress(currHopURN, domainDAO);
+            ingressPE.setLink(ingressLink);
+            ingressPE.setUrn(ingressLink.getFQTI());
         }else if(ingressIndex > 0){
-            String prevEgressURN = currHops.get(ingressIndex - 1).getUrn();
-            ingressLink = this.findIngressFromPrevEgress(prevEgressURN,
+            String prevEgressURN = reqElems.get(ingressIndex - 1).getUrn();
+            Link ingressLink = this.findIngressFromPrevEgress(prevEgressURN,
                 domainDAO);
-            ingressURN = this.matchURNToLink(ingressURN, ingressLink);
-        }else{
-            /* ingress and the source are the same */
-            ingressLink = domainDAO.getFullyQualifiedLink(ingressURN);
+            ingressPE.setLink(ingressLink);
+            ingressPE.setUrn(this.matchURNToLink(ingressPE.getUrn(), ingressLink));
+        }else if(ingressPE.getLink() == null){
+            /* ingress and the source are the same but Link is not filled in */
+            ingressPE.setLink(domainDAO.getFullyQualifiedLink(ingressPE.getUrn()));
         }
-        ingressHop.setUrn(ingressURN);
-        newPath.addPathElem(ingressHop);
+        ingressPE.setSeqNumber(++seqNumber);
+        newPath.addPathElem(ingressPE);
 
         /* ...then find egress */
-        if(egressURN == null || (!egressURN.equals(currHopURN))){
-            RouteElem route = this.lookupRoute(ingressLink, egressURN,
-                                               currHopURN, oneLocalHop);
-            this.addNewRoute(currHops, currHopIndex, currHopURN,
-                                        route, newPath);
-        }else{
+        if(egressIndex == currHopIndex){
             /* sets egress if same as destination */
-            egressHop = PathElem.copyPathElem(currHops.get(currHopIndex));
-            newPath.addPathElem(egressHop);
+            egressPE.setSeqNumber(++seqNumber);
+            newPath.addPathElem(egressPE);
+        }else{
+            RouteElem route = this.lookupRoute(ingressPE.getLink(), egressPE,
+                    currHopURN, oneLocalHop);
+            this.addNewRoute(reqElems, currHopIndex, currHopURN,
+                                        route, newPath);
         }
 
         return newPath;
@@ -211,10 +210,14 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
      * @throws PathfinderException
      * @throws BSSException
      */
-    private RouteElem lookupRoute(Link ingressLink, String egressURN,
+    private RouteElem lookupRoute(Link ingressLink, PathElem egressPE,
         String nextHopURN, boolean oneLocalHop)
         throws PathfinderException, BSSException{
-
+        
+        String egressURN = null;
+        if(egressPE != null){
+            egressURN = egressPE.getUrn();
+        }
         RouteElem route = null;
         Link egressLink = null;
         InterdomainRouteDAO routeDAO = new InterdomainRouteDAO(this.dbname);
@@ -416,9 +419,9 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
     private String matchURNToLink(String urn, Link link)
         throws PathfinderException{
 
-        String linkURN = this.urnFromLink(link);
+        String linkURN = link.getFQTI();
         String[] urnCompList = urn.split(":");
-        String[] linkCompList = urn.split(":");
+        String[] linkCompList = linkURN.split(":");
 
         for(int i = 0; i < urnCompList.length; i++){
             if(!linkCompList[i].equals(urnCompList[i])){
