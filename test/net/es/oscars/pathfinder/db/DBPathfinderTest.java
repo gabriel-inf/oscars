@@ -16,6 +16,7 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.CommonReservation;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.topology.Path;
 import net.es.oscars.pathfinder.PathfinderException;
 
 /**
@@ -50,7 +51,7 @@ public class DBPathfinderTest {
                                   "DBPathfinder test reservation");
         this.sf.getCurrentSession().beginTransaction();
         try {
-            PathInfo intraPath = this.pf.findPath(pathInfo, resv);
+            List<Path> intraPath = this.pf.findLocalPath(resv);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());

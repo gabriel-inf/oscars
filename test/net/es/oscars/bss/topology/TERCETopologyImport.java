@@ -40,7 +40,7 @@ import edu.internet2.hopi.dragon.terce.ws.types.tedb.SelectNetworkTopologyRespon
 import edu.internet2.hopi.dragon.terce.ws.types.tedb.SelectNetworkTopologyResponseContent;
 import edu.internet2.hopi.dragon.terce.ws.types.tedb.SelectTypes;
 
-@Test(groups={ "terce.init" })
+@Test(groups={ "staticroute.init" })
 public class TERCETopologyImport {
     private Logger log;
     private String dbname;
@@ -63,7 +63,7 @@ public class TERCETopologyImport {
      * @throws TEDBFaultMessage 
      * @throws RemoteException 
      */
-    @BeforeGroups(groups={ "pathfinder.dragon" })
+    @BeforeGroups(groups={ "pathfinder.staticroute" })
     @Test
     public void updateDatabase() throws BSSException, RemoteException, TEDBFaultMessage{
 	this.setUpClass();
