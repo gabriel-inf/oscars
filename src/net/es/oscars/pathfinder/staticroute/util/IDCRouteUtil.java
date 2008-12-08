@@ -1,3 +1,4 @@
+package net.es.oscars.pathfinder.staticroute.util;
 import java.util.*;
 
 import net.es.oscars.bss.*;
@@ -38,10 +39,21 @@ public class IDCRouteUtil {
             this.showRoutes();
         }
     }
+    
+    /**
+     * Constructor that accepts array of command-line parameters
+     *
+     * @param args HashMap containing command line parameters
+     */
+    public IDCRouteUtil(HashMap<String,String> args, String dbname){
+        this.log = Logger.getLogger(this.getClass());
+        this.params = args;
+        this.dbname = dbname;
+    }
 
     /**
      * Parses parameters from the command line and stores them in a globally
-     * undertood hash. Also returns the function (show, add, or del) the user
+     * understood hash. Also returns the function (show, add, or del) the user
      * wishes to perform.
      *
      * @param args String array containing command line parameters
@@ -102,7 +114,7 @@ public class IDCRouteUtil {
     /**
      * Adds new routes to the database
      */
-    private void addRoute(){
+    public void addRoute(){
         InterdomainRoute route = new InterdomainRoute();
         String egressURN = params.get("egress");
         String srcURN = params.get("source");
@@ -142,10 +154,10 @@ public class IDCRouteUtil {
         dbnames.add(this.dbname);
         initializer.initDatabase(dbnames);
         Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         bss.beginTransaction();
 
-        DomainDAO domainDAO = new DomainDAO("bss");
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
 
         /* Get source */
         if(srcURN != null){
@@ -325,7 +337,7 @@ public class IDCRouteUtil {
         dbnames.add(this.dbname);
         initializer.initDatabase(dbnames);
         Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         bss.beginTransaction();
         InterdomainRouteDAO interDAO = new InterdomainRouteDAO(this.dbname);
         List<InterdomainRoute> routes = interDAO.list();
@@ -368,7 +380,7 @@ public class IDCRouteUtil {
         dbnames.add(this.dbname);
         initializer.initDatabase(dbnames);
         Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         bss.beginTransaction();
         boolean showDetail = (params.containsKey("detail") &&
                          params.get("detail").equals("1"));
@@ -767,6 +779,20 @@ public class IDCRouteUtil {
         result.link = link;
 
         return result;
+    }
+
+    /**
+     * @return the params
+     */
+    public synchronized HashMap<String, String> getParams() {
+        return this.params;
+    }
+
+    /**
+     * @param params the params to set
+     */
+    public synchronized void setParams(HashMap<String, String> params) {
+        this.params = params;
     }
 
     /**

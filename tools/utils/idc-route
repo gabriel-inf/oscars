@@ -7,4 +7,4 @@ do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
 
-java -cp $OSCARS_CLASSPATH:IDCUtil.jar IDCRouteUtil $*
+java -cp $OSCARS_CLASSPATH:IDCUtil.jar net.es.oscars.pathfinder.staticroute.util.IDCRouteUtil $*
