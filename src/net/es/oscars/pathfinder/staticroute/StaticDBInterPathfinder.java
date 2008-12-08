@@ -2,35 +2,23 @@ package net.es.oscars.pathfinder.staticroute;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.InterdomainRouteDAO;
-import net.es.oscars.bss.topology.InterdomainRoute;
-import net.es.oscars.bss.topology.RouteElem;
-import net.es.oscars.bss.topology.DomainDAO;
-import net.es.oscars.bss.topology.Domain;
-import net.es.oscars.bss.topology.Node;
-import net.es.oscars.bss.topology.Port;
-import net.es.oscars.bss.topology.Link;
-import net.es.oscars.bss.topology.TopologyUtil;
-import net.es.oscars.oscars.*;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
-import net.es.oscars.wsdlTypes.*;
 
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.*;
 
 /**
- * InterdomainPathfinder finds paths in the interdomainRoutes table of the
+ * StaticDBInterPathfinder finds paths in the interdomainRoutes table of the
  * database. It does so by matching a given path (or the source and destination
- * if nor hops are given) to an entry in the database. It can match such requests
+ * if no hops are given) to an entry in the database. It can match such requests
  * at the domain, node, port, or link level. It can also accept paths that contain
  * not only link-id but also domain-ids, node-ids, and port-ids.
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class StaticDBInterPathfinder extends Pathfinder{
+public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPCE{
     private Logger log;
     
     /**
@@ -51,84 +39,44 @@ public class StaticDBInterPathfinder extends Pathfinder{
      * @return a path containing the ingress and egress of the local domain
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException{
-
-        CtrlPlanePathContent interPath = pathInfo.getPath();
-        CtrlPlanePathContent intraPath = null;
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        String src = null;
-        String dest = null;
-        PathInfo intraPathInfo = new PathInfo();
-
-        if(layer2Info != null){
-            src = layer2Info.getSrcEndpoint();
-            dest = layer2Info.getDestEndpoint();
-        }else{
-           this.reportError("Layer 2 path information must be provided for " +
-            "this IDC.");
+    public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException{
+        Path reqPath = null;
+        try {
+            reqPath = resv.getPath(PathType.REQUESTED);
+        } catch (BSSException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
         }
-
-        if(interPath == null || interPath.getHop() == null){
-            /* Create path with only src and dest in it */
-            interPath = new CtrlPlanePathContent();
-            interPath.setId("path-" + System.currentTimeMillis());
-            CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
-            CtrlPlaneHopContent destHop = new CtrlPlaneHopContent();
-
-            srcHop.setId("src");
-            destHop.setId("dest");
-            srcHop.setLinkIdRef(src);
-            destHop.setLinkIdRef(dest);
-            interPath.addHop(srcHop);
-            interPath.addHop(destHop);
-            pathInfo.setPathType("loose");
-            pathInfo.setPath(interPath);
-        }else{
-            /* verify the given LIDP is valid */
-            this.verifyPath(src, dest, interPath);
-        }
-
-        /* build new LIDP from existing LIDP */
-       
+        ArrayList<Path> results = new ArrayList<Path>();
+        
         try{
-            PathInfo refPathInfo = TypeConverter.createRefPath(pathInfo);
-            intraPath = this.buildNewPath(refPathInfo);
-            intraPathInfo.setPath(intraPath);
-            TypeConverter.mergePathInfo(pathInfo, intraPathInfo, true);
-            TypeConverter.mergePathInfo(pathInfo, refPathInfo, false);
+            results.add(this.buildNewPath(reqPath));
         }catch(BSSException e){
             this.reportError(e.getMessage());
         }
 
-        this.log.info("Path Type: " + pathInfo.getPathType());
-        for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
-            this.log.info(TypeConverter.hopToURN(pathInfo.getPath().getHop()[i]));
+        for(Path p : results){
+            for(PathElem e : p.getPathElems()){
+                this.log.debug(e.getUrn());
+            }
         }
         
-        /* Remove strict pathType for backward compatibility */
-        String interPathType = pathInfo.getPathType();
-        if(interPathType != null && interPathType.equals("strict")){
-            pathInfo.setPathType(null);
-        }
-        
-        return intraPathInfo;
+        return results;
     }
 
     /**
-     * Builds an interdomain path and stores it in the interdomain request
+     * Builds an interdomain path from a requested path
      *
-     * @param pathInfo the PathInfo element from a createReservation request
-     * @return a path containing the ingress and egress for this domain
+     * @param reqPath the Path element with request parameters
+     * @return the interdomain path
      */
-    private CtrlPlanePathContent buildNewPath(PathInfo pathInfo)
+    private Path buildNewPath(Path reqPath)
         throws PathfinderException, BSSException{
 
-        CtrlPlanePathContent currPath = pathInfo.getPath();
-        CtrlPlanePathContent newPath = new CtrlPlanePathContent();
-        CtrlPlaneHopContent[] currHops = currPath.getHop();
-        CtrlPlaneHopContent ingressHop = new CtrlPlaneHopContent();
-        CtrlPlaneHopContent egressHop = new CtrlPlaneHopContent();
-        CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
+        Path newPath = new Path();
+        List<PathElem> currHops = reqPath.getPathElems();
+        PathElem ingressHop = new PathElem();
+        PathElem egressHop = new PathElem();
         int ingressIndex = -1;
         int currHopIndex = -1;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -137,42 +85,30 @@ public class StaticDBInterPathfinder extends Pathfinder{
         String ingressURN = null;
         String egressURN = null;
         String currHopURN = null;
-        String pathType = pathInfo.getPathType();
+        //TODO: Pull transient value from Path
+        boolean strict = false;
         Link ingressLink = null;
         boolean oneLocalHop = false;
         boolean onlyLocal = true;
-
+        
+        
+        //TODO: Check strict
+        /* If strict then return */
+        /* if(pathType == null || pathType.equals("strict")){
+            
+        }*/
+        
         /* Copy each hop until reach egress or the last hop (destination) */
-        for(int i = 0; i < currHops.length; i++){
-            CtrlPlaneHopContent currHop = currHops[i];
-            CtrlPlaneHopContent newHop = new CtrlPlaneHopContent();
-            String domainIdURN = currHop.getDomainIdRef();
-            String nodeIdURN = currHop.getNodeIdRef();
-            String portIdURN = currHop.getPortIdRef();
-            String linkIdURN = currHop.getLinkIdRef();
-            String[] componentList = null;
+        for(int i = 0; i < currHops.size(); i++){
+            PathElem currHop = currHops.get(i);
+            PathElem newHop = PathElem.copyPathElem(currHop);
             currHopIndex = i;
-
-            if(linkIdURN != null){
-                componentList = this.splitURN(linkIdURN, TopologyUtil.LINK_URN);
-                newHop.setLinkIdRef(linkIdURN);
-                currHopURN = linkIdURN;
-            }else if(portIdURN != null){
-                componentList = this.splitURN(portIdURN, TopologyUtil.PORT_URN);
-                newHop.setPortIdRef(portIdURN);
-                currHopURN = portIdURN;
-            }else if(nodeIdURN != null){
-                componentList = this.splitURN(nodeIdURN, TopologyUtil.NODE_URN);
-                newHop.setNodeIdRef(nodeIdURN);
-                currHopURN = nodeIdURN;
-            }else if(domainIdURN != null){
-                componentList = this.splitURN(domainIdURN, TopologyUtil.DOMAIN_URN);
-                newHop.setDomainIdRef(domainIdURN);
-                currHopURN = domainIdURN;
-            }else{
-                this.reportError("Empty hop in provided path");
+            currHopURN = currHop.getUrn();
+            if(currHopURN == null){
+                currHopURN = currHop.getLink().getFQTI();
             }
-
+            
+            String[] componentList = currHopURN.split(":");
             isLocal = domainDAO.isLocal(componentList[3]);
             if(isLocal && ingressFound){
                 egressURN = currHopURN;
@@ -192,20 +128,14 @@ public class StaticDBInterPathfinder extends Pathfinder{
                 onlyLocal = false;
             }
 
-            newHop.setId("hop");
-            newPath.addHop(newHop);
+            newPath.addPathElem(newHop);
         }
 
         /* If strict or local path return local ingress and egress  */
         if(onlyLocal){
-            pathInfo.setPathType("strict");
-            return pathInfo.getPath();
-        }else if(pathType == null || pathType.equals("strict")){
-            ingressHop.setLinkIdRef(ingressURN);
-            egressHop.setLinkIdRef(egressURN);
-            intraPath.addHop(ingressHop);
-            intraPath.addHop(egressHop);
-            return intraPath;
+            //TODO: is the following line still needed?
+            //pathInfo.setPathType("strict");
+            return newPath;
         }
 
         /* If loose path given find ingress... */
@@ -213,7 +143,7 @@ public class StaticDBInterPathfinder extends Pathfinder{
             ingressLink = this.findIngressFromPrevEgress(currHopURN, domainDAO);
             ingressURN = this.urnFromLink(ingressLink);
         }else if(ingressIndex > 0){
-            String prevEgressURN = currHops[ingressIndex - 1].getLinkIdRef();
+            String prevEgressURN = currHops.get(ingressIndex - 1).getUrn();
             ingressLink = this.findIngressFromPrevEgress(prevEgressURN,
                 domainDAO);
             ingressURN = this.matchURNToLink(ingressURN, ingressLink);
@@ -221,30 +151,22 @@ public class StaticDBInterPathfinder extends Pathfinder{
             /* ingress and the source are the same */
             ingressLink = domainDAO.getFullyQualifiedLink(ingressURN);
         }
-        ingressHop.setLinkIdRef(ingressURN);
-        newPath.addHop(ingressHop);
-        intraPath.addHop(ingressHop);
+        ingressHop.setUrn(ingressURN);
+        newPath.addPathElem(ingressHop);
 
         /* ...then find egress */
         if(egressURN == null || (!egressURN.equals(currHopURN))){
             RouteElem route = this.lookupRoute(ingressLink, egressURN,
                                                currHopURN, oneLocalHop);
-            newPath = this.addNewRoute(pathInfo, currHopIndex, currHopURN,
+            this.addNewRoute(currHops, currHopIndex, currHopURN,
                                         route, newPath);
-            intraPath.addHop(newPath.getHop()[ingressIndex + 1]);
         }else{
             /* sets egress if same as destination */
-            egressHop.setId("dest");
-            egressHop.setLinkIdRef(egressURN);
-            newPath.addHop(egressHop);
-            intraPath.addHop(egressHop);
+            egressHop = PathElem.copyPathElem(currHops.get(currHopIndex));
+            newPath.addPathElem(egressHop);
         }
 
-        /* Save new interdomain path */
-        newPath.setId("path-" + System.currentTimeMillis());
-        pathInfo.setPath(newPath);
-
-        return intraPath;
+        return newPath;
     }
 
     /**
@@ -347,11 +269,10 @@ public class StaticDBInterPathfinder extends Pathfinder{
      * @throws PathfinderException
      * @throws BSSException
      */
-    private CtrlPlanePathContent addNewRoute(PathInfo pathInfo, int hopIndex,
-        String nextHopURN, RouteElem route, CtrlPlanePathContent newPath)
+    private void addNewRoute(List<PathElem> currHops, int hopIndex,
+        String nextHopURN, RouteElem route, Path newPath)
         throws PathfinderException, BSSException{
-
-        CtrlPlaneHopContent[] currHops = pathInfo.getPath().getHop();
+        
         Link egressLink = route.getLink();
         Link nextHopLink = null;
         int hopCount = 0;
@@ -359,12 +280,12 @@ public class StaticDBInterPathfinder extends Pathfinder{
         String nextHopDomain = TopologyUtil.getURNDomainId(nextHopURN);
         int nextHopType = TopologyUtil.getURNType(nextHopURN);
         int lastHopType = 0;
-        String dest = currHops[currHops.length - 1].getLinkIdRef();
+        String dest = currHops.get(currHops.size() - 1).getUrn();
         String routeType = route.isStrict() ? "strict" : "loose";
 
         /* Add all the hops to the path */
         while(route != null){
-            CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+            PathElem hop = new PathElem();
             Domain domain = route.getDomain();
             Node node = route.getNode();
             Port port = route.getPort();
@@ -373,16 +294,16 @@ public class StaticDBInterPathfinder extends Pathfinder{
 
             if(link != null){
                 urn = this.urnFromLink(link);
-                hop.setLinkIdRef(urn);
+                hop.setUrn(urn);
             }else if(port != null){
                 urn = this.urnFromPort(port);
-                hop.setPortIdRef(urn);
+                hop.setUrn(urn);
             }else if(node != null){
                 urn = this.urnFromNode(node);
-                hop.setNodeIdRef(urn);
+                hop.setUrn(urn);
             }else if(domain != null){
                 urn = this.urnFromDomain(domain);
-                hop.setDomainIdRef(urn);
+                hop.setUrn(urn);
             }else{
                 this.reportError("Invalid hop in route. Please ask the IDC " +
                     "administrator to check their routing tables");
@@ -390,8 +311,7 @@ public class StaticDBInterPathfinder extends Pathfinder{
             lastDomain = TopologyUtil.getURNDomainId(urn);
             lastHopType = TopologyUtil.getURNType(urn);
 
-            hop.setId("hop");
-            newPath.addHop(hop);
+            newPath.addPathElem(hop);
             route = route.getNextHop();
             hopCount++;
         }
@@ -400,11 +320,10 @@ public class StaticDBInterPathfinder extends Pathfinder{
         nextHopLink = egressLink.getRemoteLink();
         if(hopCount == 1 && nextHopLink != null){
             String remoteLinkURN = this.urnFromLink(nextHopLink);
-            CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+            PathElem hop = new PathElem();
             if(!remoteLinkURN.equals(dest)){
-                hop.setId("hop");
-                hop.setLinkIdRef(remoteLinkURN);
-                newPath.addHop(hop);
+                hop.setUrn(remoteLinkURN);
+                newPath.addPathElem(hop);
             }
             lastDomain = nextHopLink.getPort().getNode()
                                     .getDomain().getTopologyIdent();
@@ -413,84 +332,23 @@ public class StaticDBInterPathfinder extends Pathfinder{
         /* add next hop if its the destination or a different domain than last
            hop in path looked up */
         if(dest.equals(nextHopURN)){
-            newPath.addHop(currHops[hopIndex]);
-            pathInfo.setPathType(routeType);
+            newPath.addPathElem(currHops.get(hopIndex));
+            //TODO: Still needed?
+            //pathInfo.setPathType(routeType);
         }else if(!lastDomain.equals(nextHopDomain)){
-            newPath.addHop(currHops[hopIndex]);
-            pathInfo.setPathType("loose");
+            newPath.addPathElem(currHops.get(hopIndex));
+            //TODO: Still needed?
+            //pathInfo.setPathType("loose");
         }else if(nextHopType > lastHopType){
-            /* if hop already in path is more acurate than table's */
-            CtrlPlaneHopContent[] newHops = newPath.getHop();
-            newHops[newHops.length - 1] = currHops[hopIndex];
+            /* if hop already in path is more accurate than table's */
+            newPath.getPathElems()
+                   .set(newPath.getPathElems().size() - 1, currHops.get(hopIndex));
         }
 
         /* fill in remaining hops */
-        for(int i = (hopIndex + 1); i < currHops.length; i++){
-            newPath.addHop(currHops[i]);
+        for(int i = (hopIndex + 1); i < currHops.size(); i++){
+            newPath.addPathElem(currHops.get(i));
         }
-
-        return newPath;
-    }
-
-    /**
-     * Verifies a given path is valid
-     *
-     * @param src a createReservation request's given source URN
-     * @param dest a createReservation request's given destination URN
-     * @param interPath a createReservation request's given path
-     * @throws PathfinderException
-     */
-    private void verifyPath(String src, String dest,
-        CtrlPlanePathContent interPath) throws PathfinderException{
-
-        CtrlPlaneHopContent[] hops = interPath.getHop();
-        String firstHop = TypeConverter.hopToURN(hops[0], "link");
-        String lastHop = TypeConverter.hopToURN(hops[hops.length - 1], "link");
-
-        if(firstHop == null || lastHop == null){
-            this.reportError("The first and last hop of the given path must " +
-                "be a link or link ID reference.");
-        }else if(!firstHop.equals(src)){
-            this.reportError("The first hop of the path must be the same as " +
-            "the source. The source given was " + src + " and the first hop " +
-            "of the provided path is " + firstHop);
-        }else if(!lastHop.equals(dest)){
-            this.reportError("The last hop of the path must be the same as " +
-            "the destination. The destination given was " + dest + " and the" +
-            "last hop of the provided path is " + lastHop);
-        }
-
-    }
-
-    /**
-     * Splits a given URN into String array after verifying its of the
-     * expected type
-     *
-     * @param urn the urn to split
-     * @param partCount the type of URN expected
-     * @return a String array of the URN's components
-     * @throws PathfinderException
-     */
-    private String[] splitURN(String urn, int partCount)
-        throws PathfinderException{
-
-        String[] componentList = urn.split(":");
-        String refType = "link";
-
-        if(partCount == TopologyUtil.DOMAIN_URN){
-            refType = "domain";
-        }else if(partCount == TopologyUtil.NODE_URN){
-            refType = "node";
-        }else if(partCount == TopologyUtil.PORT_URN){
-            refType = "port";
-        }
-
-        if(componentList.length != partCount){
-            this.reportError("Invalid " + refType + " ID reference given in " +
-                "provided path. The URN that caused the error is " + urn);
-        }
-
-        return componentList;
     }
 
     /**
