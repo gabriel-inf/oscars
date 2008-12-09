@@ -53,6 +53,7 @@ public class PathElem extends HibernateBean implements Serializable {
      * @param num not actually settable
      */ 
     public void setSeqNumber(int num) {
+        this.seqNumber = num;
     }
 
 
