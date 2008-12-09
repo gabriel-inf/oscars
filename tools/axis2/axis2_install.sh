@@ -148,8 +148,8 @@ if [ $BUILD_AXIS ]; then
   echo "--- Copying OSCARS specific libs to Axis2...";
   cp lib/antlr* dists/axis2-1.4.1/lib;
   cp lib/jdom.jar dists/axis2-1.4.1/lib;
-  cp conf/server/axis2.log4j.properties dists/axis2-1.4.1/log4j.properties
-  cp conf/server/axis2.log4j.properties dists/axis2-1.4.1/webapp/WEB-INF/classes/log4j.properties
+  cp conf/logging/axis2.log4j.properties dists/axis2-1.4.1/log4j.properties
+  cp conf/logging/axis2.log4j.properties dists/axis2-1.4.1/webapp/WEB-INF/classes/log4j.properties
     echo "--- Building Axis2 with Rampart...";
   `sed -e 's/CHANGE_THIS/\.\./g' tools/axis2/build.xml > dists/axis2-1.4.1/webapp/build.xml`;
   cd dists/axis2-1.4.1/webapp;
