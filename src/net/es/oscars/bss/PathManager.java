@@ -69,12 +69,13 @@ public class PathManager {
 
         boolean isExplicit = (pathInfo.getPath() != null);
         PathInfo intraPath = null;
-
-        try {
-            intraPath = this.pceMgr.findPath(pathInfo, resv);
+        
+        //TODO: Update for new PCE interface
+        /*  try {
+            intraPath = this.pceMgr.findLocalPath(resv);
         } catch (PathfinderException ex) {
             throw new BSSException(ex.getMessage());
-        }
+        } */
 
         if (intraPath == null || intraPath.getPath() == null) {
             throw new BSSException("Pathfinder could not find a path!");
@@ -198,11 +199,13 @@ public class PathManager {
         PathInfo refOnlyPathInfo = TypeConverter.createRefPath(pathInfo);
 
         //Build path containing only the ingress link id
-        try{
+        /*try{
+            //TODO: Save the Path so this is not needed
             ingressLink = this.pceMgr.findIngress(refOnlyPathInfo);
         }catch(PathfinderException e){
             throw new BSSException(e.getMessage());
-        }
+        }*/
+        
         this.log.debug("ingress=" + ingressLink);
         link = domainDAO.getFullyQualifiedLink(ingressLink);
         elem.setLink(link);

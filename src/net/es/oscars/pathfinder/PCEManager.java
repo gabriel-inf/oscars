@@ -1,14 +1,10 @@
 package net.es.oscars.pathfinder;
 
 import java.util.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.apache.log4j.*;
-
 import net.es.oscars.PropHandler;
-import net.es.oscars.wsdlTypes.PathInfo;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.topology.Path;
 
 /**
  * This class contains methods for handling PCE's (path computation elements)
@@ -17,7 +13,6 @@ import net.es.oscars.bss.Reservation;
  */
 public class PCEManager {
     private Logger log;
-    private PCE pathfinder;
     private String dbname;
 
     public PCEManager(String dbname) {
@@ -30,75 +25,71 @@ public class PCEManager {
      * if specified by user.  Sets information, such
      * as local hops in path.
      *
-     * @param pathInfo instance containing layer 2 or layer 3 information
+     * @param resv parameters used to find the local path
      * @return local path used for resource scheduling
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
+    public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
+        this.log.info("PCEManager.findLocalPath.start");
 
-        PathInfo intraPath = null;
-
-        this.log.info("PCEManager.findPath.start");
-
-        List<String> pathMethods = this.getPathMethods();
-
+        List<String> pathMethods = this.getPathMethods("local");
+        List<Path> results = null;
+        
         if (pathMethods != null) {
             for( String method : pathMethods ) {
                 try {
-                    this.log.info("PCEManager.findPath."+method+".start");
-                    this.pathfinder = new PathfinderFactory().createPathfinder(method, this.dbname);
-                    intraPath = this.pathfinder.findPath(pathInfo, reservation);
-                    this.log.info("PCEManager.findPath."+method+".end");
+                    this.log.info("PCEManager.findLocalPath."+method+".start");
+                    LocalPCE pathfinder = new PathfinderFactory().getLocalPCE(method, this.dbname);
+                    results = pathfinder.findLocalPath(resv);
+                    this.log.info("PCEManager.findLocalPath."+method+".end");
                  } catch (Exception ex) {
-                    this.log.error("Exception caught finding path using method "+method+": "+ex.getMessage());
+                    this.log.error("Exception caught finding local path using method "+method+": "+ex.getMessage());
                     ex.printStackTrace();
                  }
 
-                 if (intraPath != null)
+                 if (results != null && !results.isEmpty())
                      break;
             }
         }
-
-        this.log.info("PCEManager.findPath.end");
-
-        return intraPath;
+        
+        this.log.info("PCEManager.findLocalPath.end");
+        return results;
     }
-
+    
     /**
-     * Finds the local ingress of a path
+     * Finds path from source to destination, taking into account information,
+     * if specified by user.  Sets information, such
+     * as local hops in path.
      *
-     * @param pathInfo instance containing layer 2 or layer 3 information
-     * @return local ingress link id
+     * @param resv parameters used to find the local path
+     * @return local path used for resource scheduling
      * @throws PathfinderException
      */
-    public String findIngress(PathInfo pathInfo) throws PathfinderException {
+    public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
+        this.log.info("PCEManager.findLocalPath.start");
 
-    String ingress = null;
-
-        this.log.info("PCEManager.findIngress.start");
-
-        List<String> pathMethods = this.getPathMethods();
-
+        List<String> pathMethods = this.getPathMethods("interdomain");
+        List<Path> results = null;
+        
         if (pathMethods != null) {
             for( String method : pathMethods ) {
                 try {
-                    this.log.info("PCEManager.findIngress."+method+".start");
-                    this.pathfinder = new PathfinderFactory().createPathfinder(method, this.dbname);
-                    ingress = this.pathfinder.findIngress(pathInfo);
-                    this.log.info("PCEManager.findIngress."+method+".end");
-                    break;
+                    this.log.info("PCEManager.findInterdomainPath."+method+".start");
+                    InterdomainPCE pathfinder = new PathfinderFactory().getInterdomainPCE(method, this.dbname);
+                    results = pathfinder.findInterdomainPath(resv);
+                    this.log.info("PCEManager.findInterdomainPath."+method+".end");
                  } catch (Exception ex) {
-                    this.log.error("Exception caught finding ingress point using method "+method+": "+ex.getMessage());
+                    this.log.error("Exception caught finding interdomain path using method "+method+": "+ex.getMessage());
+                    ex.printStackTrace();
                  }
 
-                 if (ingress != null)
+                 if (results != null && !results.isEmpty())
                      break;
             }
         }
-
-        this.log.info("PCEManager.findIngress.end");
-
-        return ingress;
+        
+        this.log.info("PCEManager.findInterdomainPath.end");
+        return results;
     }
 
     /**
@@ -108,7 +99,7 @@ public class PCEManager {
      * @return Ordered list of strings containing which pathfinding components to try.
      * @throws PathfinderException
      */
-    public List<String> getPathMethods() throws PathfinderException {
+    public List<String> getPathMethods(String pfType) throws PathfinderException {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("pathfinder", true);
 
@@ -120,6 +111,9 @@ public class PCEManager {
         }
 
         String pathMethod = props.getProperty("pathMethod");
+        if(pathMethod == null){
+            pathMethod = props.getProperty(pfType + ".pathMethod");
+        }
         if (pathMethod == null) {
             throw new PathfinderException(
                 "No path computation method specified in oscars.properties.");
