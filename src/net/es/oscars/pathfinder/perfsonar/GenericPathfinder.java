@@ -14,36 +14,16 @@ import java.util.Comparator;
 import java.io.IOException;
 import org.apache.commons.httpclient.HttpException;
 
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.RouteElem;
-import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Link;
-import net.es.oscars.bss.topology.TopologyUtil;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.perfsonar.util.*;
-import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.PropHandler;
-
 import net.es.oscars.bss.topology.URNParser;
-
-import org.jdom.*;
-
-import edu.internet2.perfsonar.*;
-
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.oscars.*;
-
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import java.util.List;
 import org.apache.log4j.*;
-
-import org.jgrapht.*;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
