@@ -3,7 +3,6 @@ package net.es.oscars.pathfinder.perfsonar;
 import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
@@ -132,21 +131,21 @@ public class GenericPathfinder {
         this.addDomainToGraph(domain, isOpaque);
 
         if (this.log.isDebugEnabled()) {
-            this.log.debug("Domains: ");
+          //  this.log.debug("Domains: ");
             Iterator<String> iter = this.domains.keySet().iterator();
             int i = 0;
             while(iter.hasNext()) {
                 String key = iter.next();
-                this.log.debug(i+"). "+key);
+               // this.log.debug(i+"). "+key);
                 i++;
             }
 
-            this.log.debug("Opaque Domains: ");
+          //  this.log.debug("Opaque Domains: ");
             Iterator<String> iter2 = this.opaqueDomains.iterator();
             int j = 0;
             while(iter2.hasNext()) {
                 String key = iter2.next();
-                this.log.debug(j+"). "+key);
+               // this.log.debug(j+"). "+key);
                 j++;
             }
         }
@@ -337,7 +336,7 @@ public class GenericPathfinder {
                 i = 0;
                 while(iter.hasNext()) {
                     String key = iter.next();
-                    this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                    //this.log.debug(i+"). "+key+" -- "+costs.get(key));
                     i++;
                 }
 
@@ -346,7 +345,7 @@ public class GenericPathfinder {
                 i = 0;
                 while(iter2.hasNext()) {
                     String key = iter2.next();
-                    this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                   // this.log.debug(i+"). "+key+" -- "+costs.get(key));
                     i++;
                 }
 
@@ -355,7 +354,7 @@ public class GenericPathfinder {
                 i = 0;
                 while(iter3.hasNext()) {
                     String key = iter3.next();
-                    this.log.debug(i+"). "+key);
+                    //this.log.debug(i+"). "+key);
                     i++;
                 }
             }
@@ -462,7 +461,7 @@ public class GenericPathfinder {
         if (this.log.isDebugEnabled()) {
             int i = 0;
             for(String currId : retIds) {
-                this.log.debug("Path("+i+"): "+currId);
+              //  this.log.debug("Path("+i+"): "+currId);
                 i++;
             }
         }

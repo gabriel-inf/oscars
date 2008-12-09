@@ -27,7 +27,7 @@ public class PathfinderFactory {
         } else if (pathMethod.equals("database")) {
             // return new DBPathfinder(dbname);
         } else if (pathMethod.equals("perfsonar")) {
-            return new PSPathfinder(dbname);
+            //return new PSPathfinder(dbname);
         }
         return null;
     }

@@ -45,7 +45,8 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
 
         DomainDAO domDAO = new DomainDAO(dbname);
         this.localDomain = domDAO.getLocalDomain();
-
+        this.log.debug("localDomain=" + this.localDomain);
+        
         if (this.psdf == null) {
             String[] gLSs = null;
             String[] hLSs = null;
@@ -139,8 +140,11 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         }
 
         for(Path p : results){
+            int seqNum = 1;
             for(PathElem e : p.getPathElems()){
-                this.log.debug(e.getUrn());
+                e.setSeqNumber(seqNum);
+                this.log.debug("Hop " + e.getSeqNumber() + ") " + e.getUrn());
+                seqNum++;
             }
         }
         
@@ -167,8 +171,11 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         }
 
         for(Path p : results){
+            int seqNum = 1;
             for(PathElem e : p.getPathElems()){
-                this.log.debug(e.getUrn());
+                e.setSeqNumber(seqNum);
+                this.log.debug("Hop " + e.getSeqNumber() + ") " + e.getUrn());
+                seqNum++;
             }
         }
         
@@ -183,13 +190,15 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
      * Dijkstra's shortest path between the hops. It constructs an intra-domain
      * path as well as an inter-domain path.
      *
-     * @param pathInfo the PathInfo element from a createReservation request
-     * @param resv a reservation to ignore when constructing the path
-     * @return a path containing the ingress and egress for this domain
+     * @param resv the reservation to ignore when constructing the path
+     * @para inputPathType the type of path to use as the input.
+     * @return a path of type INTERDOMAIN or LOCAL depending on the input information
      */
-    private Path buildNewPath(Reservation resv, String pathType)
+    private Path buildNewPath(Reservation resv, String inputPathType)
         throws PathfinderException, BSSException {
-
+        
+        //if an interdomain path is already calculated then just calculate local path
+        final boolean LOCALPATH = PathType.INTERDOMAIN.equals(inputPathType);
         GenericPathfinder pf;
         try {
             pf = new GenericPathfinder();
@@ -198,7 +207,6 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         }
 
         pf.addDomainFinder(psdf);
-
         pf.addDomain(this.localDomain);
 
         // add in the overlapping reservations to the path.
@@ -237,9 +245,8 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         // none is specified, we add a hop with our own domain since
         // presumably, we have it because the circuit is supposed to go through
         // our domain.
-        Path newPath = new Path();
-        List<PathElem> reqHops = resv.getPath(pathType).getPathElems();
-        int sequenceNum = 0;
+        Path tmpPath = new Path();
+        List<PathElem> reqHops = resv.getPath(inputPathType).getPathElems();
         boolean foundLocal = false;
         for(int i = 0; i < reqHops.size(); i++) {
             PathElem currHop = PathElem.copyPathElem(reqHops.get(i));
@@ -248,34 +255,32 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             if (currHopURNInfo.get("domainFQID").equals(this.localDomain.getFQTI())) {
                 foundLocal = true;
             }
-            currHop.setSeqNumber(++sequenceNum);
-            newPath.addPathElem(currHop);
+            tmpPath.addPathElem(currHop);
         }
         
         /* If didn't find ingress insert domain ID as second to last hop */
         if(!foundLocal){
-           List<PathElem> newHops = newPath.getPathElems();
-           PathElem lastElem = newHops.get(newHops.size()-1);
+           List<PathElem> tmpHops = tmpPath.getPathElems();
+           PathElem lastElem = tmpHops.get(tmpHops.size()-1);
            PathElem ingElem = PathElem.copyPathElem(lastElem);
            ingElem.setLink(null);
            ingElem.setUrn(this.localDomain.getFQTI());
-           newHops.add(newHops.size()-2, ingElem);
-           lastElem.setSeqNumber(newHops.size());
+           tmpHops.add(tmpHops.size()-2, ingElem);
+           lastElem.setSeqNumber(tmpHops.size());
         }
         
-        List<PathElem> newHops = newPath.getPathElems();
-        Path newInterPath = new Path();
-        newInterPath.setDirection(PathDirection.BIDIRECTIONAL);
-        newInterPath.setPathType(PathType.INTERDOMAIN);
-        newInterPath.setExplicit(false);
+        List<PathElem> tmpHops = tmpPath.getPathElems();
+        Path newPath = new Path();
+        newPath.setDirection(PathDirection.BIDIRECTIONAL);
+        newPath.setPathType(LOCALPATH ? PathType.LOCAL : PathType.INTERDOMAIN);
+        newPath.setExplicit(false);
         
         PathElem prevHop = null;
         String ingressURN = null;
         String egressURN = null;
-        sequenceNum = 0;
         
-        for(int i = 0; i < newHops.size(); i++) {
-            PathElem currHop = PathElem.copyPathElem(newHops.get(i));
+        for(int i = 0; i < tmpHops.size(); i++) {
+            PathElem currHop = PathElem.copyPathElem(tmpHops.get(i));
             Hashtable<String, String> currHopURNInfo = URNParser.parseTopoIdent(currHop.getUrn());
 
             this.log.debug("Current hop: "+ currHop.getUrn());
@@ -284,14 +289,12 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                 if (egressURN != null) {
                     this.log.debug("Adding verbatim hop(after egress): "+ currHop.getUrn());
                     // we've already found our ingress/egress points
-                    currHop.setSeqNumber(++sequenceNum);
-                    newInterPath.addPathElem(currHop);
+                    newPath.addPathElem(currHop);
                     prevHop = currHop;
                 } else if (ingressURN == null) {
                     this.log.debug("Adding verbatim hop(before egress): "+ currHop.getUrn());
                     // we've not yet found our ingress point
-                    currHop.setSeqNumber(++sequenceNum);
-                    newInterPath.addPathElem(currHop);
+                    newPath.addPathElem(currHop);
                     prevHop = currHop;
                 } else {
                     // we've already found our ingress point, so the actual
@@ -329,8 +332,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             this.log.debug("Adding hop to interdomain: "+prevHop.getUrn());
 
                             egressURN = prevHop.getUrn();
-                            prevHop.setSeqNumber(++sequenceNum);
-                            newInterPath.addPathElem(prevHop);
+                            newPath.addPathElem(prevHop);
 
                             // The code assumes that we will give them what we
                             // think is the hop into the next domain. So add
@@ -342,16 +344,15 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             try{
                                 hop.setLink(TopologyUtil.getLink(urn, this.dbname));
                             }catch(BSSException e){}
-                            hop.setSeqNumber(++sequenceNum);
-                            newInterPath.addPathElem(hop);
+                            newPath.addPathElem(hop);
 
                             // since we can only use a given link once, remove
                             // it from contention for later searches.
-                            this.log.debug("Removing edge between "+prevHop.getUrn()+" and "+urn);
+                           // this.log.debug("Removing edge between "+prevHop.getUrn()+" and "+urn);
                             //pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
                             pf.ignoreElement(prevHop.getUrn());
 
-                            this.log.debug("Removing edge between "+urn+" and "+prevHop.getUrn());
+                           // this.log.debug("Removing edge between "+urn+" and "+prevHop.getUrn());
                             //pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
                             pf.ignoreElement(urn);
 
@@ -359,7 +360,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             // as the element we just added.
                             if (currHop.getUrn() != null && currHop.getUrn().equals(hop.getUrn()) == false) {
                                     this.log.debug("Adding the given nextHop to interdomain: "+ currHop.getUrn());
-                                    newInterPath.addPathElem(currHop);
+                                    newPath.addPathElem(currHop);
                             }
 
                             break;
@@ -370,13 +371,15 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                                 try{
                                     hop.setLink(TopologyUtil.getLink(urn, this.dbname));
                                 }catch(BSSException e){}
-                                hop.setSeqNumber(++sequenceNum);
-
-                                this.log.debug("Removing edge between "+prevHop.getUrn()+" and "+urn);
+                                if(LOCALPATH){
+                                    this.log.debug("Adding "+urn+" to intradomain path");
+                                    newPath.addPathElem(hop);
+                                }
+                                //this.log.debug("Removing edge between "+prevHop.getUrn()+" and "+urn);
                                 //pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
                                 pf.ignoreElement(prevHop.getUrn());
 
-                                this.log.debug("Removing edge between "+urn+" and "+prevHop.getUrn());
+                               // this.log.debug("Removing edge between "+urn+" and "+prevHop.getUrn());
                                 //pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
                                 pf.ignoreElement(urn);
 
@@ -402,7 +405,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                     this.log.debug("Found the ingress point: "+ currHop.getUrn());
 
                     ingressURN = currHop.getUrn();
-                    newInterPath.addPathElem(currHop);
+                    newPath.addPathElem(currHop);
                     prevHop = currHop;
                     continue;
                 } else {
@@ -421,7 +424,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                     for( String urn : path ) {
                         Hashtable<String, String> currURN = URNParser.parseTopoIdent(urn);
 
-                        // the souce will either be in a different domain or
+                        // the source will either be in a different domain or
                         // will already be in the intradomain path.
                         if (urn.equals(prevHop.getUrn()))
                             continue;
@@ -439,24 +442,30 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                                 try{
                                     hop.setLink(TopologyUtil.getLink(urn, this.dbname));
                                 }catch(BSSException e){}
-                                hop.setSeqNumber(++sequenceNum);
-
-                                if (ingressURN == null) {
-                                    this.log.debug("Found our ingress point "+urn+" adding to interdomain path");
+                                
+                                if(ingressURN == null && !LOCALPATH){
                                     // we've found our ingress point. Add it to
                                     // the interdomain path.
-                                    newInterPath.addPathElem(hop);
+                                    this.log.debug("Adding ingress " + urn + " to interdomain path");
+                                    newPath.addPathElem(hop);
+                                }else if(LOCALPATH){
+                                    this.log.debug("Adding "+urn+" to intradomain path");
+                                    newPath.addPathElem(hop);
+                                }
+                                if (ingressURN == null) {
+                                    this.log.debug("Found our ingress point "+urn);
+                                    
                                     ingressURN = urn;
                                 }
                                 
                                 // XXX Currently, we can't reuse a port, so
                                 // remove each link we add from contention for
                                 // future searches
-                                this.log.debug("Removing edge between "+prevHop.getUrn()+" and "+urn);
+                               // this.log.debug("Removing edge between "+prevHop.getUrn()+" and "+urn);
                                 //pf.setEdgeBandwidth(prevHop.getLinkIdRef(), urn, 0.0);
                                 pf.ignoreElement(prevHop.getUrn());
 
-                                this.log.debug("Removing edge between "+urn+" and "+prevHop.getUrn());
+                               // this.log.debug("Removing edge between "+urn+" and "+prevHop.getUrn());
                                 //pf.setEdgeBandwidth(urn, prevHop.getLinkIdRef(), 0.0);
                                 pf.ignoreElement(urn);
 
@@ -465,18 +474,16 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                         }
                     }
 
-                    if (i == newHops.size() - 1) {
+                    if ((i == tmpHops.size() - 1) && !LOCALPATH) {
                         // if we're the last hop, the above has found the
                         // ingress point, but there is no egress point. Thus,
                         // we add ourselves to the interdomain path.
-
-                        newInterPath.addPathElem(currHop);
+                        newPath.addPathElem(currHop);
                     }
                 }
             }
         }
 
-        /* Save new interdomain path */
-        return newInterPath;
+        return newPath;
     }
 }
