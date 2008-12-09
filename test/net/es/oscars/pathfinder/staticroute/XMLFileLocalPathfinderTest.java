@@ -53,9 +53,7 @@ public class XMLFileLocalPathfinderTest {
         path.setPathType(PathType.INTERDOMAIN);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
-        ingr.setSeqNumber(1);
         PathElem egr = new PathElem();
-        ingr.setSeqNumber(2);
         ingr.setUrn(pathInfo.getLayer2Info().getSrcEndpoint());
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());
         path.addPathElem(ingr);

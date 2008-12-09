@@ -140,11 +140,8 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         }
 
         for(Path p : results){
-            int seqNum = 1;
             for(PathElem e : p.getPathElems()){
-                e.setSeqNumber(seqNum);
-                this.log.debug("Hop " + e.getSeqNumber() + ") " + e.getUrn());
-                seqNum++;
+                this.log.debug("Hop) " + e.getUrn());
             }
         }
         
@@ -171,11 +168,8 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         }
 
         for(Path p : results){
-            int seqNum = 1;
             for(PathElem e : p.getPathElems()){
-                e.setSeqNumber(seqNum);
-                this.log.debug("Hop " + e.getSeqNumber() + ") " + e.getUrn());
-                seqNum++;
+                this.log.debug("Hop) " + e.getUrn());
             }
         }
         
@@ -266,7 +260,6 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
            ingElem.setLink(null);
            ingElem.setUrn(this.localDomain.getFQTI());
            tmpHops.add(tmpHops.size()-2, ingElem);
-           lastElem.setSeqNumber(tmpHops.size());
         }
         
         List<PathElem> tmpHops = tmpPath.getPathElems();

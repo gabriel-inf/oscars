@@ -55,9 +55,7 @@ public class PSPathfinderTest {
         path.setPathType(PathType.INTERDOMAIN);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
-        ingr.setSeqNumber(1);
         PathElem egr = new PathElem();
-        ingr.setSeqNumber(2);
         ingr.setUrn(pathInfo.getLayer2Info().getSrcEndpoint());
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());
         path.addPathElem(ingr);
@@ -68,10 +66,8 @@ public class PSPathfinderTest {
         this.sf.getCurrentSession().getTransaction().commit();
         assert (pathCalcResults != null && (!pathCalcResults.isEmpty()));
         for(Path p : pathCalcResults){
-            int seqNum = 0;
             for(PathElem e : p.getPathElems()){
                 assert e.getUrn() != null;
-                assert e.getSeqNumber() == ++seqNum;
             }
         }
     }
@@ -94,9 +90,7 @@ public class PSPathfinderTest {
         path.setPathType(PathType.REQUESTED);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
-        ingr.setSeqNumber(1);
         PathElem egr = new PathElem();
-        ingr.setSeqNumber(2);
         ingr.setUrn(pathInfo.getLayer2Info().getSrcEndpoint());
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());
         path.addPathElem(ingr);
@@ -107,10 +101,8 @@ public class PSPathfinderTest {
         this.sf.getCurrentSession().getTransaction().commit();
         assert (pathCalcResults != null && (!pathCalcResults.isEmpty()));
         for(Path p : pathCalcResults){
-            int seqNum = 0;
             for(PathElem e : p.getPathElems()){
                 assert e.getUrn() != null;
-                assert e.getSeqNumber() == ++seqNum;
             }
         }
     }

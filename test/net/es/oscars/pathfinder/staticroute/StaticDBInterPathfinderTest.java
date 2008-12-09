@@ -1,6 +1,5 @@
 package net.es.oscars.pathfinder.staticroute;
 
-import java.util.HashMap;
 import java.util.List;
 
 import net.es.oscars.GlobalParams;
@@ -13,7 +12,6 @@ import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pathfinder.PathfinderException;
-import net.es.oscars.pathfinder.staticroute.util.IDCRouteUtil;
 import net.es.oscars.wsdlTypes.PathInfo;
 
 import org.hibernate.SessionFactory;
@@ -51,13 +49,10 @@ public class StaticDBInterPathfinderTest {
         path.setPathType(PathType.REQUESTED);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
-        ingr.setSeqNumber(1);
         
         PathElem mid = new PathElem();
-        mid.setSeqNumber(2);
         
         PathElem egr = new PathElem();
-        ingr.setSeqNumber(3);
         ingr.setUrn(pathInfo.getLayer2Info().getSrcEndpoint());
         mid.setUrn("urn:ogf:network:domain=dcn.internet2.edu:node=CHIC");
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());

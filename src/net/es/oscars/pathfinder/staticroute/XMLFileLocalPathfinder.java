@@ -58,8 +58,7 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
         Path interPath = resv.getPath(PathType.INTERDOMAIN);
         Path localPath = new Path();
         List<PathElem> localHops = this.extractLocalSegment(interPath);
-        
-        int seqNumber = 0;
+        boolean firstHop = true;
         for(int i = 0; i < (localHops.size() - 1); i++){
             
             Link srcLink = localHops.get(i).getLink();
@@ -93,14 +92,13 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
             Link srcRemoteLink = srcLink.getRemoteLink();
             Node srcNode = srcLink.getPort().getNode();
             Node destNode = destLink.getPort().getNode();
-            if(seqNumber == 0){
-                srcPE.setSeqNumber(++seqNumber);
+            if(firstHop){
                 localPath.addPathElem(srcPE);
+                firstHop = false;
                 this.log.debug("Hop: " + srcPE.getUrn());
             }
             if(srcNode.equals(destNode) || 
                 (srcRemoteLink != null && srcRemoteLink.equals(destLink))){
-                destPE.setSeqNumber(++seqNumber);
                 localPath.addPathElem(destPE);
                 this.log.debug("Hop: " + destPE.getUrn());
             }else{
@@ -109,7 +107,6 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
                     PathElem pe = staticPath.get(j);
                     pe.setLink(TopologyUtil.getLink(pe.getUrn(),this.dbname));
                     pe.setUserName(srcPE.getUserName());
-                    pe.setSeqNumber(++seqNumber);
                     localPath.addPathElem(pe);
                     this.log.debug("Hop: " + pe.getUrn());
                 }

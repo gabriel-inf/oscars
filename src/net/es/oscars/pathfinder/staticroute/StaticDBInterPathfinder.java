@@ -81,7 +81,6 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
         boolean onlyLocal = true;
         boolean isLocal = false;
         boolean ingressFound = false;
-        int seqNumber = 0;
         
         //TODO: Check strict
         /* If strict then return */
@@ -122,15 +121,12 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
                 onlyLocal = false;
             }
             
-            newHop.setSeqNumber(++seqNumber);
             newPath.addPathElem(newHop);
         }
 
         /* If strict or local path return local ingress and egress  */
         if(onlyLocal && strict){
-            ingressPE.setSeqNumber(++seqNumber);
             newPath.addPathElem(ingressPE);
-            egressPE.setSeqNumber(++seqNumber);
             newPath.addPathElem(egressPE);
             return newPath;
         }
@@ -150,13 +146,11 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
             /* ingress and the source are the same but Link is not filled in */
             ingressPE.setLink(domainDAO.getFullyQualifiedLink(ingressPE.getUrn()));
         }
-        ingressPE.setSeqNumber(++seqNumber);
         newPath.addPathElem(ingressPE);
 
         /* ...then find egress */
         if(egressIndex == currHopIndex){
             /* sets egress if same as destination */
-            egressPE.setSeqNumber(++seqNumber);
             newPath.addPathElem(egressPE);
         }else{
             RouteElem route = this.lookupRoute(ingressPE.getLink(), egressPE,
