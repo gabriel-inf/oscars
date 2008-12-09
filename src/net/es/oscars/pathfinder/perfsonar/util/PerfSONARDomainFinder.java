@@ -2,21 +2,10 @@ package net.es.oscars.pathfinder.perfsonar.util;
 
 import net.es.oscars.bss.topology.*;
 
-import net.es.oscars.bss.topology.URNParser;
-
 import org.jdom.*;
-
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.oscars.*;
-
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-
 import java.util.List;
 import java.util.Iterator;
 import java.io.IOException;
-
-import org.apache.log4j.*;
 import org.apache.commons.httpclient.HttpException;
 
 import edu.internet2.perfsonar.*;
