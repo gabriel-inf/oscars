@@ -87,7 +87,7 @@ public class PathManager {
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, pathInfo, intraPath.getPath(), resv);
+        this.policyMgr.checkOversubscribed(reservations, resv);
 
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -448,8 +448,7 @@ public class PathManager {
             ReservationDAO dao = new ReservationDAO(this.dbname);
             List<Reservation> active = dao.overlappingReservations(
                                         resv.getStartTime(), resv.getEndTime());
-            this.policyMgr.checkOversubscribed(active, pathInfo,
-                                               intraPath, resv);
+            this.policyMgr.checkOversubscribed(active, resv);
         }
         for (CtrlPlaneHopContent hop : hops) {
             CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =

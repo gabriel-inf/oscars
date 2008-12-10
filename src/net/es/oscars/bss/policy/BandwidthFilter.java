@@ -4,10 +4,8 @@ import java.util.*;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.wsdlTypes.*;
 
 import org.apache.log4j.Logger;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 
 public class BandwidthFilter implements PolicyFilter {
     private Logger log;
@@ -16,10 +14,7 @@ public class BandwidthFilter implements PolicyFilter {
         this.log = Logger.getLogger(this.getClass());
     }
 	
-    public void applyFilter(PathInfo pathInfo, CtrlPlaneHopContent[] hops,
-			                      List<Link> localLinks, Reservation newReservation, 
-			                      List<Reservation> activeReservations)
-            throws BSSException {
+    public void applyFilter(Reservation newReservation, List<Reservation> activeReservations) throws BSSException {
 		
         List<BandwidthIntervalAggregator> aggrs =  null;
 
@@ -29,8 +24,10 @@ public class BandwidthFilter implements PolicyFilter {
         is a special case because we want to put all the linkIntervals from the
         new reservation in this map.
         */
+        Path localPath = newReservation.getPath(PathType.LOCAL);
+        List<PathElem> localPathElems = localPath.getPathElems();
         Map<Link,List<BandwidthIntervalAggregator>> linkIntervals =
-            this.getLocalLinkIntervals(pathInfo, localLinks,
+            this.getLocalLinkIntervals(localPathElems,
                           newReservation.getStartTime(),
                           newReservation.getEndTime(),
                           newReservation.getBandwidth());
@@ -80,25 +77,28 @@ public class BandwidthFilter implements PolicyFilter {
 	 /**
      * Retrieves link bandwidth intervals given a PathInfo instance.
      *
-     * @param pathInfo PathInfo instance containing path parameters
-     * @param localLinks the local links to check
+     * @param localPathElems the local PathElems to check
      * @param startTime start time for the new reservation
      * @param endTime end time for the new reservation
      * @param capacity capacity requested
      * @return links map with initial Link instances as keys
      */
     private Map<Link,List<BandwidthIntervalAggregator>>
-        getLocalLinkIntervals(PathInfo pathInfo, List<Link> localLinks,
+        getLocalLinkIntervals(List<PathElem> localPathElems,
             Long startTime, Long endTime, Long capacity) throws BSSException {
 
         this.log.info("getLocalLinkIntervals.start");
         Map<Link,List<BandwidthIntervalAggregator>> linkIntervals =
                 new HashMap<Link,List<BandwidthIntervalAggregator>>();
         
-        if (localLinks == null) {
+        if (localPathElems == null) {
             throw new BSSException("no local links provided to getLocalLinkIntervals");
         }
-        for (Link link: localLinks) {
+        for (PathElem localPathElem: localPathElems) {
+            Link link = localPathElem.getLink();
+            if(link == null){
+                throw new BSSException("local path does not contain a linkId for elem " + localPathElem.getUrn());
+            }
             // initialize aggregator array for link
             List<BandwidthIntervalAggregator> aggrs = new ArrayList<BandwidthIntervalAggregator>();
             //check granularity

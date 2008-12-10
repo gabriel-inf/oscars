@@ -16,9 +16,8 @@ public class PolicyFilterFactory {
     
         if (filter.equals("vlanMap")) {
             return new VlanMapFilter();
-        } else if (filter.equals("edgeNode")) {
-            return new VlanFilter();
         }
+        
         throw new BSSException("Unrecognized policy filter specified '" + 
                                filter + "'");
     }
