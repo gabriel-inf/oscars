@@ -21,6 +21,12 @@ public class Layer2Data extends HibernateBean implements Serializable {
     /** persistent field */
     private String destEndpoint;
 
+    /** transient field */
+    private String srcVtag;
+
+    /** transient field */
+    private String destVtag;
+
     /** default constructor */
     public Layer2Data() { }
 
@@ -48,6 +54,33 @@ public class Layer2Data extends HibernateBean implements Serializable {
      */ 
     public void setDestEndpoint(String destEndpoint) {
         this.destEndpoint = destEndpoint;
+    }
+
+
+    /**
+     * @return srcVtag a string with the requested source VLAN tag (transient)
+     */ 
+    public String getSrcVtag() { return this.srcVtag; }
+
+    /**
+     * @param srcVtag a string with the requested source VLAN tag
+     */ 
+    public void setSrcVtag(String srcVtag) {
+        this.srcVtag = srcVtag;
+    }
+
+
+    /**
+     * @return destVtag a string with the requested destination VLAN id
+     *         (transient)
+     */ 
+    public String getDestVtag() { return this.destVtag; }
+
+    /**
+     * @param destVtag a string with the requested destination VLAN id
+     */ 
+    public void setDestVtag(String destVtag) {
+        this.destVtag = destVtag;
     }
 
 

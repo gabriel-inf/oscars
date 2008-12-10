@@ -40,6 +40,9 @@ public class Path extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private String grouping;
 
+    /** transient field */
+    private String pathHopType;
+
     private List<PathElem> pathElems = new ArrayList<PathElem>();
     private Set layer2DataSet = new HashSet<Layer2Data>();
     private Set layer3DataSet = new HashSet<Layer3Data>();
@@ -243,6 +246,22 @@ public class Path extends HibernateBean implements Serializable {
         }
         this.mplsDataSet.add(mplsData);
     }
+
+    // end kludged section
+    
+
+    /**
+     * @return pathHopType String with WSDL path type (transient) 
+     */
+    public String getPathHopType() { return this.pathHopType; }
+
+    /**
+     * @param pathHopType String with WSDL path type
+     */
+    public void setPathHopType(String pathHopType) {
+        this.pathHopType = pathHopType;
+    }
+
 
     // need to override superclass because dealing with transient
     // instances as well

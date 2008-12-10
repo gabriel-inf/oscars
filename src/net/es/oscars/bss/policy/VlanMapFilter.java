@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.PropHandler;
 
@@ -74,7 +73,7 @@ public class VlanMapFilter implements PolicyFilter{
                 /* if not a layer 2 link then don't need to check VLANs */
                 continue;
             }
-            byte[] topoVlans = TypeConverter.rangeStringToMask(l2scData.getVlanRangeAvailability());
+            byte[] topoVlans = this.rangeStringToMask(l2scData.getVlanRangeAvailability());
            // String hopVlanStr = pathElemParams.
             if(vlanMap.containsKey(k(link))){
                 byte[] vlanMapMask = vlanMap.get(k(link));
@@ -87,18 +86,18 @@ public class VlanMapFilter implements PolicyFilter{
             PathElemParam vlanRangeParam = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             if(vlanRangeParam != null){
                 hopVlanStr = vlanRangeParam.getValue();
-                byte[] hopVlans = TypeConverter.rangeStringToMask(hopVlanStr);
+                byte[] hopVlans = this.rangeStringToMask(hopVlanStr);
                 for(int j = 0; j < hopVlans.length; j++){
                     topoVlans[j] &= hopVlans[j];
                 }
             }
-            String rangeStr = TypeConverter.maskToRangeString(topoVlans);
+            String rangeStr = this.maskToRangeString(topoVlans);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN(s) " + hopVlanStr + 
                             " not available for hop " + pathElem.getUrn());
             }else if("0".equals(rangeStr)){
                 untagMap.put(link.getFQTI(), true);
-                vlanMap.put(k(link), TypeConverter.rangeStringToMask(l2scData.getVlanRangeAvailability()));
+                vlanMap.put(k(link), this.rangeStringToMask(l2scData.getVlanRangeAvailability()));
             }else{
                 untagMap.put(link.getFQTI(), false);
                 vlanMap.put(k(link), topoVlans);
@@ -133,11 +132,11 @@ public class VlanMapFilter implements PolicyFilter{
             String prevVlanString = prevInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
             prevVlanString = (prevVlanString == null ? "any" : prevVlanString);
             byte[] ingrVlans = vlanMap.get(k(ingrLink));
-            byte[] prevVlans = TypeConverter.rangeStringToMask(prevVlanString);
+            byte[] prevVlans = this.rangeStringToMask(prevVlanString);
             for(int j = 0; j < ingrVlans.length; j++){
                 ingrVlans[j] &= prevVlans[j];
             }
-            String remaining = TypeConverter.maskToRangeString(ingrVlans);
+            String remaining = this.maskToRangeString(ingrVlans);
             if("".equals(remaining)){
                 throw new BSSException("No VLANs available in the range " +
                                        "specified by the previous hop " + 
@@ -152,11 +151,11 @@ public class VlanMapFilter implements PolicyFilter{
             String nextVlanString = nextInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
             nextVlanString = (nextVlanString == null ? "any" : nextVlanString);
             byte[] egrVlans = vlanMap.get(k(egrLink));
-            byte[] nextVlans = TypeConverter.rangeStringToMask(nextVlanString);
+            byte[] nextVlans = this.rangeStringToMask(nextVlanString);
             for(int j = 0; j < egrVlans.length; j++){
                 egrVlans[j] &= nextVlans[j];
             }
-            String remaining = TypeConverter.maskToRangeString(egrVlans);
+            String remaining = this.maskToRangeString(egrVlans);
             if("".equals(remaining)){
                 throw new BSSException("No VLANs available in the range " +
                                        "specified by the next hop " + 
@@ -201,8 +200,8 @@ public class VlanMapFilter implements PolicyFilter{
                previous link then no further filtering needed 
                if untagged make its own segment like translation. This assumes 
                that untagged can only happen on the edges */
-            String currHopRangeStr = TypeConverter.maskToRangeString(currHopMask);
-            String rangeStr = TypeConverter.maskToRangeString(currSegmentMask);
+            String currHopRangeStr = this.maskToRangeString(currHopMask);
+            String rangeStr = this.maskToRangeString(currSegmentMask);
             if(l2scData.getVlanTranslation() &&
                     (currLink.getRemoteLink() == null || 
                     (!currLink.getRemoteLink().equals(prevLink)))){
@@ -232,7 +231,7 @@ public class VlanMapFilter implements PolicyFilter{
         
         //NOTE: ignores suggested for hops beyond the first hop
         byte[] suggested = this.findSuggested(prevInterPathElem, localPathElems.get(0));
-        String globalRange = TypeConverter.maskToRangeString(globalMask);
+        String globalRange = this.maskToRangeString(globalMask);
         String globalVlan = null;
         if(suggested.length > 0 && (!"".equals(globalRange))){
             globalVlan = this.chooseVlanTag(globalMask, suggested);
@@ -242,7 +241,7 @@ public class VlanMapFilter implements PolicyFilter{
         
         ///update intradomain path
         for(int i = 0; i < segments.size(); i++){
-            String vlanRange = TypeConverter.maskToRangeString(segmentMasks.get(i));
+            String vlanRange = this.maskToRangeString(segmentMasks.get(i));
             String suggestedVlan = null;
             if(globalVlan != null){
                 suggestedVlan = globalVlan;
@@ -299,12 +298,12 @@ public class VlanMapFilter implements PolicyFilter{
                             HashMap<String, byte[]> vlanMap,
                             HashMap<String, Boolean> untagMap) throws BSSException{
         if(endVtag.getTagged()){
-            byte[] endVtagMask = TypeConverter.rangeStringToMask(endVtag.getString());
+            byte[] endVtagMask = this.rangeStringToMask(endVtag.getString());
             byte[] vlanMapMask = vlanMap.get(k(endLink));
             for(int j = 0; j < vlanMapMask.length; j++){
                 vlanMapMask[j] &= endVtagMask[j];
             }
-            String rangeStr = TypeConverter.maskToRangeString(vlanMapMask);
+            String rangeStr = this.maskToRangeString(vlanMapMask);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN not available for edge link " + 
                                        endLink.getFQTI());
@@ -312,10 +311,10 @@ public class VlanMapFilter implements PolicyFilter{
             vlanMap.put(k(endLink), vlanMapMask);
         }else{
             byte[] vlanMapMask = vlanMap.get(k(endLink));
-            byte[] endVtagMask = TypeConverter.rangeStringToMask("0");
+            byte[] endVtagMask = this.rangeStringToMask("0");
             //check if untagged allowed
             endVtagMask[0] &= vlanMapMask[0];
-            String rangeStr = TypeConverter.maskToRangeString(endVtagMask);
+            String rangeStr = this.maskToRangeString(endVtagMask);
             if("".equals(rangeStr)){
                 throw new BSSException("Link " + endLink.getFQTI() + 
                                        " cannot be untagged");
@@ -348,7 +347,7 @@ public class VlanMapFilter implements PolicyFilter{
                     pathElem.getLinkDescr() == null) {
                 continue;
             }
-            byte[] resvMask = TypeConverter.rangeStringToMask(pathElem.getLinkDescr());
+            byte[] resvMask = this.rangeStringToMask(pathElem.getLinkDescr());
             boolean resvUntagged = false;
             try {
                 resvUntagged = (Integer.parseInt(pathElem.getLinkDescr()) < 0);
@@ -389,7 +388,7 @@ public class VlanMapFilter implements PolicyFilter{
                 }
                 vlanMask[i] =(byte) newTags;
             }
-            String remainingVlans = TypeConverter.maskToRangeString(vlanMask);
+            String remainingVlans = this.maskToRangeString(vlanMask);
             if ("".equals(remainingVlans) && newLogin.equals(resv.getLogin())) {
                 throw new BSSException("Last VLAN in use by a reservation " +
                                        "you previously placed (" + 
@@ -488,7 +487,7 @@ public class VlanMapFilter implements PolicyFilter{
             }
         }
         if(sugVlan != null){
-            suggested = TypeConverter.rangeStringToMask(sugVlan);
+            suggested = this.rangeStringToMask(sugVlan);
         }
         
         return suggested;
@@ -545,7 +544,7 @@ public class VlanMapFilter implements PolicyFilter{
         for (int i=0; i < suggested.length; i++) {
             suggested[i] &= mask[i];
         }
-        String remaining = TypeConverter.maskToRangeString(suggested);
+        String remaining = this.maskToRangeString(suggested);
         if (!"".equals(remaining)) {
             mask = suggested;
         }
@@ -582,4 +581,105 @@ public class VlanMapFilter implements PolicyFilter{
         }
         return vlanPool.get(index).toString();
     }
+
+    /**
+     * Converts a string to a bit mask. The range should take the form
+     * "x,y" for discontinuous ranges and "x-y" for continuous ranges.
+     * These formats can be concatenated to specify many subranges
+     * (i.e 600,3000-3001).
+     *
+     * @param range the range string to be converted
+     * @return a bit mask with values in given range set to 1
+     * @throws BSSException
+     */
+    public static byte[] rangeStringToMask(String range) throws BSSException{
+        byte[] mask = new byte[512];
+
+        if (range.trim().equals("any")) {
+            for (int i = 0; i < 512; i++) {
+                mask[i] = (byte) 255;
+            }
+            return mask;
+        }
+
+        range = range.replaceAll("\\s", "");
+        String[] rangeList = range.split(",");
+        try {
+
+            for(int i = 0; i < rangeList.length; i++){
+                String[] rangeEnds = rangeList[i].split("-");
+                if (rangeEnds.length == 1){
+                    int tag = Integer.parseInt(rangeEnds[0].trim());
+                    if(tag < 4096){
+                        mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
+                    }
+                } else if(rangeEnds.length == 2 && "".equals(rangeEnds[0])){
+                    int tag = Integer.parseInt(rangeEnds[1].trim());
+                    if(tag < 4096){
+                        mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
+                    }
+                } else if(rangeEnds.length == 2){
+                    int startTag = Integer.parseInt(rangeEnds[0].trim());
+                    int endTag = Integer.parseInt(rangeEnds[1].trim());
+                    if (startTag < 4096 && endTag < 4096){
+                        for(int j = startTag; j <= endTag; j++){
+                            mask[j/8] |= (1 << (7 - (j % 8)));
+                        }
+                    }
+                }else {
+                    throw new BSSException("Invalid VLAN range specified");
+                }
+            }
+        } catch (NumberFormatException ex) {
+            throw new BSSException("Invalid VLAN range format	\n"+ ex.getMessage());
+        }
+
+        /* for(int k = 0; k < mask.length; k++){
+            System.out.println(k + ": " + (byte)(mask[k] & 255));
+        } */
+
+        return mask;
+    }
+
+    /**
+     * Converts given mask to a range string. The range takes the form
+     * "x,y" for discontinuous ranges and "x-y" for continuous ranges.
+     * These formats can be concatenated to specify many subranges
+     * (i.e 600,3000-3001).
+     *
+     * @param mask the bit mask to be converted
+     * @return a range string representing the given bit mask
+     */
+    public static String maskToRangeString(byte[] mask){
+        int start = -2;//far away from 0
+        String range = new String();
+        boolean allowsAny = true;
+
+        for(int i = 0; i < mask.length; i++){
+            for(int j = 0; j < 8; j++){
+                int tag = i*8 + j;
+                if((mask[i] & (int)Math.pow(2, (7-j))) > 0){
+                    if(start == -2){
+                        start = tag;
+                    }
+                }else if(start != -2){
+                    allowsAny = false;
+                    if(!range.equals("")){
+                        range += ",";
+                    }
+                    range += start;
+                    if(start != (tag -1)){
+                        range += "-" + (tag-1);
+                    }
+                    start = -2;
+                }
+            }
+        }
+        if (allowsAny) {
+            return "0-4096";
+        }
+
+        return range;
+    }
+
 }

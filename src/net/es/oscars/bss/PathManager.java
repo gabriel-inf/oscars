@@ -196,7 +196,7 @@ public class PathManager {
         String ingressLink = null;
         Link link = null;
         this.log.debug("buildInitialPath.pathInfo=" + pathInfo.hashCode());
-        PathInfo refOnlyPathInfo = TypeConverter.createRefPath(pathInfo);
+        PathInfo refOnlyPathInfo = PathTypeConverter.createRefPath(pathInfo);
 
         //Build path containing only the ingress link id
         /*try{
@@ -458,7 +458,7 @@ public class PathManager {
             swcapInfo.setVlanRangeAvailability(sug);
             swcapInfo.setSuggestedVLANRange(null);
         }
-        TypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
+        PathTypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
         this.convertPathElemList(intraPathInfo, path.getPathElems(), false);
     }
 

@@ -60,6 +60,8 @@ public class ReservationAdapter {
         Reservation resv = TypeConverter.contentToReservation(soapParams);
 
         PathInfo pathInfo = soapParams.getPathInfo();
+        net.es.oscars.bss.topology.Path path = TypeConverter.convertPath(pathInfo);
+        resv.addPath(path);
         CreateReply reply = null;
         
         this.setPayloadSender(resv);

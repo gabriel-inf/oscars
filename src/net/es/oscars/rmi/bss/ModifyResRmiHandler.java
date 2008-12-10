@@ -22,15 +22,10 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.wsdlTypes.*;
-
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 public class ModifyResRmiHandler {
     private OSCARSCore core;
     private Logger log;
-
 
     public ModifyResRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
@@ -45,8 +40,10 @@ public class ModifyResRmiHandler {
      *          productionType, pathinfo
      * @return HashMap - contains gri and sucess or error status
      */
-    public HashMap<String, Object> modifyReservation(HashMap<String, Object> params, String userName)
-        throws IOException {
+    public HashMap<String, Object>
+        modifyReservation(HashMap<String, Object> params, String userName)
+            throws IOException {
+
         this.log.debug("modify.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         HashMap<String,String> simpleInputMap = new HashMap<String, String>();
@@ -60,13 +57,12 @@ public class ModifyResRmiHandler {
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
-
         AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
-                this.log.info("modify failed: no permission");
-                result.put("error", "modifyReservation: permission denied");
-                aaa.getTransaction().rollback();
-                return result;
+            this.log.info("modify failed: no permission");
+            result.put("error", "modifyReservation: permission denied");
+            aaa.getTransaction().rollback();
+            return result;
         }
         if (authVal.equals(AuthValue.MYSITE)) {
             institution = userMgr.getInstitution(userName);

@@ -1,23 +1,19 @@
 package net.es.oscars.bss;
 
-import java.util.Map;
+import java.util.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.lookup.*;
 import net.es.oscars.oscars.OSCARSCore;
-import net.es.oscars.oscars.TypeConverter;
+import net.es.oscars.bss.topology.*;
 
 /**
  * Class that performs server side validation for reservation parameters.
  */
 public class ParamValidator {
 
-    public StringBuilder validate(Reservation resv, PathInfo pathInfo) {
+    public StringBuilder validate(Reservation resv, Path requestedPath) {
 
         String explicitPath = null;
         boolean isLayer2 = false;
@@ -35,35 +31,34 @@ public class ParamValidator {
         sb.append(this.checkLogin(resv));
         sb.append(this.checkStatus(resv));
         sb.append(this.checkDescription(resv));
-        if (pathInfo == null) {
+        if (requestedPath == null) {
             return sb;
         }
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        Layer3Info layer3Info = pathInfo.getLayer3Info();
-        if (layer2Info != null) {
+        Layer2Data layer2Data = requestedPath.getLayer2Data();
+        Layer3Data layer3Data = requestedPath.getLayer3Data();
+        if (layer2Data != null) {
             isLayer2 = true;
-            sb.append(this.checkVtag(layer2Info));
-            sb.append(this.checkL2Endpoint(layer2Info, false));
-            sb.append(this.checkL2Endpoint(layer2Info, true));
+            sb.append(this.checkVtag(layer2Data));
+            sb.append(this.checkL2Endpoint(layer2Data, false));
+            sb.append(this.checkL2Endpoint(layer2Data, true));
         }
-        if (layer3Info != null) {
-            sb.append(this.checkSrcHost(layer3Info));
-            sb.append(this.checkDestHost(layer3Info));
-            sb.append(this.checkDscp(layer3Info));
-            sb.append(this.checkProtocol(layer3Info));
-            sb.append(this.checkSrcIpPort(layer3Info));
-            sb.append(this.checkDestIpPort(layer3Info));
+        if (layer3Data != null) {
+            sb.append(this.checkSrcHost(layer3Data));
+            sb.append(this.checkDestHost(layer3Data));
+            sb.append(this.checkDscp(layer3Data));
+            sb.append(this.checkProtocol(layer3Data));
+            sb.append(this.checkSrcIpPort(layer3Data));
+            sb.append(this.checkDestIpPort(layer3Data));
         }
-        if ((layer2Info == null) && (layer3Info == null)) {
+        if ((layer2Data == null) && (layer3Data == null)) {
             return sb.append("Null network layer info");
         }
-        MplsInfo mplsInfo = pathInfo.getMplsInfo();
-        if (mplsInfo != null) {
-            sb.append(this.checkLspClass(mplsInfo));
+        MPLSData mplsData = requestedPath.getMplsData();
+        if (mplsData != null) {
+            sb.append(this.checkLspClass(mplsData));
         }
-        CtrlPlanePathContent path = pathInfo.getPath();
-        if (path != null) {
-            sb.append(this.checkPath(path, isLayer2));
+        if (!requestedPath.getPathElems().isEmpty()) {
+            sb.append(this.checkPath(requestedPath.getPathElems(), isLayer2));
         }
         return sb;
     }
@@ -139,30 +134,30 @@ public class ParamValidator {
     }
 
     /**
-     * @param path An explicit path containing an ERO (layer 2 or layer 3),
+     * @param pathElems An explicit path containing an ERO (layer 2 or layer 3),
      *     or an ingress and egress (layer 3)
      * @param isLayer2 true if this is a layer 2 reservation, false otherwise
      */
-    private String checkPath(CtrlPlanePathContent path, boolean isLayer2){
+    private String checkPath(List<PathElem> pathElems, boolean isLayer2){
         // for now, just check length
-        if (path == null) {
+        if (pathElems.isEmpty()) {
             return "";
         }
-        CtrlPlaneHopContent[] hops = path.getHop();
-        if (hops != null && hops.length == 1) {
+        if (pathElems.size() == 1) {
             return("path, if specified, must contain more than one hop");
         }
         if(!isLayer2){
             return "";
         }
         //lookup hops in lookup service if not URNs
-        for(CtrlPlaneHopContent hop:hops){
+        for (PathElem pathElem: pathElems) {
             /* If URN do no further checking */
-            String child = TypeConverter.hopToURN(hop);
-            if(child == null){
+            String child = pathElem.getUrn();
+            // FIXME:  this is not correct
+            if (child == null) {
                 return "No domain,node,port, or link specified in " +
                        "hop (directly or by reference";
-            }else if(child.matches("^urn:ogf:network:.*")){
+            } else if(child.matches("^urn:ogf:network:.*")) {
                 continue;
             }
             /* Lookup name via perfSONAR Lookup Service */
@@ -170,7 +165,7 @@ public class ParamValidator {
             PSLookupClient lsClient = core.getLookupClient();
             try {
                 String urn = lsClient.lookup(child);
-                hop.setLinkIdRef(urn);
+                pathElem.setUrn(urn);
             } catch(LookupException e){
                 return e.getMessage();
             }
@@ -180,11 +175,11 @@ public class ParamValidator {
     }
 
     /**
-     * @param layer2Info A Layer2Info instance (layer 2 specific)
+     * @param layer2Data A Layer2Data instance (layer 2 specific)
      */
-    private String checkVtag(Layer2Info layer2Info) {
-        VlanTag srcVtag = layer2Info.getSrcVtag();
-        VlanTag destVtag = layer2Info.getDestVtag();
+    private String checkVtag(Layer2Data layer2Data) {
+        String srcVtag = layer2Data.getSrcVtag();
+        String destVtag = layer2Data.getDestVtag();
         String vtag = null;
         boolean tagged = true;
 
@@ -193,7 +188,6 @@ public class ParamValidator {
         if(vtag == null || vtag.equals("any")){
             return "";
         }
-
         String[] vlanFields = vtag.split("[-,]");
         for (int i=0; i < vlanFields.length; i++) {
             int field = Integer.parseInt(vlanFields[i].trim());
@@ -201,21 +195,20 @@ public class ParamValidator {
                 return("vlan given, " + field + " is not between 1 and 4094");
             }
         }
-
         return "";
     }
 
     /**
-     * @param layer2Info A Layer2Info instance (layer 2 specific)
+     * @param layer2Data A Layer2Data instance (layer 2 specific)
      */
-    private String checkL2Endpoint(Layer2Info layer2Info, boolean isDest) {
+    private String checkL2Endpoint(Layer2Data layer2Data, boolean isDest) {
         String urn = null;
         String endpoint = null;
 
         if(isDest){
-            endpoint = layer2Info.getDestEndpoint();
+            endpoint = layer2Data.getDestEndpoint();
         }else{
-            endpoint = layer2Info.getSrcEndpoint();
+            endpoint = layer2Data.getSrcEndpoint();
         }
 
         /* If URN do no further checking */
@@ -240,51 +233,51 @@ public class ParamValidator {
         }
 
         if(isDest){
-            layer2Info.setDestEndpoint(urn);
+            layer2Data.setDestEndpoint(urn);
         }else{
-            layer2Info.setSrcEndpoint(urn);
+            layer2Data.setSrcEndpoint(urn);
         }
         return "";
     }
 
     /**
-     * @param layer3Info A Layer3Info instance (layer 3 specific)
+     * @param layer3Data A Layer3Data instance (layer 3 specific)
      */
-    private String checkSrcHost(Layer3Info layer3Info) {
+    private String checkSrcHost(Layer3Data layer3Data) {
 
         // Check to make sure host exists
         InetAddress srcAddress = null;
         try {
-            srcAddress = InetAddress.getByName( layer3Info.getSrcHost() );
+            srcAddress = InetAddress.getByName( layer3Data.getSrcHost() );
         } catch (UnknownHostException ex) {
-            return "Source host " + layer3Info.getSrcHost() + " does not exist";
+            return "Source host " + layer3Data.getSrcHost() + " does not exist";
         }
-        layer3Info.setSrcHost(srcAddress.getHostAddress());
+        layer3Data.setSrcHost(srcAddress.getHostAddress());
         return "";
     }
 
     /**
-     * @param layer3Info A Layer3Info instance (layer 3 specific)
+     * @param layer3Data A Layer3Data instance (layer 3 specific)
      */
-    private String checkDestHost(Layer3Info layer3Info) {
+    private String checkDestHost(Layer3Data layer3Data) {
 
         InetAddress destAddress = null;
         try {
-            destAddress = InetAddress.getByName(layer3Info.getDestHost() );
+            destAddress = InetAddress.getByName(layer3Data.getDestHost() );
         } catch (UnknownHostException ex) {
-            return "Destination host " + layer3Info.getDestHost() +
+            return "Destination host " + layer3Data.getDestHost() +
                    " does not exist";
         }
-        layer3Info.setDestHost(destAddress.getHostAddress());
+        layer3Data.setDestHost(destAddress.getHostAddress());
         return "";
     }
 
     /**
-     * @param layer3Info A Layer3Info instance (layer 3 specific)
+     * @param layer3Data A Layer3Data instance (layer 3 specific)
      */
-    private String checkSrcIpPort(Layer3Info layer3Info) {
+    private String checkSrcIpPort(Layer3Data layer3Data) {
 
-        Integer port = layer3Info.getSrcIpPort();
+        Integer port = layer3Data.getSrcIpPort();
         // depends on client explicitly setting src port to 0
         if (port == 0) { return ""; }
         if (port == null) { return ""; }
@@ -295,11 +288,11 @@ public class ParamValidator {
     }
 
     /**
-     * @param layer3Info A Layer3Info instance (layer 3 specific)
+     * @param layer3Data A Layer3Data instance (layer 3 specific)
      */
-    private String checkDestIpPort(Layer3Info layer3Info) {
+    private String checkDestIpPort(Layer3Data layer3Data) {
 
-        Integer port = layer3Info.getDestIpPort();
+        Integer port = layer3Data.getDestIpPort();
         if (port == 0) { return ""; }
         if (port == null) { return ""; }
         if ((port < 1024) || (port > 65535)) {
@@ -309,11 +302,11 @@ public class ParamValidator {
     }
 
     /**
-     * @param layer3Info A Layer3Info instance (layer 3 specific)
+     * @param layer3Data A Layer3Data instance (layer 3 specific)
      */
-    private String checkDscp(Layer3Info layer3Info) {
+    private String checkDscp(Layer3Data layer3Data) {
 
-        String dscp = layer3Info.getDscp();
+        String dscp = layer3Data.getDscp();
         if (dscp == null) { return ""; }
         Integer intDscp = Integer.parseInt(dscp);
         if ((intDscp < 0) || (intDscp > 63)) {
@@ -323,18 +316,18 @@ public class ParamValidator {
     }
 
     /**
-     * @param layer3Info A Layer3Info instance (layer 3 specific)
+     * @param layer3Data A Layer3Data instance (layer 3 specific)
      */
-    private String checkProtocol(Layer3Info layer3Info) {
+    private String checkProtocol(Layer3Data layer3Data) {
 
-        String protocol = layer3Info.getProtocol();
+        String protocol = layer3Data.getProtocol();
         if ((protocol == null) || protocol.equals("")) { return ""; }
 
         protocol = protocol.toLowerCase();
         if (protocol.equals("udp") || protocol.equals("tcp")) {
             // ensure that what ends up in the db is valid
             // lowercase protocol
-            layer3Info.setProtocol(protocol);
+            layer3Data.setProtocol(protocol);
             return "";
         }
         try {
@@ -349,13 +342,13 @@ public class ParamValidator {
     }
 
     /**
-     * @param mplsInfo an MplsInfo instance containing MPLS-specific data
+     * @param mplsData an MPLSData instance containing MPLS-specific data
      */
-    private String checkLspClass(MplsInfo mplsInfo) {
+    private String checkLspClass(MPLSData mplsData) {
 
         String defaultLspClass = "4";
-        if (mplsInfo.getLspClass() == null) {
-            mplsInfo.setLspClass(defaultLspClass);
+        if (mplsData.getLspClass() == null) {
+            mplsData.setLspClass(defaultLspClass);
         }
         return "";
     }

@@ -51,8 +51,7 @@ public class Forwarder extends Client {
         this.log.debug("setup.finish: " + url);
     }
 
-    public CreateReply create(Reservation resv, PathInfo pathInfo)
-            throws InterdomainException {
+    public boolean create(Reservation resv) throws InterdomainException {
 
         CreateReply createReply = null;
         String login = resv.getLogin();
@@ -67,20 +66,21 @@ public class Forwarder extends Client {
                   "no path provided to forwarder create");
         }
         Domain nextDomain = path.getNextDomain();
-        if (nextDomain == null) { return null; }
+        if (nextDomain == null) { return false; }
         String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
         EventProducer eventProducer = new EventProducer();
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_STARTED, login, "JOB", resv, pathInfo);
-        ForwardReply reply = this.forward("createReservation", resv, pathInfo, url);
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_ACCEPTED, login, "JOB", resv, pathInfo);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_STARTED, login, "JOB", resv);
+        ForwardReply reply = this.forward("createReservation", resv, url);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_ACCEPTED, login, "JOB", resv);
         createReply = reply.getCreateReservation();
         this.log.info("create.finish GRI is: " +
                       createReply.getGlobalReservationId());
-        return createReply;
+        return createReply == null ? false: true;
     }
 
-    public ModifyResReply modify(Reservation resv, Reservation persistentResv, PathInfo pathInfo) throws InterdomainException {
+    public ModifyResReply modify(Reservation resv, Reservation persistentResv)
+            throws InterdomainException {
 
         String url = null;
         String login = resv.getLogin();
@@ -91,7 +91,6 @@ public class Forwarder extends Client {
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
-
          
         // currently get the next domain from the stored path
         if (path != null && path.getNextDomain() != null) {
@@ -101,9 +100,9 @@ public class Forwarder extends Client {
         if (url != null) {
             this.log.info("modify.start forward to  " + url);
             EventProducer eventProducer = new EventProducer();
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_STARTED, login, "JOB", persistentResv, pathInfo);
-            ForwardReply reply = this.forward("modifyReservation", resv, pathInfo, url);
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_ACCEPTED, login, "JOB", persistentResv, pathInfo);
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_STARTED, login, "JOB", persistentResv);
+            ForwardReply reply = this.forward("modifyReservation", resv, url);
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_ACCEPTED, login, "JOB", persistentResv);
             ModifyResReply modifyReply = reply.getModifyReservation();
             this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
             return modifyReply;
@@ -129,7 +128,7 @@ public class Forwarder extends Client {
         }
         if (url == null) { return null; }
         this.log.info("query forward to " + url);
-        ForwardReply reply = this.forward("queryReservation", resv, null, url);
+        ForwardReply reply = this.forward("queryReservation", resv, url);
         return reply.getQueryReservation();
     }
 
@@ -153,7 +152,7 @@ public class Forwarder extends Client {
         this.log.info("cancel start forward to: " + url);
         EventProducer eventProducer = new EventProducer();
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FWD_STARTED, login, "JOB", resv);
-        ForwardReply reply = this.forward("cancelReservation", resv, null, url);
+        ForwardReply reply = this.forward("cancelReservation", resv, url);
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FWD_ACCEPTED, login, "JOB", resv);
         return reply.getCancelReservation();
     }
@@ -174,7 +173,7 @@ public class Forwarder extends Client {
         }
         if (url == null) { return null; }
         this.log.info("createPath forward to: " + url);
-        ForwardReply reply = this.forward("createPath", resv, null, url);
+        ForwardReply reply = this.forward("createPath", resv, url);
         return reply.getCreatePath();
     }
 
@@ -194,7 +193,7 @@ public class Forwarder extends Client {
         }
         if (url == null) { return null; }
         this.log.info("refreshPath forward to: " + url);
-        ForwardReply reply = this.forward("refreshPath", resv, null, url);
+        ForwardReply reply = this.forward("refreshPath", resv, url);
         return reply.getRefreshPath();
     }
 
@@ -214,12 +213,12 @@ public class Forwarder extends Client {
         }
         if (url == null) { return null; }
         this.log.info("teardownPath forward to: " + url);
-        ForwardReply reply = this.forward("teardownPath", resv, null, url);
+        ForwardReply reply = this.forward("teardownPath", resv, url);
         return reply.getTeardownPath();
     }
 
     public ForwardReply forward(String operation, Reservation resv,
-                                PathInfo pathInfo, String url)
+                                String url)
             throws InterdomainException {
 
         this.log.debug("forward.start:  to " + url);
@@ -234,7 +233,7 @@ public class Forwarder extends Client {
         try {
             if (operation.equals("createReservation")) {
                 forPayload.setCreateReservation(
-                        toCreateRequest(resv, pathInfo));
+                        toCreateRequest(resv));
 
             } else if (operation.equals("cancelReservation")) {
                 GlobalReservationId rt = new GlobalReservationId();
@@ -246,7 +245,7 @@ public class Forwarder extends Client {
                 rt.setGri(resv.getGlobalReservationId());
                 forPayload.setQueryReservation(rt);
             } else if (operation.equals("modifyReservation")) {
-                ModifyResContent modResContent = this.toModifyRequest(resv, pathInfo);
+                ModifyResContent modResContent = this.toModifyRequest(resv);
                 forPayload.setModifyReservation(modResContent);
 
             } else if (operation.equals("createPath")) {
@@ -283,7 +282,8 @@ public class Forwarder extends Client {
                                             url +  e.getMessage());
         }
     }
-    public ModifyResContent toModifyRequest(Reservation resv, PathInfo pathInfo) {
+    public ModifyResContent toModifyRequest(Reservation resv) 
+           throws InterdomainException {
         ModifyResContent modResContent = new ModifyResContent();
 
         modResContent.setStartTime(resv.getStartTime());
@@ -293,15 +293,28 @@ public class Forwarder extends Client {
         modResContent.setBandwidth( bandwidth.intValue());
         modResContent.setDescription(resv.getDescription());
         modResContent.setGlobalReservationId(resv.getGlobalReservationId());
+        PathInfo pathInfo = null;
+        try {
+        	pathInfo = TypeConverter.getPathInfo(resv);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
         modResContent.setPathInfo(pathInfo);
         return modResContent;
     }
 
-    public ResCreateContent toCreateRequest(Reservation resv,
-                                            PathInfo pathInfo) {
+    public ResCreateContent toCreateRequest(Reservation resv) 
+            throws InterdomainException {
 
         long millis = -1;
         ResCreateContent resCont = new ResCreateContent();
+
+        PathInfo pathInfo = null;
+        try {
+        	pathInfo = TypeConverter.getPathInfo(resv);
+        } catch (BSSException ex) {
+            throw new InterdomainException(ex.getMessage());
+        }
 
         /* default pathSetupMode between domains is signal-xml */
         String pathSetupMode = pathInfo.getPathSetupMode();

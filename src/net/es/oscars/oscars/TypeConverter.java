@@ -174,7 +174,7 @@ public class TypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
-    	reply.setPathInfo(TypeConverter.getPathInfo(resv));
+        reply.setPathInfo(TypeConverter.getPathInfo(resv));
         log.debug("reservationToDetails.end");
         return reply;
     }
@@ -238,49 +238,6 @@ public class TypeConverter {
             log.debug("getPathInfo.end");
             return null;
         }
-    }
-
-    /**
-     * Takes a pathInfo object and sets the source and destination
-     * to the ingress and egress. This makes it valid for pathfinders
-     * testing whether src and dest are set as the first and last hops
-     * in the path. Assumes that the path object contains the local
-     * path segment.
-     *
-     * @param pathInfo the pathInfo instance to convert
-     * @return the converted pathInfo object
-     */
-    public static PathInfo toLocalPathInfo(PathInfo pathInfo){
-        Layer2Info l2Info = pathInfo.getLayer2Info();
-        Layer3Info l3Info = pathInfo.getLayer3Info();
-        CtrlPlanePathContent path = pathInfo.getPath();
-        CtrlPlaneHopContent[] hop = path.getHop();
-        String ingress = null;
-        String egress = null;
-
-        if(path == null){
-            return pathInfo;
-        }
-
-        hop = path.getHop();
-        if(hop == null){
-            return pathInfo;
-        }
-
-        ingress = hopToURN(hop[0], "link");
-        egress = hopToURN(hop[hop.length - 1], "link");
-        if(l2Info != null){
-            l2Info.setSrcEndpoint(ingress);
-            l2Info.setDestEndpoint(egress);
-            pathInfo.setLayer2Info(l2Info);
-        }
-        if(l3Info != null){
-            l3Info.setSrcHost(ingress);
-            l3Info.setDestHost(egress);
-            pathInfo.setLayer3Info(l3Info);
-        }
-
-        return pathInfo;
     }
 
     /**
@@ -466,451 +423,6 @@ public class TypeConverter {
     }
 
     /**
-     * Converts a string to a bit mask. The range should take the form
-     * "x,y" for discontinuous ranges and "x-y" for continuous ranges.
-     * These formats can be concatenated to specify many subranges
-     * (i.e 600,3000-3001).
-     *
-     * @param range the range string to be converted
-     * @return a bit mask with values in given range set to 1
-     * @throws BSSException
-     */
-    public static byte[] rangeStringToMask(String range) throws BSSException{
-        byte[] mask = new byte[512];
-
-        if (range.trim().equals("any")) {
-            for (int i = 0; i < 512; i++) {
-                mask[i] = (byte) 255;
-            }
-            return mask;
-        }
-
-        range = range.replaceAll("\\s", "");
-        String[] rangeList = range.split(",");
-        try {
-
-            for(int i = 0; i < rangeList.length; i++){
-                String[] rangeEnds = rangeList[i].split("-");
-                if (rangeEnds.length == 1){
-                    int tag = Integer.parseInt(rangeEnds[0].trim());
-                    if(tag < 4096){
-                        mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
-                    }
-                } else if(rangeEnds.length == 2 && "".equals(rangeEnds[0])){
-                    int tag = Integer.parseInt(rangeEnds[1].trim());
-                    if(tag < 4096){
-                        mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
-                    }
-                } else if(rangeEnds.length == 2){
-                    int startTag = Integer.parseInt(rangeEnds[0].trim());
-                    int endTag = Integer.parseInt(rangeEnds[1].trim());
-                    if (startTag < 4096 && endTag < 4096){
-                        for(int j = startTag; j <= endTag; j++){
-                            mask[j/8] |= (1 << (7 - (j % 8)));
-                        }
-                    }
-                }else {
-                    throw new BSSException("Invalid VLAN range specified");
-                }
-            }
-        } catch (NumberFormatException ex) {
-            throw new BSSException("Invalid VLAN range format	\n"+ ex.getMessage());
-        }
-
-        /* for(int k = 0; k < mask.length; k++){
-            System.out.println(k + ": " + (byte)(mask[k] & 255));
-        } */
-
-        return mask;
-    }
-
-    /**
-     * Converts given mask to a range string. The range takes the form
-     * "x,y" for discontinuous ranges and "x-y" for continuous ranges.
-     * These formats can be concatenated to specify many subranges
-     * (i.e 600,3000-3001).
-     *
-     * @param mask the bit mask to be converted
-     * @return a range string representing the given bit mask
-     */
-    public static String maskToRangeString(byte[] mask){
-        int start = -2;//far away from 0
-        String range = new String();
-        boolean allowsAny = true;
-
-        for(int i = 0; i < mask.length; i++){
-            for(int j = 0; j < 8; j++){
-                int tag = i*8 + j;
-                if((mask[i] & (int)Math.pow(2, (7-j))) > 0){
-                    if(start == -2){
-                        start = tag;
-                    }
-                }else if(start != -2){
-                    allowsAny = false;
-                    if(!range.equals("")){
-                        range += ",";
-                    }
-                    range += start;
-                    if(start != (tag -1)){
-                        range += "-" + (tag-1);
-                    }
-                    start = -2;
-                }
-            }
-        }
-        if (allowsAny) {
-            return "0-4096";
-        }
-
-        return range;
-    }
-
-    /**
-     * If given an int whose string length is less than 2, prepends a "0".
-     *
-     * @param dint int, for example representing month or day
-     * @return fixedLength fixed length string of length 2
-     */
-    private static String fixedLengthTime(int dint) {
-        String fixedLength = null;
-
-        if (dint < 10) { fixedLength = "0" + dint; }
-        else { fixedLength = "" + dint; }
-        return fixedLength;
-    }
-
-    /**
-     * Converts Reservation Hibernate bean to a HashMap
-     *
-     * @param resv the Reservation to convert
-     * @param pathInfo the pathInfo to use in place of the resv path if provided
-     * @return the converted HashMap
-     */
-    public static HashMap<String, String[]> reservationToHashMap(Reservation resv, PathInfo pathInfo)
-    		throws BSSException {
-        HashMap<String, String[]> map = new HashMap<String, String[]>();
-        if(resv == null){
-            return map;
-        }
-
-        map.put("startSeconds", genHashVal(resv.getStartTime() + ""));
-        map.put("endSeconds", genHashVal(resv.getEndTime() + ""));
-        map.put("createSeconds", genHashVal(resv.getCreatedTime() + ""));
-        map.put("bandwidth", genHashVal(resv.getBandwidth() + ""));
-        map.put("status", genHashVal(resv.getStatus()));
-        map.put("description", genHashVal(resv.getDescription()));
-        map.put("gri", genHashVal(resv.getGlobalReservationId()));
-        map.put("userLogin", genHashVal(resv.getLogin()));
-
-        //set Token
-        Token token = resv.getToken();
-        if (token != null) {
-            map.put("token", genHashVal(token.getValue()));
-        }
-        //set path
-        map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL), pathInfo));
-        return map;
-    }
-
-    /**
-     * Converts HashMap to a Reservation Hibernate bean
-     *
-     * @param map a HashMap with parameters to initialize reservation
-     * @return resv the converted Reservation
-     */
-    public static Reservation hashMapToReservation(HashMap<String, String[]> map){
-        Reservation resv = new Reservation();
-        if (map == null) {
-            return resv;
-        }
-        resv.setStartTime(Long.parseLong(map.get("startSeconds")[0]));
-        resv.setEndTime(Long.parseLong(map.get("endSeconds")[0]));
-        resv.setCreatedTime(Long.parseLong(map.get("createSeconds")[0]));
-        resv.setBandwidth(Long.parseLong(map.get("bandwidth")[0]));
-        resv.setDescription(map.get("description")[0]);
-        resv.setGlobalReservationId(map.get("gri")[0]);
-        resv.setLogin(map.get("userLogin")[0]);
-
-        //TODO: Fill-in pathInfo
-        return resv;
-    }
-
-    /**
-     * Converts Path Hibernate bean to a HashMap
-     *
-     * @param path the Path to convert
-     * @param pathInfo associated path information to add to the hash map
-     * @return map the converted HashMap
-     */
-    public static HashMap<String, String[]> pathToHashMap(Path path, PathInfo pathInfo){
-        HashMap<String, String[]> map = new HashMap<String, String[]>();
-        ArrayList<String> layers = new ArrayList<String>();
-        if(path == null){
-            return map;
-        }
-
-        Domain nextDomain = path.getNextDomain();
-        Layer2Data layer2Data = path.getLayer2Data();
-        Layer3Data layer3Data = path.getLayer3Data();
-        MPLSData mplsData = path.getMplsData();
-        List<PathElem> pathElems = path.getPathElems();
-        //PathElem interPathElem = path.getInterPathElem();
-        ArrayList<String> intraPath = new ArrayList<String>();
-        ArrayList<String> interPath = new ArrayList<String>();
-        String src = null;
-        String dest = null;
-
-        map.put("isExplicitPath", genHashVal(path.isExplicit() ? "true" : "false"));
-        map.put("pathSetupMode", genHashVal(path.getPathSetupMode()));
-
-        if(nextDomain != null){
-            map.put("nextDomain", genHashVal(nextDomain.getTopologyIdent()));
-        }
-
-        if(layer3Data != null){
-            src = layer3Data.getSrcHost();
-            dest = layer3Data.getDestHost();
-            map.put("source", genHashVal(src));
-            map.put("destination", genHashVal(dest));
-            //these are in the TCP/UDP headers, not IP headers, hence L4
-            map.put("srcPort", genHashVal(layer3Data.getSrcIpPort() + ""));
-            map.put("destPort", genHashVal(layer3Data.getDestIpPort() + ""));
-            map.put("protocol", genHashVal(layer3Data.getProtocol()));
-            map.put("dscp", genHashVal(layer3Data.getDscp()));
-            map.put("layer", genHashVal("3"));
-            layers.add("3");
-        }
-
-        if(layer2Data != null){
-            src = layer2Data.getSrcEndpoint();
-            dest = layer2Data.getDestEndpoint();
-            map.put("source", genHashVal(src));
-            map.put("destination", genHashVal(dest));
-            layers.add("2");
-        }
-
-        map.put("layer", layers.toArray(new String[layers.size()]));
-
-        if(mplsData != null){
-            map.put("burstLimit", genHashVal(mplsData.getBurstLimit() + ""));
-            map.put("lspClass", genHashVal(mplsData.getLspClass()));
-        }
-
-
-        if(pathInfo != null){
-            String pathType = pathInfo.getPathType() == null ? "strict" : pathInfo.getPathType();
-            map.put("pathType", genHashVal(pathType));
-        }
-
-        /* If given pathInfo add info to hash map*/
-        Layer2Info l2Info = null;
-        boolean usePathInfo = false;
-        ArrayList<String> interHopInfo = new ArrayList<String>();
-        if(pathInfo != null && pathInfo.getPath() != null
-           && pathInfo.getPath().getHop() != null){
-            for(CtrlPlaneHopContent hop :  pathInfo.getPath().getHop()){
-                String urn = hopToURN(hop);
-                interPath.add(urn);
-                CtrlPlaneLinkContent link = hop.getLink();
-                if(link != null){
-                    String infoVal = link.getTrafficEngineeringMetric();
-                    CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
-                    CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
-                        swcap.getSwitchingCapabilitySpecificInfo();
-                    infoVal += ";" + swcap.getSwitchingcapType();
-                    infoVal += ";" + swcap.getEncodingType();
-                    if(swcap.getSwitchingcapType().equals("l2sc")){
-                        infoVal += ";" + swcapInfo.getInterfaceMTU();
-                        infoVal += ";" + swcapInfo.getVlanRangeAvailability();
-                        infoVal += ";" + swcapInfo.getSuggestedVLANRange();
-                    }else{
-                        infoVal += ";" + swcapInfo.getCapability();
-                    }
-                    interHopInfo.add(infoVal);
-                }else{
-                    interHopInfo.add("");
-                }
-            }
-            l2Info = pathInfo.getLayer2Info();
-            usePathInfo = true;
-        }
-        if (!usePathInfo) {
-            // INTERDOMAIN
-            /*
-            for (PathElem pathElem: interPathElems) {
-                Link link = interPathElem.getLink();
-                if(link != null){
-                    String linkId = link.getFQTI();
-                    interPath.add(linkId);
-                    interHopInfo.add(this.getPathElemInfo(interPathElem));
-                    map.putAll(this.vlanToHashMap(interPathElem, src, dest, layer2Data));
-                }else{
-                    this.log.error("Could not locate a link for interPathElem, id: "+interPathElem.getId());
-                }
-            }
-            */
-        } else if (l2Info != null) {
-            if (l2Info.getSrcVtag() != null) {
-                map.put("srcVtag", genHashVal(l2Info.getSrcVtag().getString()));
-                map.put("tagSrcPort", genHashVal(l2Info.getSrcVtag().getTagged() + ""));
-            }
-            if (l2Info.getDestVtag() != null) {
-                map.put("destVtag", genHashVal(l2Info.getSrcVtag().getString()));
-                map.put("tagDestPort", genHashVal(l2Info.getDestVtag().getTagged() + ""));
-            }
-        }
-        map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
-        map.put("interdomainHopInfo", interHopInfo.toArray(new String[interHopInfo.size()]));
-
-        ArrayList<String> intraHopInfo = new ArrayList<String>();
-        for (PathElem pathElem: pathElems) {
-            Link link = pathElem.getLink();
-            if (link != null) {
-                String linkId = link.getFQTI();
-                intraPath.add(linkId);
-                intraHopInfo.add(getPathElemInfo(pathElem));
-                map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
-            } else {
-                log.error("Could not locate a link for pathElem, id: "+pathElem.getId());
-            }
-        }
-        map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
-        map.put("intradomainHopInfo", intraHopInfo.toArray(new String[intraHopInfo.size()]));
-
-        return map;
-    }
-
-    /**
-     * Creates a ';' delimited String with detailed information about each hop
-     * in a path.
-     *
-     * @param pathElem the pathElem for which to generate information
-     * @return a ';' delimited String with detailed information about each hop
-     */
-     private static String getPathElemInfo(PathElem pathElem){
-        Link link = pathElem.getLink();
-        L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
-        String infoVal = link.getTrafficEngineeringMetric();
-        String defaulSwcapType = PathManager.DEFAULT_SWCAP_TYPE;
-        String defaulEncType = PathManager.DEFAULT_ENC_TYPE;
-        if(l2scData != null){
-            //TEMetric;swcap;enc;MTU;VLANRangeAvail;SuggestedVLANRange
-            infoVal += ";l2sc;ethernet";
-            infoVal += ";" + l2scData.getInterfaceMTU();
-            infoVal += ";" + pathElem.getLinkDescr();
-            infoVal += ";null";
-        }else{
-            //TEMetric;swcap;enc;MTU;capbility
-            infoVal += ";" + defaulSwcapType + ";" + defaulEncType + ";unimplemented";
-        }
-
-        return infoVal;
-     }
-
-    /**
-     * Converts PathElem Hibernate bean of a layer2 link to a HashMap
-     *
-     * @param elem the PathElem to convert
-     * @param src the source URN of the reservation
-     * @param dest the destination URN of the reservation
-     * @param layer2Data the layer 2 data associated with a reservation
-     * @return the converted HashMap
-     */
-    private static HashMap<String, String[]> vlanToHashMap(PathElem elem, String src,
-                                                    String dest,
-                                                    Layer2Data layer2Data){
-        HashMap<String, String[]> map = new HashMap<String, String[]>();
-        if(layer2Data == null){
-            return map;
-        }
-
-        String linkId = elem.getLink().getFQTI();
-        String descr = elem.getDescription();
-        String tagField = "";
-        if(linkId.equals(src)){
-            tagField = "tagSrcPort";
-            try{
-                int vtag = Integer.parseInt(descr);
-                map.put(tagField, genHashVal(vtag > 0 ? "true" : "false"));
-                map.put("srcVtag", genHashVal(descr));
-            }catch(Exception e){}
-        }else if(linkId.equals(dest)){
-            tagField = "tagDestPort";
-            try{
-                int vtag = Integer.parseInt(descr);
-                map.put(tagField, genHashVal(vtag > 0 ? "true" : "false"));
-                map.put("destVtag", genHashVal(descr));
-            }catch(Exception e){}
-        }
-
-        return map;
-    }
-
-    /**
-     * Generates a String array from a String
-     *
-     * @param value the String to convert
-     * @return the converted array
-     */
-    private static String[] genHashVal(String value){
-        if(value == null){
-            return null;
-        }
-        String[] array = new String[1];
-        array[0] = value;
-        return array;
-    }
-
-    /**
-     * Extracts a String from a String array
-     *
-     * @param array the String[] to extract
-     * @return the converted array
-     */
-    private static String extractHashVal(String[] array){
-        if(array == null || array.length < 1){
-            return null;
-        }
-        return array[0];
-    }
-
-    /**
-     * Extracts a long from a String array
-     *
-     * @param array the String[] to extract
-     * @return the converted array
-     */
-    private static long extractHashLongVal(String[] array){
-        long longVal = 0;
-        if(array == null || array.length < 1){
-            return 0;
-        }
-        try{
-            longVal = Long.parseLong(array[0]);
-        }catch(Exception e){}
-
-        return longVal;
-    }
-
-    /**
-     * Extracts a int from a String array
-     *
-     * @param array the String[] to extract
-     * @return the converted array
-     */
-    private static int extractHashIntVal(String[] array){
-        int intVal = 0;
-        if(array == null || array.length < 1){
-            return 0;
-        }
-        try{
-            intVal = Integer.parseInt(array[0]);
-        }catch(Exception e){}
-
-        return intVal;
-    }
-
-    /**
      * Converts a hash map to a ResDetail object for Axis2
      *
      * @param map a HashMap with reservation information
@@ -1084,6 +596,130 @@ public class TypeConverter {
      }
 
     /**
+     * Extracts a String from a String array
+     *
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    private static String extractHashVal(String[] array){
+        if(array == null || array.length < 1){
+            return null;
+        }
+        return array[0];
+    }
+
+    /**
+     * Extracts a long from a String array
+     *
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    private static long extractHashLongVal(String[] array){
+        long longVal = 0;
+        if(array == null || array.length < 1){
+            return 0;
+        }
+        try{
+            longVal = Long.parseLong(array[0]);
+        }catch(Exception e){}
+
+        return longVal;
+    }
+
+    /**
+     * Extracts a int from a String array
+     *
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    private static int extractHashIntVal(String[] array){
+        int intVal = 0;
+        if(array == null || array.length < 1){
+            return 0;
+        }
+        try{
+            intVal = Integer.parseInt(array[0]);
+        }catch(Exception e){}
+
+        return intVal;
+    }
+
+    /**
+     * Converts an incoming Axis2 PathInfo object into a Hibernate Path object.
+     *
+     * @param requestedPath PathInfo instance (Axis2 type) with filled in info
+     * @return path Path in database format
+     */
+    public static Path convertPath(PathInfo pathInfo) throws BSSException {
+
+        log.info("convertPath.start");
+        Path path = new Path();
+        path.setPathType(PathType.REQUESTED);
+        path.setPathSetupMode(pathInfo.getPathSetupMode());
+        path.setPathHopType(pathInfo.getPathType());
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
+        MplsInfo mplsInfo = pathInfo.getMplsInfo();
+        if (layer2Info != null) {
+            Layer2Data dbLayer2Data = layer2InfoToData(layer2Info);
+            path.setLayer2Data(dbLayer2Data);
+        } else if (layer3Info != null) {
+            Layer3Data dbLayer3Data = layer3InfoToData(layer3Info);
+            path.setLayer3Data(dbLayer3Data);
+        }
+        if (mplsInfo != null) {
+            MPLSData dbMplsData = mplsInfoToData(mplsInfo);
+            path.setMplsData(dbMplsData);
+        }
+        CtrlPlanePathContent requestedPath = pathInfo.getPath();
+        CtrlPlaneHopContent[] hops = requestedPath.getHop();
+        List<PathElem> pathElems = new ArrayList<PathElem>();
+
+        for (int i = 0; i < hops.length; i++) {
+            PathElem pathElem = new PathElem();
+            CtrlPlaneLinkContent link = hops[i].getLink();
+            if (link != null) {
+                List<PathElemParam> pathElemParams =
+                    convertCtrlPlaneLink(link);
+                for (PathElemParam pep: pathElemParams) {
+                    pathElem.addPathElemParam(pep);
+                }
+            }
+            String urn = hopToURN(hops[i], "any");
+            pathElem.setUrn(urn);
+            pathElems.add(pathElem);
+        }
+        path.setPathElems(pathElems);
+        log.debug("convertPath.end");
+        return path;
+    }
+
+    public static List<PathElemParam>
+        convertCtrlPlaneLink(CtrlPlaneLinkContent link) {
+
+        List<PathElemParam> pathElemParams = new ArrayList<PathElemParam>();
+        CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
+        String switchingcapType = swcap.getSwitchingcapType();
+        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = 
+                            swcap.getSwitchingCapabilitySpecificInfo();
+        if (swcapInfo.getVlanRangeAvailability() != null) {
+            PathElemParam pathElemParam = new PathElemParam();
+            pathElemParam.setSwcap(switchingcapType);
+            pathElemParam.setType("vlanRangeAvailability");
+            pathElemParam.setValue(swcapInfo.getVlanRangeAvailability());
+            pathElemParams.add(pathElemParam);
+        }
+        if (swcapInfo.getSuggestedVLANRange() != null) {
+            PathElemParam pathElemParam = new PathElemParam();
+            pathElemParam.setSwcap(switchingcapType);
+            pathElemParam.setType("suggestedVlanRange");
+            pathElemParam.setValue(swcapInfo.getSuggestedVLANRange());
+            pathElemParams.add(pathElemParam);
+        }
+        return pathElemParams;
+    }
+
+    /**
      * Converts Axis2 Layer2Info object to a Layer2Data Hibernate bean
      *
      * @param layer2Info the Layer2Info object to convert
@@ -1250,112 +886,6 @@ public class TypeConverter {
                            "domain, node, port or link object/reference");
             urn = null;
         }
-
         return urn;
     }
-
-    /**
-     * Converts a path in a PathInfo object that may contain a mixture of
-     * references and objects and converts it to a path containing only references.
-     * It then returns a new copy of the PathInfo object containing the converted
-     * path.
-     *
-     * @param pathInfo the pathInfo with the CtrlPlanePathContent to convert
-     * @return the a new pathInfo object with the converted path
-     */
-     public static PathInfo createRefPath(PathInfo pathInfo){
-        CtrlPlanePathContent path = pathInfo.getPath();
-        CtrlPlanePathContent refPath = new CtrlPlanePathContent();
-        if(path == null){
-            return pathInfo;
-        }
-        CtrlPlaneHopContent[] hops = path.getHop();
-        if(hops == null || hops.length < 1){
-            return pathInfo;
-        }
-        /* Create a copy so that the path in the original PathInfo
-           remains the same. */
-        PathInfo refPathInfo = new PathInfo();
-        refPathInfo.setPathSetupMode(pathInfo.getPathSetupMode());
-        refPathInfo.setPathType(pathInfo.getPathType());
-        refPathInfo.setLayer2Info(pathInfo.getLayer2Info());
-        refPathInfo.setLayer3Info(pathInfo.getLayer3Info());
-        refPathInfo.setMplsInfo(pathInfo.getMplsInfo());
-
-        refPath.setId(path.getId());
-        for(CtrlPlaneHopContent hop : hops){
-            String urn = hopToURN(hop);
-            CtrlPlaneHopContent refHop = new CtrlPlaneHopContent();
-            refHop.setId(hop.getId());
-            if(urn == null){
-                //if invalid hop just skip it
-                log.debug("createRefPath=skipping invalid hop");
-                continue;
-            }
-            int parts = urn.split(":").length;
-            if(parts == 7){
-                refHop.setLinkIdRef(urn);
-            }else if(parts == 6){
-                refHop.setPortIdRef(urn);
-            }else if(parts == 5){
-                refHop.setNodeIdRef(urn);
-            }else if(parts == 4){
-                refHop.setDomainIdRef(urn);
-            }else{
-                log.debug("createRefPath=skipping invalid urn");
-                continue;
-            }
-            refPath.addHop(refHop);
-        }
-        refPathInfo.setPath(refPath);
-
-        return refPathInfo;
-     }
-
-     /**
-      * Merge additional hops in the new path with an original path while maintaining any
-      * objects in that path. Useful for pathfinders that only work on paths containing
-      * IDRefs.
-      *
-      * @param origPathInfo the original path that may have objects to maintain
-      * @param newPathInfo the new path the may only contain references
-      * @param saveToNew if true writes merged path to newPathInfo, otherwise writes to origPathInfo
-      */
-      public static void mergePathInfo(PathInfo origPathInfo, PathInfo newPathInfo, boolean saveToNew) throws BSSException{
-        CtrlPlanePathContent mergedPath = new CtrlPlanePathContent();
-        int i = 0;
-        int j = 0;
-        CtrlPlanePathContent origPath = origPathInfo.getPath();
-        CtrlPlanePathContent newPath = newPathInfo.getPath();
-        HashMap<String, CtrlPlaneHopContent> hopMap = new  HashMap<String, CtrlPlaneHopContent>();
-        if(newPath == null || newPath.getHop() == null ||
-           newPath.getHop().length == 0){
-            return;
-        }else if(origPath == null || origPath.getHop() == null){
-            origPath = new CtrlPlanePathContent();
-            origPath.setHop(new CtrlPlaneHopContent[0]);
-        }
-
-        CtrlPlaneHopContent[] origHops = origPath.getHop();
-        CtrlPlaneHopContent[] newHops = newPath.getHop();
-        for(CtrlPlaneHopContent origHop : origHops){
-            String urn = hopToURN(origHop);
-            hopMap.put(urn, origHop);
-        }
-        for(CtrlPlaneHopContent newHop : newHops){
-            String urn = hopToURN(newHop);
-            if(hopMap.containsKey(urn)){
-                mergedPath.addHop(hopMap.get(urn));
-            }else{
-                mergedPath.addHop(newHop);
-            }
-        }
-        if(saveToNew){
-            newPathInfo.setPath(mergedPath);
-        }else{
-            origPathInfo.setPathType(newPathInfo.getPathType());
-            origPathInfo.setPath(mergedPath);
-        }
-      }
-
 }

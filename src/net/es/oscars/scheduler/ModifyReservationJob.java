@@ -72,7 +72,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                 origState = StateEngine.ACTIVE;
             }
             if (dataMap.containsKey("start")) {
-                Reservation resv = TypeConverter.hashMapToReservation(resvMap);
+                Reservation resv = PathTypeConverter.hashMapToReservation(resvMap);
                 resv.setLogin(persistentResv.getLogin());
                 Long[] times = new Long[2];
                 times[0] = persistentResv.getStartTime();
@@ -187,7 +187,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         rm.modify(resv, persistentResv);
         
         try {
-            forwardReply = forwarder.modify(resv, persistentResv, null);
+            forwardReply = forwarder.modify(resv, persistentResv);
         } catch(Exception e) {
             error = e;
         } finally {

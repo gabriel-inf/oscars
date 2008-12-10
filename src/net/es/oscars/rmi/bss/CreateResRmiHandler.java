@@ -20,10 +20,6 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.wsdlTypes.*;
-
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 public class CreateResRmiHandler {
     private OSCARSCore core;
@@ -43,37 +39,36 @@ public class CreateResRmiHandler {
      *          productionType, pathinfo
      * @return HashMap - contains gri and sucess or error status
      */
-    public HashMap<String, Object> createReservation(HashMap<String, Object> params, String userName)
-        throws IOException {
+    public HashMap<String, Object>
+        createReservation(HashMap<String, Object> params, String userName)
+            throws IOException {
+
         this.log.debug("create.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CreateReservation";
 
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-        
         Reservation resv = null;
-        PathInfo pathInfo = null;
+        Path requestedPath = null;
         
         String caller = (String) params.get("caller");
         if (caller.equals("WBUI")) {
             resv = this.toReservation(userName, params);
             try {
-                pathInfo = this.handlePath(params);
+                requestedPath = this.handlePath(params);
             } catch (BSSException e) {
                 result.put("error", methodName + ": " + e.getMessage());
                 this.log.debug("create reservaton failed: " + e.getMessage());
                 return result;
             }
         } else if (caller.equals("AAR")) {
-        	resv = (Reservation) params.get("reservation");
+            resv = (Reservation) params.get("reservation");
         } else {
-        	this.log.error("Invalid caller");
-        	throw new IOException("Invalid caller!");
+            this.log.error("Invalid caller");
+            throw new IOException("Invalid caller!");
         }
 
-
-        
         // Check to see if this user can create this reservation
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -81,7 +76,6 @@ public class CreateResRmiHandler {
         
         // bandwidth limits are stored in megaBits
         int reqBandwidth = (int) (resv.getBandwidth() / 1000000);
-
         // convert from seconds to minutes
         int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 60;
         
@@ -93,7 +87,6 @@ public class CreateResRmiHandler {
                 specifyPath = true;
             }
         }
-
         AuthValue authVal = userMgr.checkModResAccess(userName, "Reservations",
                 "create", reqBandwidth, reqDuration, specifyPath, false);
 
@@ -104,7 +97,6 @@ public class CreateResRmiHandler {
             return result;
         }
         aaa.getTransaction().commit();
-
         
         // submit reservation request
         Session bss = core.getBssSession();
@@ -114,7 +106,7 @@ public class CreateResRmiHandler {
             // url returned, if not null, indicates location of next domain
             // manager
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, userName, caller, resv);
-            rm.submitCreate(resv, userName, pathInfo);
+            rm.submitCreate(resv, userName, requestedPath);
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, userName, caller, resv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
@@ -129,30 +121,28 @@ public class CreateResRmiHandler {
                 return result;
             }
         }
-        
         if (caller.equals("WBUI")) {
             result.put("gri", resv.getGlobalReservationId());
             result.put("status", "Submitted reservation with GRI " + resv.getGlobalReservationId());
             result.put("method", methodName);
             result.put("success", Boolean.TRUE);
         } else if (caller.equals("AAR")) {
-        	Hibernate.initialize(resv);
-        	Iterator<Path> pathIt = resv.getPaths().iterator();
-        	while (pathIt.hasNext()) {
-        		Path path = pathIt.next();
-            	Hibernate.initialize(path);
-            	Hibernate.initialize(path.getLayer2Data());
-            	Hibernate.initialize(path.getLayer3Data());
-            	Hibernate.initialize(path.getNextDomain());
-            	List<PathElem> pelems = path.getPathElems();
-            	for (PathElem pe : pelems) {
-            		Hibernate.initialize(pe);
-            		Hibernate.initialize(pe.getLink());
-            	}
-        	}
-        	result.put("reservation", resv);
+            Hibernate.initialize(resv);
+            Iterator<Path> pathIt = resv.getPaths().iterator();
+            while (pathIt.hasNext()) {
+                Path path = pathIt.next();
+                Hibernate.initialize(path);
+                Hibernate.initialize(path.getLayer2Data());
+                Hibernate.initialize(path.getLayer3Data());
+                Hibernate.initialize(path.getNextDomain());
+                List<PathElem> pelems = path.getPathElems();
+                for (PathElem pe : pelems) {
+                    Hibernate.initialize(pe);
+                    Hibernate.initialize(pe.getLink());
+                }
+            }
+            result.put("reservation", resv);
         }
-
         bss.getTransaction().commit();
         this.log.debug("create.end - success");
         return result;
@@ -224,23 +214,24 @@ public class CreateResRmiHandler {
     }
 
     /**
-     * Takes form parameters and builds PathInfo structures.
+     * Takes form parameters and builds Path structures.
      *
      * @param inputMap contains form request parameters
-     * @return pathInfo a PathInfo instance with layer 2 or 3 information
+     * @return requestedPath a Path instance with layer 2 or 3 information
      */
-    public PathInfo handlePath(HashMap<String, Object> inputMap)
+    public Path handlePath(HashMap<String, Object> inputMap)
             throws BSSException {
 
         String[] arrayParam = null;
         String strParam = null;
 
-        CtrlPlanePathContent path = null;
+        List<PathElem> pathElems = new ArrayList<PathElem>();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("wbui", true);
         String defaultLayer = props.getProperty("defaultLayer");
 
-        PathInfo pathInfo = new PathInfo();
+        Path requestedPath = new Path();
+        requestedPath.setPathType(PathType.REQUESTED);
         String explicitPath = "";
         arrayParam = (String[]) inputMap.get("explicitPath");
         if (arrayParam != null) {
@@ -251,8 +242,6 @@ public class CreateResRmiHandler {
         }
         if ((explicitPath != null) && !explicitPath.trim().equals("")) {
             this.log.info("explicit path: " + explicitPath);
-            path = new CtrlPlanePathContent();
-            path.setId("userPath"); //id doesn't matter in this context
 
             String[] hops = explicitPath.split("\\s+");
             for (int i = 0; i < hops.length; i++) {
@@ -260,36 +249,35 @@ public class CreateResRmiHandler {
                 if (hops[i].equals(" ") || hops[i].equals("")) {
                     continue;
                 }
-                CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+                PathElem pathElem = new PathElem();
                 // these can currently be either topology identifiers
                 // or IP addresses
-                hop.setId(i + "");
-                hop.setLinkIdRef(hops[i]);
+                pathElem.setUrn(hops[i]);
                 this.log.info("explicit path hop: " + hops[i]);
-                path.addHop(hop);
+                pathElems.add(pathElem);
             }
-            pathInfo.setPath(path);
+            requestedPath.setPathElems(pathElems);
         } else {
             // Add a path just composed of source and destination
-            pathInfo.setPathType("loose");
-            path = new CtrlPlanePathContent();
-            path.setId("userPath"); //id doesn't matter in this context
+            requestedPath.setPathHopType("loose");
+            // TODO:  necessary?
+            // path.setId("userPath"); //id doesn't matter in this context
             String[] hops = new String[2];
             hops[0] = ((String[]) inputMap.get("source"))[0];
             hops[1] = ((String[]) inputMap.get("destination"))[0];
             for (int i = 0; i < hops.length; i++) {
                 hops[i] = hops[i].trim();
-                CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+                PathElem pathElem = new PathElem();
                 // these can currently be either topology identifiers
                 // or IP addresses
-                hop.setId(i + "");
-                hop.setLinkIdRef(hops[i]);
+                // FIXME:  do somewhere else on the way back if not already
+                // hop.setId(i + "");
+                pathElem.setUrn(hops[i]);
                 this.log.info("implicit path hop: " + hops[i]);
-                path.addHop(hop);
+                pathElems.add(pathElem);
             }
-            pathInfo.setPath(path);
+            requestedPath.setPathElems(pathElems);
         }
-
         String vlanTag = "";
         arrayParam = (String[]) inputMap.get("vlanTag");
         if (arrayParam != null) {
@@ -298,7 +286,6 @@ public class CreateResRmiHandler {
                 vlanTag = strParam;
             }
         }
-
         String tagSrcPort = "";
         arrayParam = (String[]) inputMap.get("tagSrcPort");
         if (arrayParam != null) {
@@ -307,7 +294,6 @@ public class CreateResRmiHandler {
                 tagSrcPort = strParam;
             }
         }
-
         String tagDestPort = "";
         arrayParam = (String[]) inputMap.get("tagDestPort");
         if (arrayParam != null) {
@@ -316,7 +302,6 @@ public class CreateResRmiHandler {
                 tagDestPort = strParam;
             }
         }
-
         //Set default to tagged if tagSrcPort and tagDestPort unspecified
         if ((tagSrcPort == null) || tagSrcPort.trim().equals("")) {
             tagSrcPort = "Tagged";
@@ -324,21 +309,22 @@ public class CreateResRmiHandler {
         if ((tagDestPort == null) || tagDestPort.trim().equals("")) {
             tagDestPort = "Tagged";
         }
-
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
         if (((vlanTag != null) && !vlanTag.trim().equals("")) ||
               (defaultLayer !=  null && defaultLayer.equals("2"))) {
-            Layer2Info layer2Info = new Layer2Info();
-            VlanTag srcVtagObject = new VlanTag();
-            VlanTag destVtagObject = new VlanTag();
+            Layer2Data layer2Data = new Layer2Data();
             vlanTag = (vlanTag == null||vlanTag.equals("") ? "any" : vlanTag);
-            srcVtagObject.setString(vlanTag);
-            destVtagObject.setString(vlanTag);
             boolean tagged = tagSrcPort.equals("Tagged");
-            srcVtagObject.setTagged(tagged);
+            if (!tagged) {
+                vlanTag = "0";
+            }
+            layer2Data.setSrcVtag(vlanTag);
             tagged = tagDestPort.equals("Tagged");
-            destVtagObject.setTagged(tagged);
+            if (!tagged) {
+                vlanTag = "0";
+            }
+            layer2Data.setDestVtag(vlanTag);
 
             arrayParam = (String[]) inputMap.get("source");
             if (arrayParam != null) {
@@ -347,8 +333,7 @@ public class CreateResRmiHandler {
                 strParam = "";
             }
             strParam = strParam.trim();
-            layer2Info.setSrcEndpoint(strParam);
-
+            layer2Data.setSrcEndpoint(strParam);
 
             arrayParam = (String[]) inputMap.get("destination");
             if (arrayParam != null) {
@@ -357,14 +342,12 @@ public class CreateResRmiHandler {
                 strParam = "";
             }
             strParam = strParam.trim();
-            layer2Info.setDestEndpoint(strParam);
-            layer2Info.setSrcVtag(srcVtagObject);
-            layer2Info.setDestVtag(destVtagObject);
-            pathInfo.setLayer2Info(layer2Info);
-            return pathInfo;
+            layer2Data.setDestEndpoint(strParam);
+            requestedPath.setLayer2Data(layer2Data);
+            return requestedPath;
         }
 
-        Layer3Info layer3Info = new Layer3Info();
+        Layer3Data layer3Data = new Layer3Data();
         arrayParam = (String[]) inputMap.get("source");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -377,7 +360,7 @@ public class CreateResRmiHandler {
         if (strParam.startsWith("urn:ogf:network")) {
             throw new BSSException("VLAN tag not supplied for layer 2 reservation");
         }
-        layer3Info.setSrcHost(strParam);
+        layer3Data.setSrcHost(strParam);
         arrayParam = (String[]) inputMap.get("destination");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -385,7 +368,7 @@ public class CreateResRmiHandler {
             strParam = "";
         }
         strParam = strParam.trim();
-        layer3Info.setDestHost(strParam);
+        layer3Data.setDestHost(strParam);
 
         arrayParam = (String[]) inputMap.get("srcPort");
         if (arrayParam != null) {
@@ -394,9 +377,9 @@ public class CreateResRmiHandler {
             strParam = "";
         }
         if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Info.setSrcIpPort(Integer.valueOf(strParam));
+            layer3Data.setSrcIpPort(Integer.valueOf(strParam));
         } else {
-            layer3Info.setSrcIpPort(0);
+            layer3Data.setSrcIpPort(0);
         }
 
         arrayParam = (String[]) inputMap.get("destPort");
@@ -406,9 +389,9 @@ public class CreateResRmiHandler {
             strParam = "";
         }
         if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Info.setDestIpPort(Integer.valueOf(strParam));
+            layer3Data.setDestIpPort(Integer.valueOf(strParam));
         } else {
-            layer3Info.setDestIpPort(0);
+            layer3Data.setDestIpPort(0);
         }
 
         arrayParam = (String[]) inputMap.get("protocol");
@@ -418,7 +401,7 @@ public class CreateResRmiHandler {
             strParam = "";
         }
         if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Info.setProtocol(strParam);
+            layer3Data.setProtocol(strParam);
         }
 
         arrayParam = (String[]) inputMap.get("dscp");
@@ -428,14 +411,14 @@ public class CreateResRmiHandler {
             strParam = "";
         }
         if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Info.setDscp(strParam);
+            layer3Data.setDscp(strParam);
         }
-        pathInfo.setLayer3Info(layer3Info);
+        requestedPath.setLayer3Data(layer3Data);
 
-        MplsInfo mplsInfo = new MplsInfo();
-        mplsInfo.setBurstLimit(10000000);
-        pathInfo.setMplsInfo(mplsInfo);
+        MPLSData mplsData = new MPLSData();
+        mplsData.setBurstLimit(10000000L);
+        requestedPath.setMplsData(mplsData);
 
-        return pathInfo;
+        return requestedPath;
     }
 }

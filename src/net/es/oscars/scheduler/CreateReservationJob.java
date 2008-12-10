@@ -7,7 +7,6 @@ import org.hibernate.Session;
 import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.*;
@@ -39,7 +38,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri =  dataMap.getString("gri");
-        PathInfo pathInfo = (PathInfo) dataMap.get("pathInfo");
         this.log.debug("GRI is: "+dataMap.get("gri")+"for job name: "+jobName);
         this.init();
 
@@ -65,11 +63,11 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         /* Perform start, confirm, complete, fail or statusCheck operation */
         try {
             if (dataMap.containsKey("start")) {
-                this.start(resv, pathInfo);
+                this.start(resv);
             } else if(dataMap.containsKey("confirm")) {
-                this.confirm(resv, pathInfo);
+                this.confirm(resv);
             } else if(dataMap.containsKey("complete")) {
-                this.complete(resv, pathInfo);
+                this.complete(resv);
             } else if(dataMap.containsKey("fail")) {
                 String code = dataMap.getString("errorCode");
                 String msg = dataMap.getString("errorMsg");
@@ -161,10 +159,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
      * Processes an initial request
      *
      * @param resv partially filled in Reserrvation instance
-     * @param pathInfo requested path info
      * @throws Exception
      */
-    public void start(Reservation resv, PathInfo pathInfo) throws Exception {
+    public void start(Reservation resv) throws Exception {
         this.log.debug("start.start");
         Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
@@ -173,22 +170,18 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         Exception error = null;     
         
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "JOB", 
-                               resv, pathInfo);
+                               resv);
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INCREATE);
-            rm.create(resv, pathInfo);
-            TypeConverter.ensureLocalIds(pathInfo);
-
-            // FIXME: why does this sometimes get unset?
-            pathInfo.getPath().setId(resv.getGlobalReservationId());
+            rm.create(resv);
 
             /* checks whether next domain should be contacted, forwards to
                the next domain if necessary, and handles the response */
-            CreateReply forwardReply = forwarder.create(resv, pathInfo);
-            rm.finalizeResv(resv, pathInfo, false);
+            boolean forwarded = forwarder.create(resv);
+            rm.finalizeResv(resv, false);
             rm.store(resv);
-            if (forwardReply == null) {
-                this.confirm(resv, pathInfo);      
+            if (!forwarded) {
+                this.confirm(resv);      
             } else {
                 this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
             }
@@ -208,10 +201,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
      * on what other domains return
      *
      * @param resv partially completed reservation instance
-     * @param pathInfo PathInfo instance containing path related information
      * @throws BSSException
      */
-    public void confirm(Reservation resv, PathInfo pathInfo)
+    public void confirm(Reservation resv)
             throws BSSException {
 
         this.log.debug("confirm.start");
@@ -221,16 +213,19 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String bssDbName = this.core.getBssDbName();
        
         String login = resv.getLogin();
-        rm.finalizeResv(resv, pathInfo, true);
+        rm.finalizeResv(resv, true);
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv, pathInfo);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);
         
         DomainDAO domainDAO = new DomainDAO(bssDbName);
         //getNextDomain is a misnomer. return hop domain
-        Domain firstDomain = domainDAO.getNextDomain(pathInfo.getPath().getHop()[0]);
+        // FIXME
+        //Domain firstDomain = domainDAO.getNextDomain(pathInfo.getPath().getHop()[0]);
+        Domain firstDomain = new Domain();
+        // end FIXME
         if (firstDomain.isLocal()) {
-            this.complete(resv, pathInfo);
+            this.complete(resv);
         } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
@@ -242,10 +237,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
      * final set of interdomain resources
      *
      * @param resv reservation instance to be completed
-     * @param pathInfo PathInfo instance containing path related information
      * @throws BSSException
      */
-    public void complete(Reservation resv, PathInfo pathInfo)
+    public void complete(Reservation resv)
             throws BSSException {
 
         this.log.debug("complete.start");
@@ -255,11 +249,11 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String gri = resv.getGlobalReservationId();
         String login = resv.getLogin();
         
-        rm.finalizeResv(resv, pathInfo, false);
+        rm.finalizeResv(resv, false);
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         this.se.updateStatus(resv, StateEngine.RESERVED);
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv, pathInfo);
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv);
         
         // just in case this is an immediate reservation, check pending & add setup actions
         PSSScheduler sched = new PSSScheduler(core.getBssDbName());

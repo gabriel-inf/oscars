@@ -53,16 +53,20 @@ public class ReservationManager {
         GEN_TOKEN = aaaProps.getProperty("useSignalTokens");
     }
 
-    public void submitCreate(Reservation resv, String login, PathInfo pathInfo)
+    public void submitCreate(Reservation resv, String login, Path path)
         throws  BSSException {
         this.log.info("submitCreate.start");
         ReservationDAO dao = new ReservationDAO(this.dbname);
+        // FIXME:  for compile only
+        PathInfo pathInfo = new PathInfo();
 
         // login is checked in validate so set it here
         resv.setLogin(login);
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
-        StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
+        // FIXME:  for compile only
+        Path removePath = new Path();
+        StringBuilder errorMsg = paramValidator.validate(resv, removePath);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
@@ -111,6 +115,7 @@ public class ReservationManager {
         jobDataMap.put("start", true);
         jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
+        // FIXME
         jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
         try {
@@ -129,9 +134,11 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void create(Reservation resv, PathInfo pathInfo)
+    public void create(Reservation resv)
             throws  BSSException {
 
+        // FIXME:  for compile only
+        PathInfo pathInfo = new PathInfo();
         this.log.info("create.start");
 
         this.rsvLogger.redirect(resv.getGlobalReservationId());
@@ -567,7 +574,7 @@ public class ReservationManager {
         }
 
         //Schedule job
-        HashMap resvMap = TypeConverter.reservationToHashMap(resv, null);
+        HashMap resvMap = PathTypeConverter.reservationToHashMap(resv);
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "submitModify-"+resv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", ModifyReservationJob.class);
@@ -629,7 +636,8 @@ public class ReservationManager {
             throw new BSSException("No path provided or stored in DB for reservation "+
                                     resv.getGlobalReservationId());
         }
-        pathInfo = TypeConverter.toLocalPathInfo(pathInfo);
+        // FIXME
+        // pathInfo = TypeConverter.toLocalPathInfo(pathInfo);
 
         // this will throw an exception if modification isn't possible
         Path path = this.pathMgr.getPath(resv, pathInfo);
@@ -765,12 +773,12 @@ public class ReservationManager {
      * Stores the interdomain path elements returned by forwardReply
      *
      * @param resv reservation to be stored in database
-     * @param pathInfo reservation path information
      */
-    public void finalizeResv(Reservation resv, PathInfo pathInfo,
-                             boolean confirm)
+    public void finalizeResv(Reservation resv, boolean confirm)
             throws BSSException {
 
+        // FIXME:  for compile only
+        PathInfo pathInfo = new PathInfo();
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
         Path path = resv.getPath("intra");
