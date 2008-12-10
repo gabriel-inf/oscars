@@ -1,4 +1,4 @@
-package net.es.oscars.bss.topology;
+package net.es.oscars.client;
 // GraphViz.java - a simple API to call dot from Java programs
 
 /*$Id$*/
@@ -31,6 +31,16 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.bss.topology.DomainDAO;
+import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Node;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathType;
+import net.es.oscars.bss.topology.Port;
+import net.es.oscars.bss.topology.Topology;
+import net.es.oscars.bss.topology.URNParser;
 import net.es.oscars.wsdlTypes.Layer2Info;
 import net.es.oscars.wsdlTypes.PathInfo;
 import net.es.oscars.wsdlTypes.ResDetails;
