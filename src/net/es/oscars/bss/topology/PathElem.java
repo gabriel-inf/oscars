@@ -8,6 +8,7 @@ import org.hibernate.Hibernate;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.database.HibernateBean;
 
 /**
@@ -37,11 +38,23 @@ public class PathElem extends HibernateBean implements Serializable {
     private Link link;
 
     private Set pathElemParams = new HashSet<PathElemParam>();
-
+    
+    private HashMap<String, PathElemParam> pathElemParamMap = new HashMap<String, PathElemParam>();
+    
     /** default constructor */
     public PathElem() { }
-
-
+    
+    public void initializePathElemParams() {
+        if (!this.pathElemParamMap.isEmpty()) {
+            return;
+        }
+        Iterator pathElemParamsIterator = this.pathElemParams.iterator();
+        while (pathElemParamsIterator.hasNext()) {
+            PathElemParam param = (PathElemParam) pathElemParamsIterator.next();
+            String key = param.getSwcap() + param.getType();
+            this.pathElemParamMap.put(key, param);
+        }
+    }
     /**
      * @return seqNumber int with this path element's position in list
      */ 
@@ -124,7 +137,26 @@ public class PathElem extends HibernateBean implements Serializable {
      * @return set of path elem parameters
      */
     public Set getPathElemParams() { return this.pathElemParams; }
-
+    
+    /**
+     * @param swcap Generate a HashMap only with parameters of this swcap
+     * @return HashMap keyed by type for each parameter with given swcap type
+     * @throws BSSException 
+     */
+    public PathElemParam getPathElemParam(String swcap, String type) throws BSSException {
+        if(!PathElemParamSwcap.isValid(swcap)){
+            throw new BSSException("Invalid PathElemParam swcap '" + swcap + "'");
+        }else if(!PathElemParamType.isValid(type)){
+            throw new BSSException("Invalid PathElemParam type '" + type + "'");
+        }
+        
+        if(!pathElemParamMap.containsKey(swcap+type)){
+            return null;
+        }
+        
+        return pathElemParamMap.get(swcap+type);
+    }
+    
     /**
      * @param pathElemParams set of path elem parameters
      */
@@ -133,8 +165,8 @@ public class PathElem extends HibernateBean implements Serializable {
     }
 
     public boolean addPathElemParam(PathElemParam pathElemParam) {
-
         if (this.pathElemParams.add(pathElemParam)) {
+            pathElemParamMap.put(pathElemParam.getSwcap()+pathElemParam.getType(), pathElemParam);
             return true;
         } else {
             return false;
@@ -144,6 +176,7 @@ public class PathElem extends HibernateBean implements Serializable {
 
     public void removePathElemParam(PathElemParam pathElemParam) {
         this.pathElemParams.remove(pathElemParam);
+        this.pathElemParamMap.remove(pathElemParam);
     }
 
     // need to override superclass because dealing with transient
@@ -188,6 +221,30 @@ public class PathElem extends HibernateBean implements Serializable {
         copy.setUrn(pathElem.getUrn());
         copy.setUserName(pathElem.getUserName());
         copy.setLinkDescr(pathElem.getLinkDescr());
+        copy.setPathElemParams(PathElem.copyPathElemParams(pathElem, null));
+        return copy;
+    }
+    
+    /** Creates a copies of the PathElemParams of this object that match the swcap given
+     * 
+     * @param pathElem the PathElem with the params to copy
+     * @param swcap the type of PathElem params to copy. null if all params should be copied.
+     * @return the copy
+     */
+    public static HashSet<PathElemParam> copyPathElemParams(PathElem pathElem, String swcap){
+        HashSet<PathElemParam> copy = new HashSet<PathElemParam>();
+        Iterator paramIterator = pathElem.getPathElemParams().iterator();
+        while(paramIterator.hasNext()){
+            PathElemParam param = (PathElemParam) paramIterator.next();
+            if(swcap != null && !swcap.equals(param.getSwcap())){
+                continue;
+            }
+            PathElemParam paramCopy = new PathElemParam();
+            paramCopy.setSwcap(param.getSwcap());
+            paramCopy.setType(param.getType());
+            paramCopy.setValue(param.getValue());
+            copy.add(paramCopy);
+        }
         return copy;
     }
 }
