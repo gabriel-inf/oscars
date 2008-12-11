@@ -14,7 +14,7 @@ import net.es.oscars.pss.*;
 import net.es.oscars.PropHandler;
 
 public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
-    private Logger log;
+    private Logger log = Logger.getLogger(CreateReservationJob.class);
     private OSCARSCore core;
     private StateEngine se;
     private long CONFIRM_TIMEOUT = 600;//10min
@@ -77,8 +77,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login,
                                       src, resv, code, msg);
             } else if(dataMap.containsKey("statusCheck")) {
-                String status = this.se.getStatus(resv);
-                int localStatus = this.se.getLocalStatus(resv);
+                String status = StateEngine.getStatus(resv);
+                int localStatus = StateEngine.getLocalStatus(resv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
                     String op = (localStatus == StateEngine.CONFIRMED ? 
@@ -158,7 +158,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
     /**
      * Processes an initial request
      *
-     * @param resv partially filled in Reserrvation instance
+     * @param resv partially filled in Reservation instance
      * @throws Exception
      */
     public void start(Reservation resv) throws Exception {
@@ -209,8 +209,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log.debug("confirm.start");
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-        String gri = resv.getGlobalReservationId();
-        String bssDbName = this.core.getBssDbName();
        
         String login = resv.getLogin();
         rm.finalizeResv(resv, true);
@@ -218,13 +216,11 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);
         
-        DomainDAO domainDAO = new DomainDAO(bssDbName);
-        //getNextDomain is a misnomer. return hop domain
-        // FIXME
-        //Domain firstDomain = domainDAO.getNextDomain(pathInfo.getPath().getHop()[0]);
-        Domain firstDomain = new Domain();
-        // end FIXME
-        if (firstDomain.isLocal()) {
+        // Get the next domain from the INTERDOMAIN path, the interdomain pathfinder 
+        // should have populated that field.
+        // FIXME: not 100% sure what the logic is here -- Vangelis
+        Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
+        if (nextDomain == null || nextDomain.isLocal()) {
             this.complete(resv);
         } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
@@ -245,8 +241,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log.debug("complete.start");
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-        String bssDbName = this.core.getBssDbName();
-        String gri = resv.getGlobalReservationId();
         String login = resv.getLogin();
         
         rm.finalizeResv(resv, false);
@@ -280,8 +274,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
         dataMap.put("gri", resv.getGlobalReservationId());
-        dataMap.put("status", this.se.getStatus(resv));
-        dataMap.put("localStatus", this.se.getLocalStatus(resv));
+        dataMap.put("status", StateEngine.getStatus(resv));
+        dataMap.put("localStatus", StateEngine.getLocalStatus(resv));
         jobDetail.setJobDataMap(dataMap);
         try {
             this.log.debug("Adding job " + jobName);

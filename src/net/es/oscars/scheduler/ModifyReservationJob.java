@@ -15,7 +15,6 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.pss.*;
 import net.es.oscars.PropHandler;
 
 public class ModifyReservationJob extends ChainingJob implements Job {
@@ -68,7 +67,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         
         /* Perform start, confirm, complete, fail or statusCheck operation */
         try {
-            if (this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)) {
+            if (StateEngine.getStatus(persistentResv).equals(StateEngine.ACTIVE)) {
                 origState = StateEngine.ACTIVE;
             }
             if (dataMap.containsKey("start")) {
@@ -91,8 +90,8 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                 eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login,
                                       src, persistentResv, code, msg);
             } else if (dataMap.containsKey("statusCheck")) {
-                String status = this.se.getStatus(persistentResv);
-                int localStatus = this.se.getLocalStatus(persistentResv);
+                String status = StateEngine.getStatus(persistentResv);
+                int localStatus = StateEngine.getLocalStatus(persistentResv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
                     String op = ((localStatus & 1) == 1 ? 
@@ -218,8 +217,8 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         this.log.debug("confirm.start");
         EventProducer eventProducer = new EventProducer();
         String bssDbName = this.core.getBssDbName();
-        Path path = resv.getPath("intra");
-        int localStatus = this.se.getLocalStatus(resv) + 1;
+        Path path = resv.getPath(PathType.INTERDOMAIN);
+        int localStatus = StateEngine.getLocalStatus(resv) + 1;
         this.se.updateLocalStatus(resv, localStatus);
         eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_CONFIRMED, login, "JOB", resv);
         
@@ -256,7 +255,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
     public void complete(Reservation resv, String login) throws BSSException {
         this.log.debug("complete.start");
         EventProducer eventProducer = new EventProducer();
-        int localStatus = this.se.getLocalStatus(resv);
+        int localStatus =  StateEngine.getLocalStatus(resv);
         if (localStatus >= 2) {
             this.se.updateStatus(resv, StateEngine.ACTIVE);
         } else {
@@ -288,8 +287,8 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
         dataMap.put("gri", resv.getGlobalReservationId());
-        dataMap.put("status", this.se.getStatus(resv));
-        dataMap.put("localStatus", this.se.getLocalStatus(resv));
+        dataMap.put("status", StateEngine.getStatus(resv));
+        dataMap.put("localStatus", StateEngine.getLocalStatus(resv));
         jobDetail.setJobDataMap(dataMap);
         try {
             this.log.debug("Adding job " + jobName);
