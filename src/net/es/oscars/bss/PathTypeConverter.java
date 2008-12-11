@@ -72,10 +72,9 @@ public class PathTypeConverter {
             map.put("token", genHashVal(token.getValue()));
         }
         //set local path
-        // FIXME
-        // map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL)));
+        map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL)));
         // set interdomain path
-        // map.putAll(pathToHashMap(resv.getPath(PathType.INTERDOMAIN)));
+        map.putAll(pathToHashMap(resv.getPath(PathType.INTERDOMAIN)));
         return map;
     }
 
@@ -106,34 +105,29 @@ public class PathTypeConverter {
      * Converts Path Hibernate bean to a HashMap
      *
      * @param path the Path to convert
-     * @param pathInfo associated path information to add to the hash map
      * @return map the converted HashMap
      */
-    public static HashMap<String, String[]> pathToHashMap(Path path, PathInfo pathInfo){
+    public static HashMap<String, String[]> pathToHashMap(Path path) {
+
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         ArrayList<String> layers = new ArrayList<String>();
-        if(path == null){
+        if (path == null) {
             return map;
         }
-
         Domain nextDomain = path.getNextDomain();
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
         MPLSData mplsData = path.getMplsData();
         List<PathElem> pathElems = path.getPathElems();
-        //PathElem interPathElem = path.getInterPathElem();
-        ArrayList<String> intraPath = new ArrayList<String>();
-        ArrayList<String> interPath = new ArrayList<String>();
+        ArrayList<String> pathListStr = new ArrayList<String>();
         String src = null;
         String dest = null;
 
         map.put("isExplicitPath", genHashVal(path.isExplicit() ? "true" : "false"));
         map.put("pathSetupMode", genHashVal(path.getPathSetupMode()));
-
         if(nextDomain != null){
             map.put("nextDomain", genHashVal(nextDomain.getTopologyIdent()));
         }
-
         if(layer3Data != null){
             src = layer3Data.getSrcHost();
             dest = layer3Data.getDestHost();
@@ -155,7 +149,6 @@ public class PathTypeConverter {
             map.put("destination", genHashVal(dest));
             layers.add("2");
         }
-
         map.put("layer", layers.toArray(new String[layers.size()]));
 
         if(mplsData != null){
@@ -163,87 +156,28 @@ public class PathTypeConverter {
             map.put("lspClass", genHashVal(mplsData.getLspClass()));
         }
 
+        String pathType = path.getPathHopType() == null ? "strict" : path.getPathHopType();
+        map.put("pathType", genHashVal(pathType));
 
-        if(pathInfo != null){
-            String pathType = pathInfo.getPathType() == null ? "strict" : pathInfo.getPathType();
-            map.put("pathType", genHashVal(pathType));
-        }
-
-        /* If given pathInfo add info to hash map*/
-        Layer2Info l2Info = null;
-        boolean usePathInfo = false;
-        ArrayList<String> interHopInfo = new ArrayList<String>();
-        if(pathInfo != null && pathInfo.getPath() != null
-           && pathInfo.getPath().getHop() != null){
-            for(CtrlPlaneHopContent hop :  pathInfo.getPath().getHop()){
-                String urn = TypeConverter.hopToURN(hop);
-                interPath.add(urn);
-                CtrlPlaneLinkContent link = hop.getLink();
-                if(link != null){
-                    String infoVal = link.getTrafficEngineeringMetric();
-                    CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
-                    CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
-                        swcap.getSwitchingCapabilitySpecificInfo();
-                    infoVal += ";" + swcap.getSwitchingcapType();
-                    infoVal += ";" + swcap.getEncodingType();
-                    if(swcap.getSwitchingcapType().equals("l2sc")){
-                        infoVal += ";" + swcapInfo.getInterfaceMTU();
-                        infoVal += ";" + swcapInfo.getVlanRangeAvailability();
-                        infoVal += ";" + swcapInfo.getSuggestedVLANRange();
-                    }else{
-                        infoVal += ";" + swcapInfo.getCapability();
-                    }
-                    interHopInfo.add(infoVal);
-                }else{
-                    interHopInfo.add("");
-                }
-            }
-            l2Info = pathInfo.getLayer2Info();
-            usePathInfo = true;
-        }
-        if (!usePathInfo) {
-            // INTERDOMAIN
-            /*
-            for (PathElem pathElem: interPathElems) {
-                Link link = interPathElem.getLink();
-                if(link != null){
-                    String linkId = link.getFQTI();
-                    interPath.add(linkId);
-                    interHopInfo.add(this.getPathElemInfo(interPathElem));
-                    map.putAll(this.vlanToHashMap(interPathElem, src, dest, layer2Data));
-                }else{
-                    this.log.error("Could not locate a link for interPathElem, id: "+interPathElem.getId());
-                }
-            }
-            */
-        } else if (l2Info != null) {
-            if (l2Info.getSrcVtag() != null) {
-                map.put("srcVtag", genHashVal(l2Info.getSrcVtag().getString()));
-                map.put("tagSrcPort", genHashVal(l2Info.getSrcVtag().getTagged() + ""));
-            }
-            if (l2Info.getDestVtag() != null) {
-                map.put("destVtag", genHashVal(l2Info.getSrcVtag().getString()));
-                map.put("tagDestPort", genHashVal(l2Info.getDestVtag().getTagged() + ""));
-            }
-        }
-        map.put("interdomainPath", interPath.toArray(new String[interPath.size()]));
-        map.put("interdomainHopInfo", interHopInfo.toArray(new String[interHopInfo.size()]));
-
-        ArrayList<String> intraHopInfo = new ArrayList<String>();
+        ArrayList<String> pathHopInfo = new ArrayList<String>();
         for (PathElem pathElem: pathElems) {
             Link link = pathElem.getLink();
             if (link != null) {
                 String linkId = link.getFQTI();
-                intraPath.add(linkId);
-                intraHopInfo.add(getPathElemInfo(pathElem));
+                pathListStr.add(linkId);
+                pathHopInfo.add(getPathElemInfo(pathElem));
                 map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
             } else {
                 log.error("Could not locate a link for pathElem, id: "+pathElem.getId());
             }
         }
-        map.put("intradomainPath", intraPath.toArray(new String[intraPath.size()]));
-        map.put("intradomainHopInfo", intraHopInfo.toArray(new String[intraHopInfo.size()]));
-
+        if (path.getPathType().equals(PathType.LOCAL)) {
+            map.put("intradomainPath", pathListStr.toArray(new String[pathListStr.size()]));
+            map.put("intradomainHopInfo", pathHopInfo.toArray(new String[pathHopInfo.size()]));
+        } else {
+            map.put("interdomainPath", pathListStr.toArray(new String[pathListStr.size()]));
+            map.put("interdomainHopInfo", pathHopInfo.toArray(new String[pathHopInfo.size()]));
+        }
         return map;
     }
 
@@ -327,64 +261,6 @@ public class PathTypeConverter {
         array[0] = value;
         return array;
     }
-
-    /**
-     * Converts a path in a PathInfo object that may contain a mixture of
-     * references and objects and converts it to a path containing only references.
-     * It then returns a new copy of the PathInfo object containing the converted
-     * path.
-     *
-     * @param pathInfo the pathInfo with the CtrlPlanePathContent to convert
-     * @return the a new pathInfo object with the converted path
-     */
-     public static PathInfo createRefPath(PathInfo pathInfo){
-        CtrlPlanePathContent path = pathInfo.getPath();
-        CtrlPlanePathContent refPath = new CtrlPlanePathContent();
-        if(path == null){
-            return pathInfo;
-        }
-        CtrlPlaneHopContent[] hops = path.getHop();
-        if(hops == null || hops.length < 1){
-            return pathInfo;
-        }
-        /* Create a copy so that the path in the original PathInfo
-           remains the same. */
-        PathInfo refPathInfo = new PathInfo();
-        refPathInfo.setPathSetupMode(pathInfo.getPathSetupMode());
-        refPathInfo.setPathType(pathInfo.getPathType());
-        refPathInfo.setLayer2Info(pathInfo.getLayer2Info());
-        refPathInfo.setLayer3Info(pathInfo.getLayer3Info());
-        refPathInfo.setMplsInfo(pathInfo.getMplsInfo());
-
-        refPath.setId(path.getId());
-        for(CtrlPlaneHopContent hop : hops){
-            String urn = TypeConverter.hopToURN(hop);
-            CtrlPlaneHopContent refHop = new CtrlPlaneHopContent();
-            refHop.setId(hop.getId());
-            if(urn == null){
-                //if invalid hop just skip it
-                log.debug("createRefPath=skipping invalid hop");
-                continue;
-            }
-            int parts = urn.split(":").length;
-            if(parts == 7){
-                refHop.setLinkIdRef(urn);
-            }else if(parts == 6){
-                refHop.setPortIdRef(urn);
-            }else if(parts == 5){
-                refHop.setNodeIdRef(urn);
-            }else if(parts == 4){
-                refHop.setDomainIdRef(urn);
-            }else{
-                log.debug("createRefPath=skipping invalid urn");
-                continue;
-            }
-            refPath.addHop(refHop);
-        }
-        refPathInfo.setPath(refPath);
-
-        return refPathInfo;
-     }
 
      /**
       * Merge additional hops in the new path with an original path while maintaining any

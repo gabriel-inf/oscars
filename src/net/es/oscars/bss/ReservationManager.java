@@ -86,9 +86,7 @@ public class ReservationManager {
 
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
-        Path tempPath = this.pathMgr.buildInitialPath(pathInfo);
-        tempPath.setPathType(PathType.LOCAL);
-        resv.addPath(tempPath);
+        resv.addPath(path);
 
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);
