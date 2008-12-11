@@ -3,25 +3,27 @@ package net.es.oscars.pathfinder;
 import java.util.*;
 
 import org.apache.log4j.*;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.lookup.*;
 
 /**
- * This class is intended to be subclassed by TERCEPathfinder and
- * TraceroutePathfinder.
+ * This class is intended to be subclassed by the other xxxPathfinder classes
  *
  * @author David Robertson (dwrobertson@lbl.gov), Andrew Lake (alake@internet2.edu)
+ * @author Evangelos Chaniotakis (haniotak@es.net)
+ *
  */
 public class Pathfinder {
-    private Logger log;
+    private Logger log = Logger.getLogger(Pathfinder.class);
     protected String dbname;
+    private DomainDAO domDAO;
 
     public Pathfinder(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
+        domDAO = new DomainDAO(dbname);
+
     }
 
     /**
@@ -30,10 +32,123 @@ public class Pathfinder {
      * @param requestedPath the path to examine
      * @return true if the path has been explicitly specified
      */
-    protected boolean isPathSpecified(Path requestedPath) {
+    public boolean isPathSpecified(Path requestedPath) {
         List<PathElem> pathElems = requestedPath.getPathElems();
-        return (!pathElems.isEmpty());
+        return !(pathElems == null || pathElems.isEmpty());
     }
+
+
+    /**
+     * Utility function to decide whether the requested path terminates
+     * in this domain
+     *
+     * @param requestedPath a requested path with all local URNs already resolved to Links
+     * @return whether the path terminates locally
+     * @throws PathfinderException
+     */
+    public boolean pathTerminatesLocally(Path requestedPath) throws PathfinderException {
+        List<PathElem> pathElems = requestedPath.getPathElems();
+        if (this.isPathSpecified(requestedPath)) {
+            // If the path is specified and the last hop has not already been
+            // resolved to a Link, it is not local
+            if (pathElems.get(pathElems.size()-1).getLink() == null ){
+                return false;
+            }
+            // if it is in our DB, return the locality
+            return pathElems.get(pathElems.size()-1).getLink().getPort().getNode().getDomain().isLocal();
+        } else {
+            // if the path is NOT specified, try to locate the destination link
+            String destEndpoint = this.findEndpoints(requestedPath).get("dest");
+
+            // FIXME: this ONLY works with L2 identifiers
+            Link dstLink = domDAO.getFullyQualifiedLink(destEndpoint);
+            if (dstLink != null) {
+                return dstLink.getPort().getNode().getDomain().isLocal();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Utility function to decide whether the requested path originates
+     * from this domain
+     *
+     * @param requestedPath a requested path with all local URNs already resolved to Links
+     * @return if the path originates locally
+     * @throws PathfinderException
+     */
+    public boolean pathOriginatesLocally(Path requestedPath) throws PathfinderException {
+        List<PathElem> pathElems = requestedPath.getPathElems();
+        if (this.isPathSpecified(requestedPath)) {
+            // If the path is specified and the first hop has not already been
+            // resolved to a Link, it is not a local hop
+            if (pathElems.get(0).getLink() == null ){
+                return false;
+            }
+            // if it is in our DB, return the locality
+            return pathElems.get(0).getLink().getPort().getNode().getDomain().isLocal();
+        } else {
+            // If the path is NOT specified, that means this is a user request,
+            // and we are the 1st domain on the path,
+            // Try to locate the source link from L2 / L3 data.
+            String srcEndpoint = this.findEndpoints(requestedPath).get("src");
+
+            // FIXME: this ONLY works with L2 identifiers
+            Link srcLink = domDAO.getFullyQualifiedLink(srcEndpoint);
+            if (srcLink == null) {
+                throw new PathfinderException("No path specified and source link not found");
+            }
+            return srcLink.getPort().getNode().getDomain().isLocal();
+        }
+    }
+
+
+
+    protected Link firstLocalLink(Path requestedPath) throws PathfinderException {
+        List<PathElem> localPathElems = this.extractLocalSegment(requestedPath);
+        return localPathElems.get(0).getLink();
+    }
+
+    protected Link lastLocalLink(Path requestedPath) throws PathfinderException {
+        List<PathElem> localPathElems = this.extractLocalSegment(requestedPath);
+        return localPathElems.get(localPathElems.size()-1).getLink();
+    }
+
+
+    protected String firstHopAfterLocal(Path requestedPath) throws PathfinderException {
+        List<PathElem> pathElems = requestedPath.getPathElems();
+        int i = this.firstHopAfterLocalIndex(requestedPath);
+        PathElem pe = pathElems.get(i);
+        if (pe.getLink() != null) {
+            return pe.getLink().getFQTI();
+        } else {
+            return pe.getUrn();
+        }
+    }
+
+    protected int firstHopAfterLocalIndex(Path requestedPath) throws PathfinderException {
+        List<PathElem> pathElems = requestedPath.getPathElems();
+        boolean foundLocal = false;
+        int i = 0;
+        for (PathElem pe : pathElems) {
+            if (pe.getLink() != null) {
+                if (pe.getLink().getPort().getNode().getDomain().isLocal()) {
+                    foundLocal = true;
+                } else {
+                    if (foundLocal) {
+                        return i;
+                    }
+                }
+            } else {
+                if (foundLocal) {
+                    return i;
+                }
+            }
+            i++;
+        }
+        throw new PathfinderException("No local segment found!");
+    }
+
 
     /**
      * Extracts only the local segment of a path
@@ -86,111 +201,43 @@ public class Pathfinder {
     }
 
 
-
-
-
-
-    /**
-     * Convenience method for finding ingress. Subclass may call this by
-     * converting the source to a fully-qualified link URN and converting
-     * all the hops to URNs (if they aren't already) then passing them to
-     * this method.
-     *
-     * @param src the fully-qualified link-id of the request's source
-     * @param path the path to analyze. if null then src is returned.
-     * @return the fully-qualified link-id of the ingress link
-     * @throws PathfinderException
-     */
-    protected String findIngress(String src, CtrlPlanePathContent path)
-                                    throws PathfinderException {
-         this.log.debug("findIngress.start");
-         DomainDAO domainDAO = new DomainDAO(this.dbname);
-
-
-        /* If no path given then return the source. In such a case this must
-           be the first domain so the source must be the ingress */
-        if (path == null && src == null) {
-            throw new PathfinderException("Could not determine ingress; no path or source link given.");
-        } else if (path == null) {
-            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(src);
-            String domainId = parseResults.get("domainId");
-            String srcType = parseResults.get("type");
-            if (!srcType.equals("link")) {
-                throw new PathfinderException("Could not determine ingress; no path given and source is not a link.");
-            } else if (!domainDAO.isLocal(domainId)) {
-                throw new PathfinderException("Could not determine ingress; no path given and source link is not local (" + domainId + ")");
-            } else {
-                String fqti = parseResults.get("fqti");
-                Link ingressLink = domainDAO.getFullyQualifiedLink(fqti);
-                if (ingressLink == null) {
-                    throw new PathfinderException("Could not locate ingress link in DB");
-                } else if (!ingressLink.isValid()) {
-                    throw new PathfinderException("Ingress link is not valid");
-                }
-
-                return fqti;
-            }
+    protected HashMap<String, String> findEndpoints(Path path) throws PathfinderException {
+        Layer2Data layer2Data = path.getLayer2Data();
+        Layer3Data layer3Data = path.getLayer3Data();
+        String srcEndpoint = null;
+        String destEndpoint= null;
+        HashMap<String, String> result = new HashMap<String, String>();
+        if (layer2Data != null && layer3Data != null) {
+            throw new PathfinderException("Both L2 and L3 data specified!");
+        } else if (layer2Data == null && layer3Data == null) {
+            throw new PathfinderException("No L2 or L3 data!");
+        } else if (layer2Data != null) {
+            srcEndpoint = path.getLayer2Data().getSrcEndpoint();
+            destEndpoint = path.getLayer2Data().getDestEndpoint();
+        } else if (layer3Data != null) {
+            srcEndpoint = path.getLayer3Data().getSrcHost();
+            destEndpoint = path.getLayer3Data().getDestHost();
         }
-
-        /* Search for explicitly defined link in local domain */
-        CtrlPlaneHopContent[] hops = path.getHop();
-        ArrayList<String> links = new ArrayList<String>();
-        for(CtrlPlaneHopContent hop : hops){
-            String linkId = hop.getLinkIdRef();
-            /* if encounter domain-id, etc then stop because past the point
-            where previous domains expanded */
-
-            if (linkId == null) {
-                break;
-            } else {
-                links.add(linkId);
-            }
-
-            this.log.debug("looking at: " +linkId);
-            //parse link id and check if in local domain
-            linkId = this.resolveToFQTI(linkId);
-            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(linkId);
-
-            String domainId = parseResults.get("domainId");
-            if (domainDAO.isLocal(domainId)) {
-                this.log.debug("first local is: " +linkId);
-                return linkId;
-            }
-        }
-
-        /* If path given and local hop not explicitly provided then check to
-           see if any of the links are the remote side of a local link. It is
-           a best common practice to explicitly specify the ingress so the
-           checks above this should capture 90% of the cases. */
-        for (String link : links) {
-            Link dbLink = domainDAO.getFullyQualifiedLink(link);
-            if (dbLink == null) {
-                continue;
-            }
-
-            Link remoteLink = dbLink.getRemoteLink();
-            if (remoteLink == null) {
-                continue;
-            }
-
-            //Hibernate does not allow Port->Node->Domain to be null
-            Domain domain = remoteLink.getPort().getNode().getDomain();
-            if (domain.isLocal()) {
-                return link;
-            }
-        }
-
-        this.log.debug("findIngress.end");
-        throw new PathfinderException("Failed to find an ingress after analyzing the path");
+        result.put("src", srcEndpoint);
+        result.put("dest", destEndpoint);
+        return result;
     }
 
 
-
-
+    /**
+     * Utility function to resolve to FTQIs
+     *
+     * This functionality should probably be moved into whatever
+     * preprocesses the path before it is passed to the pathfinder
+     *
+     * @deprecated
+     * @param urnOrName
+     * @return
+     * @throws PathfinderException
+     */
     protected String resolveToFQTI(String urnOrName) throws PathfinderException {
         LookupFactory lookupFactory = new LookupFactory();
         PSLookupClient lookupClient = lookupFactory.getPSLookupClient();
-
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urnOrName);
         String fqti;
         if (parseResults != null) {
