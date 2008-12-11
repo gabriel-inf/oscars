@@ -295,7 +295,7 @@ public class Forwarder extends Client {
         modResContent.setGlobalReservationId(resv.getGlobalReservationId());
         PathInfo pathInfo = null;
         try {
-        	pathInfo = TypeConverter.getPathInfo(resv);
+        	pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
@@ -311,7 +311,7 @@ public class Forwarder extends Client {
 
         PathInfo pathInfo = null;
         try {
-        	pathInfo = TypeConverter.getPathInfo(resv);
+        	pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }

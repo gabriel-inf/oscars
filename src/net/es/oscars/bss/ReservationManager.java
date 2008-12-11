@@ -57,16 +57,12 @@ public class ReservationManager {
         throws  BSSException {
         this.log.info("submitCreate.start");
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        // FIXME:  for compile only
-        PathInfo pathInfo = new PathInfo();
 
         // login is checked in validate so set it here
         resv.setLogin(login);
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
-        // FIXME:  for compile only
-        Path removePath = new Path();
-        StringBuilder errorMsg = paramValidator.validate(resv, removePath);
+        StringBuilder errorMsg = paramValidator.validate(resv, path);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
@@ -114,7 +110,7 @@ public class ReservationManager {
         jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
         // FIXME
-        jobDataMap.put("pathInfo", pathInfo);
+        // jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
         try {
             sched.addJob(jobDetail, false);
@@ -129,7 +125,6 @@ public class ReservationManager {
      * instance and additional parameters.
      *
      * @param resv reservation instance modified in place
-     * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
     public void create(Reservation resv)
@@ -629,7 +624,9 @@ public class ReservationManager {
         }
 
         // since pathInfo is null we should keep the stored path
-        PathInfo pathInfo = TypeConverter.getPathInfo(persistentResv);
+        // FIXME:  probably should use a Path bean
+        PathInfo pathInfo =
+            TypeConverter.getPathInfo(persistentResv, PathType.INTERDOMAIN);
         if (pathInfo == null) {
             throw new BSSException("No path provided or stored in DB for reservation "+
                                     resv.getGlobalReservationId());

@@ -174,7 +174,8 @@ public class TypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
-        reply.setPathInfo(TypeConverter.getPathInfo(resv));
+        reply.setPathInfo(
+                TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN));
         log.debug("reservationToDetails.end");
         return reply;
     }
@@ -215,12 +216,15 @@ public class TypeConverter {
      * Hibernate Reservation bean.
      *
      * @param resv a Reservation instance
+     * @param pathType string determining path retrieved from the reservation
      * @return pathInfo a filled in PathInfo Axis2 type
      */
-    public static PathInfo getPathInfo(Reservation resv) throws BSSException {
+    public static PathInfo getPathInfo(Reservation resv, String pathType)
+            throws BSSException {
+
         log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
-        Path path = resv.getPath(PathType.LOCAL);
+        Path path = resv.getPath(pathType);
         if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
             pathInfo.setPath(pathToCtrlPlane(path, true));
