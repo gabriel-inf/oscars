@@ -36,7 +36,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpe
  */
 public class PathTypeConverter {
 
-    private static Logger log = Logger.getLogger(TypeConverter.class);
+    private static Logger log = Logger.getLogger(PathTypeConverter.class);
 
     // do not instantiate
     private PathTypeConverter() {
