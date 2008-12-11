@@ -2,6 +2,7 @@ package net.es.oscars.pathfinder.db;
 
 import java.util.*;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.pathfinder.interdomain.*;
 import net.es.oscars.pathfinder.db.util.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
@@ -134,8 +135,8 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
 
 
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
-        ArrayList<Path> paths = new ArrayList<Path>();
-        return paths;
+        GenericInterdomainPathfinder pf = new GenericInterdomainPathfinder(dbname);
+        return pf.findInterdomainPath(resv);
     }
 
     private Path joinPaths(Path pathA, Path pathB) {
