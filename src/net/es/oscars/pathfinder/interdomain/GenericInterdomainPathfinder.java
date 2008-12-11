@@ -92,6 +92,8 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                         interdomainPath.addPathElem(ingress);
                         interdomainPath.addPathElem(egress);
                         interdomainPath.addPathElem(nextDomainIngress);
+
+                        interdomainPath.setNextDomain(nextDomainIngress.getLink().getPort().getNode().getDomain());
                         addedLocalPes = true;
                     }
                 }
@@ -133,6 +135,8 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                     PathElem destination = new PathElem();
                     destination.setLink(null);
                     destination.setUrn(this.findEndpoints(requestedPath).get("dest"));
+
+                    interdomainPath.setNextDomain(nextDomainIngress.getLink().getPort().getNode().getDomain());
                 }
 
             }
