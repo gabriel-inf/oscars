@@ -955,8 +955,8 @@ public class TopologyManager {
             //       assuming only the hops have the possibility of changing
             PathInfo pathInfo = new PathInfo();
             try {
-                // finds path and checks for oversubscription
-                path = this.pathMgr.getPath(r, pathInfo);
+                //FIXME: finds path and checks for oversubscription
+                this.pathMgr.calculatePaths(r);
             } catch (BSSException e) {
                 String msg = "Reservation invalidated due to oversubscription.";
                 EventProducer eventProducer = new EventProducer();

@@ -19,7 +19,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
     private StateEngine se;
     private long CONFIRM_TIMEOUT = 600;//10min
     private long COMPLETE_TIMEOUT = 600;//10min
-    
+
     /**
      * Assigns the job to the start, confirm or complete method
      *
@@ -43,7 +43,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        
+
         /* Verify reservation exists */
         Reservation resv = null;
         String bssDbName = this.core.getBssDbName();
@@ -54,20 +54,22 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             bss.getTransaction().rollback();
             String errMessage = "Could not locate reservation in DB for gri: "+gri;
             this.log.error(errMessage);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, "", 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, "",
                                    "JOB", "", ex.getMessage());
             return;
         }
         String login = resv.getLogin();
-        
+
         /* Perform start, confirm, complete, fail or statusCheck operation */
         try {
             if (dataMap.containsKey("start")) {
                 this.start(resv);
             } else if(dataMap.containsKey("confirm")) {
-                this.confirm(resv);
+                // FIXME: make sure NULL is correct and that we can handle it
+                this.confirm(resv, null);
             } else if(dataMap.containsKey("complete")) {
-                this.complete(resv);
+                // FIXME: make sure NULL is correct and that we can handle it
+                this.complete(resv, null);
             } else if(dataMap.containsKey("fail")) {
                 String code = dataMap.getString("errorCode");
                 String msg = dataMap.getString("errorMsg");
@@ -79,10 +81,10 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             } else if(dataMap.containsKey("statusCheck")) {
                 String status = StateEngine.getStatus(resv);
                 int localStatus = StateEngine.getLocalStatus(resv);
-                if(status.equals(dataMap.getString("status")) && 
+                if(status.equals(dataMap.getString("status")) &&
                     localStatus == dataMap.getInt("localStatus")){
-                    String op = (localStatus == StateEngine.CONFIRMED ? 
-                                 OSCARSEvent.RESV_CREATE_COMPLETED : 
+                    String op = (localStatus == StateEngine.CONFIRMED ?
+                                 OSCARSEvent.RESV_CREATE_COMPLETED :
                                  OSCARSEvent.RESV_CREATE_CONFIRMED);
                     throw new BSSException("Create reservation timed-out " +
                                            "while waiting for event " +  op);
@@ -101,19 +103,19 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 bss.beginTransaction();
                 this.se.updateStatus(resv, StateEngine.FAILED);
                 this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
-                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, 
+                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login,
                                       idcURL, resv, "", ex.getMessage());
                 bss.getTransaction().commit();
             } catch(Exception ex2) {
                 bss.getTransaction().rollback();
                 this.log.error(ex2);
             }
-        } finally { 
+        } finally {
             this.runNextJob(context);
         }
         this.log.debug("CreateReservationJob.end name:"+jobName);
     }
-    
+
     /**
      * Reads in timeout properties
      */
@@ -153,8 +155,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             COMPLETE_TIMEOUT = defaultTimeout;
         }
      }
-     
-     
+
+
     /**
      * Processes an initial request
      *
@@ -167,22 +169,23 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
         String login = resv.getLogin();
-        Exception error = null;     
-        
-        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "JOB", 
+        Exception error = null;
+
+        eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "JOB",
                                resv);
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INCREATE);
-            rm.create(resv);
 
-            /* checks whether next domain should be contacted, forwards to
-               the next domain if necessary, and handles the response */
-            boolean forwarded = forwarder.create(resv);
-            rm.finalizeResv(resv, false);
-            rm.store(resv);
-            if (!forwarded) {
-                this.confirm(resv);      
+            rm.create(resv);
+            Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
+
+            if (nextDomain == null || nextDomain.isLocal()) {
+                // this will also finalize & store
+                this.confirm(resv, null);
             } else {
+                Path fromForwardResponse = forwarder.create(resv);
+                rm.finalizeResv(resv, false, fromForwardResponse);
+                rm.store(resv);
                 this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
             }
         } catch (Exception ex) {
@@ -195,66 +198,65 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         }
         this.log.debug("start.end");
     }
-    
+
     /**
-     * Confirms a reservation by choosing the final set of resources based 
+     * Confirms a reservation by choosing the final set of resources based
      * on what other domains return
      *
      * @param resv partially completed reservation instance
      * @throws BSSException
      */
-    public void confirm(Reservation resv)
+    public void confirm(Reservation resv, Path fromForwardResponse)
             throws BSSException {
 
         this.log.debug("confirm.start");
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-       
+
         String login = resv.getLogin();
-        rm.finalizeResv(resv, true);
+        rm.finalizeResv(resv, true, fromForwardResponse);
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);
-        
-        // Get the next domain from the INTERDOMAIN path, the interdomain pathfinder 
+
+        // Get the next domain from the INTERDOMAIN path, the interdomain pathfinder
         // should have populated that field.
-        // FIXME: not 100% sure what the logic is here -- Vangelis
         Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
         if (nextDomain == null || nextDomain.isLocal()) {
-            this.complete(resv);
+            this.complete(resv, fromForwardResponse);
         } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
         this.log.debug("confirm.end");
     }
-    
+
     /**
-     * Completes a reservation by updating the path with the 
+     * Completes a reservation by updating the path with the
      * final set of interdomain resources
      *
      * @param resv reservation instance to be completed
      * @throws BSSException
      */
-    public void complete(Reservation resv)
+    public void complete(Reservation resv, Path fromForwardResponse)
             throws BSSException {
 
         this.log.debug("complete.start");
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
         String login = resv.getLogin();
-        
-        rm.finalizeResv(resv, false);
+
+        rm.finalizeResv(resv, false,fromForwardResponse);
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         this.se.updateStatus(resv, StateEngine.RESERVED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv);
-        
+
         // just in case this is an immediate reservation, check pending & add setup actions
         PSSScheduler sched = new PSSScheduler(core.getBssDbName());
         sched.pendingReservations(0);
         this.log.debug("complete.end");
     }
-    
+
     /**
      * Schedules a job to check if a request timed out
      *
@@ -267,9 +269,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String jobName = "createResvTimeoutJob-" + resv.hashCode();
         long time = System.currentTimeMillis() + timeout*1000;
         Date date = new Date(time);
-        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null,
                                                   date, null, 0, 0L);
-        JobDetail jobDetail = new JobDetail(jobName, "REQ_TIMEOUT", 
+        JobDetail jobDetail = new JobDetail(jobName, "REQ_TIMEOUT",
                                             CreateReservationJob.class);
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
@@ -282,7 +284,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             sched.scheduleJob(jobDetail, trigger);
             this.log.debug("Job added.");
         } catch(SchedulerException ex) {
-            this.log.error("Scheduler exception: " + ex);    
+            this.log.error("Scheduler exception: " + ex);
         }
     }
 }

@@ -130,18 +130,16 @@ public class ReservationManager {
     public void create(Reservation resv)
             throws  BSSException {
 
-        // FIXME:  for compile only
-        PathInfo pathInfo = new PathInfo();
         this.log.info("create.start");
 
         this.rsvLogger.redirect(resv.getGlobalReservationId());
-        CtrlPlanePathContent pathCopy = null;
 
-        // this modifies the path to include internal hops with layer 2,
-        // and finds the complete path with traceroute
-        Path path = this.pathMgr.getPath(resv, pathInfo);
-        Path oldPath = resv.getPath("intra");
-        resv.addPath(path);
+        this.pathMgr.calculatePaths(resv);
+
+        /*
+        // FIXME: START
+         *
+         * These all seem unnecessary:
 
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
@@ -154,6 +152,11 @@ public class ReservationManager {
             pathCopy = this.pathMgr.copyPath(pathInfo, true);
         }
         pathInfo.setPath(pathCopy);
+
+        *
+        * FIXME: END
+        */
+
         //chose resources not put INCREATE
         this.se.updateStatus(resv, StateEngine.INCREATE);
         this.log.info("create.finish");
@@ -623,19 +626,10 @@ public class ReservationManager {
             }
         }
 
-        // since pathInfo is null we should keep the stored path
-        // FIXME:  probably should use a Path bean
-        PathInfo pathInfo =
-            TypeConverter.getPathInfo(persistentResv, PathType.INTERDOMAIN);
-        if (pathInfo == null) {
-            throw new BSSException("No path provided or stored in DB for reservation "+
-                                    resv.getGlobalReservationId());
-        }
-        // FIXME
-        // pathInfo = TypeConverter.toLocalPathInfo(pathInfo);
-
         // this will throw an exception if modification isn't possible
-        Path path = this.pathMgr.getPath(resv, pathInfo);
+        // Note that for now, the paths are not allowed to change and any arguments
+        // are ignored.
+        this.pathMgr.calculatePaths(resv);
         this.log.info("modify.finish");
     }
 
@@ -769,43 +763,26 @@ public class ReservationManager {
      *
      * @param resv reservation to be stored in database
      */
-    public void finalizeResv(Reservation resv, boolean confirm)
+    public void finalizeResv(Reservation resv, boolean confirm, Path fromForwardResponse)
             throws BSSException {
-
-        // FIXME:  for compile only
-        PathInfo pathInfo = new PathInfo();
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        String pathSetupMode = pathInfo.getPathSetupMode();
-        Path path = resv.getPath("intra");
-        int localStatus = this.se.getLocalStatus(resv);
 
         /* if user signaled and last domain create token, otherwise store
            token returned in confirm message */
         if (confirm) {
+            // FIXME: token code is broken
             /* if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
                 this.generateToken(forwardReply, resv);
             } */
-        }
-        if (confirm && layer2Info != null) {
-            this.pathMgr.finalizeVlanTags(resv, path, pathInfo);
+            this.pathMgr.finalizeVlanTags(resv, fromForwardResponse);
         }
 
-        /* Store or update interdomain path */
-        // INTERDOMAIN
-        path = resv.getPath("inter");
-        try {
-            List<PathElem> interPathElems =
-                this.pathMgr.convertPathElemList(pathInfo,
-                                                 path.getPathElems(), true);
-            path.setPathElems(interPathElems);
-        } catch(BSSException e) {
-            /* Catch error when try to store path with links not in the
-               database. Perhaps in the future this will be an error but
-               until everyone shares topology we can relax this requirement
-             */
-            this.log.info("Unable to store interdomain path. " +
-                e.getMessage());
-        }
+        // Update interdomain path:
+        Path interdomainPath = resv.getPath(PathType.INTERDOMAIN);
+
+        // Note: we can do setPathElems here, because the previous INTERDOMAIN path
+        // has not been persisted yet.
+        interdomainPath.setPathElems(fromForwardResponse.getPathElems());
+
     }
 
     /**

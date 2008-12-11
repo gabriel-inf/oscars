@@ -34,49 +34,18 @@ public class PathManager {
     public PathManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pceMgr = new PCEManager(dbname);
-        this.policyMgr = new PolicyManager(dbname);
-        this.dbname = dbname;
-        this.initGlobals();
-    }
+        //FIXME: START
+        //
+        // All this looks unnecessary:
 
-    /** Initializes global variables */
-    private void initGlobals() {
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties topoProps = propHandler.getPropertyGroup("topo", true);
-        DEFAULT_SWCAP_TYPE = topoProps.getProperty("defaultSwcapType");
-        if(DEFAULT_SWCAP_TYPE == null){
-            DEFAULT_SWCAP_TYPE = "tdm";
-        }
-        DEFAULT_ENC_TYPE = topoProps.getProperty("defaultEncodingType");
-        if(DEFAULT_ENC_TYPE == null){
-            DEFAULT_ENC_TYPE = "sdh/sonet";
-        }
-    }
 
-    /**
-     * Finds path between source and destination, checks to make sure
-     * it wouldn't violate policy, and then finds the next domain, if any.
-     *
-     * @param resv partially filled in reservation, use startTime, endTime, bandWidth,
-     *                GRI
-     * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
-     *                  information, may also include explicit path hops.
-     * @return a Path structure with the intradomain path hops, nextDomain, and
-     *                  whether the path hops were explicitly set by the user.
-     */
-    public Path getPath(Reservation resv, PathInfo pathInfo)
-            throws BSSException {
-
-        boolean isExplicit = (pathInfo.getPath() != null);
-        PathInfo intraPath = null;
-        
-        //TODO: Update for new PCE interface
         /*  try {
             intraPath = this.pceMgr.findLocalPath(resv);
         } catch (PathfinderException ex) {
             throw new BSSException(ex.getMessage());
         } */
 
+        /*
         if (intraPath == null || intraPath.getPath() == null) {
             throw new BSSException("Pathfinder could not find a path!");
         }
@@ -108,16 +77,92 @@ public class PathManager {
         // Path path = this.convertPath(intraPath, pathInfo, nextDomain);
         // path.setExplicit(isExplicit);
         return null;
+
+
+        // FIXME: END
+         */
+
+        this.policyMgr = new PolicyManager(dbname);
+        this.dbname = dbname;
+        this.initGlobals();
+    }
+
+    /** Initializes global variables */
+    private void initGlobals() {
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties topoProps = propHandler.getPropertyGroup("topo", true);
+        DEFAULT_SWCAP_TYPE = topoProps.getProperty("defaultSwcapType");
+        if(DEFAULT_SWCAP_TYPE == null){
+            DEFAULT_SWCAP_TYPE = "tdm";
+        }
+        DEFAULT_ENC_TYPE = topoProps.getProperty("defaultEncodingType");
+        if(DEFAULT_ENC_TYPE == null){
+            DEFAULT_ENC_TYPE = "sdh/sonet";
+        }
     }
 
     /**
+     * Finds path between source and destination, checks to make sure
+     * it wouldn't violate policy, and then finds the next domain, if any.
+     *
+     * @param resv partially filled in reservation, use startTime, endTime, bandWidth,
+     *                GRI
+     * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
+     *                  information, may also include explicit path hops.
+     * @return a Path structure with the intradomain path hops, nextDomain, and
+     *                  whether the path hops were explicitly set by the user.
+     */
+    public void calculatePaths(Reservation resv)
+            throws BSSException {
+
+        List<Path> interdomainPaths = null;
+        List<Path> localPaths = null;
+        Path interdomainPath = null;
+        Path localPath = null;
+        try {
+
+            interdomainPaths = this.pceMgr.findInterdomainPath(resv);
+            localPaths = this.pceMgr.findInterdomainPath(resv);
+
+            interdomainPath = interdomainPaths.get(0);
+            localPath = localPaths.get(0);
+
+            // FIXME: is addPath the method to use? maybe we want to replace the set of
+            // paths during modify
+            resv.addPath(localPath);
+            resv.addPath(interdomainPath);
+
+        } catch (PathfinderException ex) {
+            this.log.error(ex.getMessage());
+            throw new BSSException(ex.getMessage());
+        }
+
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
+        this.policyMgr.checkOversubscribed(reservations, resv);
+
+
+        Domain nextDomain = interdomainPath.getNextDomain();
+        if (nextDomain != null) {
+            this.log.info("create.finish, next domain: " + nextDomain.getUrl());
+        } else {
+            this.log.info("create.finish, reservation terminates in this domain");
+        }
+
+    }
+
+    /**
+     * FIXME: likely not necessary / should be rethought
+     *
      * Expands any local linkIdRef elements in a given path and
      * converts them to links
      *
+     *
+     * @deprecated
      * @param pathInfo the pathInfo containg the path to expand
      * @throws BSSException
      */
-    public void expandLocalHops(PathInfo pathInfo) throws BSSException{
+    private void expandLocalHops(PathInfo pathInfo) throws BSSException{
         CtrlPlanePathContent path = pathInfo.getPath();
         CtrlPlanePathContent expandedPath = new CtrlPlanePathContent();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -184,10 +229,13 @@ public class PathManager {
      * @param path path associated with Hibernate bean
      * @param pathInfo reservation path information in Axis2 format
      */
-    public void finalizeVlanTags(Reservation resv, Path path, PathInfo pathInfo)
+    public void finalizeVlanTags(Reservation resv, Path interdomainPath)
             throws BSSException {
 
         this.log.info("finalizing VLAN tags");
+
+        /*
+         * FIXME START
         CtrlPlaneHopContent nextExtHop = this.getNextExternalHop(pathInfo);
         //Retrieve the local path
         PathInfo intraPathInfo = new PathInfo();
@@ -214,10 +262,14 @@ public class PathManager {
             egrSuggestedVLAN = elem.getLinkDescr();
             ctr++;
         }
+        FIXME END
+        */
 
         /* Find the next hop(if any) and see if it uses the suggested VLAN.
            If not then try to choose another by doing the oversubscription
            check again. */
+
+        /* FIXME START
         String nextVlan = null;
         if (nextExtHop != null && nextExtHop.getLink() != null) {
             nextVlan = nextExtHop.getLink()
@@ -242,242 +294,9 @@ public class PathManager {
         }
         PathTypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
         this.convertPathElemList(intraPathInfo, path.getPathElems(), false);
-    }
+        FIXME END
+        */
 
-    /**
-     * Converts the path in a pathInfo object to a PathElem bean list.
-     * This is useful for storing the inter-domain
-     * path and updating VLANs when a reservation completes.
-     *
-     * @param pathInfo the pathInfo element containing the interdomain path
-     * @param currPath if path already stored then this is the list
-     * @param isInter true if interdomain
-     * @return converted path list
-     * @throws BSSException
-     */
-    public List<PathElem> convertPathElemList(PathInfo pathInfo,
-                                       List<PathElem> currPath, boolean isInter)
-                throws BSSException {
-
-        List<PathElem> newPath = new ArrayList<PathElem>();
-        PathElem currPathElem = null;
-        CtrlPlanePathContent path = pathInfo.getPath();
-        if(path == null){ return null; }
-        CtrlPlaneHopContent[] hops = path.getHop();
-        HashMap<String, PathElem> savedElems = new HashMap<String, PathElem>();
-
-        for (PathElem pathElem: currPath) {
-            Link link = pathElem.getLink();
-            if (link != null) {
-                savedElems.put(link.getFQTI(), pathElem);
-            }
-        }
-
-        for (int i = 0; i < hops.length; i++) {
-            String urn = TypeConverter.hopToURN(hops[i]);
-            Link link = null;
-            try {
-                link = TopologyUtil.getLink(urn, this.dbname);
-            } catch(BSSException e) {
-                if (isInter) {
-                    //store whatever hops you can
-                    continue;
-                }
-                throw e;
-            }
-            if (savedElems.containsKey(urn)) {
-                currPathElem = savedElems.get(urn);
-            } else {
-                currPathElem = new PathElem();
-                currPathElem.setLink(link);
-            }
-            if (link.getL2SwitchingCapabilityData() != null &&
-                    hops[i].getLink() != null) {
-                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
-                                     hops[i].getLink()
-                                     .getSwitchingCapabilityDescriptors()
-                                     .getSwitchingCapabilitySpecificInfo();
-                String vlan = swcapInfo.getVlanRangeAvailability();
-                if ("0".equals(vlan)) {
-                    vlan = "-" + swcapInfo.getSuggestedVLANRange();
-                    swcapInfo.setSuggestedVLANRange("0");
-                }
-                currPathElem.setLinkDescr(vlan);
-            }
-            newPath.add(currPathElem);
-        }
-        return newPath;
-    }
-
-    /**
-     * Make a copy of either just the internal hops or all the hops on the path
-     * depending on the value of the exclude boolean.
-     *
-     * @param pathInfo a PathInfo instance containing a path
-     * @param exclude boolean indicating whether to exclude internal hops
-     * @return pathCopy a CtrlPlanePathContent instance with the copied path
-     */
-    public CtrlPlanePathContent copyPath(PathInfo pathInfo, boolean exclude) {
-        boolean edgeFound = false;
-        CtrlPlaneHopContent prevHop = null;
-
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        CtrlPlanePathContent pathCopy = new CtrlPlanePathContent();
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-
-        if (ctrlPlanePath == null) {
-            return null;
-        }
-        String pathId = "unimplemented";
-        if (ctrlPlanePath.getId() != null && !ctrlPlanePath.getId().equals("")) {
-            pathId = ctrlPlanePath.getId();
-        }
-        pathCopy.setId(pathId);
-
-        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
-        for (int i = 0; i < hops.length; i++) {
-            CtrlPlaneHopContent hopCopy = new CtrlPlaneHopContent();
-            if (!exclude) {
-                hopCopy.setId(hops[i].getId());
-                hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
-                hopCopy.setPortIdRef(hops[i].getPortIdRef());
-                hopCopy.setNodeIdRef(hops[i].getNodeIdRef());
-                hopCopy.setDomainIdRef(hops[i].getDomainIdRef());
-                hopCopy.setLink(hops[i].getLink());
-                hopCopy.setPort(hops[i].getPort());
-                hopCopy.setNode(hops[i].getNode());
-                hopCopy.setDomain(hops[i].getDomain());
-                pathCopy.addHop(hopCopy);
-                continue;
-            }
-            String hopTopoId = TypeConverter.hopToURN(hops[i]);
-            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
-            String hopType = parseResults.get("type");
-            String domainId = parseResults.get("domainId");
-
-            if (hopType.equals("link") &&  domainDAO.isLocal(domainId)) {
-                // add ingress
-                if (!edgeFound || i == (hops.length - 1)) {
-                    hopCopy.setId(hops[i].getId());
-                    hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
-                    hopCopy.setPortIdRef(hops[i].getPortIdRef());
-                    hopCopy.setNodeIdRef(hops[i].getNodeIdRef());
-                    hopCopy.setDomainIdRef(hops[i].getDomainIdRef());
-                    hopCopy.setLink(hops[i].getLink());
-                    hopCopy.setPort(hops[i].getPort());
-                    hopCopy.setNode(hops[i].getNode());
-                    hopCopy.setDomain(hops[i].getDomain());
-                    pathCopy.addHop(hopCopy);
-                    edgeFound = true;
-                }
-                prevHop = hops[i];
-                continue;
-            } else if (edgeFound) {
-                // add egress
-                CtrlPlaneHopContent hopCopy2 = new CtrlPlaneHopContent();
-                hopCopy2.setId(prevHop.getId());
-                hopCopy2.setLinkIdRef(prevHop.getLinkIdRef());
-                hopCopy2.setPortIdRef(prevHop.getPortIdRef());
-                hopCopy2.setNodeIdRef(prevHop.getNodeIdRef());
-                hopCopy2.setDomainIdRef(prevHop.getDomainIdRef());
-                hopCopy2.setLink(prevHop.getLink());
-                hopCopy2.setPort(prevHop.getPort());
-                hopCopy2.setNode(prevHop.getNode());
-                hopCopy2.setDomain(prevHop.getDomain());
-                pathCopy.addHop(hopCopy2);
-                edgeFound = false;
-            }
-            hopCopy.setId(hops[i].getId());
-            hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
-            hopCopy.setPortIdRef(hops[i].getPortIdRef());
-            hopCopy.setNodeIdRef(hops[i].getNodeIdRef());
-            hopCopy.setDomainIdRef(hops[i].getDomainIdRef());
-            hopCopy.setLink(hops[i].getLink());
-            hopCopy.setPort(hops[i].getPort());
-            hopCopy.setNode(hops[i].getNode());
-            hopCopy.setDomain(hops[i].getDomain());
-            pathCopy.addHop(hopCopy);
-            prevHop = hops[i];
-        }
-        return pathCopy;
-    }
-
-    /**
-     * Given a PathInfo instance with the complete path, find the
-     * first hop outside the local domain.
-     *
-     * @param pathInfo PathInfo instance containing path
-     * @return hop CtrlPlaneHopContent instance with hop in next domain
-     */
-    public CtrlPlaneHopContent getNextExternalHop(PathInfo pathInfo) {
-
-        CtrlPlaneHopContent nextHop = null;
-        boolean hopFound = false;
-
-        this.log.debug("getNextExternalHop.start");
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
-        for (int i = 0; i < hops.length; i++) {
-            String hopTopoId = TypeConverter.hopToURN(hops[i]);
-            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
-            String hopType = parseResults.get("type");
-            String domainId = parseResults.get("domainId");
-            if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
-                if (hopFound) {
-                    nextHop = hops[i];
-                    break;
-                }
-            } else {
-                hopFound = true;
-            }
-        }
-        this.log.debug("getNextExternalHop.end");
-        return nextHop;
-    }
-
-    /**
-     * Returns the last hop before the current domain
-     *
-     * @param pathInfo PathInfo instance containing path
-     * @return the last hop before the current domain
-     * @throws BSSException
-     */
-     public CtrlPlaneHopContent getPrevExternalHop(PathInfo pathInfo) {
-        this.log.debug("getPrevExternalHop.start");
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
-        CtrlPlaneHopContent prevHop = null;
-        for (CtrlPlaneHopContent hop: hops) {
-            String urn = TypeConverter.hopToURN(hop);
-            Hashtable<String, String> parseResults =
-                URNParser.parseTopoIdent(urn);
-            String domainId = parseResults.get("domainId");
-            if (domainDAO.isLocal(domainId)) {
-                break;
-            }
-            prevHop = hop;
-        }
-        this.log.debug("getPrevExternalHop.start");
-        return prevHop;
-     }
-
-    /**
-     * Returns IP address associated with host.
-     *
-     * @param host string with either host name or IP address
-     * @return string with IP address
-     */
-    public String getIpAddress(String host) throws BSSException {
-        InetAddress addr = null;
-        try {
-            addr = InetAddress.getByName(host);
-        } catch (UnknownHostException ex) {
-            throw new BSSException(ex.getMessage());
-        }
-        // returns same value if already an IP address
-        return addr.getHostAddress();
     }
 
     /**
