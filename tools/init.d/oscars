@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# Linux-style init.d OSCARS startup script
+
+#
+# Change and uncomment these to reflect your OSCARS environment
+# if running this script under /etc/init.d
+#
+# No need to set if running this script directly from the
+# tools/init.d directory.
+#
+# OSCARS_BASE=/path/to/installation/dir
+# USER=username
+
+
+
+
+# Get function library. Try the system functions first, then fail
+# through to the local copy.
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+elif [ -f ./functions ]; then
+    . ./functions
+else
+    echo "init.d function library not found!"
+    exit 2
+fi
+
+
+
+
+
+DESC="OSCARS core";
+PROGNAME="oscars_core";
+OSCARS_DIR_GUESS=`pwd`/../..
+export OSCARS_BASE;
+CORE_COMMAND=${OSCARS_BASE-$OSCARS_DIR_GUESS}/oscars_core.sh
+PID_FILE=/tmp/${PROGNAME}.pid
+LOCK_FILE=/tmp/${PROGNAME}.lock
+
+
+DAEMON_ARGS=" $CORE_COMMAND\
+ --user=$USER \
+--pid-file=$PID_FILE "
+
+start() {
+    echo -n $"Starting ${DESC}.."
+    if [ -f $LOCK_FILE ]; then
+        PID=`cat $PID_FILE`
+        echo "${DESC} already running, pid: $PID"
+        exit 2;
+    elif [ -f $PID_FILE ]; then
+        PID=`cat $PID_FILE`
+        echo "${DESC} already running, pid: $PID"
+        exit 2;
+    else
+        cd ${OSCARS_BASE-$OSCARS_DIR_GUESS}
+        daemon $DAEMON_ARGS
+        touch ${LOCK_FILE}
+        sleep 1
+        PID=`cat $PID_FILE`
+        echo
+        echo " pid: $PID"
+
+        return
+    fi
+}
+stop() {
+    echo -n "Stopping ${DESC}.."
+    if [ -f $LOCK_FILE ]; then
+        PID=`cat $PID_FILE`
+        echo -n " pid: $PID"
+        killproc -p $PID_FILE
+        rm -f ${LOCK_FILE}
+        echo
+        return
+    elif [ -f $PID_FILE ]; then
+        PID=`cat $PID_FILE`
+        echo -n " pid: $PID"
+        killproc -p $PID_FILE
+        echo
+        return
+    else
+        echo " process is not running"
+        exit 2;
+    fi
+ }
+
+
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status -p $PID_FILE $PROGNAME
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  *)
+        echo "Usage: ${DESC} {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

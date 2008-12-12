@@ -1,8 +1,8 @@
 #!/bin/sh
 
-cwd=`pwd`
-progname="$0"
-curdir=`dirname "$progname"`
+
+
+cd ${OSCARS_BASE-.};
 
 # update classpath
 OSCARS_CLASSPATH=""
@@ -24,8 +24,10 @@ CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
 CLASSPATH=$CLASSPATH:build/OSCARS.jar:$CATALINA_HOME/shared/classes/
 
 export CLASSPATH=$CLASSPATH
-#echo CLASSPATH is $CLASSPATH
+# echo "CLASSPATH is: $CLASSPATH"
 
-java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $*
+nohup java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $* > /dev/null 2&>1 &
 
-exit 1
+echo $! > /tmp/oscars_core.pid
+
+exit 0
