@@ -39,9 +39,11 @@ if [ -f "$CATALINA_HOME/shared/classes/server/sec-server.jks" ]; then
     #get sec-server.properties password
     OLD_KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $CATALINA_HOME/shared/classes/server/sec-server.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
     #copy axis2.xml and rampConfig.xml to repo
-    cp conf/examples/client/axis2.xml $CATALINA_HOME/shared/classes/repo/axis2.xml
+    if [ -f "$CATALINA_HOME/shared/classes/repo/axis2.xml" ]; then
+        rm $CATALINA_HOME/shared/classes/repo/axis2.xml
+    fi
     cp conf/examples/server/rampConfig.xml $CATALINA_HOME/shared/classes/repo/rampConfig.xml
-    #put sec-server.props password in axis2.xml
+    #put sec-server.props password in rampConfig.xml
     sed -i -e "s/<ramp:property name=\"org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password\">.*<\/ramp:property>/<ramp:property name=\"org.apache.ws.security.crypto.merlin.keystore.password\">$OLD_KS_PASS<\/ramp:property>/" $CATALINA_HOME/shared/classes/repo/rampConfig.xml;
     if [ $? != 0 ]; then 
         echo "-- Sed returned an error when updating '$CATALINA_HOME/shared/classes/repo/rampConfig.xml'. Please manually change the field org.apache.ws.security.crypto.merlin.keystore.password=YOUR_NEW_PASSWORD in '$CATALINA_HOME/shared/classes/repo/rampConfig.xml' to your old password for sec-server.jks.";

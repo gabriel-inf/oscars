@@ -122,7 +122,7 @@ import_signed_cert ()
         exit 1;
     fi
     echo "-- Using certificate with the alias $CERT_ALIAS"
-    echo "--- If this is not the correct alias please exit (Ctrl-C) and modify the <rampu:ser> tag in rampConfig.xml"
+    echo "--- If this is not the correct alias please exit (Ctrl-C) and modify the <ramp:user> tag in rampConfig.xml"
     
     ISSUER=`keytool -printcert -file $CERTFILE -V | grep -m 1 Issuer | sed -e 's/Issuer: //'`;
     if [ $? != 0 ]; then
