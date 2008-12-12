@@ -262,6 +262,55 @@ public class PathTypeConverter {
         return array;
     }
 
+    /**
+     * Extracts a String from a String array
+     *
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    public static String extractHashVal(String[] array){
+        if(array == null || array.length < 1){
+            return null;
+        }
+        return array[0];
+    }
+
+    /**
+     * Extracts a long from a String array
+     *
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    public static long extractHashLongVal(String[] array){
+        long longVal = 0;
+        if(array == null || array.length < 1){
+            return 0;
+        }
+        try{
+            longVal = Long.parseLong(array[0]);
+        }catch(Exception e){}
+
+        return longVal;
+    }
+
+    /**
+     * Extracts a int from a String array
+     *
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    public static int extractHashIntVal(String[] array){
+        int intVal = 0;
+        if(array == null || array.length < 1){
+            return 0;
+        }
+        try{
+            intVal = Integer.parseInt(array[0]);
+        }catch(Exception e){}
+
+        return intVal;
+    }
+
      /**
       * Merge additional hops in the new path with an original path while maintaining any
       * objects in that path. Useful for pathfinders that only work on paths containing

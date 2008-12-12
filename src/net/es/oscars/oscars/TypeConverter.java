@@ -24,6 +24,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpe
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.Token;
 import net.es.oscars.bss.PathManager;
+import net.es.oscars.bss.PathTypeConverter;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
@@ -386,30 +387,6 @@ public class TypeConverter {
         return mplsInfo;
     }
 
-    public static void ensureLocalIds(PathInfo pathInfo) {
-        if (pathInfo == null) {
-            return;
-        }
-
-        CtrlPlanePathContent path = pathInfo.getPath();
-        if (path == null) {
-            return;
-        }
-        path.setId("unimplemented");
-
-        CtrlPlaneHopContent[] hops = path.getHop();
-        if (hops == null) {
-            return;
-        }
-        for (int i=0; i < hops.length; i++) {
-            CtrlPlaneHopContent hop = hops[i];
-            if (hop.getId() == null || hop.getId().equals("")) {
-                hop.setId(i+"");
-            }
-        }
-        return;
-    }
-
     /**
      * Given a PathInfo instance, determines whether it contains information
      *     requiring special authorization to set.
@@ -450,17 +427,17 @@ public class TypeConverter {
         PathInfo pathInfo = new PathInfo();
         boolean hasLayer2Params = false;
         boolean hasLayer3Params = false;
-        details.setGlobalReservationId(extractHashVal(map.get("gri")));
-        details.setLogin(extractHashVal(map.get("userLogin")));
-        details.setStatus(extractHashVal(map.get("status")));
-        details.setStartTime(extractHashLongVal(map.get("startSeconds")));
-        details.setEndTime(extractHashLongVal(map.get("endSeconds")));
-        details.setCreateTime(extractHashLongVal(map.get("createTime")));
-        details.setBandwidth(extractHashIntVal(map.get("bandwidth")));
-        details.setDescription(extractHashVal(map.get("description")));
+        details.setGlobalReservationId(PathTypeConverter.extractHashVal(map.get("gri")));
+        details.setLogin(PathTypeConverter.extractHashVal(map.get("userLogin")));
+        details.setStatus(PathTypeConverter.extractHashVal(map.get("status")));
+        details.setStartTime(PathTypeConverter.extractHashLongVal(map.get("startSeconds")));
+        details.setEndTime(PathTypeConverter.extractHashLongVal(map.get("endSeconds")));
+        details.setCreateTime(PathTypeConverter.extractHashLongVal(map.get("createTime")));
+        details.setBandwidth(PathTypeConverter.extractHashIntVal(map.get("bandwidth")));
+        details.setDescription(PathTypeConverter.extractHashVal(map.get("description")));
 
-        pathInfo.setPathSetupMode(extractHashVal(map.get("pathSetupMode")));
-        pathInfo.setPathType(extractHashVal(map.get("pathType")));
+        pathInfo.setPathSetupMode(PathTypeConverter.extractHashVal(map.get("pathSetupMode")));
+        pathInfo.setPathType(PathTypeConverter.extractHashVal(map.get("pathType")));
 
         /*Set Path
            use interdomain path if available otherwise just use the
@@ -501,20 +478,20 @@ public class TypeConverter {
 
         if(hasLayer2Params){
             Layer2Info layer2Info = new Layer2Info();
-            String srcVtagStr = extractHashVal(map.get("srcVtag"));
-            String destVtagStr = extractHashVal(map.get("destVtag"));
-            layer2Info.setSrcEndpoint(extractHashVal(map.get("source")));
-            layer2Info.setDestEndpoint(extractHashVal(map.get("destination")));
+            String srcVtagStr = PathTypeConverter.extractHashVal(map.get("srcVtag"));
+            String destVtagStr = PathTypeConverter.extractHashVal(map.get("destVtag"));
+            layer2Info.setSrcEndpoint(PathTypeConverter.extractHashVal(map.get("source")));
+            layer2Info.setDestEndpoint(PathTypeConverter.extractHashVal(map.get("destination")));
             if(srcVtagStr != null){
                 VlanTag vtag = new VlanTag();
-                String isTagged = extractHashVal(map.get("tagSrcPort"));
+                String isTagged = PathTypeConverter.extractHashVal(map.get("tagSrcPort"));
                 vtag.setString(srcVtagStr);
                 vtag.setTagged(isTagged!= null && "true".equals(isTagged));
                 layer2Info.setSrcVtag(vtag);
             }
             if(destVtagStr != null){
                 VlanTag vtag = new VlanTag();
-                String isTagged = extractHashVal(map.get("tagDestPort"));
+                String isTagged = PathTypeConverter.extractHashVal(map.get("tagDestPort"));
                 vtag.setString(destVtagStr);
                 vtag.setTagged(isTagged!= null && "true".equals(isTagged));
                 layer2Info.setDestVtag(vtag);
@@ -524,17 +501,17 @@ public class TypeConverter {
 
         if(hasLayer3Params){
             Layer3Info layer3Info = new Layer3Info();
-            layer3Info.setSrcHost(extractHashVal(map.get("source")));
-            layer3Info.setDestHost(extractHashVal(map.get("destination")));
-            layer3Info.setProtocol(extractHashVal(map.get("protocol")));
-            layer3Info.setSrcIpPort(extractHashIntVal(map.get("srcPort")));
-            layer3Info.setDestIpPort(extractHashIntVal(map.get("destPort")));
-            layer3Info.setDscp(extractHashVal(map.get("dscp")));
+            layer3Info.setSrcHost(PathTypeConverter.extractHashVal(map.get("source")));
+            layer3Info.setDestHost(PathTypeConverter.extractHashVal(map.get("destination")));
+            layer3Info.setProtocol(PathTypeConverter.extractHashVal(map.get("protocol")));
+            layer3Info.setSrcIpPort(PathTypeConverter.extractHashIntVal(map.get("srcPort")));
+            layer3Info.setDestIpPort(PathTypeConverter.extractHashIntVal(map.get("destPort")));
+            layer3Info.setDscp(PathTypeConverter.extractHashVal(map.get("dscp")));
             pathInfo.setLayer3Info(layer3Info);
         }
 
-        int burstLimit = extractHashIntVal(map.get("burstLimit"));
-        String lspClass = extractHashVal(map.get("lspClass"));
+        int burstLimit = PathTypeConverter.extractHashIntVal(map.get("burstLimit"));
+        String lspClass = PathTypeConverter.extractHashVal(map.get("lspClass"));
         if(burstLimit != 0 || lspClass != null){
             MplsInfo mplsInfo = new MplsInfo();
             mplsInfo.setLspClass(lspClass);
@@ -598,55 +575,6 @@ public class TypeConverter {
         }
         return wsPath;
      }
-
-    /**
-     * Extracts a String from a String array
-     *
-     * @param array the String[] to extract
-     * @return the converted array
-     */
-    private static String extractHashVal(String[] array){
-        if(array == null || array.length < 1){
-            return null;
-        }
-        return array[0];
-    }
-
-    /**
-     * Extracts a long from a String array
-     *
-     * @param array the String[] to extract
-     * @return the converted array
-     */
-    private static long extractHashLongVal(String[] array){
-        long longVal = 0;
-        if(array == null || array.length < 1){
-            return 0;
-        }
-        try{
-            longVal = Long.parseLong(array[0]);
-        }catch(Exception e){}
-
-        return longVal;
-    }
-
-    /**
-     * Extracts a int from a String array
-     *
-     * @param array the String[] to extract
-     * @return the converted array
-     */
-    private static int extractHashIntVal(String[] array){
-        int intVal = 0;
-        if(array == null || array.length < 1){
-            return 0;
-        }
-        try{
-            intVal = Integer.parseInt(array[0]);
-        }catch(Exception e){}
-
-        return intVal;
-    }
 
     /**
      * Converts an incoming Axis2 PathInfo object into a Hibernate Path object.
