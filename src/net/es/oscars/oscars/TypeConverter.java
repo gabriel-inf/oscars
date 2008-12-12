@@ -228,7 +228,7 @@ public class TypeConverter {
         Path path = resv.getPath(pathType);
         if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
-            pathInfo.setPath(pathToCtrlPlane(path, true));
+            pathInfo.setPath(pathToCtrlPlane(path));
             // one of these is allowed to be null
             Layer2Info layer2Info = pathToLayer2Info(path);
             pathInfo.setLayer2Info(layer2Info);
@@ -253,11 +253,14 @@ public class TypeConverter {
      * @param path a Path instance
      * @param confirmed true if result path should be a confirmed path
      * @return A CtrlPlanePathContent instance
+     * @throws BSSException 
      */
-    public static CtrlPlanePathContent pathToCtrlPlane(Path path, boolean confirmed) {
+    public static CtrlPlanePathContent pathToCtrlPlane(Path path) throws BSSException {
         log.debug("pathToCtrlPlane.start");
         String swcapType = PathManager.DEFAULT_SWCAP_TYPE;
         String encType = PathManager.DEFAULT_ENC_TYPE;
+        String teMetric = PathManager.DEFAULT_TE_METRIC;
+        int mtu = PathManager.DEFAULT_MTU;
         Ipaddr ipaddr = null;
 
         List<PathElem> pathElems = path.getPathElems();
@@ -270,41 +273,70 @@ public class TypeConverter {
             CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
                                 new CtrlPlaneSwitchingCapabilitySpecificInfo();
             Link link = pathElem.getLink();
-            String linkId = null;
-            cpLink.setTrafficEngineeringMetric(link.getTrafficEngineeringMetric());
-            if (path.getLayer2Data() != null) {
-                linkId = link.getFQTI();
-            } else {
-                //TODO: This should be in an ESnet specific location
+            String urn = pathElem.getUrn();
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+            String hopType = parseResults.get("type");
+            hop.setId(i + "");
+            
+            /* Handle case where unconfirmed path contains domain, node, 
+             * port, or link id refs */
+            if("domain".equals(hopType)){
+                hop.setDomainIdRef(urn);
+                i++;
+                continue;
+            }else if("node".equals(hopType)){
+                hop.setNodeIdRef(urn);
+                i++;
+                continue;
+            }else if("port".equals(hopType)){
+                hop.setPortIdRef(urn);
+                i++;
+                continue;
+            }else if(link == null && pathElem.getPathElemParams().isEmpty()){
+                /*if a link URN not in the local domain and we don't have 
+                 * params for it then must be a <linkIdRef> */
+                hop.setLinkIdRef(urn);
+                i++;
+                continue;
+            }
+            
+            /* If reach this point then we have a <link> to create.. */
+            if(link == null){
+                cpLink.setTrafficEngineeringMetric(teMetric);
+            }else{
+                cpLink.setTrafficEngineeringMetric(link.getTrafficEngineeringMetric());
+            }
+            
+            //TODO: This should be in an ESnet specific location
+            if (path.getLayer2Data() == null) {
+                
                 String nodeName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = link.getValidIpaddr();
                 if (ipaddr == null) {
-                    linkId = "*out-of-date IP*";
+                    urn = "*out-of-date IP*";
                 } else {
-                    linkId = nodeName + ": " + ipaddr.getIP();
+                    urn = nodeName + ": " + ipaddr.getIP();
                 }
             }
-            L2SwitchingCapabilityData l2scData =
-                                           link.getL2SwitchingCapabilityData();
-            if(l2scData == null){
+            
+            PathElemParam vlanRange = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            PathElemParam suggVlan = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+            if(vlanRange == null){
                 swcap.setSwitchingcapType(swcapType);
                 swcap.setEncodingType(encType);
                 swcapInfo.setCapability("unimplemented");
             }else{
-                swcap.setSwitchingcapType("l2sc");
+                swcap.setSwitchingcapType(PathElemParamSwcap.L2SC);
                 swcap.setEncodingType("ethernet");
-                swcapInfo.setInterfaceMTU(l2scData.getInterfaceMTU());
-                if(confirmed){
-                    swcapInfo.setVlanRangeAvailability(pathElem.getLinkDescr());
-                }else{
-                    swcapInfo.setVlanRangeAvailability(l2scData.getVlanRangeAvailability());
-                    swcapInfo.setSuggestedVLANRange(pathElem.getLinkDescr());
+                swcapInfo.setInterfaceMTU(mtu);
+                swcapInfo.setVlanRangeAvailability(vlanRange.getValue());
+                if(suggVlan != null){
+                    swcapInfo.setSuggestedVLANRange(suggVlan.getValue());
                 }
             }
             swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
-            cpLink.setId(linkId);
+            cpLink.setId(urn);
             cpLink.setSwitchingCapabilityDescriptors(swcap);
-            hop.setId(i + "");
             hop.setLink(cpLink);
             ctrlPlanePath.addHop(hop);
             i++;

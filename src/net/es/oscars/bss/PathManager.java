@@ -1,7 +1,6 @@
 package net.es.oscars.bss;
 
 import java.util.*;
-import java.net.*;
 import org.apache.log4j.*;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
@@ -29,7 +28,9 @@ public class PathManager {
     private String dbname;
     public static String DEFAULT_SWCAP_TYPE;
     public static String DEFAULT_ENC_TYPE;
-
+    final public static String DEFAULT_TE_METRIC = "10";
+    final public static int DEFAULT_MTU = 9000;
+    
     /** Constructor. */
     public PathManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());

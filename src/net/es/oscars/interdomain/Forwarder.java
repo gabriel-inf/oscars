@@ -1,13 +1,8 @@
 package net.es.oscars.interdomain;
 
-import java.rmi.RemoteException;
-import java.util.*;
-
 import org.apache.log4j.*;
 import org.apache.axis2.AxisFault;
 
-import net.es.oscars.oscars.OSCARSCore;
-import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
@@ -24,11 +19,9 @@ import net.es.oscars.notify.OSCARSEvent;
  */
 public class Forwarder extends Client {
     private Logger log;
-    private OSCARSCore core;
 
     public Forwarder() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
     private void setup(Reservation resv, String url)
@@ -52,7 +45,6 @@ public class Forwarder extends Client {
     }
 
     public Path create(Reservation resv) throws InterdomainException {
-
         CreateReply createReply = null;
         String login = resv.getLogin();
         Path path = null;
@@ -230,8 +222,7 @@ public class Forwarder extends Client {
     }
 
     public ForwardReply forward(String operation, Reservation resv,
-                                String url)
-            throws InterdomainException {
+                                String url) throws InterdomainException {
 
         this.log.debug("forward.start:  to " + url);
         setup(resv, url);
@@ -294,10 +285,17 @@ public class Forwarder extends Client {
                                             url +  e.getMessage());
         }
     }
+
     public ModifyResContent toModifyRequest(Reservation resv)
            throws InterdomainException {
         ModifyResContent modResContent = new ModifyResContent();
-
+        PathInfo pathInfo = null;
+        try {
+            pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
+        } catch (BSSException e) {
+            throw new InterdomainException(e.getMessage());
+        }
+        
         modResContent.setStartTime(resv.getStartTime());
         modResContent.setEndTime(resv.getEndTime());
         /* output bandwidth is in bytes, input is in Mbytes */
@@ -305,12 +303,7 @@ public class Forwarder extends Client {
         modResContent.setBandwidth( bandwidth.intValue());
         modResContent.setDescription(resv.getDescription());
         modResContent.setGlobalReservationId(resv.getGlobalReservationId());
-        PathInfo pathInfo = null;
-        try {
-            pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
-        } catch (BSSException ex) {
-            throw new InterdomainException(ex.getMessage());
-        }
+
         modResContent.setPathInfo(pathInfo);
         return modResContent;
     }
@@ -318,20 +311,12 @@ public class Forwarder extends Client {
     public ResCreateContent toCreateRequest(Reservation resv)
             throws InterdomainException {
 
-        long millis = -1;
         ResCreateContent resCont = new ResCreateContent();
-
         PathInfo pathInfo = null;
         try {
             pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
-        }
-
-        /* default pathSetupMode between domains is signal-xml */
-        String pathSetupMode = pathInfo.getPathSetupMode();
-        if (pathSetupMode == null) {
-            pathInfo.setPathSetupMode("timer-automatic");
         }
 
         resCont.setStartTime(resv.getStartTime());
