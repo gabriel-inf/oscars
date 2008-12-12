@@ -77,7 +77,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         int reqBandwidth = params.getBandwidth();
         // convert from milli-seconds to minutes
         int  reqDuration = (int)(params.getEndTime() - params.getStartTime())/6000;
-        boolean specifyPath = TypeConverter.pathSpecified(params.getPathInfo());
+        boolean specifyPath = WSDLTypeConverter.pathSpecified(params.getPathInfo());
         boolean specifyGRI = (params.getGlobalReservationId() != null);
         
         // Check to see if user can create this  reservation

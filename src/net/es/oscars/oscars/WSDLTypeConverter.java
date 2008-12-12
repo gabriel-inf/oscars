@@ -24,7 +24,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpe
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.Token;
 import net.es.oscars.bss.PathManager;
-import net.es.oscars.bss.PathTypeConverter;
+import net.es.oscars.bss.HashMapTypeConverter;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
@@ -33,12 +33,12 @@ import net.es.oscars.wsdlTypes.*;
  * Has methods to convert between Axis2 WSDL type classes and Hibernate beans.
  * Used by both the API and the WBUI.
  */
-public class TypeConverter {
+public class WSDLTypeConverter {
 
-    private static Logger log = Logger.getLogger(TypeConverter.class);
+    private static Logger log = Logger.getLogger(WSDLTypeConverter.class);
 
     // do not instantiate
-    private TypeConverter() {
+    private WSDLTypeConverter() {
     }
 
     /**
@@ -120,7 +120,7 @@ public class TypeConverter {
         log.debug("reservationToModReply.start");
 
         ModifyResReply reply = new ModifyResReply();
-        ResDetails details = TypeConverter.reservationToDetails(resv);
+        ResDetails details = WSDLTypeConverter.reservationToDetails(resv);
         reply.setReservation(details);
         log.debug("reservationToModReply.end");
         return reply;
@@ -176,7 +176,7 @@ public class TypeConverter {
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
         reply.setPathInfo(
-                TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN));
+                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN));
         log.debug("reservationToDetails.end");
         return reply;
     }
@@ -203,7 +203,7 @@ public class TypeConverter {
         reply.setTotalResults(listLength);
 
         for (Reservation resv : reservations) {
-            ResDetails details = TypeConverter.reservationToDetails(resv);
+            ResDetails details = WSDLTypeConverter.reservationToDetails(resv);
             resList[ctr] = details;
             ctr++;
         }
@@ -459,17 +459,17 @@ public class TypeConverter {
         PathInfo pathInfo = new PathInfo();
         boolean hasLayer2Params = false;
         boolean hasLayer3Params = false;
-        details.setGlobalReservationId(PathTypeConverter.extractHashVal(map.get("gri")));
-        details.setLogin(PathTypeConverter.extractHashVal(map.get("userLogin")));
-        details.setStatus(PathTypeConverter.extractHashVal(map.get("status")));
-        details.setStartTime(PathTypeConverter.extractHashLongVal(map.get("startSeconds")));
-        details.setEndTime(PathTypeConverter.extractHashLongVal(map.get("endSeconds")));
-        details.setCreateTime(PathTypeConverter.extractHashLongVal(map.get("createTime")));
-        details.setBandwidth(PathTypeConverter.extractHashIntVal(map.get("bandwidth")));
-        details.setDescription(PathTypeConverter.extractHashVal(map.get("description")));
+        details.setGlobalReservationId(HashMapTypeConverter.extractHashVal(map.get("gri")));
+        details.setLogin(HashMapTypeConverter.extractHashVal(map.get("userLogin")));
+        details.setStatus(HashMapTypeConverter.extractHashVal(map.get("status")));
+        details.setStartTime(HashMapTypeConverter.extractHashLongVal(map.get("startSeconds")));
+        details.setEndTime(HashMapTypeConverter.extractHashLongVal(map.get("endSeconds")));
+        details.setCreateTime(HashMapTypeConverter.extractHashLongVal(map.get("createTime")));
+        details.setBandwidth(HashMapTypeConverter.extractHashIntVal(map.get("bandwidth")));
+        details.setDescription(HashMapTypeConverter.extractHashVal(map.get("description")));
 
-        pathInfo.setPathSetupMode(PathTypeConverter.extractHashVal(map.get("pathSetupMode")));
-        pathInfo.setPathType(PathTypeConverter.extractHashVal(map.get("pathType")));
+        pathInfo.setPathSetupMode(HashMapTypeConverter.extractHashVal(map.get("pathSetupMode")));
+        pathInfo.setPathType(HashMapTypeConverter.extractHashVal(map.get("pathType")));
 
         /*Set Path
            use interdomain path if available otherwise just use the
@@ -510,20 +510,20 @@ public class TypeConverter {
 
         if(hasLayer2Params){
             Layer2Info layer2Info = new Layer2Info();
-            String srcVtagStr = PathTypeConverter.extractHashVal(map.get("srcVtag"));
-            String destVtagStr = PathTypeConverter.extractHashVal(map.get("destVtag"));
-            layer2Info.setSrcEndpoint(PathTypeConverter.extractHashVal(map.get("source")));
-            layer2Info.setDestEndpoint(PathTypeConverter.extractHashVal(map.get("destination")));
+            String srcVtagStr = HashMapTypeConverter.extractHashVal(map.get("srcVtag"));
+            String destVtagStr = HashMapTypeConverter.extractHashVal(map.get("destVtag"));
+            layer2Info.setSrcEndpoint(HashMapTypeConverter.extractHashVal(map.get("source")));
+            layer2Info.setDestEndpoint(HashMapTypeConverter.extractHashVal(map.get("destination")));
             if(srcVtagStr != null){
                 VlanTag vtag = new VlanTag();
-                String isTagged = PathTypeConverter.extractHashVal(map.get("tagSrcPort"));
+                String isTagged = HashMapTypeConverter.extractHashVal(map.get("tagSrcPort"));
                 vtag.setString(srcVtagStr);
                 vtag.setTagged(isTagged!= null && "true".equals(isTagged));
                 layer2Info.setSrcVtag(vtag);
             }
             if(destVtagStr != null){
                 VlanTag vtag = new VlanTag();
-                String isTagged = PathTypeConverter.extractHashVal(map.get("tagDestPort"));
+                String isTagged = HashMapTypeConverter.extractHashVal(map.get("tagDestPort"));
                 vtag.setString(destVtagStr);
                 vtag.setTagged(isTagged!= null && "true".equals(isTagged));
                 layer2Info.setDestVtag(vtag);
@@ -533,17 +533,17 @@ public class TypeConverter {
 
         if(hasLayer3Params){
             Layer3Info layer3Info = new Layer3Info();
-            layer3Info.setSrcHost(PathTypeConverter.extractHashVal(map.get("source")));
-            layer3Info.setDestHost(PathTypeConverter.extractHashVal(map.get("destination")));
-            layer3Info.setProtocol(PathTypeConverter.extractHashVal(map.get("protocol")));
-            layer3Info.setSrcIpPort(PathTypeConverter.extractHashIntVal(map.get("srcPort")));
-            layer3Info.setDestIpPort(PathTypeConverter.extractHashIntVal(map.get("destPort")));
-            layer3Info.setDscp(PathTypeConverter.extractHashVal(map.get("dscp")));
+            layer3Info.setSrcHost(HashMapTypeConverter.extractHashVal(map.get("source")));
+            layer3Info.setDestHost(HashMapTypeConverter.extractHashVal(map.get("destination")));
+            layer3Info.setProtocol(HashMapTypeConverter.extractHashVal(map.get("protocol")));
+            layer3Info.setSrcIpPort(HashMapTypeConverter.extractHashIntVal(map.get("srcPort")));
+            layer3Info.setDestIpPort(HashMapTypeConverter.extractHashIntVal(map.get("destPort")));
+            layer3Info.setDscp(HashMapTypeConverter.extractHashVal(map.get("dscp")));
             pathInfo.setLayer3Info(layer3Info);
         }
 
-        int burstLimit = PathTypeConverter.extractHashIntVal(map.get("burstLimit"));
-        String lspClass = PathTypeConverter.extractHashVal(map.get("lspClass"));
+        int burstLimit = HashMapTypeConverter.extractHashIntVal(map.get("burstLimit"));
+        String lspClass = HashMapTypeConverter.extractHashVal(map.get("lspClass"));
         if(burstLimit != 0 || lspClass != null){
             MplsInfo mplsInfo = new MplsInfo();
             mplsInfo.setLspClass(lspClass);

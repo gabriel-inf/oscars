@@ -71,7 +71,7 @@ public class PathManager {
             } else {
                 this.log.warn(
                         "Can't find domain url for nextExternalHop. Hop is: " +
-                        TypeConverter.hopToURN(nextExternalHop));
+                        WSDLTypeConverter.hopToURN(nextExternalHop));
             }
         }
         // TODO:  return which reservation path
@@ -176,7 +176,7 @@ public class PathManager {
         }
 
         for(CtrlPlaneHopContent hop : hops){
-            String urn = TypeConverter.hopToURN(hop);
+            String urn = WSDLTypeConverter.hopToURN(hop);
             //if not link then add to path
             if(urn == null){
                 throw new BSSException("Cannot expand path because " +
@@ -240,7 +240,7 @@ public class PathManager {
         CtrlPlaneHopContent nextExtHop = this.getNextExternalHop(pathInfo);
         //Retrieve the local path
         PathInfo intraPathInfo = new PathInfo();
-        intraPathInfo.setPath(TypeConverter.pathToCtrlPlane(path, false));
+        intraPathInfo.setPath(WSDLTypeConverter.pathToCtrlPlane(path, false));
         this.expandLocalHops(intraPathInfo);
         CtrlPlanePathContent intraPath = intraPathInfo.getPath();
         CtrlPlaneHopContent[] hops = intraPath.getHop();
@@ -293,7 +293,7 @@ public class PathManager {
             swcapInfo.setVlanRangeAvailability(sug);
             swcapInfo.setSuggestedVLANRange(null);
         }
-        PathTypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
+        HashMapTypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
         this.convertPathElemList(intraPathInfo, path.getPathElems(), false);
         FIXME END
         */

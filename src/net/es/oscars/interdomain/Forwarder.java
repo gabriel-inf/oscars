@@ -3,7 +3,7 @@ package net.es.oscars.interdomain;
 import org.apache.log4j.*;
 import org.apache.axis2.AxisFault;
 
-import net.es.oscars.oscars.TypeConverter;
+import net.es.oscars.oscars.WSDLTypeConverter;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.bss.BSSException;
@@ -71,7 +71,8 @@ public class Forwarder extends Client {
 
         Path fromForwardResponse = null;
         try {
-            fromForwardResponse = TypeConverter.convertPath(createReply.getPathInfo());
+            fromForwardResponse =
+                WSDLTypeConverter.convertPath(createReply.getPathInfo());
         } catch (BSSException ex) {
             this.log.error(ex);
             throw new InterdomainException(ex.getMessage());
@@ -291,7 +292,8 @@ public class Forwarder extends Client {
         ModifyResContent modResContent = new ModifyResContent();
         PathInfo pathInfo = null;
         try {
-            pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
+            pathInfo =
+                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
         } catch (BSSException e) {
             throw new InterdomainException(e.getMessage());
         }
@@ -314,7 +316,8 @@ public class Forwarder extends Client {
         ResCreateContent resCont = new ResCreateContent();
         PathInfo pathInfo = null;
         try {
-            pathInfo = TypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
+            pathInfo =
+                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }

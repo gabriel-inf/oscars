@@ -570,7 +570,7 @@ public class ReservationManager {
         }
 
         //Schedule job
-        HashMap resvMap = PathTypeConverter.reservationToHashMap(resv);
+        HashMap resvMap = HashMapTypeConverter.reservationToHashMap(resv);
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "submitModify-"+resv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", ModifyReservationJob.class);

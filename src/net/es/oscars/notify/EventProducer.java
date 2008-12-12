@@ -8,7 +8,6 @@ import org.quartz.*;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.PathTypeConverter;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.scheduler.NotifyJob;
 import net.es.oscars.wsdlTypes.PathInfo;

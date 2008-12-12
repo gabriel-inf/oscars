@@ -17,16 +17,15 @@ import net.es.oscars.bss.topology.*;
 
 
 /**
- * Has methods to perform and support conversion operations on Paths.
- * Any conversions involving the Axis2 PathInfo structure are performed
- * in oscars.TypeConverter.
+ * Has methods to perform and support conversion operations between hash
+ * maps and beans.
  */
-public class PathTypeConverter {
+public class HashMapTypeConverter {
 
-    private static Logger log = Logger.getLogger(PathTypeConverter.class);
+    private static Logger log = Logger.getLogger(HashMapTypeConverter.class);
 
     // do not instantiate
-    private PathTypeConverter() {
+    private HashMapTypeConverter() {
     }
 
     /**

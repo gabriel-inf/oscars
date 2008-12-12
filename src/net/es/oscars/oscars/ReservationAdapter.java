@@ -57,10 +57,11 @@ public class ReservationAdapter {
 
         this.log.info("create.start");
         this.logCreateParams(soapParams);
-        Reservation resv = TypeConverter.contentToReservation(soapParams);
+        Reservation resv = WSDLTypeConverter.contentToReservation(soapParams);
 
         PathInfo pathInfo = soapParams.getPathInfo();
-        net.es.oscars.bss.topology.Path path = TypeConverter.convertPath(pathInfo);
+        net.es.oscars.bss.topology.Path path =
+            WSDLTypeConverter.convertPath(pathInfo);
         resv.addPath(path);
         CreateReply reply = null;
         
@@ -73,7 +74,7 @@ public class ReservationAdapter {
         	resv = (Reservation) rmiResult.get("reservation");
 
             this.log.debug("create, to toReply");
-            reply = TypeConverter.reservationToReply(resv);
+            reply = WSDLTypeConverter.reservationToReply(resv);
             
             ///PathInfo is unchanged so just return the user-given pathInfo
             reply.setPathInfo(pathInfo);
@@ -176,7 +177,7 @@ public class ReservationAdapter {
         }
         Reservation resv = (Reservation) result.get("reservation");
         
-        reply = TypeConverter.reservationToModifyReply(resv);
+        reply = WSDLTypeConverter.reservationToModifyReply(resv);
 
         this.log.info("modify.finish");
         return reply;
@@ -211,7 +212,7 @@ public class ReservationAdapter {
      * Gets the local path from the intradomain path. Then forwards to
      * request to get the inter domain hops and combines them to give a
      * complete interdomain path.
-     * TODO: change TypeConverter.reservationToDetails to get the hops
+     * TODO: change WSDLTypeConverter.reservationToDetails to get the hops
      * from the interdomain path rather than the intradomain path and then
      * drop the forwarder call. At the moment we don't require the interdomain
      * path to be complete since the topology exchanges may not all be complete yet.
@@ -241,7 +242,7 @@ public class ReservationAdapter {
         
         Reservation resv = (Reservation) result.get("reservation");
         
-        ResDetails reply = TypeConverter.reservationToDetails(resv);
+        ResDetails reply = WSDLTypeConverter.reservationToDetails(resv);
         
         this.log.info("QueryReservation.finish: " + reply.getGlobalReservationId());
         return reply;
@@ -359,7 +360,7 @@ public class ReservationAdapter {
                          login, institution, statuses, description, inLinks,
                          inVlanTags, startTime, endTime);
 
-        reply = TypeConverter.reservationToListReply(reservations);
+        reply = WSDLTypeConverter.reservationToListReply(reservations);
 
         this.log.info("list.finish: " + reply.toString());
         return reply;
@@ -411,7 +412,7 @@ public class ReservationAdapter {
             this.log.info("using ERO");
             CtrlPlaneHopContent[] hops = path.getHop();
             for (int i=0; i < hops.length; i++) {
-                this.log.info("hop: " + TypeConverter.hopToURN(hops[i]));
+                this.log.info("hop: " + WSDLTypeConverter.hopToURN(hops[i]));
             }
         }
         Layer2Info layer2Info = pathInfo.getLayer2Info();
