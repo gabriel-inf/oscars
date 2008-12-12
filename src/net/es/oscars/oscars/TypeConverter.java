@@ -441,7 +441,7 @@ public class TypeConverter {
      * @param map a HashMap with reservation information
      * @return the converted HashMap in a ResDetails object
      */
-    public static ResDetails hashMaptoResDetails(HashMap<String, String[]> map){
+    public static ResDetails hashMapToResDetails(HashMap<String, String[]> map){
         //Verify that map has enough fields to build valid ResDetails object
         final String[] requiredFields = { "gri", "userLogin", "status",
                                           "startSeconds", "endSeconds",

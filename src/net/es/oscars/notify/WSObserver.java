@@ -267,7 +267,7 @@ public class WSObserver implements Observer {
     private EventContent oscarsEventToWSEvent(OSCARSEvent osEvent){
         EventContent event = new EventContent();
         HashMap<String, String[]> map = osEvent.getReservationParams();
-        ResDetails resDetails = TypeConverter.hashMaptoResDetails(osEvent.getReservationParams());
+        ResDetails resDetails = TypeConverter.hashMapToResDetails(osEvent.getReservationParams());
         LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"), 
                                                          map.get("intradomainHopInfo"));
         Path path = new Path();
