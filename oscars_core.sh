@@ -25,9 +25,14 @@ CLASSPATH=$CLASSPATH:build/OSCARS.jar:$CATALINA_HOME/shared/classes/
 
 export CLASSPATH=$CLASSPATH
 # echo "CLASSPATH is: $CLASSPATH"
+CALLING_STYLE=${DAEMON_STYLE-0}
 
-nohup java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $* > /dev/null 2&>1 &
+if [ $CALLING_STYLE -ne 1 ]; then
+    java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $*
+else
+    nohup java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $* > /dev/null 2&>1 &
+    echo $! > /tmp/oscars_core.pid
+fi
 
-echo $! > /tmp/oscars_core.pid
 
 exit 0
