@@ -39,6 +39,7 @@ PID_FILE=/tmp/${PROGNAME}.pid
 LOCK_FILE=/tmp/${PROGNAME}.lock
 DAEMON_STYLE=1
 export DAEMON_STYLE;
+export PID_FILE;
 
 
 DAEMON_ARGS=" $CORE_COMMAND\
@@ -46,14 +47,19 @@ DAEMON_ARGS=" $CORE_COMMAND\
 --pid-file=$PID_FILE "
 
 start() {
-    echo -n $"Starting ${DESC}.."
+    echo -n $"Starting ${DESC}... "
     if [ -f $LOCK_FILE ]; then
-        PID=`cat $PID_FILE`
-        echo "${DESC} already running, pid: $PID"
+        if [ -f $PID_FILE ]; then
+            PID=`cat $PID_FILE`
+            echo "Already running with pid: $PID"
+        else
+            echo "Locked at $LOCK_FILE. PID file not found at $PID_FILE."
+        fi
+
         exit 2;
     elif [ -f $PID_FILE ]; then
         PID=`cat $PID_FILE`
-        echo "${DESC} already running, pid: $PID"
+        echo "Already running with pid: $PID"
         exit 2;
     else
         cd ${OSCARS_BASE-$OSCARS_DIR_GUESS}
@@ -62,28 +68,33 @@ start() {
         sleep 1
         PID=`cat $PID_FILE`
         echo
-        echo " pid: $PID"
+        echo "PID: $PID"
 
         return
     fi
 }
 stop() {
-    echo -n "Stopping ${DESC}.."
+    echo -n "Stopping ${DESC}... "
     if [ -f $LOCK_FILE ]; then
-        PID=`cat $PID_FILE`
-        echo -n " pid: $PID"
-        killproc -p $PID_FILE
-        rm -f ${LOCK_FILE}
-        echo
-        return
+        if [ -f $PID_FILE ]; then
+            PID=`cat $PID_FILE`
+            echo -n "PID: $PID"
+            killproc -p $PID_FILE
+            rm -f ${LOCK_FILE}
+            echo
+            return
+        else
+            echo "Locked at $LOCK_FILE. PID file not found at $PID_FILE ."
+            exit 2;
+        fi
     elif [ -f $PID_FILE ]; then
         PID=`cat $PID_FILE`
-        echo -n " pid: $PID"
+        echo -n " PID: $PID"
         killproc -p $PID_FILE
         echo
         return
     else
-        echo " process is not running"
+        echo "Process is not running."
         exit 2;
     fi
  }
