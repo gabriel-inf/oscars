@@ -190,7 +190,10 @@ public class HashMapTypeConverter {
         }
 
         String linkId = elem.getLink().getFQTI();
-        String descr = elem.getDescription();
+        // FIXME:  this was originally ingress, egress, or NULL, linkDescr
+        // meant instead?
+        // String descr = elem.getDescription();
+        String descr = null;
         String tagField = "";
         if(linkId.equals(src)){
             tagField = "tagSrcPort";

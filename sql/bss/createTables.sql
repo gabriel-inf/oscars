@@ -156,13 +156,12 @@ CREATE TABLE IF NOT EXISTS pathElems (
     id                  INT NOT NULL AUTO_INCREMENT,
     pathId              INT NOT NULL, -- foreign key
     seqNumber           INT NOT NULL,
-    urn                 TEXT,
+    urn                 TEXT NOT NULL,
     userName            TEXT,
-        -- currently ingress, egress, or null
-    description         TEXT,
         -- what this path is made up of
     linkId              INT,  -- foreign key
         -- optional description of link (for things like VLAN id's)
+	-- TODO:  remove, need conversion routine
     linkDescr           TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;

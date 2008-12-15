@@ -154,16 +154,8 @@ public class BssUtils {
      * @return vlanTag string with VLAN tag, if any
      */
     public static String getVlanTag(Path path) {
-        String vlanTag = null;
         List<PathElem> pathElems = path.getPathElems();
-        for (PathElem pathElem: pathElems) {
-            if (pathElem.getDescription() != null) {
-                if (pathElem.getDescription().equals("ingress")) {
-                    vlanTag = pathElem.getLinkDescr();
-                    break;
-                }
-            }
-        }
+        String vlanTag = pathElems.get(0).getLinkDescr();
         return vlanTag;
     }
 

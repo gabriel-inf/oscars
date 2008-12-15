@@ -29,9 +29,6 @@ public class PathElem extends HibernateBean implements Serializable {
     private String userName;
     
     /** nullable persistent field */
-    private String description;
-    
-    /** nullable persistent field */
     private String linkDescr;
     
     /** persistent field */
@@ -93,19 +90,6 @@ public class PathElem extends HibernateBean implements Serializable {
      */ 
     public void setUserName(String userName) {
         this.userName = userName;
-    }
-
-
-    /**
-     * @return description a string with this path element's description
-     */ 
-    public String getDescription() { return this.description; }
-
-    /**
-     * @param description a string with this path element's description
-     */ 
-    public void setDescription(String description) {
-        this.description = description;
     }
 
 
@@ -197,7 +181,6 @@ public class PathElem extends HibernateBean implements Serializable {
         } else {
             return new EqualsBuilder()
                 .append(this.getLink(), castOther.getLink())
-                .append(this.getDescription(), castOther.getDescription())
                 .isEquals();
         }
     }
@@ -216,7 +199,6 @@ public class PathElem extends HibernateBean implements Serializable {
      */
     public static PathElem copyPathElem(PathElem pathElem) {
         PathElem copy = new PathElem();
-        copy.setDescription(pathElem.getDescription());
         copy.setLink(pathElem.getLink());
         copy.setUrn(pathElem.getUrn());
         copy.setUserName(pathElem.getUserName());

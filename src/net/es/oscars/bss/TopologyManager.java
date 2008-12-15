@@ -928,26 +928,19 @@ public class TopologyManager {
             // find old ingress and egress IP's
             // TODO:  this may no longer be necessary
             List<PathElem> pathElems = oldPath.getPathElems();
-            for (PathElem pathElem: pathElems) {
-                if (pathElem.getDescription() != null) {
-                    if (pathElem.getDescription().equals("ingress")) {
-                        link = pathElem.getLink();
-                        ipaddr = link.getValidIpaddr();
-                        if (ipaddr != null) {
-                            ingressNodeIP = ipaddr.getIP();
-                        } else {
-                            ingressNodeIP = null;
-                        }
-                    } else if (pathElem.getDescription().equals("egress")) {
-                        link = pathElem.getLink();
-                        ipaddr = link.getValidIpaddr();
-                        if (ipaddr != null) {
-                            egressNodeIP = ipaddr.getIP();
-                        } else {
-                            egressNodeIP = null;
-                        }
-                    }
-                }
+            link = pathElems.get(0).getLink();
+            ipaddr = link.getValidIpaddr();
+            if (ipaddr != null) {
+                ingressNodeIP = ipaddr.getIP();
+            } else {
+                ingressNodeIP = null;
+            }
+            link = pathElems.get(pathElems.size()-1).getLink();
+            ipaddr = link.getValidIpaddr();
+            if (ipaddr != null) {
+                egressNodeIP = ipaddr.getIP();
+            } else {
+                egressNodeIP = null;
             }
 
             //TODO:  build layer-specific info from old path in database

@@ -50,21 +50,12 @@ public class LSPData {
     public void setPathVars(List<PathElem> pathElems)
             throws PSSException {
 
-        // Find ingress and egress path elements and associated links.
-        // Reservation could not have been scheduled without these being
-        // set.
-        for (PathElem pathElem: pathElems) {
-            if (pathElem.getDescription() != null) {
-                if (pathElem.getDescription().equals("ingress")) {
-                    this.ingressPathElem = pathElem;
-                } else if (pathElem.getDescription().equals("egress")) {
-                    this.egressPathElem = pathElem;
-                }
-            } else {
-                // used in finding next to last interface
-                this.lastXfacePathElem = pathElem;
-            }
+        this.ingressPathElem = pathElems.get(0);
+        // check probably unnecessary
+        if (pathElems.size() > 2) {
+            this.lastXfacePathElem = pathElems.get(pathElems.size()-2);
         }
+        this.egressPathElem = pathElems.get(pathElems.size()-1);
         this.ingressLink = this.ingressPathElem.getLink();
         this.egressLink = this.egressPathElem.getLink();
     }
@@ -149,17 +140,16 @@ public class LSPData {
 
         List<String> hops = new ArrayList<String>();
         List<String> restrictedHops = new ArrayList<String>();
-        for (PathElem pathElem: pathElems) {
+        // this gets everything except the ingress and egress, which we
+        // don't want
+        for (int i=1; i < pathElems.size()-1; i++) {
+            PathElem pathElem = pathElems.get(i);
             Link link = pathElem.getLink();
-            // this gets everything except the ingress and egress, which we
-            // don't want
-            if (pathElem.getDescription() ==  null) {
-                Ipaddr ipaddr = link.getValidIpaddr();
-                if (ipaddr == null) {
-                    throw new PSSException("No IP for link: ["+link.getFQTI()+"]");
-                }
-                hops.add(ipaddr.getIP());
+            Ipaddr ipaddr = link.getValidIpaddr();
+            if (ipaddr == null) {
+                throw new PSSException("No IP for link: ["+link.getFQTI()+"]");
             }
+            hops.add(ipaddr.getIP());
         }
         if (direction.equals("reverse")) {
             ArrayList<String> reverseHops = new ArrayList<String>();

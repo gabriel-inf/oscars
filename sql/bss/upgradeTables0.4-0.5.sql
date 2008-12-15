@@ -24,7 +24,7 @@ ALTER TABLE layer3Data ADD pathId INT AFTER id;
 ALTER TABLE mplsData ADD pathId INT AFTER id;
 ALTER TABLE pathElems ADD pathId INT AFTER id;
 ALTER TABLE pathElems ADD seqNumber INT AFTER pathId; 
-ALTER TABLE pathElems ADD urn TEXT AFTER seqNumber;
+ALTER TABLE pathElems ADD urn TEXT NOT NULL AFTER seqNumber;
 ALTER TABLE pathElems ADD userName TEXT after urn;
 
 UPDATE paths p set p.reservationId =
@@ -245,6 +245,8 @@ ALTER TABLE paths DROP layer3DataId;
 ALTER TABLE paths DROP mplsDataId;
 ALTER TABLE paths DROP pathElemId;
 ALTER TABLE pathElems DROP nextId;
+ALTER TABLE pathElems DROP description;
+-- ALTER TABLE pathElems DROP linkDescr;
 
 ALTER TABLE pathElems CHANGE linkId linkId INT;
 ALTER TABLE layer2Data CHANGE pathId pathId INT NOT NULL UNIQUE;
