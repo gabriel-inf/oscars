@@ -95,9 +95,9 @@ public class JnxLSP {
         }
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
-        	throw new PSSException(ex.getMessage());
+            throw new PSSException(ex.getMessage());
         }
         this.log.info("path id: " + path.getId());
         MPLSData mplsData = path.getMplsData();
@@ -194,6 +194,7 @@ public class JnxLSP {
             if (param != null) {
                 hm.put("protocol", param);
             }
+            hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
             this.setupLogin(lspData.getIngressLink(), hm);
@@ -242,9 +243,9 @@ public class JnxLSP {
         }
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
-        	throw new PSSException(ex.getMessage());
+            throw new PSSException(ex.getMessage());
         }
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
