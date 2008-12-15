@@ -67,6 +67,40 @@
         <family>
           <inet>
             <filter>
+              <name><user-var>tester_interface_filter</user-var></name>
+              <term>
+                <name><user-var>resv-id</user-var></name>
+                <from>
+                  <source-address>
+                    <user-var>source-address</user-var>
+                  </source-address>
+                  <destination-address>
+                    <user-var>destination-address</user-var>
+                  </destination-address>
+                  <dscp optional="yes"><user-var>dscp</user-var></dscp>
+                  <protocol optional="yes">
+                    <user-var>protocol</user-var>
+                  </protocol>
+                  <source-port optional="yes">
+                    <user-var>source-port</user-var>
+                  </source-port>
+                  <destination-port optional="yes">
+                    <user-var>destination-port</user-var>
+                  </destination-port>
+                </from>
+                <then>
+                  <count><user-var>resv-id</user-var></count>
+                  <forwarding-class>expedited-forwarding</forwarding-class>
+                  <routing-instance>
+                    <user-var>resv-id</user-var>
+                  </routing-instance>
+                </then>
+              </term>
+              <term insert="after" name="firewall_filter_marker">
+                <name><user-var>resv-id</user-var></name>
+              </term>
+            </filter>
+            <filter>
               <name><user-var>internal_interface_filter</user-var></name>
               <term>
                 <name><user-var>resv-id</user-var></name>
