@@ -21,28 +21,29 @@ public class PathElem extends HibernateBean implements Serializable {
 
     /** persistent field */
     private int seqNumber;
-    
+
     /** nullable persistent field */
     private String urn;
-    
+
     /** nullable persistent field */
     private String userName;
-    
+
+
     /** persistent field */
     private Link link;
 
-    private Set pathElemParams = new HashSet<PathElemParam>();
-    
+    private Set<PathElemParam> pathElemParams = new HashSet<PathElemParam>();
+
     private HashMap<String, PathElemParam> pathElemParamMap = new HashMap<String, PathElemParam>();
-    
+
     /** default constructor */
     public PathElem() { }
-    
+
     public void initializePathElemParams() {
         if (!this.pathElemParamMap.isEmpty()) {
             return;
         }
-        Iterator pathElemParamsIterator = this.pathElemParams.iterator();
+        Iterator<PathElemParam> pathElemParamsIterator = this.pathElemParams.iterator();
         while (pathElemParamsIterator.hasNext()) {
             PathElemParam param = (PathElemParam) pathElemParamsIterator.next();
             String key = param.getSwcap() + param.getType();
@@ -51,14 +52,14 @@ public class PathElem extends HibernateBean implements Serializable {
     }
     /**
      * @return seqNumber int with this path element's position in list
-     */ 
+     */
     public int getSeqNumber() {
         return this.seqNumber;
     }
 
     /**
      * @param num not actually settable
-     */ 
+     */
     public void setSeqNumber(int num) {
         this.seqNumber = num;
     }
@@ -66,12 +67,12 @@ public class PathElem extends HibernateBean implements Serializable {
 
     /**
      * @return urn a string with this path element's associated urn
-     */ 
+     */
     public String getUrn() { return this.urn; }
 
     /**
      * @param urn string with path element's associated urn
-     */ 
+     */
     public void setUrn(String urn) {
         this.urn = urn;
     }
@@ -79,12 +80,12 @@ public class PathElem extends HibernateBean implements Serializable {
 
     /**
      * @return userName a string with element's associated user name
-     */ 
+     */
     public String getUserName() { return this.userName; }
 
     /**
      * @param userName string with path element's associated user name
-     */ 
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -92,24 +93,24 @@ public class PathElem extends HibernateBean implements Serializable {
 
     /**
      * @return link link instance associated with this path element
-     */ 
+     */
     public Link getLink() { return this.link; }
 
     /**
      * @param link link instance associated with this path element
-     */ 
+     */
     public void setLink(Link link) { this.link = link; }
 
 
     /**
      * @return set of path elem parameters
      */
-    public Set getPathElemParams() { return this.pathElemParams; }
-    
+    public Set<PathElemParam> getPathElemParams() { return this.pathElemParams; }
+
     /**
      * @param swcap Generate a HashMap only with parameters of this swcap
      * @return HashMap keyed by type for each parameter with given swcap type
-     * @throws BSSException 
+     * @throws BSSException
      */
     public PathElemParam getPathElemParam(String swcap, String type) throws BSSException {
         if(!PathElemParamSwcap.isValid(swcap)){
@@ -117,18 +118,18 @@ public class PathElem extends HibernateBean implements Serializable {
         }else if(!PathElemParamType.isValid(type)){
             throw new BSSException("Invalid PathElemParam type '" + type + "'");
         }
-        
+
         if(!pathElemParamMap.containsKey(swcap+type)){
             return null;
         }
-        
+
         return pathElemParamMap.get(swcap+type);
     }
-    
+
     /**
      * @param pathElemParams set of path elem parameters
      */
-    public void setPathElemParams(Set pathElemParams) {
+    public void setPathElemParams(Set <PathElemParam>pathElemParams) {
         this.pathElemParams = pathElemParams;
     }
 
@@ -177,7 +178,7 @@ public class PathElem extends HibernateBean implements Serializable {
 
     /**
      * Copies a pathElem; will not copy id and seqNumber.
-     * 
+     *
      * @param pe the pathElem to copy
      * @return the copy
      */
@@ -189,16 +190,16 @@ public class PathElem extends HibernateBean implements Serializable {
         copy.setPathElemParams(PathElem.copyPathElemParams(pathElem, null));
         return copy;
     }
-    
+
     /** Creates a copies of the PathElemParams of this object that match the swcap given
-     * 
+     *
      * @param pathElem the PathElem with the params to copy
      * @param swcap the type of PathElem params to copy. null if all params should be copied.
      * @return the copy
      */
     public static HashSet<PathElemParam> copyPathElemParams(PathElem pathElem, String swcap){
         HashSet<PathElemParam> copy = new HashSet<PathElemParam>();
-        Iterator paramIterator = pathElem.getPathElemParams().iterator();
+        Iterator<PathElemParam> paramIterator = pathElem.getPathElemParams().iterator();
         while(paramIterator.hasNext()){
             PathElemParam param = (PathElemParam) paramIterator.next();
             if(swcap != null && !swcap.equals(param.getSwcap())){
@@ -212,4 +213,5 @@ public class PathElem extends HibernateBean implements Serializable {
         }
         return copy;
     }
+
 }

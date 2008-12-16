@@ -18,7 +18,7 @@
 
     <cache usage="read-write" />
 
-    <id name="id">
+    <id name="id" column="id">
         <meta attribute="field-description">
            @hibernate.id generator-class="identity"
         </meta>
@@ -34,10 +34,6 @@
     <property name="urn" />
 
     <property name="userName" />
-
-    <property name="description" />
-
-    <property name="linkDescr" />
 
     <!-- Associations -->
 
