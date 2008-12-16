@@ -246,7 +246,7 @@ ALTER TABLE paths DROP mplsDataId;
 ALTER TABLE paths DROP pathElemId;
 ALTER TABLE pathElems DROP nextId;
 ALTER TABLE pathElems DROP description;
--- ALTER TABLE pathElems DROP linkDescr;
+ALTER TABLE pathElems DROP linkDescr;
 
 ALTER TABLE pathElems CHANGE linkId linkId INT;
 ALTER TABLE layer2Data CHANGE pathId pathId INT NOT NULL UNIQUE;

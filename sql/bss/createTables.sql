@@ -160,9 +160,6 @@ CREATE TABLE IF NOT EXISTS pathElems (
     userName            TEXT,
         -- what this path is made up of
     linkId              INT,  -- foreign key
-        -- optional description of link (for things like VLAN id's)
-	-- TODO:  remove, need conversion routine
-    linkDescr           TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
