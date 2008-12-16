@@ -355,11 +355,13 @@ public class PathManager {
                                     link.getSwitchingCapabilityDescriptors()
                                         .getSwitchingCapabilitySpecificInfo();
         String vlanRange = swcapInfo.getVlanRangeAvailability();
+        PathElemParam pep = new PathElemParam();
+        // TODO
         if ("0".equals(vlanRange)) { //untagged
-            pathElem.setLinkDescr("-"+swcapInfo.getSuggestedVLANRange());
+            // pathElem.setLinkDescr("-"+swcapInfo.getSuggestedVLANRange());
             swcapInfo.setSuggestedVLANRange("0");
         } else {
-            pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
+            // pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
         }
     }
 }

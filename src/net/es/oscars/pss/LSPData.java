@@ -1,6 +1,7 @@
 package net.es.oscars.pss;
 
 import java.util.*;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.PCEUtils;
 import net.es.oscars.pathfinder.PathfinderException;
@@ -69,7 +70,14 @@ public class LSPData {
     public void setLayer2PathInfo(boolean getLoopbacks) throws PSSException {
 
         // assume just one VLAN for now
-        this.vlanTag = this.ingressPathElem.getLinkDescr();
+        try {
+            PathElemParam pep =
+                this.ingressPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                        PathElemParamType.L2SC_SUGGESTED_VLAN);
+            this.vlanTag = pep.getValue();
+        } catch (BSSException ex) {
+            throw new PSSException(ex.getMessage());
+        }
         if (this.vlanTag == null) {
             throw new PSSException("VLAN tag is null!");
         }

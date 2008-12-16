@@ -24,8 +24,9 @@ public class BssUtils {
      *
      * @param path path to convert to string
      * @return pathDataStr path data in string format
+     * @throws BSSException
      */
-    public static String pathDataToString(Path path) {
+    public static String pathDataToString(Path path) throws BSSException {
         StringBuilder sb =  new StringBuilder();
         if (path.getPathSetupMode() != null) {
             sb.append("path setup mode: " + path.getPathSetupMode() + "\n");
@@ -43,7 +44,11 @@ public class BssUtils {
             }
             List<PathElem> pathElems = path.getPathElems();
             if (!pathElems.isEmpty()) {
-                String linkDescr = pathElems.get(0).getLinkDescr();
+                PathElem pathElem = pathElems.get(0);
+                PathElemParam pep =
+                    pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                         PathElemParamType.L2SC_SUGGESTED_VLAN);
+                String linkDescr = pep.getValue();
                 if (linkDescr != null) {
                     sb.append("VLAN tag: " + linkDescr + "\n");
                 }
@@ -152,10 +157,15 @@ public class BssUtils {
      *
      * @param path Path with reservation's page
      * @return vlanTag string with VLAN tag, if any
+     * @throws BSSException
      */
-    public static String getVlanTag(Path path) {
+    public static String getVlanTag(Path path) throws BSSException {
         List<PathElem> pathElems = path.getPathElems();
-        String vlanTag = pathElems.get(0).getLinkDescr();
+        PathElem pathElem = pathElems.get(0);
+        PathElemParam pep =
+            pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                      PathElemParamType.L2SC_SUGGESTED_VLAN);
+        String vlanTag = pep.getValue();
         return vlanTag;
     }
 

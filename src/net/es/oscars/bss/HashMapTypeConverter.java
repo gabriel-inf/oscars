@@ -35,8 +35,7 @@ public class HashMapTypeConverter {
      * @return the converted HashMap
      */
     public static HashMap<String, String[]>
-        reservationToHashMap(Reservation resv)
-                throws BSSException {
+        reservationToHashMap(Reservation resv) throws BSSException {
 
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         if(resv == null){
@@ -70,8 +69,10 @@ public class HashMapTypeConverter {
      *
      * @param path the Path to convert
      * @return map the converted HashMap
+     * @throws BSSException
      */
-    public static HashMap<String, String[]> pathToHashMap(Path path) {
+    public static HashMap<String, String[]> pathToHashMap(Path path) 
+            throws BSSException {
 
         HashMap<String, String[]> map = new HashMap<String, String[]>();
         ArrayList<String> layers = new ArrayList<String>();
@@ -152,7 +153,9 @@ public class HashMapTypeConverter {
      * @param pathElem the pathElem for which to generate information
      * @return a ';' delimited String with detailed information about each hop
      */
-     private static String getPathElemInfo(PathElem pathElem){
+     private static String getPathElemInfo(PathElem pathElem)
+            throws BSSException {
+
         Link link = pathElem.getLink();
         L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
         String infoVal = link.getTrafficEngineeringMetric();
@@ -162,7 +165,10 @@ public class HashMapTypeConverter {
             //TEMetric;swcap;enc;MTU;VLANRangeAvail;SuggestedVLANRange
             infoVal += ";l2sc;ethernet";
             infoVal += ";" + l2scData.getInterfaceMTU();
-            infoVal += ";" + pathElem.getLinkDescr();
+            PathElemParam pep =
+                pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                         PathElemParamType.L2SC_SUGGESTED_VLAN);
+            infoVal += ";" + pep.getValue();
             infoVal += ";null";
         }else{
             //TEMetric;swcap;enc;MTU;capbility

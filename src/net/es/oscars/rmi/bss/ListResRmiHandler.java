@@ -249,8 +249,8 @@ public class ListResRmiHandler {
      * @param outputMap map containing grid data
      * @param reservations list of reservations satisfying search criteria
      */
-    public void
-        outputReservations(Map<String, Object> outputMap, List<Reservation> reservations) {
+    public void outputReservations(Map<String, Object> outputMap,
+                                   List<Reservation> reservations) {
 
         InetAddress inetAddress = null;
         String gri = "";
@@ -317,7 +317,12 @@ public class ListResRmiHandler {
             }
             // start of second sub-row
             resvEntry.add(resv.getLogin());
-            String vlanTag = BssUtils.getVlanTag(path);
+            String vlanTag = null;
+            try {
+                vlanTag = BssUtils.getVlanTag(path);
+            } catch (BSSException ex) {
+                outputMap.put("error", ex.getMessage());
+            }
             if (vlanTag != null) {
                 int vlanNum = Math.abs(Integer.parseInt(vlanTag));
                 resvEntry.add(vlanNum + "");

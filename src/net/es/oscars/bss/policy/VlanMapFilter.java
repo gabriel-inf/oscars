@@ -343,14 +343,19 @@ public class VlanMapFilter implements PolicyFilter{
             }
             String fqti = link.getFQTI();
             L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
+            // TODO:  check
+            PathElemParam pep =
+                pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                          PathElemParamType.L2SC_VLAN_RANGE);
+            String linkDescr = pep.getValue();
             if (l2scData == null || !vlanMap.containsKey(k(link)) || 
-                    pathElem.getLinkDescr() == null) {
+                    linkDescr == null) {
                 continue;
             }
-            byte[] resvMask = this.rangeStringToMask(pathElem.getLinkDescr());
+            byte[] resvMask = this.rangeStringToMask(linkDescr);
             boolean resvUntagged = false;
             try {
-                resvUntagged = (Integer.parseInt(pathElem.getLinkDescr()) < 0);
+                resvUntagged = (Integer.parseInt(linkDescr) < 0);
             } catch (Exception e){}
             //NOTE: Even if untagMap contains false, it can be used to match links in path
             if (resvUntagged && untagMap.containsKey(fqti) &&

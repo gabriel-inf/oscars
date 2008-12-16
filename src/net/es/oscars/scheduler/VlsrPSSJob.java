@@ -134,8 +134,15 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         Layer2Data layer2Data = path.getLayer2Data();
         Link ingressLink = path.getPathElems().get(0).getLink();
         Link egressLink= this.getEgressLink(path);
-        int ingressLinkDescr = this.getLinkDescr(path, true);
-        int egressLinkDescr = this.getLinkDescr(path, false);
+        int ingressLinkDescr = -1;
+        int egressLinkDescr = -1;
+        try {
+            ingressLinkDescr = this.getLinkDescr(path, true);
+            egressLinkDescr = this.getLinkDescr(path, false);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+            return;
+        }
 
         String ingressPortTopoId = ingressLink.getPort().getTopologyIdent();
         String egressPortTopoId = egressLink.getPort().getTopologyIdent();
@@ -689,14 +696,21 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      * @return the ingress or egress link description as an int
      *
      */
-    private int getLinkDescr(Path path, boolean isIngress){
+    private int getLinkDescr(Path path, boolean isIngress)
+            throws BSSException {
+
         List<PathElem> elems = path.getPathElems();
         String linkDescr = null;
+        PathElem pathElem = null;
         if (isIngress) {
-            linkDescr = elems.get(0).getLinkDescr();
+            pathElem = elems.get(0);
         } else {
-            linkDescr = elems.get(elems.size()-1).getLinkDescr();
+            pathElem = elems.get(elems.size()-1);
         }
+        PathElemParam pep =
+            pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                      PathElemParamType.L2SC_SUGGESTED_VLAN);
+        linkDescr = pep.getValue();
         if (linkDescr == null) {
             return -1;
         } else {
