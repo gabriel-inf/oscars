@@ -35,7 +35,7 @@ if [ $CALLING_STYLE -ne 1 ]; then
     rm -f /tmp/oscars_core.lock
 else
     nohup java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $* > /dev/null 2&>1 &
-    echo $! > $PID_FILE
+    echo $! > $CORE_PID_FILE
 fi
 
 

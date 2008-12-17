@@ -35,7 +35,7 @@ if [ $CALLING_STYLE -ne 1 ]; then
     rm -f /tmp/oscars_aaa.lock
 else
     nohup java -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner $* > /dev/null 2&>1 &
-    echo $! > $PID_FILE
+    echo $! > $AAA_PID_FILE
 fi
 
 

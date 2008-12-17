@@ -27,77 +27,165 @@ else
 fi
 
 
+PROGNAME="oscars";
+DESC="OSCARS core and AAA";
 
 
-
-DESC="OSCARS core";
-PROGNAME="oscars_core";
 OSCARS_DIR_GUESS=`pwd`/../..
-export OSCARS_BASE;
-CORE_COMMAND=${OSCARS_BASE-$OSCARS_DIR_GUESS}/oscars_core.sh
-PID_FILE=/tmp/${PROGNAME}.pid
-LOCK_FILE=/tmp/${PROGNAME}.lock
+
+CORE_PROGNAME="oscars_core.sh";
+CORE_DESC="OSCARS core";
+CORE_COMMAND=${OSCARS_BASE-$OSCARS_DIR_GUESS}/${CORE_PROGNAME}
+CORE_PID_FILE=/tmp/${CORE_PROGNAME}.pid
+CORE_LOCK_FILE=/tmp/${CORE_PROGNAME}.lock
+
+AAA_DESC="OSCARS AAA";
+AAA_PROGNAME="oscars_aaa.sh";
+AAA_COMMAND=${OSCARS_BASE-$OSCARS_DIR_GUESS}/${AAA_PROGNAME}
+AAA_PID_FILE=/tmp/${AAA_PROGNAME}.pid
+AAA_LOCK_FILE=/tmp/${AAA_PROGNAME}.lock
+
+
 DAEMON_STYLE=1
+
+
+export OSCARS_BASE;
 export DAEMON_STYLE;
-export PID_FILE;
+export CORE_PID_FILE;
+export AAA_PID_FILE;
 
 
-DAEMON_ARGS=" $CORE_COMMAND\
+CORE_DAEMON_ARGS=" $CORE_COMMAND\
  --user=$USER \
---pid-file=$PID_FILE "
+--pid-file=$CORE_PID_FILE "
+
+AAA_DAEMON_ARGS=" $AAA_COMMAND\
+ --user=$USER \
+--pid-file=$AAA_PID_FILE "
+
 
 start() {
-    echo -n $"Starting ${DESC}... "
-    if [ -f $LOCK_FILE ]; then
-        if [ -f $PID_FILE ]; then
-            PID=`cat $PID_FILE`
+    start_aaa;
+    sleep 5;
+    start_core;
+}
+stop() {
+    stop_core;
+    sleep 5;
+    stop_aaa;
+}
+
+start_core() {
+    echo -n $"Starting ${CORE_DESC}... "
+    if [ -f $CORE_LOCK_FILE ]; then
+        if [ -f $CORE_PID_FILE ]; then
+            PID=`cat $CORE_PID_FILE`
             echo "Already running with pid: $PID"
         else
-            echo "Locked at $LOCK_FILE. PID file not found at $PID_FILE."
+            echo "Locked at $CORE_LOCK_FILE. PID file not found at $CORE_PID_FILE."
         fi
 
         exit 2;
-    elif [ -f $PID_FILE ]; then
-        PID=`cat $PID_FILE`
+    elif [ -f $CORE_PID_FILE ]; then
+        PID=`cat $CORE_PID_FILE`
         echo "Already running with pid: $PID"
         exit 2;
     else
         cd ${OSCARS_BASE-$OSCARS_DIR_GUESS}
-        daemon $DAEMON_ARGS
-        touch ${LOCK_FILE}
+        daemon $CORE_DAEMON_ARGS
+        touch ${CORE_LOCK_FILE}
         sleep 1
-        PID=`cat $PID_FILE`
+        PID=`cat $CORE_PID_FILE`
         echo
         echo "PID: $PID"
 
         return
     fi
 }
-stop() {
-    echo -n "Stopping ${DESC}... "
-    if [ -f $LOCK_FILE ]; then
-        if [ -f $PID_FILE ]; then
-            PID=`cat $PID_FILE`
+
+start_aaa() {
+    echo -n $"Starting ${AAA_DESC}... "
+    if [ -f $AAA_LOCK_FILE ]; then
+        if [ -f $AAA_PID_FILE ]; then
+            PID=`cat $AAA_PID_FILE`
+            echo "Already running with pid: $PID"
+        else
+            echo "Locked at $AAA_LOCK_FILE. PID file not found at $AAA_PID_FILE."
+        fi
+
+        exit 2;
+    elif [ -f $AAA_PID_FILE ]; then
+        PID=`cat $AAA_PID_FILE`
+        echo "Already running with pid: $PID"
+        exit 2;
+    else
+        cd ${OSCARS_BASE-$OSCARS_DIR_GUESS}
+        daemon $AAA_DAEMON_ARGS
+        touch ${AAA_LOCK_FILE}
+        sleep 1
+        PID=`cat $AAA_PID_FILE`
+        echo
+        echo "PID: $PID"
+
+        return
+    fi
+}
+
+
+
+
+stop_core() {
+    echo -n "Stopping ${CORE_DESC}... "
+    if [ -f $CORE_LOCK_FILE ]; then
+        if [ -f $CORE_PID_FILE ]; then
+            PID=`cat $CORE_PID_FILE`
             echo -n "PID: $PID"
-            killproc -p $PID_FILE
-            rm -f ${LOCK_FILE}
+            killproc -p $CORE_PID_FILE
+            rm -f ${CORE_LOCK_FILE}
             echo
             return
         else
-            echo "Locked at $LOCK_FILE. PID file not found at $PID_FILE ."
+            echo "Locked at $CORE_LOCK_FILE. PID file not found at $CORE_PID_FILE ."
             exit 2;
         fi
-    elif [ -f $PID_FILE ]; then
-        PID=`cat $PID_FILE`
+    elif [ -f $CORE_PID_FILE ]; then
+        PID=`cat $CORE_PID_FILE`
         echo -n " PID: $PID"
-        killproc -p $PID_FILE
+        killproc -p $CORE_PID_FILE
         echo
         return
     else
-        echo "Process is not running."
+        echo "${CORE_DESC} is not running."
         exit 2;
     fi
- }
+}
+
+stop_aaa() {
+    echo -n "Stopping ${AAA_DESC}... "
+    if [ -f $AAA_LOCK_FILE ]; then
+        if [ -f $AAA_PID_FILE ]; then
+            PID=`cat $AAA_PID_FILE`
+            echo -n "PID: $PID"
+            killproc -p $AAA_PID_FILE
+            rm -f ${AAA_LOCK_FILE}
+            echo
+            return
+        else
+            echo "Locked at $AAA_LOCK_FILE. PID file not found at $AAA_PID_FILE ."
+            exit 2;
+        fi
+    elif [ -f $AAA_PID_FILE ]; then
+        PID=`cat $AAA_PID_FILE`
+        echo -n " PID: $PID"
+        killproc -p $AAA_PID_FILE
+        echo
+        return
+    else
+        echo "${AAA_DESC} is not running."
+        exit 2;
+    fi
+}
+
 
 
 
@@ -109,15 +197,12 @@ case "$1" in
   stop)
         stop
         ;;
-  status)
-        status -p $PID_FILE $PROGNAME
-        ;;
   restart)
         stop
         start
         ;;
   *)
-        echo "Usage: ${DESC} {start|stop|restart}"
+        echo "Usage: ${PROGNAME} {start|stop|restart}"
         exit 1
 esac
 
