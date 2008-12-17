@@ -1,8 +1,6 @@
 package net.es.oscars.oscars;
 
-import java.util.*;
 import java.io.*;
-import java.lang.Throwable;
 
 import org.apache.log4j.*;
 
@@ -10,25 +8,18 @@ import org.apache.log4j.*;
 public class OSCARSRunner {
     private static Logger log = Logger.getLogger(OSCARSRunner.class);
 
-    // time in seconds to look into the future for reservations
-    private static final Integer reservationInterval = 0;
 
-
-    // shutdown lock held while pending and expired reservations are handled
-    private static Object shutdownLock;
-    
     private static OSCARSCore core = null;
 
     public static void main (String[] args) {
 
-        log.info("*** OSCARS STARTUP ***");
-        
-        shutdownLock = new Object();
+        log.info("*** OSCARS CORE STARTUP ***");
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        String fname = "/tmp/oscarsHeartbeat.txt";
+        String fname = "/tmp/oscarsCoreHeartbeat.txt";
         File heartbeatFile = new File(fname);
-        
+
         if (!heartbeatFile.exists()) {
             try {
               FileWriter outFile = new FileWriter(fname);
@@ -45,13 +36,13 @@ public class OSCARSRunner {
                 System.exit(0);
             }
         }
-        
+
         Thread runtimeHookThread = new Thread() {
             public void run() {
                 shutdownHook();
             }
         };
-        
+
         core = OSCARSCore.init();
 
         Runtime.getRuntime().addShutdownHook (runtimeHookThread);
@@ -59,7 +50,7 @@ public class OSCARSRunner {
             while (true) {
                 long ms = System.currentTimeMillis();
                 if (!heartbeatFile.setLastModified(ms)) {
-                    log.fatal("*** UNABLE TO SET HEARTBEAT ***");
+                    log.fatal("*** OSCARS CORE: UNABLE TO SET HEARTBEAT ***");
                     System.exit(0);
                 }
                 Thread.sleep (30000);
@@ -69,18 +60,11 @@ public class OSCARSRunner {
             log.error(sw.toString());
         }
     }
-    
+
     private static void shutdownHook() {
-        log.info("*** OSCARS SHUTDOWN beginning ***");
-        long t0 = System.currentTimeMillis();
+        log.info("*** OSCARS CORE SHUTDOWN beginning ***");
         core.shutdown();
-        log.info("*** SCHEDULER SHUTDOWN ending ***");
+        log.info("*** OSCARS CORE SHUTDOWN ending ***");
     }
 
-    /* close down the standard IO ports we are a daemon */
-    private static void closeIO() throws IOException {
-        System.out.close();
-        System.err.close();
-        System.in.close();
-    }
 }
