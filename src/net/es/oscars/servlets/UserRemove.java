@@ -34,17 +34,17 @@ public class UserRemove extends HttpServlet {
         // cannot remove oneself
         if (profileName == userName) {
             log.error("User "+userName+" not allowed to remove himself");
-            Utils.handleFailure(out, "You may not remove your own account.", methodName);
+            ServletUtils.handleFailure(out, "You may not remove your own account.", methodName);
             return;
         }
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
 
             if (authVal != AuthValue.ALLUSERS) {
                 log.error("no permission to modify users");
-                Utils.handleFailure(out,"You do not have the permissions to modify users", methodName);
+                ServletUtils.handleFailure(out,"You do not have the permissions to modify users", methodName);
                 return;
             }
 
@@ -54,13 +54,13 @@ public class UserRemove extends HttpServlet {
             rmiParams.put("operation", ModelOperation.DELETE);
 
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-            authVal = Utils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
+            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+            authVal = ServletUtils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
 
             // shouldn't be able to get to this point, but just in case
             if (!(authVal == AuthValue.ALLUSERS)) {
                 log.error("no permission to list users");
-                Utils.handleFailure(out, "You do not have the permissions to list users", methodName);
+                ServletUtils.handleFailure(out, "You do not have the permissions to list users", methodName);
                 return;
             }
         } catch (RemoteException e) {

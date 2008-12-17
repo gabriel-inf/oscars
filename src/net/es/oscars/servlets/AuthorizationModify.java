@@ -70,15 +70,15 @@ public class AuthorizationModify extends HttpServlet {
         try {
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
 
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
 
             if (authVal == AuthValue.DENIED)  {
                 log.error("Not allowed to modify an authorization");
-                Utils.handleFailure(out, "not allowed to modify an authorization", methodName);
+                ServletUtils.handleFailure(out, "not allowed to modify an authorization", methodName);
                 return;
             }
-            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (RemoteException e) {
             return;
         }

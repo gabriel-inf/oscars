@@ -68,23 +68,23 @@ public class UserModify extends HttpServlet {
         ArrayList<Integer> curRoles = new ArrayList<Integer>();
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
 
-            AuthValue authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
             if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
-                user = Utils.getUser(profileName, rmiClient, out, log);
+                user = ServletUtils.getUser(profileName, rmiClient, out, log);
             } else {
-                Utils.handleFailure(out,"no permission to modify users", methodName);
+                ServletUtils.handleFailure(out,"no permission to modify users", methodName);
                 return;
             }
 
             if (user == null) {
                 String msg = "User " + profileName + " does not exist";
-                Utils.handleFailure(out, msg, methodName);
+                ServletUtils.handleFailure(out, msg, methodName);
             }
 
-            List<Attribute> attributesForUser = Utils.getAttributesForUser(profileName, rmiClient, out, log);
-            List<Attribute> allAttributes = Utils.getAllAttributes(rmiClient, out, log);
+            List<Attribute> attributesForUser = ServletUtils.getAttributesForUser(profileName, rmiClient, out, log);
+            List<Attribute> allAttributes = ServletUtils.getAllAttributes(rmiClient, out, log);
 
             this.convertParams(request, user);
             String password = request.getParameter("password");
@@ -92,7 +92,7 @@ public class UserModify extends HttpServlet {
 
             // handle password modification if necessary
             // checkpassword will return null, if password is  not to be changed
-            String newPassword = Utils.checkPassword(password, confirmationPassword);
+            String newPassword = ServletUtils.checkPassword(password, confirmationPassword);
             if (newPassword != null) {
                 user.setPassword(newPassword);
                 setPassword = true;
@@ -103,7 +103,7 @@ public class UserModify extends HttpServlet {
                 RoleUtils roleUtils = new RoleUtils();
                 String roles[] = request.getParameterValues("attributeName");
                 for (int i=0; i < roles.length; i++) {
-                    roles[i] = Utils.dropDescription(roles[i].trim());
+                    roles[i] = ServletUtils.dropDescription(roles[i].trim());
                 }
                 if (roles[0].equals("None")) {
                     log.info("AddUser: roles = null");
@@ -124,11 +124,11 @@ public class UserModify extends HttpServlet {
             rmiParams.put("objectType", ModelObject.USER);
             rmiParams.put("operation", ModelOperation.MODIFY);
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
 
         } catch (Exception e) {
-            Utils.handleFailure(out, e.getMessage(), methodName);
+            ServletUtils.handleFailure(out, e.getMessage(), methodName);
             return;
         }
         outputMap.put("status", "Profile for user " + profileName + " successfully modified");
@@ -172,7 +172,7 @@ public class UserModify extends HttpServlet {
 
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = Utils.checkDN(strParam);
+            DN = ServletUtils.checkDN(strParam);
         }
         // allow setting existent non-required field to null
         if ((DN != null) || (user.getCertIssuer() != null)) {
@@ -180,7 +180,7 @@ public class UserModify extends HttpServlet {
         }
         strParam = request.getParameter("certSubject");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = Utils.checkDN(strParam);
+            DN = ServletUtils.checkDN(strParam);
         }
         if ((DN != null) || (user.getCertSubject() != null)) {
             user.setCertSubject(DN);

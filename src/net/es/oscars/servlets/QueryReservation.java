@@ -50,11 +50,11 @@ public class QueryReservation extends HttpServlet {
         // which sections of the page to display are controlled on the
         // RMI server side in the rmi module
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.queryReservation(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
-            Utils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);
         }
 
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

@@ -50,18 +50,18 @@ public class UserSession {
             }
             status += "Your login session has expired. " +
                       "Please try logging in again.";
-            Utils.handleFailure(out, status, methodName);
+            ServletUtils.handleFailure(out, status, methodName);
 
             return null;
         }
 
 
         Boolean validSession = false;
-        AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+        AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
         try {
             validSession = rmiClient.validSession(userName, sessionName);
         } catch (RemoteException ex) {
-            Utils.handleFailure(out, "internal error: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "internal error: " + ex.getMessage(), methodName);
             return null;
         }
 
@@ -70,7 +70,7 @@ public class UserSession {
             userName = null;
              errorMsg = "There is a problem with the login for user " + cookieUserName + "." +
                           " Please check with a system administrator.";
-            Utils.handleFailure(out, "internal error: " + errorMsg, methodName);
+            ServletUtils.handleFailure(out, "internal error: " + errorMsg, methodName);
         }
         return userName;
     }

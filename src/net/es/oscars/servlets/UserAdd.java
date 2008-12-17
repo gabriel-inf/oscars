@@ -38,13 +38,13 @@ public class UserAdd extends HttpServlet {
         }
         String profileName = request.getParameter("profileName");
 
-        AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-        AuthValue authVal = Utils.getAuth(userName, "Users", "create", rmiClient, methodName, log, out);
+        AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+        AuthValue authVal = ServletUtils.getAuth(userName, "Users", "create", rmiClient, methodName, log, out);
         RoleUtils roleUtils = new RoleUtils();
 
         if ((authVal == AuthValue.DENIED) || (profileName != userName)) {
             this.log.error("Not allowed to add a new user");
-            Utils.handleFailure(out, "not allowed to add a new user", methodName);
+            ServletUtils.handleFailure(out, "not allowed to add a new user", methodName);
             return;
         }
         User newUser = null;
@@ -52,17 +52,17 @@ public class UserAdd extends HttpServlet {
             newUser = this.toUser(out, profileName, request);
         } catch (AAAException e) {
             this.log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName);
+            ServletUtils.handleFailure(out, e.getMessage(), methodName);
             return;
         }
 
 
         try {
-            List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+            List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
             ArrayList <Integer> addRoles = null;
             String roles[] = request.getParameterValues("attributeName");
             for (int i=0; i < roles.length; i++) {
-                roles[i] = Utils.dropDescription(roles[i].trim());
+                roles[i] = ServletUtils.dropDescription(roles[i].trim());
             }
             // will be only one parameter value due to constraints
             // on client side
@@ -80,12 +80,12 @@ public class UserAdd extends HttpServlet {
             rmiParams.put("objectType", ModelObject.USER);
             rmiParams.put("operation", ModelOperation.ADD);
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
 
         } catch (RemoteException e) {
             this.log.error(e.getMessage());
-            Utils.handleFailure(out, e.getMessage(), methodName);
+            ServletUtils.handleFailure(out, e.getMessage(), methodName);
             return;
         }
 
@@ -124,13 +124,13 @@ public class UserAdd extends HttpServlet {
         user.setLogin(userName);
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = Utils.checkDN(strParam);
+            DN = ServletUtils.checkDN(strParam);
         }
         else { DN = ""; }
         user.setCertIssuer(DN);
         strParam = request.getParameter("certSubject");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            DN = Utils.checkDN(strParam);
+            DN = ServletUtils.checkDN(strParam);
         }
         else { DN = ""; }
         user.setCertSubject(DN);
@@ -139,7 +139,7 @@ public class UserAdd extends HttpServlet {
         user.setFirstName(request.getParameter("firstName"));
         user.setEmailPrimary(request.getParameter("emailPrimary"));
         user.setPhonePrimary(request.getParameter("phonePrimary"));
-        password = Utils.checkPassword(request.getParameter("password"), request.getParameter("passwordConfirmation"));
+        password = ServletUtils.checkPassword(request.getParameter("password"), request.getParameter("passwordConfirmation"));
         user.setPassword(password);
         // doesn't matter if blank
         user.setDescription(request.getParameter("description"));

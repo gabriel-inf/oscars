@@ -56,12 +56,12 @@ public class AuthorizationForm extends HttpServlet {
 
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
 
             if (authVal == null || authVal == AuthValue.DENIED) {
                 log.error("Not authorized to perform admin operations");
-                Utils.handleFailure(out, "not authorized to perform admin operations", methodName);
+                ServletUtils.handleFailure(out, "not authorized to perform admin operations", methodName);
                 return;
             }
 
@@ -101,7 +101,7 @@ public class AuthorizationForm extends HttpServlet {
 
     public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "AuthorizationForm.outputAttributeMenu";
-        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+        List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
 
         List<String> attributeList = new ArrayList<String>();
         int ctr = 0;
@@ -120,7 +120,7 @@ public class AuthorizationForm extends HttpServlet {
     public void outputResourceMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "AuthorizationForm.outputResourceMenu";
 
-        List<Resource> resources = Utils.getAllResources(rmiClient, out, log);
+        List<Resource> resources = ServletUtils.getAllResources(rmiClient, out, log);
 
         List<String> resourceList = new ArrayList<String>();
         int ctr = 0;
@@ -139,7 +139,7 @@ public class AuthorizationForm extends HttpServlet {
     public void outputPermissionMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "AuthorizationForm.outputPermissionMenu";
 
-        List<Permission> permissions = Utils.getAllPermissions(rmiClient, out, log);
+        List<Permission> permissions = ServletUtils.getAllPermissions(rmiClient, out, log);
 
         List<String> permissionList = new ArrayList<String>();
         int ctr = 0;
@@ -159,7 +159,7 @@ public class AuthorizationForm extends HttpServlet {
         outputConstraintMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException  {
         String methodName = "AuthorizationForm.outputConstraintMenu";
 
-        List<Constraint> constraints = Utils.getAllConstraints(rmiClient, out, log);
+        List<Constraint> constraints = ServletUtils.getAllConstraints(rmiClient, out, log);
 
         List<String> constraintList = new ArrayList<String>();
         int ctr = 0;
@@ -187,7 +187,7 @@ public class AuthorizationForm extends HttpServlet {
     public void outputRpcs(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "AuthorizationForm.outputRpcs";
 
-        List<Rpc> rpcs = Utils.getAllRpcs(rmiClient, out, log);
+        List<Rpc> rpcs = ServletUtils.getAllRpcs(rmiClient, out, log);
 
         ArrayList<ArrayList<String>> rpcList = new ArrayList<ArrayList<String>>();
         for (Rpc rpc: rpcs) {

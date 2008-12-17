@@ -40,13 +40,13 @@ public class AuthorizationList extends HttpServlet {
 
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
 
             if (authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" has no permission to list authorizations";
                 this.log.error(errorMsg);
-                Utils.handleFailure(out, errorMsg, methodName);
+                ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
             this.outputAuthorizations(outputMap, request, rmiClient, out);
@@ -73,7 +73,7 @@ public class AuthorizationList extends HttpServlet {
     public void outputAttributeMenu(Map<String, Object> outputMap,  AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "AuthorizationList.outputAttributeMenu";
 
-        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+        List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
 
         List<String> attributeList = new ArrayList<String>();
         attributeList.add("Any");
@@ -121,7 +121,7 @@ public class AuthorizationList extends HttpServlet {
         rmiParams.put("objectType", ModelObject.AUTHORIZATION);
         rmiParams.put("operation", ModelOperation.LIST);
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
         List<Authorization> auths = (List<Authorization>) rmiResult.get("authorizations");
         if (auths == null) {

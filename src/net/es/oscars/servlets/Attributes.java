@@ -37,7 +37,7 @@ public class Attributes extends HttpServlet {
         String[] ops = request.getQueryString().split("=");
         if (ops.length != 2) {
             this.log.error("Incorrect input from Attributes page");
-            Utils.handleFailure(out, "incorrect input from Attributes page", methodName);
+            ServletUtils.handleFailure(out, "incorrect input from Attributes page", methodName);
             return;
         }
         String opName = ops[1];
@@ -55,13 +55,13 @@ public class Attributes extends HttpServlet {
         String attributeEditType = request.getParameter("attributeTypes").trim();
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
 
             if (authVal != null && authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" does not have permission to modify attributes.";
                 this.log.error(errorMsg);
-                Utils.handleFailure(out, errorMsg, methodName);
+                ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
 
@@ -116,7 +116,7 @@ public class Attributes extends HttpServlet {
     public void outputAttributes(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "Attributes.outputAttributes";
 
-        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+        List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
 
         ArrayList<ArrayList<String>> attributeList = new ArrayList<ArrayList<String>>();
         for (Attribute attribute: attributes) {
@@ -152,7 +152,7 @@ public class Attributes extends HttpServlet {
         rmiParams.put("attribute", attribute);
 
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
     }
 
     /**
@@ -180,7 +180,7 @@ public class Attributes extends HttpServlet {
         rmiParams.put("oldName", oldName);
 
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
     }
 
@@ -199,7 +199,7 @@ public class Attributes extends HttpServlet {
         rmiParams.put("name", attributeName);
 
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
 
     }

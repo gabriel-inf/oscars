@@ -52,19 +52,19 @@ public class AuthenticateUser extends HttpServlet {
         }
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             String loginUserName = rmiClient.verifyLogin(userName, password, sessionName);
 
             userName = (String) loginUserName;
             if (userName == null) {
-                Utils.handleFailure(out, "Login not allowed", methodName);
+                ServletUtils.handleFailure(out, "Login not allowed", methodName);
                 return;
             }
 
             this.handleDisplay(rmiClient, userName, outputMap, out);
         } catch (RemoteException ex) {
             this.log.error("AuthenticateUser failed with " + ex.getMessage());
-            Utils.handleFailure(out, "Internal error: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "Internal error: " + ex.getMessage(), methodName);
             return;
         }
 

@@ -41,11 +41,11 @@ public class OverrideStatusReservation extends HttpServlet {
         }
 
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.modifyStatus(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
-            Utils.handleFailure(out, "OverrideStatusReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "OverrideStatusReservation not completed: " + ex.getMessage(), methodName);
             return;
         }
 

@@ -22,8 +22,9 @@ import net.es.oscars.rmi.core.*;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
 import net.es.oscars.rmi.aaa.*;
+import net.es.oscars.rmi.RmiUtils;
 
-public class Utils {
+public class ServletUtils {
 
     public static CoreRmiInterface getCoreRmiClient(String methodName, Logger log, PrintWriter out) {
         CoreRmiInterface rmiClient;
@@ -31,23 +32,14 @@ public class Utils {
         try {
             rmiClient.init();
         } catch (RemoteException ex) {
-            Utils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
             return null;
         }
         return rmiClient;
     }
 
     public static AuthValue getAuth(String userName, String resourceName, String permissionName, AaaRmiInterface rmiClient, String methodName, Logger log, PrintWriter out) {
-        HashMap<String, Object> authResult = new HashMap<String, Object>();
-        AuthValue authVal;
-        try {
-            authVal = rmiClient.checkAccess(userName, resourceName, permissionName);
-        } catch (RemoteException ex) {
-            log.error("RMI exception:  " + ex.getMessage());
-            Utils.handleFailure(out, methodName + " RMI exception: " + ex.getMessage(), methodName);
-            authVal = AuthValue.DENIED;
-        }
-        return authVal;
+        return RmiUtils.getAuth(userName, resourceName, permissionName, rmiClient, methodName, log, out);
     }
 
 
@@ -57,7 +49,7 @@ public class Utils {
             result = rmiClient.manageAaaObjects(parameters);
         } catch (RemoteException e) {
             log.warn("RMI exception: " + e.getMessage(), e);
-            Utils.handleFailure(out, callerMethodName + " internal error: " + e.getMessage(), callerMethodName);
+            ServletUtils.handleFailure(out, callerMethodName + " internal error: " + e.getMessage(), callerMethodName);
             throw e;
         }
 
@@ -72,7 +64,7 @@ public class Utils {
         userRmiParams.put("findBy", "username");
         userRmiParams.put("username", username);
         HashMap<String, Object> userRmiResult = new HashMap<String, Object>();
-        userRmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, userRmiParams);
+        userRmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, userRmiParams);
 
         User user = (User) userRmiResult.get("user");
 
@@ -89,7 +81,7 @@ public class Utils {
         rmiParams.put("operation", ModelOperation.LIST);
         rmiParams.put("listBy", "username");
         rmiParams.put("username", username);
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
 
         List<Attribute> attributes = (List<Attribute>) rmiResult.get("attributes");
@@ -109,13 +101,13 @@ public class Utils {
         rmiParams.put("objectType", model);
         rmiParams.put("operation", ModelOperation.LIST);
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         return rmiResult.get(objectName);
     }
 
     public static List<Permission> getAllPermissions(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllPermissions";
-        List<Permission> objects = (List<Permission>) Utils.getAllObjects(ModelObject.PERMISSION, "permissions", rmiClient, out, log);
+        List<Permission> objects = (List<Permission>) ServletUtils.getAllObjects(ModelObject.PERMISSION, "permissions", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Permission>();
         }
@@ -123,7 +115,7 @@ public class Utils {
     }
     public static List<Attribute> getAllAttributes(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllAttributes";
-        List<Attribute> objects = (List<Attribute>) Utils.getAllObjects(ModelObject.ATTRIBUTE, "attributes", rmiClient, out, log);
+        List<Attribute> objects = (List<Attribute>) ServletUtils.getAllObjects(ModelObject.ATTRIBUTE, "attributes", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Attribute>();
         }
@@ -131,7 +123,7 @@ public class Utils {
     }
     public static List<Constraint> getAllConstraints(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllConstraints";
-        List<Constraint> objects = (List<Constraint>) Utils.getAllObjects(ModelObject.CONSTRAINT, "constraints", rmiClient, out, log);
+        List<Constraint> objects = (List<Constraint>) ServletUtils.getAllObjects(ModelObject.CONSTRAINT, "constraints", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Constraint>();
         }
@@ -140,7 +132,7 @@ public class Utils {
 
     public static List<Resource> getAllResources(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllResources";
-        List<Resource> objects = (List<Resource>) Utils.getAllObjects(ModelObject.RESOURCE, "resources", rmiClient, out, log);
+        List<Resource> objects = (List<Resource>) ServletUtils.getAllObjects(ModelObject.RESOURCE, "resources", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Resource>();
         }
@@ -149,7 +141,7 @@ public class Utils {
 
     public static List<Rpc> getAllRpcs(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllRpcs";
-        List<Rpc> objects = (List<Rpc>) Utils.getAllObjects(ModelObject.RPC, "rpcs", rmiClient, out, log);
+        List<Rpc> objects = (List<Rpc>) ServletUtils.getAllObjects(ModelObject.RPC, "rpcs", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Rpc>();
         }
@@ -159,7 +151,7 @@ public class Utils {
 
     public static List<Authorization> getAllAuthorizations(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllAuthorizations";
-        List<Authorization> objects = (List<Authorization>) Utils.getAllObjects(ModelObject.AUTHORIZATION, "authorizations", rmiClient, out, log);
+        List<Authorization> objects = (List<Authorization>) ServletUtils.getAllObjects(ModelObject.AUTHORIZATION, "authorizations", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Authorization>();
         }
@@ -169,7 +161,7 @@ public class Utils {
 
     public static List<Institution> getAllInstitutions(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllInstitutions";
-        List<Institution> objects = (List<Institution>) Utils.getAllObjects(ModelObject.INSTITUTION, "institutions", rmiClient, out, log);
+        List<Institution> objects = (List<Institution>) ServletUtils.getAllObjects(ModelObject.INSTITUTION, "institutions", rmiClient, out, log);
         if (objects == null) {
             objects = new ArrayList<Institution>();
         }
@@ -178,7 +170,7 @@ public class Utils {
 
     public static List<User> getAllUsers(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllUsers";
-        List<User> objects = (List<User>) Utils.getAllObjects(ModelObject.USER, "users", rmiClient, out, log);
+        List<User> objects = (List<User>) ServletUtils.getAllObjects(ModelObject.USER, "users", rmiClient, out, log);
 
         if (objects == null) {
             objects = new ArrayList<User>();

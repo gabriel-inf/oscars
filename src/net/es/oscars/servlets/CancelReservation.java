@@ -49,11 +49,11 @@ public class CancelReservation extends HttpServlet {
         params.put("caller", "WBUI");
         
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.cancelReservation(params, userName);
         } catch (Exception ex) {
             this.log.error(ex.getMessage());
-            Utils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(), methodName);
             return;
         }
 

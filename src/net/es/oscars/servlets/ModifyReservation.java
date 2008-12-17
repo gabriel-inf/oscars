@@ -41,11 +41,11 @@ public class ModifyReservation extends HttpServlet {
             params.put(paramName, paramValues);
         }
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.modifyReservation(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex);
-            Utils.handleFailure(out, "ModifyReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "ModifyReservation not completed: " + ex.getMessage(), methodName);
             return;
         }
 

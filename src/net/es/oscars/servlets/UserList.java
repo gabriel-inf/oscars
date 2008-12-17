@@ -42,8 +42,8 @@ public class UserList extends HttpServlet {
 
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
 
             // if allowed to see all users, show help information on clicking on
             // row to see user details
@@ -92,8 +92,8 @@ public class UserList extends HttpServlet {
             attrsUpdated = "";
         }
 
-        AuthValue authVal = Utils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
-        AuthValue aaaVal = Utils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
+        AuthValue authVal = ServletUtils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
+        AuthValue aaaVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
 
 
         String listType = "plain";
@@ -134,7 +134,7 @@ public class UserList extends HttpServlet {
         rmiParams.put("username", userName);
         rmiParams.put("attributeName", attributeName);
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
         List<User> users = (List<User>) rmiResult.get("users");
 
@@ -161,7 +161,7 @@ public class UserList extends HttpServlet {
     public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "UserList.outputAttributeMenu";
 
-        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+        List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
 
         List<String> attrList = new ArrayList<String>();
         attrList.add("Any");

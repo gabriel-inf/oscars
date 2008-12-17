@@ -33,7 +33,7 @@ public class Institutions extends HttpServlet {
         String[] ops = request.getQueryString().split("=");
         if (ops.length != 2) {
             this.log.error("Incorrect input from Institutions page");
-            Utils.handleFailure(out, "incorrect input from Institutions page", methodName);
+            ServletUtils.handleFailure(out, "incorrect input from Institutions page", methodName);
             return;
         }
         String opName = ops[1];
@@ -47,12 +47,12 @@ public class Institutions extends HttpServlet {
 
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
 
             if (authVal == AuthValue.DENIED) {
                 this.log.error("No permission to modify Institutions table.");
-                Utils.handleFailure(out, "no permission to modify Institutions table", methodName);
+                ServletUtils.handleFailure(out, "no permission to modify Institutions table", methodName);
                 return;
             }
 
@@ -107,7 +107,7 @@ public class Institutions extends HttpServlet {
     public void outputInstitutions(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "Institutions.outputInstitutions";
 
-        List<Institution> institutions = Utils.getAllInstitutions(rmiClient, out, log);
+        List<Institution> institutions = ServletUtils.getAllInstitutions(rmiClient, out, log);
 
         ArrayList<ArrayList<String>> institutionList = new ArrayList<ArrayList<String>>();
         for (Institution institution: institutions) {
@@ -132,7 +132,7 @@ public class Institutions extends HttpServlet {
         rmiParams.put("operation", ModelOperation.ADD);
         rmiParams.put("institutionName", newName);
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
     }
 
     /**
@@ -152,7 +152,7 @@ public class Institutions extends HttpServlet {
         rmiParams.put("oldName", oldName);
 
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
    }
 
     /**
@@ -171,7 +171,7 @@ public class Institutions extends HttpServlet {
         rmiParams.put("institutionName", institutionName);
 
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
 
     }

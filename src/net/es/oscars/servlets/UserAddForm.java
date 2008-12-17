@@ -38,13 +38,13 @@ public class UserAddForm extends HttpServlet {
         }
 
 
-        AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-        AuthValue authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+        AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+        AuthValue authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
 
         if (authVal != AuthValue.ALLUSERS) {
             String errorMsg = "User "+userName+" is not allowed to add a new user";
             log.error(errorMsg);
-            Utils.handleFailure(out, errorMsg, methodName);
+            ServletUtils.handleFailure(out, errorMsg, methodName);
             return;
         }
 
@@ -78,7 +78,7 @@ public class UserAddForm extends HttpServlet {
     public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
 
         String methodName = "UserAddForm.outputAttributeMenu";
-        List<Attribute> attributes = Utils.getAllAttributes(rmiClient, out, log);
+        List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
 
 
         List<String> attributeList = new ArrayList<String>();
@@ -95,7 +95,7 @@ public class UserAddForm extends HttpServlet {
     public void outputInstitutionMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "UserAddForm.outputInstitutionMenu";
 
-        List<Institution> institutions = Utils.getAllInstitutions(rmiClient, out, log);
+        List<Institution> institutions = ServletUtils.getAllInstitutions(rmiClient, out, log);
 
         List<String> institutionList = new ArrayList<String>();
         int ctr = 0;

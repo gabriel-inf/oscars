@@ -54,11 +54,11 @@ public class CreateReservation extends HttpServlet {
         }
 
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.createReservation(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed with " + ex.getMessage());
-            Utils.handleFailure(out, "CreateReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "CreateReservation not completed: " + ex.getMessage(), methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

@@ -55,18 +55,18 @@ public class AuthorizationRemove extends HttpServlet {
 
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
 
             if (authVal == AuthValue.DENIED)  {
                 String errorMsg = "User "+userName+" not allowed to remove authorizations";
                 log.error(errorMsg);
-                Utils.handleFailure(out, errorMsg, methodName);
+                ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
 
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-            rmiResult = Utils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (RemoteException e) {
             return;
         }

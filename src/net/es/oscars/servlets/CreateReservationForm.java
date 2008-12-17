@@ -30,17 +30,17 @@ public class CreateReservationForm extends HttpServlet {
         if (userName == null) {
             return;
         }
-        AaaRmiInterface coreRmiClient = Utils.getCoreRmiClient(methodName, log, out);
+        AaaRmiInterface coreRmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
         AuthValue authVal = null;
         try {
             authVal = coreRmiClient.checkModResAccess(userName, "Reservations", "create", 0, 0, false, false );
         } catch (Exception ex) {
             this.log.error("rmiClient failed with " + ex.getMessage());
-            Utils.handleFailure(out, "CreateReservationForm internal error: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "CreateReservationForm internal error: " + ex.getMessage(), methodName);
             return;
         }
         if (authVal == null || authVal == AuthValue.DENIED ) {
-            Utils.handleFailure(out, "No permission granted to create a reservation", methodName);
+            ServletUtils.handleFailure(out, "No permission granted to create a reservation", methodName);
             return;
         }
 

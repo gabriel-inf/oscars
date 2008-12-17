@@ -43,11 +43,11 @@ public class PathTeardownReservation extends HttpServlet {
             params.put(paramName, paramValues);
         }
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.teardownPath(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
-            Utils.handleFailure(out, "TeardownPathReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "TeardownPathReservation not completed: " + ex.getMessage(), methodName);
             return;
         }
 

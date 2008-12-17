@@ -50,11 +50,11 @@ public class ListReservations extends HttpServlet {
         }
 
         try {
-            BssRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.listReservations(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed with " + ex.getMessage());
-            Utils.handleFailure(out, "ListReservations not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, "ListReservations not completed: " + ex.getMessage(), methodName);
             return;
         }
         outputMap.put("status", "Reservations list");

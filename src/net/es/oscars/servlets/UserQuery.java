@@ -67,20 +67,20 @@ public class UserQuery extends HttpServlet {
 
 
         try {
-            AaaRmiInterface rmiClient = Utils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = Utils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
 
             if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
                 // either have permission to see others OR see self
              } else {
-                Utils.handleFailure(out,"no permission to query users", methodName);
+                ServletUtils.handleFailure(out,"no permission to query users", methodName);
                 return;
             }
 
             /* check to see if user has modify permission for this user
              *     used by contentSection to set the action on submit
              */
-            authVal = Utils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+            authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
 
             if ((authVal == AuthValue.ALLUSERS) ||
                 (self && (authVal == AuthValue.SELFONLY))) {
@@ -96,15 +96,15 @@ public class UserQuery extends HttpServlet {
             List<Attribute> attributesForUser = null;
 
             if (self) {
-                attributesForUser = Utils.getAttributesForUser(userName, rmiClient, out, log);
-                targetUser = Utils.getUser(userName, rmiClient, out, log);
+                attributesForUser = ServletUtils.getAttributesForUser(userName, rmiClient, out, log);
+                targetUser = ServletUtils.getUser(userName, rmiClient, out, log);
             } else {
-                attributesForUser = Utils.getAttributesForUser(profileName, rmiClient, out, log);
-                targetUser = Utils.getUser(profileName, rmiClient, out, log);
+                attributesForUser = ServletUtils.getAttributesForUser(profileName, rmiClient, out, log);
+                targetUser = ServletUtils.getUser(profileName, rmiClient, out, log);
             }
 
-            List<Attribute> allAtributes = Utils.getAllAttributes(rmiClient, out, log);
-            List<Institution> institutions = Utils.getAllInstitutions(rmiClient, out, log);
+            List<Attribute> allAtributes = ServletUtils.getAllAttributes(rmiClient, out, log);
+            List<Institution> institutions = ServletUtils.getAllInstitutions(rmiClient, out, log);
 
             this.contentSection( outputMap, targetUser, modifyAllowed,
                     (authVal == AuthValue.ALLUSERS),
