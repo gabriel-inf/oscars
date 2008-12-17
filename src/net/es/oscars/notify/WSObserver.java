@@ -51,9 +51,9 @@ public class WSObserver implements Observer {
     private static String brokerConsumerURL = null;
     private static HashMap<String, String> topics = null;
 
-	/* Constants */
+    /* Constants */
     private final String TOPIC_EXPR_FULL = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full";
-    
+
     /** Constructor */
     public WSObserver() {
         this.log = Logger.getLogger(this.getClass());
@@ -68,7 +68,7 @@ public class WSObserver implements Observer {
         /* initialize */
         this.initialize();
     }
-    
+
     /**
      * This method does basic initialization. It will load in topic files
      * and read properties necessary to send messages.
@@ -76,13 +76,17 @@ public class WSObserver implements Observer {
      */
     private boolean initialize(){
         PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties wsNotifyProps = propHandler.getPropertyGroup("notify.ws", true); 
-        Properties idcProps = propHandler.getPropertyGroup("idc", true); 
+        Properties wsNotifyProps = propHandler.getPropertyGroup("notify.ws", true);
+        Properties idcProps = propHandler.getPropertyGroup("idc", true);
         this.brokerPublisherRegMgrURL = wsNotifyProps.getProperty("broker.url");
         this.producerURL = idcProps.getProperty("url");
         String privateURL = wsNotifyProps.getProperty("broker.url.private");
         String registerRetryAttempts = wsNotifyProps.getProperty("broker.registerRetryAttempts");
         String catalinaHome = System.getProperty("catalina.home");
+        if (catalinaHome == null) {
+            this.log.warn("catalina.home not set, using /usr/local/tomcat");
+            catalinaHome = "/usr/local/tomcat";
+        }
         // check for trailing slash
         if (!catalinaHome.endsWith("/")) {
             catalinaHome += "/";
@@ -91,17 +95,17 @@ public class WSObserver implements Observer {
         String topicSetFile = catalinaHome + "shared/classes/server/idc-topicset.xml";
         /* Set default urls. Lots of logging so its clear what's going on to users. */
         String localhost = null;
-        
+
         try{
             localhost = InetAddress.getLocalHost().getHostName();
         }catch(Exception e){
             this.log.error("Unable to determine localhost.");
         }
-        
+
         /* Set client files */
         this.repo = catalinaHome + "shared/classes/repo/";
         this.axisConfig = this.repo + "axis2-norampart.xml";
-        
+
         /* Load Topics files */
         try{
             this.loadTopics(topicSetFile, topicNsFile);
@@ -111,7 +115,7 @@ public class WSObserver implements Observer {
             this.initialized = false;
             return this.initialized;
         }
-        
+
         if(this.brokerPublisherRegMgrURL == null && localhost == null){
             this.log.error("You need to set notify.ws.broker.url in oscars.properties!");
             this.initialized = false;
@@ -120,7 +124,7 @@ public class WSObserver implements Observer {
             this.brokerPublisherRegMgrURL = "https://" + localhost + ":8443/axis2/services/OSCARSNotify";
             this.log.info("notify.ws.broker not set in oscars.properties. Defaulting to " + this.brokerPublisherRegMgrURL);
         }
-        
+
         if(this.producerURL == null && localhost == null){
             this.log.error("You need to set idc.url in oscars.properties!");
             this.initialized = false;
@@ -129,22 +133,22 @@ public class WSObserver implements Observer {
             this.producerURL = "https://" + localhost + ":8443/axis2/services/OSCARS";
             this.log.info("idc.url not set in oscars.properties. Defaulting to " + this.producerURL);
         }
-        
+
         /* Register publisher */
         //TODO: Move this to ServiceManager
         int registerRetries = 10;//default
         if("unlimited".equals(registerRetryAttempts)){
             registerRetries = -1;
-        }else if(registerRetryAttempts != null && 
+        }else if(registerRetryAttempts != null &&
                  registerRetryAttempts.matches("\\d+")){
             registerRetries = Integer.parseInt(registerRetryAttempts);
         }
-        
+
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String triggerName = "pubRegTrig-" + idcProps.hashCode();
         String jobName = "pubReg-" + idcProps.hashCode();
-        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
-                                                  new Date(), 
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null,
+                                                  new Date(),
                                                   null, 0, 0L);
         JobDetail jobDetail = new JobDetail(jobName, "REGISTER_PUBLISHER",
                                             RegisterPublisherJob.class);
@@ -165,16 +169,16 @@ public class WSObserver implements Observer {
             this.log.error("Scheduler exception: " + ex);
             //don't set uninitialized because job will try again on its own
         }
-        
+
         this.initialized = true;
         return this.initialized;
     }
-    
+
     /**
      * Sets the publisherRegistrationId to use in the ProducerReference of all
-     * Notify messages and empties any queued notifications. If set to null 
+     * Notify messages and empties any queued notifications. If set to null
      * then it will be interpreted as no PublisherRegistration exists and that
-     * Notify messages can't be sent. While null, notification messages will either 
+     * Notify messages can't be sent. While null, notification messages will either
      * be queued or discarded depending on the value of notify.ws.queueOnFailure.
      *
      * @param id the publisherRegistrationId to set
@@ -185,7 +189,7 @@ public class WSObserver implements Observer {
     }
 
     /**
-     * Observer method called whenever a change occurs. It accepts an 
+     * Observer method called whenever a change occurs. It accepts an
      * Observable object and an net.es.oscars.notify.OSCARSEvent object as
      * arguments.
      *
@@ -199,21 +203,21 @@ public class WSObserver implements Observer {
             return;
         }
         OSCARSEvent osEvent = (OSCARSEvent) arg;
-        
-        /* if not initialized then try to initialize so user does not need to 
+
+        /* if not initialized then try to initialize so user does not need to
             restart IDC to change URLS in oscars.properties. */
         if((!this.initialized) && (!this.initialize())){
-            this.log.error("Can't send web service notifications because of " + 
+            this.log.error("Can't send web service notifications because of " +
                            "errors. See previous error messages for details.");
             return;
         }
-       
+
         //if not registered with broker, then retry later
         if(this.publisherRegistrationId == null){
             this.log.debug("Not registered so exiting!");
             return;
         }
-        
+
         OMElement omEvent = null;
         Client client = new Client();
         EndpointReferenceType prodRef = null;
@@ -221,7 +225,7 @@ public class WSObserver implements Observer {
         EventContent event = this.oscarsEventToWSEvent(osEvent);
         NotificationMessageHolderType msgHolder = new NotificationMessageHolderType();
         MessageType msg = new MessageType();
-        
+
         try{
             client.setUpNotify(true, this.brokerConsumerURL, this.repo, this.axisConfig);
             prodRef = client.generateEndpointReference(this.producerURL);
@@ -241,14 +245,14 @@ public class WSObserver implements Observer {
         if(!"".equals(publisherRegistrationId)){
             ReferenceParametersType refParams = new ReferenceParametersType();
             refParams.setPublisherRegistrationId(publisherRegistrationId);
-            prodRef.setReferenceParameters(refParams); 
+            prodRef.setReferenceParameters(refParams);
         }
-        
+
         msg.addExtraElement(omEvent);
         msgHolder.setTopic(topicExpr);
         msgHolder.setProducerReference(prodRef);
         msgHolder.setMessage(msg);
-        
+
         //send notifcation
         try{
             client.notify(msgHolder);
@@ -259,24 +263,24 @@ public class WSObserver implements Observer {
             client.cleanUp();
         }
     }
-    
+
     /**
      * Converts an OSCAREvent object to an EventContent type that can be passed in Axis2.
-     * 
+     *
      * @param osEvent the OSCARSEvent to convert
      * @returns a converted EventContent object
      */
     private EventContent oscarsEventToWSEvent(OSCARSEvent osEvent){
         EventContent event = new EventContent();
         HashMap<String, String[]> map = osEvent.getReservationParams();
-        
+
         ResDetails resDetails =
-        		WSDLTypeConverter.hashMapToResDetails(osEvent.getReservationParams());
-        
-        LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"), 
+                WSDLTypeConverter.hashMapToResDetails(osEvent.getReservationParams());
+
+        LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"),
                                                          map.get("intradomainHopInfo"));
         Path path = new Path();
-        
+
         for(String key: map.keySet()){
             String[] val = map.get(key);
             //System.out.print(key + ": ");
@@ -306,10 +310,10 @@ public class WSObserver implements Observer {
         event.setResDetails(resDetails);
         event.setLocalDetails(localDetails);
         //TODO: Set msgDetails
-        
+
         return event;
     }
-    
+
     /**
      * Creates a LocalDetails element containing the local path
      *
@@ -322,11 +326,11 @@ public class WSObserver implements Observer {
         LocalDetails localDetails = new LocalDetails();
         OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
         OMElement omPath = null;
-        
+
         //Build path
-        
+
         CtrlPlanePathContent wsPath =
-        		WSDLTypeConverter.arrayToCtrlPlanePath(path, hopInfo);
+                WSDLTypeConverter.arrayToCtrlPlanePath(path, hopInfo);
         wsPath.setId("localPath");
         try{
             omPath = wsPath.getOMElement(Path.MY_QNAME, omFactory);
@@ -337,14 +341,14 @@ public class WSObserver implements Observer {
         localDetails.addExtraElement(omPath);
         return localDetails;
     }
-    
+
     /**
      * Matches an event to a topic then returns a TopicExpression
      *
      * @param event the event to classify as belonging to a topic
      * @return a topic expression for the given event
      */
-    private TopicExpressionType generateTopicExpression(EventContent event) 
+    private TopicExpressionType generateTopicExpression(EventContent event)
                     throws MalformedURIException, ADBException, JaxenException{
         TopicExpressionType topicExpr = new TopicExpressionType();
         URI topicDialect = new URI(TOPIC_EXPR_FULL);
@@ -360,7 +364,7 @@ public class WSObserver implements Observer {
             OMElement omRoot = omFactory.createOMElement(rootQname);
             OMElement omEvent = event.getOMElement(Event.MY_QNAME, omFactory);
             omRoot.addChild(omEvent);
-            AXIOMXPath xpathExpression = new AXIOMXPath (xpath); 
+            AXIOMXPath xpathExpression = new AXIOMXPath (xpath);
             SimpleNamespaceContext nsContext = new SimpleNamespaceContext(this.namespaces);
             xpathExpression.setNamespaceContext(nsContext);
             if(xpathExpression.booleanValueOf(omRoot)){
@@ -375,10 +379,10 @@ public class WSObserver implements Observer {
             return null;
         }
         topicExpr.setString(topicString);
-         
+
         return topicExpr;
     }
-    
+
     /**
      * Loads Topics from an XML file. The file must follow the WS-Topics standard
      * listed by OASIS (http://docs.oasis-open.org/wsn/wsn-ws_topics-1.3-spec-os.pdf).
@@ -389,11 +393,11 @@ public class WSObserver implements Observer {
      * @param topicSetFile file that contains supported topics (TopicSet)
      * @param topicNamesapce file that describes all possible topics (TopicNamespace)
      */
-    private void loadTopics(String topicSetFile, String topicNSFile) 
+    private void loadTopics(String topicSetFile, String topicNSFile)
                                             throws IOException, JDOMException{
         this.topics = new HashMap<String, String>();
         Namespace wstop = Namespace.getNamespace("http://docs.oasis-open.org/wsn/t-1");
-        
+
         //Step 1: Figure out which Topics are supported
         //open topicset
         SAXBuilder builder = new SAXBuilder(false);
@@ -434,7 +438,7 @@ public class WSObserver implements Observer {
                 topicSetElems.addAll(0, children);
             }
         }
-        
+
         //Step 2: Find supported topics in topic namespace
         //load file
         this.log.debug("Loading topic namespace file " + topicNSFile);
@@ -454,7 +458,7 @@ public class WSObserver implements Observer {
                 topicNSElems.remove(0);
                 continue;
             }
-            
+
             List children = currElem.getChildren("Topic", wstop);
             //check if working way back up tree
             if((!parents.isEmpty()) && name.equals(parents.get(0))){
@@ -462,7 +466,7 @@ public class WSObserver implements Observer {
                 parents.remove(0);
                 continue;
             }
-            
+
             for(int i = (parents.size() - 1); i >= 0; i--){
                 completeName += (parents.get(i) + "/");
             }
@@ -472,14 +476,14 @@ public class WSObserver implements Observer {
                 this.log.debug("Ignoring disabled topic " + completeName);
                 continue;
             }
-            
+
             if(children.isEmpty()){
                 topicNSElems.remove(0);
             }else{
                 parents.add(0, name);
                 topicNSElems.addAll(0, children);
             }
-            
+
             Element msgPattern = currElem.getChild("MessagePattern", wstop);
             if(msgPattern == null){
                 continue;
@@ -491,8 +495,8 @@ public class WSObserver implements Observer {
             }
         }
     }
-    
+
     public static HashMap<String, String> getTopics() {
-		return topics;
-	}
+        return topics;
+    }
 }
