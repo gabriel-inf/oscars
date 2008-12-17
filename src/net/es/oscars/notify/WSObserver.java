@@ -80,11 +80,10 @@ public class WSObserver implements Observer {
         Properties idcProps = propHandler.getPropertyGroup("idc", true); 
         this.brokerPublisherRegMgrURL = wsNotifyProps.getProperty("broker.url");
         this.producerURL = idcProps.getProperty("url");
+        String privateURL = wsNotifyProps.getProperty("broker.url.private");
         String registerRetryAttempts = wsNotifyProps.getProperty("broker.registerRetryAttempts");
-        //String catalinaHome = System.getProperty("catalina.home");
-        String catalinaHome = System.getenv("CATALINA_HOME");
+        String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
-        System.out.println("catalina.home is: " + catalinaHome);
         if (!catalinaHome.endsWith("/")) {
             catalinaHome += "/";
         }
@@ -151,6 +150,9 @@ public class WSObserver implements Observer {
                                             RegisterPublisherJob.class);
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("url", this.brokerPublisherRegMgrURL);
+        if(privateURL != null){
+            dataMap.put("private.url", privateURL);
+        }
         dataMap.put("repo", this.repo);
         dataMap.put("publisher", this.producerURL);
         dataMap.put("retryAttempts", registerRetries);
@@ -267,8 +269,8 @@ public class WSObserver implements Observer {
     private EventContent oscarsEventToWSEvent(OSCARSEvent osEvent){
         EventContent event = new EventContent();
         HashMap<String, String[]> map = osEvent.getReservationParams();
-        ResDetails resDetails =
-            WSDLTypeConverter.hashMapToResDetails(osEvent.getReservationParams());
+        TypeConverter tc = new TypeConverter();
+        ResDetails resDetails = tc.hashMaptoResDetails(osEvent.getReservationParams());
         LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"), 
                                                          map.get("intradomainHopInfo"));
         Path path = new Path();
@@ -315,14 +317,14 @@ public class WSObserver implements Observer {
      */
     private LocalDetails getLocalDetails(String[] path, String[] hopInfo){
         if(path == null || path.length < 1){ return null; }
+        TypeConverter tc = new TypeConverter();
         LocalDetails localDetails = new LocalDetails();
         OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
         OMElement omPath = null;
         
         //Build path
         
-        CtrlPlanePathContent wsPath =
-            WSDLTypeConverter.arrayToCtrlPlanePath(path, hopInfo);
+        CtrlPlanePathContent wsPath = tc.arrayToCtrlPlanePath(path, hopInfo);
         wsPath.setId("localPath");
         try{
             omPath = wsPath.getOMElement(Path.MY_QNAME, omFactory);

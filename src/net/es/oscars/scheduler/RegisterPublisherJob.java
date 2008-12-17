@@ -26,10 +26,9 @@ public class RegisterPublisherJob implements Job{
         this.core = OSCARSCore.getInstance();
         String jobName = context.getJobDetail().getFullName();
         log.info("ProcessNotifyJob.start name:"+jobName);
-        String url = dataMap.getString("url");
         String repo = dataMap.getString("repo");
         String publisherURL = dataMap.getString("publisher");
-        String consumerURL = url;
+        String consumerURL = dataMap.getString("url");
         String axisConfig = repo + "axis2.xml";
         Client client = new Client();
         RegisterPublisher request = new RegisterPublisher();
@@ -37,12 +36,17 @@ public class RegisterPublisherJob implements Job{
         RegisterPublisherResponse response = null;
         String publisherRegistrationId = "";
         
+        //Check for private URL
+        if(dataMap.containsKey("private.url")){
+            consumerURL = dataMap.getString("private.url");
+        }
+        
         //send message
         boolean error = true;
         try{
             publisherRef = client.generateEndpointReference(publisherURL);
             request.setPublisherReference(publisherRef);
-            client.setUpNotify(true, url, repo, axisConfig);
+            client.setUpNotify(true, consumerURL, repo, axisConfig);
             //send registration
             response = client.registerPublisher(request);
             error = false;
@@ -65,7 +69,7 @@ public class RegisterPublisherJob implements Job{
         
         //parse results
         EndpointReferenceType conRef = response.getConsumerReference();
-        if(conRef != null){
+        if(conRef != null && (!dataMap.containsKey("private.url"))){
             consumerURL = conRef.getAddress().toString();
         }
         /* Get PublisherRegistrationId. If doesn't exist, then assume it's not
