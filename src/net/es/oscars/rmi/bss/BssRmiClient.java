@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.Logger;
 
@@ -40,8 +41,10 @@ public class BssRmiClient implements BssRmiInterface  {
         String rmiRegName = BssRmiInterface.registryName;
 
 
-        PropHandler propHandler = new PropHandler("rmi.properties");
-        Properties props = propHandler.getPropertyGroup("aaa", true);
+        Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
+
+        // PropHandler propHandler = new PropHandler("rmi.properties");
+        // Properties props = propHandler.getPropertyGroup("aaa", true);
         if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
             try {
                 rmiPort = Integer.decode(props.getProperty("registryPort"));
@@ -58,6 +61,7 @@ public class BssRmiClient implements BssRmiInterface  {
             rmiRegName = props.getProperty("registryName");
         }
 
+        this.log.info("BSS client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
 
         try {
             Registry registry = LocateRegistry.getRegistry(rmiIpaddr, rmiPort);

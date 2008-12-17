@@ -11,17 +11,16 @@ import org.hibernate.Hibernate;
 import net.es.oscars.aaa.*;
 import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.model.*;
-import net.es.oscars.servlets.Utils;
+import net.es.oscars.servlets.ServletUtils;
 
 
 public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
-    private OSCARSCore core;
+    private AAACore core = AAACore.getInstance();
     private Logger log;
 
 
     public AttributeModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
 

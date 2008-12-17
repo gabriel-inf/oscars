@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 
 import net.es.oscars.rmi.AnchorSocketFactory;
 import net.es.oscars.PropHandler;
+import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.*;
 
@@ -51,8 +52,12 @@ public class BssRmiServer  implements BssRmiInterface {
      */
     public void init() throws RemoteException {
         this.log.debug("BssRmiServer.init().start");
-        PropHandler propHandler = new PropHandler("rmi.properties");
-        Properties props = propHandler.getPropertyGroup("bss", true);
+
+
+        Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
+
+        //PropHandler propHandler = new PropHandler("rmi.properties");
+        //Properties props = propHandler.getPropertyGroup("bss", true);
 
         // default rmi registry port
         int rmiPort = BssRmiInterface.registryPort;
@@ -77,6 +82,7 @@ public class BssRmiServer  implements BssRmiInterface {
             rmiRegName = props.getProperty("registryName");
         }
 
+        this.log.info("BSS server RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
 
         InetAddress ipAddr = null;
         AnchorSocketFactory sf = null;

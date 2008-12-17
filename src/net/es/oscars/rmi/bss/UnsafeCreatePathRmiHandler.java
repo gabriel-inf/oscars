@@ -12,6 +12,8 @@ import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class UnsafeCreatePathRmiHandler {
     private OSCARSCore core;
@@ -36,16 +38,13 @@ public class UnsafeCreatePathRmiHandler {
          Reservation resv = null;
          result.put("method", methodName);
 
-         Session aaa = core.getAaaSession();
-         aaa.beginTransaction();
-         AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
+         AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+         AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "modify");
          if (authVal == AuthValue.DENIED) {
              result.put("error", "no permission to force path creation");
-             aaa.getTransaction().rollback();
              this.log.debug("createPath failed: permission denied");
              return result;
          }
-         aaa.getTransaction().commit();
 
          String gri = (String) params.get("gri");
          Session bss = core.getBssSession();

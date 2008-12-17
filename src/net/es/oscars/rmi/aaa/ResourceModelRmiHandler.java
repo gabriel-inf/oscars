@@ -8,18 +8,16 @@ import org.apache.log4j.*;
 import org.hibernate.Session;
 
 import net.es.oscars.aaa.*;
-import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.model.*;
 
 
 public class ResourceModelRmiHandler extends ModelRmiHandlerImpl {
-    private OSCARSCore core;
+    private AAACore core = AAACore.getInstance();
     private Logger log;
 
 
     public ResourceModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
 

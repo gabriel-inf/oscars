@@ -38,7 +38,7 @@ public interface AaaRmiInterface extends Remote {
 
     public String verifyDN(String dn) throws RemoteException;
 
-    
+
     /**
      * Verifies if a user has a valid session
      * @param userName The username to check
@@ -48,6 +48,7 @@ public interface AaaRmiInterface extends Remote {
      */
     public Boolean validSession(String userName, String sessionName) throws RemoteException;
 
+    public String getInstitution(String userName) throws RemoteException;
 
     public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException;
     public AuthMultiValue checkMultiAccess(String userName, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException;

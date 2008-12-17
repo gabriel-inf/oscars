@@ -5,14 +5,12 @@ import java.util.*;
 import java.rmi.RemoteException;
 import org.apache.log4j.*;
 import org.hibernate.Session;
-import org.hibernate.Hibernate;
 
 import net.es.oscars.aaa.*;
-import net.es.oscars.oscars.OSCARSCore;
 
 
 public class CheckAccessRmiHandler {
-    private OSCARSCore core = OSCARSCore.getInstance();
+    private AAACore core = AAACore.getInstance();
     private Logger log = Logger.getLogger(CheckAccessRmiHandler.class);
 
 
@@ -26,6 +24,18 @@ public class CheckAccessRmiHandler {
         aaa.getTransaction().commit();
         this.log.debug("checkAccess.end");
         return auth;
+    }
+
+    public String getInstitution(String userName) throws RemoteException {
+        this.log.debug("getInstitution.start");
+        Session aaa = core.getAaaSession();
+        aaa.beginTransaction();
+
+        UserManager um = core.getUserManager();
+        String institution = um.getInstitution(userName);
+        aaa.getTransaction().commit();
+        this.log.debug("getInstitution.end");
+        return institution;
     }
 
 

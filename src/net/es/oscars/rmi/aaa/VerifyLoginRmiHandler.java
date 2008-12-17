@@ -6,11 +6,11 @@ import org.hibernate.Session;
 
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.oscars.AAAFaultMessage;
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.aaa.AAACore;
 
 public class VerifyLoginRmiHandler {
 
-    private OSCARSCore core = OSCARSCore.getInstance();
+    private AAACore core = AAACore.getInstance();
     private Logger log = Logger.getLogger(VerifyLoginRmiHandler.class);
 
 
@@ -23,7 +23,7 @@ public class VerifyLoginRmiHandler {
         String username = null;
         try {
             username = um.loginFromDN(dn);
-            
+
             if (username == null) {
                 String[] dnElems = null;
                 // if that fails try the reverse of the elements in the DN
@@ -53,7 +53,7 @@ public class VerifyLoginRmiHandler {
 
     }
 
-    
+
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException {
         this.log.debug("VerifyLogin.start");
         Session aaa = core.getAaaSession();

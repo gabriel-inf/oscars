@@ -8,17 +8,15 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.aaa.*;
-import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.model.*;
 
 public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
-    private OSCARSCore core;
+    private AAACore core = AAACore.getInstance();
     private Logger log;
 
 
     public InstitutionModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
     public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {

@@ -20,6 +20,9 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
+import net.es.oscars.rmi.aaa.*;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.servlets.ServletUtils;
 
 public class CreateResRmiHandler {
     private OSCARSCore core;
@@ -51,7 +54,7 @@ public class CreateResRmiHandler {
         EventProducer eventProducer = new EventProducer();
         Reservation resv = null;
         Path requestedPath = null;
-        
+
         String caller = (String) params.get("caller");
         if (caller.equals("WBUI")) {
             resv = this.toReservation(userName, params);
@@ -69,16 +72,12 @@ public class CreateResRmiHandler {
             throw new IOException("Invalid caller!");
         }
 
-        // Check to see if this user can create this reservation
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-        UserManager userMgr = core.getUserManager();
-        
+
         // bandwidth limits are stored in megaBits
         int reqBandwidth = (int) (resv.getBandwidth() / 1000000);
         // convert from seconds to minutes
         int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 60;
-        
+
         boolean specifyPath = false;
         String[] arrayParam = (String[]) params.get("explicitPath");
         if (arrayParam != null) {
@@ -87,17 +86,17 @@ public class CreateResRmiHandler {
                 specifyPath = true;
             }
         }
-        AuthValue authVal = userMgr.checkModResAccess(userName, "Reservations",
-                "create", reqBandwidth, reqDuration, specifyPath, false);
+
+        AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+        AuthValue authVal = rmiClient.checkModResAccess(userName, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, false);
+
 
         if (authVal == AuthValue.DENIED) {
             result.put("error", "createReservation permission denied");
             this.log.debug("createReservation failed permission denied");
-            aaa.getTransaction().rollback();
             return result;
         }
-        aaa.getTransaction().commit();
-        
+
         // submit reservation request
         Session bss = core.getBssSession();
         bss.beginTransaction();

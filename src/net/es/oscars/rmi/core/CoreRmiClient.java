@@ -119,6 +119,10 @@ public class CoreRmiClient implements CoreRmiInterface {
         return this.aaaRmiClient.checkAccess(userName, resourceName, permissionName);
     }
 
+    public String getInstitution(String userName) throws RemoteException {
+        return this.aaaRmiClient.getInstitution(userName);
+    }
+
     public AuthMultiValue checkMultiAccess(String userName, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException {
         return this.aaaRmiClient.checkMultiAccess(userName, resourcePermissions);
     }
@@ -133,15 +137,15 @@ public class CoreRmiClient implements CoreRmiInterface {
         return this.aaaRmiClient.manageAaaObjects(parameters);
     }
 
-    
+
     // Notify RMI stuff.
 
     public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) throws RemoteException {
-    	return this.notifyRmiClient.checkSubscriptionId(address, msgSubRef);
+        return this.notifyRmiClient.checkSubscriptionId(address, msgSubRef);
     }
-    
+
     public void Notify(Notify request) throws RemoteException {
-    	this.notifyRmiClient.Notify(request);
+        this.notifyRmiClient.Notify(request);
     }
 
 

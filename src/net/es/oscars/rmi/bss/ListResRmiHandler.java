@@ -19,6 +19,8 @@ import net.es.oscars.aaa.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.oscars.*;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class ListResRmiHandler {
     private OSCARSCore core;
@@ -34,23 +36,23 @@ public class ListResRmiHandler {
                throws IOException {
 
         this.log.debug("listReservations.start");
-        
+
         String caller = (String) params.get("caller");
         if (caller.equals("WBUI")) {
             this.log.debug("listReservations.end");
-        	return this.handleWBUI(params, userName);
+            return this.handleWBUI(params, userName);
         } else if (caller.equals("AAR")) {
             this.log.debug("listReservations.end");
-        	return this.handleAAR(params, userName);
+            return this.handleAAR(params, userName);
         } else {
-        	throw new IOException("Invalid caller!");
+            throw new IOException("Invalid caller!");
         }
-    } 
-    
+    }
+
     public HashMap<String, Object> handleAAR(HashMap<String, Object> params, String userName)
-    	throws IOException {
-    	// FIXME: implement this part
-    	
+        throws IOException {
+        // FIXME: implement this part
+
         HashMap<String, Object> result = new HashMap<String, Object>();
         return result;
     }
@@ -62,15 +64,15 @@ public class ListResRmiHandler {
         String loginConstraint = null;
         String methodName = "ListReservations";
         ReservationManager rm = core.getReservationManager();
-        
+
         List<Link> inLinks = null;
         List<Reservation> reservations = null;
 
-        
+
         int numRowsReq =0;
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
-        
+
         List<String> statuses = this.getStatuses(params);
         List<String> vlans = this.getVlanTags(params);
         String description = this.getSingleValue(params, "resvDescription");
@@ -78,14 +80,14 @@ public class ListResRmiHandler {
         String endTimeStr = this.getSingleValue(params, "endTimeSeconds");
         String numRowParam = this.getSingleValue(params, "numRows");
         String loginEntered = this.getSingleValue(params, "resvLogin");
-        
+
         if ( !startTimeStr.equals("")) {
             startTimeSeconds = Long.valueOf(startTimeStr.trim());
         }
         if ( !endTimeStr.equals("")) {
             endTimeSeconds = Long.valueOf(endTimeStr.trim());
         }
-        
+
         if (!numRowParam.equals("") && !numRowParam.equals("all")) {
             numRowsReq = Integer.parseInt(numRowParam);
         } else {
@@ -94,12 +96,12 @@ public class ListResRmiHandler {
         if (!loginEntered.equals("")) {
             loginConstraint = loginEntered;
         }
-        
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-        UserManager userMgr = core.getUserManager();
 
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "list");
+
+        AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+
+
+        AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "list");
 
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to list Reservations");
@@ -110,14 +112,13 @@ public class ListResRmiHandler {
         // reservations
         if (authVal.equals(AuthValue.MYSITE)) {
             result.put("resvLoginDisplay", Boolean.TRUE);
-            institution = userMgr.getInstitution(userName);
+            institution = rmiClient.getInstitution(userName);
         } else if (authVal.equals(AuthValue.SELFONLY)){
             result.put("resvLoginDisplay", Boolean.FALSE);
             loginConstraint = userName;
         } else {
             result.put("resvLoginDisplay", Boolean.TRUE);
         }
-        aaa.getTransaction().commit();
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -191,14 +192,14 @@ public class ListResRmiHandler {
         }
         return inLinks;
     }
-    
-    
+
+
     public String getSingleValue(HashMap<String, Object> params, String paramName) {
         String paramArgs[] = (String[]) params.get(paramName);
         if (paramArgs == null) {
-        	return null;
+            return null;
         } else {
-        	return (String) paramArgs[0];
+            return (String) paramArgs[0];
         }
 
     }
@@ -264,10 +265,10 @@ public class ListResRmiHandler {
             // INTERDOMAIN
             Path path = null;
             try {
-            	path = resv.getPath(PathType.INTERDOMAIN);
+                path = resv.getPath(PathType.INTERDOMAIN);
             } catch (BSSException ex) {
-            	outputMap.put("error", ex.getMessage());
-            	return;
+                outputMap.put("error", ex.getMessage());
+                return;
             }
             String pathStr = BssUtils.pathToString(path, false);
             String localSrc = null;
@@ -282,12 +283,12 @@ public class ListResRmiHandler {
             Layer3Data layer3Data = null;
             Layer2Data layer2Data = null;
             if (path != null ) {
-            	layer3Data = path.getLayer3Data();
-            	layer2Data = path.getLayer2Data();
+                layer3Data = path.getLayer3Data();
+                layer2Data = path.getLayer2Data();
             }
             resvEntry.add(gri);
             resvEntry.add(resv.getStatus());
-            Long mbps = resv.getBandwidth()/1000000;    	
+            Long mbps = resv.getBandwidth()/1000000;
 
             String bandwidthField = mbps.toString() + "Mbps";
             resvEntry.add(bandwidthField);

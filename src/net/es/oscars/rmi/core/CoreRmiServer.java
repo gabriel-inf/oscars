@@ -31,7 +31,7 @@ public class CoreRmiServer  implements CoreRmiInterface  {
     public static CoreRmiServer staticObject;
     private CoreRmiInterface stub;
     private BssRmiServer bssRmiServer;
-    private AaaRmiServer aaaRmiServer;
+    private AaaRmiInterface aaaRmiServer;
     private NotifyRmiServer notifyRmiServer;
 
     /**
@@ -94,11 +94,15 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, port, null,sf);
         this.registry.rebind(registryName, this.stub);
 
+
+
         this.bssRmiServer = new BssRmiServer();
         this.bssRmiServer.initHandlers();
-        this.aaaRmiServer = new AaaRmiServer();
-        this.aaaRmiServer.initHandlers();
-        
+
+        this.aaaRmiServer = new AaaRmiClient();
+        this.aaaRmiServer.init();
+
+
         this.notifyRmiServer = new NotifyRmiServer();
         this.notifyRmiServer.initHandlers();
 
@@ -136,6 +140,10 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         return this.aaaRmiServer.verifyDN(dn);
     }
 
+    public String getInstitution(String userName) throws RemoteException {
+        return this.aaaRmiServer.getInstitution(userName);
+    }
+
     public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException {
         return this.aaaRmiServer.checkAccess(userName, resourceName, permissionName);
     }
@@ -158,11 +166,11 @@ public class CoreRmiServer  implements CoreRmiInterface  {
 
 
     public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) throws RemoteException {
-    	return this.notifyRmiServer.checkSubscriptionId(address, msgSubRef);
+        return this.notifyRmiServer.checkSubscriptionId(address, msgSubRef);
     }
-    
+
     public void Notify(Notify request) throws RemoteException {
-    	this.notifyRmiServer.Notify(request);
+        this.notifyRmiServer.Notify(request);
     }
 
 

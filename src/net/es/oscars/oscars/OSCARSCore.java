@@ -17,6 +17,7 @@ import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.scheduler.*;
 import net.es.oscars.rmi.core.*;
+import net.es.oscars.rmi.bss.*;
 import net.es.oscars.bss.policy.*;
 
 import org.quartz.SchedulerException;
@@ -35,14 +36,12 @@ public class OSCARSCore {
 
     // Hardcoded but one can set them for tests etc
     private String bssDbName = "bss";
-    private String aaaDbName = "aaa";
 
     private StateEngine stateEngine = null;
     private ReservationManager reservationManager = null;
     private PathManager pathManager = null;
     private TopologyManager topologyManager = null;
     private TopologyExchangeManager topologyExchangeManager = null;
-    private UserManager userManager = null;
     private PCEManager pceManager = null;
     private PathSetupManager pathSetupManager = null;
     private PolicyManager policyManager = null;
@@ -95,13 +94,12 @@ public class OSCARSCore {
     public void initAll() {
         this.log.debug("initAll.start");
 
-        this.initDatabases();
+        this.initBssDatabase();
         this.initStateEngine();
         this.initReservationManager();
         this.initPathSetupManager();
         this.initTopologyManager();
         this.initTopologyExchangeManager();
-        this.initUserManager();
         this.initScheduleManager();
         this.initPCEManager();
         this.initPolicyManager();
@@ -131,7 +129,6 @@ public class OSCARSCore {
             this.log.error("Scheduler error shutting down", ex);
         }
         this.coreRmiServer.shutdown();
-        HibernateUtil.closeSessionFactory(this.aaaDbName);
         HibernateUtil.closeSessionFactory(this.bssDbName);
         this.log.info("shutdown.end");
     }
@@ -139,14 +136,13 @@ public class OSCARSCore {
     /**
      * Initializes the DB module
      */
-    public void initDatabases() {
-        this.log.debug("initDatabases.start");
+    public void initBssDatabase() {
+        this.log.debug("initBssDatabase.start");
         ArrayList<String> dbnames = new ArrayList<String>();
         dbnames.add(this.bssDbName);
-        dbnames.add(this.aaaDbName);
         Initializer dbInitializer = new Initializer();
         dbInitializer.initDatabase(dbnames);
-        this.log.debug("initDatabases.end");
+        this.log.debug("initBssDatabase.end");
     }
 
 
@@ -230,14 +226,6 @@ public class OSCARSCore {
         this.log.debug("initTopologyManager.end");
     }
 
-    /**
-     * Initializes the UserManager module
-     */
-    public void initUserManager() {
-        this.log.debug("initUserManager.start");
-        this.userManager = new UserManager(this.aaaDbName);
-        this.log.debug("initUserManager.end");
-    }
 
     /**
      * Initializes the TopologyExchangeManager module
@@ -328,21 +316,6 @@ public class OSCARSCore {
     }
 
 
-    /**
-     * @return the current AAA DB session for the current thread
-     */
-    public Session getAaaSession() {
-        Session aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
-        if (aaa == null || !aaa.isOpen()) {
-            this.log.info("opening AAA session");
-            HibernateUtil.getSessionFactory(this.aaaDbName).openSession();
-            aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
-        }
-        if (aaa == null || !aaa.isOpen()) {
-            this.log.error("AAA session is still closed!");
-        }
-        return aaa;
-    }
 
     /**
      * @return Grabs the current AAA DB session for the current thread
@@ -375,19 +348,6 @@ public class OSCARSCore {
         this.bssDbName = bssDbName;
     }
 
-    /**
-     * @return the aaaDbName
-     */
-    public String getAaaDbName() {
-        return aaaDbName;
-    }
-
-    /**
-     * @param aaaDbName the aaaDbName to set
-     */
-    public void setAaaDbName(String aaaDbName) {
-        this.aaaDbName = aaaDbName;
-    }
 
     /**
      * @return the stateEngine
@@ -450,22 +410,7 @@ public class OSCARSCore {
         this.topologyManager = topologyManager;
     }
 
-    /**
-     * @return the userManager
-     */
-    public UserManager getUserManager() {
-        if (this.userManager == null) {
-            this.initUserManager();
-        }
-        return userManager;
-    }
 
-    /**
-     * @param userManager the userManager to set
-     */
-    public void setUserManager(UserManager userManager) {
-        this.userManager = userManager;
-    }
 
     /**
      * @return the PCEManager

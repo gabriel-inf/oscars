@@ -9,6 +9,8 @@ import org.hibernate.*;
 import net.es.oscars.aaa.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.oscars.*;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class UnsafeModifyStatusRmiHandler {
     private OSCARSCore core;
@@ -30,16 +32,14 @@ public class UnsafeModifyStatusRmiHandler {
         Reservation resv = null;
         result.put("method", methodName);
 
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
+        AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+
+        AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to override reservation status");
-            aaa.getTransaction().rollback();
             this.log.debug("overrideStatus failed: permission denied");
             return result;
         }
-        aaa.getTransaction().commit();
         String gri = (String) params.get("gri");
 
         String status = (String) params.get("forcedStatus");

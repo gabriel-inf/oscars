@@ -13,13 +13,12 @@ import net.es.oscars.rmi.model.*;
 
 
 public class PermissionModelRmiHandler extends ModelRmiHandlerImpl  {
-    private OSCARSCore core;
+    private AAACore core = AAACore.getInstance();
     private Logger log;
 
 
     public PermissionModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
     public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {

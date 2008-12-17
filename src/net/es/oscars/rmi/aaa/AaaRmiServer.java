@@ -9,6 +9,7 @@ import java.net.*;
 import java.net.UnknownHostException;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.PropertyLoader;
 
 import net.es.oscars.aaa.*;
 import net.es.oscars.rmi.*;
@@ -57,9 +58,9 @@ public class AaaRmiServer  implements AaaRmiInterface  {
      */
     public void init() throws RemoteException {
         this.log.debug("AaaRmiServer.init().start");
-        PropHandler propHandler = new PropHandler("rmi.properties");
 
-        Properties props = propHandler.getPropertyGroup("aaa", true);
+        Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
+
 
         // default rmi registry port
         int rmiPort = AaaRmiInterface.registryPort;
@@ -84,6 +85,9 @@ public class AaaRmiServer  implements AaaRmiInterface  {
             rmiRegName = props.getProperty("registryName");
         }
 
+
+        this.log.info("AAA server RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
+
         InetAddress ipAddr = null;
         AnchorSocketFactory sf = null;
         // Causes the endPoint of the remote sever object to match the interface that is listened on
@@ -104,6 +108,7 @@ public class AaaRmiServer  implements AaaRmiInterface  {
     }
 
     public void initHandlers() {
+        this.log.debug("Initializing AAA RMI handlers");
         this.verifyLoginHandler 	= new VerifyLoginRmiHandler();
         this.checkAccessHandler 	= new CheckAccessRmiHandler();
         this.authorizationModelHandler = new AuthorizationModelRmiHandler();
@@ -114,11 +119,17 @@ public class AaaRmiServer  implements AaaRmiInterface  {
         this.permissionModelHandler = new PermissionModelRmiHandler();
         this.rpcModelHandler 		= new RpcModelRmiHandler();
         this.institutionModelHandler 	= new InstitutionModelRmiHandler();
+        this.log.debug("Done initializing AAA RMI handlers");
     }
 
     public Boolean validSession(String userName, String sessionName) throws RemoteException {
         return this.verifyLoginHandler.validSession(userName, sessionName);
     }
+
+    public String getInstitution(String userName) throws RemoteException {
+        return this.checkAccessHandler.getInstitution(userName);
+    }
+
 
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException {
         return this.verifyLoginHandler.verifyLogin(userName, password, sessionName);

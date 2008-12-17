@@ -13,13 +13,12 @@ import net.es.oscars.rmi.model.*;
 
 
 public class RpcModelRmiHandler extends ModelRmiHandlerImpl {
-    private OSCARSCore core;
     private Logger log;
+    private AAACore core = AAACore.getInstance();
 
 
     public RpcModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
     public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {

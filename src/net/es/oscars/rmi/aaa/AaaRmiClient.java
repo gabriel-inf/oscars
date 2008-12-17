@@ -5,6 +5,8 @@ import java.rmi.registry.*;
 import java.util.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.PropertyLoader;
+
 import org.apache.log4j.Logger;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
@@ -52,8 +54,9 @@ public class AaaRmiClient implements AaaRmiInterface {
         String rmiRegName = AaaRmiInterface.registryName;
 
 
-        PropHandler propHandler = new PropHandler("rmi.properties");
-        Properties props = propHandler.getPropertyGroup("aaa", true);
+        Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
+        //PropHandler propHandler = new PropHandler("rmi.properties");
+        //Properties props = propHandler.getPropertyGroup("aaa", true);
         if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
             try {
                 rmiPort = Integer.decode(props.getProperty("registryPort"));
@@ -69,7 +72,7 @@ public class AaaRmiClient implements AaaRmiInterface {
         if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
             rmiRegName = props.getProperty("registryName");
         }
-
+        this.log.info("AAA client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
 
         try {
             Registry registry = LocateRegistry.getRegistry(rmiIpaddr, rmiPort);
@@ -180,8 +183,29 @@ public class AaaRmiClient implements AaaRmiInterface {
         this.log.debug("verifyDN.end");
         return result;
     }
-    
-    
+
+
+    public String getInstitution(String userName) throws RemoteException {
+
+        String methodName = "getInstitution";
+        this.log.debug("getInstitution.start");
+
+        String result = null;
+        if (!this.verifyRmiConnection(methodName)) {
+            return result;
+        }
+
+        try {
+            result = this.remote.getInstitution(userName);
+        } catch (RemoteException e) {
+            this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+        } catch (Exception e) {
+            this.log.warn("Exception from RMI server" + e.getMessage(), e);
+        }
+        this.log.debug("getInstitution.end");
+        return result;
+    }
+
     public AuthValue checkAccess(String userName, String resourceName, String permissionName)
             throws RemoteException {
         String methodName = "checkAccess";

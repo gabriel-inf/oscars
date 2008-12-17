@@ -14,13 +14,12 @@ import net.es.oscars.rmi.model.*;
 
 
 public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
-    private OSCARSCore core;
+    private AAACore core = AAACore.getInstance();
     private Logger log;
 
 
     public AuthorizationModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
     }
 
 

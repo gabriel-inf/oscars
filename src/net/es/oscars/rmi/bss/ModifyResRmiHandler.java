@@ -22,6 +22,8 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class ModifyResRmiHandler {
     private OSCARSCore core;
@@ -54,22 +56,19 @@ public class ModifyResRmiHandler {
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
 
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-        UserManager userMgr = core.getUserManager();
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
+        AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+
+        AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
             this.log.info("modify failed: no permission");
             result.put("error", "modifyReservation: permission denied");
-            aaa.getTransaction().rollback();
             return result;
         }
         if (authVal.equals(AuthValue.MYSITE)) {
-            institution = userMgr.getInstitution(userName);
+            institution = rmiClient.getInstitution(userName);
         } else if (authVal.equals(AuthValue.SELFONLY)) {
             loginConstraint = userName;
         }
-        aaa.getTransaction().commit();
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
