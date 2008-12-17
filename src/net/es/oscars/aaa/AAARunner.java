@@ -45,7 +45,9 @@ public class AAARunner {
                 shutdownHook();
             }
         };
-        initRMIServer();
+
+        AAACore core = AAACore.getInstance();
+        core.init();
 
 
         Runtime.getRuntime().addShutdownHook (runtimeHookThread);
@@ -65,27 +67,12 @@ public class AAARunner {
     }
 
 
-    /**
-     * Initializes the RMIServer module
-     */
-    private static void initRMIServer() {
-        log.info("initRMIServer.start");
-        try {
-            aaaRmiServer = new AaaRmiServer();
-            aaaRmiServer.init();
-        } catch (RemoteException ex) {
-            log.error("Error initializing AAA RMI server", ex);
-            aaaRmiServer.shutdown();
-            aaaRmiServer = null;
-        }
-        log.info("initRMIServer.end");
-    }
 
 
     private static void shutdownHook() {
         log.info("*** OSCARS AAA SHUTDOWN beginning ***");
-        aaaRmiServer.shutdown();
-        aaaRmiServer = null;
+        AAACore core = AAACore.getInstance();
+        core.shutdown();
         log.info("*** OSCARS AAA SHUTDOWN ending ***");
     }
 
