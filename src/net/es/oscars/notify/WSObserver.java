@@ -84,8 +84,8 @@ public class WSObserver implements Observer {
         String registerRetryAttempts = wsNotifyProps.getProperty("broker.registerRetryAttempts");
         String catalinaHome = System.getProperty("catalina.home");
         if (catalinaHome == null) {
-            this.log.warn("catalina.home not set, using /usr/local/tomcat");
-            catalinaHome = "/usr/local/tomcat";
+            this.log.error("catalina.home not set!");
+            return false;
         }
         // check for trailing slash
         if (!catalinaHome.endsWith("/")) {
