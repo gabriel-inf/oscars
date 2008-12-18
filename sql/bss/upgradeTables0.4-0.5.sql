@@ -117,14 +117,15 @@ ALTER TABLE paths ADD grouping TEXT AFTER priority;
 
 -- stored procedure section
 
-DROP PROCEDURE IF EXISTS updatePathElems;
+DROP PROCEDURE IF EXISTS alterPaths;
 DROP PROCEDURE IF EXISTS alterLayer2Data;
 DROP PROCEDURE IF EXISTS alterLayer3Data;
 DROP PROCEDURE IF EXISTS alterMplsData;
 DROP PROCEDURE IF EXISTS alterPathElems;
+DROP PROCEDURE IF EXISTS insertPathElemParams;
 
 DELIMITER //
-CREATE PROCEDURE updatePathElems()
+CREATE PROCEDURE alterPaths()
 BEGIN
     DECLARE pId INT;
     DECLARE l2DataId INT;
@@ -133,14 +134,14 @@ BEGIN
     DECLARE pElemId INT;
     DECLARE pType TEXT;
     DECLARE finished INT DEFAULT 0;
-    DECLARE pathElemCur CURSOR FOR
+    DECLARE pathCur CURSOR FOR
         SELECT id, layer2DataId, layer3DataId, mplsDataId, pathElemId, pathType
        	from paths;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
 
-    OPEN pathElemCur;
+    OPEN pathCur;
     alterPath: LOOP
-        FETCH pathElemCur INTO pId, l2DataId, l3DataId, mDataId, pElemId, pType;
+        FETCH pathCur INTO pId, l2DataId, l3DataId, mDataId, pElemId, pType;
 	IF finished THEN
 	    LEAVE alterPath;
         END IF;
@@ -155,6 +156,7 @@ BEGIN
         END IF;
 	CALL alterPathElems(pId, pElemId);
     END LOOP alterPath;
+    CALL insertPathElemParams();
 END
 //
 DELIMITER ;
@@ -235,7 +237,32 @@ END
 //
 DELIMITER ;
 
-CALL updatePathElems();
+DELIMITER //
+CREATE PROCEDURE insertPathElemParams()
+BEGIN
+    DECLARE pElemId INT;
+    DECLARE linkDescription TEXT;
+    DECLARE finished INT DEFAULT 0;
+    DECLARE pathElemCur CURSOR FOR
+        SELECT id, linkDescr from pathElems;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+    OPEN pathElemCur;
+    insertPathElemParam: LOOP
+        FETCH pathElemCur INTO pElemId, linkDescription;
+        IF finished THEN
+            LEAVE insertPathElemParam;
+        END IF;
+	SELECT pElemId, linkDescription;
+        IF linkDescription IS NOT NULL THEN
+            INSERT INTO pathElemParams VALUES(NULL, pElemId, "l2sc", "suggestedVlan", linkDescription);
+        END IF;
+    END LOOP insertPathElemParam;
+END
+//
+DELIMITER ;
+
+CALL alterPaths();
 
 -- end stored procedure section
 
