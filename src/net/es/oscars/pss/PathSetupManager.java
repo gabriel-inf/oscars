@@ -479,7 +479,9 @@ public class PathSetupManager{
         if((newLocalStatus & localStatus) == 1){
             throw new BSSException("Already set local status bit " + newLocalStatus);
         }
-        se.updateLocalStatus(resv, localStatus + newLocalStatus);
+        if(!se.getStatus(resv).equals(StateEngine.FAILED)){
+            se.updateLocalStatus(resv, localStatus + newLocalStatus);
+        }
         localStatus = se.getLocalStatus(resv);
         String login = resv.getLogin();
         EventProducer eventProducer = new EventProducer();
@@ -522,7 +524,10 @@ public class PathSetupManager{
             se.updateStatus(resv, newStatus);
             se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, login, "JOB", resv);
-        }
+        } else if (StateEngine.FAILED.equals(newStatus)){
+            se.updateStatus(resv, newStatus);
+            se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
+         }
         
         
      }

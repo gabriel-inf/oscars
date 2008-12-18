@@ -657,8 +657,7 @@ public class VlanMapFilter implements PolicyFilter{
      */
     public static String maskToRangeString(byte[] mask){
         int start = -2;//far away from 0
-        String range = new String();
-        boolean allowsAny = true;
+        String range = "";
 
         for(int i = 0; i < mask.length; i++){
             for(int j = 0; j < 8; j++){
@@ -668,7 +667,6 @@ public class VlanMapFilter implements PolicyFilter{
                         start = tag;
                     }
                 }else if(start != -2){
-                    allowsAny = false;
                     if(!range.equals("")){
                         range += ",";
                     }
@@ -679,9 +677,6 @@ public class VlanMapFilter implements PolicyFilter{
                     start = -2;
                 }
             }
-        }
-        if (allowsAny) {
-            return "0-4096";
         }
 
         return range;

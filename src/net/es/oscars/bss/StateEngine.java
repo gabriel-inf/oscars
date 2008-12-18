@@ -109,7 +109,7 @@ public class StateEngine {
                 allowed = false;
             }
         } else if (newStatus.equals(INTEARDOWN)) {
-            if (!status.equals(ACTIVE)) {
+            if (!status.equals(ACTIVE) && !status.equals(INSETUP)) {
                 allowed = false;
             }
         } else if (newStatus.equals(FINISHED)) {
