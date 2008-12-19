@@ -80,8 +80,6 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userProfilePane = dijit.byId("userProfilePane");
     var userGrid = dijit.byId("userGrid");
-    console.log("onUserRowSelect");
-    console.dir(evt);
     // get user login name
     /* TODO
     var profileName = userGrid.model.getDatum(evt.rowIndex, 0);
