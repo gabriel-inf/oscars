@@ -28,8 +28,8 @@ public class Path extends HibernateBean implements Serializable {
     /** persistent field */
     private String pathType;
 
-    /** nullable persistent field */
-    private int priority;
+    /** nullable persistent field (so has to be Object, not int) */
+    private Integer priority;
 
     /** nullable persistent field */
     private Domain nextDomain;
@@ -85,14 +85,14 @@ public class Path extends HibernateBean implements Serializable {
     }
 
     /**
-     * @return int with priority of this path
+     * @return Integer with priority of this path
      */
-    public int getPriority() { return this.priority; }
+    public Integer getPriority() { return this.priority; }
 
     /**
-     * @param priority int with priority of this path
+     * @param priority Integer with priority of this path
      */
-    public void setPriority(int priority) { this.priority = priority; }
+    public void setPriority(Integer priority) { this.priority = priority; }
 
 
     /**

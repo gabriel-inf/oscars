@@ -33,7 +33,6 @@ public class ListReservations extends HttpServlet {
         params.put("caller", "WBUI");
         
         UserSession userSession = new UserSession();
-
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
@@ -41,14 +40,12 @@ public class ListReservations extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         Enumeration e = request.getParameterNames();
         while (e.hasMoreElements()) {
             String paramName = (String) e.nextElement();
             String[] paramValues = request.getParameterValues(paramName);
             params.put(paramName, paramValues);
         }
-
         try {
             BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.listReservations(params, userName);
@@ -60,11 +57,9 @@ public class ListReservations extends HttpServlet {
         outputMap.put("status", "Reservations list");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
-
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
-
     }
 
     public void doPost(HttpServletRequest request,

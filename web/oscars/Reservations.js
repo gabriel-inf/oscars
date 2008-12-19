@@ -51,14 +51,16 @@ oscars.Reservations.handleReply = function (responseObject, ioArgs) {
     oscars.Form.applyParams(responseObject);
     var mainTabContainer = dijit.byId("mainTabContainer");
     var resvGrid = dijit.byId("resvGrid");
-    var model = resvGrid.model;
     // convert seconds to datetime format before displaying
     oscars.Reservations.convertReservationTimes(responseObject.resvData);
-    model.setData(responseObject.resvData);
-    resvGrid.update();
-    // as of 1.1.1, Dojo comment said to call twice
-    resvGrid.resize();
-    resvGrid.resize();
+    var data = {
+        identifier: 'id',
+        label: 'id',
+        items: responseObject.resvData
+    };
+    var store =
+        new dojo.data.ItemFileWriteStore({data: data});
+    resvGrid.setStore(store);
     oscarsState.resvGridInitialized = true;
     var oscarsStatus = dojo.byId("oscarsStatus");
     oscarsStatus.className = "success";
@@ -96,6 +98,7 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     var reservationDetailsPane = dijit.byId("reservationDetailsPane");
     var resvGrid = dijit.byId("resvGrid");
     // get reservation's GRI
+    /* TODO
     var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     formNode.gri.value = gri;
@@ -111,6 +114,7 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     // Note that this generates an apparently harmless error message in
     // Firebug console.
     mainTabContainer.selectChild(reservationDetailsPane);
+    */
 };
 
 // sets hidden form fields' seconds values from search date and time

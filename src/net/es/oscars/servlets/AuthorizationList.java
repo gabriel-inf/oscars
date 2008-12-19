@@ -37,7 +37,6 @@ public class AuthorizationList extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
             AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
@@ -54,7 +53,6 @@ public class AuthorizationList extends HttpServlet {
         } catch (RemoteException ex) {
             return;
         }
-
         outputMap.put("status", "Authorization list");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
@@ -63,18 +61,18 @@ public class AuthorizationList extends HttpServlet {
         this.log.debug("servlet.end");
     }
 
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         this.doGet(request, response);
     }
 
-    public void outputAttributeMenu(Map<String, Object> outputMap,  AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputAttributeMenu(Map<String, Object> outputMap,
+                                    AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
+
         String methodName = "AuthorizationList.outputAttributeMenu";
-
         List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
-
         List<String> attributeList = new ArrayList<String>();
         attributeList.add("Any");
         attributeList.add("true");
@@ -84,6 +82,7 @@ public class AuthorizationList extends HttpServlet {
         }
         outputMap.put("attributeSelectMenu", attributeList);
     }
+
     /**
      * Sets the list of authorizations to display in a grid.
      *
@@ -91,9 +90,12 @@ public class AuthorizationList extends HttpServlet {
      * @param request HttpServletRequest form parameters
      * @throws AAAException
      */
-    public void outputAuthorizations(Map<String, Object> outputMap, HttpServletRequest request, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
-        String methodName = "AuthorizationList.outputAuthorizations";
+    public void outputAuthorizations(Map<String, Object> outputMap,
+                        HttpServletRequest request, AaaRmiInterface rmiClient,
+                        PrintWriter out)
+            throws RemoteException {
 
+        String methodName = "AuthorizationList.outputAuthorizations";
         String attributeName = request.getParameter("attributeName");
         if (attributeName != null) {
             attributeName = attributeName.trim();
@@ -106,15 +108,12 @@ public class AuthorizationList extends HttpServlet {
         } else {
             attrsUpdated = "";
         }
-
         String listType = "";
         if (attributeName.equals("") || (attributeName.equals("Any"))) {
             listType = "ordered";
         } else {
             listType = "byAttrName";
         }
-
-
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("listType", listType);
         rmiParams.put("attributeName", attributeName);
@@ -122,45 +121,42 @@ public class AuthorizationList extends HttpServlet {
         rmiParams.put("operation", ModelOperation.LIST);
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
         rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
         List<Authorization> auths = (List<Authorization>) rmiResult.get("authorizations");
         if (auths == null) {
             auths = new ArrayList<Authorization>();
         }
-
         if (attributeName.equals("") ||
             ((attrsUpdated != null) && !attrsUpdated.equals(""))) {
             this.outputAttributeMenu(outputMap, rmiClient, out);
         }
-
-
-
-        ArrayList<ArrayList<String>> authList = new ArrayList<ArrayList<String>>();
+        ArrayList<HashMap<String,String>> authList =
+            new ArrayList<HashMap<String,String>>();
+        int ctr = 0;
         for (Authorization auth: auths) {
-            ArrayList<String> authEntry = new ArrayList<String>();
-
+            HashMap<String,String> authMap = new HashMap<String,String>();
+            authMap.put("id", Integer.toString(ctr));
             Attribute attr = auth.getAttribute();
-            authEntry.add(attr.getName());
+            authMap.put("attribute", attr.getName());
             Resource resource = auth.getResource();
-            authEntry.add(resource.getName());
+            authMap.put("resource", resource.getName());
             Permission perm = auth.getPermission();
-            authEntry.add(perm.getName());
+            authMap.put("permission", perm.getName());
             String constraintName = auth.getConstraint().getName();
-            authEntry.add(constraintName);
-
+            authMap.put("constraint", constraintName);
             String constraintValue = auth.getConstraintValue();
             String constraintType = auth.getConstraint().getType();
             if (constraintValue == null) {
                 if (constraintType.equals("boolean") &&
                     !constraintName.equals("none")) {
-                    authEntry.add("true");
+                    authMap.put("constraintVal", "true");
                 } else {
-                    authEntry.add("");
+                    authMap.put("constraintVal", "");
                 }
             } else {
-                authEntry.add(constraintValue);
+                authMap.put("constraintVal", constraintValue);
             }
-            authList.add(authEntry);
+            authList.add(authMap);
+            ctr++;
         }
         outputMap.put("authData", authList);
     }

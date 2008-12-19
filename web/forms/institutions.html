@@ -1,13 +1,9 @@
 <html>
 <head>
 <script type="text/javascript">
-    var institutionView = {
-      cells: [[
-         {name: 'Name', width: "30em"}
-      ]]
-    };
-    var institutionLayout = [ institutionView ];
-
+    var institutionLayout = [
+         {name: 'Name', field: 'name', width: "30em"}
+    ];
 </script>
 </head>
 
@@ -58,7 +54,9 @@ there are no users belonging to that institution.
   </tr>
   </tbody>
   </table>
-  <div id="institutionGrid" dojoType="dojox.Grid" structure="institutionLayout">
+  <div id="institutionGrid" dojoType="dojox.grid.DataGrid"
+      structure="institutionLayout" autoWidth="true" autoHeight="true"
+      elasticView="2">
   </div>
 </form>
 </body>

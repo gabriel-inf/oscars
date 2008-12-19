@@ -165,7 +165,9 @@ public class ReservationDAO
                 this.reservations.remove(rsv);
             }
         }
-
+        // NOTE:  each reservation has to have initializePaths called on it
+        //        if one of its paths is to be accessed.  Not doing here
+        //        because may not always need every one.
         this.log.info("list.finish");
         return this.reservations;
     }

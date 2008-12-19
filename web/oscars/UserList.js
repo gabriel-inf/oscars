@@ -25,11 +25,13 @@ oscars.UserList.handleReply = function (responseObject, ioArgs) {
         userListHeaderNode.style.display = "";
         var mainTabContainer = dijit.byId("mainTabContainer");
         var userGrid = dijit.byId("userGrid");
-        var model = userGrid.model;
-        model.setData(responseObject.userData);
-        userGrid.update();
-        userGrid.resize();
-        userGrid.resize();
+        var data = {
+            identifier: 'id',
+            label: 'id',
+            items: responseObject.userData
+        };
+        var store = new dojo.data.ItemFileWriteStore({data: data});
+        userGrid.setStore(store);
         oscarsState.userGridInitialized = true;
         var listFormNode = dijit.byId("userListForm").domNode;
         listFormNode.userListInstsUpdated.value = "";
@@ -78,7 +80,10 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userProfilePane = dijit.byId("userProfilePane");
     var userGrid = dijit.byId("userGrid");
+    console.log("onUserRowSelect");
+    console.dir(evt);
     // get user login name
+    /* TODO
     var profileName = userGrid.model.getDatum(evt.rowIndex, 0);
     var formNode = dijit.byId("userProfileForm").domNode;
     formNode.reset();
@@ -94,4 +99,5 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     });
     // set tab to user details
     mainTabContainer.selectChild(userProfilePane);
+    */
 };

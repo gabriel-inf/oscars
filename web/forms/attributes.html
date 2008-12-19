@@ -1,15 +1,11 @@
 <html>
 <head>
 <script type="text/javascript">
-    var attributeView = {
-      cells: [[
-         {name: 'Name', width: "15em"},
-         {name: 'Description', width: "32em"},
-         {name: 'Type', width: "10em"}
-      ]]
-    };
-    var attributeLayout = [ attributeView ];
-
+    var attributeLayout = [
+         {name: 'Name', field: 'name', width: "15em"},
+         {name: 'Description', field: 'description', width: "32em"},
+         {name: 'Type', field: 'type', width: "10em"}
+    ];
 </script>
 </head>
 
@@ -81,7 +77,9 @@ that attribute.
   </tr>
   </tbody>
   </table>
-  <div id="attributeGrid" dojoType="dojox.Grid" structure="attributeLayout">
+  <div id="attributeGrid" dojoType="dojox.grid.DataGrid"
+      structure="attributeLayout" autoWidth="true" autoHeight="true"
+      elasticView="2">
   </div>
 </form>
 </body>

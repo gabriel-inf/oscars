@@ -28,7 +28,6 @@ public class UserList extends HttpServlet {
 
         this.log.debug("UserList.start");
         String methodName = "UserList";
-
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -39,12 +38,11 @@ public class UserList extends HttpServlet {
         }
 
         Map<String, Object> outputMap = new HashMap<String, Object>();
-
-
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query",
+                                               rmiClient, methodName, log, out);
             // if allowed to see all users, show help information on clicking on
             // row to see user details
             if  (authVal == AuthValue.ALLUSERS) {
@@ -57,7 +55,6 @@ public class UserList extends HttpServlet {
         } catch (RemoteException e) {
             return;
         }
-
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
@@ -74,11 +71,11 @@ public class UserList extends HttpServlet {
      * @throws AAAException
      */
     public void outputUsers(Map<String, Object> outputMap, String userName,
-                            HttpServletRequest request, AaaRmiInterface rmiClient, PrintWriter out)
+                            HttpServletRequest request,
+                            AaaRmiInterface rmiClient, PrintWriter out)
             throws RemoteException {
+
         String methodName = "UserList.outputUsers";
-
-
         String attributeName = request.getParameter("attributeName");
         if (attributeName != null) {
             attributeName = attributeName.trim();
@@ -91,13 +88,10 @@ public class UserList extends HttpServlet {
         } else {
             attrsUpdated = "";
         }
-
         AuthValue authVal = ServletUtils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
         AuthValue aaaVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
 
-
         String listType = "plain";
-
         if (authVal == AuthValue.ALLUSERS) {
             // check to see if need to (re)display menu
             if (attributeName.equals("") ||
@@ -125,8 +119,6 @@ public class UserList extends HttpServlet {
         } else {
             throw new RemoteException("no permission to list users");
         }
-
-
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.USER);
         rmiParams.put("operation", ModelOperation.LIST);
@@ -134,23 +126,25 @@ public class UserList extends HttpServlet {
         rmiParams.put("username", userName);
         rmiParams.put("attributeName", attributeName);
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                 out, rmiParams);
         List<User> users = (List<User>) rmiResult.get("users");
-
-        ArrayList<ArrayList<String>> userList = new ArrayList<ArrayList<String>>();
+        ArrayList<HashMap<String,String>> userList =
+            new ArrayList<HashMap<String,String>>();
+        int ctr = 0;
         for (User user: users) {
-            ArrayList<String> userEntry = new ArrayList<String>();
-            userEntry.add(user.getLogin());
-            userEntry.add(user.getLastName());
-            userEntry.add(user.getFirstName());
-            userEntry.add(user.getInstitution().getName());
-            userEntry.add(user.getPhonePrimary());
-            userList.add(userEntry);
+            HashMap<String,String> userMap = new HashMap<String,String>();
+            userMap.put("id", Integer.toString(ctr));
+            userMap.put("login", user.getLogin());
+            userMap.put("lastName", user.getLastName());
+            userMap.put("firstName", user.getFirstName());
+            userMap.put("organization", user.getInstitution().getName());
+            userMap.put("phone", user.getPhonePrimary());
+            userList.add(userMap);
+            ctr++;
         }
         outputMap.put("userData", userList);
     }
-
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
@@ -158,11 +152,13 @@ public class UserList extends HttpServlet {
         this.doGet(request, response);
     }
 
-    public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputAttributeMenu(Map<String, Object> outputMap,
+                                    AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
+
         String methodName = "UserList.outputAttributeMenu";
-
-        List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
-
+        List<Attribute> attributes =
+            ServletUtils.getAllAttributes(rmiClient, out, log);
         List<String> attrList = new ArrayList<String>();
         attrList.add("Any");
         attrList.add("true");

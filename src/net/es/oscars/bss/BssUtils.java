@@ -162,6 +162,7 @@ public class BssUtils {
     public static String getVlanTag(Path path) throws BSSException {
         List<PathElem> pathElems = path.getPathElems();
         PathElem pathElem = pathElems.get(0);
+        pathElem.initializePathElemParams();
         PathElemParam pep =
             pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                                       PathElemParamType.L2SC_SUGGESTED_VLAN);

@@ -33,7 +33,6 @@ public class Attributes extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         String[] ops = request.getQueryString().split("=");
         if (ops.length != 2) {
             this.log.error("Incorrect input from Attributes page");
@@ -41,7 +40,6 @@ public class Attributes extends HttpServlet {
             return;
         }
         String opName = ops[1];
-
         response.setContentType("application/json");
 
         Map<String, Object> outputMap = new HashMap<String, Object>();
@@ -49,11 +47,9 @@ public class Attributes extends HttpServlet {
         if (saveAttrName != null) {
             saveAttrName = saveAttrName.trim();
         }
-
         String attributeEditName = request.getParameter("attributeEditName").trim();
         String attributeEditDescr = request.getParameter("attributeEditDescription").trim();
         String attributeEditType = request.getParameter("attributeTypes").trim();
-
         try {
             AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
@@ -64,9 +60,6 @@ public class Attributes extends HttpServlet {
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
-
-
-
             if (opName.equals("add")) {
                 methodName = "AttributeAdd";
                 this.addAttribute(attributeEditName, attributeEditDescr, attributeEditType, rmiClient, out);
@@ -97,8 +90,6 @@ public class Attributes extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-
-
         this.log.debug("Attributes.end");
     }
 
@@ -113,18 +104,23 @@ public class Attributes extends HttpServlet {
      *
      * @param outputMap Map containing JSON data
      */
-    public void outputAttributes(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputAttributes(Map<String, Object> outputMap,
+                                 AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
+
         String methodName = "Attributes.outputAttributes";
-
         List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
-
-        ArrayList<ArrayList<String>> attributeList = new ArrayList<ArrayList<String>>();
+        ArrayList<HashMap<String,String>> attributeList =
+            new ArrayList<HashMap<String,String>>();
+        int ctr = 0;
         for (Attribute attribute: attributes) {
-            ArrayList<String> attributeEntry = new ArrayList<String>();
-            attributeEntry.add(attribute.getName());
-            attributeEntry.add(attribute.getDescription());
-            attributeEntry.add(attribute.getAttrType());
-            attributeList.add(attributeEntry);
+            HashMap<String,String> attributeMap = new HashMap<String,String>();
+            attributeMap.put("id", Integer.toString(ctr));
+            attributeMap.put("name", attribute.getName());
+            attributeMap.put("description", attribute.getDescription());
+            attributeMap.put("type", attribute.getAttrType());
+            attributeList.add(attributeMap);
+            ctr++;
         }
         outputMap.put("attributeData", attributeList);
     }
@@ -137,22 +133,22 @@ public class Attributes extends HttpServlet {
      * @param newType string with type of new attribute
      * @throws AAAException
      */
-    public void addAttribute(String newName, String newDescription, String newType, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException{
+    public void addAttribute(String newName, String newDescription,
+                     String newType, AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException{
+
         String methodName = "Attributes.addAttribute";
-
-
         Attribute attribute = new Attribute();
         attribute.setName(newName);
         attribute.setDescription(newDescription);
         attribute.setAttrType(newType);
-
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.ATTRIBUTE);
         rmiParams.put("operation", ModelOperation.ADD);
         rmiParams.put("attribute", attribute);
-
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                 out, rmiParams);
     }
 
     /**
@@ -164,24 +160,23 @@ public class Attributes extends HttpServlet {
      * @param attrType string with type of attribute
      * @throws AAAException
      */
-    public void modifyAttribute(String oldName, String newName, String descr, String attrType, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
-        String methodName = "Attributes.modifyAttribute";
+    public void modifyAttribute(String oldName, String newName, String descr,
+                    String attrType, AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
 
+        String methodName = "Attributes.modifyAttribute";
         Attribute attribute = new Attribute();
         attribute.setName(newName);
         attribute.setDescription(descr);
         attribute.setAttrType(attrType);
-
-
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.ATTRIBUTE);
         rmiParams.put("operation", ModelOperation.MODIFY);
         rmiParams.put("attribute", attribute);
         rmiParams.put("oldName", oldName);
-
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                 out, rmiParams);
     }
 
     /**
@@ -191,16 +186,18 @@ public class Attributes extends HttpServlet {
      * @param attributeName string with name of attribute to delete
      * @throws AAAException
      */
-    public void deleteAttribute(String attributeName, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void deleteAttribute(String attributeName, AaaRmiInterface rmiClient,
+                                PrintWriter out)
+            throws RemoteException {
+
         String methodName = "Attributes.deleteAttribute";
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.ATTRIBUTE);
         rmiParams.put("operation", ModelOperation.DELETE);
         rmiParams.put("name", attributeName);
-
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                 out, rmiParams);
 
     }
 }

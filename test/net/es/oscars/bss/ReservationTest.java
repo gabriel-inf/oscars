@@ -73,7 +73,6 @@ public class ReservationTest {
         // create ingress element in path
         // a few interdepencies to take care of...
         PathElem ingressPathElem = new PathElem();
-        ingressPathElem.setDescription("ingress");
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = new Ipaddr();
         ipaddr.setValid(true);

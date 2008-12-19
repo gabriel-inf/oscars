@@ -82,13 +82,16 @@ oscars.Attributes.handleReply = function (responseObject, ioArgs) {
     }
     var formNode;
     var attributeGrid = dijit.byId("attributeGrid");
-    var model = attributeGrid.model;
-    model.setData(responseObject.attributeData);
+    var data = {
+        identifier: 'id',
+        label: 'id',
+        items: responseObject.attributeData
+    };
+    var store =
+        new dojo.data.ItemFileWriteStore({data: data});
+    attributeGrid.setStore(store);
     attributeGrid.setSortIndex(0, true);
     attributeGrid.sort();
-    attributeGrid.update();
-    attributeGrid.resize();
-    attributeGrid.resize();
     oscarsState.attributeGridInitialized = true;
     var attrFormNode = dijit.byId("attributesForm").domNode;
     var addButton = dijit.byId("attributeAddButton").domNode;
@@ -149,6 +152,7 @@ oscars.Attributes.createAttributeGrid = function () {
 oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     var attributeGrid = dijit.byId("attributeGrid");
     // get attribute
+    /* TODO
     var attributeName = attributeGrid.model.getDatum(evt.rowIndex, 0);
     var attributeDescription = attributeGrid.model.getDatum(evt.rowIndex, 1);
     var attributeType = attributeGrid.model.getDatum(evt.rowIndex, 2);
@@ -166,6 +170,7 @@ oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     addButton.style.color = "#FF0000";
     saveButton.style.color = "#00FF00";
     deleteButton.style.color = "#00FF00";
+    */
 };
 
 oscars.Attributes.clearFormValues = function (formNode) {

@@ -42,11 +42,13 @@ oscars.Authorizations.handleReply = function (responseObject, ioArgs) {
         oscars.Form.applyParams(responseObject);
         var mainTabContainer = dijit.byId("mainTabContainer");
         var authGrid = dijit.byId("authGrid");
-        var model = authGrid.model;
-        model.setData(responseObject.authData);
-        authGrid.update();
-        authGrid.resize();
-        authGrid.resize();
+        var data = {
+            identifier: 'id',
+            label: 'id',
+            items: responseObject.authData
+        };
+        var store = new dojo.data.ItemFileWriteStore({data: data});
+        authGrid.setStore(store);
         oscarsState.authGridInitialized = true;
     }
     var authListFormNode = dijit.byId("authListForm").domNode;
@@ -102,6 +104,7 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     formNode.reset();
     // set four parameters necessary to retrieve authorization
     // dijit.byId doesn't seem to work outside form and tab
+    /* TODO
     var attributeName = authGrid.model.getDatum(evt.rowIndex, 0);
     var resourceName = authGrid.model.getDatum(evt.rowIndex, 1);
     var permissionName = authGrid.model.getDatum(evt.rowIndex, 2);
@@ -118,4 +121,5 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     oscarsStatus.className = "success";
     oscarsStatus.innerHTML = "Modifying authorization";
+    */
 };

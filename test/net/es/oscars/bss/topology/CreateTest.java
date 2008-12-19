@@ -245,7 +245,6 @@ public class CreateTest {
 
         // create ingress and egress elements in path
         PathElem ingressPathElem = new PathElem();
-        ingressPathElem.setDescription("ingress");
         PathElemParam pathElemParam = new PathElemParam();
         pathElemParam.setSwcap("test");
         pathElemParam.setType("test");
@@ -271,7 +270,6 @@ public class CreateTest {
         pathElems.add(ingressPathElem);
 
         PathElem egressPathElem = new PathElem();
-        egressPathElem.setDescription("egress");
         Ipaddr ipaddr1 = new Ipaddr();
         ipaddr1.setValid(true);
         String hop1 = "hop1";

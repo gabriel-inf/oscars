@@ -44,7 +44,6 @@ public class Institutions extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
             AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
@@ -55,14 +54,11 @@ public class Institutions extends HttpServlet {
                 ServletUtils.handleFailure(out, "no permission to modify Institutions table", methodName);
                 return;
             }
-
             String saveName = request.getParameter("saveName");
             if (saveName != null) {
                 saveName = saveName.trim();
             }
-
             String institutionEditName = request.getParameter("institutionEditName").trim();
-
             if (opName.equals("add")) {
                 methodName = "InstitutionAdd";
                 this.addInstitution(institutionEditName, rmiClient, out);
@@ -104,16 +100,22 @@ public class Institutions extends HttpServlet {
      *
      * @param outputMap Map containing JSON data
      */
-    public void outputInstitutions(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputInstitutions(Map<String, Object> outputMap,
+                                   AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
+
         String methodName = "Institutions.outputInstitutions";
-
         List<Institution> institutions = ServletUtils.getAllInstitutions(rmiClient, out, log);
-
-        ArrayList<ArrayList<String>> institutionList = new ArrayList<ArrayList<String>>();
+        ArrayList<HashMap<String,String>> institutionList =
+            new ArrayList<HashMap<String,String>>();
+        int ctr = 0;
         for (Institution institution: institutions) {
-            ArrayList<String> institutionEntry = new ArrayList<String>();
-            institutionEntry.add(institution.getName());
-            institutionList.add(institutionEntry);
+            HashMap<String,String> institutionMap =
+                new HashMap<String,String>();
+            institutionMap.put("id", Integer.toString(ctr));
+            institutionMap.put("name", institution.getName());
+            institutionList.add(institutionMap);
+            ctr++;
         }
         outputMap.put("institutionData", institutionList);
     }
@@ -124,9 +126,10 @@ public class Institutions extends HttpServlet {
      * @param newName string with name of new institution
      * @throws AAAException
      */
-    public void addInstitution(String newName, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
-        String methodName = "Institutions.addInstitution";
+    public void addInstitution(String newName, AaaRmiInterface rmiClient,
+                               PrintWriter out) throws RemoteException {
 
+        String methodName = "Institutions.addInstitution";
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.INSTITUTION);
         rmiParams.put("operation", ModelOperation.ADD);
@@ -142,17 +145,19 @@ public class Institutions extends HttpServlet {
      * @param newName string with new name of institution
      * @throws AAAException
      */
-    public void modifyInstitution(String oldName, String newName, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
-        String methodName = "Institutions.modifyInstitution";
+    public void modifyInstitution(String oldName, String newName,
+                                  AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
 
+        String methodName = "Institutions.modifyInstitution";
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.INSTITUTION);
         rmiParams.put("operation", ModelOperation.MODIFY);
         rmiParams.put("newName", newName);
         rmiParams.put("oldName", oldName);
-
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                 out, rmiParams);
    }
 
     /**
@@ -162,17 +167,17 @@ public class Institutions extends HttpServlet {
      * @param institutionName string with name of institution to delete
      * @throws AAAException
      */
-    public void deleteInstitution(String institutionName, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
-        String methodName = "Institutions.deleteInstitution";
+    public void deleteInstitution(String institutionName,
+                                  AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException {
 
+        String methodName = "Institutions.deleteInstitution";
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("objectType", ModelObject.INSTITUTION);
         rmiParams.put("operation", ModelOperation.DELETE);
         rmiParams.put("institutionName", institutionName);
-
         HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
-
+        rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                 out, rmiParams);
     }
 }

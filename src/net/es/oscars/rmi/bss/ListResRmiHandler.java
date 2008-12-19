@@ -259,9 +259,11 @@ public class ListResRmiHandler {
         String hostName = null;
         String destination = null;
 
-        ArrayList<Object> resvList = new ArrayList<Object>();
-
+        ArrayList<HashMap<String,Object>> resvList =
+            new ArrayList<HashMap<String,Object>>();
+        int ctr = 0;
         for (Reservation resv: reservations) {
+            resv.initializePaths();
             // INTERDOMAIN
             Path path = null;
             try {
@@ -278,7 +280,7 @@ public class ListResRmiHandler {
                 localSrc = hops[0];
                 localDest = hops[hops.length-1];
             }
-            ArrayList<Object> resvEntry = new ArrayList<Object>();
+            HashMap<String,Object> resvMap = new HashMap<String,Object>();
             gri = resv.getGlobalReservationId();
             Layer3Data layer3Data = null;
             Layer2Data layer2Data = null;
@@ -286,38 +288,40 @@ public class ListResRmiHandler {
                 layer3Data = path.getLayer3Data();
                 layer2Data = path.getLayer2Data();
             }
-            resvEntry.add(gri);
-            resvEntry.add(resv.getStatus());
+            resvMap.put("id", Integer.toString(ctr));
+            resvMap.put("gri", gri);
+            resvMap.put("status", resv.getStatus());
             Long mbps = resv.getBandwidth()/1000000;
 
             String bandwidthField = mbps.toString() + "Mbps";
-            resvEntry.add(bandwidthField);
+            resvMap.put("bandwidth", bandwidthField);
             // entries are converted on the fly on the client to standard
             // date and time format before the model's data is set
-            resvEntry.add(resv.getStartTime().toString());
+            resvMap.put("startTime", resv.getStartTime().toString());
             if (layer2Data != null) {
-                resvEntry.add(this.abbreviate(layer2Data.getSrcEndpoint()));
+                resvMap.put("source",
+                            this.abbreviate(layer2Data.getSrcEndpoint()));
             } else if (layer3Data != null) {
                 source = layer3Data.getSrcHost();
                 try {
                     inetAddress = InetAddress.getByName(source);
                     hostName = inetAddress.getHostName();
-                    resvEntry.add(hostName);
+                    resvMap.put("source", hostName);
                 } catch (UnknownHostException e) {
-                    resvEntry.add(source);
+                    resvMap.put("source", source);
                 }
             }
             if (localSrc != null) {
                 if (layer2Data != null) {
-                    resvEntry.add(this.abbreviate(localSrc));
+                    resvMap.put("localSource", this.abbreviate(localSrc));
                 } else {
-                    resvEntry.add(localSrc);
+                    resvMap.put("localSource", localSrc);
                 }
             } else {
-                resvEntry.add("");
+                resvMap.put("localSource", "");
             }
             // start of second sub-row
-            resvEntry.add(resv.getLogin());
+            resvMap.put("user", resv.getLogin());
             String vlanTag = null;
             try {
                 vlanTag = BssUtils.getVlanTag(path);
@@ -326,33 +330,35 @@ public class ListResRmiHandler {
             }
             if (vlanTag != null) {
                 int vlanNum = Math.abs(Integer.parseInt(vlanTag));
-                resvEntry.add(vlanNum + "");
+                resvMap.put("vlan", vlanNum + "");
             } else {
-                resvEntry.add("");
+                resvMap.put("vlan", "");
             }
-            resvEntry.add(resv.getEndTime().toString());
+            resvMap.put("endTime", resv.getEndTime().toString());
             if (layer2Data != null) {
-                resvEntry.add(this.abbreviate(layer2Data.getDestEndpoint()));
+                resvMap.put("destination",
+                            this.abbreviate(layer2Data.getDestEndpoint()));
             } else if (layer3Data != null) {
                 destination = layer3Data.getDestHost();
                 try {
                     inetAddress = InetAddress.getByName(destination);
                     hostName = inetAddress.getHostName();
-                    resvEntry.add(hostName);
+                    resvMap.put("destination", hostName);
                 } catch (UnknownHostException e) {
-                    resvEntry.add(destination);
+                    resvMap.put("destination", destination);
                 }
             }
             if (localDest != null) {
                 if (layer2Data != null) {
-                    resvEntry.add(this.abbreviate(localDest));
+                resvMap.put("localDestination", this.abbreviate(localDest));
                 } else {
-                    resvEntry.add(localDest);
+                    resvMap.put("localDestination", localDest);
                 }
             } else {
-                resvEntry.add("");
+                resvMap.put("localDestination", "");
             }
-            resvList.add(resvEntry);
+            resvList.add(resvMap);
+            ctr++;
         }
         outputMap.put("resvData", resvList);
     }

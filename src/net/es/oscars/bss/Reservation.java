@@ -69,7 +69,6 @@ public class Reservation extends HibernateBean implements Serializable {
         Iterator pathIterator = this.paths.iterator();
         while (pathIterator.hasNext()) {
             Path path = (Path) pathIterator.next();
-            System.out.println(path.getPathType());
             this.pathMap.put(path.getPathType(), path);
         }
     }

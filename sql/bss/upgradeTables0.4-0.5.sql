@@ -30,9 +30,9 @@ ALTER TABLE pathElems ADD userName TEXT after urn;
 UPDATE paths p set p.reservationId =
     (SELECT r.id from reservations r where r.pathId = p.id);
 
--- create intradomain paths table for copy (can't figure out how to make
+-- create local paths table for copy (can't figure out how to make
 -- unique field non-unique, alter doesn't work)
-CREATE TABLE intraPaths (
+CREATE TABLE localPaths (
     id                  INT NOT NULL AUTO_INCREMENT,
     reservationId       INT NOT NULL,
     explicit            BOOLEAN NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE intraPaths (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-INSERT INTO intraPaths (reservationId, explicit, pathSetupMode, nextDomainId,
+INSERT INTO localPaths (reservationId, explicit, pathSetupMode, nextDomainId,
        	pathType, pathElemId, layer2DataId, layer3DataId, mplsDataId)
     SELECT p.reservationId, p.explicit, p.pathSetupMode, p.nextDomainId,
         p.pathType, p.pathElemId, p.layer2DataId, p.layer3DataId,
@@ -75,7 +75,7 @@ INSERT INTO interPaths (reservationId, explicit, pathSetupMode, nextDomainId,
 	p.mplsDataId
     FROM paths p;
 
-UPDATE intraPaths set pathType = 'local';
+UPDATE localPaths set pathType = 'local';
 UPDATE interPaths set pathType = 'interdomain';
 DROP TABLE paths;
 
@@ -99,7 +99,7 @@ INSERT INTO paths (reservationId, explicit, pathSetupMode, nextDomainId,
     SELECT p.reservationId, p.explicit, p.pathSetupMode, p.nextDomainId,
         p.pathType, p.pathElemId, p.layer2DataId, p.layer3DataId,
 	p.mplsDataId
-    FROM intraPaths p;
+    FROM localPaths p;
 
 INSERT INTO paths (reservationId, explicit, pathSetupMode, nextDomainId,
        	pathType, pathElemId, layer2DataId, layer3DataId, mplsDataId)
@@ -108,7 +108,7 @@ INSERT INTO paths (reservationId, explicit, pathSetupMode, nextDomainId,
 	p.mplsDataId
     FROM interPaths p;
 
-DROP TABLE intraPaths;
+DROP TABLE localPaths;
 DROP TABLE interPaths;
 
 ALTER TABLE paths ADD direction TEXT AFTER pathType;
@@ -167,7 +167,7 @@ BEGIN
     DECLARE srcPoint TEXT;
     DECLARE destPoint TEXT;
 
-    IF pType = 'intra' THEN
+    IF pType = 'local' THEN
 	UPDATE layer2Data SET pathId = pId where id = l2DataId;
     ELSE
 	SELECT srcEndpoint, destEndpoint INTO srcPoint, destPoint
@@ -188,7 +188,7 @@ BEGIN
     DECLARE prot TEXT;
     DECLARE d TEXT;
 
-    IF pType = 'intra' THEN
+    IF pType = 'local' THEN
 	UPDATE layer3Data SET pathId = pId where id = l3DataId;
     ELSE
 	SELECT srcHost, destHost, srcIpPort, destIpPort, protocol, dscp
@@ -207,7 +207,7 @@ BEGIN
     DECLARE bLimit BIGINT UNSIGNED;
     DECLARE lsp TEXT;
 
-    IF pType = 'intra' THEN
+    IF pType = 'local' THEN
 	UPDATE mplsData SET pathId = pId where id = mDataId;
     ELSE
 	SELECT burstLimit, lspClass INTO bLimit, lsp

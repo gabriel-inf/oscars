@@ -1,24 +1,21 @@
 <html>
 <head>
 <script type="text/javascript">
-    var resvView = {
-      cells: [[
-         {name: 'GRI', width: "13em"},
-         {name: 'Status', width: "6em"},
-         {name: 'Bandwidth', width: "7em"},
-         {name: 'Start Time', width: "10em"},
-         {name: 'Source', width: "27"},
-         {name: 'Local source', width: "27"}
+    var resvLayout = [[
+         {name: 'GRI', field: 'gri', width: "13em"},
+         {name: 'Status', field: 'status', width: "6em"},
+         {name: 'Bandwidth', field: 'bandwidth', width: "7em"},
+         {name: 'Start Time', field: 'startTime', width: "10em"},
+         {name: 'Source', field: 'source', width: "27"},
+         {name: 'Local source', field: 'localSource', width: "27"}
        ],
        [
-         {name: 'User', colSpan:"2", width: "19em"},
-         {name: 'VLAN', width: "7em"},
-         {name: 'End Time', width: "10em"},
-         {name: 'Destination', width: "27"},
-         {name: 'Local destination', width: "27"}
-      ]]
-    };
-    var resvLayout = [ resvView ];
+         {name: 'User', colSpan:"2", field: 'user', width: "19em"},
+         {name: 'VLAN', field: 'vlan', width: "7em"},
+         {name: 'End Time', field: 'endTime', width: "10em"},
+         {name: 'Destination', field: 'destination', width: "27"},
+         {name: 'Local destination', field: 'localDestination', width: "27"}
+      ]];
 </script>
 <script type="text/javascript">
     function catchSearch(event) {
@@ -153,7 +150,8 @@ information on the reservations chosen.</p>
 
 <br/>
 
-<div id="resvGrid" dojoType="dojox.Grid" structure="resvLayout">
+<div id="resvGrid" dojoType="dojox.grid.DataGrid" structure="resvLayout"
+     autoWidth="true" autoHeight="true" elasticView="2">
 </div>
 
 </body>

@@ -79,13 +79,15 @@ oscars.Institutions.handleReply = function (responseObject, ioArgs) {
         return;
     }
     var institutionGrid = dijit.byId("institutionGrid");
-    var model = institutionGrid.model;
-    model.setData(responseObject.institutionData);
+    var data = {
+        identifier: 'id',
+        label: 'id',
+        items: responseObject.institutionData
+    };
+    var store = new dojo.data.ItemFileWriteStore({data: data});
+    institutionGrid.setStore(store);
     institutionGrid.setSortIndex(0, true);
     institutionGrid.sort();
-    institutionGrid.update();
-    institutionGrid.resize();
-    institutionGrid.resize();
     oscarsState.institutionGridInitialized = true;
     var formNode = dijit.byId("institutionsForm").domNode;
     formNode.institutionEditName.value = "";
@@ -138,6 +140,7 @@ oscars.Institutions.createInstitutionGrid = function () {
 oscars.Institutions.onRowSelect = function (/*Event*/ evt) {
     var institutionGrid = dijit.byId("institutionGrid");
     // get institution name
+    /* TODO
     var institutionName = institutionGrid.model.getDatum(evt.rowIndex, 0);
     var formNode = dijit.byId("institutionsForm").domNode;
     formNode.institutionEditName.value = institutionName;
@@ -150,4 +153,5 @@ oscars.Institutions.onRowSelect = function (/*Event*/ evt) {
     addButton.style.color = "#FF0000";
     saveButton.style.color = "#00FF00";
     deleteButton.style.color = "#00FF00";
+    */
 };

@@ -1,16 +1,13 @@
 <html>
 <head>
 <script type="text/javascript">
-    var authView = {
-      cells: [[
-         {name: 'Attribute', width: "15em"},
-         {name: 'Resource', width: "10em"},
-         {name: 'Permission', width: "10em"},
-         {name: 'Constraint', width: "10em"},
-         {name: 'Constraint Value', width: "11em"}
-      ]]
-    };
-    var authLayout = [ authView ];
+    var authLayout = [
+         {name: 'Attribute', field: "attribute", width: "15em"},
+         {name: 'Resource', field: "resource", width: "10em"},
+         {name: 'Permission', field: "permission", width: "10em"},
+         {name: 'Constraint', field: "constraint", width: "10em"},
+         {name: 'Constraint Value', field: "constraintVal", width: "11em"}
+    ];
 </script>
 </head>
 
@@ -56,7 +53,8 @@
     Add a new authorization.
 </div>
 
-<div id="authGrid" dojoType="dojox.Grid" structure="authLayout">
+<div id="authGrid" dojoType="dojox.grid.DataGrid" structure="authLayout"
+    autoWidth="true" autoHeight="true" elasticView="2">
 </div>
 </body>
 
