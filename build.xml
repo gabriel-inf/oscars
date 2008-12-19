@@ -110,6 +110,8 @@
         <mkdir dir="${build.home}/war/" />
         <copy file="conf/logging/war.log4j.properties" tofile="${build.home}/war/log4j.properties"/>
 
+        <copy file="conf/rmi/rmi.properties" tofile="${build.home}/WEB-INF/classes/rmi.properties"/>
+
         <!-- First copy over only the necessary .jar files into a temporary directory
              This is needed because we're not allowed more than one lib dir
              during .war creation -->
@@ -126,13 +128,12 @@
             <classes dir="${build.classes}"
                 includes="**/oscars/*.class, **/oscars/database/HibernateBean.class,
                           **/oscars/bss/*.class, **/oscars/bss/topology/*.class,
-                          **/oscars/aaa/*.class, **/oscars/servlets/**/*.class"
+                          **/oscars/aaa/*.class, **/oscars/servlets/**/*.class *.properties"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager.class,
                           **/oscars/bss/*DAO.class, **/oscars/bss/*Manager.class,
                           **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
 
-            <fileset dir="conf/rmi" includes="rmi.properties" />
 
             <lib dir="${build.home}/war/lib" includes="*.jar"/>
             <fileset dir="${build.home}/war/" includes="log4j.properties" />
