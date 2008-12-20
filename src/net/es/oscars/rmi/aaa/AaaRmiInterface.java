@@ -8,18 +8,6 @@ import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
 
 public interface AaaRmiInterface extends Remote {
-    /**
-     * Default registry port
-     */
-    static int registryPort = 1099;
-    /**
-     * Default registry address
-     */
-    static String registryAddress = "127.0.0.1";
-    /**
-     * Default registry name
-     */
-    static String registryName = "AAARMIServer";
 
     public void init() throws RemoteException;
 

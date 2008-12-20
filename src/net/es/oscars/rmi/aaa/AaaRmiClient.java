@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
 import net.es.oscars.aaa.Resource;
+import net.es.oscars.rmi.BaseRmiClient;
 
 
 /**
@@ -20,18 +21,14 @@ import net.es.oscars.aaa.Resource;
  *
  * @author Evangelos Chaniotakis, Mary Thompson
  */
-public class AaaRmiClient implements AaaRmiInterface {
+public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
     private Logger log = Logger.getLogger(AaaRmiClient.class);
 
     /**
      * The remote object
      */
-    private AaaRmiInterface remote;
+    protected AaaRmiInterface remote;
 
-    /**
-     * True if we have a connection to the RMI registry, false otherwise
-     */
-    private boolean connected;
 
     /**
      * Initializes the client and connects to the AAA RMI registry.
@@ -42,55 +39,17 @@ public class AaaRmiClient implements AaaRmiInterface {
      * @throws RemoteException
      */
     public void init() throws RemoteException {
-        this.remote = null;
         this.log.debug("AaaRmiClient.init().start");
-        this.connected = true;
-
-        // default rmi registry port
-        int rmiPort = AaaRmiInterface.registryPort;
-        // default rmi registry address
-        String rmiIpaddr = AaaRmiInterface.registryAddress;
-        // default rmi registry name
-        String rmiRegName = AaaRmiInterface.registryName;
-
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
-        //PropHandler propHandler = new PropHandler("rmi.properties");
-        //Properties props = propHandler.getPropertyGroup("aaa", true);
-        if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
-            try {
-                rmiPort = Integer.decode(props.getProperty("registryPort"));
-            } catch (NumberFormatException e) {
-                this.log.warn(e);
-            }
-        }
+        this.setProps(props);
+        super.configure();
 
-        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
-            rmiIpaddr = props.getProperty("registryAddress");
-        }
+        Remote remote = super.startConnection();
 
-        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
-            rmiRegName = props.getProperty("registryName");
-        }
-        this.log.info("AAA client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
-
-        try {
-            Registry registry = LocateRegistry.getRegistry(rmiIpaddr, rmiPort);
-            this.remote = (AaaRmiInterface) registry.lookup(rmiRegName);
-
-            this.log.debug("Got remote object \n" + remote.toString());
-            this.connected = true;
-            this.log.debug("Connected to "+rmiRegName+" server");
-        } catch (RemoteException e) {
-            this.connected = false;
-            this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
-            throw e;
-        } catch (NotBoundException e) {
-            this.connected = false;
-            this.log.warn("Trying to access unregistered remote object: ", e);
-        } catch (Exception e) {
-            this.connected = false;
-            this.log.warn("Could not connect", e);
+        if (this.connected) {
+            this.setRemote((AaaRmiInterface) remote);
+            super.setRemote(remote);
         }
         this.log.debug("AaaRmiClient.init().end");
     }
@@ -277,21 +236,6 @@ public class AaaRmiClient implements AaaRmiInterface {
 
 
 
-    /**
-     * @param methodName the calling method, for logging
-     * @return true if the RMI connection is OK
-     */
-    private boolean verifyRmiConnection(String methodName) {
-        if (this.remote == null) {
-            this.log.error(methodName+": Remote object not found");
-            return false;
-        }
-        if (!this.connected) {
-            this.log.error(methodName+": Not connected to RMI server");
-            return false;
-        }
-        return true;
-    }
 
 
     /**
@@ -305,6 +249,7 @@ public class AaaRmiClient implements AaaRmiInterface {
      * @param remote the remote to set
      */
     public void setRemote(AaaRmiInterface remote) {
+        super.setRemote(remote);
         this.remote = remote;
     }
 

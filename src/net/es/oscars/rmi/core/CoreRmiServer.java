@@ -18,18 +18,17 @@ import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.notify.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
-public class CoreRmiServer  implements CoreRmiInterface  {
+public class CoreRmiServer extends BaseRmiServer implements CoreRmiInterface  {
     private Logger log;
-    private Registry registry;
 
     /* Make remote object static so GarbageCollector doesn't delete it */
-    public static CoreRmiServer staticObject;
-    private CoreRmiInterface stub;
+    protected static CoreRmiServer staticObject;
     private BssRmiServer bssRmiServer;
     private AaaRmiInterface aaaRmiServer;
     private NotifyRmiServer notifyRmiServer;
@@ -40,7 +39,6 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      */
     public CoreRmiServer() throws RemoteException {
         this.log = Logger.getLogger(this.getClass());
-        CoreRmiServer.staticObject = this;
     }
 
     /**
@@ -54,47 +52,21 @@ public class CoreRmiServer  implements CoreRmiInterface  {
      * @throws remoteException
      */
     public void init() throws RemoteException {
-        this.log.debug("CoreRmiServer.init().start");
+
+        CoreRmiServer.staticObject = this;
+
+        /*
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi", true);
-        int port = rmiPort;
-        if (props.getProperty("registryPort") != null) {
-            try {
-                port = Integer.decode(props.getProperty("registryPort"));
-            } catch (NumberFormatException e) { }
-        }
+         */
 
-        String rmiIpaddr = localhost;
-        if (props.getProperty("serverIpaddr") != null && !props.getProperty("serverIpaddr").equals("")) {
-            rmiIpaddr = props.getProperty("serverIpaddr");
-        }
-        this.log.info("CoreRmiServer listening on " + rmiIpaddr);
-        if (!rmiIpaddr.equals(localhost)){
-            this.log.warn("CoreRmiServer listening on " + rmiIpaddr + " . Possible security vulnerability");
-        }
-        InetAddress ipAddr = null;
-        AnchorSocketFactory sf = null;
-        // Causes the endPoint of the remote sever object to match the interface that is listened on
-        System.setProperty("java.rmi.server.hostname",rmiIpaddr);
-        try {
-            ipAddr = InetAddress.getByName(rmiIpaddr);
-            // creates a custom socket that only listens on ipAddr
-            sf = new AnchorSocketFactory(ipAddr);
-            this.registry = LocateRegistry.createRegistry(port, null, sf);
-        } catch (UnknownHostException ex) {
+        Properties props = PropertyLoader.loadProperties("rmi.properties", "core", true);
+        this.setProperties(props);
 
-        }
+        this.setRmiServiceName("IDCRMIServer");
+        this.setServiceName("OSCARS Core RMI Server");
 
-        port = rmiPort;
-        if (props.getProperty("serverPort") != null) {
-            try {
-                port = Integer.decode(props.getProperty("serverPort"));
-            } catch (NumberFormatException e) { }
-        }
-        this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, port, null,sf);
-        this.registry.rebind(registryName, this.stub);
-
-
+        super.init(staticObject);
 
         this.bssRmiServer = new BssRmiServer();
         this.bssRmiServer.initHandlers();
@@ -102,27 +74,16 @@ public class CoreRmiServer  implements CoreRmiInterface  {
         this.aaaRmiServer = new AaaRmiClient();
         this.aaaRmiServer.init();
 
-
         this.notifyRmiServer = new NotifyRmiServer();
         this.notifyRmiServer.initHandlers();
 
-        this.log.debug("CoreRmiServer.init().end");
     }
 
     /**
      * shutdown
      */
     public void shutdown() {
-        try {
-            java.rmi.server.UnicastRemoteObject.unexportObject(CoreRmiServer.staticObject, true);
-            java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
-            this.registry.unbind(registryName);
-        } catch (RemoteException ex) {
-            this.log.error("Remote exception shutting down Core RMI server", ex);
-
-        } catch (NotBoundException ex) {
-            this.log.error("RMI Server already unbound", ex);
-        }
+        super.shutdown(staticObject);
     }
 
 

@@ -17,14 +17,9 @@ import net.es.oscars.rmi.model.*;
 
 import org.apache.log4j.*;
 
-public class AaaRmiServer  implements AaaRmiInterface  {
-    private Logger log = Logger.getLogger(AaaRmiServer.class);
-    private Registry registry;
+public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
+    protected Logger log;
 
-    /** Static remote object so that GarbageCollector doesn't delete it */
-    public static AaaRmiServer staticObject;
-
-    private AaaRmiInterface stub;
     private VerifyLoginRmiHandler verifyLoginHandler;
     private CheckAccessRmiHandler checkAccessHandler;
     private ModelRmiHandler authorizationModelHandler;
@@ -36,14 +31,8 @@ public class AaaRmiServer  implements AaaRmiInterface  {
     private ModelRmiHandler rpcModelHandler;
     private ModelRmiHandler institutionModelHandler;
 
+    protected static AaaRmiServer staticObject = null;
 
-    /**
-     * AaaRmiServer constructor
-     * @throws RemoteException
-     */
-    public AaaRmiServer() throws RemoteException {
-        AaaRmiServer.staticObject = this;
-    }
 
 
     /**
@@ -57,54 +46,22 @@ public class AaaRmiServer  implements AaaRmiInterface  {
      * @throws remoteException
      */
     public void init() throws RemoteException {
-        this.log.debug("AaaRmiServer.init().start");
+        this.log = Logger.getLogger(this.getClass());
+
+        AaaRmiServer.staticObject = this;
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
+        this.setProperties(props);
 
+        this.setRmiServiceName("AAARMIServer");
+        this.setServiceName("AAA RMI Server");
 
-        // default rmi registry port
-        int rmiPort = AaaRmiInterface.registryPort;
-        // default rmi registry address
-        String rmiIpaddr = AaaRmiInterface.registryAddress;
-        // default rmi registry name
-        String rmiRegName = AaaRmiInterface.registryName;
-
-        if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
-            try {
-                rmiPort = Integer.decode(props.getProperty("registryPort"));
-            } catch (NumberFormatException e) {
-                this.log.warn(e);
-            }
-        }
-
-        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
-            rmiIpaddr = props.getProperty("registryAddress");
-        }
-
-        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
-            rmiRegName = props.getProperty("registryName");
-        }
-
-
-        this.log.info("AAA server RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
-
-        InetAddress ipAddr = null;
-        AnchorSocketFactory sf = null;
-        // Causes the endPoint of the remote sever object to match the interface that is listened on
-        System.setProperty("java.rmi.server.hostname",rmiIpaddr);
-        try {
-            ipAddr = InetAddress.getByName(rmiIpaddr);
-            // creates a custom socket that only listens on ipAddr
-            sf = new AnchorSocketFactory(ipAddr);
-            this.registry = LocateRegistry.createRegistry(rmiPort, null, sf);
-        } catch (UnknownHostException ex) {
-            this.log.error(ex);
-        }
-
-        this.stub = (AaaRmiInterface) UnicastRemoteObject.exportObject(AaaRmiServer.staticObject, rmiPort, null, sf);
-        this.registry.rebind(rmiRegName, this.stub);
+        super.init(staticObject);
         this.initHandlers();
-        this.log.debug("AaaRmiServer.init().end");
+    }
+
+    public void shutdown() {
+        super.shutdown(staticObject);
     }
 
     public void initHandlers() {
@@ -183,24 +140,6 @@ public class AaaRmiServer  implements AaaRmiInterface  {
         } catch (Exception ex) {
             log.error(ex);
             throw new RemoteException(ex.getMessage());
-        }
-    }
-
-
-
-    /**
-     * shutdown
-     */
-    public void shutdown() {
-        try {
-            java.rmi.server.UnicastRemoteObject.unexportObject(AaaRmiServer.staticObject, true);
-            java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
-            this.registry.unbind(registryName);
-        } catch (RemoteException ex) {
-            this.log.error("Remote exception shutting down AAA RMI server", ex);
-
-        } catch (NotBoundException ex) {
-            this.log.error("AAA RMI Server already unbound", ex);
         }
     }
 
