@@ -80,9 +80,10 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userProfilePane = dijit.byId("userProfilePane");
     var userGrid = dijit.byId("userGrid");
+    // will be only one selected
+    var item = evt.grid.selection.getFirstSelected();
     // get user login name
-    /* TODO
-    var profileName = userGrid.model.getDatum(evt.rowIndex, 0);
+    var profileName = userGrid.store.getValues(item, "login");
     var formNode = dijit.byId("userProfileForm").domNode;
     formNode.reset();
     formNode.profileName.value = profileName;
@@ -97,5 +98,4 @@ oscars.UserList.onUserRowSelect = function (/*Event*/ evt) {
     });
     // set tab to user details
     mainTabContainer.selectChild(userProfilePane);
-    */
 };

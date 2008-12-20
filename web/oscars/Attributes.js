@@ -151,11 +151,12 @@ oscars.Attributes.createAttributeGrid = function () {
 // select name based on row select in grid
 oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     var attributeGrid = dijit.byId("attributeGrid");
+    var item = evt.grid.selection.getFirstSelected();
     // get attribute
-    /* TODO
-    var attributeName = attributeGrid.model.getDatum(evt.rowIndex, 0);
-    var attributeDescription = attributeGrid.model.getDatum(evt.rowIndex, 1);
-    var attributeType = attributeGrid.model.getDatum(evt.rowIndex, 2);
+    var attributeName = attributeGrid.store.getValues(item, "name");
+    var attributeDescription =
+        attributeGrid.store.getValues(item, "description");
+    var attributeType = attributeGrid.store.getValues(item, "type");
     var formNode = dijit.byId("attributesForm").domNode;
     formNode.attributeEditName.value = attributeName;
     formNode.attributeEditDescription.value = attributeDescription;
@@ -170,7 +171,6 @@ oscars.Attributes.onRowSelect = function (/*Event*/ evt) {
     addButton.style.color = "#FF0000";
     saveButton.style.color = "#00FF00";
     deleteButton.style.color = "#00FF00";
-    */
 };
 
 oscars.Attributes.clearFormValues = function (formNode) {

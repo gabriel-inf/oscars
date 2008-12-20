@@ -140,8 +140,8 @@ oscars.Institutions.createInstitutionGrid = function () {
 oscars.Institutions.onRowSelect = function (/*Event*/ evt) {
     var institutionGrid = dijit.byId("institutionGrid");
     // get institution name
-    /* TODO
-    var institutionName = institutionGrid.model.getDatum(evt.rowIndex, 0);
+    var item = evt.grid.selection.getFirstSelected();
+    var institutionName = institutionGrid.store.getValues(item, "name");
     var formNode = dijit.byId("institutionsForm").domNode;
     formNode.institutionEditName.value = institutionName;
     formNode.saveName.value = institutionName;
@@ -153,5 +153,4 @@ oscars.Institutions.onRowSelect = function (/*Event*/ evt) {
     addButton.style.color = "#FF0000";
     saveButton.style.color = "#00FF00";
     deleteButton.style.color = "#00FF00";
-    */
 };

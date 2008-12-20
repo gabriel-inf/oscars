@@ -98,8 +98,8 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     var reservationDetailsPane = dijit.byId("reservationDetailsPane");
     var resvGrid = dijit.byId("resvGrid");
     // get reservation's GRI
-    /* TODO
-    var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
+    var item = evt.grid.selection.getFirstSelected();
+    var gri = resvGrid.store.getValues(item, "gri");
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     formNode.gri.value = gri;
     // get reservation details
@@ -114,7 +114,6 @@ oscars.Reservations.onResvRowSelect = function (/*Event*/ evt) {
     // Note that this generates an apparently harmless error message in
     // Firebug console.
     mainTabContainer.selectChild(reservationDetailsPane);
-    */
 };
 
 // sets hidden form fields' seconds values from search date and time

@@ -103,13 +103,12 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     // clear constraint value if any
     formNode.reset();
     // set four parameters necessary to retrieve authorization
-    // dijit.byId doesn't seem to work outside form and tab
-    /* TODO
-    var attributeName = authGrid.model.getDatum(evt.rowIndex, 0);
-    var resourceName = authGrid.model.getDatum(evt.rowIndex, 1);
-    var permissionName = authGrid.model.getDatum(evt.rowIndex, 2);
-    var constraintName = authGrid.model.getDatum(evt.rowIndex, 3);
-    var constraintValue = authGrid.model.getDatum(evt.rowIndex, 4);
+    var item = evt.grid.selection.getFirstSelected();
+    var attributeName = authGrid.store.getValues(item, "attribute");
+    var resourceName = authGrid.store.getValues(item, "resource");
+    var permissionName = authGrid.store.getValues(item, "permission");
+    var constraintName = authGrid.store.getValues(item, "constraint");
+    var constraintValue = authGrid.store.getValues(item, "constraintVal");
     oscarsState.authorizationState.saveAuthState(attributeName,
             resourceName, permissionName, constraintName, constraintValue);
     // No need to query server; grid already contains all information.
@@ -121,5 +120,4 @@ oscars.Authorizations.onAuthRowSelect = function (/*Event*/ evt) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     oscarsStatus.className = "success";
     oscarsStatus.innerHTML = "Modifying authorization";
-    */
 };
