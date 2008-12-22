@@ -95,24 +95,8 @@ td.innerHops {
     width: 100%;
 }
 
-/* overriding dojo/dojox/grid/_grid/Grid.css section */
+/* overriding dojo/dojox/grid/resources/tundraGrid.css section */
 
-/* makes alternate rows in grid stand out more */
-.dojoxGrid-row-odd {
-    background-color: Beige;
-}
-
-/* highlight selected row's border more */
-.dojoxGrid-row-over {
-    border-top-color: #FE8B14;
-    border-bottom-color: #FE8B14;
-}
-
-/* make font slightly smaller for header and row */
-.dojoxGrid-header .dojoxGrid-cell {
-    font-size: 90%;
-}
-
-.dojoxGrid-row {
-    font-size: 90%;
+.tundra .dojoxGrid {
+    font-size: 0.95em;
 }
