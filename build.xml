@@ -124,7 +124,7 @@
         </copy>
 
         <war destfile="build/OSCARS.war" webxml="web/WEB-INF/web.xml">
-            <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, *.tar.gz" />
+            <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml, **/*.tar" />
             <classes dir="${build.classes}"
                 includes="**/oscars/*.class, **/oscars/database/HibernateBean.class,
                           **/oscars/bss/*.class, **/oscars/bss/topology/*.class,
