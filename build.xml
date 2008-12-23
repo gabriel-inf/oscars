@@ -24,7 +24,6 @@
 
     <target name="all" depends="clean, compile" description="Recompile all source"/>
 
-
     <!-- Compile everything except tests.  Various targets use portions they
          need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <!-- Added the debug flags to give us line numbers in stack traces -mrt -->
@@ -38,7 +37,6 @@
         </javac>
     </target>
 
-
     <!-- Compile the main application .jar file -->
     <target name="jar" description="Main OSCARS jar file" depends="compile">
 
@@ -47,7 +45,7 @@
         <copy file="conf/logging/jar.log4j.properties" tofile="${build.home}/jar/log4j.properties"/>
 
         <jar destfile="build/OSCARS.jar">
-            <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*"/>
+            <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*, **/aaa/*, **/rmi/aaa/**/*/">
             <!-- can't be easily used
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
             <fileset dir="${build.lib}/.." includes="lib/axis2/*.jar"/>
@@ -62,13 +60,9 @@
 <!-- IMPORTANT FIXME: how else to load oscars.properties into the .jar ?? -->
             <fileset dir="${catalina.home}/shared/classes/server/" includes="oscars.properties"/>
 
-
         </jar>
         <!-- <delete dir="${build.home}/jar/" /> -->
     </target>
-
-
-
 
     <!-- Compile the AAA .jar file -->
     <target name="aaajar" description="AAA jar file" depends="compile">
@@ -78,8 +72,8 @@
         <copy file="conf/logging/aaa.log4j.properties" tofile="${build.home}/aaajar/log4j.properties"/>
 
         <jar destfile="build/AAA.jar">
-<!-- FIXME: reduce to necessary classes -->
-            <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*"/>
+            <fileset dir="${build.classes}"
+                includes="**/aaa/*.class, **/database/*.class, **/es/oscars/*.class, **/rmi/BaseRmiServer.class, **/rmi/AnchorSocketFactory.class, **/rmi/aaa/*.class, **/rmi/core/*.class, **/rmi/model/*.class, **/*.hbm.xml"/>
             <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml"/>
             <fileset dir="conf/rmi" includes="rmi.properties"/>
             <fileset dir="${build.home}/aaajar/" includes="log4j.properties"/>
@@ -88,9 +82,6 @@
         </jar>
         <!-- <delete dir="${build.home}/aaajar/" /> -->
     </target>
-
-
-
 
     <!-- Compile the RMI jar file included in the WAR and AAR -->
     <target name="rmijar" description="Create jar with RMI classes" depends="compile">
@@ -101,7 +92,6 @@
                            org/w3/www/_2005/_08/addressing/EndpointReferenceType.class" />
         </jar>
     </target>
-
 
     <!-- Compile the WAR web application file to be deployed inside an servlet container -->
     <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
@@ -142,7 +132,6 @@
         <delete dir="${build.home}/war/" /> -->
     </target>
 
-
     <!-- Compile the AAR Axis2 web service. This is deployed in a container-specific directory.
          For Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="aar" description="Create OSCARS.aar file" depends="compile, rmijar">
@@ -168,7 +157,6 @@
 
         <!-- Copy over the rmi.properties file -->
         <copy file="conf/rmi/rmi.properties" tofile="${build.home}/aar/rmi.properties"/>
-
         <jar destfile="build/OSCARS.aar">
             <!-- These are just the necessary OSCARS classes -->
             <fileset dir="${build.classes}"
@@ -187,7 +175,6 @@
         <delete dir="${build.home}/aar"/> -->
     </target>
 
-
     <target name="clean" description="Empty build's classes and libs directories">
         <delete>
             <fileset dir="${build.classes}" includes="**/*"/>
@@ -195,9 +182,7 @@
         <delete dir="${test.classes}"/>
     </target>
 
-
     <!-- Prepares everything for compilation -->
-
     <target name="prepare" depends="axis2LocalCopy, tomcatLocalCopy, jarRemoteCopy">
         <!-- a bit of a kludge -->
         <available file="lib/axis2/mail-1.4.jar" property="axis2.found"/>
@@ -209,15 +194,12 @@
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
         </copy>
-
         <copy file="conf/aar/oscars-services.xml.template" tofile="conf/aar/oscars-services.xml"/>
         <replace summary="true" file="conf/aar/oscars-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/aar"/>
 
         <copy file="conf/aar/notify-services.xml.template" tofile="conf/aar/notify-services.xml"/>
         <replace summary="true" file="conf/aar/notify-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/aar"/>
     </target>
-
-
 
     <target name="axis2LocalCopy" if="axis2.local">
         <copy todir="lib/axis2">
@@ -230,8 +212,6 @@
             <fileset dir="${tomcat.loc}" includes="servlet-api.jar"/>
         </copy>
     </target>
-
-
 
     <target name="initMaven">
         <path id="maven.classpath">
@@ -266,7 +246,6 @@
         </artifact:dependencies>
         <copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
     </target>
-
 
     <!-- Using Axis2, generates code in net.es.oscars.oscars and
 net.es.oscars.wsdlTypes.  Also, OSCARS.wsdl is copied into resources,
@@ -307,7 +286,6 @@ Adding a -sd switch generates resources/services.xml -->
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
         </java>
-
         <echo>
   ***
   **** Changes to resources/services.xml must be merged with
@@ -315,7 +293,6 @@ Adding a -sd switch generates resources/services.xml -->
   ****
         </echo>
     </target>
-
 
     <!-- WSDL types generation -->
 
@@ -357,7 +334,6 @@ Adding a -sd switch generates resources/services.xml -->
         </condition>
     </target>
 
-
     <!-- **** Document targets -->
     <!-- generate and copy the api docs files -->
     <available property="apiDocs.present" file="docs/api"/>
@@ -394,14 +370,11 @@ Adding a -sd switch generates resources/services.xml -->
         </javadoc>
     </target>
 
-
     <target name="docs.clean" description="Delete web/docs directory and the generated api docs">
         <delete dir="web/docs"/>
         <delete dir="docs/api"/>
         <delete dir="docs/client-api"/>
     </target>
-
-
 
 <!-- FIXME: need to fix these two -->
     <!-- Client API section -->
@@ -427,14 +400,13 @@ Adding a -sd switch generates resources/services.xml -->
         </zip>
     </target>
 
-
     <!-- Dojo WBUI section ************************************************* -->
     <property name="dojo" value="/usr/local/src/dojo"/>
     <available property="dojo.installed" file="web/lib/dojo"/>
     <target name="installdojo" unless="dojo.installed" description="unzip and untar Dojo material if necessary">
         <!-- <gunzip src="web/lib/dojo-standard-1.2.3.tar.gz"/> -->
         <untar src="web/lib/dojo-standard-1.2.3.tar" dest="web/lib"/>
-	<!-- <delete file="web/lib/dojo-standard-1.2.3.tar"/> -->
+        <!-- <delete file="web/lib/dojo-standard-1.2.3.tar"/> -->
     </target>
 
     <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
@@ -451,8 +423,6 @@ Adding a -sd switch generates resources/services.xml -->
             <fileset dir="docs/papers" includes="*.pdf"/>
         </copy>
     </target>
-
-
 
     <!-- Notification interface targets -->
     <target name="genAllWsdl.check" depends="genWsdl.check">
@@ -514,7 +484,6 @@ Adding a -sd switch generates resources/services.xml -->
         </echo>
     </target>
 
-
     <target name="notifyaar" description="notifyaar" depends="compile">
         <!-- Create a temporary directory for the AAR structure -->
         <mkdir dir="${build.home}/notifyaar/" />
@@ -545,12 +514,7 @@ Adding a -sd switch generates resources/services.xml -->
         <delete dir="${build.home}/notifyaar"/>
     </target>
 
-
-
-
     <!-- Deployment section  *********************************************** -->
-
-
     <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
         <delete file="${catalina.home}/webapps/OSCARS.war"/>
         <delete dir="${catalina.home}/webapps/OSCARS"/>
@@ -571,10 +535,7 @@ Adding a -sd switch generates resources/services.xml -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
 
-
     <target name="deployall" description="deploy all aar and war files" depends="deployaar, deploywbui, deploynotifyaar" />
-
-
 
     <!-- Note that this requires that Axis2 has already been deployed. -->
     <target name="deploylibs" description="copy all libraries used by the aar and war to shared/lib">
@@ -583,7 +544,6 @@ Adding a -sd switch generates resources/services.xml -->
             <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" excludes="jaxen-1.1.1.jar"/>
         </copy>
     </target>
-
 
 <!-- FIXME: Where should repo be? Also defaultKeys is kindof strange.  -->
     <target name="copydomain" if="domain.exists">
@@ -605,8 +565,6 @@ Adding a -sd switch generates resources/services.xml -->
         <!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
         <uptodate property="axis2.xml.exists" targetfile="${catalina.home}/shared/classes/repo/axis2.xml"
                             srcfile="${defaultKeys}/client/axis2.xml" />
-
-
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
@@ -621,8 +579,6 @@ Adding a -sd switch generates resources/services.xml -->
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
         </copy>
     </target>
-
-
 
 <!-- FIXME: Should rethink this a bit.  -->
     <target name="copydefaults" unless="domain.exists">
@@ -662,14 +618,12 @@ Adding a -sd switch generates resources/services.xml -->
         </copy>
     </target>
 
-
 <!-- FIXME: this depends on where repo will be -->
     <target name="edit_axis2.xml" unless="axis2.xml.exists">
         <replace file="${catalina.home}/shared/classes/repo/axis2.xml"
                         token="**tomcat**"
                         value="${catalina.home}" summary="true"/>
     </target>
-
 
     <target name="addUserAlias" unless="rampConfig.xml.exists">
         <input
@@ -679,7 +633,6 @@ Adding a -sd switch generates resources/services.xml -->
         <replace file="conf/aar/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
     </target>
 
-
     <target name="addKeystorePassword" unless="rampConfig.xml.exists">
         <input
             message="Please enter the password for the client keystore."
@@ -687,7 +640,6 @@ Adding a -sd switch generates resources/services.xml -->
         />
         <replace file="conf/aar/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
     </target>
-
 
     <target name="existing.keystore.warning" unless="OSCARS.jks.exists">
         <echo level="warning">  **** A new OSCARS.jks file has been copied to  ****
@@ -722,10 +674,6 @@ Adding a -sd switch generates resources/services.xml -->
         </copy>
         <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key, oscars.properties"/>
     </target>
-
-
-
-
 
     <!-- TestNG test section *********************************************** -->
     <property name="test.classes" value="build/test"/>
@@ -801,6 +749,5 @@ Adding a -sd switch generates resources/services.xml -->
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
-
 
 </project>
