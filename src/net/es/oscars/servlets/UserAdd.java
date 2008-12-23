@@ -40,11 +40,19 @@ public class UserAdd extends HttpServlet {
 
         AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
         AuthValue authVal = ServletUtils.getAuth(userName, "Users", "create", rmiClient, methodName, log, out);
+        this.log.info(authVal.toString());
+        this.log.info(profileName + " " + userName);
         RoleUtils roleUtils = new RoleUtils();
 
-        if ((authVal == AuthValue.DENIED) || (profileName != userName)) {
-            this.log.error("Not allowed to add a new user");
-            ServletUtils.handleFailure(out, "not allowed to add a new user", methodName);
+        String errMsg = null;
+        if (authVal != AuthValue.ALLUSERS) {
+            errMsg = "not allowed to add a new user";
+        }
+        if (profileName.equals(userName)) {
+            errMsg = "can't add another account for onself";
+        }
+        if (errMsg != null) {
+            ServletUtils.handleFailure(out, errMsg, methodName);
             return;
         }
         User newUser = null;
