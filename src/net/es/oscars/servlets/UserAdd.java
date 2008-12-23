@@ -40,8 +40,6 @@ public class UserAdd extends HttpServlet {
 
         AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
         AuthValue authVal = ServletUtils.getAuth(userName, "Users", "create", rmiClient, methodName, log, out);
-        this.log.info(authVal.toString());
-        this.log.info(profileName + " " + userName);
         RoleUtils roleUtils = new RoleUtils();
 
         String errMsg = null;
