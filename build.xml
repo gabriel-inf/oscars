@@ -38,14 +38,14 @@
     </target>
 
     <!-- Compile the main application .jar file -->
-    <target name="jar" description="Main OSCARS jar file" depends="compile">
+    <target name="oscars-core" description="Main OSCARS jar file" depends="compile">
 
         <!-- Copy over the specific log4j.properties file -->
-        <mkdir dir="${build.home}/jar/" />
-        <copy file="conf/logging/jar.log4j.properties" tofile="${build.home}/jar/log4j.properties"/>
+        <mkdir dir="${build.home}/oscars-core/" />
+	<copy file="conf/logging/oscars-core.log4j.properties" tofile="${build.home}/oscars-core/log4j.properties"/>
 
-        <jar destfile="build/OSCARS.jar">
-            <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*, **/aaa/*, **/rmi/aaa/**/*/">
+        <jar destfile="build/oscars-core.jar">
+            <fileset dir="${build.classes}" includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/**/*, **/WEB-INF/**/*"/>
             <!-- can't be easily used
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
             <fileset dir="${build.lib}/.." includes="lib/axis2/*.jar"/>
@@ -54,7 +54,7 @@
             <fileset dir="conf/rmi" includes="rmi.properties"/>
             <fileset dir="conf/pss" includes="*.xml"/>
             <fileset dir="conf/lookup" includes="*.xml"/>
-            <fileset dir="${build.home}/jar/" includes="log4j.properties"/>
+            <fileset dir="${build.home}/oscars-core/" includes="log4j.properties"/>
 
 
 <!-- IMPORTANT FIXME: how else to load oscars.properties into the .jar ?? -->
@@ -65,22 +65,22 @@
     </target>
 
     <!-- Compile the AAA .jar file -->
-    <target name="aaajar" description="AAA jar file" depends="compile">
+    <target name="aaa-core" description="AAA core jar file" depends="compile">
 
         <!-- Copy over the specific log4j.properties file -->
-        <mkdir dir="${build.home}/aaajar/" />
-        <copy file="conf/logging/aaa.log4j.properties" tofile="${build.home}/aaajar/log4j.properties"/>
+        <mkdir dir="${build.home}/aaa-core/" />
+        <copy file="conf/logging/aaa-core.log4j.properties" tofile="${build.home}/aaa-core/log4j.properties"/>
 
-        <jar destfile="build/AAA.jar">
+        <jar destfile="build/aaa-core.jar">
             <fileset dir="${build.classes}"
-                includes="**/aaa/*.class, **/database/*.class, **/es/oscars/*.class, **/rmi/BaseRmiServer.class, **/rmi/AnchorSocketFactory.class, **/rmi/aaa/*.class, **/rmi/core/*.class, **/rmi/model/*.class, **/*.hbm.xml"/>
+		    includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/*, WEB-INF/**/*"/>
             <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml"/>
             <fileset dir="conf/rmi" includes="rmi.properties"/>
-            <fileset dir="${build.home}/aaajar/" includes="log4j.properties"/>
+            <fileset dir="${build.home}/aaa-core/" includes="log4j.properties"/>
 <!-- IMPORTANT FIXME: how else to load oscars.properties into the .jar ?? -->
             <fileset dir="${catalina.home}/shared/classes/server/" includes="oscars.properties"/>
         </jar>
-        <!-- <delete dir="${build.home}/aaajar/" /> -->
+        <!-- <delete dir="${build.home}/aaa-core/" /> -->
     </target>
 
     <!-- Compile the RMI jar file included in the WAR and AAR -->
@@ -94,19 +94,19 @@
     </target>
 
     <!-- Compile the WAR web application file to be deployed inside an servlet container -->
-    <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
+    <target name="oscars-war" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
 
         <!-- Copy over the specific log4j.properties file -->
-        <mkdir dir="${build.home}/war/" />
-        <copy file="conf/logging/war.log4j.properties" tofile="${build.home}/war/log4j.properties"/>
+        <mkdir dir="${build.home}/oscars-war/" />
+        <copy file="conf/logging/oscars-war.log4j.properties" tofile="${build.home}/oscars-war/log4j.properties"/>
 
         <copy file="conf/rmi/rmi.properties" tofile="${build.home}/WEB-INF/classes/rmi.properties"/>
 
         <!-- First copy over only the necessary .jar files into a temporary directory
              This is needed because we're not allowed more than one lib dir
              during .war creation -->
-        <mkdir dir="${build.home}/war/lib" />
-        <copy todir="${build.home}/war/lib" flatten="true">
+        <mkdir dir="${build.home}/oscars-war/lib" />
+        <copy todir="${build.home}/oscars-war/lib" flatten="true">
             <fileset dir="lib"
                 includes="hibernate*.jar, json-lib-*.jar, ezmorph-*.jar, commons-lang-*.jar,
                           commons-collections-*.jar, commons-beanutils.jar, axis2/log4j-1.2.*.jar  "/>
@@ -125,38 +125,39 @@
                           **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
 
 
-            <lib dir="${build.home}/war/lib" includes="*.jar"/>
-            <fileset dir="${build.home}/war/" includes="log4j.properties" />
+            <lib dir="${build.home}/oscars-war/lib" includes="*.jar"/>
+            <fileset dir="${build.home}/oscars-war/" includes="log4j.properties" />
         </war>
         <!-- clear out temporary directory
-        <delete dir="${build.home}/war/" /> -->
+        <delete dir="${build.home}/oscars-war/" /> -->
     </target>
 
     <!-- Compile the AAR Axis2 web service. This is deployed in a container-specific directory.
          For Tomcat, this is webapps/axis2/WEB-INF/services -->
-    <target name="aar" description="Create OSCARS.aar file" depends="compile, rmijar">
+    <target name="oscars-aar" description="Create OSCARS.aar file" depends="compile, rmijar">
+
         <!-- Create a temporary directory for the AAR structure -->
-        <mkdir dir="${build.home}/aar/" />
+        <mkdir dir="${build.home}/oscars-aar/" />
 
         <!-- Copy necessary libraries there -->
-        <copy todir="${build.home}/aar/lib" flatten="true">
+        <copy todir="${build.home}/oscars-aar/lib" flatten="true">
             <fileset dir="lib" includes="hibernate*.jar, ezmorph-*.jar, axis2/log4j-1.2.*.jar  "/>
             <fileset dir="build" includes="oscars-rmi.jar" />
         </copy>
 
         <!-- Copy the schema & WSDL files  -->
-        <copy todir="${build.home}/aar/META-INF" flatten="true">
+        <copy todir="${build.home}/oscars-aar/META-INF" flatten="true">
             <fileset dir="conf/schema" includes="*.xsd, OSCARS.wsdl"/>
         </copy>
 
         <!-- Copy over the OSCARS AAR-specific services.xml file -->
-        <copy file="conf/aar/oscars-services.xml" tofile="${build.home}/aar/META-INF/services.xml"/>
+        <copy file="conf/oscars-aar/oscars-services.xml" tofile="${build.home}/oscars-aar/META-INF/services.xml"/>
 
         <!-- Copy over the OSCARS AAR-specific log4j.properties file -->
-        <copy file="conf/logging/aar.log4j.properties" tofile="${build.home}/aar/log4j.properties"/>
+        <copy file="conf/logging/oscars-aar.log4j.properties" tofile="${build.home}/oscars-aar/log4j.properties"/>
 
         <!-- Copy over the rmi.properties file -->
-        <copy file="conf/rmi/rmi.properties" tofile="${build.home}/aar/rmi.properties"/>
+        <copy file="conf/rmi/rmi.properties" tofile="${build.home}/oscars-aar/rmi.properties"/>
         <jar destfile="build/OSCARS.aar">
             <!-- These are just the necessary OSCARS classes -->
             <fileset dir="${build.classes}"
@@ -169,10 +170,10 @@
                           **/oscars/bss/*DAO.class, **/oscars/bss/*Manager*.class,
                           **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
             <!-- include all the temporary files -->
-            <fileset dir="${build.home}/aar/"/>
+            <fileset dir="${build.home}/oscars-aar/"/>
         </jar>
         <!-- clear out temporary directory
-        <delete dir="${build.home}/aar"/> -->
+        <delete dir="${build.home}/oscars-aar"/> -->
     </target>
 
     <target name="clean" description="Empty build's classes and libs directories">
@@ -194,11 +195,11 @@
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
         </copy>
-        <copy file="conf/aar/oscars-services.xml.template" tofile="conf/aar/oscars-services.xml"/>
+        <copy file="conf/oscars-aar/oscars-services.xml.template" tofile="conf/aar/oscars-services.xml"/>
         <replace summary="true" file="conf/aar/oscars-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/aar"/>
 
-        <copy file="conf/aar/notify-services.xml.template" tofile="conf/aar/notify-services.xml"/>
-        <replace summary="true" file="conf/aar/notify-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/aar"/>
+        <copy file="conf/oscars-aar/notify-services.xml.template" tofile="conf/oscars-aar/notify-services.xml"/>
+        <replace summary="true" file="conf/oscars-aar/notify-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
     </target>
 
     <target name="axis2LocalCopy" if="axis2.local">
@@ -289,7 +290,7 @@ Adding a -sd switch generates resources/services.xml -->
         <echo>
   ***
   **** Changes to resources/services.xml must be merged with
-  **** conf/aar/oscars-services.xml
+  **** conf/oscars-aar/oscars-services.xml
   ****
         </echo>
     </target>
@@ -479,63 +480,63 @@ Adding a -sd switch generates resources/services.xml -->
         <echo>
   ****
   **** Changes to resources/services.xml must be merged with
-  **** conf/aar/notify-services.xml
+  **** conf/oscars-aar/notify-services.xml
   ****
         </echo>
     </target>
 
-    <target name="notifyaar" description="notifyaar" depends="compile">
+    <target name="notify-aar" description="notifyaar" depends="compile">
         <!-- Create a temporary directory for the AAR structure -->
-        <mkdir dir="${build.home}/notifyaar/" />
+        <mkdir dir="${build.home}/notify-aar/" />
 
         <!-- Copy necessary libraries there -->
         <!-- FIXME: what are the necessary libraries? Andy? -->
-        <copy todir="${build.home}/notifyaar/lib" flatten="true">
+        <copy todir="${build.home}/notify-aar/lib" flatten="true">
             <fileset dir="lib" includes="*.jar"/>
         </copy>
 
         <!-- Copy the schema & WSDL files -->
-        <copy todir="${build.home}/notifyaar/META-INF" flatten="true">
+        <copy todir="${build.home}/notify-aar/META-INF" flatten="true">
             <fileset dir="conf/schema" includes="*.xsd, OSCARS-Notify.wsdl"/>
         </copy>
 
-        <copy todir="${build.home}/notifyaar" flatten="true">
+        <copy todir="${build.home}/notify-aar" flatten="true">
             <fileset dir="conf/db" includes="c3p0.properties, notify.cfg.xml, bss.cfg.xml, aaa.cfg.xml"/>
         </copy>
 
         <!-- Copy over the specific services.xml file -->
-        <copy file="conf/aar/notify-services.xml" tofile="${build.home}/notifyaar/META-INF/services.xml"/>
+        <copy file="conf/oscars-aar/notify-services.xml" tofile="${build.home}/notify-aar/META-INF/services.xml"/>
 
         <jar destfile="build/OSCARSNotify.aar">
             <fileset dir="${build.classes}" includes="**/*" excludes="**/pathfinder/**/*,**/servlets/**/*,**/pss/**/*,**/rmi/**/*,**/tss/**/*"/>
-            <fileset dir="${build.home}/notifyaar/"/>
+            <fileset dir="${build.home}/notify-aar/"/>
         </jar>
         <!-- clear out temporary directory -->
-        <delete dir="${build.home}/notifyaar"/>
+        <delete dir="${build.home}/notify-aar"/>
     </target>
 
     <!-- Deployment section  *********************************************** -->
-    <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
+    <target name="deploywar" description="copy OSCARS.war to webapp directory" depends="oscars-war, setupServer, deploylibs">
         <delete file="${catalina.home}/webapps/OSCARS.war"/>
         <delete dir="${catalina.home}/webapps/OSCARS"/>
         <copy file="build/OSCARS.war" todir="${webapp.home}"/>
     </target>
 
-    <target name="deployaar" description="copy OSCARS.aar to axis2 services directory" depends="aar, setupServer, deploylibs">
+    <target name="deployaar" description="copy OSCARS.aar to axis2 services directory" depends="oscars-aar, setupServer, deploylibs">
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
 
         <copy file="conf/logging/axis2.log4j.properties" tofile="${axis2.home}/WEB-INF/classes/log4j.properties"/>
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
 
-    <target name="deploynotifyaar" description="copy OSCARSNotify.aar to axis2 services directory" depends="notifyaar,deploylibs">
+    <target name="deploynotifyaar" description="copy OSCARSNotify.aar to axis2 services directory" depends="notify-aar,deploylibs">
         <copy file="${build.home}/OSCARSNotify.aar" todir="${webservice.home}"/>
 
         <copy file="conf/logging/axis2.log4j.properties" tofile="${axis2.home}/WEB-INF/classes/log4j.properties"/>
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
 
-    <target name="deployall" description="deploy all aar and war files" depends="deployaar, deploywbui, deploynotifyaar" />
+    <target name="deployall" description="deploy all aar and war files" depends="deployaar, deploywar, deploynotifyaar, aaa-core, oscars-core" />
 
     <!-- Note that this requires that Axis2 has already been deployed. -->
     <target name="deploylibs" description="copy all libraries used by the aar and war to shared/lib">

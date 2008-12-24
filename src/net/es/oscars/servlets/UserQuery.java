@@ -103,12 +103,13 @@ public class UserQuery extends HttpServlet {
                 targetUser = ServletUtils.getUser(profileName, rmiClient, out, log);
             }
 
-            List<Attribute> allAtributes = ServletUtils.getAllAttributes(rmiClient, out, log);
+            List<Attribute> allAttributes =
+                ServletUtils.getAllAttributes(rmiClient, out, log);
             List<Institution> institutions = ServletUtils.getAllInstitutions(rmiClient, out, log);
 
             this.contentSection( outputMap, targetUser, modifyAllowed,
                     (authVal == AuthValue.ALLUSERS),
-                    institutions, attributesForUser, allAtributes);
+                    institutions, attributesForUser, allAttributes);
 
         } catch (RemoteException ex) {
             return;
