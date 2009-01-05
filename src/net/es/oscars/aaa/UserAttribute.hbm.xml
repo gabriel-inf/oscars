@@ -25,10 +25,10 @@
 
     <!-- Associations -->
     <many-to-one name="user" column="userId"
-        class="net.es.oscars.aaa.User" />
+        unique="true" class="net.es.oscars.aaa.User" />
 
     <many-to-one name="attribute" column="attributeId"
-        class="net.es.oscars.aaa.Attribute" />
+        unique="true" class="net.es.oscars.aaa.Attribute" />
 
 
 </class>

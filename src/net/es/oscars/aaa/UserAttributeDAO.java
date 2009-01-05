@@ -63,7 +63,7 @@ import  org.apache.log4j.*;;
         }
         UserDAO userDAO = new UserDAO(this.dbname);
         for (UserAttribute ua : userAttrs) {
-            users.add(userDAO.findById(ua.getUserId(), false));
+            users.add(userDAO.findById(ua.getUser().getId(), false));
         }
         return users;
  }

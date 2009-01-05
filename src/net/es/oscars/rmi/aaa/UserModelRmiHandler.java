@@ -1,6 +1,5 @@
 package net.es.oscars.rmi.aaa;
 
-
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -15,17 +14,16 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
     private Logger log;
     private AAACore core = AAACore.getInstance();
 
-
     public UserModelRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
     }
 
-    public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> list(HashMap<String, Object> parameters)
+            throws RemoteException {
+
         this.log.debug("listUsers.start");
         Session aaa = core.getAaaSession();
-
         HashMap<String, Object> result = new HashMap<String, Object>();
-
         String listType = (String) parameters.get("listType");
         if (listType == null) {
             listType = "plain";
@@ -80,32 +78,26 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } finally {
 
         }
-
         result.put("users", users);
-
         this.log.debug("listUsers.end");
         return result;
     }
 
+    public HashMap<String, Object> add(HashMap<String, Object> parameters)
+            throws RemoteException {
 
-
-    public HashMap<String, Object> add(HashMap<String, Object> parameters) throws RemoteException {
         this.log.debug("addUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         ArrayList <Integer> addRoles = (ArrayList <Integer>) parameters.get("addRoles");
         User user = (User) parameters.get("user");
-
         if (user == null) {
             throw new RemoteException("User not set");
         } else if (addRoles == null) {
             throw new RemoteException("Roles not set");
         }
 
-
-
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
-
         UserManager mgr = core.getUserManager();
         try {
             mgr.create(user, addRoles);
@@ -117,16 +109,15 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } finally {
 
         }
-
         this.log.debug("addUser.end");
         return result;
     }
 
+    public HashMap<String, Object> modify(HashMap<String, Object> parameters)
+            throws RemoteException {
 
-    public HashMap<String, Object> modify(HashMap<String, Object> parameters) throws RemoteException {
         this.log.debug("modifyUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
-
         ArrayList <Integer> newRoles = (ArrayList <Integer>) parameters.get("newRoles");
         ArrayList <Integer> curRoles = (ArrayList <Integer>) parameters.get("curRoles");
 
@@ -136,13 +127,11 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         if (setPassword == null) {
             setPassword = false;
         }
-
         if (user == null) {
             throw new RemoteException("User not set");
         } else if (newRoles == null) {
             throw new RemoteException("Roles not set");
         }
-
         Session aaa = core.getAaaSession();
         try {
             aaa.beginTransaction();
@@ -153,7 +142,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             for (Integer newRoleItem : newRoles) {
                  int intNewRoleItem = newRoleItem.intValue();
                  if (!curRoles.contains(intNewRoleItem)) {
-                     this.addUserAttribute(intNewRoleItem, userId);
+                     this.addUserAttribute(intNewRoleItem, user);
                  }
              }
              for (Integer curRoleItem : curRoles){
@@ -162,6 +151,9 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                      userAttrDAO.remove(userId, intCurRoleItem);
                  }
              }
+             Hibernate.initialize(user);
+             Hibernate.initialize(user.getInstitution());
+             Hibernate.initialize(user.getInstitution().getUsers());
              aaa.getTransaction().commit();
         } catch (Exception ex) {
             this.log.error(ex);
@@ -170,12 +162,9 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } finally {
 
         }
-
-
         this.log.debug("modifyUser.end");
         return result;
     }
-
 
     public HashMap<String, Object> delete(HashMap<String, Object> parameters) throws RemoteException {
         this.log.debug("deleteUser.start");
@@ -193,22 +182,18 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } finally {
 
         }
-
-
         HashMap<String, Object> result = new HashMap<String, Object>();
         this.log.debug("deleteUser.end");
         return result;
     }
 
+    public HashMap<String, Object> find(HashMap<String, Object> parameters)
+            throws RemoteException {
 
-
-    public HashMap<String, Object> find(HashMap<String, Object> parameters) throws RemoteException {
         this.log.info("findUser.start");
-
         HashMap<String, Object> result = new HashMap<String, Object>();
         User user = null;
         String findBy = (String) parameters.get("findBy");
-
         Session aaa = core.getAaaSession();
         try {
             aaa.beginTransaction();
@@ -249,23 +234,18 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             this.log.error(ex);
             throw new RemoteException(ex.getMessage());
         }
-
-
         this.log.info("findUser.end");
         return result;
     }
 
-
-    private void addUserAttribute(int attrId, int userId){
+    private void addUserAttribute(int attrId, User user){
 
         UserAttributeDAO userAttrDAO = new UserAttributeDAO(core.getAaaDbName());
+        AttributeDAO attrDAO = new AttributeDAO(core.getAaaDbName());
         UserAttribute userAttr = new UserAttribute();
-
-        userAttr.setAttributeId(attrId);
-        userAttr.setUserId(userId);
+        Attribute attr = attrDAO.findById(attrId, false);
+        userAttr.setAttribute(attr);
+        userAttr.setUser(user);
         userAttrDAO.create(userAttr);
     }
-
-
-
 }

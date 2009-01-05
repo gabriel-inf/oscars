@@ -36,8 +36,6 @@ public class AuthorizationForm extends HttpServlet {
         this.log = Logger.getLogger(this.getClass());
         String methodName = "AuthorizationForm";
         log.debug("servlet.start");
-
-
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
@@ -45,7 +43,6 @@ public class AuthorizationForm extends HttpServlet {
             log.error("No user session: cookies invalid");
             return;
         }
-
         String attrsUpdated = request.getParameter("authAttrsUpdated");
         if (attrsUpdated != null) {
             attrsUpdated = attrsUpdated.trim();
@@ -53,8 +50,6 @@ public class AuthorizationForm extends HttpServlet {
             attrsUpdated = "";
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
-
-
         try {
             AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
@@ -64,7 +59,6 @@ public class AuthorizationForm extends HttpServlet {
                 ServletUtils.handleFailure(out, "not authorized to perform admin operations", methodName);
                 return;
             }
-
             this.outputAttributeMenu(outputMap, rmiClient, out);
             String rpcParam = request.getParameter("rpc");
 
@@ -98,11 +92,11 @@ public class AuthorizationForm extends HttpServlet {
         this.doGet(request, response);
     }
 
+    public void outputAttributeMenu(Map<String, Object> outputMap,
+            AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
 
-    public void outputAttributeMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
         String methodName = "AuthorizationForm.outputAttributeMenu";
         List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
-
         List<String> attributeList = new ArrayList<String>();
         int ctr = 0;
         for (Attribute attribute: attributes) {
@@ -117,11 +111,11 @@ public class AuthorizationForm extends HttpServlet {
         outputMap.put("authAttributeNameMenu", attributeList);
     }
 
-    public void outputResourceMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputResourceMenu(Map<String, Object> outputMap,
+            AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+
         String methodName = "AuthorizationForm.outputResourceMenu";
-
         List<Resource> resources = ServletUtils.getAllResources(rmiClient, out, log);
-
         List<String> resourceList = new ArrayList<String>();
         int ctr = 0;
         for (Resource resource: resources) {
@@ -136,11 +130,11 @@ public class AuthorizationForm extends HttpServlet {
         outputMap.put("resourceNameMenu", resourceList);
     }
 
-    public void outputPermissionMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputPermissionMenu(Map<String, Object> outputMap,
+            AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+
         String methodName = "AuthorizationForm.outputPermissionMenu";
-
         List<Permission> permissions = ServletUtils.getAllPermissions(rmiClient, out, log);
-
         List<String> permissionList = new ArrayList<String>();
         int ctr = 0;
         for (Permission permission: permissions) {
@@ -156,11 +150,12 @@ public class AuthorizationForm extends HttpServlet {
     }
 
     public void
-        outputConstraintMenu(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException  {
+        outputConstraintMenu(Map<String, Object> outputMap,
+                AaaRmiInterface rmiClient, PrintWriter out)
+            throws RemoteException  {
+
         String methodName = "AuthorizationForm.outputConstraintMenu";
-
         List<Constraint> constraints = ServletUtils.getAllConstraints(rmiClient, out, log);
-
         List<String> constraintList = new ArrayList<String>();
         int ctr = 0;
         for (Constraint constraint: constraints) {
@@ -184,31 +179,34 @@ public class AuthorizationForm extends HttpServlet {
      *
      * @param outputMap Map containing JSON data
      */
-    public void outputRpcs(Map<String, Object> outputMap, AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+    public void outputRpcs(Map<String, Object> outputMap,
+            AaaRmiInterface rmiClient, PrintWriter out) throws RemoteException {
+
         String methodName = "AuthorizationForm.outputRpcs";
-
         List<Rpc> rpcs = ServletUtils.getAllRpcs(rmiClient, out, log);
-
         ArrayList<ArrayList<String>> rpcList = new ArrayList<ArrayList<String>>();
         for (Rpc rpc: rpcs) {
             ArrayList<String> rpcEntry = new ArrayList<String>();
             if (rpc.getResource() != null) {
                 rpcEntry.add(rpc.getResource().getName());
             } else {
-                this.log("couldn't find resource: " + rpc.getResourceId());
+                this.log("couldn't find resource: " +
+                        rpc.getResource().getName());
                 continue;
             }
             if (rpc.getPermission() != null) {
                 rpcEntry.add(rpc.getPermission().getName());
             } else {
-                this.log("couldn't find permission: " + rpc.getPermissionId());
+                this.log("couldn't find permission: " +
+                        rpc.getPermission().getName());
                 continue;
             }
             if (rpc.getConstraint() != null) {
                 rpcEntry.add(rpc.getConstraint().getName());
                 rpcEntry.add(rpc.getConstraint().getType());
             } else {
-                this.log("couldn't find constraint: " + rpc.getConstraintId());
+                this.log("couldn't find constraint: " +
+                        rpc.getConstraint().getName());
                 continue;
             }
             rpcList.add(rpcEntry);

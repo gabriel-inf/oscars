@@ -78,10 +78,12 @@ public class UserManager {
         if (roles != null) {
             int UserId = user.getId();
             UserAttributeDAO uaDAO = new UserAttributeDAO(this.dbname);
-            for (int attrID : roles) {
+            AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+            for (int attrId: roles) {
                 UserAttribute ua = new UserAttribute();
-                ua.setUserId(UserId);
-                ua.setAttributeId(attrID);
+                ua.setUser(user);
+                Attribute attr = attrDAO.findById(attrId, false);
+                ua.setAttribute(attr);
                 uaDAO.create(ua);
             }
         }
@@ -178,6 +180,8 @@ public class UserManager {
         // make sure institution is set properly
         if (user.getInstitution() == null) {
             user.setInstitution(currentInfo.getInstitution());
+        } else {
+            this.log.info("institution:" + user.getInstitution().getName());
         }
         // make sure password is set properly
         if (newPassword) {
@@ -185,6 +189,7 @@ public class UserManager {
             String encryptedPwd = Jcrypt.crypt(this.salt, user.getPassword());
             user.setPassword(encryptedPwd);
         }
+        this.log.info("to update");
         // persist to the database
         userDAO.update(user);
         this.log.info("update.finish:" + user.getLogin());

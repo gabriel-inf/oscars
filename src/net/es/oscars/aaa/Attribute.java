@@ -64,7 +64,7 @@ public class Attribute extends HibernateBean implements Serializable {
 
     public String toString() {
         return new ToStringBuilder(this)
-            .append("id", getId())
+            .append("name", getName())
             .toString();
     }
 }

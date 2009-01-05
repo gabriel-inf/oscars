@@ -28,28 +28,165 @@ public class AuthorizationDAO
     }
 
     /**
-     * Deletes a row containing an authorization four-tuple.
+     * Retrieves authorization, if any, based on presence of corresponding
+     *    four-tuple in authorizations table.
+     *
+     * @param attrName String name of attribute
+     * @param resourceName String name of resource
+     * @param permissionName String name of permission
+     * @param constraintName String name of constraint
+     * @return auths - list of the associated authorization instances, if any
+     */
+    public Authorization query(String attrName, String resourceName,
+            String permissionName, String constraintName) throws AAAException {
+
+        Authorization auth = null;
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        int attrId = attrDAO.getIdByName(attrName).intValue();
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        int resourceId = resourceDAO.getIdByName(resourceName).intValue();
+        PermissionDAO permDAO = new PermissionDAO(this.dbname);
+        int permId = permDAO.getIdByName(permissionName).intValue();
+        if (constraintName == null) {
+            constraintName = "none";
+        }
+        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
+        int constrId = constrDAO.getIdByName(constraintName).intValue();
+
+        auth =  this.query(attrId,resourceId, permId, constrId);
+        return auth;
+    }
+
+    /**
+     * Retrieves authorization, if any, based on presence of corresponding
+     *    four-tuple in authorizations table.
      *
      * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
-     * @param constraintId int with primary key of constraint
-     * @throws AAAException.
+     * @param constraintId - int with primary key of constraint
+     * @return auths - list of the associated authorization instances, if any
      */
-    public void remove(int attrId, int resourceId, int permissionId,
-                       int constraintId)
-            throws AAAException {
+    public Authorization query(int attrId, int resourceId, int permissionId,
+                               int constraintId) {
 
-        /* not called yet - designed for use by Web interface to manage
-           authorizations */
+        Authorization auth = null;
 
+        String hsql = "from Authorization where attrId = :attrId and " +
+            "resourceId = :resourceId and " +
+            "permissionId = :permissionId and " +
+            "constraintId = :constraintId";
+        auth = (Authorization) this.getSession().createQuery(hsql)
+            .setInteger("attrId", attrId)
+            .setInteger("resourceId", resourceId)
+            .setInteger("permissionId", permissionId)
+            .setInteger("constraintId", constraintId)
+            .setMaxResults(1)
+            .uniqueResult();
+
+        return auth;
+    }
+
+    /**
+     * Retrieves authorization, if any, based on presence of corresponding
+     *     triplet in authorizations table.
+     *
+     * @param attrId int with primary key of attribute
+     * @param resourceId int with primary key of resource
+     * @param permissionId int with primary key of permission
+     * @return auths - list of the associated authorization instances, if any
+     */
+    public List<Authorization> query(int attrId, int resourceId,
+                                     int permissionId) {
+
+        List<Authorization> auths = null;
+
+        String hsql = "from Authorization where attrId = :attrId and " +
+                     "resourceId = :resourceId and " +
+                     "permissionId = :permissionId";
+        auths = this.getSession().createQuery(hsql)
+                      .setInteger("attrId", attrId)
+                      .setInteger("resourceId", resourceId)
+                      .setInteger("permissionId", permissionId)
+                      .list();
+
+        return auths;
+    }
+
+    /**
+     * Add a new authorization given the attrName, resourceName, permisionName
+     *    constraintName and value.
+     *
+     *    @param attrName String name of attribute
+     *    @param resourceName String name of resource
+     *    @param permissionName String name of permission
+     *    @param constraintName String name of constraint, may be  null
+     *    @param constraintValue String value of constraint, if null map to "true"
+     */
+
+    public void create(String attrName, String resourceName,
+            String permissionName, String constraintName,
+            String constraintValue) throws AAAException {
+
+        // check for an already existing authorization
         Authorization auth =
-            this.query(attrId, resourceId, permissionId, constraintId);
-        if (auth == null) {
-            throw new AAAException(
-                    "Trying to remove non-existent authorization");
+            this.query(attrName, resourceName, permissionName, constraintName);
+        if (auth != null) {
+            throw new AAAException("duplicate entry");
         }
-        super.remove(auth);
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        Attribute attr = attrDAO.queryByParam("name", attrName);
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        Resource resource = resourceDAO.queryByParam("name", resourceName);
+        PermissionDAO permDAO = new PermissionDAO(this.dbname);
+        Permission permission = permDAO.queryByParam("name", permissionName);
+        if (constraintName == null) {
+            constraintName = "none";
+        }
+        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
+        Constraint constraint = constrDAO.queryByParam("name", constraintName);
+        auth = new Authorization();
+        auth.setAttribute(attr);
+        auth.setResource(resource);
+        auth.setPermission(permission);
+        auth.setConstraint(constraint);
+        auth.setConstraintValue(constraintValue);
+        super.create(auth);
+    }
+
+    /**
+     * Update an authorization given the attrName, resourceName, permisionName
+     *    constraintName and value.
+     *
+     *    @param attrName String name of attribute
+     *    @param resourceName String name of resource
+     *    @param permissionName String name of permission
+     *    @param constraintName String name of constraint, may be  null
+     *    @param constraintValue String value of constraint, if null map to "true"
+     */
+
+    public void update(Authorization auth, String attrName, String resourceName,
+            String permissionName, String constraintName,
+            String constraintValue) throws AAAException {
+
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        Attribute attr = attrDAO.queryByParam("name", attrName);
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
+        Resource resource = resourceDAO.queryByParam("name", resourceName);
+        PermissionDAO permDAO = new PermissionDAO(this.dbname);
+        Permission permission = permDAO.queryByParam("name", permissionName);
+        if (constraintName == null) {
+            constraintName = "none";
+        }
+        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
+        Constraint constraint = constrDAO.queryByParam("name", constraintName);
+
+        auth.setAttribute(attr);
+        auth.setResource(resource);
+        auth.setPermission(permission);
+        auth.setConstraint(constraint);
+        auth.setConstraintValue(constraintValue);
+        super.update(auth);
     }
 
     /**
@@ -62,23 +199,16 @@ public class AuthorizationDAO
      *    @param constraintName String name of constraint, may be  null
      */
 
-    public void remove(String attrName, String resourceName, String permissionName,
-            String constraintName) throws AAAException {
+    public void remove(String attrName, String resourceName,
+            String permissionName, String constraintName) throws AAAException {
 
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        int attrId = attrDAO.getIdByName(attrName);
-        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
-        int resourceId = resourceDAO.getIdByName(resourceName);
-        PermissionDAO permDAO = new PermissionDAO(this.dbname);
-        int permId = permDAO.getIdByName(permissionName);
-        if (constraintName == null) {
-            constraintName = "none";
+        Authorization auth =
+            this.query(attrName, resourceName, permissionName, constraintName);
+        if (auth == null) {
+            throw new AAAException(
+                    "Trying to remove non-existent authorization");
         }
-        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
-        int constrId = constrDAO.getIdByName(constraintName);
-
-        this.remove(attrId,resourceId,permId,constrId);
-
+        super.remove(auth);
     }
 
     /**
@@ -200,189 +330,6 @@ public class AuthorizationDAO
         return auths;
     }
 
-    /**
-     * Retrieves authorization, if any, based on presence of corresponding
-     *     triplet in authorizations table.
-     *
-     * @param attrId int with primary key of attribute
-     * @param resourceId int with primary key of resource
-     * @param permissionId int with primary key of permission
-     * @return auths - list of the associated authorization instances, if any
-     */
-    public List<Authorization> query(int attrId, int resourceId,
-                                     int permissionId) {
-
-        List<Authorization> auths = null;
-
-        String hsql = "from Authorization where attrId = :attrId and " +
-                     "resourceId = :resourceId and " +
-                     "permissionId = :permissionId";
-        auths = this.getSession().createQuery(hsql)
-                      .setInteger("attrId", attrId)
-                      .setInteger("resourceId", resourceId)
-                      .setInteger("permissionId", permissionId)
-                      .list();
-
-        return auths;
-    }
-
-    /**
-     * Retrieves authorization, if any, based on presence of corresponding
-     *    four-tuple in authorizations table.
-     *
-     * @param attrName String name of attribute
-     * @param resourceName String name of resource
-     * @param permissionName String name of permission
-     * @param constraintName String name of constraint
-     * @return auths - list of the associated authorization instances, if any
-     */
-    public Authorization query(String attrName, String resourceName, String permissionName,
-                               String constraintName) throws AAAException {
-
-        Authorization auth = null;
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        int attrId = attrDAO.getIdByName(attrName).intValue();
-        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
-        int resourceId = resourceDAO.getIdByName(resourceName).intValue();
-        PermissionDAO permDAO = new PermissionDAO(this.dbname);
-        int permId = permDAO.getIdByName(permissionName).intValue();
-        if (constraintName == null) {
-            constraintName = "none";
-        }
-        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
-        int constrId = constrDAO.getIdByName(constraintName).intValue();
-
-        auth =  this.query(attrId,resourceId, permId, constrId);
-        return auth;
-    }
-
-    /**
-     * Retrieves authorization, if any, based on presence of corresponding
-     *    four-tuple in authorizations table.
-     *
-     * @param attrId int with primary key of attribute
-     * @param resourceId int with primary key of resource
-     * @param permissionId int with primary key of permission
-     * @param constraintId - int with primary key of constraint
-     * @return auths - list of the associated authorization instances, if any
-     */
-    public Authorization query(int attrId, int resourceId, int permissionId,
-                               int constraintId) {
-
-        Authorization auth = null;
-
-        String hsql = "from Authorization where attrId = :attrId and " +
-            "resourceId = :resourceId and " +
-            "permissionId = :permissionId and " +
-            "constraintId = :constraintId";
-        auth = (Authorization) this.getSession().createQuery(hsql)
-            .setInteger("attrId", attrId)
-            .setInteger("resourceId", resourceId)
-            .setInteger("permissionId", permissionId)
-            .setInteger("constraintId", constraintId)
-            .setMaxResults(1)
-            .uniqueResult();
-
-        return auth;
-    }
-
-
-    /**
-     * Add a new authorization given the attrName, resourceName, permisionName
-     *    constraintName and value.
-     *
-     *    @param attrName String name of attribute
-     *    @param resourceName String name of resource
-     *    @param permissionName String name of permission
-     *    @param constraintName String name of constraint, may be  null
-     *    @param constraintValue String value of constraint, if null map to "true"
-     */
-
-    public void create(String attrName, String resourceName, String permissionName,
-            String constraintName, String constraintValue) throws AAAException {
-
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        int attrId = attrDAO.getIdByName(attrName).intValue();
-        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
-        int resourceId = resourceDAO.getIdByName(resourceName).intValue();
-        PermissionDAO permDAO = new PermissionDAO(this.dbname);
-        int permId = permDAO.getIdByName(permissionName).intValue();
-        if (constraintName == null) {
-            constraintName = "none";
-        }
-        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
-        int constrId = constrDAO.getIdByName(constraintName).intValue();
-
-        this.create(attrId,resourceId,permId,constrId,constraintValue);
-
-    }
-
-    /**
-     * Add a new authorization, given the attrId, resourceId, permissionId,
-     *    constraintId and constraintValue
-     *
-     * @param attrId int with primary key of attribute
-     * @param resourceId int with primary key of resource
-     * @param permissionId int with primary key of permission
-     * @param constraintId - int with primary key of constraint, could be null
-     * @param constraintValue - String with value of constraint, could be null
-     */
-
-    public void create(int attrId, int resourceId, int permissionId,
-                       int constraintId, String constraintValue) throws AAAException {
-
-        // check for an already existing authorization
-        Authorization auth = this.query(attrId,resourceId, permissionId, constraintId);
-        if (auth != null) {
-            throw new AAAException("duplicate entry");
-        }
-        auth = new Authorization();
-        auth.setAttrId(attrId);
-        auth.setResourceId(resourceId);
-        auth.setPermissionId(permissionId);
-        auth.setConstraintId(constraintId);
-        if (constraintValue != null) {
-            auth.setConstraintValue(constraintValue);
-        }
-        super.create(auth);
-
-    }
-
-
-    /**
-     * Add a new authorization given the attrName, resourceName, permisionName
-     *    constraintName and value.
-     *
-     *    @param attrName String name of attribute
-     *    @param resourceName String name of resource
-     *    @param permissionName String name of permission
-     *    @param constraintName String name of constraint, may be  null
-     *    @param constraintValue String value of constraint, if null map to "true"
-     */
-
-    public void update(Authorization auth, String attrName, String resourceName, String permissionName,
-            String constraintName, String constraintValue) throws AAAException {
-
-        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-        int attrId = attrDAO.getIdByName(attrName).intValue();
-        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
-        int resourceId = resourceDAO.getIdByName(resourceName).intValue();
-        PermissionDAO permDAO = new PermissionDAO(this.dbname);
-        int permId = permDAO.getIdByName(permissionName).intValue();
-        if (constraintName == null) {
-            constraintName = "none";
-        }
-        ConstraintDAO constrDAO = new ConstraintDAO(this.dbname);
-        int constrId = constrDAO.getIdByName(constraintName).intValue();
-
-        auth.setAttrId(attrId);
-        auth.setResourceId(resourceId);
-        auth.setPermissionId(permId);
-        auth.setConstraintId(constrId);
-        auth.setConstraintValue(constraintValue);
-        super.update(auth);
-
-    }
     /**
      * getConstraintName returns the constraint name for an authorization
      *

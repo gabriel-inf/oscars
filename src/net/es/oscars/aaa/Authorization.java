@@ -20,27 +20,18 @@ public class Authorization extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private Long updateTime;
 
-    /** persistent field */
-    private int attrId;
-
-    /** persistent field */
-    private int resourceId;
-
-    /** persistent field */
-    private int permissionId;
-
-    /** persistent field */
-    private int constraintId;
-
     /** nullable persistent field */
     private String constraintValue;
 
     /** associated object */
     private Constraint constraint;
+
     /** associated object */
     private Permission permission;
+
     /** associated object */
     private Resource resource;
+
     /** associated object */
     private Attribute attribute;
 
@@ -71,53 +62,6 @@ public class Authorization extends HibernateBean implements Serializable {
         this.updateTime = updateTime;
     }
 
-
-    /**
-     * @return attrId An Integer containing a user table row primary key
-     */
-    public int getAttrId() { return this.attrId; }
-
-    /**
-     * @param attrId An Integer containing a user table row primary key
-     */
-    public void setAttrId(int attrId) { this.attrId = attrId; }
-
-
-    /**
-     * @return resourceId An Integer with a resource table primary key
-     */
-    public int getResourceId() { return this.resourceId; }
-
-    /**
-     * @param resourceId An Integer with a resource table primary key
-     */
-    public void setResourceId(int resourceId) {
-        this.resourceId = resourceId;
-    }
-
-
-    /**
-     * @return permissionId An Integer with a permission table primary key
-     */
-    public int getPermissionId() { return this.permissionId; }
-
-    /**
-     * @param permissionId An Integer with a permission table primary key
-     */
-    public void setPermissionId(int permissionId) {
-        this.permissionId = permissionId;
-    }
-
-    /**
-     * @return constraintId an Integer corresponding to a constraint for this authorization
-     */
-    public int getConstraintId() { return this.constraintId; }
-
-    /**
-     * @param constraintId an Integer corresponding to a constraint value for this authorization
-     */
-    public void setConstraintId(int constraintId ) { this.constraintId = constraintId; }
-
     /**
      * @return constraintValue A String corresponding to a constraintValue for this authorization
      */
@@ -127,18 +71,6 @@ public class Authorization extends HibernateBean implements Serializable {
      * @param constraintValue A String corresponding to a constraint for this authorization
      */
     public void setConstraintValue(String constraintValue ) { this.constraintValue = constraintValue; }
-
-
-    public String toString() {
-        return new ToStringBuilder(this)
-            .append("id", getId())
-            .append("attrId", getAttrId())
-            .append("resourceId",getResourceId())
-            .append("permissionId", getPermissionId())
-            .append("ConstraintId",getConstraintId())
-            .append("ConstraintValue",getConstraintValue())
-            .toString();
-    }
 
     /**
      * @return the constraint
@@ -194,5 +126,15 @@ public class Authorization extends HibernateBean implements Serializable {
      */
     public void setAttribute(Attribute attribute) {
         this.attribute = attribute;
+    }
+
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("attribute", getAttribute().getName())
+            .append("resource", getResource().getName())
+            .append("permission", getPermission().getName())
+            .append("constraint", getConstraint().getName())
+            .append("constraintValue", getConstraintValue())
+            .toString();
     }
 }

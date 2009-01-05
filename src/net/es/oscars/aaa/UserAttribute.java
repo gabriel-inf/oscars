@@ -14,17 +14,14 @@ public class UserAttribute extends HibernateBean implements Serializable {
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 5025;
 
-    /** persistent field */
-    private int userId;
-
-    /** persistent field */
-    private int attributeId;
-
     /** associated object*/
     private User user;
 
     /** associated object*/
     private Attribute attribute;
+
+    /** default constructor */
+    public UserAttribute() { }
 
     /**
      * @return the user
@@ -54,35 +51,10 @@ public class UserAttribute extends HibernateBean implements Serializable {
         this.attribute = attribute;
     }
 
-    /** default constructor */
-    public UserAttribute() { }
-
-    /**
-     * @return userId the foreign key into the users table
-     */
-    public int getUserId() { return this.userId; }
-
-    /**
-     * @return  attributeId the foreign key into the attribute table
-     */
-    public int getAttributeId() { return this.attributeId; }
-
-    /**
-     * @param userId An int that is a foreign key into the users table
-     * */
-    public void setUserId(int userId) { this.userId = userId; }
-
-    /**
-     * @param attributeId An int that is a foreign key into the attributes table
-     * */
-    public void setAttributeId(int attributeId) { this.attributeId = attributeId; }
-
-
     public String toString() {
         return new ToStringBuilder(this)
-            .append("id", getId())
-            .append("userId",getUserId())
-            .append("attributeId", getAttributeId())
+            .append("user", getUser().getLogin())
+            .append("attribute", getAttribute().getName())
             .toString();
     }
 }
