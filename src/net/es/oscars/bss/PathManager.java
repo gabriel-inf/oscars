@@ -282,15 +282,14 @@ public class PathManager {
         /* Set the local VLAN range on each hop to the suggested VLAN
            for both interdomain and local path */
         for(List<PathElem> pathToUpdate : pathsToUpdate){
-        for(PathElem interPathElem : interLocalSegment){
-            PathElemParam sugVlanParam = interPathElem.getPathElemParam(
-                    PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
-            PathElemParam vlanRange = interPathElem.getPathElemParam(
-                    PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
-            vlanRange.setValue(sugVlanParam.getValue());
+            for(PathElem elem : pathToUpdate){
+                PathElemParam sugVlanParam = elem.getPathElemParam(
+                        PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+                PathElemParam vlanRange = elem.getPathElemParam(
+                        PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                vlanRange.setValue(sugVlanParam.getValue());
+            }
         }
-        }
-        
     }
 
     /**
