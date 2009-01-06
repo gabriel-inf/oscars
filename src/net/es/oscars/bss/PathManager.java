@@ -224,7 +224,7 @@ public class PathManager {
     }
 
     /**
-     * Finalizes VLAN tags for reservation.
+     *  s VLAN tags for reservation.
      *
      * @param resv reservation to be stored in database
      * @param path path associated with Hibernate bean
@@ -234,70 +234,63 @@ public class PathManager {
             throws BSSException {
 
         this.log.info("finalizing VLAN tags");
-
-        /*
-         * FIXME START
-        CtrlPlaneHopContent nextExtHop = this.getNextExternalHop(pathInfo);
-        //Retrieve the local path
-        PathInfo intraPathInfo = new PathInfo();
-        intraPathInfo.setPath(WSDLTypeConverter.pathToCtrlPlane(path, false));
-        this.expandLocalHops(intraPathInfo);
-        CtrlPlanePathContent intraPath = intraPathInfo.getPath();
-        CtrlPlaneHopContent[] hops = intraPath.getHop();
-        List<PathElem> elems = path.getPathElems();
-        String egrSuggestedVLAN = "";
-        int ctr = 0;
-        for(CtrlPlaneHopContent hop : hops){
-            if (ctr >= elems.size()) {
-                break;
-            }
-            PathElem elem = elems.get(ctr);
-            Link link = elem.getLink();
-            if (link==null || link.getL2SwitchingCapabilityData()==null) {
-                ctr++;
+        
+        PathElem nextExtPathElem = null;
+        String egrSugVlan = null;
+        boolean localFound = false;
+        String nextExtVlan = null;
+        List<PathElem> interLocalSegment = new ArrayList<PathElem>();
+        Path localPath = resv.getPath(PathType.LOCAL);
+        List<List<PathElem>> pathsToUpdate = new ArrayList<List<PathElem>>();
+        pathsToUpdate.add(interLocalSegment);
+        pathsToUpdate.add(localPath.getPathElems());
+        
+        //Find ingress pathElem of next domain (if exists)
+        for(PathElem interPathElem : interdomainPath.getPathElems()){
+            String domainUrn = URNParser.parseTopoIdent(interPathElem.getUrn()).get("domainFQID");
+            Domain domain = null;
+            try{
+                domain = TopologyUtil.getDomain(domainUrn, this.dbname);
+            }catch(BSSException e){
                 continue;
             }
-            hop.getLink().getSwitchingCapabilityDescriptors()
-                         .getSwitchingCapabilitySpecificInfo()
-                         .setSuggestedVLANRange(elem.getLinkDescr());
-            egrSuggestedVLAN = elem.getLinkDescr();
-            ctr++;
+            if(domain.isLocal()){
+                localFound = true;
+                interLocalSegment.add(interPathElem);
+                egrSugVlan = interPathElem.getPathElemParam(PathElemParamSwcap.L2SC, 
+                        PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
+            }else if(localFound && (!domain.isLocal())){
+                nextExtPathElem = interPathElem;
+                break;
+            }
         }
-        FIXME END
-        */
-
+        
         /* Find the next hop(if any) and see if it uses the suggested VLAN.
-           If not then try to choose another by doing the oversubscription
-           check again. */
-
-        /* FIXME START
-        String nextVlan = null;
-        if (nextExtHop != null && nextExtHop.getLink() != null) {
-            nextVlan = nextExtHop.getLink()
-                                 .getSwitchingCapabilityDescriptors()
-                                 .getSwitchingCapabilitySpecificInfo()
-                                 .getVlanRangeAvailability();
+        If not then try to choose another by doing the oversubscription
+        check again. */
+        if(nextExtPathElem != null){
+            nextExtVlan = nextExtPathElem.getPathElemParam(PathElemParamSwcap.L2SC, 
+                    PathElemParamType.L2SC_VLAN_RANGE).getValue();
         }
-
-        if (nextVlan != null && (!egrSuggestedVLAN.equals(nextVlan))) {
+        if(nextExtVlan != null && (!nextExtVlan.equals(egrSugVlan))){
             ReservationDAO dao = new ReservationDAO(this.dbname);
             List<Reservation> active = dao.overlappingReservations(
                                         resv.getStartTime(), resv.getEndTime());
             this.policyMgr.checkOversubscribed(active, resv);
         }
-        for (CtrlPlaneHopContent hop : hops) {
-            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
-                         hop.getLink().getSwitchingCapabilityDescriptors()
-                                      .getSwitchingCapabilitySpecificInfo();
-            String sug = swcapInfo.getSuggestedVLANRange();
-            swcapInfo.setVlanRangeAvailability(sug);
-            swcapInfo.setSuggestedVLANRange(null);
+        
+        /* Set the local VLAN range on each hop to the suggested VLAN
+           for both interdomain and local path */
+        for(List<PathElem> pathToUpdate : pathsToUpdate){
+        for(PathElem interPathElem : interLocalSegment){
+            PathElemParam sugVlanParam = interPathElem.getPathElemParam(
+                    PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+            PathElemParam vlanRange = interPathElem.getPathElemParam(
+                    PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            vlanRange.setValue(sugVlanParam.getValue());
         }
-        HashMapTypeConverter.mergePathInfo(intraPathInfo, pathInfo, true);
-        this.convertPathElemList(intraPathInfo, path.getPathElems(), false);
-        FIXME END
-        */
-
+        }
+        
     }
 
     /**
