@@ -121,13 +121,13 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         ArrayList <Integer> newRoles = (ArrayList <Integer>) parameters.get("newRoles");
         ArrayList <Integer> curRoles = (ArrayList <Integer>) parameters.get("curRoles");
 
-        User user = (User) parameters.get("user");
-        Integer userId = user.getId();
+        // transient
+        User modifiedUser = (User) parameters.get("user");
         Boolean setPassword = (Boolean) parameters.get("setPassword");
         if (setPassword == null) {
             setPassword = false;
         }
-        if (user == null) {
+        if (modifiedUser == null) {
             throw new RemoteException("User not set");
         } else if (newRoles == null) {
             throw new RemoteException("Roles not set");
@@ -135,26 +135,56 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         Session aaa = core.getAaaSession();
         try {
             aaa.beginTransaction();
+            UserDAO userDAO = new UserDAO(core.getAaaDbName());
+            User user = userDAO.queryByParam("login", modifiedUser.getLogin());
+            if (user == null) {
+                throw new RemoteException("User " + modifiedUser.getLogin() +
+                                          " does not exist");
+            }
+            InstitutionDAO institutionDAO =
+                new InstitutionDAO(core.getAaaDbName());
+            Institution modifiedInst = institutionDAO.queryByParam(
+                               "name", modifiedUser.getInstitution().getName());
+            if (modifiedInst == null) {
+                throw new RemoteException("Institution " +
+                                       modifiedUser.getInstitution().getName() +
+                                       " not found!");
+            }
+            user.setCertIssuer(modifiedUser.getCertIssuer());
+            user.setCertSubject(modifiedUser.getCertSubject());
+            user.setLastName(modifiedUser.getLastName());
+            user.setFirstName(modifiedUser.getFirstName());
+            user.setEmailPrimary(modifiedUser.getEmailPrimary());
+            user.setPhonePrimary(modifiedUser.getPhonePrimary());
+            if (setPassword) {
+                user.setPassword(modifiedUser.getPassword());
+            }
+            user.setDescription(modifiedUser.getDescription());
+            user.setEmailSecondary(modifiedUser.getEmailSecondary());
+            user.setPhoneSecondary(modifiedUser.getPhoneSecondary());
+            if (user.getInstitution().getName() !=
+                  modifiedUser.getInstitution().getName()) {
+                user.setInstitution(modifiedInst);
+            }
             UserManager mgr = core.getUserManager();
-            UserAttributeDAO userAttrDAO = new UserAttributeDAO(core.getAaaDbName());
-            mgr.update(user,setPassword);
-
+            UserAttributeDAO userAttrDAO =
+                new UserAttributeDAO(core.getAaaDbName());
+            mgr.update(user, setPassword);
             for (Integer newRoleItem : newRoles) {
-                 int intNewRoleItem = newRoleItem.intValue();
-                 if (!curRoles.contains(intNewRoleItem)) {
-                     this.addUserAttribute(intNewRoleItem, user);
-                 }
-             }
-             for (Integer curRoleItem : curRoles){
-                int intCurRoleItem  = curRoleItem.intValue();
-                if (!newRoles.contains(intCurRoleItem)) {
-                     userAttrDAO.remove(userId, intCurRoleItem);
-                 }
-             }
-             Hibernate.initialize(user);
-             Hibernate.initialize(user.getInstitution());
-             Hibernate.initialize(user.getInstitution().getUsers());
-             aaa.getTransaction().commit();
+                int intNewRoleItem = newRoleItem.intValue();
+                this.log.info("new: " + intNewRoleItem);
+                if (!curRoles.contains(intNewRoleItem)) {
+                    this.log.info("adding user attribute");
+                    this.addUserAttribute(intNewRoleItem, user);
+                }
+            }
+            for (Integer curRoleItem : curRoles){
+               int intCurRoleItem  = curRoleItem.intValue();
+               if (!newRoles.contains(intCurRoleItem)) {
+                    userAttrDAO.remove(user.getId(), intCurRoleItem);
+                }
+            }
+            aaa.getTransaction().commit();
         } catch (Exception ex) {
             this.log.error(ex);
             aaa.getTransaction().rollback();

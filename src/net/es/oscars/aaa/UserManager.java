@@ -172,6 +172,7 @@ public class UserManager {
         UserDAO userDAO = new UserDAO(this.dbname);
         String userName = user.getLogin();
 
+        // TODO:  keep next two checks?
         // check whether this person is in the database
         User currentInfo = userDAO.query(userName);
         if (currentInfo == null) {
@@ -180,8 +181,6 @@ public class UserManager {
         // make sure institution is set properly
         if (user.getInstitution() == null) {
             user.setInstitution(currentInfo.getInstitution());
-        } else {
-            this.log.info("institution:" + user.getInstitution().getName());
         }
         // make sure password is set properly
         if (newPassword) {
@@ -189,7 +188,6 @@ public class UserManager {
             String encryptedPwd = Jcrypt.crypt(this.salt, user.getPassword());
             user.setPassword(encryptedPwd);
         }
-        this.log.info("to update");
         // persist to the database
         userDAO.update(user);
         this.log.info("update.finish:" + user.getLogin());
