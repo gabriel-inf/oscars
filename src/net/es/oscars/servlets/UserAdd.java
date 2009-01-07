@@ -65,7 +65,7 @@ public class UserAdd extends HttpServlet {
 
         try {
             List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
-            ArrayList <Integer> addRoles = null;
+            ArrayList<String> addRoles = null;
             String roles[] = request.getParameterValues("attributeName");
             for (int i=0; i < roles.length; i++) {
                 roles[i] = ServletUtils.dropDescription(roles[i].trim());
@@ -74,10 +74,10 @@ public class UserAdd extends HttpServlet {
             // on client side
             if (roles[0].equals("None")) {
                 this.log.debug("roles = null");
-                addRoles = new ArrayList<Integer>();
+                addRoles = new ArrayList<String>();
             } else {
                 this.log.debug("number of roles input is "+roles.length);
-                addRoles = roleUtils.convertRoles(roles, attributes);
+                addRoles = roleUtils.checkRoles(roles, attributes);
             }
 
             HashMap<String, Object> rmiParams = new HashMap<String, Object>();

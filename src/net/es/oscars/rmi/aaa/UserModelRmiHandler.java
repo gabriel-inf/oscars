@@ -88,7 +88,8 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
 
         this.log.debug("addUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
-        ArrayList <Integer> addRoles = (ArrayList <Integer>) parameters.get("addRoles");
+        ArrayList<String> addRoles =
+            (ArrayList<String>) parameters.get("addRoles");
         User user = (User) parameters.get("user");
         if (user == null) {
             throw new RemoteException("User not set");
@@ -118,8 +119,10 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
 
         this.log.debug("modifyUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
-        ArrayList <Integer> newRoles = (ArrayList <Integer>) parameters.get("newRoles");
-        ArrayList <Integer> curRoles = (ArrayList <Integer>) parameters.get("curRoles");
+        ArrayList<String> newRoles =
+            (ArrayList<String>) parameters.get("newRoles");
+        ArrayList<String> curRoles =
+            (ArrayList<String>) parameters.get("curRoles");
 
         // transient
         User modifiedUser = (User) parameters.get("user");
@@ -170,18 +173,16 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             UserAttributeDAO userAttrDAO =
                 new UserAttributeDAO(core.getAaaDbName());
             mgr.update(user, setPassword);
-            for (Integer newRoleItem : newRoles) {
-                int intNewRoleItem = newRoleItem.intValue();
-                this.log.info("new: " + intNewRoleItem);
-                if (!curRoles.contains(intNewRoleItem)) {
+            for (String newRoleItem: newRoles) {
+                this.log.info("new: " + newRoleItem);
+                if (!curRoles.contains(newRoleItem)) {
                     this.log.info("adding user attribute");
-                    this.addUserAttribute(intNewRoleItem, user);
+                    this.addUserAttribute(newRoleItem, user);
                 }
             }
-            for (Integer curRoleItem : curRoles){
-               int intCurRoleItem  = curRoleItem.intValue();
-               if (!newRoles.contains(intCurRoleItem)) {
-                    userAttrDAO.remove(user.getId(), intCurRoleItem);
+            for (String curRoleItem: curRoles){
+               if (!newRoles.contains(curRoleItem)) {
+                    userAttrDAO.remove(user.getLogin(), curRoleItem);
                 }
             }
             aaa.getTransaction().commit();
@@ -268,12 +269,12 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         return result;
     }
 
-    private void addUserAttribute(int attrId, User user){
+    private void addUserAttribute(String attrName, User user){
 
         UserAttributeDAO userAttrDAO = new UserAttributeDAO(core.getAaaDbName());
         AttributeDAO attrDAO = new AttributeDAO(core.getAaaDbName());
         UserAttribute userAttr = new UserAttribute();
-        Attribute attr = attrDAO.findById(attrId, false);
+        Attribute attr = attrDAO.queryByParam("name", attrName);
         userAttr.setAttribute(attr);
         userAttr.setUser(user);
         userAttrDAO.create(userAttr);

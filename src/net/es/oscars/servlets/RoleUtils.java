@@ -18,9 +18,10 @@ public class RoleUtils {
      *
      *   @param request
      */
-    public ArrayList<Integer> convertRoles (String roles[], List<Attribute> attributes) {
+    public ArrayList<String> checkRoles(String roles[],
+                                        List<Attribute> attributes) {
 
-        ArrayList <Integer> addRoles = new ArrayList<Integer>();
+        ArrayList<String> addRoles = new ArrayList<String>();
         Logger log = Logger.getLogger(this.getClass());
         if (roles != null && roles.length > 0) {
             String st;
@@ -28,16 +29,9 @@ public class RoleUtils {
                 log.debug("role is " + s);
                 if (s != null && !s.trim().equals("")) {
                     st = s.trim();
-                    Integer attrId = null;
                     for (Attribute attr : attributes) {
                         if (attr.getName().equals(st)) {
-                            attrId = attr.getId();
-                        }
-                    }
-                    if (attrId != null) {
-                        if (!addRoles.contains(attrId)) {
-                            log.info("adding "+ attrId);
-                            addRoles.add(attrId);
+                            addRoles.add(attr.getName());
                         }
                     }
                 }

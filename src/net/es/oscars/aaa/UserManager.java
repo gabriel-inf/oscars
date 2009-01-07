@@ -34,7 +34,7 @@ public class UserManager {
     public void create(User user, String institutionName)
             throws AAAException {
 
-        this.create(user, new ArrayList<Integer>());
+        this.create(user, new ArrayList<String>());
     }
 
     /** Creates a system user.
@@ -43,7 +43,7 @@ public class UserManager {
      * @param institutionName a string with the new user's affiliation
      * @param roles a list of attributes for the user
      */
-    public void create(User user, List<Integer> roles)
+    public void create(User user, List<String> roles)
             throws AAAException {
 
         User currentUser = null;
@@ -51,7 +51,6 @@ public class UserManager {
 
         this.log.info("create.start: " + user.getLogin());
         this.log.debug("create.institution: " + institutionName);
-
         String userName = user.getLogin();
         this.log.debug("create.userName: " + userName);
 
@@ -60,14 +59,11 @@ public class UserManager {
         if (currentUser != null) {
             throw new AAAException("User " + userName + " already exists.");
         }
-
         InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
         Institution inst = institutionDAO.queryByParam("name", institutionName);
-
         if (inst == null) {
             throw new AAAException("Institution "+institutionName+" not found!");
         }
-
         user.setInstitution(inst);
         // encrypt the password before persisting it to the database
         String encryptedPwd = Jcrypt.crypt(this.salt, user.getPassword());
@@ -76,13 +72,12 @@ public class UserManager {
         userDAO.create(user);
         // add any attributes for this user to the UserAttributes table
         if (roles != null) {
-            int UserId = user.getId();
             UserAttributeDAO uaDAO = new UserAttributeDAO(this.dbname);
             AttributeDAO attrDAO = new AttributeDAO(this.dbname);
-            for (int attrId: roles) {
+            for (String attrName: roles) {
                 UserAttribute ua = new UserAttribute();
                 ua.setUser(user);
-                Attribute attr = attrDAO.findById(attrId, false);
+                Attribute attr = attrDAO.queryByParam("name", attrName);
                 ua.setAttribute(attr);
                 uaDAO.create(ua);
             }

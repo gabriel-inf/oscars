@@ -101,7 +101,7 @@ import  org.apache.log4j.*;;
 
          AttributeDAO attributeDAO = new AttributeDAO(this.dbname);
          Attribute attribute = (Attribute) attributeDAO.queryByParam(
-                                              "attributeName", attributeName);
+                                                        "name", attributeName);
 
          String hsql = "from UserAttribute " + 
                        "where userId = :userId and " +

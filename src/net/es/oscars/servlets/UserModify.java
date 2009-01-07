@@ -33,7 +33,6 @@ public class UserModify extends HttpServlet {
         boolean self = false; // is user modifying own profile
         boolean setPassword = false;
 
-
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -42,11 +41,11 @@ public class UserModify extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         String profileName = request.getParameter("profileName");
 
         Map<String, Object> outputMap = new HashMap<String, Object>();
-        if (profileName != null) { // get here by clicking on a name in the users list
+        // got here by clicking on a name in the user list
+        if (profileName != null) {
             if (profileName.equals(userName)) {
                 self = true;
             } else {
@@ -62,37 +61,41 @@ public class UserModify extends HttpServlet {
         } else {
             outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
-
         User user = null;
-        ArrayList<Integer> newRoles = new ArrayList<Integer>();
-        ArrayList<Integer> curRoles = new ArrayList<Integer>();
-
+        ArrayList<String> newRoles = new ArrayList<String>();
+        ArrayList<String> curRoles = new ArrayList<String>();
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
-
-            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
-            if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
+            AaaRmiInterface rmiClient =
+                ServletUtils.getCoreRmiClient(methodName, log, out);
+            AuthValue authVal =
+                ServletUtils.getAuth(userName, "Users", "modify", rmiClient,
+                                     methodName, log, out);
+            if ((authVal == AuthValue.ALLUSERS) || 
+                    ( self && (authVal == AuthValue.SELFONLY))) {
                 user = ServletUtils.getUser(profileName, rmiClient, out, log);
             } else {
-                ServletUtils.handleFailure(out,"no permission to modify users", methodName);
+                ServletUtils.handleFailure(out,"no permission to modify users",
+                                           methodName);
                 return;
             }
-
             if (user == null) {
                 String msg = "User " + profileName + " does not exist";
                 ServletUtils.handleFailure(out, msg, methodName);
             }
-
-            List<Attribute> attributesForUser = ServletUtils.getAttributesForUser(profileName, rmiClient, out, log);
-            List<Attribute> allAttributes = ServletUtils.getAllAttributes(rmiClient, out, log);
+            List<Attribute> attributesForUser =
+                ServletUtils.getAttributesForUser(profileName, rmiClient, out,
+                                                  log);
+            List<Attribute> allAttributes =
+                ServletUtils.getAllAttributes(rmiClient, out, log);
 
             this.convertParams(request, user);
             String password = request.getParameter("password");
-            String confirmationPassword = request.getParameter("passwordConfirmation");
-
+            String confirmationPassword =
+                request.getParameter("passwordConfirmation");
             // handle password modification if necessary
-            // checkpassword will return null, if password is  not to be changed
-            String newPassword = ServletUtils.checkPassword(password, confirmationPassword);
+            // check will return null, if password is  not to be changed
+            String newPassword = ServletUtils.checkPassword(password,
+                                                          confirmationPassword);
             if (newPassword != null) {
                 user.setPassword(newPassword);
                 setPassword = true;
@@ -107,15 +110,18 @@ public class UserModify extends HttpServlet {
                 }
                 if (roles[0].equals("None")) {
                     log.info("AddUser: roles = null");
-                    newRoles = new ArrayList<Integer>();
+                    newRoles = new ArrayList<String>();
                 } else {
                     this.log.info("number of roles input is " + roles.length);
-                    newRoles = roleUtils.convertRoles(roles, allAttributes);
+                    newRoles = roleUtils.checkRoles(roles, allAttributes);
                 }
                 for (Attribute attr : attributesForUser) {
-                    curRoles.add(attr.getId());
+                    curRoles.add(attr.getName());
                 }
-             }
+            }
+            for (String role: newRoles) {
+                this.log.info("new role: " + role);
+            }
 
             HashMap<String, Object> rmiParams = new HashMap<String, Object>();
             rmiParams.put("user", user);
@@ -124,14 +130,14 @@ public class UserModify extends HttpServlet {
             rmiParams.put("objectType", ModelObject.USER);
             rmiParams.put("operation", ModelOperation.MODIFY);
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
-            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
-
+            rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
+                                                     out, rmiParams);
         } catch (Exception e) {
             ServletUtils.handleFailure(out, e.getMessage(), methodName);
             return;
         }
-        outputMap.put("status", "Profile for user " + profileName + " successfully modified");
+        outputMap.put("status", "Profile for user " + profileName +
+                      " successfully modified");
         // user may have changed his own attributes
         //authVal = mgr.checkAccess(userName, "Users", "modify");
         // or user may  have changed a target users attributes
@@ -158,7 +164,8 @@ public class UserModify extends HttpServlet {
      *        modified by the parameters in the request.
      * @throws AAAException
      */
-    public void convertParams(HttpServletRequest request, User user) throws AAAException {
+    public void convertParams(HttpServletRequest request, User user)
+            throws AAAException {
 
         String strParam = null;
         String DN = null;
@@ -169,7 +176,6 @@ public class UserModify extends HttpServlet {
             institution.setName(strParam);
             user.setInstitution(institution);
         }
-
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = ServletUtils.checkDN(strParam);
@@ -212,5 +218,4 @@ public class UserModify extends HttpServlet {
             user.setActivationKey(strParam);
         }
     }
-
 }
