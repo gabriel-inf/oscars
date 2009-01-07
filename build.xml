@@ -195,8 +195,8 @@
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
         </copy>
-        <copy file="conf/oscars-aar/oscars-services.xml.template" tofile="conf/aar/oscars-services.xml"/>
-        <replace summary="true" file="conf/aar/oscars-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/aar"/>
+        <copy file="conf/oscars-aar/oscars-services.xml.template" tofile="conf/oscars-aar/oscars-services.xml"/>
+        <replace summary="true" file="conf/oscars-aar/oscars-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
 
         <copy file="conf/oscars-aar/notify-services.xml.template" tofile="conf/oscars-aar/notify-services.xml"/>
         <replace summary="true" file="conf/oscars-aar/notify-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
@@ -551,18 +551,19 @@ Adding a -sd switch generates resources/services.xml -->
         <!-- don't let newer  OSCARS.jks file overwrite existing one -->
         <available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks" value="true" />
 
-          <!-- let  new value of rampConfig.xml over write existing one, but edit the target in addUserAlias -->
+        <!-- let  new value of rampConfig.xml over write existing one, but edit the target in addUserAlias -->
+        <!-- may need to replace domain/server/rampConfig.xml with a standard rampConfig.template.xml -mrt -->
         <uptodate property="rampConfig.xml.exists"
-                targetfile="conf/aar/rampConfig.xml"
+                targetfile="conf/oscars-aar/rampConfig.xml"
                 srcfile="${domain.home}/server/rampConfig.xml" />
 
-        <!-- if rampConfig.xml exists, also copy it under conf/aar -->
-        <copy todir="conf/aar/">
+        <!-- if rampConfig.xml is new copy to conf/oscars-aar -->
+        <copy todir="conf/oscars-aar/">
             <fileset dir="${domain.home}/server/">
                 <include name="rampConfig.xml" unless="rampConfig.xml.exists" />
             </fileset>
         </copy>
-
+           
         <!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
         <uptodate property="axis2.xml.exists" targetfile="${catalina.home}/shared/classes/repo/axis2.xml"
                             srcfile="${defaultKeys}/client/axis2.xml" />
@@ -570,8 +571,10 @@ Adding a -sd switch generates resources/services.xml -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${defaultKeys}/client" includes="axis2.xml,axis2-norampart.xml, ssl-keystore.jks"/>
+            <fileset dir="conf/oscars-aar"> 
+                <include name="rampConfig.xml"/> 
+            </fileset>
             <fileset dir="${domain.home}/server">
-                <include name="rampConfig.xml"/>
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
             </fileset>
         </copy>
@@ -631,7 +634,7 @@ Adding a -sd switch generates resources/services.xml -->
             message="Please enter the service user name to be used when it acts as a client."
             addproperty="user.alias"
         />
-        <replace file="conf/aar/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
+        <replace file="conf/oscars-aar/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
     </target>
 
     <target name="addKeystorePassword" unless="rampConfig.xml.exists">
@@ -639,7 +642,7 @@ Adding a -sd switch generates resources/services.xml -->
             message="Please enter the password for the client keystore."
             addproperty="keystore.password"
         />
-        <replace file="conf/aar/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
+        <replace file="conf/oscars-aar/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
     </target>
 
     <target name="existing.keystore.warning" unless="OSCARS.jks.exists">
