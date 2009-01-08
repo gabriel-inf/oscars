@@ -243,6 +243,10 @@ INSERT INTO rpcs VALUES (NULL,
 -- all-users constraint
 INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="users"),
+	(select id from permissions where name="create"),
+	(select id from constraints where name="all-users"));
+INSERT INTO rpcs VALUES (NULL,
+	(select id from resources where name="users"),
 	(select id from permissions where name="list"),
 	(select id from constraints where name="all-users"));
 INSERT INTO rpcs VALUES (NULL,
