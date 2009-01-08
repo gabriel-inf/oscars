@@ -73,7 +73,7 @@
 
         <jar destfile="build/aaa-core.jar">
             <fileset dir="${build.classes}"
-		    includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/*, WEB-INF/**/*"/>
+                includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/*, WEB-INF/**/*"/>
             <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml"/>
             <fileset dir="conf/rmi" includes="rmi.properties"/>
             <fileset dir="${build.home}/aaa-core/" includes="log4j.properties"/>
@@ -197,7 +197,6 @@
         </copy>
         <copy file="conf/oscars-aar/oscars-services.xml.template" tofile="conf/oscars-aar/oscars-services.xml"/>
         <replace summary="true" file="conf/oscars-aar/oscars-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
-
         <copy file="conf/oscars-aar/notify-services.xml.template" tofile="conf/oscars-aar/notify-services.xml"/>
         <replace summary="true" file="conf/oscars-aar/notify-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
     </target>
@@ -249,15 +248,15 @@
     </target>
 
     <!-- Using Axis2, generates code in net.es.oscars.oscars and
-net.es.oscars.wsdlTypes.  Also, OSCARS.wsdl is copied into resources,
-a services.xml file generated in resources, and a build.xml generated in the
-output directory.
+        net.es.oscars.wsdlTypes.  Also, OSCARS.wsdl is copied into resources,
+        a services.xml file generated in resources, and a build.xml generated in the
+        output directory.
 
-Currently all auto-generated code is checked into Subversion as reference
-material.
+        Currently all auto-generated code is checked into Subversion as reference
+        material.
 
-Adding a -t switch generates a Junit test in test/ne/es/oscars/service
-Adding a -sd switch generates resources/services.xml -->
+        Adding a -t switch generates a Junit test in test/ne/es/oscars/service
+        Adding a -sd switch generates resources/services.xml -->
     <target name="wsdl2java" depends="prepare, genWsdl.check" if="genWsdl">
         <delete failonerror="true">
             <fileset dir="src/net/es/oscars/wsdlTypes" includes="*"/>
@@ -546,45 +545,39 @@ Adding a -sd switch generates resources/services.xml -->
         </copy>
     </target>
 
-<!-- FIXME: Where should repo be? Also defaultKeys is kindof strange.  -->
+<!-- Intended to be used by sites that copy modified versions of these files to a $DOMAIN_HOME directory
+     If new values of these files exist they will be installed into the server area, except for OSCARS.jks -->
     <target name="copydomain" if="domain.exists">
-        <!-- don't let newer  OSCARS.jks file overwrite existing one -->
-        <available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks" value="true" />
-
-        <!-- let  new value of rampConfig.xml over write existing one, but edit the target in addUserAlias -->
-        <!-- may need to replace domain/server/rampConfig.xml with a standard rampConfig.template.xml -mrt -->
+        <!-- don't let newer  OSCARS.jks file overwrite existing one, but later inform user that a new file exists -->
+        <available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"  value="true" />
+        <uptodate property="OSCARS.jks.uptodate" 
+            targetfile="${catalina.home}/shared/classes/repo/OSCARS.jks" 
+            srcfile="${domain.home}/server/OSCARS.jks"/>
+        <!-- let a newer value of rampConfig.xml overwrite existing one, but edit the target in addUserAlias -->
         <uptodate property="rampConfig.xml.exists"
-                targetfile="conf/oscars-aar/rampConfig.xml"
-                srcfile="${domain.home}/server/rampConfig.xml" />
-
-        <!-- if rampConfig.xml is new copy to conf/oscars-aar -->
-        <copy todir="conf/oscars-aar/">
-            <fileset dir="${domain.home}/server/">
-                <include name="rampConfig.xml" unless="rampConfig.xml.exists" />
-            </fileset>
-        </copy>
-           
+            targetfile="conf/oscars-aar/rampConfig.xml"
+            srcfile="${domain.home}/server/rampConfig.xml" />
+        <copy file="${domain.home}/server/rampConfig.xml" tofile="conf/oscars-aar/rampConfig.xml"/> 
         <!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
-        <uptodate property="axis2.xml.exists" targetfile="${catalina.home}/shared/classes/repo/axis2.xml"
-                            srcfile="${defaultKeys}/client/axis2.xml" />
-        <!-- Copy domain keys to repo -->
+        <uptodate property="axis2.xml.exists" 
+            targetfile="${catalina.home}/shared/classes/repo/axis2.xml"
+            srcfile="${defaultKeys}/client/axis2.xml" />
+        <!-- Copy domain keys and properties and generic axis.xml files to $CATALINA_HOME -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
-            <fileset dir="${defaultKeys}/client" includes="axis2.xml,axis2-norampart.xml, ssl-keystore.jks"/>
-            <fileset dir="conf/oscars-aar"> 
-                <include name="rampConfig.xml"/> 
-            </fileset>
+            <fileset dir="${defaultKeys}/client" includes="axis2.xml,axis2-norampart.xml"/>
             <fileset dir="${domain.home}/server">
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
             </fileset>
         </copy>
-
         <copy todir="${catalina.home}/shared/classes/server">
-            <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
+            <fileset dir="${domain.home}/server/" includes="*key, ssl-keystore.jks, oscars.properties, test.properties, idc-topic*"/>
         </copy>
     </target>
 
-<!-- FIXME: Should rethink this a bit.  -->
+<!-- Intended to be used by sites who update with tar file releases
+     On an release update, these files will be copied and edited by an upgrade script
+     This task will only be effective on a clean installation  -->
     <target name="copydefaults" unless="domain.exists">
         <!-- Copy default configs if they don't exist. -->
         <available property="axis2.xml.exists" file="${catalina.home}/shared/classes/repo/axis2.xml" value="true"/>
@@ -592,6 +585,9 @@ Adding a -sd switch generates resources/services.xml -->
         <available property="ssl-keystore.jks.exists" file="${catalina.home}/shared/classes/repo/ssl-keystore.jks" value="true"/>
         <available property="rampConfig.xml.exists" file="${catalina.home}/shared/classes/repo/rampConfig.xml" value="true" />
         <available property="OSCARS.jks.exists" file="${catalina.home}/shared/classes/repo/OSCARS.jks"  value="true" />
+        <uptodate property="OSCARS.jks.uptodate" 
+            targetfile="${catalina.home}/shared/classes/repo/OSCARS.jks" 
+            srcfile="${defaultKeys}/server/OSCARS.jks"/>
         <available property="oscars.properties.exists" file="${catalina.home}/shared/classes/server/oscars.properties" value="true"/>
         <available property="test.properties.exists" file="${catalina.home}/shared/classes/server/test.properties" value="true"/>
         <available property="idc-topicnamespace.xml.exists" file="${catalina.home}/shared/classes/server/idc-topicnamespace.xml" value="true"/>
@@ -600,7 +596,7 @@ Adding a -sd switch generates resources/services.xml -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${defaultKeys}/client">
-                <include name="axis2.xml"/>
+                <include name="axis2.xml" unless="axis2.xml.exists"/>
                 <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists"/>
                 <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists"/>
             </fileset>
@@ -643,6 +639,7 @@ Adding a -sd switch generates resources/services.xml -->
             addproperty="keystore.password"
         />
         <replace file="conf/oscars-aar/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
+        <copy file="conf/oscars-aar/rampConfig.xml" tofile="${catalina.home}/shared/classes/repo/rampConfig.xml"/>
     </target>
 
     <target name="existing.keystore.warning" unless="OSCARS.jks.exists">
@@ -651,9 +648,16 @@ Adding a -sd switch generates resources/services.xml -->
   **** You must add a KeyEntry for the service. ****
         </echo>
     </target>
+    
+    <target name="new.keystore.warning" unless="OSCARS.jks.uptodate">
+        <echo level="warning">  ****  A new OSCARS.jks.file is available  ***
+  **** You may want to merge it with the one in  ***
+  **** ${catalina.home}/shared/classes/repo  ****
+        </echo>
+    </target>
 
     <target name="setupServer" description="populate the shared/classes directory"
-                      depends="copydomain,copydefaults,addUserAlias,addKeystorePassword,existing.keystore.warning,edit_axis2.xml">
+                      depends="copydomain,copydefaults,addUserAlias,addKeystorePassword,existing.keystore.warning,new.keystore.warning,edit_axis2.xml">
 
         <!-- copy log4j.jar and commons-logging.jar to common/lib so that Tomcat will use log4j logging -->
         <copy todir="${catalina.home}/common/lib/">
