@@ -361,11 +361,11 @@ public class PathSetupManager{
         ReservationDAO dao = new ReservationDAO(this.dbname);
         ReservationManager rm = this.core.getReservationManager();
         Reservation resv = dao.query(gri);
-        String login = resv.getLogin();
         if(resv == null){
             this.log.error("Reservation " + gri + " not found");
             return;
         }
+        String login = resv.getLogin();
         
         Domain prevDomain = rm.endPointDomain(resv, true);
         Domain nextDomain = rm.endPointDomain(resv, false);
