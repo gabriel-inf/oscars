@@ -27,14 +27,23 @@ public class Node extends HibernateBean implements Serializable {
     /** persistent field */
     private String topologyIdent;
 
+    /** nullable persistent field */
+    private Double latitude;
+
+    /** nullable persistent field */
+    private Double longitude;
+
     /** persistent field */
     private Domain domain;
+
     private Set ports = new HashSet<Port>();
+
     private NodeAddress nodeAddress;
 
     /** default constructor */
     public Node() {
     }
+
     /** initializing constructor */
     public Node(Domain domDB, boolean init) {
         if (!init) {
@@ -71,6 +80,34 @@ public class Node extends HibernateBean implements Serializable {
      */
     public void setTopologyIdent(String topologyIdent) {
         this.topologyIdent = topologyIdent;
+    }
+
+    /**
+     * @return latitude latitude in degrees where node is located
+     */
+    public Double getLatitude() {
+        return this.latitude;
+    }
+
+    /**
+     * @param latitude latitude in degrees where node is located
+     */
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    /**
+     * @return longitude longitude in degrees where node is located
+     */
+    public Double getLongitude() {
+        return this.longitude;
+    }
+
+    /**
+     * @param longitude longitude in degrees where node is located
+     */
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     /**

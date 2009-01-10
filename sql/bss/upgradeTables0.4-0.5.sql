@@ -27,6 +27,9 @@ ALTER TABLE pathElems ADD seqNumber INT AFTER pathId;
 ALTER TABLE pathElems ADD urn TEXT NOT NULL AFTER seqNumber;
 ALTER TABLE pathElems ADD userName TEXT after urn;
 
+ALTER TABLE nodes ADD latitude DOUBLE after topologyIdent;
+ALTER TABLE nodes ADD longitude DOUBLE after topologyIdent;
+
 UPDATE paths p set p.reservationId =
     (SELECT r.id from reservations r where r.pathId = p.id);
 

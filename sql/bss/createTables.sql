@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS nodes (
     valid               BOOLEAN NOT NULL,
       -- topology exchange id; in ESnet, router name
     topologyIdent       TEXT NOT NULL,
+    latitude            DOUBLE,
+    longitude           DOUBLE,
         -- key of corresponding domain in domains table
     domainId            INT NOT NULL,
     PRIMARY KEY (id)

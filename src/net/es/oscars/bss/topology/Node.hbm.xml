@@ -38,6 +38,10 @@
         </meta>
     </property>
 
+    <property name="latitude" />
+
+    <property name="longitude" />
+
     <!-- Associations -->
 
     <many-to-one name="domain" column="domainId"
