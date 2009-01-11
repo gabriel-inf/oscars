@@ -40,7 +40,7 @@ public class ReservationDAO
         throws BSSException {
 
         Reservation reservation = this.queryByParam("globalReservationId", gri);
-        if (reservation != null) {
+        if (reservation == null) {
             throw new BSSException ("No reservation matches requested gri: " + gri);
         }
         reservation.initializePaths();
