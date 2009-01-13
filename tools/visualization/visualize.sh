@@ -30,7 +30,7 @@ export CLASSPATH=$CLASSPATH
 
 
 # start up logging to file
-javac `pwd`/ReservationVisualizer.java -d ../../build/tools
+javac `pwd`/ReservationVisualizer.java
 java -Djava.net.preferIPv4Stack=true ReservationVisualizer $*
 
 exit 1

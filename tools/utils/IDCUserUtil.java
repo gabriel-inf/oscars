@@ -4,7 +4,7 @@ import java.io.*;
 import net.es.oscars.*;
 import net.es.oscars.aaa.*;
 import net.es.oscars.database.*;
-import net.es.oscars.servlets.Utils;
+import net.es.oscars.servlets.ServletUtils;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
@@ -31,7 +31,7 @@ public class IDCUserUtil extends IDCCmdUtil{
     public void addUser(){
         Scanner in = new Scanner(System.in);
         String input = null;
-        Utils utils = new Utils();
+        ServletUtils utils = new ServletUtils();
         ArrayList<UserAttribute> userAttrs = new ArrayList<UserAttribute>();
         String salt = this.props.getProperty("salt");
 
@@ -95,7 +95,7 @@ public class IDCUserUtil extends IDCCmdUtil{
         /* Save the user and attributes */
         aaa.save(user);
         for(UserAttribute userAttr : userAttrs){
-            userAttr.setUserId(user.getId());
+            userAttr.setUser(user);
             aaa.save(userAttr);
         }
         aaa.getTransaction().commit();
@@ -198,7 +198,7 @@ public class IDCUserUtil extends IDCCmdUtil{
                 System.exit(0);
             }
             UserAttribute userAttr = new UserAttribute();
-            userAttr.setAttributeId(attrs.get(n-1).getId());
+            userAttr.setAttribute(attrs.get(n-1));
             userAttrs.add(userAttr);
         }
         

@@ -199,6 +199,12 @@
         <replace summary="true" file="conf/oscars-aar/oscars-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
         <copy file="conf/oscars-aar/notify-services.xml.template" tofile="conf/oscars-aar/notify-services.xml"/>
         <replace summary="true" file="conf/oscars-aar/notify-services.xml" token="**path_to_rampConfig**" value="${basedir}/conf/oscars-aar"/>
+
+        <!-- for lack of a better place, need bss.cfg.xml for tools -->
+        <property name="tool.classes" value="build/tools"/>
+        <copy todir="${tool.classes}">
+            <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml, bss.cfg.xml"/>
+        </copy>
     </target>
 
     <target name="axis2LocalCopy" if="axis2.local">

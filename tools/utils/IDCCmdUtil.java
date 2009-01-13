@@ -4,7 +4,7 @@ import java.io.*;
 import net.es.oscars.*;
 import net.es.oscars.aaa.*;
 import net.es.oscars.database.*;
-import net.es.oscars.servlets.Utils;
+import net.es.oscars.servlets.ServletUtils;
 
 import org.apache.log4j.*;
 import org.hibernate.*;

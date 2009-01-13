@@ -6,9 +6,10 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.client.GraphVizExporter;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import org.hibernate.*;
 import org.hibernate.cfg.*;
@@ -52,12 +53,12 @@ public class ReservationVisualizer {
 
         try {
 
-            ge.exportTopology(topo, rm.list(null, null, statuses, "FNAL", null, null, null, null));
+            ge.exportTopology(topo, rm.list(10, 0, null, null, statuses, "FNAL", null, null, null, null));
 
             String dot = ge.getDotSource();
             ge.writeDotSourceToFile(dot, graphFile);
 
-            ge.setDOT("/usr/bin/neato");
+            ge.setDOT("neato");
             ge.writeGraphToFile(neatoFile);
 
 //            ge.setDOT("/usr/bin/dot");
