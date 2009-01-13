@@ -334,7 +334,7 @@ public class VlanMapFilter implements PolicyFilter{
     public void examineReservation(Reservation resv, String newLogin,
                             HashMap<String, byte[]> vlanMap,
                             HashMap<String, Boolean> untagMap) throws BSSException{
-        Path resvPath = resv.getPath("intra");
+        Path resvPath = resv.getPath(PathType.LOCAL);
         List<PathElem> pathElems = resvPath.getPathElems();
         for (PathElem pathElem: pathElems) {
             Link link = pathElem.getLink();

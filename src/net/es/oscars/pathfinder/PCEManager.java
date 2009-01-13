@@ -5,6 +5,7 @@ import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathType;
 
 /**
  * This class contains methods for handling PCE's (path computation elements)
@@ -32,7 +33,7 @@ public class PCEManager {
     public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
         this.log.info("PCEManager.findLocalPath.start");
 
-        List<String> pathMethods = this.getPathMethods("local");
+        List<String> pathMethods = this.getPathMethods(PathType.LOCAL);
         List<Path> results = null;
         
         if (pathMethods != null) {
@@ -68,7 +69,7 @@ public class PCEManager {
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
         this.log.info("PCEManager.findLocalPath.start");
 
-        List<String> pathMethods = this.getPathMethods("interdomain");
+        List<String> pathMethods = this.getPathMethods(PathType.INTERDOMAIN);
         List<Path> results = null;
         
         if (pathMethods != null) {

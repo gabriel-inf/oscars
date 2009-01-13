@@ -923,7 +923,7 @@ public class TopologyManager {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.statusReservations(status);
         for (Reservation r : reservations) {
-            Path oldPath = r.getPath("intra");
+            Path oldPath = r.getPath(PathType.LOCAL);
 
             // find old ingress and egress IP's
             // TODO:  this may no longer be necessary

@@ -82,7 +82,7 @@ public class GraphVizExporter {
    /**subgraph cluster_b
     * Where is your dot program located? It will be called externally.
     */
-   private static String DOT        = "/usr/bin/dot";
+   private static String DOT        = "dot";
 
    /**
     * The source of the graph written in dot language.
@@ -347,7 +347,7 @@ public class GraphVizExporter {
                this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
            }
            /* INTERDOMAIN:  FIXME (wasn't previously functional)
-           path = resv.getPath("inter");
+           path = resv.getPath(PathType.INTERDOMAIN);
            pathElems = path.getPathElems();
            for (int i = 0; i < pathElems.size(); i++) {
                PathElem pe = pathElems.get(i);

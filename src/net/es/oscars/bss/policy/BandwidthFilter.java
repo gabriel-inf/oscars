@@ -125,7 +125,7 @@ public class BandwidthFilter implements PolicyFilter {
 
         Link link = null;
         // get path list
-        List<PathElem> pathElems = resv.getPath("intra").getPathElems();
+        List<PathElem> pathElems = resv.getPath(PathType.LOCAL).getPathElems();
         for (PathElem pathElem: pathElems) {
             link = pathElem.getLink();
             if (linkIntervals.containsKey(link)) {

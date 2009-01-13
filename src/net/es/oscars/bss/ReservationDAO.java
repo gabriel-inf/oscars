@@ -159,8 +159,8 @@ public class ReservationDAO
         if (links != null && !links.isEmpty()) {
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
             for (Reservation rsv : this.reservations) {
-                if (!rsv.getPath("intra").containsAnyOf(links)) {
-                    this.log.debug("not returning: " + rsv.getGlobalReservationId());
+                if (!rsv.getPath(PathType.LOCAL).containsAnyOf(links)) {
+                    this.log.info("not returning: " + rsv.getGlobalReservationId());
                     removeThese.add(rsv);
                 }
             }

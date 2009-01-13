@@ -96,12 +96,12 @@ public class Path extends HibernateBean implements Serializable {
 
 
     /**
-     * @return path type (currently intra or inter)
+     * @return path type (currently local or interdomain)
      */
     public String getPathType() { return this.pathType; }
 
     /**
-     * @param pathType path type (currently intra or inter)
+     * @param pathType path type (currently local or interdomain)
      */
     public void setPathType(String pathType) throws BSSException {
         if (!PathType.isValid(pathType)) {

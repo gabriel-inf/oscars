@@ -4,6 +4,7 @@ import java.util.*;
 import org.apache.log4j.*;
 
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.OSCARSCore;
 
@@ -44,7 +45,7 @@ public class PSSScheduler {
         for (Reservation resv: reservations) {
             try {
                 // call PSS to schedule LSP setup(s)
-                String pathSetupMode = resv.getPath("intra").getPathSetupMode();
+                String pathSetupMode = resv.getPath(PathType.LOCAL).getPathSetupMode();
                 if (pathSetupMode.equals("timer-automatic")) {
                     this.log.info("pendingReservation: " + resv.getGlobalReservationId());
                     // resv must be set to proper status inside PSS
