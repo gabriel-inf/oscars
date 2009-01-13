@@ -143,6 +143,9 @@ public class ReservationDAO
         this.reservations = query.list();
         this.log.debug("done with Hibernate query");
 
+        for (Reservation resv: this.reservations) {
+            resv.initializePaths();
+        }
         if (vlanTags != null && !vlanTags.isEmpty() &&
             !vlanTags.contains("any")) {
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
@@ -160,7 +163,7 @@ public class ReservationDAO
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
             for (Reservation rsv : this.reservations) {
                 if (!rsv.getPath(PathType.LOCAL).containsAnyOf(links)) {
-                    this.log.info("not returning: " + rsv.getGlobalReservationId());
+                    this.log.debug("not returning: " + rsv.getGlobalReservationId());
                     removeThese.add(rsv);
                 }
             }
@@ -168,9 +171,6 @@ public class ReservationDAO
                 this.reservations.remove(rsv);
             }
         }
-        // NOTE:  each reservation has to have initializePaths called on it
-        //        if one of its paths is to be accessed.  Not doing here
-        //        because may not always need every one.
         this.log.info("list.finish");
         return this.reservations;
     }
@@ -373,7 +373,7 @@ public class ReservationDAO
                                         .setString(0, gri)
                                         .setString(1, login)
                                         .uniqueResult();
-
+        resv.initializePaths();
         return resv;
     }
 
