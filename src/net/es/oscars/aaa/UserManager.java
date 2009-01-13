@@ -7,8 +7,10 @@ import net.es.oscars.PropHandler;
 
 
 /**
- * UserManager handles all AAA method calls at this time, and makes
- * all calls to data access objects.
+ * UserManager handles all user related method calls. It should only be called from 
+ * within the aaaRmiServer.
+ * 
+ * Methods may throw AAAExceptions
  *
  * @author David Robertson, Mary Thompson, Jason Lee, Evangelos Chaniotakis
  */

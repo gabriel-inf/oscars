@@ -32,7 +32,7 @@ public class QueryReservation extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "QueryReservation";
-        this.log.info("servlet.start");
+        this.log.debug("servlet.start");
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
@@ -52,9 +52,14 @@ public class QueryReservation extends HttpServlet {
         try {
             BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             outputMap = rmiClient.queryReservation(params, userName);
-        } catch (Exception ex) {
-            this.log.error("rmiClient failed: " + ex.getMessage());
+        } catch (RemoteException ex) {
+            this.log.debug("RemoteException rmiClient failed: " + ex.getMessage());
             ServletUtils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);
+            return;
+        } catch (Exception ex) {
+            this.log.debug("Exception rmiClient failed: " + ex.getMessage());
+            ServletUtils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);
+            return;
         }
 
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

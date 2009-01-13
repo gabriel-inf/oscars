@@ -323,10 +323,12 @@ public class ListResRmiHandler {
             // start of second sub-row
             resvMap.put("user", resv.getLogin());
             String vlanTag = null;
-            try {
-                vlanTag = BssUtils.getVlanTag(path);
-            } catch (BSSException ex) {
-                outputMap.put("error", ex.getMessage());
+            if ( path != null) {
+                try {
+                    vlanTag = BssUtils.getVlanTag(path);
+                } catch (BSSException ex) {
+                    outputMap.put("error", ex.getMessage());
+                }
             }
             if (vlanTag != null) {
                 int vlanNum = Math.abs(Integer.parseInt(vlanTag));

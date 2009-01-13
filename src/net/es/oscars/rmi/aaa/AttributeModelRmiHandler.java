@@ -37,13 +37,13 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
             String username = (String) parameters.get("username");
             if (username == null) {
                 aaa.getTransaction().rollback();
-                throw new RemoteException("No username");
+                throw new RemoteException("Invalid parameter to AttributeRmiHandler.list: No username");
             }
             UserManager mgr = core.getUserManager();
             attributes = mgr.getAttributesForUser(username);
         } else {
             aaa.getTransaction().rollback();
-            throw new RemoteException("unknown listBy");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.list: unknown listBy: " + listBy);
         }
         HashMap<String, Object> result = new HashMap<String, Object>();
         for (Attribute attr: attributes) {
@@ -66,7 +66,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         Attribute attribute = (Attribute) parameters.get("attribute");
         if (attribute == null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("No attribute set");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.add: No attribute set");
         }
         Attribute oldAttribute = dao.queryByParam("name", attribute.getName());
         if (oldAttribute != null) {
@@ -90,18 +90,18 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         Attribute attribute = (Attribute) parameters.get("attribute");
         if (attribute == null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("No attribute set");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.modify: No attribute set");
         }
         String oldName = (String) parameters.get("oldName");
         if (oldName == null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("oldName not set");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.modify: oldName not set");
         }
         AttributeDAO dao = new AttributeDAO(core.getAaaDbName());
         Attribute oldAttribute = dao.queryByParam("name", oldName);
         if (oldAttribute == null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("Attribute " + oldName + " does not exist to be modified");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.modify: Attribute " + oldName + " does not exist to be modified");
         }
         oldAttribute.setName(attribute.getName());
         oldAttribute.setDescription(attribute.getDescription());
@@ -122,7 +122,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         String attributeName = (String) parameters.get("name");
         if (attributeName == null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("Attribute name not set");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.delete: Attribute name not set");
         }
         AttributeDAO dao = new AttributeDAO(core.getAaaDbName());
         UserAttributeDAO userAttributeDAO =
@@ -133,7 +133,8 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         boolean existingAuthorizations = false;
         if (attribute == null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("Attribute " + attributeName + " does not exist to be deleted");
+            throw new RemoteException("Invalid parameter to AttributeRmiHandler.delete: Attribute " + 
+                    attributeName + " does not exist to be deleted");
         }
         try {
             List<User> users =

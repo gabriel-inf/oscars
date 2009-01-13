@@ -34,7 +34,7 @@ public class BaseRmiClient implements Remote {
 
 
     public Remote startConnection() throws RemoteException {
-        this.log.info("startConnection().start");
+        this.log.debug("startConnection().start");
 
         if (!this.configured) {
             throw new RemoteException("RMI client not configured");
@@ -60,13 +60,13 @@ public class BaseRmiClient implements Remote {
             this.connected = false;
             this.log.warn("Could not connect", e);
         }
-        this.log.info("startConnection().end");
+        this.log.debug("startConnection().end");
         return this.remote;
     }
 
 
     protected void configure() throws RemoteException {
-        this.log.info("configure().start");
+        this.log.debug("configure().start");
         // default rmi registry port
         int rmiPort = Registry.REGISTRY_PORT;
         // rmi registry address
@@ -81,7 +81,7 @@ public class BaseRmiClient implements Remote {
                 this.log.warn("invalid registryPort value, using default");
             }
         } else {
-            this.log.info("registryPort property not set, using default");
+            this.log.debug("registryPort property not set, using default");
         }
         this.registryPort = rmiPort;
 
@@ -102,7 +102,7 @@ public class BaseRmiClient implements Remote {
 
         this.configured = true;
         this.log.info("Client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
-        this.log.info("configure().end");
+        this.log.debug("configure().end");
     }
 
 

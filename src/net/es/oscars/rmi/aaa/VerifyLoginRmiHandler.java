@@ -37,15 +37,14 @@ public class VerifyLoginRmiHandler {
 
                 username = um.loginFromDN(reverseDN);
                 if (username == null) {
-                    log.error("verifyDN invalid user: " + dn);
                     AAAFaultMessage AAAErrorEx = new AAAFaultMessage("verifyDN: invalid user" + dn);
                     throw AAAErrorEx;
                 }
             }
         } catch (Exception ex) {
-            this.log.error(ex);
+            this.log.warn(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
+            throw new RemoteException(ex.getMessage(),ex);
         }
         this.log.debug("VerifyDN.end");
         aaa.getTransaction().commit();
@@ -64,9 +63,9 @@ public class VerifyLoginRmiHandler {
         try {
             username = um.verifyLogin(userName, password, sessionName);
         } catch (Exception ex) {
-            this.log.error(ex);
+            this.log.warn(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
+            throw new RemoteException(ex.getMessage(),ex);
         }
         this.log.debug("VerifyLogin.end");
         aaa.getTransaction().commit();
@@ -82,7 +81,7 @@ public class VerifyLoginRmiHandler {
         UserManager um = core.getUserManager();
         Boolean valid = um.validSession(userName, sessionName);
         if (valid == null) {
-            this.log.warn("VerifyLoginRmiHandler.validSession: null validSession from UserManager");
+            this.log.warn(" null validSession from UserManager for user: " + userName);
             valid = false;
         }
 

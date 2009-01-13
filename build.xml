@@ -97,8 +97,8 @@
     <target name="oscars-war" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
 
         <!-- Copy over the specific log4j.properties file -->
-        <mkdir dir="${build.home}/oscars-war/" />
-        <copy file="conf/logging/oscars-war.log4j.properties" tofile="${build.home}/oscars-war/log4j.properties"/>
+        <mkdir dir="${build.home}/oscars-war/WEB-INF/classes" />
+        <copy file="conf/logging/oscars-war.log4j.properties" tofile="${build.home}/oscars-war/WEB-INF/classes/log4j.properties"/>
 
         <copy file="conf/rmi/rmi.properties" tofile="${build.home}/WEB-INF/classes/rmi.properties"/>
 
@@ -126,7 +126,7 @@
 
 
             <lib dir="${build.home}/oscars-war/lib" includes="*.jar"/>
-            <fileset dir="${build.home}/oscars-war/" includes="log4j.properties" />
+            <fileset dir="${build.home}/oscars-war/" includes="WEB-INF/classes/log4j.properties" />
         </war>
         <!-- clear out temporary directory
         <delete dir="${build.home}/oscars-war/" /> -->

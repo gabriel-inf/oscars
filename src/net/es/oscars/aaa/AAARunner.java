@@ -1,43 +1,40 @@
 package net.es.oscars.aaa;
 
 import java.io.*;
-import java.rmi.RemoteException;
+//import java.rmi.RemoteException;
 
 import net.es.oscars.rmi.aaa.AaaRmiServer;
 
 import org.apache.log4j.*;
 
-
+/**
+ * 
+ * @author Evangelos Chaniotakis, ESnet
+ * 
+ * Main program that starts the AAA RMI server.
+ * 
+ * It creates a heartbeat file in /tmp/oscarsAaaHeartbeat.txt that
+ * it updates every 30 seconds. This file will be monitored by 
+ * nagios to be sure the aaaRmi server is still running.
+ * 
+ *
+ */
 public class AAARunner {
     private static Logger log = Logger.getLogger(AAARunner.class);
 
-    private static AaaRmiServer aaaRmiServer = null;
+//    private static AaaRmiServer aaaRmiServer = null;
 
 
     public static void main (String[] args) {
 
+ 
         log.info("*** OSCARS AAA STARTUP ***");
 
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
         String fname = "/tmp/oscarsAaaHeartbeat.txt";
         File heartbeatFile = new File(fname);
 
         if (!heartbeatFile.exists()) {
-            try {
-              FileWriter outFile = new FileWriter(fname);
-              PrintWriter out = new PrintWriter(outFile);
-              out.println(
-                "The scheduler resets the last modified time of this file on " +
-                " each cycle. The last modified time of this file will be " +
-                " monitored by nagios to check that the scheduler is " +
-                "running normally.");
-              out.close();
-            } catch (IOException e) {
-                e.printStackTrace(pw);
-                log.error(sw.toString());
-                System.exit(0);
-            }
+            createHeartBeat(fname);
         }
 
         Thread runtimeHookThread = new Thread() {
@@ -55,18 +52,32 @@ public class AAARunner {
             while (true) {
                 long ms = System.currentTimeMillis();
                 if (!heartbeatFile.setLastModified(ms)) {
-                    log.fatal("*** UNABLE TO SET HEARTBEAT ***");
-                    System.exit(0);
+                    log.warn("*** UNABLE TO SET HEARTBEAT ***");
+                    log.warn("*** ATTEMPT TO CREATE NEW HEARTBEAT ***");
+                    createHeartBeat(fname);
                 }
                 Thread.sleep (30000);
             }
         } catch (Exception e) {
-            e.printStackTrace(pw);
-            log.error(sw.toString());
+            log.error(e);
         }
     }
 
-
+ public static void createHeartBeat(String fname) {
+        try {
+            FileWriter outFile = new FileWriter(fname);
+            PrintWriter out = new PrintWriter(outFile);
+            out.println(
+              "The aaaRmiServer resets the last modified time of this file on " +
+              " each cycle. The last modified time of this file will be " +
+              " monitored by nagios to check that the server is " +
+              " running normally.");
+            out.close();
+          } catch (IOException e) {;
+              log.error(e);
+              System.exit(0);
+          } 
+    }
 
 
     private static void shutdownHook() {

@@ -10,7 +10,15 @@ import net.es.oscars.rmi.aaa.AaaRmiServer;
 import org.apache.log4j.*;
 import org.hibernate.Session;
 
-
+/**
+ * 
+ * @author Evangelos Chaniotakis
+ *
+ * A singleton class that initializes and keeps an aaaRmiServer instance, 
+ * a userManager instance, the name of the aaa database. Also initializes
+ * the aaa database, and opens and returns a Hibernate aaa session,
+ * and provide a shutdown method for aaaRmiServer.
+ */
 public class AAACore {
     private static Logger log = Logger.getLogger(AAACore.class);
 
@@ -145,6 +153,7 @@ public class AAACore {
         return userManager;
     }
     /**
+     *   NOT CALLED, this.userManager is set by initUserManager
      * @param userManager the userManager to set
      */
     public void setUserManager(UserManager userManager) {

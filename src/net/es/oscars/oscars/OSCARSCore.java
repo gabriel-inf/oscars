@@ -24,7 +24,11 @@ import org.quartz.SchedulerException;
 
 /**
  * OSCARS main object
- * @author Evangelos Chaniotakis
+ * @author Evangelos Chaniotakis @ ESnet
+ * 
+ * Called by OSCARSRunner. Initializes all major objects including Hibernate and
+ * its database access.
+ * Starts the RMI repository, the coreRMIserver and the scheduler.
  */
 public class OSCARSCore {
 

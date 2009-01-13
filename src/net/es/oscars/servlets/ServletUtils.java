@@ -25,12 +25,17 @@ import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.RmiUtils;
 
 public class ServletUtils {
-
+/**
+ *  Gets a new, initialized CoreRmiInterface for client calls.
+ * @param methodName String - name of method that is calling us
+ * @param log Logger - place to log errors
+ * @param out PrinterWriter - used by handleFailure in case of error.
+ * @return  CoreRmiInterface
+ */
     public static CoreRmiInterface getCoreRmiClient(String methodName, Logger log, PrintWriter out) {
         CoreRmiInterface rmiClient;
-        rmiClient = new CoreRmiClient();
         try {
-            rmiClient.init();
+            rmiClient = RmiUtils.getCoreRmiClient(methodName,log); // will log the error
         } catch (RemoteException ex) {
             ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
             return null;
@@ -39,9 +44,17 @@ public class ServletUtils {
     }
 
     public static AuthValue getAuth(String userName, String resourceName, String permissionName, AaaRmiInterface rmiClient, String methodName, Logger log, PrintWriter out) {
-        return RmiUtils.getAuth(userName, resourceName, permissionName, rmiClient, methodName, log, out);
+       HashMap<String, Object> authResult = new HashMap<String, Object>();
+       AuthValue authVal;
+       try {
+           authVal = rmiClient.checkAccess(userName, resourceName, permissionName);
+       } catch (RemoteException ex) {
+           log.error("RMI exception:  " + ex.getMessage());
+           ServletUtils.handleFailure(out, methodName + " RMI exception: " + ex.getMessage(), methodName);
+           authVal = AuthValue.DENIED;
+       }
+       return authVal;
     }
-
 
     public static HashMap<String, Object> manageAaaObject(AaaRmiInterface rmiClient, String callerMethodName, Logger log, PrintWriter out, HashMap<String, Object> parameters) throws RemoteException {
         HashMap<String, Object> result = null;

@@ -51,7 +51,7 @@ public class QueryResRmiHandler {
      */
     public HashMap<String, Object>
           queryReservation(HashMap<String, Object> params, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
         this.log.debug("query.start");
         String methodName = "QueryReservation";
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -73,6 +73,7 @@ public class QueryResRmiHandler {
         // only look at reservations they have made
         AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "query");
         if (authVal == AuthValue.DENIED) {
+            // TODO switch to throwing exceptions
             result.put("error", "no permission to query Reservations");
             this.log.debug("query failed: no permission to query Reservations");
             return result;
@@ -124,23 +125,21 @@ public class QueryResRmiHandler {
             try {
                 reservation = rm.query(gri, loginConstraint, institution);
             } catch (BSSException e) {
-                result.put("error",  e.getMessage());
                 bss.getTransaction().rollback();
                 this.log.debug("query failed: " + e.getMessage());
-                return result;
+                throw new RemoteException("reservation does not exist");
             }
             if (reservation == null) {
-                result.put("error", "reservation does not exist");
                 bss.getTransaction().rollback();
                 this.log.debug("query failed: reservation does not exist");
-                return result;
+                throw new RemoteException("reservation does not exist");
             }
             try {
                 result.put("status", "Reservation details for " + reservation.getGlobalReservationId());
                 this.contentSection(result, reservation, userName, internalIntradomainHops);
                 result.put("success", Boolean.TRUE);
             } catch (BSSException ex) {
-                log.error(ex);
+                this.log.debug(ex);
                 bss.getTransaction().rollback();
                 throw new RemoteException(ex.getMessage());
             }

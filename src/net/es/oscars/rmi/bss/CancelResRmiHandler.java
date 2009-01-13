@@ -18,28 +18,34 @@ import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
+/**
+ * CancelResRmiHandler - rmi interface to ReservationManager.cancelReservation
+ *
+*/
+
 public class CancelResRmiHandler {
     private OSCARSCore core;
     private Logger log;
-
-
+    
+    
     public CancelResRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
     }
 
     /**
-     * CancelResRmiHandler - interfaces between servlet and ReservationManager
-     *
+     * cancelReservation
+     * 
      * @param params contains the gri of the reservation at key "gri"
      * @param userName String name of user making request
      *
      * @return HashMap - contains gri and success or error status
      *
+     * @throws IllegalArgumentException
      * @throws IOException
      */
     public HashMap<String, Object> cancelReservation(HashMap<String, Object> params, String userName)
-        throws IOException {
+        throws IllegalArgumentException, IOException {
         this.log.debug("cancel.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
@@ -96,8 +102,10 @@ public class CancelResRmiHandler {
             result.put("success", Boolean.TRUE);
             bss.getTransaction().commit();
         } else {
-            this.log.error("INTERNAL ERROR");
-            throw new IOException("Internal error");
+
+        	this.log.error("INTERNAL ERROR: invalid caller: " + caller);
+        	throw new IllegalArgumentException("Internal error: invalid caller");
+            //throw new IOException("Internal error");
         }
         this.log.debug("cancel.end");
         return result;

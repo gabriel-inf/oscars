@@ -143,13 +143,12 @@ public class BssRmiClient implements BssRmiInterface  {
             this.log.debug("queryReservation.end");
             return result;
         } catch (RemoteException e) {
-            this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
-            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
-        } catch (Exception e) {
+            this.log.info("Remote exception from RMI server: " + e.getMessage());
+            throw new RemoteException(methodName + ": Remote exception from RMI server: " + e.getCause().getMessage());
+        } catch (Exception e) {  // shouldn't happen
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
-            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
+            throw new RemoteException(e.getMessage(),e);
         }
-        return result;
     }
 
     /**
@@ -173,6 +172,7 @@ public class BssRmiClient implements BssRmiInterface  {
         }
 
         try {
+            // TODO switch to throwing exceptions
             result = this.remote.listReservations(params, userName);
             this.log.debug(" listReservations.end");
             return result;
@@ -211,12 +211,11 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
-            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
+            throw new RemoteException(methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
-            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
+            throw new RemoteException (e.getMessage(),e);
         }
-        return result;
     }
 
     /**
@@ -239,6 +238,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
+            // TODO switch to throwing exceptions
             result = this.remote.modifyReservation(params, userName);
             this.log.debug("modifyReservation.end");
             return result;
@@ -272,6 +272,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
+            // TODO switch to throwing exceptions
             result = this.remote.createPath(params, userName);
             this.log.debug("createPath.end");
             return result;
@@ -304,6 +305,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
+            // TODO switch to throwing exceptions
             result = this.remote.teardownPath(params, userName);
             this.log.debug("teardownPath.end");
             return result;
@@ -337,6 +339,7 @@ public class BssRmiClient implements BssRmiInterface  {
             return result;
         }
         try {
+            // TODO switch to throwing exceptions
             result = this.remote.modifyStatus(params, userName);
             this.log.debug("modifyStatus.end");
             return result;
@@ -367,6 +370,7 @@ public class BssRmiClient implements BssRmiInterface  {
 
     public HashMap<String, Object> checkConnectionErrors(String methodName) {
         HashMap<String, Object> result = new HashMap<String, Object>();
+        // TODO switch to throwing exceptions
         if (this.remote == null) {
             this.log.error("Remote object not found");
             result.put("error", methodName + ": Remote object not found");

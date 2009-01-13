@@ -33,6 +33,9 @@ public class RmiUtils {
         return rmiClient;
     }
 
+/* This was only called from servletsUtils and assumes it is called by a servlet since it sets the out 
+ * parameter to the error message, so I moved the code the servletsUtil -mrt 
+
     public static AuthValue getAuth(String userName, String resourceName, String permissionName, AaaRmiInterface rmiClient, String methodName, Logger log, PrintWriter out) {
         HashMap<String, Object> authResult = new HashMap<String, Object>();
         AuthValue authVal;
@@ -45,5 +48,6 @@ public class RmiUtils {
         }
         return authVal;
     }
+     */
 
 }

@@ -80,7 +80,8 @@ public class EmailObserver implements Observer {
         
         //TODO: Do not hardcode this path
         OSCARSEvent event = (OSCARSEvent) arg;
-        String catalinaHome = System.getProperty("catalina.home");
+        //String catalinaHome = System.getProperty("catalina.home");
+        String catalinaHome = System.getenv("CATALINA_HOME");
         if(!catalinaHome.endsWith("/")){
             catalinaHome += "/";
         }
