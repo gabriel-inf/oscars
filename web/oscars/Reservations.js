@@ -152,7 +152,9 @@ oscars.Reservations.convertReservationTimes = function (data) {
         // These fields are sent by the server in epoch seconds
         // Note that if the grid layout changes, the indices need to
         // change.
-        data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
-        data[i][8] = oscars.DigitalClock.convertFromSeconds(data[i][8]);
+        data[i].startTime =
+            oscars.DigitalClock.convertFromSeconds(data[i].startTime);
+        data[i].endTime =
+            oscars.DigitalClock.convertFromSeconds(data[i].endTime);
     }
 };
