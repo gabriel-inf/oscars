@@ -562,8 +562,8 @@
         <!-- let a newer value of rampConfig.xml overwrite existing one, but edit the target in addUserAlias -->
         <uptodate property="rampConfig.xml.exists"
             targetfile="conf/oscars-aar/rampConfig.xml"
-            srcfile="${domain.home}/server/rampConfig.xml" />
-        <copy file="${domain.home}/server/rampConfig.xml" tofile="conf/oscars-aar/rampConfig.xml"/> 
+            srcfile="${defaultKeys}/client/rampConfig.xml" />
+        <copy file="${defaultKeys}/client/rampConfig.xml" tofile="conf/oscars-aar/rampConfig.xml"/> 
         <!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
         <uptodate property="axis2.xml.exists" 
             targetfile="${catalina.home}/shared/classes/repo/axis2.xml"
@@ -577,7 +577,8 @@
             </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
-            <fileset dir="${domain.home}/server/" includes="*key, ssl-keystore.jks, oscars.properties, test.properties, idc-topic*"/>
+            <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
+            <fileset dir="${defaultKeys}/client/" includes="ssl-keystore.jks"/>
         </copy>
     </target>
 
@@ -604,11 +605,11 @@
             <fileset dir="${defaultKeys}/client">
                 <include name="axis2.xml" unless="axis2.xml.exists"/>
                 <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists"/>
+                <include name="rampConfig.xml" unless="rampConfig.xml.exists"/>
                 <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists"/>
             </fileset>
             <fileset dir="${defaultKeys}/server">
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
-                <include name="rampConfig.xml" unless="rampConfig.xml.exists"/>
             </fileset>
         </copy>
 

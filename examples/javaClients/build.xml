@@ -23,14 +23,13 @@
 
 <target name="copydefaults"  >
 	<uptodate property="editAxisxml" targetfile="${repo}/axis2.xml" srcfile="${defaultKeys}/client/axis2.xml"/>
-	<uptodate property="editRampConfig" targetfile="${repo}/rampConfig.xml" srcfile="${defaultKeys}/server/rampConfig.xml" />
+	<uptodate property="editRampConfig" targetfile="${repo}/rampConfig.xml" srcfile="${defaultKeys}/client/rampConfig.xml" />
     <available property="OSCARS.jks.exists" file="${repo}/OSCARS.jks" value="true" />
     <!-- Copy default keys to repo -->
     <mkdir dir="${repo}"/>
     <copy todir="${repo}" >
         <fileset dir="${defaultKeys}/client" includes="*.*" />
         <fileset dir="${defaultKeys}/server">
-            <include name="rampConfig.xml"/>
             <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
         </fileset>
     </copy>
