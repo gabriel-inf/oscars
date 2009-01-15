@@ -219,7 +219,7 @@ public class ListResRmiHandler {
     public List<String> getVlanTags(HashMap<String, Object> request) {
 
         List<String> vlanTags = new ArrayList<String>();
-        String vlanParam[] = (String[]) request.get("vlanTags");
+        String vlanParam[] = (String[]) request.get("vlanSearch");
         if ((vlanParam != null) && !vlanParam[0].equals("")) {
             String[] paramTags = vlanParam[0].trim().split(" ");
             for (int i=0; i < paramTags.length; i++) {
