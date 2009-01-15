@@ -571,14 +571,13 @@
         <!-- Copy domain keys and properties and generic axis.xml files to $CATALINA_HOME -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
-            <fileset dir="${defaultKeys}/client" includes="axis2.xml,axis2-norampart.xml"/>
+            <fileset dir="${defaultKeys}/client" includes="axis2.xml,axis2-norampart.xml,ssl-keystore.jks"/>
             <fileset dir="${domain.home}/server">
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
             </fileset>
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, idc-topic*"/>
-            <fileset dir="${defaultKeys}/client/" includes="ssl-keystore.jks"/>
         </copy>
     </target>
 
