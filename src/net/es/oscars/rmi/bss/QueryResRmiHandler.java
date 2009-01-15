@@ -52,23 +52,19 @@ public class QueryResRmiHandler {
     public HashMap<String, Object>
           queryReservation(HashMap<String, Object> params, String userName)
             throws  RemoteException {
+
         this.log.debug("query.start");
         String methodName = "QueryReservation";
         HashMap<String, Object> result = new HashMap<String, Object>();
-
         ReservationManager rm = core.getReservationManager();
-
         boolean internalIntradomainHops = false;
         Reservation reservation = null;
         String institution = null;
         String loginConstraint = null;
         result.put("method", methodName);
-
         String caller = (String) params.get("caller");
 
         AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
-
-
         // check to see if user is allowed to query at all, and if they can
         // only look at reservations they have made
         AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "query");
@@ -105,22 +101,18 @@ public class QueryResRmiHandler {
                 result.put("resvCloneDisplay", Boolean.FALSE);
             }
         }
-
         // check to see if may look at internal intradomain path elements
         // if user can specify hops on create, he can look at them
         AuthValue authValHops = rmiClient.checkModResAccess(userName, "Reservations", "create", 0, 0, true, false );
         if  (authValHops != AuthValue.DENIED ) {
             internalIntradomainHops = true;
         };
-
         // AAA section end
-
 
         // BSS section start
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String gri = (String) params.get("gri");
-
         if (caller.equals("WBUI")) {
             try {
                 reservation = rm.query(gri, loginConstraint, institution);
@@ -149,7 +141,6 @@ public class QueryResRmiHandler {
                 if (reservation == null) {
                     throw new BSSException("Reservation with gri: "+gri+" does not exist");
                 }
-
                 this.initialize(reservation);
                 result.put("reservation", reservation);
             } catch (BSSException e) {
@@ -163,7 +154,6 @@ public class QueryResRmiHandler {
         }
 
         bss.getTransaction().commit();
-
         // BSS section end
         this.log.debug("query.end");
         return result;
@@ -328,5 +318,4 @@ public class QueryResRmiHandler {
             outputMap.put("interPathReplace", sb.toString());
         }
     }
-
 }

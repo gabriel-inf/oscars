@@ -24,22 +24,15 @@ public class URNParser {
      */
     public static Hashtable<String, String> parseTopoIdent(String topoIdent) {
 
-
         topoIdent = topoIdent.trim();
-
 //    	System.out.println("looking at: ["+topoIdent+"]");
-
-
         Hashtable<String, String> regexps = new Hashtable<String, String>();
         regexps.put("domainFull", "^urn:ogf:network:domain=([^:]+)$");
         regexps.put("domain", "^urn:ogf:network:([^:=]+)$");
-
         regexps.put("nodeFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+)$");
         regexps.put("node", "^urn:ogf:network:([^:=]+):([^:=]+)$");
-
         regexps.put("portFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+)$");
         regexps.put("port", "^urn:ogf:network:([^:=]+):([^:=]+):([^:=]+)$");
-
         regexps.put("linkFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
         regexps.put("link", "^urn:ogf:network:([^:=]+):([^:=]+):([^:=]+):([^:=]+)$");
 
@@ -47,11 +40,8 @@ public class URNParser {
         String nodeId = "";
         String portId = "";
         String linkId = "";
-
         String matched = "";
-
         Matcher matcher = null;
-
 
         for (String key: regexps.keySet()) {
             Pattern p = Pattern.compile(regexps.get(key));
@@ -92,7 +82,7 @@ public class URNParser {
         String fqti = null;
         String addressType = "";
         
-        if(matched == null){
+        if (matched == null) {
             try {
                 InetAddress[] addrs = InetAddress.getAllByName(topoIdent);
                  System.out.print("[Success]:");
@@ -109,13 +99,13 @@ public class URNParser {
                  }
                  result.put("type", addressType);
                  matched = "address";
-             } catch(UnknownHostException e){
+             } catch(UnknownHostException e) {
                  if (matched == null) {
                     result.put("type", "unknown");
                     return result;
                  }
              }
-        }else if (matched.equals("domain")) {
+        } else if (matched.equals("domain")) {
             String domainFqti = "urn:ogf:network:domain="+domainId;
             compactForm = "urn:ogf:network:"+domainId;
             realCompactForm = domainId;
@@ -176,5 +166,30 @@ public class URNParser {
             result.put("domainFQID", domainFqti);
         }
          return result;
+    }
+
+    /**
+     * Returns an abbreviated version of the full layer 2 topology identifier.
+     *
+     * @param topoIdent string with full topology identifier, for example
+     * urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
+     * @return string abbreviation such as es.net:bnl-mr1:TenGigabitEthernet1/3
+     */
+    public static String abbreviate(String topoIdent) {
+        Pattern p = Pattern.compile(
+            "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
+        Matcher matcher = p.matcher(topoIdent);
+        String domainId = "";
+        String nodeId = "";
+        String portId = "";
+        // punt if not in expected format
+        if (!matcher.matches()) {
+            return topoIdent;
+        } else {
+            domainId = matcher.group(1);
+            nodeId = matcher.group(2);
+            portId = matcher.group(3);
+            return domainId + ":" + nodeId + ":" + portId;
+        }
     }
 }

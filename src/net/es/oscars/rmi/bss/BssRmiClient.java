@@ -170,7 +170,6 @@ public class BssRmiClient implements BssRmiInterface  {
         if (result != null) {
             return result;
         }
-
         try {
             // TODO switch to throwing exceptions
             result = this.remote.listReservations(params, userName);
@@ -204,7 +203,6 @@ public class BssRmiClient implements BssRmiInterface  {
         if (result != null) {
             return result;
         }
-
         try {
             result = this.remote.cancelReservation(params, userName);
             this.log.debug(" cancelReservation.end");
@@ -367,7 +365,6 @@ public class BssRmiClient implements BssRmiInterface  {
         this.remote = remote;
     }
 
-
     public HashMap<String, Object> checkConnectionErrors(String methodName) {
         HashMap<String, Object> result = new HashMap<String, Object>();
         // TODO switch to throwing exceptions
@@ -397,7 +394,4 @@ public class BssRmiClient implements BssRmiInterface  {
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
-
-
-
 }

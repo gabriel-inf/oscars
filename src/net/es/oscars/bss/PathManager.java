@@ -1,6 +1,9 @@
 package net.es.oscars.bss;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.log4j.*;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
@@ -355,5 +358,31 @@ public class PathManager {
         } else {
             // pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
         }
+    }
+
+    /**
+     * Matches if any hop in the path has a topology identifier that at
+     * least partially matches a link id.
+     *
+     * @param path path to check
+     * @param patterns map from linkIds to compiled Patterns
+     */
+    public boolean matches(Path path, Map<String, Pattern> patterns) {
+
+        List<PathElem> pathElems = path.getPathElems();
+        StringBuilder sb = new StringBuilder();
+        for (PathElem pathElem: pathElems) {
+            String topologyIdent = pathElem.getLink().getFQTI();
+            sb.append(topologyIdent);
+            String localIdent = URNParser.abbreviate(topologyIdent);
+            sb.append(localIdent);
+        }
+        for (Pattern pattern: patterns.values()) {
+            Matcher matcher = pattern.matcher(sb.toString()); 
+            if (matcher.matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

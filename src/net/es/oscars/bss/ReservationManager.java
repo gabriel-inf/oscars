@@ -1,6 +1,8 @@
 package net.es.oscars.bss;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.net.*;
 import org.apache.log4j.*;
 
@@ -677,8 +679,8 @@ public class ReservationManager {
      * results will only include reservations with one of these statuses.
      * If null / empty, results will include reservations with any status.
      *
-     * @param links a list of links. If not null / empty, results will only
-     * include reservations whose path includes at least one of the links.
+     * @param linkIds a list of link id's. If not null / empty, results will
+     * only include reservations whose path includes at least one of the links.
      * If null / empty, results will include reservations with any path.
      *
      * @param vlanTags a list of VLAN tags.  If not null or empty,
@@ -698,7 +700,7 @@ public class ReservationManager {
      */
     public List<Reservation> list(int numRequested, int resOffset,
             String login, String institution,
-            List<String> statuses, String description, List<Link> links,
+            List<String> statuses, String description, List<String> linkIds,
             List<String> vlanTags,  Long startTime, Long endTime)
                 throws BSSException {
 
@@ -713,8 +715,26 @@ public class ReservationManager {
         }
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.list(numRequested, resOffset, loginIds, statuses,
-                                description, links,
-                                vlanTags, startTime, endTime);
+                                description, vlanTags, startTime, endTime);
+        if (linkIds != null && !linkIds.isEmpty()) {
+            Map<String, Pattern> patterns = new HashMap<String,Pattern>();
+            for (String id: linkIds) {
+                patterns.put(id, Pattern.compile(".*" + id + ".*"));
+            }
+            ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
+            boolean found = false;
+            for (Reservation rsv : reservations) {
+                if (!this.pathMgr.matches(rsv.getPath(PathType.LOCAL), patterns) &&
+                    !this.pathMgr.matches(rsv.getPath(PathType.INTERDOMAIN), patterns)) {
+                    this.log.debug("not returning: " +
+                                    rsv.getGlobalReservationId());
+                    removeThese.add(rsv);
+                }
+            }
+            for (Reservation rsv : removeThese) {
+                reservations.remove(rsv);
+            }
+        }
         if (institution == null) {
             // the dao.list selected only the allowed reservations
             this.log.info("list.finish, success");

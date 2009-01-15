@@ -36,39 +36,42 @@ public class ListResRmiHandler {
                throws IOException {
 
         this.log.debug("listReservations.start");
-
         String caller = (String) params.get("caller");
         if (caller.equals("WBUI")) {
+            HashMap<String, Object> result = this.handleWBUI(params, userName);
             this.log.debug("listReservations.end");
-            return this.handleWBUI(params, userName);
+            return result;
         } else if (caller.equals("AAR")) {
+            HashMap<String, Object> result = this.handleAAR(params, userName);
             this.log.debug("listReservations.end");
-            return this.handleAAR(params, userName);
+            return result;
         } else {
             throw new IOException("Invalid caller!");
         }
     }
 
-    public HashMap<String, Object> handleAAR(HashMap<String, Object> params, String userName)
-        throws IOException {
+    public HashMap<String, Object>
+        handleAAR(HashMap<String, Object> params, String userName)
+            throws IOException {
+
         // FIXME: implement this part
 
         HashMap<String, Object> result = new HashMap<String, Object>();
         return result;
     }
 
-    public HashMap<String, Object> handleWBUI(HashMap<String, Object> params, String userName)
-        throws IOException {
+    public HashMap<String, Object>
+        handleWBUI(HashMap<String, Object> params, String userName)
+            throws IOException {
+
         HashMap<String, Object> result = new HashMap<String, Object>();
         String institution = null;
         String loginConstraint = null;
         String methodName = "ListReservations";
         ReservationManager rm = core.getReservationManager();
 
-        List<Link> inLinks = null;
+        List<String> inLinks = null;
         List<Reservation> reservations = null;
-
-
         int numRowsReq =0;
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
@@ -96,13 +99,8 @@ public class ListResRmiHandler {
         if (!loginEntered.equals("")) {
             loginConstraint = loginEntered;
         }
-
-
         AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
-
-
         AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "list");
-
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to list Reservations");
             this.log.debug("query failed: no permission to list Reservations");
@@ -145,15 +143,12 @@ public class ListResRmiHandler {
         outputReservations(result, reservations);
         result.put("totalRowsReplace", "Total rows: " + reservations.size());
         result.put("status", "list reservations successful ");        this.log.debug("listReservations.end");
-
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
-
         bss.getTransaction().commit();
         this.log.debug("listReservations.end");
         return result;
     }
-
 
     /**
      * Gets list of links to search for.  If a reservation's path includes
@@ -163,10 +158,9 @@ public class ListResRmiHandler {
      * @return list of links to send to BSS
      * @throws BSSException
      */
-    public List<Link> getLinks(HashMap<String, Object> request)
-            throws BSSException {
+    public List<String> getLinks(HashMap<String, Object> request) {
 
-        List<Link> inLinks = new ArrayList<Link>();
+        List<String> inLinks = new ArrayList<String>();
         String linkList;
         String linkParam [] = (String[]) request.get("linkIds");
         if (linkParam != null) {
@@ -178,21 +172,12 @@ public class ListResRmiHandler {
         if (linkIds.length > 0) {
             for (String s : linkIds) {
                 if (s != null && !s.trim().equals("")) {
-                    Link link = null;
-                    try {
-                        link = TopologyUtil.getLink(s.trim(), core.getBssDbName());
-                        inLinks.add(link);
-                    } catch (BSSException ex) {
-                        this.log.error("Could not get link for string: [" +
-                                   s.trim()+"], error: ["+ex.getMessage()+"]");
-                        throw new BSSException ("invalid link" + s.trim() );
-                    }
+                    inLinks.add(s);
                 }
             }
         }
         return inLinks;
     }
-
 
     public String getSingleValue(HashMap<String, Object> params, String paramName) {
         String paramArgs[] = (String[]) params.get(paramName);
@@ -234,7 +219,7 @@ public class ListResRmiHandler {
     public List<String> getVlanTags(HashMap<String, Object> request) {
 
         List<String> vlanTags = new ArrayList<String>();
-        String vlanParam [] = (String[]) request.get("vlanSearch");
+        String vlanParam[] = (String[]) request.get("vlanTags");
         if ((vlanParam != null) && !vlanParam[0].equals("")) {
             String[] paramTags = vlanParam[0].trim().split(" ");
             for (int i=0; i < paramTags.length; i++) {
@@ -300,7 +285,7 @@ public class ListResRmiHandler {
             resvMap.put("startTime", resv.getStartTime().toString());
             if (layer2Data != null) {
                 resvMap.put("source",
-                            this.abbreviate(layer2Data.getSrcEndpoint()));
+                            URNParser.abbreviate(layer2Data.getSrcEndpoint()));
             } else if (layer3Data != null) {
                 source = layer3Data.getSrcHost();
                 try {
@@ -313,7 +298,7 @@ public class ListResRmiHandler {
             }
             if (localSrc != null) {
                 if (layer2Data != null) {
-                    resvMap.put("localSource", this.abbreviate(localSrc));
+                    resvMap.put("localSource", URNParser.abbreviate(localSrc));
                 } else {
                     resvMap.put("localSource", localSrc);
                 }
@@ -339,7 +324,7 @@ public class ListResRmiHandler {
             resvMap.put("endTime", resv.getEndTime().toString());
             if (layer2Data != null) {
                 resvMap.put("destination",
-                            this.abbreviate(layer2Data.getDestEndpoint()));
+                            URNParser.abbreviate(layer2Data.getDestEndpoint()));
             } else if (layer3Data != null) {
                 destination = layer3Data.getDestHost();
                 try {
@@ -352,7 +337,7 @@ public class ListResRmiHandler {
             }
             if (localDest != null) {
                 if (layer2Data != null) {
-                resvMap.put("localDestination", this.abbreviate(localDest));
+                resvMap.put("localDestination", URNParser.abbreviate(localDest));
                 } else {
                     resvMap.put("localDestination", localDest);
                 }
@@ -363,31 +348,5 @@ public class ListResRmiHandler {
             ctr++;
         }
         outputMap.put("resvData", resvList);
-    }
-
-    /**
-     * Returns an abbreviated version of the full layer 2 topology identifier.
-     * (adapted from bss.topology.URNParser)
-     *
-     * @param topoIdent string with full topology identifier, for example
-     * urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
-     * @return string abbreviation such as es.net:bnl-mr1:TenGigabitEthernet1/3
-     */
-    public String abbreviate(String topoIdent) {
-        Pattern p = Pattern.compile(
-            "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
-        Matcher matcher = p.matcher(topoIdent);
-        String domainId = "";
-        String nodeId = "";
-        String portId = "";
-        // punt if not in expected format
-        if (!matcher.matches()) {
-            return topoIdent;
-        } else {
-            domainId = matcher.group(1);
-            nodeId = matcher.group(2);
-            portId = matcher.group(3);
-            return domainId + ":" + nodeId + ":" + portId;
-        }
     }
 }

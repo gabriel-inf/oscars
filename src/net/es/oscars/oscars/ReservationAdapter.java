@@ -15,9 +15,6 @@ import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane.*;
 import org.quartz.*;
 
-import net.es.oscars.lookup.LookupException;
-import net.es.oscars.lookup.LookupFactory;
-import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.scheduler.*;
@@ -38,7 +35,6 @@ public class ReservationAdapter {
     private ReservationManager rm;
     private String dbname;
     private static HashMap<String, String> payloadSender;
-    
 
     /**
      * Called by OSCARSSkeleton to create a reservation.
@@ -52,8 +48,8 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public CreateReply create(ResCreateContent soapParams, String login, BssRmiInterface rmiClient)
-            throws BSSException {
+    public CreateReply create(ResCreateContent soapParams, String login,
+               BssRmiInterface rmiClient) throws BSSException {
 
         this.log.info("create.start");
         this.logCreateParams(soapParams);
@@ -64,7 +60,6 @@ public class ReservationAdapter {
             WSDLTypeConverter.convertPath(pathInfo);
         resv.addPath(path);
         CreateReply reply = null;
-        
         this.setPayloadSender(resv);
         
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
@@ -84,9 +79,7 @@ public class ReservationAdapter {
             this.log.error(errMsg);
             throw new BSSException(e.getMessage());
         }
-
         this.log.info("create.finish: " + resv.toString("bss"));
-
         return reply;
     }
 
@@ -157,19 +150,16 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public ModifyResReply modify(ModifyResContent request, String username, BssRmiInterface rmiClient)
-            throws BSSException{
+    public ModifyResReply modify(ModifyResContent request, String username,
+               BssRmiInterface rmiClient) throws BSSException {
 
         this.log.info("modify.start");
-
-
         ModifyResReply reply = null;
         HashMap<String, Object> result = new HashMap<String, Object>();
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("caller", "AAR");
         // FIXME: map request to params
         // FIXME: IMPORTANT
-        
         try {
         	result = rmiClient.modifyReservation(params, username);
         } catch (Exception ex) {
@@ -193,7 +183,9 @@ public class ReservationAdapter {
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException
      */
-    public String cancel(CancelReservation request, String username, BssRmiInterface rmiClient) throws BSSException {
+    public String cancel(CancelReservation request, String username,
+            BssRmiInterface rmiClient) throws BSSException {
+
         String gri = request.getCancelReservation().getGri();
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("gri", gri);
@@ -223,12 +215,10 @@ public class ReservationAdapter {
      * @return reply ResDetails instance encapsulating library reply.
      * @throws BSSException
      */
-    public ResDetails
-        query(QueryReservation request, String username, BssRmiInterface rmiClient)
-            throws BSSException {
+    public ResDetails query(QueryReservation request, String username,
+            BssRmiInterface rmiClient) throws BSSException {
 
         String gri = request.getQueryReservation().getGri();
-        
         this.log.info("QueryReservation.start: " + gri);
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("gri", gri);
@@ -239,19 +229,17 @@ public class ReservationAdapter {
         } catch (Exception ex) {
         	throw new BSSException(ex.getMessage());
         }
-        
         Reservation resv = (Reservation) result.get("reservation");
-        
         ResDetails reply = WSDLTypeConverter.reservationToDetails(resv);
-        
-        this.log.info("QueryReservation.finish: " + reply.getGlobalReservationId());
+        this.log.info("QueryReservation.finish: " +
+                       reply.getGlobalReservationId());
         return reply;
     }
 
     /**
      * List all the reservations on this IDC that meet the input constraints.
      *
-     * @param login String with user's login name
+     * @param username String with user's login name
      * @param institution String with the user's institution name
      *
      * @param request the listRequest received by OSCARSSkeleton. Includes an
@@ -260,91 +248,16 @@ public class ReservationAdapter {
      *  requested, and offset of first reservation to return.  The items
      *  in the listRequest are
      *
-     * If statuses is not empty, results will only include reservations with one
-     * of these statuses.  If null / empty, results will include reservations
-     * with any status.
-     *
-     * If topology identifiers is not null / empty, results will only
-     * include reservations whose path includes at least one of the links.
-     * If null / empty, results will include reservations with any path.
-     *
-     * vlanTags a list of VLAN tags.  If not null or empty,
-     * results will only include reservations where (currently) the first link
-     * in the path has a VLAN tag from the list (or ranges in the list).  If
-     * null / empty, results will include reservations with any associated
-     * VLAN.
-     *
-     * startTime is the start of the time window to look in; null for
-     * everything before the endTime.
-     *
-     * endTime is the end of the time window to look in; null for
-     * everything after the startTime, Leave both start and endTime null to
-     * disregard time.
-     *
      * @return reply ListReply encapsulating library reply.
      * @throws BSSException
      */
-    public ListReply list(String login, String institution,ListRequest request)
-                 throws BSSException, LookupException{
+    public ListReply
+        list(ListRequest request, String username, BssRmiInterface rmiClient)
+            throws BSSException {
+
         ListReply reply = null;
-        List<Reservation> reservations = null;
-
-        ArrayList<net.es.oscars.bss.topology.Link> inLinks =
-            new ArrayList<net.es.oscars.bss.topology.Link>();
-        ArrayList<String> inVlanTags = new ArrayList<String>();
-        ArrayList<String> statuses = new ArrayList<String>();
-
-        // lookup name via perfSONAR Lookup Service
 
         this.log.info("list.start");
-        String[] linkIds = request.getLinkId();
-        VlanTag[] vlanTags = request.getVlanTag();
-        String[] resStatuses = request.getResStatus();
-
-        if (linkIds != null && linkIds.length > 0 ) {
-            for (String s : linkIds) {
-                s = s.trim();
-                if (s != null && !s.equals("")) {
-                    net.es.oscars.bss.topology.Link link = null;
-                    try {
-                        if (s.startsWith("urn:ogf:network")) {
-                            link = TopologyUtil.getLink(s, this.dbname);
-                        } else {
-                        	/*
-                        	 * FIXME: this whole section needs cleanup
-                            try {
-                                String urn = lookupClient.lookup(s);
-                                link = TopologyUtil.getLink(urn, this.dbname);
-                            } catch(LookupException e){
-                                throw new BSSException(e.getMessage());
-                            }
-                            */
-
-                        }
-                        inLinks.add(link);
-                    } catch (BSSException ex) {
-                        this.log.error("Could not get link for string: [" + s.trim()+"], error: ["+ex.getMessage()+"]");
-                    }
-                }
-            }
-        }
-
-        if (vlanTags != null && vlanTags.length > 0) {
-            for (VlanTag v: vlanTags) {
-                String s = v.getString().trim();
-                if (s != null && !s.equals("")) {
-                    inVlanTags.add(s);
-                }
-            }
-        }
-        if (resStatuses != null && resStatuses.length > 0 ) {
-            for (String s : request.getResStatus()) {
-                if (s != null && !s.trim().equals("")) {
-                    statuses.add(s.trim());
-                }
-            }
-        }
-
         Long startTime = null;
         Long endTime = null;
         ListRequestSequence_type0 tmp;
@@ -354,14 +267,28 @@ public class ReservationAdapter {
             endTime = tmp.getEndTime();
         }
         String description = request.getDescription();
-        reservations =
-            this.rm.list(request.getResRequested(),
-                         request.getResOffset(),
-                         login, institution, statuses, description, inLinks,
-                         inVlanTags, startTime, endTime);
-
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        /* replace with bean, remove caller
+        params.put("caller", "AAR");
+        params.put("numRequested", request.getResRequested());
+        params.put("resOffset", request.getResOffset());
+        params.put("login", username);
+        params.put("statuses", request.getResStatus());
+        params.put("description", description);
+        params.put("linkIds", request.getLinkId());
+        params.put("vlanTags", request.getVlanTag());
+        params.put("startTime", startTime);
+        params.put("endTime", endTime);
+        */
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        try {
+        	result = rmiClient.listReservations(params, username);
+        } catch (Exception ex) {
+        	throw new BSSException(ex.getMessage());
+        }
+        List<Reservation> reservations =
+            (List<Reservation>) result.get("reservations");
         reply = WSDLTypeConverter.reservationToListReply(reservations);
-
         this.log.info("list.finish: " + reply.toString());
         return reply;
     }

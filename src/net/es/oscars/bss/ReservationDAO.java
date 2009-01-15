@@ -61,10 +61,6 @@ public class ReservationDAO
      * results wil only include reservations with one of these statuses.
      * If null / empty, results will include reservations with any status.
      *
-     * @param links a list of links. If not null / empty, results will only
-     * include reservations whose path includes at least one of the links.
-     * If null / empty, results will include reservations with any path.
-     *
      * @param vlanTags a list of VLAN tags.  If not null or empty,
      * results will only include reservations where (currently) the first link
      * in the path has a VLAN tag from the list (or ranges in the list).  If
@@ -81,9 +77,8 @@ public class ReservationDAO
      */
     @SuppressWarnings("unchecked")
     public List<Reservation> list(int numRequested, int resOffset,
-            List<String> logins, List<String> statuses,
-            String description, List<Link> links, List<String> vlanTags,
-            Long startTime, Long endTime)
+            List<String> logins, List<String> statuses, String description,
+            List<String> vlanTags, Long startTime, Long endTime)
                 throws BSSException {
 
         this.log.info("list.start");
@@ -151,19 +146,6 @@ public class ReservationDAO
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
             for (Reservation rsv : this.reservations) {
                 if (!this.containsVlan(rsv, vlanTags)) {
-                    removeThese.add(rsv);
-                }
-            }
-            for (Reservation rsv : removeThese) {
-                this.reservations.remove(rsv);
-            }
-        }
-
-        if (links != null && !links.isEmpty()) {
-            ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
-            for (Reservation rsv : this.reservations) {
-                if (!rsv.getPath(PathType.LOCAL).containsAnyOf(links)) {
-                    this.log.debug("not returning: " + rsv.getGlobalReservationId());
                     removeThese.add(rsv);
                 }
             }
