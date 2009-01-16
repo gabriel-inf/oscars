@@ -57,7 +57,7 @@
     </set>
 
     <set name="paths" inverse="true" cascade="all, delete-orphan">
-        <key column="nextDomain" />
+        <key column="nextDomainId" />
         <one-to-many class="net.es.oscars.bss.topology.Path" />
     </set>
 
