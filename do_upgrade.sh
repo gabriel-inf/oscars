@@ -57,7 +57,7 @@ fi
 
 #Upgrade Axis2 
 INSTALL_HOME=`pwd`;
-bash conf/axis2/axis2_install.sh $INSTALL_HOME
+bash tools/axis2/axis2_install.sh $INSTALL_HOME
 
 if [ $? != 0 ]; then
     exit 1;
