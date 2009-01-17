@@ -39,6 +39,13 @@ public class CheckAccessRmiHandler {
     }
 
 
+    /** 
+     * 
+     * @param username
+     * @param resourcePermissions a hashmap of resource name, and an array of desired permission
+     * @return AuthMultiValue a hashmap of resource names and hashmaps of permission names and authValues
+     * @throws RemoteException
+     */
     public AuthMultiValue checkMultiAccess(String username, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException {
         this.log.debug("checkMultiAccess.start");
         Session aaa = core.getAaaSession();

@@ -12,13 +12,13 @@ $SIG{KILL} = \&sig_handler;
 
 
 # spawn the aaa service in the background
-my $aaa = Proc::Background->new("./oscars_aaa.sh");
+my $aaa = Proc::Background->new("./oscars-aaa.sh");
 
 # wait a bit
 sleep(5);
 
 # spawn the core service in the background
-my $core = Proc::Background->new("./oscars_core.sh");
+my $core = Proc::Background->new("./oscars-core.sh");
 
 while (1) {
 # do nothing and only wait for a signal

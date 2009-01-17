@@ -31,7 +31,7 @@ CALLING_STYLE=${DAEMON_STYLE-0}
 
 if [ $CALLING_STYLE -ne 1 ]; then
     touch /tmp/oscars_core.lock
-    java -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $*
+    java -Dcatalina.home=${CATALINA_HOME} -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $*
     rm -f /tmp/oscars_core.lock
 else
     nohup java -Dcatalina.home=${CATALINA_HOME} -Djava.net.preferIPv4Stack=true net.es.oscars.oscars.OSCARSRunner $* > /dev/null 2&>1 &

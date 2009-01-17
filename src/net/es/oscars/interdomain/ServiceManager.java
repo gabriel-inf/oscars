@@ -40,14 +40,20 @@ public class ServiceManager{
         
         /* FIXME */
         String catalinaHome = System.getProperty("catalina.home");
+        if (catalinaHome == null) {
+            catalinaHome = System.getenv("CATALINA_HOME");
+        }
         // check for trailing slash
-        if (catalinaHome != null && !catalinaHome.endsWith("/")) {
-            catalinaHome += "/";
+        if (catalinaHome != null) {
+            if (!catalinaHome.endsWith("/")) {
+                catalinaHome += "/";
+            }
             this.repo = catalinaHome + "shared/classes/repo/";
         } else {
         	// this is a better place..
-        	this.repo = "conf/server";
+        	this.repo = "conf/server/";
         }
+        this.log.debug ("repo is set to:" + this.repo);
         this.axisConfig = this.repo + "axis2.xml";
         this.axisConfigNoRampart = this.repo + "axis2-norampart.xml";
         
