@@ -1,8 +1,6 @@
 package net.es.oscars.client;
 
 import java.rmi.RemoteException;
-import javax.net.ssl.*;
-import java.security.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -76,7 +74,7 @@ public class Client {
         this.configContext =
                 ConfigurationContextFactory
                 .createConfigurationContextFromFileSystem(repo, axisConfig);
-        
+
         if(url != null){
             this.stub = new OSCARSStub(this.configContext, url);
             ServiceClient sc = this.stub._getServiceClient();
