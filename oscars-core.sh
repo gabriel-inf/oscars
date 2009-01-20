@@ -23,7 +23,7 @@ CLASSPATH=$CLASSPATH:${CATALINA_HOME}/shared/classes:build/oscars-core.jar
 
 export CLASSPATH=$CLASSPATH
 
- echo "CLASSPATH is: $CLASSPATH"
+# echo "CLASSPATH is: $CLASSPATH"
 
 
 # Decide if we are being called as a daemon or from the command-line
