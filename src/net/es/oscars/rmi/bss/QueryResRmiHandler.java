@@ -135,7 +135,7 @@ public class QueryResRmiHandler {
                 bss.getTransaction().rollback();
                 throw new RemoteException(ex.getMessage());
             }
-        } else if (caller.equals("API")) {
+        } else if (caller.equals("AAR")) {
             try {
                 reservation = rm.query(gri, loginConstraint, institution);
                 if (reservation == null) {
