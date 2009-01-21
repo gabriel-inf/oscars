@@ -42,7 +42,7 @@ public class PathSetupReservation extends HttpServlet {
             params.put(paramName, paramValues);
         }
         try {
-            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
             outputMap = rmiClient.createPath(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());

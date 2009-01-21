@@ -55,7 +55,7 @@ public class AuthorizationRemove extends HttpServlet {
 
 
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
             AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
 
             if (authVal == AuthValue.DENIED)  {

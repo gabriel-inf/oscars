@@ -57,7 +57,7 @@ public class UserSession {
 
 
         Boolean validSession = false;
-        AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+        AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
         try {
             validSession = rmiClient.validSession(userName, sessionName);
         } catch (RemoteException ex) {

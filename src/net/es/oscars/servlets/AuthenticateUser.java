@@ -52,7 +52,7 @@ public class AuthenticateUser extends HttpServlet {
         }
 
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
             String loginUserName = rmiClient.verifyLogin(userName, password, sessionName);
 
             userName = (String) loginUserName;

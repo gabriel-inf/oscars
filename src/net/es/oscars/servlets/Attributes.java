@@ -51,7 +51,7 @@ public class Attributes extends HttpServlet {
         String attributeEditDescr = request.getParameter("attributeEditDescription").trim();
         String attributeEditType = request.getParameter("attributeTypes").trim();
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
             AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
 
             if (authVal != null && authVal == AuthValue.DENIED) {

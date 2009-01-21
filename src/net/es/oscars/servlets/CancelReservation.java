@@ -47,9 +47,9 @@ public class CancelReservation extends HttpServlet {
 
         params.put("gri", request.getParameterValues("gri"));
         params.put("caller", "WBUI");
-        
+
         try {
-            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
             outputMap = rmiClient.cancelReservation(params, userName);
         } catch (Exception ex) {
             this.log.error(ex.getMessage());

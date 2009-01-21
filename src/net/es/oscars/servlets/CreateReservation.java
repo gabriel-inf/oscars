@@ -54,7 +54,7 @@ public class CreateReservation extends HttpServlet {
         }
 
         try {
-            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
             outputMap = rmiClient.createReservation(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed with " + ex.getMessage());

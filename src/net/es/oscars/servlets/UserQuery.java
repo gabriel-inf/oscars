@@ -61,7 +61,7 @@ public class UserQuery extends HttpServlet {
             outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
             AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
 
             if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {

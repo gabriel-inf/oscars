@@ -35,7 +35,7 @@ public class ServletUtils {
     public static AaaRmiInterface getAaaRmiClient(String methodName, Logger log, PrintWriter out) {
         AaaRmiInterface rmiClient;
         try {
-            rmiClient = RmiUtils.getAaaRmiClient(); // will log the error
+            rmiClient = RmiUtils.getAaaRmiClient(methodName, log); // will log the error
         } catch (RemoteException ex) {
             ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
             return null;
@@ -45,7 +45,7 @@ public class ServletUtils {
     public static BssRmiInterface getBssRmiClient(String methodName, Logger log, PrintWriter out) {
         BssRmiInterface rmiClient;
         try {
-            rmiClient = RmiUtils.getBssRmiClient(); // will log the error
+            rmiClient = RmiUtils.getBssRmiClient(methodName, log); // will log the error
         } catch (RemoteException ex) {
             ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
             return null;

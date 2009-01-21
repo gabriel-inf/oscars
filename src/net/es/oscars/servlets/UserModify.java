@@ -66,11 +66,11 @@ public class UserModify extends HttpServlet {
         ArrayList<String> curRoles = new ArrayList<String>();
         try {
             AaaRmiInterface rmiClient =
-                ServletUtils.getCoreRmiClient(methodName, log, out);
+                ServletUtils.getAaaRmiClient(methodName, log, out);
             AuthValue authVal =
                 ServletUtils.getAuth(userName, "Users", "modify", rmiClient,
                                      methodName, log, out);
-            if ((authVal == AuthValue.ALLUSERS) || 
+            if ((authVal == AuthValue.ALLUSERS) ||
                     ( self && (authVal == AuthValue.SELFONLY))) {
                 user = ServletUtils.getUser(profileName, rmiClient, out, log);
             } else {

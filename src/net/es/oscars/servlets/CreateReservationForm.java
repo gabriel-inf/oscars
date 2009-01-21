@@ -30,7 +30,7 @@ public class CreateReservationForm extends HttpServlet {
         if (userName == null) {
             return;
         }
-        AaaRmiInterface coreRmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+        AaaRmiInterface coreRmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
         AuthValue authVal = null;
         try {
             authVal = coreRmiClient.checkModResAccess(userName, "Reservations", "create", 0, 0, false, false );

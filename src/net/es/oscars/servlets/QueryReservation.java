@@ -50,7 +50,7 @@ public class QueryReservation extends HttpServlet {
         // which sections of the page to display are controlled on the
         // RMI server side in the rmi module
         try {
-            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
             outputMap = rmiClient.queryReservation(params, userName);
         } catch (RemoteException ex) {
             this.log.debug("RemoteException rmiClient failed: " + ex.getMessage());

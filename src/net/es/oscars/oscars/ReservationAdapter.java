@@ -13,19 +13,12 @@ import java.io.IOException;
 
 import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane.*;
-import org.quartz.*;
 
 import net.es.oscars.notify.*;
-import net.es.oscars.interdomain.*;
-import net.es.oscars.scheduler.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.bss.xface.*;
-import net.es.oscars.rmi.aaa.*;
-import net.es.oscars.rmi.core.*;
 
 
 /**
@@ -62,16 +55,16 @@ public class ReservationAdapter {
         resv.addPath(path);
         CreateReply reply = null;
         this.setPayloadSender(resv);
-        
+
         HashMap<String, Object> rmiParams = new HashMap<String, Object>();
         rmiParams.put("reservation", resv);
         try {
-        	HashMap<String, Object> rmiResult = rmiClient.createReservation(rmiParams, login);
-        	resv = (Reservation) rmiResult.get("reservation");
+            HashMap<String, Object> rmiResult = rmiClient.createReservation(rmiParams, login);
+            resv = (Reservation) rmiResult.get("reservation");
 
             this.log.debug("create, to toReply");
             reply = WSDLTypeConverter.reservationToReply(resv);
-            
+
             ///PathInfo is unchanged so just return the user-given pathInfo
             reply.setPathInfo(pathInfo);
         } catch (IOException e) {
@@ -84,7 +77,7 @@ public class ReservationAdapter {
         return reply;
     }
 
-	/**
+    /**
      * Extracts important information from Notify messages related to
      * creating a reservation and schedules them for execution.
      *
@@ -96,7 +89,7 @@ public class ReservationAdapter {
         String eventType = event.getType();
         ResDetails resDetails = event.getResDetails();
         if(resDetails == null){
-            this.log.error("No revservation details provided for event " + 
+            this.log.error("No revservation details provided for event " +
                            eventType + " from " + producerId);
             return;
         }
@@ -105,7 +98,7 @@ public class ReservationAdapter {
         String confirmed = "";
         String completed = "";
         String failed = "";
-        
+
         if(reqStatus.equals(StateEngine.INCREATE)){
             confirmed = OSCARSEvent.RESV_CREATE_CONFIRMED;
             completed = OSCARSEvent.RESV_CREATE_COMPLETED;
@@ -119,7 +112,7 @@ public class ReservationAdapter {
             completed = OSCARSEvent.RESV_CANCEL_COMPLETED;
             failed = OSCARSEvent.RESV_CANCEL_FAILED;
         }
-        
+
         try{
             if(eventType.equals(confirmed)){
                 this.rm.submitResvJob(gri, pathInfo, producerId, reqStatus, true);
@@ -162,12 +155,12 @@ public class ReservationAdapter {
         // FIXME: map request to params
         // FIXME: IMPORTANT
         try {
-        	result = rmiClient.modifyReservation(params, username);
+            result = rmiClient.modifyReservation(params, username);
         } catch (Exception ex) {
-        	throw new BSSException(ex.getMessage());
+            throw new BSSException(ex.getMessage());
         }
         Reservation resv = (Reservation) result.get("reservation");
-        
+
         reply = WSDLTypeConverter.reservationToModifyReply(resv);
 
         this.log.info("modify.finish");
@@ -193,9 +186,9 @@ public class ReservationAdapter {
         params.put("caller", "AAR");
         HashMap<String, Object> result = new HashMap<String, Object>();
         try {
-        	result = rmiClient.cancelReservation(params, username);
+            result = rmiClient.cancelReservation(params, username);
         } catch (Exception ex) {
-        	throw new BSSException(ex.getMessage());
+            throw new BSSException(ex.getMessage());
         }
         return (String) result.get("status");
     }
@@ -226,9 +219,9 @@ public class ReservationAdapter {
         params.put("caller", "AAR");
         HashMap<String, Object> result = new HashMap<String, Object>();
         try {
-        	result = rmiClient.queryReservation(params, username);
+            result = rmiClient.queryReservation(params, username);
         } catch (Exception ex) {
-        	throw new BSSException(ex.getMessage());
+            throw new BSSException(ex.getMessage());
         }
         Reservation resv = (Reservation) result.get("reservation");
         ResDetails reply = WSDLTypeConverter.reservationToDetails(resv);
@@ -306,9 +299,9 @@ public class ReservationAdapter {
         rmiRequest.setEndTime(endTime);
         RmiListResReply rmiReply = null;
         try {
-        	rmiReply = rmiClient.listReservations(rmiRequest, username);
+            rmiReply = rmiClient.listReservations(rmiRequest, username);
         } catch (Exception ex) {
-        	throw new BSSException(ex.getMessage());
+            throw new BSSException(ex.getMessage());
         }
         ListReply reply =
            WSDLTypeConverter.reservationToListReply(rmiReply.getReservations());
@@ -416,31 +409,31 @@ public class ReservationAdapter {
 
         return errMsg;
     }
-    
+
     /**
      * Adds a payload sender to the global hash map
      * @param gri the GRI of the reservation being created
      * @param sender the original sender of the createReservation message
      */
     static synchronized public void addPayloadSender(String gri, String sender){
-    	if(ReservationAdapter.payloadSender == null){
-    		ReservationAdapter.payloadSender = new HashMap<String,String>();
-    	}
-    	ReservationAdapter.payloadSender.put(gri, sender);
+        if(ReservationAdapter.payloadSender == null){
+            ReservationAdapter.payloadSender = new HashMap<String,String>();
+        }
+        ReservationAdapter.payloadSender.put(gri, sender);
     }
     /**
      * Sets the payload sender of a reservation
      * @param resv the reservation with the payload to set
      */
     private synchronized void setPayloadSender(Reservation resv) {
-    	String gri = resv.getGlobalReservationId();
-		if(gri == null || ReservationAdapter.payloadSender == null){
-			return;
-		}
-		
-		if(ReservationAdapter.payloadSender.containsKey(gri)){
-			resv.setPayloadSender(ReservationAdapter.payloadSender.get(gri));
-			ReservationAdapter.payloadSender.remove(gri);
-		}
-	}
+        String gri = resv.getGlobalReservationId();
+        if(gri == null || ReservationAdapter.payloadSender == null){
+            return;
+        }
+
+        if(ReservationAdapter.payloadSender.containsKey(gri)){
+            resv.setPayloadSender(ReservationAdapter.payloadSender.get(gri));
+            ReservationAdapter.payloadSender.remove(gri);
+        }
+    }
 }

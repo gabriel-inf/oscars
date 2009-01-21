@@ -37,10 +37,10 @@ public class ListReservations extends HttpServlet {
 
         String methodName = "ListReservations";
         this.log.info("servlet.start");
-        
+
         RmiListResRequest rmiRequest = this.getParameters(servletRequest);
         RmiListResReply rmiReply = new RmiListResReply();
-        
+
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -51,12 +51,12 @@ public class ListReservations extends HttpServlet {
         }
         AuthValue authVal = null;
         try {
-            BssRmiInterface bssRmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface bssRmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
             this.log.info("to listReservations");
             rmiReply = bssRmiClient.listReservations(rmiRequest, userName);
             this.log.info("past listReservations");
             AaaRmiInterface aaaRmiClient =
-                ServletUtils.getCoreRmiClient(methodName, log, out);
+                ServletUtils.getAaaRmiClient(methodName, log, out);
             authVal = ServletUtils.getAuth(userName, "Reservations", "list", aaaRmiClient, methodName, log, out);
             this.log.info("past authVal");
         } catch (Exception ex) {

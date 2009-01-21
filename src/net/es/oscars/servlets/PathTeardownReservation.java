@@ -33,7 +33,7 @@ public class PathTeardownReservation extends HttpServlet {
 
         HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        
+
         params.put("style", "wbui");
 
         Enumeration e = request.getParameterNames();
@@ -43,7 +43,7 @@ public class PathTeardownReservation extends HttpServlet {
             params.put(paramName, paramValues);
         }
         try {
-            BssRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
             outputMap = rmiClient.teardownPath(params, userName);
         } catch (Exception ex) {
             this.log.error("rmiClient failed: " + ex.getMessage());
