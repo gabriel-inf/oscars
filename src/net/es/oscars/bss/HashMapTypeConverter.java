@@ -159,8 +159,8 @@ public class HashMapTypeConverter {
         Link link = pathElem.getLink();
         L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
         String infoVal = link.getTrafficEngineeringMetric();
-        String defaulSwcapType = PathManager.DEFAULT_SWCAP_TYPE;
-        String defaulEncType = PathManager.DEFAULT_ENC_TYPE;
+        String defaulSwcapType = L2SwitchingCapType.DEFAULT_SWCAP_TYPE;
+        String defaulEncType = L2SwitchingCapType.DEFAULT_ENC_TYPE;
         if(l2scData != null){
             //TEMetric;swcap;enc;MTU;VLANRangeAvail;SuggestedVLANRange
             infoVal += ";l2sc;ethernet";

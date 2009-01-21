@@ -9,14 +9,14 @@ import java.rmi.registry.*;
 import java.net.*;
 import java.net.UnknownHostException;
 
-
 import net.es.oscars.rmi.AnchorSocketFactory;
 import net.es.oscars.PropHandler;
 import net.es.oscars.PropertyLoader;
+import net.es.oscars.rmi.bss.xface.*;
 
 import org.apache.log4j.*;
 
-public class BssRmiServer  implements BssRmiInterface {
+public class BssRmiServer implements BssRmiInterface {
     private Logger log = Logger.getLogger(BssRmiServer.class);
     private Registry registry;
 
@@ -165,14 +165,14 @@ public class BssRmiServer  implements BssRmiInterface {
     /**
      * listReservations
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param request RmiListResRequest contains list constraints from client
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @return RmiListResReply list of reservations satisfying constraints
      */
-    public HashMap<String, Object>
-        listReservations(HashMap<String, Object> params, String userName)
+    public RmiListResReply
+        listReservations(RmiListResRequest request, String userName)
             throws IOException, RemoteException {
-        return this.listHandler.listReservations(params, userName);
+        return this.listHandler.listReservations(request, userName);
     }
 
     /**

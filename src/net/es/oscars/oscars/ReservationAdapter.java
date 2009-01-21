@@ -23,6 +23,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.bss.*;
+import net.es.oscars.rmi.bss.xface.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.core.*;
 
@@ -255,8 +256,6 @@ public class ReservationAdapter {
         list(ListRequest request, String username, BssRmiInterface rmiClient)
             throws BSSException {
 
-        ListReply reply = null;
-
         this.log.info("list.start");
         Long startTime = null;
         Long endTime = null;
@@ -266,29 +265,53 @@ public class ReservationAdapter {
             startTime = tmp.getStartTime();
             endTime = tmp.getEndTime();
         }
-        String description = request.getDescription();
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        /* replace with bean, remove caller
-        params.put("caller", "AAR");
-        params.put("numRequested", request.getResRequested());
-        params.put("resOffset", request.getResOffset());
-        params.put("login", username);
-        params.put("statuses", request.getResStatus());
-        params.put("description", description);
-        params.put("linkIds", request.getLinkId());
-        params.put("vlanTags", request.getVlanTag());
-        params.put("startTime", startTime);
-        params.put("endTime", endTime);
-        */
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        List<String> inLinks = new ArrayList<String>();
+        List<String> inVlanTags = new ArrayList<String>();
+        List<String> statuses = new ArrayList<String>();
+
+        String[] linkIds = request.getLinkId();
+        VlanTag[] vlanTags = request.getVlanTag();
+        String[] resStatuses = request.getResStatus();
+        if (linkIds != null && linkIds.length > 0) {
+            for (String linkId: linkIds) {
+                String s = linkId.trim();
+                if (s != null && !s.equals("")) {
+                    inLinks.add(s);
+                }
+            }
+        }
+        if (vlanTags != null && vlanTags.length > 0) {
+            for (VlanTag v: vlanTags) {
+                String s = v.getString().trim();
+                if (s != null && !s.equals("")) {
+                    inVlanTags.add(s);
+                }
+            }
+        }
+        if (resStatuses != null && resStatuses.length > 0 ) {
+            for (String s : request.getResStatus()) {
+                if (s != null && !s.trim().equals("")) {
+                    statuses.add(s.trim());
+                }
+            }
+        }
+        RmiListResRequest rmiRequest = new RmiListResRequest();
+        rmiRequest.setNumRequested(request.getResRequested());
+        rmiRequest.setResOffset(request.getResOffset());
+        rmiRequest.setStatuses(statuses);
+        rmiRequest.setDescription(request.getDescription());
+        rmiRequest.setLinkIds(inLinks);
+        rmiRequest.setVlanTags(inVlanTags);
+        rmiRequest.setStartTime(startTime);
+        rmiRequest.setEndTime(endTime);
+        RmiListResReply rmiReply = null;
         try {
-        	result = rmiClient.listReservations(params, username);
+        	rmiReply = rmiClient.listReservations(rmiRequest, username);
         } catch (Exception ex) {
         	throw new BSSException(ex.getMessage());
         }
-        List<Reservation> reservations =
-            (List<Reservation>) result.get("reservations");
-        reply = WSDLTypeConverter.reservationToListReply(reservations);
+        ListReply reply =
+           WSDLTypeConverter.reservationToListReply(rmiReply.getReservations());
         this.log.info("list.finish: " + reply.toString());
         return reply;
     }

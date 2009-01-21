@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import net.es.oscars.rmi.bss.xface.*;
+
 public interface BssRmiInterface extends Remote {
 
      /**
@@ -52,18 +54,17 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Lists reservations given criteria from servlet.
+     * Lists reservations given criteria from other component.
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
+     * @param request - RmiListResRequest contains input from component
      *
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return RmiListResReply list of reservations satisfying criteria
      * @throws IOException
      * @throws RemoteException
      */
 
-    public HashMap<String, Object>
-        listReservations(HashMap<String, Object> params, String userName)
+    public RmiListResReply
+        listReservations(RmiListResRequest request, String userName)
             throws IOException, RemoteException;
 
     /**

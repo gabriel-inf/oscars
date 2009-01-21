@@ -15,6 +15,7 @@ import net.es.oscars.aaa.Resource;
 import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.bss.*;
+import net.es.oscars.rmi.bss.xface.*;
 import net.es.oscars.rmi.notify.*;
 
 import net.es.oscars.PropHandler;
@@ -168,14 +169,14 @@ public class CoreRmiServer extends BaseRmiServer implements CoreRmiInterface  {
     /**
      * listReservations
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param request RmiListResRequest - contains criteria from another component
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @return RmiListResReply list of reservations satisfying criteria
      */
-    public HashMap<String, Object>
-        listReservations(HashMap<String, Object> params, String userName)
+    public RmiListResReply
+        listReservations(RmiListResRequest request, String userName)
             throws IOException, RemoteException {
-        return this.bssRmiServer.listReservations(params, userName);
+        return this.bssRmiServer.listReservations(request, userName);
     }
 
     /**

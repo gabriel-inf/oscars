@@ -141,7 +141,7 @@ public class QueryResRmiHandler {
                 if (reservation == null) {
                     throw new BSSException("Reservation with gri: "+gri+" does not exist");
                 }
-                this.initialize(reservation);
+                BssRmiUtils.initialize(reservation);
                 result.put("reservation", reservation);
             } catch (BSSException e) {
                 bss.getTransaction().rollback();
@@ -157,31 +157,6 @@ public class QueryResRmiHandler {
         // BSS section end
         this.log.debug("query.end");
         return result;
-    }
-
-    public void initialize(Reservation reservation) {
-        Hibernate.initialize(reservation);
-        Hibernate.initialize(reservation.getToken());
-        Set<Path> paths = reservation.getPaths();
-        Iterator<Path> pathIt = paths.iterator();
-        while (pathIt.hasNext()) {
-            Path path = pathIt.next();
-            Hibernate.initialize(path);
-            Hibernate.initialize(path.getLayer2Data());
-            Hibernate.initialize(path.getLayer3Data());
-            Hibernate.initialize(path.getMplsData());
-            Hibernate.initialize(path.getNextDomain());
-            for (PathElem pe : path.getPathElems()) {
-                Hibernate.initialize(pe);
-                Hibernate.initialize(pe.getLink());
-                Hibernate.initialize(pe.getLink().getL2SwitchingCapabilityData());
-                Hibernate.initialize(pe.getLink().getPort());
-                Hibernate.initialize(pe.getLink().getPort().getNode());
-                Hibernate.initialize(pe.getLink().getPort().getNode().getNodeAddress());
-                Hibernate.initialize(pe.getLink().getPort().getNode().getDomain());
-                Hibernate.initialize(pe.getLink().getPort().getNode().getDomain().getSite());
-            }
-        }
     }
 
     public void contentSection(Map outputMap, Reservation resv, String userName,

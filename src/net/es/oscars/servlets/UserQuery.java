@@ -30,20 +30,16 @@ public class UserQuery extends HttpServlet {
 
         boolean self =  false; // is query about the current user
         boolean modifyAllowed = false;
-
         UserSession userSession = new UserSession();
-
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
-
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
             return;
         }
 
         String profileName = request.getParameter("profileName");
-
         // get here by clicking on a name in the users list
         if ((profileName != null) && !profileName.equals("")) {
             this.log.info("profileName: " + profileName);
@@ -64,8 +60,6 @@ public class UserQuery extends HttpServlet {
         } else {
             outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
-
-
         try {
             AaaRmiInterface rmiClient = ServletUtils.getCoreRmiClient(methodName, log, out);
             AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
@@ -76,7 +70,6 @@ public class UserQuery extends HttpServlet {
                 ServletUtils.handleFailure(out,"no permission to query users", methodName);
                 return;
             }
-
             /* check to see if user has modify permission for this user
              *     used by contentSection to set the action on submit
              */
@@ -88,13 +81,8 @@ public class UserQuery extends HttpServlet {
             } else {
                 modifyAllowed = false;
             }
-
-
             User targetUser = null;
-
-
             List<Attribute> attributesForUser = null;
-
             if (self) {
                 attributesForUser = ServletUtils.getAttributesForUser(userName, rmiClient, out, log);
                 targetUser = ServletUtils.getUser(userName, rmiClient, out, log);
@@ -102,7 +90,6 @@ public class UserQuery extends HttpServlet {
                 attributesForUser = ServletUtils.getAttributesForUser(profileName, rmiClient, out, log);
                 targetUser = ServletUtils.getUser(profileName, rmiClient, out, log);
             }
-
             List<Attribute> allAttributes =
                 ServletUtils.getAllAttributes(rmiClient, out, log);
             List<Institution> institutions = ServletUtils.getAllInstitutions(rmiClient, out, log);
@@ -110,22 +97,14 @@ public class UserQuery extends HttpServlet {
             this.contentSection( outputMap, targetUser, modifyAllowed,
                     (authVal == AuthValue.ALLUSERS),
                     institutions, attributesForUser, allAttributes);
-
         } catch (RemoteException ex) {
             return;
         }
-
-
-
-
-
-
         outputMap.put("status", "Profile for user " + profileName);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-
         this.log.debug("UserQuery.end");
     }
 
@@ -162,7 +141,6 @@ public class UserQuery extends HttpServlet {
             outputMap.put("allowModify", Boolean.FALSE);
             outputMap.put("userHeader", "Profile for user: " + user.getLogin());
         }
-
         String strParam = user.getLogin();
         if (strParam == null) { strParam = ""; }
         outputMap.put("profileName", strParam);

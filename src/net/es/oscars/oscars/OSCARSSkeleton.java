@@ -30,6 +30,7 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.aaa.AuthValue;
 // import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.topology.L2SwitchingCapType;
 // import net.es.oscars.tss.TSSException;
 // import net.es.oscars.pss.PSSException;
 // import net.es.oscars.lookup.LookupException;
@@ -640,6 +641,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      */
     public void init(ServiceContext sc) {
         this.log.info("OSCARS AAR initialized");
+        // TODO:  this might not be the best place
+        L2SwitchingCapType.initGlobals();
     }
 
     public void destroy(ServiceContext sc) {

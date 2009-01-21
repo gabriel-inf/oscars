@@ -108,7 +108,7 @@
         <mkdir dir="${build.home}/oscars-war/lib" />
         <copy todir="${build.home}/oscars-war/lib" flatten="true">
             <fileset dir="lib"
-                includes="hibernate*.jar, json-lib-*.jar, ezmorph-*.jar, commons-lang-*.jar,
+                includes="hibernate*.jar, cglib*.jar, json-lib-*.jar, ezmorph-*.jar, commons-lang-*.jar,
                           commons-collections-*.jar, commons-beanutils.jar, axis2/log4j-1.2.*.jar  "/>
             <fileset dir="build" includes="oscars-rmi.jar" />
         </copy>
@@ -141,7 +141,7 @@
 
         <!-- Copy necessary libraries there -->
         <copy todir="${build.home}/oscars-aar/lib" flatten="true">
-            <fileset dir="lib" includes="hibernate*.jar, ezmorph-*.jar, axis2/log4j-1.2.*.jar  "/>
+            <fileset dir="lib" includes="hibernate*.jar, cglib*.jar, commons-lang*.jar, ezmorph-*.jar, axis2/log4j-1.2.*.jar  "/>
             <fileset dir="build" includes="oscars-rmi.jar" />
         </copy>
 
@@ -167,7 +167,8 @@
                           **/oscars/database/HibernateBean.class, **/org/**/*.class"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class,
-                          **/oscars/bss/*DAO.class, **/oscars/bss/*Manager*.class,
+                          **/oscars/bss/*DAO.class, **/oscars/bss/ReservationManager*.class,
+                          **/oscars/bss/TopologyManager*.class,
                           **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
             <!-- include all the temporary files -->
             <fileset dir="${build.home}/oscars-aar/"/>

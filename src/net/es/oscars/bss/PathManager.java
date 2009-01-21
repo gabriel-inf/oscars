@@ -12,7 +12,6 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
-import net.es.oscars.PropHandler;
 import net.es.oscars.oscars.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
@@ -29,10 +28,6 @@ public class PathManager {
     private PCEManager pceMgr;
     private PolicyManager policyMgr;
     private String dbname;
-    public static String DEFAULT_SWCAP_TYPE;
-    public static String DEFAULT_ENC_TYPE;
-    final public static String DEFAULT_TE_METRIC = "10";
-    final public static int DEFAULT_MTU = 9000;
     
     /** Constructor. */
     public PathManager(String dbname) {
@@ -88,21 +83,7 @@ public class PathManager {
 
         this.policyMgr = new PolicyManager(dbname);
         this.dbname = dbname;
-        this.initGlobals();
-    }
-
-    /** Initializes global variables */
-    private void initGlobals() {
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties topoProps = propHandler.getPropertyGroup("topo", true);
-        DEFAULT_SWCAP_TYPE = topoProps.getProperty("defaultSwcapType");
-        if(DEFAULT_SWCAP_TYPE == null){
-            DEFAULT_SWCAP_TYPE = "tdm";
-        }
-        DEFAULT_ENC_TYPE = topoProps.getProperty("defaultEncodingType");
-        if(DEFAULT_ENC_TYPE == null){
-            DEFAULT_ENC_TYPE = "sdh/sonet";
-        }
+        L2SwitchingCapType.initGlobals();
     }
 
     /**
@@ -210,8 +191,8 @@ public class PathManager {
             } else {
                 //TODO: What does esnet use for internal links?
                 swcapInfo.setCapability("unimplemented");
-                swcap.setSwitchingcapType(DEFAULT_SWCAP_TYPE);
-                swcap.setEncodingType(DEFAULT_ENC_TYPE);
+                swcap.setSwitchingcapType(L2SwitchingCapType.DEFAULT_SWCAP_TYPE);
+                swcap.setEncodingType(L2SwitchingCapType.DEFAULT_ENC_TYPE);
             }
             swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
             link.setId(urn);

@@ -23,7 +23,6 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpe
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.Token;
-import net.es.oscars.bss.PathManager;
 import net.es.oscars.bss.HashMapTypeConverter;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
@@ -35,6 +34,7 @@ import net.es.oscars.wsdlTypes.*;
  */
 public class WSDLTypeConverter {
 
+    final public static String DEFAULT_TE_METRIC = "10";
     private static Logger log = Logger.getLogger(WSDLTypeConverter.class);
 
     // do not instantiate
@@ -257,10 +257,10 @@ public class WSDLTypeConverter {
      */
     public static CtrlPlanePathContent pathToCtrlPlane(Path path) throws BSSException {
         log.debug("pathToCtrlPlane.start");
-        String swcapType = PathManager.DEFAULT_SWCAP_TYPE;
-        String encType = PathManager.DEFAULT_ENC_TYPE;
-        String teMetric = PathManager.DEFAULT_TE_METRIC;
-        int mtu = PathManager.DEFAULT_MTU;
+        String swcapType = L2SwitchingCapType.DEFAULT_SWCAP_TYPE;
+        String encType = L2SwitchingCapType.DEFAULT_ENC_TYPE;
+        String teMetric = WSDLTypeConverter.DEFAULT_TE_METRIC;
+        int mtu = L2SwitchingCapType.DEFAULT_MTU;
         Ipaddr ipaddr = null;
 
         List<PathElem> pathElems = path.getPathElems();

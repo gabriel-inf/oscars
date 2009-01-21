@@ -10,6 +10,7 @@ import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.notify.*;
 import net.es.oscars.rmi.BaseRmiClient;
+import net.es.oscars.rmi.bss.xface.*;
 
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
@@ -178,12 +179,14 @@ public class CoreRmiClient extends BaseRmiClient implements CoreRmiInterface {
     }
 
 
-    public HashMap<String, Object> listReservations(HashMap<String, Object> params, String userName)
+    public RmiListResReply listReservations(RmiListResRequest request,
+                                            String userName)
         throws IOException, RemoteException {
+
         if (!this.connected) {
             this.init();
         }
-        return this.bssRmiClient.listReservations(params, userName);
+        return this.bssRmiClient.listReservations(request, userName);
     }
 
     public HashMap<String, Object> cancelReservation(HashMap<String, Object> params, String userName)
