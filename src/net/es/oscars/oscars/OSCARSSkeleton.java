@@ -28,15 +28,12 @@ import org.w3.www._2005._08.addressing.*;
 import net.es.oscars.wsdlTypes.*;
 
 import net.es.oscars.aaa.AuthValue;
-// import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.L2SwitchingCapType;
-// import net.es.oscars.tss.TSSException;
-// import net.es.oscars.pss.PSSException;
-// import net.es.oscars.lookup.LookupException;
-// import net.es.oscars.interdomain.InterdomainException;
 
-import net.es.oscars.rmi.core.CoreRmiInterface;
+import net.es.oscars.rmi.bss.BssRmiInterface;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.notify.NotifyRmiInterface;
 import net.es.oscars.rmi.RmiUtils;
 
 
@@ -45,7 +42,7 @@ import net.es.oscars.rmi.RmiUtils;
  */
 public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     private Logger log = Logger.getLogger(OSCARSSkeleton.class);
-    
+
 
     /**
      * @param request CreateReservation instance with with request params
@@ -59,27 +56,29 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         CreateReservationResponse response = new CreateReservationResponse();
         String methodName = "createReservation";
-        CoreRmiInterface rmiClient = null;
+        BssRmiInterface bssRmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String login = this.checkUser(rmiClient);
+        String login = this.checkUser(aaaRmiClient);
         CreateReply reply = null;
         ResCreateContent params = request.getCreateReservation();
-        
+
         /* FIXME: we actually do this check again inside the RMI, is it worth it to do it again here ?*/
         int reqBandwidth = params.getBandwidth();
         // convert from milli-seconds to minutes
         int  reqDuration = (int)(params.getEndTime() - params.getStartTime())/6000;
         boolean specifyPath = WSDLTypeConverter.pathSpecified(params.getPathInfo());
         boolean specifyGRI = (params.getGlobalReservationId() != null);
-        
+
         // Check to see if user can create this  reservation
         AuthValue authVal = AuthValue.DENIED;
         try {
-            authVal = rmiClient.checkModResAccess(login, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, specifyGRI);
+            authVal = aaaRmiClient.checkModResAccess(login, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, specifyGRI);
         } catch (RemoteException ex) {
             throw new AAAFaultMessage(ex.getMessage());
         }
@@ -91,7 +90,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
-            reply = resAdapter.create(params, login, rmiClient);
+            reply = resAdapter.create(params, login, bssRmiClient);
         } catch (BSSException e) {
             this.log.error("createReservation: " + e.getMessage());
             throw new BSSFaultMessage("createReservation " + e.getMessage());
@@ -114,16 +113,18 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String reply = null;
         log.info(methodName+".start");
 
-        CoreRmiInterface rmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
+        BssRmiInterface bssRmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String username = this.checkUser(rmiClient);
+        String username = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
-            reply = resAdapter.cancel(request, username, rmiClient);
+            reply = resAdapter.cancel(request, username, bssRmiClient);
         } catch (BSSException e) {
             this.log.error("cancelReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
@@ -145,20 +146,22 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      */
     public QueryReservationResponse queryReservation(QueryReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
-    
+
         String methodName = "queryReservation";
         log.info(methodName+".start");
-        CoreRmiInterface rmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
+        BssRmiInterface bssRmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String username = this.checkUser(rmiClient);
+        String username = this.checkUser(aaaRmiClient);
         ResDetails reply = null;
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
-            reply = resAdapter.query(request, username, rmiClient);
+            reply = resAdapter.query(request, username, bssRmiClient);
         } catch (BSSException e) {
             this.log.error(e.getMessage());
             throw new BSSFaultMessage(e.getMessage());
@@ -182,19 +185,21 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         String methodName = "modifyReservation";
         log.info(methodName+".start");
-        CoreRmiInterface rmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
+        BssRmiInterface bssRmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String username = this.checkUser(rmiClient);
+        String username = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         ModifyResReply reply = null;
         ModifyReservationResponse response = new ModifyReservationResponse();
         ModifyResContent params = request.getModifyReservation();
         try {
-            reply = resAdapter.modify(params, username, rmiClient);
+            reply = resAdapter.modify(params, username, bssRmiClient);
         } catch (BSSException e) {
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
@@ -217,21 +222,23 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      */
     public ListReservationsResponse listReservations(ListReservations request)
             throws AAAFaultMessage, BSSFaultMessage {
-    
+
         String methodName = "listReservations";
         log.info(methodName+".start");
-        CoreRmiInterface rmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
+        BssRmiInterface bssRmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String username = this.checkUser(rmiClient);
+        String username = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         ListReply reply = null;
         ListRequest params = request.getListReservations();
         try {
-            reply = resAdapter.list(params, username, rmiClient);
+            reply = resAdapter.list(params, username, bssRmiClient);
         } catch (BSSException e) {
             this.log.error("listReservations caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("listReservations: " + e.getMessage());
@@ -258,7 +265,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         GetTopologyContent requestContent = request.getGetNetworkTopology();
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
         // FIXME: move this to RMI
-        
+
         /*
         GetTopologyResponseContent responseContent = null;
         String login = this.checkUser();
@@ -328,7 +335,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("initiateTopologyPull: " + e.getMessage());
         }
         bss.getTransaction().commit();
-        
+
         */
 
         return response;
@@ -348,7 +355,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         CreatePathResponse response = new CreatePathResponse();
         // FIXME: move this to RMI
 
-        /*        
+        /*
         CreatePathResponseContent responseContent = null;
         String loginConstraint = null;
         String institution = null; // not used yet
@@ -403,7 +410,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         RefreshPathResponse response = new RefreshPathResponse();
         RefreshPathResponseContent responseContent = null;
         // FIXME: move this to RMI
-        
+
         /*
 
         String loginConstraint = null;
@@ -458,7 +465,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         TeardownPathResponse response = new TeardownPathResponse();
         TeardownPathResponseContent responseContent = null;
         // FIXME: move this to RMI
-        
+
         /*
 
         String loginConstraint = null;
@@ -613,9 +620,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String methodName = "checkSubscriptionId";
         log.info(methodName+".start");
 
-        CoreRmiInterface rmiClient = null;
+        NotifyRmiInterface rmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            rmiClient = RmiUtils.getNotifyRmiClient(methodName, log);
         } catch (RemoteException e) {
             this.log.error(methodName+" caught RemoteException: " + e.getMessage());
             return;
@@ -659,7 +666,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         this.log.debug("getSecurityPrincipals.start");
         HashMap<String, Principal> result = new HashMap<String, Principal>();
-        
+
         try {
             MessageContext inContext = MessageContext.getCurrentMessageContext();
             // opContext.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
@@ -668,7 +675,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                 return null;
             }
             Vector results = (Vector) inContext.getProperty(WSHandlerConstants.RECV_RESULTS);
-            
+
             for (int i = 0; results != null && i < results.size(); i++) {
                 WSHandlerResult hResult = (WSHandlerResult) results.get(i);
                 Vector hResults = hResult.getResults();
@@ -681,39 +688,39 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.SIGN) ||
                         (((java.lang.Integer) eResult.get(
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.UT)) {
-	                    this.log.info("getSecurityPrincipals.getSecurityInfo, " +
-	                        "Principal's name: " +
-	                        ((Principal) eResult.get(
-	                            WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
-	                    
-	                    Principal subjectDN = ((X509Certificate) eResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getSubjectDN();
-	                    Principal issuerDN = ((X509Certificate) eResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getIssuerDN();
-	                    result.put("subject", subjectDN);
-	                    result.put("issuer", issuerDN);
-	                    return result;
-	                } else if (((java.lang.Integer) eResult.get(
-	                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.ENCR) {
-	                    // Encryption action returns what ?
-	                	return null;
-	                } else if (((java.lang.Integer) eResult.get(
-	                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.TS) {
-	                    // Timestamp action returns a Timestamp
-	                    //System.out.println("Timestamp created: " +
-	                    //eResult.getTimestamp().getCreated());
-	                    //System.out.println("Timestamp expires: " +
-	                    //eResult.getTimestamp().getExpires());
-	                	return null;
-	                }
-	            }
+                        this.log.info("getSecurityPrincipals.getSecurityInfo, " +
+                            "Principal's name: " +
+                            ((Principal) eResult.get(
+                                WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
+
+                        Principal subjectDN = ((X509Certificate) eResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getSubjectDN();
+                        Principal issuerDN = ((X509Certificate) eResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getIssuerDN();
+                        result.put("subject", subjectDN);
+                        result.put("issuer", issuerDN);
+                        return result;
+                    } else if (((java.lang.Integer) eResult.get(
+                                WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.ENCR) {
+                        // Encryption action returns what ?
+                        return null;
+                    } else if (((java.lang.Integer) eResult.get(
+                                WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.TS) {
+                        // Timestamp action returns a Timestamp
+                        //System.out.println("Timestamp created: " +
+                        //eResult.getTimestamp().getCreated());
+                        //System.out.println("Timestamp expires: " +
+                        //eResult.getTimestamp().getExpires());
+                        return null;
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("getSecurityPrincipals.exception: " + e.getMessage());
-        	return null;
+            return null;
         }
         log.debug("getSecurityPrincipals.finish");
         return result;
     }
-    
+
     /**
      *  Called from each of the messages to check that the user who signed the
      *  message is entered in the user table.
@@ -723,7 +730,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @return login A string with the login associated with the certSubject
      * @throws AAAFaultMessage
      */
-    public String checkUser(CoreRmiInterface rmiClient) throws AAAFaultMessage {
+    public String checkUser(AaaRmiInterface rmiClient) throws AAAFaultMessage {
         this.log.debug("checkUser.start");
 
         String login = null;
@@ -739,7 +746,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         // lookup up using input DN first
         String origDN = principals.get("subject").getName();
         this.log.info("checkUser original DN: " + origDN);
-        
+
         try {
             login = rmiClient.verifyDN(origDN);
         } catch (Exception ex) {
@@ -747,13 +754,13 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             AAAFaultMessage AAAErrorEx = new AAAFaultMessage(ex.getMessage());
             throw AAAErrorEx;
         }
-        
+
         this.log.info("checkUser authenticated user: " + login);
         this.log.debug("checkUser.end");
         return login;
     }
-    
-    /**                
+
+    /**
      * Checks subscription ID in Notify message
      *
      * @param address the producer URL
@@ -765,9 +772,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String methodName = "checkSubscriptionId";
         log.info(methodName+".start");
 
-        CoreRmiInterface rmiClient = null;
+        NotifyRmiInterface rmiClient = null;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName, log);
+            rmiClient = RmiUtils.getNotifyRmiClient(methodName, log);
         } catch (RemoteException e) {
             this.log.error(methodName+" caught RemoteException: " + e.getMessage());
             return null;

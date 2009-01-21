@@ -25,7 +25,7 @@ import org.quartz.SchedulerException;
 /**
  * OSCARS main object
  * @author Evangelos Chaniotakis @ ESnet
- * 
+ *
  * Called by OSCARSRunner. Initializes all major objects including Hibernate and
  * its database access.
  * Starts the RMI repository, the coreRMIserver and the scheduler.
@@ -60,7 +60,7 @@ public class OSCARSCore {
     private ScheduleManager scheduleManager = null;
     private ServiceManager serviceManager = null;
 
-    private CoreRmiServer coreRmiServer = null;
+    private BssRmiServer bssRmiServer = null;
 
     /**
      * Constructor - private because this is a Singleton
@@ -132,7 +132,7 @@ public class OSCARSCore {
         } catch (SchedulerException ex) {
             this.log.error("Scheduler error shutting down", ex);
         }
-        this.coreRmiServer.shutdown();
+        this.bssRmiServer.shutdown();
         HibernateUtil.closeSessionFactory(this.bssDbName);
         this.log.info("shutdown.end");
     }
@@ -300,12 +300,12 @@ public class OSCARSCore {
     public void initRMIServer() {
         this.log.info("initRMIServer.start");
         try {
-            this.coreRmiServer = new CoreRmiServer();
-            this.coreRmiServer.init();
+            this.bssRmiServer = new BssRmiServer();
+            this.bssRmiServer.init();
         } catch (RemoteException ex) {
             this.log.error("Error initializing RMI server", ex);
-            this.coreRmiServer.shutdown();
-            this.coreRmiServer = null;
+            this.bssRmiServer.shutdown();
+            this.bssRmiServer = null;
         }
         this.log.info("initRMIServer.end");
     }

@@ -18,10 +18,10 @@ import net.es.oscars.aaa.Resource;
 import net.es.oscars.aaa.Rpc;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.User;
-import net.es.oscars.rmi.core.*;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
 import net.es.oscars.rmi.aaa.*;
+import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.RmiUtils;
 
 public class ServletUtils {
@@ -32,10 +32,20 @@ public class ServletUtils {
  * @param out PrinterWriter - used by handleFailure in case of error.
  * @return  CoreRmiInterface
  */
-    public static CoreRmiInterface getCoreRmiClient(String methodName, Logger log, PrintWriter out) {
-        CoreRmiInterface rmiClient;
+    public static AaaRmiInterface getAaaRmiClient(String methodName, Logger log, PrintWriter out) {
+        AaaRmiInterface rmiClient;
         try {
-            rmiClient = RmiUtils.getCoreRmiClient(methodName,log); // will log the error
+            rmiClient = RmiUtils.getAaaRmiClient(); // will log the error
+        } catch (RemoteException ex) {
+            ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
+            return null;
+        }
+        return rmiClient;
+    }
+    public static BssRmiInterface getBssRmiClient(String methodName, Logger log, PrintWriter out) {
+        BssRmiInterface rmiClient;
+        try {
+            rmiClient = RmiUtils.getBssRmiClient(); // will log the error
         } catch (RemoteException ex) {
             ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
             return null;
