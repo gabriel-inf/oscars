@@ -16,7 +16,7 @@ import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
-import net.es.oscars.bss.topology.GraphVizExporter;
+import net.es.oscars.client.GraphVizExporter;
 import net.es.oscars.bss.topology.URNParser;
 
 public class ListReservationsClient extends ExampleClient {

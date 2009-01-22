@@ -18,7 +18,7 @@ import edu.internet2.perfsonar.PSException;
 import edu.internet2.perfsonar.dcn.DCNLookupClient;
 
 import net.es.oscars.bss.topology.URNParser;
-import net.es.oscars.bss.topology.GraphVizExporter;
+import net.es.oscars.client.GraphVizExporter;
 import net.es.oscars.client.Client;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;

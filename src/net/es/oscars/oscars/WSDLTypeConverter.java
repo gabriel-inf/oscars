@@ -279,10 +279,8 @@ public class WSDLTypeConverter {
                                 new CtrlPlaneSwitchingCapabilitySpecificInfo();
             Link link = pathElem.getLink();
             String urn = pathElem.getUrn();
-            if (urn == null) {
-                log.info("urn is null");
-            } else {
-                log.info("urn: " + urn);
+            if ((urn == null) || urn.trim().equals("")) {
+                urn = link.getFQTI();
             }
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
             String hopType = parseResults.get("type");

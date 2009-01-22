@@ -265,24 +265,25 @@ public class ReservationAdapter {
         String[] linkIds = request.getLinkId();
         VlanTag[] vlanTags = request.getVlanTag();
         String[] resStatuses = request.getResStatus();
-        if (linkIds != null && linkIds.length > 0) {
+        if (linkIds != null) {
             for (String linkId: linkIds) {
-                String s = linkId.trim();
-                if (s != null && !s.equals("")) {
-                    inLinks.add(s);
+                if ((linkId != null) && !linkId.trim().equals("")) {
+                    inLinks.add(linkId.trim());
                 }
             }
         }
-        if (vlanTags != null && vlanTags.length > 0) {
+        if (vlanTags != null) {
             for (VlanTag v: vlanTags) {
-                String s = v.getString().trim();
-                if (s != null && !s.equals("")) {
-                    inVlanTags.add(s);
+                if (v != null) {
+                    String s = v.getString();
+                    if (s != null && !s.trim().equals("")) {
+                        inVlanTags.add(s.trim());
+                    }
                 }
             }
         }
-        if (resStatuses != null && resStatuses.length > 0 ) {
-            for (String s : request.getResStatus()) {
+        if (resStatuses != null) {
+            for (String s: resStatuses) {
                 if (s != null && !s.trim().equals("")) {
                     statuses.add(s.trim());
                 }
