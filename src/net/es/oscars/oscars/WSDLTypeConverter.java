@@ -175,8 +175,13 @@ public class WSDLTypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
-        reply.setPathInfo(
-                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN));
+        // FIXME:  this needs work
+        PathInfo pathInfo =
+                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
+        if (pathInfo == null) {
+            pathInfo = WSDLTypeConverter.getPathInfo(resv, PathType.LOCAL);
+        }
+        reply.setPathInfo(pathInfo);
         log.debug("reservationToDetails.end");
         return reply;
     }
@@ -256,7 +261,7 @@ public class WSDLTypeConverter {
      * @throws BSSException 
      */
     public static CtrlPlanePathContent pathToCtrlPlane(Path path) throws BSSException {
-        log.debug("pathToCtrlPlane.start");
+        log.info("pathToCtrlPlane.start");
         String swcapType = L2SwitchingCapType.DEFAULT_SWCAP_TYPE;
         String encType = L2SwitchingCapType.DEFAULT_ENC_TYPE;
         String teMetric = WSDLTypeConverter.DEFAULT_TE_METRIC;
@@ -274,6 +279,11 @@ public class WSDLTypeConverter {
                                 new CtrlPlaneSwitchingCapabilitySpecificInfo();
             Link link = pathElem.getLink();
             String urn = pathElem.getUrn();
+            if (urn == null) {
+                log.info("urn is null");
+            } else {
+                log.info("urn: " + urn);
+            }
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
             String hopType = parseResults.get("type");
             hop.setId(i + "");
@@ -342,7 +352,7 @@ public class WSDLTypeConverter {
             i++;
         }
         ctrlPlanePath.setId("unimplemented");
-        log.debug("pathToCtrlPlane.end");
+        log.info("pathToCtrlPlane.end");
         return ctrlPlanePath;
     }
 
