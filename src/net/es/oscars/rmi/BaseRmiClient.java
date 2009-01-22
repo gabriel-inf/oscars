@@ -110,17 +110,17 @@ public class BaseRmiClient implements Remote {
      * @param methodName the calling method, for logging
      * @return true if the RMI connection is OK
      */
-    protected boolean verifyRmiConnection(String methodName) {
+    protected boolean verifyRmiConnection(String methodName) throws RemoteException {
         if (methodName == null) {
             methodName = "";
         }
         if (this.remote == null) {
             this.log.error(methodName+": Remote object not found");
-            return false;
+            throw new RemoteException("Remote object not found");
         }
         if (!this.connected) {
             this.log.error(methodName+": Not connected to RMI server");
-            return false;
+            throw new RemoteException("Not connected to RMI server");
         }
         return true;
     }

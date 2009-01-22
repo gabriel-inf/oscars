@@ -33,9 +33,6 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
     /**
      * Initializes the client and connects to the AAA RMI registry.
      *
-     * DO NOT use this yet; currently only here for completeness
-     * Will eventually be used by the core to connect to a separate AAA RMI server
-     *
      * @throws RemoteException
      */
     public void init() throws RemoteException {
@@ -46,7 +43,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         super.configure();
 
         Remote remote = super.startConnection();
- 
+
         if (this.connected) {
             this.setRemote((AaaRmiInterface) remote);
             super.setRemote(remote);
@@ -59,9 +56,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("manageAaaObjects.start");
         String methodName = "manageAaaObjects";
         HashMap<String, Object> result = null;
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
+        this.verifyRmiConnection(methodName);
         try {
             result = this.remote.manageAaaObjects(parameters);
         } catch (RemoteException e) {
@@ -84,10 +79,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
 
         String methodName = "validSession";
         Boolean result = false;
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
-
+        this.verifyRmiConnection(methodName);
         try {
             result = this.remote.validSession(userName, sessionName);
         } catch (RemoteException e) {
@@ -107,11 +99,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("verifyLogin.start");
 
         String result = null;
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
-
-
+        this.verifyRmiConnection(methodName);
         try {
             result = this.remote.verifyLogin(userName, password, sessionName);
         } catch (RemoteException e) {
@@ -131,9 +119,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("verifyDN.start");
 
         String result = null;
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
+        this.verifyRmiConnection(methodName);
 
         try {
             result = this.remote.verifyDN(dn);
@@ -154,10 +140,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("getInstitution.start");
 
         String result = null;
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
-
+        this.verifyRmiConnection(methodName);
         try {
             result = this.remote.getInstitution(userName);
         } catch (RemoteException e) {
@@ -176,11 +159,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("checkAccess.start");
 
         AuthValue result = AuthValue.DENIED;
-
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
-
+        this.verifyRmiConnection(methodName);
         try {
             result = this.remote.checkAccess(userName, resourceName, permissionName);
         } catch (RemoteException e) {
@@ -200,10 +179,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("checkMultiAccess.start");
 
         AuthMultiValue result = new AuthMultiValue();
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
 
+        this.verifyRmiConnection(methodName);
 
         try {
             result = this.remote.checkMultiAccess(userName, resourcePermissions);
@@ -226,10 +203,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("checkModResAccess.start");
         String methodName = "checkModResAccess";
         AuthValue result = AuthValue.DENIED;
-
-        if (!this.verifyRmiConnection(methodName)) {
-            return result;
-        }
+        this.verifyRmiConnection(methodName);
         try {
             result = this.remote.checkModResAccess(userName, resourceName, permissionName, reqBandwidth, reqDuration, specPathElems, specGRI);
         } catch (RemoteException e) {
