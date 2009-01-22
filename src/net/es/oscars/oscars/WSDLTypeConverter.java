@@ -261,7 +261,7 @@ public class WSDLTypeConverter {
      * @throws BSSException 
      */
     public static CtrlPlanePathContent pathToCtrlPlane(Path path) throws BSSException {
-        log.info("pathToCtrlPlane.start");
+        log.debug("pathToCtrlPlane.start");
         String swcapType = L2SwitchingCapType.DEFAULT_SWCAP_TYPE;
         String encType = L2SwitchingCapType.DEFAULT_ENC_TYPE;
         String teMetric = WSDLTypeConverter.DEFAULT_TE_METRIC;
@@ -350,7 +350,7 @@ public class WSDLTypeConverter {
             i++;
         }
         ctrlPlanePath.setId("unimplemented");
-        log.info("pathToCtrlPlane.end");
+        log.debug("pathToCtrlPlane.end");
         return ctrlPlanePath;
     }
 
