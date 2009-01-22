@@ -76,7 +76,7 @@ INSERT INTO interPaths (reservationId, explicit, pathSetupMode, nextDomainId,
     SELECT p.reservationId, p.explicit, p.pathSetupMode, p.nextDomainId,
         p.pathType, p.interPathElemId, p.layer2DataId, p.layer3DataId,
 	p.mplsDataId
-    FROM paths p;
+    FROM paths p WHERE p.interPathElemId is not null;
 
 UPDATE localPaths set pathType = 'local';
 UPDATE interPaths set pathType = 'interdomain';
@@ -225,17 +225,25 @@ DELIMITER //
 CREATE PROCEDURE alterPathElems(IN pId INT, IN pElemId INT)
 BEGIN
     DECLARE peId INT;
+    DECLARE prevId INT DEFAULT -1;
     DECLARE nId INT;
     DECLARE seqNum INT DEFAULT 0;
 
     UPDATE pathElems SET pathId = pId, seqNumber = seqNum where id = pElemId;
-    SELECT nextId INTO nId FROM pathElems where id = pElemId;
-    WHILE nId IS NOT NULL DO
-	SELECT id, nextId INTO peId, nId FROM pathElems where id=nId;
+    SELECT id, nextId INTO peId, nId from pathElems where id=pElemId;
+    SET prevId = peId;
+    alterPathElem: LOOP
+        SELECT id, nextId INTO peId, nId FROM pathElems where id=nId;
+        IF prevId = peId THEN
+            LEAVE alterPathElem;
+        END IF;
 	SET seqNum = seqNum + 1;
-	UPDATE pathElems set pathId = pId, seqNumber = seqNum
-	WHERE id=peId;
-    END WHILE;
+	UPDATE pathElems set pathId = pId, seqNumber = seqNum WHERE id=peId;
+        IF nId IS NULL THEN
+            LEAVE alterPathElem;
+        END IF;
+        SET prevId = peId;
+    END LOOP alterPathElem;
 END
 //
 DELIMITER ;
@@ -256,7 +264,6 @@ BEGIN
         IF finished THEN
             LEAVE insertPathElemParam;
         END IF;
-	SELECT pElemId, linkDescription;
         IF linkDescription IS NOT NULL THEN
             INSERT INTO pathElemParams VALUES(NULL, pElemId, "l2sc", "suggestedVlan", linkDescription);
         END IF;
@@ -278,6 +285,7 @@ ALTER TABLE pathElems DROP nextId;
 ALTER TABLE pathElems DROP description;
 ALTER TABLE pathElems DROP linkDescr;
 
+ALTER TABLE pathElems CHANGE pathId pathId INT NOT NULL;
 ALTER TABLE pathElems CHANGE linkId linkId INT;
 ALTER TABLE layer2Data CHANGE pathId pathId INT NOT NULL UNIQUE;
 ALTER TABLE layer3Data CHANGE pathId pathId INT NOT NULL UNIQUE;

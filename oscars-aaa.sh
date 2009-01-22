@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 # Try to cd to the application base directory if the variable is set

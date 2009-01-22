@@ -166,6 +166,9 @@ public class BssUtils {
         PathElemParam pep =
             pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                                       PathElemParamType.L2SC_SUGGESTED_VLAN);
+        if (pep == null) {
+            return null;
+        }
         String vlanTag = pep.getValue();
         return vlanTag;
     }
