@@ -48,10 +48,9 @@ public class BssRmiUtils {
                 Hibernate.initialize(pe.getLink().getPort().getNode().getNodeAddress());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain().getSite());
-                //
-                //for (PathElemParam pep: pe.getPathElemParams()) {
-                    //Hibernate.initialize(pep);
-                //}
+                for (PathElemParam pep: pe.getPathElemParams()) {
+                    Hibernate.initialize(pep);
+                }
             }
         }
     }
