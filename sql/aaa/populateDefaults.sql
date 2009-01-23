@@ -483,7 +483,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="users"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL);
+     (select id from constraints where name="all-users"),"true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="users"),
