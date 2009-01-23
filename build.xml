@@ -94,7 +94,7 @@
     </target>
 
     <!-- Compile the WAR web application file to be deployed inside an servlet container -->
-    <target name="oscars-war" description="Build war file for deploy" depends="compile, installdojo, copydocs, rmijar">
+    <target name="oscars-war" description="Build war file for deploy" depends="compile, installnewdojo, copydocs, rmijar">
 
         <!-- Copy over the specific log4j.properties file -->
         <mkdir dir="${build.home}/oscars-war/WEB-INF/classes" />
@@ -167,8 +167,7 @@
                           **/oscars/database/HibernateBean.class, **/org/**/*.class"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class,
-                          **/oscars/bss/*DAO.class, **/oscars/bss/ReservationManager*.class,
-                          **/oscars/bss/TopologyManager*.class,
+                          **/oscars/bss/*DAO.class, **/oscars/bss/*Manager*.class,
                           **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
             <!-- include all the temporary files -->
             <fileset dir="${build.home}/oscars-aar/"/>
@@ -414,6 +413,11 @@
         <!-- <gunzip src="web/lib/dojo-standard-1.2.3.tar.gz"/> -->
         <untar src="web/lib/dojo-standard-1.2.3.tar" dest="web/lib"/>
         <!-- <delete file="web/lib/dojo-standard-1.2.3.tar"/> -->
+    </target>
+    <available property="new.dojo.installed" file="web/lib/dojo/dojox/grid/DataGrid.js"/>
+    <target name="installnewdojo" unless="new.dojo.installed" description="install new Dojo if necessary" depends="installdojo">
+        <delete dir="web/lib/dojo"/>
+        <untar src="web/lib/dojo-standard-1.2.3.tar" dest="web/lib"/>
     </target>
 
     <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
