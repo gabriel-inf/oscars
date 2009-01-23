@@ -46,7 +46,7 @@
     <many-to-one name="nextDomain" column="nextDomainId"
         class="net.es.oscars.bss.topology.Domain" not-null="false" />
 
-    <list name="pathElems" cascade="all, delete-orphan">
+    <list name="pathElems" fetch="subselect" cascade="all, delete-orphan">
         <key column="pathId" not-null="true" />
 	<list-index column="seqNumber" />
         <one-to-many class="net.es.oscars.bss.topology.PathElem" />

@@ -71,7 +71,7 @@
 
     <!-- Associations -->
 
-    <set name="paths" cascade="all, delete-orphan">
+    <set name="paths" fetch="subselect" cascade="all, delete-orphan">
         <key column="reservationId" />
         <one-to-many class="net.es.oscars.bss.topology.Path" />
     </set>

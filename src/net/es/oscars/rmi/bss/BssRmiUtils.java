@@ -33,14 +33,14 @@ public class BssRmiUtils {
         Iterator<Path> pathIt = paths.iterator();
         while (pathIt.hasNext()) {
             Path path = pathIt.next();
-            Hibernate.initialize(path);
+            // Hibernate.initialize(path);
             Hibernate.initialize(path.getLayer2DataSet());
             Hibernate.initialize(path.getLayer3DataSet());
             Hibernate.initialize(path.getMplsDataSet());
             Hibernate.initialize(path.getNextDomain());
             for (PathElem pe : path.getPathElems()) {
-                Hibernate.initialize(pe);
                 Hibernate.initialize(pe.getLink());
+                Hibernate.initialize(pe.getLink().getIpaddrs());
                 Hibernate.initialize(pe.getLink().getRemoteLink());
                 Hibernate.initialize(pe.getLink().getL2SwitchingCapabilityData());
                 Hibernate.initialize(pe.getLink().getPort());
@@ -48,9 +48,10 @@ public class BssRmiUtils {
                 Hibernate.initialize(pe.getLink().getPort().getNode().getNodeAddress());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain().getSite());
-                for (PathElemParam pep: pe.getPathElemParams()) {
-                    Hibernate.initialize(pep);
-                }
+                //
+                //for (PathElemParam pep: pe.getPathElemParams()) {
+                    //Hibernate.initialize(pep);
+                //}
             }
         }
     }
