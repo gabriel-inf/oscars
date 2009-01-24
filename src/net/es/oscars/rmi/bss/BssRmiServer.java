@@ -80,7 +80,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
 
     /**
      * shutdown
-     */
+
     public void shutdown() {
         try {
             java.rmi.server.UnicastRemoteObject.unexportObject(BssRmiServer.staticObject, true);
@@ -92,6 +92,9 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         } catch (NotBoundException ex) {
             this.log.error("BSS RMI Server already unbound", ex);
         }
+    }*/
+    public void shutdown() {
+        super.shutdown(staticObject);
     }
 
     /**

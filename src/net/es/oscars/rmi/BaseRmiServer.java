@@ -133,9 +133,9 @@ public abstract class BaseRmiServer {
                 java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
             }
         } catch (RemoteException ex) {
-            this.log.error("Remote exception shutting down "+this.getServiceName(), ex);
+            this.log.error(this.getServiceName() + " Registry already shutdown ");
         } catch (NotBoundException ex) {
-            this.log.error(this.getServiceName()+" RMI service already unbound", ex);
+            this.log.error(this.getServiceName()+" RMI service already unbound " + ex.getMessage());
         }
         this.log.debug(this.getServiceName()+".shutdown().end");
     }
