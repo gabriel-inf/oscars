@@ -1,5 +1,5 @@
 <!DOCTYPE page [
-<!ENTITY rampConfig SYSTEM "**tomcat**/shared/classes/repo/rampConfig.xml"> 
+<!ENTITY rampConfig SYSTEM "**path_to_rampConfig**/rampConfig.xml"> 
 ]>
 <!--
 /*

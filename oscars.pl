@@ -22,6 +22,7 @@ my $core = Proc::Background->new("./oscars-core.sh");
 
 while (1) {
 # do nothing and only wait for a signal
+sleep(5);
 }
 exit(0);
 

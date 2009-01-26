@@ -6,7 +6,7 @@
 <property name="lib" location="../../lib" />
 <property name="repo" location="./repo" />
 <property name="src" location="../../src" />
-<property name="defaultKeys" location="../../conf/examples"/>
+<property name="defaultKeys" location="../../conf/axis-tomcat"/>
 <available property="domain.exists" file="${env.DOMAIN_HOME}"/>
 <property name="domain" location="${env.DOMAIN_HOME}" />
 <property name="public" location="../../conf" />
@@ -22,19 +22,19 @@
 </path>
 
 <target name="copydefaults"  >
-	<uptodate property="editAxisxml" targetfile="${repo}/axis2.xml" srcfile="${defaultKeys}/client/axis2.xml"/>
-	<uptodate property="editRampConfig" targetfile="${repo}/rampConfig.xml" srcfile="${defaultKeys}/client/rampConfig.xml" />
-    <available property="OSCARS.jks.exists" file="${repo}/OSCARS.jks" value="true" />
-    <!-- Copy default keys to repo -->
+    <!-- Copy templates to repo -->
     <mkdir dir="${repo}"/>
     <copy todir="${repo}" >
-        <fileset dir="${defaultKeys}/client" includes="*.*" />
-        <fileset dir="${defaultKeys}/server">
-            <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
-        </fileset>
+        <fileset dir="${defaultKeys}" includes="axis2.xml.template,axis2-norampart.xml,rampConfig.xml.template,*.jks.template" />
     </copy>
+	<uptodate property="AxisxmlUpToDate" targetfile="${repo}/axis2.xml" srcfile="${repo}/axis2.xml.template"/>
+	<uptodate property="RampConfigUpToDate" targetfile="${repo}/rampConfig.xml" srcfile="${repo}/rampConfig.xml.template" />
+    <uptodate property="Oscars.jksUpToDate" targetfile="${repo}/OSCARS.jks" srcfile="${repo}/OSCARS.jks.template" />
+    <uptodate property="newssl.jksUpToDate" targetfile="${repo}/ssl-keystore.jks" srcfile="${repo}/ssl-keystore.jks.template" />
+    <copy file="${repo}/axis2.xml.template" tofile="${repo}/axis2.xml"/>
+
 </target>
-<target name="checkLocalRampConfig" unless="editAxisxml">
+<target name="checkLocalRampConfig" unless="AxisxmlUpToDate">
     <input
         message=
 "Do you wish to use the rampConfig.xml in the repo subdirectory in axis2.xml to be able to customize the user key (as opposed to using the default ? " 
@@ -45,42 +45,49 @@
         <equals arg1="${do.local}" arg2="y"/>
     </condition>
 </target>
-<target name="useLocalRampConfig" if="do.local.set" depends="checkLocalRampConfig" unless="editAxisxml">
-    <dirname property="antfile.dir" file="repo" />
-    <replace file="repo/axis2.xml" token="**tomcat**/shared/classes" summary="true" value="${antfile.dir}" />
+<target name="useLocalRampConfig" if="do.local.set" depends="checkLocalRampConfig" unless="AxisxmlUpToDate">
+    <copy file="repo/rampConfig.xml.template" tofile="repo/rampConfig.xml"/>
+    <replace summary="true" file="${repo}/axis2.xml" token="**path_to_rampConfig**" value="${repo}"/>
 </target>
-<target name="useCatalinaRampConfig" unless="do.local.set" depends="checkLocalRampConfig">
-    <replace file="repo/axis2.xml" token="**tomcat**" summary="true" value="${catalina.home}" />
+<target name="useCatalinaRampConfig" unless="do.local.set" depends="checkLocalRampConfig"> 
+    <replace file="repo/axis2.xml" token="**path_to_rampConfig**" summary="true" value="${catalina.home}/shared/classes/repo" />
 </target>
-<target name="addUserAlias" if="do.local.set" unless="editRampConfig">
+<target name="addUserAlias" if="do.local.set" unless="RampConfigUpToDate">
     <input
         message="Please enter the user name to be used by the client." 
         addproperty="user.alias"
     />
+    <copy file="repo/rampConfig.xml.template" tofile="repo/rampConfig.xml"/>
     <replace file="repo/rampConfig.xml" token="**keyEntry**" summary="true" value="${user.alias}" />
 </target>
-<target name="addKeystorePassword" if="do.local.set" unless="editRampConfig">
+<target name="addKeystorePassword" if="do.local.set" unless="RampConfigUpToDate">
     <input
         message="Please enter the password for the client keystore." 
         addproperty="keystore.password"
     />
     <replace file="repo/rampConfig.xml" token="**keystorePassword**" summary="true" value="${keystore.password}" />
 </target>
-<target name="warn3" unless="OSCARS.jks.exists">
-    <echo level="warning">**** a new OSCARS.jks was copied to repo. ****
-	    **** You must add a KeyEntry for yourself using tools/utils/copyKey.sh.  Use copyKey.sh -h for help. ****
+<target name="warn3" unless="Oscars.jksUpToDate">
+    <echo level="warning">    **** a new OSCARS.jks.template was copied to repo. 
+	**** You must copy it to OSCARS.jks and add a KeyEntry for yourself using tools/utils/copyKey.sh.  
+    **** or merge with an existing OSCARS.jks. Use copyKey.sh -h for help. 
+    </echo>
+</target>
+<target name="warn4" unless="newssl.jksUpToDate">
+    <echo level="warning">    **** a new ssl-keystore.jks.template was copied to repo. 
+    **** You must copy it to ssl-keystore.jks and add a trustedCert CA entry for your target host.  
+    **** use keytool -import . ****
     </echo>
 </target>
 		
-<target name="prepare" depends="copydefaults,useLocalRampConfig,useCatalinaRampConfig,addUserAlias,addKeystorePassword,warn3">
+<target name="prepare" depends="copydefaults,useLocalRampConfig,useCatalinaRampConfig,addUserAlias,
+    addKeystorePassword,warn3,warn4">
     <mkdir dir="${repo}/modules" />
     <mkdir dir="${build}/classes" />
-    <copy todir="${repo}">
-        <fileset dir="${public}/client" includes="log4j.properties" />
-    </copy>
     <!-- Copy public material to repo -->
+    <copy file="${public}/logging/examples.log4j.properties" tofile="${repo}/log4j.properties" />
     <copy todir="${repo}/modules">
-        <fileset dir="${public}" includes="*rampart-SNAPSHOT.mar" />
+        <fileset dir="${public}/axis-tomcat" includes="*rampart-SNAPSHOT.mar" />
     </copy>
 
 </target>
