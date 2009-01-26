@@ -9,6 +9,7 @@ import org.apache.log4j.*;
 
 import net.sf.json.*;
 
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 
 
@@ -23,14 +24,12 @@ public class PathSetupReservation extends HttpServlet {
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
-
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
         params.put("style", "wbui");
@@ -42,14 +41,13 @@ public class PathSetupReservation extends HttpServlet {
             params.put(paramName, paramValues);
         }
         try {
-            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient =
+                RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.createPath(params, userName);
         } catch (Exception ex) {
-            this.log.error("rmiClient failed: " + ex.getMessage());
-            ServletUtils.handleFailure(out, "PathSetupReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, ex, methodName);
             return;
         }
-
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");

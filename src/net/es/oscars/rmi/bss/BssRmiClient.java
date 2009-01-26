@@ -74,21 +74,21 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     /**
      * queryReservation
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param request RmiQueryResRequest contains input from component
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return result RmiQueryResReply bean containing reservation
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        queryReservation(HashMap<String, Object> params, String userName)
+    public RmiQueryResReply
+        queryReservation(RmiQueryResRequest request, String userName)
             throws RemoteException {
 
         this.log.debug("queryReservation.start");
-        HashMap<String, Object> result =  new HashMap<String, Object>();
         String methodName = "QueryReservation";
         this.verifyRmiConnection(methodName);
+        RmiQueryResReply result = null;
         try {
-            result = this.remote.queryReservation(params, userName);
+            result = this.remote.queryReservation(request, userName);
             this.log.debug("queryReservation.end");
             return result;
         } catch (RemoteException e) {

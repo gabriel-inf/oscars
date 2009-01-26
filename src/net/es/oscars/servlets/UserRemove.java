@@ -9,6 +9,7 @@ import javax.servlet.http.*;
 import net.sf.json.*;
 import org.apache.log4j.Logger;
 
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -39,9 +40,10 @@ public class UserRemove extends HttpServlet {
         }
 
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "Users", "modify");
             if (authVal != AuthValue.ALLUSERS) {
                 log.error("no permission to modify users");
                 ServletUtils.handleFailure(out,"You do not have the permissions to modify users", methodName);
@@ -55,7 +57,7 @@ public class UserRemove extends HttpServlet {
 
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-            authVal = ServletUtils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
+            authVal = rmiClient.checkAccess(userName, "Users", "list");
 
             // shouldn't be able to get to this point, but just in case
             if (!(authVal == AuthValue.ALLUSERS)) {
@@ -63,11 +65,10 @@ public class UserRemove extends HttpServlet {
                 ServletUtils.handleFailure(out, "You do not have the permissions to list users", methodName);
                 return;
             }
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "User " + profileName + " successfully removed");
         outputMap.put("method", methodName);

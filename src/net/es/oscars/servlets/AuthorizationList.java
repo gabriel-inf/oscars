@@ -15,6 +15,7 @@ import net.es.oscars.aaa.Resource;
 import net.es.oscars.aaa.Permission;
 import net.es.oscars.aaa.Authorization;
 import net.es.oscars.aaa.Attribute;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
@@ -39,9 +40,10 @@ public class AuthorizationList extends HttpServlet {
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "AAA", "list");
             if (authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" has no permission to list authorizations";
                 this.log.error(errorMsg);
@@ -49,8 +51,8 @@ public class AuthorizationList extends HttpServlet {
                 return;
             }
             this.outputAuthorizations(outputMap, request, rmiClient, out);
-
-        } catch (RemoteException ex) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         outputMap.put("status", "Authorization list");

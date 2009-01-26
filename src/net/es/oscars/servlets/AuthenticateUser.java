@@ -14,6 +14,7 @@ import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
 import net.es.oscars.aaa.Resource;
 import net.es.oscars.aaa.Permission;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class AuthenticateUser extends HttpServlet {
@@ -36,11 +37,8 @@ public class AuthenticateUser extends HttpServlet {
         } else {
             userName = request.getParameter("userName");
         }
-
         String password = request.getParameter("initialPassword");
-
         String guestLogin = userSession.getGuestLogin();
-
         String sessionName = "";
         if (userName != null && guestLogin != null &&
             userName.equals(guestLogin)) {
@@ -50,39 +48,31 @@ public class AuthenticateUser extends HttpServlet {
             int r = generator.nextInt();
             sessionName = String.valueOf(r);
         }
-
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            String loginUserName = rmiClient.verifyLogin(userName, password, sessionName);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            String loginUserName =
+                rmiClient.verifyLogin(userName, password, sessionName);
             userName = (String) loginUserName;
             if (userName == null) {
                 ServletUtils.handleFailure(out, "Login not allowed", methodName);
                 return;
             }
-
             this.handleDisplay(rmiClient, userName, outputMap, out);
-        } catch (RemoteException ex) {
-            this.log.error("AuthenticateUser failed with " + ex.getMessage());
-            ServletUtils.handleFailure(out, "Internal error: " + ex.getMessage(), methodName);
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
-
         log.info("setting cookie name to " + userName);
         userSession.setCookie("userName", userName, response);
         log.info("setting session name to " + sessionName);
         userSession.setCookie("sessionName", sessionName, response);
 
-        log.debug("hello");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         outputMap.put("status", userName + " signed in.  Use tabs " + "to navigate to different pages.");
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        log.debug("there");
-        log.info("{}&&" + jsonObject);
         out.println("{}&& " + jsonObject);
-
         log.info("AuthenticateUser: user " + userName + " logged in");
         log.debug("AuthenticateUser.end");
 

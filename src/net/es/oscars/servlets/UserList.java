@@ -15,6 +15,7 @@ import net.sf.json.*;
 import net.es.oscars.aaa.Attribute;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.User;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -36,13 +37,12 @@ public class UserList extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
             AaaRmiInterface rmiClient =
-                ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query",
-                                               rmiClient, methodName, log, out);
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "Users", "query");
             // if allowed to see all users, show help information on clicking on
             // row to see user details
             if  (authVal == AuthValue.ALLUSERS) {
@@ -52,7 +52,8 @@ public class UserList extends HttpServlet {
             }
             outputMap.put("status", "User list");
             this.outputUsers(outputMap, userName, request,rmiClient, out);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         outputMap.put("method", methodName);
@@ -88,8 +89,8 @@ public class UserList extends HttpServlet {
         } else {
             attrsUpdated = "";
         }
-        AuthValue authVal = ServletUtils.getAuth(userName, "Users", "list", rmiClient, methodName, log, out);
-        AuthValue aaaVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
+        AuthValue authVal = rmiClient.checkAccess(userName, "Users", "list");
+        AuthValue aaaVal = rmiClient.checkAccess(userName, "AAA", "list");
 
         String listType = "plain";
         if (authVal == AuthValue.ALLUSERS) {

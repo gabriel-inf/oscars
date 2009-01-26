@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import net.sf.json.*;
 
 import net.es.oscars.aaa.*;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.*;
 
@@ -23,8 +24,6 @@ public class UserAddForm extends HttpServlet {
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-
-
         List<Institution> institutions = null;
         log.debug("servlet.start");
 
@@ -37,10 +36,15 @@ public class UserAddForm extends HttpServlet {
             return;
         }
 
-
-        AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-        AuthValue authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
-
+        AaaRmiInterface rmiClient = null;
+        AuthValue authVal = null;
+        try {
+            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            authVal = rmiClient.checkAccess(userName, "Users", "modify");
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
+            return;
+        }
         if (authVal != AuthValue.ALLUSERS) {
             String errorMsg = "User "+userName+" is not allowed to add a new user";
             log.error(errorMsg);
@@ -52,11 +56,10 @@ public class UserAddForm extends HttpServlet {
         try {
             this.outputAttributeMenu(outputMap, rmiClient, out);
             this.outputInstitutionMenu(outputMap, rmiClient, out);
-        } catch (RemoteException ex) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
-
         outputMap.put("status", "Add a user");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);

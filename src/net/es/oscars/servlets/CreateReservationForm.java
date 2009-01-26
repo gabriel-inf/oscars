@@ -10,19 +10,18 @@ import javax.servlet.http.*;
 import org.apache.log4j.Logger;
 import net.sf.json.*;
 
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.aaa.AuthValue;
 
 public class CreateReservationForm extends HttpServlet {
     private Logger log = Logger.getLogger(CreateReservationForm.class);
 
-
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-
         String methodName = "CreateReservationForm";
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -30,13 +29,15 @@ public class CreateReservationForm extends HttpServlet {
         if (userName == null) {
             return;
         }
-        AaaRmiInterface coreRmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
+        AaaRmiInterface rmiClient = null;
         AuthValue authVal = null;
         try {
-            authVal = coreRmiClient.checkModResAccess(userName, "Reservations", "create", 0, 0, false, false );
-        } catch (Exception ex) {
-            this.log.error("rmiClient failed with " + ex.getMessage());
-            ServletUtils.handleFailure(out, "CreateReservationForm internal error: " + ex.getMessage(), methodName);
+            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            authVal =
+                rmiClient.checkModResAccess(userName, "Reservations", "create",
+                                            0, 0, false, false );
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         if (authVal == null || authVal == AuthValue.DENIED ) {
@@ -49,8 +50,9 @@ public class CreateReservationForm extends HttpServlet {
             // this form does not reset status
             outputMap.put("method", methodName);
             outputMap.put("success", Boolean.TRUE);
-            this.contentSection(outputMap, userName, coreRmiClient, out);
-        } catch (RemoteException ex) {
+            this.contentSection(outputMap, userName, rmiClient, out);
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

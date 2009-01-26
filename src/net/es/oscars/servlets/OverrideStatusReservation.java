@@ -8,6 +8,7 @@ import javax.servlet.http.*;
 import org.apache.log4j.*;
 import net.sf.json.*;
 
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 
 
@@ -30,7 +31,6 @@ public class OverrideStatusReservation extends HttpServlet {
         }
         HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-
         params.put("style", "wbui");
 
         Enumeration e = request.getParameterNames();
@@ -39,16 +39,14 @@ public class OverrideStatusReservation extends HttpServlet {
             String[] paramValues = request.getParameterValues(paramName);
             params.put(paramName, paramValues);
         }
-
         try {
-            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient =
+                RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.modifyStatus(params, userName);
         } catch (Exception ex) {
-            this.log.error("rmiClient failed: " + ex.getMessage());
-            ServletUtils.handleFailure(out, "OverrideStatusReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, ex, methodName);
             return;
         }
-
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");

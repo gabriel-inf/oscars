@@ -43,14 +43,14 @@ public interface BssRmiInterface extends Remote {
     /**
      * Queries reservation given information from servlet.
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param request RmiQueryResRequest contains input from component
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return RmiQueryResReply bean containing reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        queryReservation(HashMap<String, Object> params, String userName)
+    public RmiQueryResReply
+        queryReservation(RmiQueryResRequest request, String userName)
             throws IOException, RemoteException;
 
     /**

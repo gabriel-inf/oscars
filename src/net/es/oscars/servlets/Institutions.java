@@ -13,10 +13,10 @@ import net.sf.json.*;
 import net.es.oscars.aaa.Attribute;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
-
 
 
 public class Institutions extends HttpServlet {
@@ -46,9 +46,10 @@ public class Institutions extends HttpServlet {
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED) {
                 this.log.error("No permission to modify Institutions table.");
                 ServletUtils.handleFailure(out, "no permission to modify Institutions table", methodName);
@@ -77,11 +78,10 @@ public class Institutions extends HttpServlet {
             }
             // always output latest list
             this.outputInstitutions(outputMap,rmiClient, out);
-        } catch (RemoteException e) {
-            this.log.error(e.getMessage());
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

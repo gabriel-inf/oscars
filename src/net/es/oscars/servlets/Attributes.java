@@ -12,6 +12,7 @@ import net.sf.json.*;
 
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.Attribute;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -51,9 +52,8 @@ public class Attributes extends HttpServlet {
         String attributeEditDescr = request.getParameter("attributeEditDescription").trim();
         String attributeEditType = request.getParameter("attributeTypes").trim();
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal = rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal != null && authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" does not have permission to modify attributes.";
                 this.log.error(errorMsg);
@@ -81,8 +81,8 @@ public class Attributes extends HttpServlet {
                 outputMap.put("status", "Attributes management");
             }
             this.outputAttributes(outputMap, rmiClient, out);
-        } catch (RemoteException e) {
-            this.log.error(e.getMessage());
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         // always output latest list

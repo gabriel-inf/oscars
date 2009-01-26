@@ -9,6 +9,7 @@ import javax.servlet.http.*;
 import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
 public class UserSession {
@@ -57,14 +58,14 @@ public class UserSession {
 
 
         Boolean validSession = false;
-        AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
         try {
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
             validSession = rmiClient.validSession(userName, sessionName);
-        } catch (RemoteException ex) {
-            ServletUtils.handleFailure(out, "internal error: " + ex.getMessage(), methodName);
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return null;
         }
-
         String cookieUserName = userName;
         if (!validSession) {
             userName = null;

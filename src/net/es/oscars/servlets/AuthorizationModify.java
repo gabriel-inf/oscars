@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import net.sf.json.*;
 
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -35,7 +36,6 @@ public class AuthorizationModify extends HttpServlet {
             return;
         }
 
-
         String attributeName = request.getParameter("authAttributeName");
         String permissionName  = request.getParameter("permissionName");
         String resourceName  = request.getParameter("resourceName");
@@ -45,7 +45,6 @@ public class AuthorizationModify extends HttpServlet {
         String oldPermissionName = request.getParameter("oldPermissionName");
         String oldResourceName  = request.getParameter("oldResourceName");
         String oldConstraintName  = request.getParameter("oldConstraintName");
-
         log.debug("modifying attribute: " + oldAttributeName + " to "+ attributeName +
                 " resource: " + oldResourceName  + " to " + resourceName  +
                 " permission: " + oldPermissionName  + " to " + permissionName  +
@@ -65,26 +64,23 @@ public class AuthorizationModify extends HttpServlet {
         rmiParams.put("objectType", ModelObject.AUTHORIZATION);
         rmiParams.put("operation", ModelOperation.MODIFY);
 
-
-
         try {
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
 
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "list", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "AAA", "list");
             if (authVal == AuthValue.DENIED)  {
                 log.error("Not allowed to modify an authorization");
                 ServletUtils.handleFailure(out, "not allowed to modify an authorization", methodName);
                 return;
             }
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
-
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "Authorization modified");
         outputMap.put("method", methodName);

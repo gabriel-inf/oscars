@@ -14,6 +14,7 @@ import net.es.oscars.aaa.Attribute;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.Institution;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -61,8 +62,10 @@ public class UserQuery extends HttpServlet {
             outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "Users", "query", rmiClient, methodName, log, out);
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "Users", "query");
 
             if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
                 // either have permission to see others OR see self
@@ -73,7 +76,7 @@ public class UserQuery extends HttpServlet {
             /* check to see if user has modify permission for this user
              *     used by contentSection to set the action on submit
              */
-            authVal = ServletUtils.getAuth(userName, "Users", "modify", rmiClient, methodName, log, out);
+            authVal = rmiClient.checkAccess(userName, "Users", "modify");
 
             if ((authVal == AuthValue.ALLUSERS) ||
                 (self && (authVal == AuthValue.SELFONLY))) {
@@ -97,7 +100,8 @@ public class UserQuery extends HttpServlet {
             this.contentSection( outputMap, targetUser, modifyAllowed,
                     (authVal == AuthValue.ALLUSERS),
                     institutions, attributesForUser, allAttributes);
-        } catch (RemoteException ex) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         outputMap.put("status", "Profile for user " + profileName);

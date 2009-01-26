@@ -72,7 +72,6 @@ public class CreateResRmiHandler {
             throw new IOException("Invalid caller!");
         }
 
-
         // bandwidth limits are stored in megaBits
         int reqBandwidth = (int) (resv.getBandwidth() / 1000000);
         // convert from seconds to minutes
@@ -86,10 +85,10 @@ public class CreateResRmiHandler {
                 specifyPath = true;
             }
         }
+        boolean specifyGRI = (resv.getGlobalReservationId() != null);
 
         AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
-        AuthValue authVal = rmiClient.checkModResAccess(userName, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, false);
-
+        AuthValue authVal = rmiClient.checkModResAccess(userName, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, specifyGRI);
 
         if (authVal == AuthValue.DENIED) {
             result.put("error", "createReservation permission denied");

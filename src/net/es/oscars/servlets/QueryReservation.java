@@ -4,11 +4,25 @@ package net.es.oscars.servlets;
 import java.io.*;
 import java.util.*;
 import java.rmi.RemoteException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
+
 import org.apache.log4j.Logger;
 import net.sf.json.*;
+
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.BssUtils;
+import net.es.oscars.bss.topology.*;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
+import net.es.oscars.rmi.bss.xface.RmiQueryResRequest;
+import net.es.oscars.rmi.bss.xface.RmiQueryResReply;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.aaa.AuthValue;
 
 /**
  * Query reservation servlet
@@ -42,31 +56,55 @@ public class QueryReservation extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        HashMap<String, Object> outputMap = new HashMap<String, Object>();
-
-        params.put("gri", request.getParameterValues("gri")[0]);
-        params.put("caller", "WBUI");
-        // which sections of the page to display are controlled on the
-        // RMI server side in the rmi module
+        RmiQueryResRequest rmiRequest = new RmiQueryResRequest();
+        RmiQueryResReply rmiReply = new RmiQueryResReply();
+        Map<String, Object> outputMap = new HashMap<String, Object>();
+        rmiRequest.setGlobalReservationId(request.getParameter("gri"));
+        AuthValue authVal = null;
         try {
-            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
-            outputMap = rmiClient.queryReservation(params, userName);
-        } catch (RemoteException ex) {
-            this.log.debug("RemoteException rmiClient failed: " + ex.getMessage());
-            ServletUtils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);
-            return;
-        } catch (Exception ex) {
-            this.log.debug("Exception rmiClient failed: " + ex.getMessage());
-            ServletUtils.handleFailure(out, "failed to query Reservations: " + ex.getMessage(), methodName);
+            BssRmiInterface bssRmiClient =
+                RmiUtils.getBssRmiClient(methodName, log);
+            rmiReply = bssRmiClient.queryReservation(rmiRequest, userName);
+            AaaRmiInterface aaaRmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            authVal =
+                aaaRmiClient.checkAccess(userName, "Reservations", "modify");
+            // check to see if user is allowed to see the buttons allowing
+            // reservation modification
+            if (authVal != AuthValue.DENIED) {
+                outputMap.put("resvModifyDisplay", Boolean.TRUE);
+                outputMap.put("resvCautionDisplay", Boolean.TRUE);
+            } else {
+                outputMap.put("resvModifyDisplay", Boolean.FALSE);
+                outputMap.put("resvCautionDisplay", Boolean.FALSE);
+            }
+            // check to see if user is allowed to see the clone button, which
+            // requires generic reservation create authorization
+            authVal = aaaRmiClient.checkModResAccess(userName, "Reservations",
+                                                "create", 0, 0, false, false);
+            if (authVal != AuthValue.DENIED) {
+                outputMap.put("resvCloneDisplay", Boolean.TRUE);
+            } else {
+                outputMap.put("resvCloneDisplay", Boolean.FALSE);
+            }
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
+        try {
+            this.contentSection(rmiReply, outputMap);
+        } catch (BSSException ex) {
+            ;
+        }
+        Reservation resv = rmiReply.getReservation();
+        outputMap.put("status", "Reservation details for " +
+                                resv.getGlobalReservationId());
+        outputMap.put("method", methodName);
+        outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
         return;
-
     }
 
     public void
@@ -76,5 +114,10 @@ public class QueryReservation extends HttpServlet {
         this.doGet(request, response);
     }
 
+    public void
+        contentSection(RmiQueryResReply rmiReply, Map<String,Object> outputMap)
+            throws BSSException {
 
+            // TODO:  add back
+    }
 }

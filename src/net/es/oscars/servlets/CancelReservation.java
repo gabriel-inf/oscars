@@ -4,8 +4,11 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+
 import org.apache.log4j.Logger;
 import net.sf.json.*;
+
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 
 /**
@@ -34,7 +37,6 @@ public class CancelReservation extends HttpServlet {
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
-
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
@@ -44,19 +46,17 @@ public class CancelReservation extends HttpServlet {
 
         HashMap<String, Object> params = new HashMap<String, Object>();
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-
         params.put("gri", request.getParameterValues("gri"));
         params.put("caller", "WBUI");
 
         try {
-            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient =
+                RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.cancelReservation(params, userName);
-        } catch (Exception ex) {
-            this.log.error(ex.getMessage());
-            ServletUtils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(), methodName);
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");

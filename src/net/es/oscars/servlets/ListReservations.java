@@ -15,6 +15,7 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.BssUtils;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 import net.es.oscars.rmi.bss.xface.RmiListResRequest;
 import net.es.oscars.rmi.bss.xface.RmiListResReply;
@@ -51,20 +52,17 @@ public class ListReservations extends HttpServlet {
         }
         AuthValue authVal = null;
         try {
-            BssRmiInterface bssRmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
-            this.log.info("to listReservations");
+            BssRmiInterface bssRmiClient =
+                RmiUtils.getBssRmiClient(methodName, log);
             rmiReply = bssRmiClient.listReservations(rmiRequest, userName);
-            this.log.info("past listReservations");
             AaaRmiInterface aaaRmiClient =
-                ServletUtils.getAaaRmiClient(methodName, log, out);
-            authVal = ServletUtils.getAuth(userName, "Reservations", "list", aaaRmiClient, methodName, log, out);
-            this.log.info("past authVal");
-        } catch (Exception ex) {
-            this.log.error("rmiClient failed with " + ex.getMessage());
-            ServletUtils.handleFailure(out, "ListReservations not completed: " + ex.getMessage(), methodName);
+                RmiUtils.getAaaRmiClient(methodName, log);
+            authVal =
+                aaaRmiClient.checkAccess(userName, "Reservations", "list");
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
         HashMap<String,Object> outputMap = new HashMap<String,Object>();
         // only display user search field if can look at other users'
         // reservations
@@ -75,7 +73,6 @@ public class ListReservations extends HttpServlet {
         } else {
             outputMap.put("resvLoginDisplay", Boolean.TRUE);
         }
-        this.log.info("to getReservations");
         List<Reservation> reservations = rmiReply.getReservations();
         this.outputReservations(outputMap, reservations);
         outputMap.put("totalRowsReplace", "Total rows: " + reservations.size());

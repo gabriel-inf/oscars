@@ -67,27 +67,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String login = this.checkUser(aaaRmiClient);
         CreateReply reply = null;
         ResCreateContent params = request.getCreateReservation();
-
-        /* FIXME: we actually do this check again inside the RMI, is it worth it to do it again here ?*/
-        int reqBandwidth = params.getBandwidth();
-        // convert from milli-seconds to minutes
-        int  reqDuration = (int)(params.getEndTime() - params.getStartTime())/6000;
-        boolean specifyPath = WSDLTypeConverter.pathSpecified(params.getPathInfo());
-        boolean specifyGRI = (params.getGlobalReservationId() != null);
-
-        // Check to see if user can create this  reservation
-        AuthValue authVal = AuthValue.DENIED;
-        try {
-            authVal = aaaRmiClient.checkModResAccess(login, "Reservations", "create", reqBandwidth, reqDuration, specifyPath, specifyGRI);
-        } catch (RemoteException ex) {
-            throw new AAAFaultMessage(ex.getMessage());
-        }
-        if (authVal == AuthValue.DENIED ) {
-            this.log.info("denied");
-            throw new AAAFaultMessage("createReservation: permission denied");
-        }
-        this.log.debug("AAA complete");
-
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.create(params, login, bssRmiClient);

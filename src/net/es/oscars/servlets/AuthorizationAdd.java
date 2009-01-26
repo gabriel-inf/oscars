@@ -11,9 +11,9 @@ import org.apache.log4j.Logger;
 import net.sf.json.*;
 
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.*;
-
 
 
 public class AuthorizationAdd extends HttpServlet {
@@ -40,11 +40,9 @@ public class AuthorizationAdd extends HttpServlet {
         String resourceName  = request.getParameter("resourceName");
         String constraintName = request.getParameter("constraintName");
         String constraintValue = null;
-
         if (constraintName != null) {
             constraintValue = request.getParameter("constraintValue");
         }
-
         this.log.debug("Adding attribute: " + attributeName  +" resource: " + resourceName  + " permission: "
                 + permissionName  + " constraintName: " + constraintName + " constraintValue: " + constraintValue);
 
@@ -54,30 +52,26 @@ public class AuthorizationAdd extends HttpServlet {
         rmiParams.put("resourceName", resourceName);
         rmiParams.put("constraintName", constraintName);
         rmiParams.put("constraintValue", constraintValue);
-
         rmiParams.put("objectType", ModelObject.AUTHORIZATION);
         rmiParams.put("operation", ModelOperation.ADD);
 
-
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED)  {
                 String errorMsg = "User "+userName+" is not allowed to add an authorization";
                 this.log.error(errorMsg);
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
-
-
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
 
             rmiResult = ServletUtils.manageAaaObject(rmiClient, "addAuthorization", log, out, rmiParams);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "Added authorization");
         outputMap.put("method", methodName);

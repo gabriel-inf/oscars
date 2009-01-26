@@ -17,6 +17,7 @@ import net.es.oscars.aaa.Constraint;
 import net.es.oscars.aaa.Rpc;
 import net.es.oscars.aaa.Attribute;
 
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.*;
 
@@ -51,9 +52,10 @@ public class AuthorizationForm extends HttpServlet {
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == null || authVal == AuthValue.DENIED) {
                 log.error("Not authorized to perform admin operations");
                 ServletUtils.handleFailure(out, "not authorized to perform admin operations", methodName);
@@ -74,8 +76,8 @@ public class AuthorizationForm extends HttpServlet {
             if ((rpcParam == null) || rpcParam.trim().equals("")) {
                 this.outputRpcs(outputMap, rmiClient, out);
             }
-        } catch (RemoteException ex) {
-            this.log.error(ex.getMessage());
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         outputMap.put("method", methodName);

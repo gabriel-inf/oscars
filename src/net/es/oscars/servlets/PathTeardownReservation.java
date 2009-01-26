@@ -9,6 +9,7 @@ import org.apache.log4j.*;
 
 import net.sf.json.*;
 
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 
 
@@ -43,14 +44,13 @@ public class PathTeardownReservation extends HttpServlet {
             params.put(paramName, paramValues);
         }
         try {
-            BssRmiInterface rmiClient = ServletUtils.getBssRmiClient(methodName, log, out);
+            BssRmiInterface rmiClient =
+                RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.teardownPath(params, userName);
         } catch (Exception ex) {
-            this.log.error("rmiClient failed: " + ex.getMessage());
-            ServletUtils.handleFailure(out, "TeardownPathReservation not completed: " + ex.getMessage(), methodName);
+            ServletUtils.handleFailure(out, ex, methodName);
             return;
         }
-
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");

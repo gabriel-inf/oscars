@@ -25,57 +25,10 @@ import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.RmiUtils;
 
 public class ServletUtils {
-/**
- *  Gets a new, initialized CoreRmiInterface for client calls.
- * @param methodName String - name of method that is calling us
- * @param log Logger - place to log errors
- * @param out PrinterWriter - used by handleFailure in case of error.
- * @return  CoreRmiInterface
- */
-    public static AaaRmiInterface getAaaRmiClient(String methodName, Logger log, PrintWriter out) {
-        AaaRmiInterface rmiClient;
-        try {
-            rmiClient = RmiUtils.getAaaRmiClient(methodName, log); // will log the error
-        } catch (RemoteException ex) {
-            ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
-            return null;
-        }
-        return rmiClient;
-    }
-    public static BssRmiInterface getBssRmiClient(String methodName, Logger log, PrintWriter out) {
-        BssRmiInterface rmiClient;
-        try {
-            rmiClient = RmiUtils.getBssRmiClient(methodName, log); // will log the error
-        } catch (RemoteException ex) {
-            ServletUtils.handleFailure(out, methodName + " internal error: " + ex.getMessage(), methodName);
-            return null;
-        }
-        return rmiClient;
-    }
-
-    public static AuthValue getAuth(String userName, String resourceName, String permissionName, AaaRmiInterface rmiClient, String methodName, Logger log, PrintWriter out) {
-       HashMap<String, Object> authResult = new HashMap<String, Object>();
-       AuthValue authVal;
-       try {
-           authVal = rmiClient.checkAccess(userName, resourceName, permissionName);
-       } catch (RemoteException ex) {
-           log.error("RMI exception:  " + ex.getMessage());
-           ServletUtils.handleFailure(out, methodName + " RMI exception: " + ex.getMessage(), methodName);
-           authVal = AuthValue.DENIED;
-       }
-       return authVal;
-    }
 
     public static HashMap<String, Object> manageAaaObject(AaaRmiInterface rmiClient, String callerMethodName, Logger log, PrintWriter out, HashMap<String, Object> parameters) throws RemoteException {
         HashMap<String, Object> result = null;
-        try {
-            result = rmiClient.manageAaaObjects(parameters);
-        } catch (RemoteException e) {
-            log.warn("RMI exception: " + e.getMessage(), e);
-            ServletUtils.handleFailure(out, callerMethodName + " internal error: " + e.getMessage(), callerMethodName);
-            throw e;
-        }
-
+        result = rmiClient.manageAaaObjects(parameters);
         return result;
     }
 
@@ -90,10 +43,8 @@ public class ServletUtils {
         userRmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, userRmiParams);
 
         User user = (User) userRmiResult.get("user");
-
         return user;
     }
-
 
     public static List<Attribute> getAttributesForUser(String username, AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllObjects";
@@ -106,17 +57,12 @@ public class ServletUtils {
         rmiParams.put("username", username);
         rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
 
-
         List<Attribute> attributes = (List<Attribute>) rmiResult.get("attributes");
         if (attributes == null) {
             attributes = new ArrayList<Attribute>();
         }
         return attributes;
-
     }
-
-
-
 
     private static Object getAllObjects(ModelObject model, String objectName, AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllObjects";
@@ -171,7 +117,6 @@ public class ServletUtils {
         return objects;
     }
 
-
     public static List<Authorization> getAllAuthorizations(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllAuthorizations";
         List<Authorization> objects = (List<Authorization>) ServletUtils.getAllObjects(ModelObject.AUTHORIZATION, "authorizations", rmiClient, out, log);
@@ -180,7 +125,6 @@ public class ServletUtils {
         }
         return objects;
     }
-
 
     public static List<Institution> getAllInstitutions(AaaRmiInterface rmiClient, PrintWriter out, Logger log) throws RemoteException {
         String methodName = "Utils.getAllInstitutions";
@@ -201,12 +145,25 @@ public class ServletUtils {
         return objects;
     }
 
-
     public static void handleFailure(PrintWriter out, String message, String method) {
 
         Map<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("success", Boolean.FALSE);
         errorMap.put("status", message);
+        errorMap.put("method", method);
+        JSONObject jsonObject = JSONObject.fromObject(errorMap);
+        if (out != null) {
+            out.println("{}&&" + jsonObject);
+        }
+        return;
+    }
+
+    public static void handleFailure(PrintWriter out, Exception ex, String method) {
+
+        // TODO:  more will be done with exception
+        Map<String, Object> errorMap = new HashMap<String, Object>();
+        errorMap.put("success", Boolean.FALSE);
+        errorMap.put("status", ex.getMessage());
         errorMap.put("method", method);
         JSONObject jsonObject = JSONObject.fromObject(errorMap);
         if (out != null) {

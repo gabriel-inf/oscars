@@ -116,17 +116,17 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     /**
      * queryReservation
      *
-     * @param params HashMap<String, Object> - input from web request
+     * @param request RmiQueryResRequest contains input from component
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @return RmiQueryResReply bean containing reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        queryReservation(HashMap<String, Object> params, String userName)
+    public RmiQueryResReply
+        queryReservation(RmiQueryResRequest request, String userName)
             throws IOException, RemoteException {
 
-        return this.queryHandler.queryReservation(params, userName);
+        return this.queryHandler.queryReservation(request, userName);
     }
 
     /**

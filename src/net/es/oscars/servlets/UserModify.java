@@ -15,6 +15,7 @@ import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -66,10 +67,9 @@ public class UserModify extends HttpServlet {
         ArrayList<String> curRoles = new ArrayList<String>();
         try {
             AaaRmiInterface rmiClient =
-                ServletUtils.getAaaRmiClient(methodName, log, out);
+                RmiUtils.getAaaRmiClient(methodName, log);
             AuthValue authVal =
-                ServletUtils.getAuth(userName, "Users", "modify", rmiClient,
-                                     methodName, log, out);
+                rmiClient.checkAccess(userName, "Users", "modify");
             if ((authVal == AuthValue.ALLUSERS) ||
                     ( self && (authVal == AuthValue.SELFONLY))) {
                 user = ServletUtils.getUser(profileName, rmiClient, out, log);
@@ -133,7 +133,7 @@ public class UserModify extends HttpServlet {
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
                                                      out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e.getMessage(), methodName);
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
         outputMap.put("status", "Profile for user " + profileName +

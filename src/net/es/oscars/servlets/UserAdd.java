@@ -14,6 +14,7 @@ import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.Attribute;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -24,8 +25,6 @@ public class UserAdd extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         this.log.info("UserAdd.start");
-
-
         String methodName = "UserAdd";
         UserSession userSession = new UserSession();
 
@@ -38,11 +37,17 @@ public class UserAdd extends HttpServlet {
         }
         String profileName = request.getParameter("profileName");
 
-        AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-        AuthValue authVal = ServletUtils.getAuth(userName, "Users", "create", rmiClient, methodName, log, out);
-        RoleUtils roleUtils = new RoleUtils();
-
+        AaaRmiInterface rmiClient = null;
+        AuthValue authVal = null;
         String errMsg = null;
+        try {
+            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            authVal = rmiClient.checkAccess(userName, "Users", "create");
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
+            return;
+        }
+        RoleUtils roleUtils = new RoleUtils();
         if (authVal != AuthValue.ALLUSERS) {
             errMsg = "not allowed to add a new user";
         }
@@ -61,8 +66,6 @@ public class UserAdd extends HttpServlet {
             ServletUtils.handleFailure(out, e.getMessage(), methodName);
             return;
         }
-
-
         try {
             List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);
             ArrayList<String> addRoles = null;
@@ -87,14 +90,10 @@ public class UserAdd extends HttpServlet {
             rmiParams.put("operation", ModelOperation.ADD);
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-
-
-        } catch (RemoteException e) {
-            this.log.error(e.getMessage());
-            ServletUtils.handleFailure(out, e.getMessage(), methodName);
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "User " + profileName +  " successfully created");
         outputMap.put("method", methodName);
@@ -121,12 +120,9 @@ public class UserAdd extends HttpServlet {
         String password;
 
         User user = new User();
-
         Institution institution = new Institution();
         institution.setName(request.getParameter("institutionName"));
         user.setInstitution(institution);
-
-
         user.setLogin(userName);
         strParam = request.getParameter("certIssuer");
         if ((strParam != null) && (!strParam.trim().equals(""))) {

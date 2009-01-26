@@ -214,16 +214,15 @@ public class ReservationAdapter {
 
         String gri = request.getQueryReservation().getGri();
         this.log.info("QueryReservation.start: " + gri);
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("gri", gri);
-        params.put("caller", "AAR");
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        RmiQueryResRequest rmiRequest = new RmiQueryResRequest();
+        rmiRequest.setGlobalReservationId(gri);
+        RmiQueryResReply result = null;
         try {
-            result = rmiClient.queryReservation(params, username);
+            result = rmiClient.queryReservation(rmiRequest, username);
         } catch (Exception ex) {
             throw new BSSException(ex.getMessage());
         }
-        Reservation resv = (Reservation) result.get("reservation");
+        Reservation resv = result.getReservation();
         ResDetails reply = WSDLTypeConverter.reservationToDetails(resv);
         this.log.info("QueryReservation.finish: " +
                        reply.getGlobalReservationId());

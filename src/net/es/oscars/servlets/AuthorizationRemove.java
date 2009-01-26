@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import net.sf.json.*;
 
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
@@ -23,7 +24,6 @@ public class AuthorizationRemove extends HttpServlet {
             throws IOException, ServletException {
 
         log.debug("AuthorizationRemove.start");
-
         UserSession userSession = new UserSession();
         String methodName = "AuthorizationRemove";
         PrintWriter out = response.getWriter();
@@ -34,7 +34,6 @@ public class AuthorizationRemove extends HttpServlet {
             log.error("No user session: cookies invalid");
             return;
         }
-
         String attributeName = request.getParameter("authAttributeName");
         String permissionName = request.getParameter("permissionName");
         String resourceName = request.getParameter("resourceName");
@@ -51,26 +50,23 @@ public class AuthorizationRemove extends HttpServlet {
 
         rmiParams.put("objectType", ModelObject.AUTHORIZATION);
         rmiParams.put("operation", ModelOperation.DELETE);
-
-
-
         try {
-            AaaRmiInterface rmiClient = ServletUtils.getAaaRmiClient(methodName, log, out);
-            AuthValue authVal = ServletUtils.getAuth(userName, "AAA", "modify", rmiClient, methodName, log, out);
-
+            AaaRmiInterface rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log);
+            AuthValue authVal =
+                rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED)  {
                 String errorMsg = "User "+userName+" not allowed to remove authorizations";
                 log.error(errorMsg);
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
-
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            ServletUtils.handleFailure(out, e, methodName);
             return;
         }
-
         Map<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("status", "authorization deleted");
         outputMap.put("method", methodName);
