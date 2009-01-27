@@ -33,11 +33,11 @@ public interface BssRmiInterface extends Remote {
      *
      * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
-     * @return resvResult - resulting reservation
+     * @return gri - new global reservation id assigned to reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public Reservation
+    public String
         createReservation(Reservation resvRequest, String userName)
             throws IOException, RemoteException;
 

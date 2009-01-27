@@ -40,9 +40,9 @@ public class CreateResRmiHandler {
      *
      * @param resv - partially filled in reservation with requested params
      * @param userName String - name of user  making request
-     * @return resvResult - resulting reservation
+     * @return gri - new global reservation id assigned to reservation
      */
-    public Reservation
+    public String
         createReservation(Reservation resv, String userName)
             throws IOException, RemoteException {
 
@@ -83,11 +83,12 @@ public class CreateResRmiHandler {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
+        String gri = null;
         try {
             // url returned, if not null, indicates location of next domain
             // manager
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_RECEIVED, userName, "localhost", resv);
-            rm.submitCreate(resv, userName);
+            gri = rm.submitCreate(resv, userName);
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_ACCEPTED, userName, "localhost", resv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
@@ -101,9 +102,8 @@ public class CreateResRmiHandler {
                 throw new RemoteException(errMessage);
             }
         }
-        BssRmiUtils.initialize(resv);
         bss.getTransaction().commit();
         this.log.debug("create.end - success");
-        return resv;
+        return gri;
     }
 }

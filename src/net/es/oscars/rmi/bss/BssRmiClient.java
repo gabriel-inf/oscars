@@ -44,10 +44,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
      *
      * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
-     * @return resvResult - resulting reservation
+     * @return gri - new global reservation id assigned to reservation
      * @throws RemoteException
      */
-    public Reservation
+    public String
         createReservation(Reservation resvRequest, String userName)
             throws RemoteException {
 
@@ -56,9 +56,9 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
         this.verifyRmiConnection(methodName);
         Reservation resvResult = null;
         try {
-            resvResult = this.remote.createReservation(resvRequest, userName);
+            String gri = this.remote.createReservation(resvRequest, userName);
             this.log.debug("createReservation.end");
-            return resvResult;
+            return gri;
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
             throw new RemoteException(methodName + ": Remote exception from RMI server: " + e.getMessage());

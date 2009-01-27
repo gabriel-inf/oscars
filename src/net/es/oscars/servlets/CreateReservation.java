@@ -56,18 +56,17 @@ public class CreateReservation extends HttpServlet {
             ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
-        Reservation resvResult = null;
+        String gri = null;
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-            resvResult = rmiClient.createReservation(resv, userName);
+            gri = rmiClient.createReservation(resv, userName);
         } catch (Exception ex) {
             ServletUtils.handleFailure(out, null, ex, methodName);
             return;
         }
-        outputMap.put("gri", resvResult.getGlobalReservationId());
-        outputMap.put("status", "Submitted reservation with GRI " +
-                      resvResult.getGlobalReservationId());
+        outputMap.put("gri", gri);
+        outputMap.put("status", "Submitted reservation with GRI " + gri);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

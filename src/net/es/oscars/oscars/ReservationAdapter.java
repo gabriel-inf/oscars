@@ -47,33 +47,32 @@ public class ReservationAdapter {
 
         this.log.info("create.start");
         this.logCreateParams(soapParams);
-        Reservation resvRequest =
+        Reservation resv =
             WSDLTypeConverter.contentToReservation(soapParams);
 
         PathInfo pathInfo = soapParams.getPathInfo();
         net.es.oscars.bss.topology.Path path =
             WSDLTypeConverter.convertPath(pathInfo);
-        resvRequest.addPath(path);
+        resv.addPath(path);
         CreateReply reply = null;
-        this.setPayloadSender(resvRequest);
+        this.setPayloadSender(resv);
 
-        Reservation resvResult = null;
+        String gri = null;
         try {
-            resvResult =
-                rmiClient.createReservation(resvRequest, login);
+            gri = rmiClient.createReservation(resv, login);
             this.log.debug("create, to toReply");
-            reply = WSDLTypeConverter.reservationToReply(resvResult);
+            reply = WSDLTypeConverter.reservationToReply(resv);
 
             ///PathInfo is unchanged so just return the user-given pathInfo
             reply.setPathInfo(pathInfo);
         } catch (IOException e) {
             // send notification in all cases
             String errMsg =
-                this.generateErrorMsg(resvRequest, e.getMessage());
+                this.generateErrorMsg(resv, e.getMessage());
             this.log.error(errMsg);
             throw new BSSException(e.getMessage());
         }
-        this.log.info("create.finish: " + resvResult.toString("bss"));
+        this.log.info("create.finish: " + resv.toString("bss"));
         return reply;
     }
 

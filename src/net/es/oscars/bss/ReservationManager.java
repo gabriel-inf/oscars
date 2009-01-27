@@ -55,7 +55,7 @@ public class ReservationManager {
         GEN_TOKEN = aaaProps.getProperty("useSignalTokens");
     }
 
-    public void submitCreate(Reservation resv, String login)
+    public String submitCreate(Reservation resv, String login)
         throws  BSSException {
         this.log.info("submitCreate.start");
         ReservationDAO dao = new ReservationDAO(this.dbname);
@@ -71,15 +71,17 @@ public class ReservationManager {
         }
         this.log.info("create.validated");
 
+        String gri = resv.getGlobalReservationId();
         // set GRI if none specified
-        if (resv.getGlobalReservationId() == null){
-            String gri = this.generateGRI();
+        if (gri == null){
+            gri = this.generateGRI();
             resv.setGlobalReservationId(gri);
         } else {
             // this should be the first time we're seeing this GRI
             Reservation tmp = dao.query(resv.getGlobalReservationId());
             if (tmp != null) {
-                throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
+                throw new BSSException("Reservation with gri: " + gri +
+                                       " already exists!");
             }
         }
 
@@ -120,6 +122,7 @@ public class ReservationManager {
             throw new BSSException(ex);
         }
         this.log.info("submitCreate.end");
+        return gri;
     }
 
     /**
