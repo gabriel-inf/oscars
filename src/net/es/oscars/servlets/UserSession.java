@@ -63,7 +63,7 @@ public class UserSession {
                 RmiUtils.getAaaRmiClient(methodName, log);
             validSession = rmiClient.validSession(userName, sessionName);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return null;
         }
         String cookieUserName = userName;

@@ -101,7 +101,7 @@ public class UserQuery extends HttpServlet {
                     (authVal == AuthValue.ALLUSERS),
                     institutions, attributesForUser, allAttributes);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         outputMap.put("status", "Profile for user " + profileName);

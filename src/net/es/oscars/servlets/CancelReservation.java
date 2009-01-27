@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-
 import org.apache.log4j.Logger;
 import net.sf.json.*;
 
@@ -44,19 +43,22 @@ public class CancelReservation extends HttpServlet {
             return;
         }
 
-        HashMap<String, Object> params = new HashMap<String, Object>();
+ 
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        params.put("gri", request.getParameterValues("gri"));
-        params.put("caller", "WBUI");
+        String gri = request.getParameterValues("gri")[0];
 
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-            outputMap = rmiClient.cancelReservation(params, userName);
+           rmiClient.cancelReservation(gri, userName);
+
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
+        outputMap.put("status", "Reservation " + gri + "canceled");    
+        outputMap.put("method", methodName);
+        outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");

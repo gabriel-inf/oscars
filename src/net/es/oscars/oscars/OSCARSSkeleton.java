@@ -105,7 +105,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.cancel(request, username, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("cancelReservation caught BSSException: " + e.getMessage());
+            this.log.debug("cancelReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
         } catch (Exception e) {
             this.log.error("cancelReservation caught Exception: " + e.getMessage());

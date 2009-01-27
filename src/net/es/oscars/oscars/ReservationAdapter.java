@@ -181,16 +181,13 @@ public class ReservationAdapter {
             BssRmiInterface rmiClient) throws BSSException {
 
         String gri = request.getCancelReservation().getGri();
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("gri", gri);
-        params.put("caller", "AAR");
-        HashMap<String, Object> result = new HashMap<String, Object>();
+
         try {
-            result = rmiClient.cancelReservation(params, username);
+            rmiClient.cancelReservation(gri, username);
         } catch (Exception ex) {
             throw new BSSException(ex.getMessage());
         }
-        return (String) result.get("status");
+        return "reservation canceled";
     }
 
     /**

@@ -60,7 +60,7 @@ public class ListReservations extends HttpServlet {
             authVal =
                 aaaRmiClient.checkAccess(userName, "Reservations", "list");
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         HashMap<String,Object> outputMap = new HashMap<String,Object>();

@@ -44,7 +44,7 @@ public class OverrideStatusReservation extends HttpServlet {
                 RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.modifyStatus(params, userName);
         } catch (Exception ex) {
-            ServletUtils.handleFailure(out, ex, methodName);
+            ServletUtils.handleFailure(out, null, ex, methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

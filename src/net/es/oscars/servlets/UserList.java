@@ -53,7 +53,7 @@ public class UserList extends HttpServlet {
             outputMap.put("status", "User list");
             this.outputUsers(outputMap, userName, request,rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         outputMap.put("method", methodName);

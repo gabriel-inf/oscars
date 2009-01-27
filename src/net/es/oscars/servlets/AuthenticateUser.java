@@ -60,7 +60,7 @@ public class AuthenticateUser extends HttpServlet {
             }
             this.handleDisplay(rmiClient, userName, outputMap, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         log.info("setting cookie name to " + userName);

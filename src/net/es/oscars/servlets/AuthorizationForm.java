@@ -77,7 +77,7 @@ public class AuthorizationForm extends HttpServlet {
                 this.outputRpcs(outputMap, rmiClient, out);
             }
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         outputMap.put("method", methodName);

@@ -80,7 +80,16 @@ public class EventProducer{
     public void addEvent(String type, String userLogin, String source, 
                          Reservation resv, String errorCode, 
                          String errorMessage){
-        this.addEvent(type, userLogin, source, resv, errorCode, errorMessage);
+       // this.addEvent(type, userLogin, source, resv, errorCode, errorMessage);
+        OSCARSEvent event = new OSCARSEvent();
+        HashMap <String,String[]> resvParams = new HashMap<String,String[]>();
+        // TODO fill in the reservation params from the reservation.
+        event.setType(type);
+        event.setUserLogin(userLogin);
+        event.setSource(source);
+        event.setErrorCode(errorCode);
+        event.setErrorMessage(errorMessage);
+        event.setReservationParams(resvParams);
     }
 
     /**

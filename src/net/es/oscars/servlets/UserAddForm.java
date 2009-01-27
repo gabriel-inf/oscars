@@ -42,7 +42,7 @@ public class UserAddForm extends HttpServlet {
             rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             authVal = rmiClient.checkAccess(userName, "Users", "modify");
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         if (authVal != AuthValue.ALLUSERS) {
@@ -57,7 +57,7 @@ public class UserAddForm extends HttpServlet {
             this.outputAttributeMenu(outputMap, rmiClient, out);
             this.outputInstitutionMenu(outputMap, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         outputMap.put("status", "Add a user");

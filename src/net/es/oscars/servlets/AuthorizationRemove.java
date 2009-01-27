@@ -64,7 +64,7 @@ public class AuthorizationRemove extends HttpServlet {
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();

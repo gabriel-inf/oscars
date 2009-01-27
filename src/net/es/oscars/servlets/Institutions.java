@@ -79,7 +79,7 @@ public class Institutions extends HttpServlet {
             // always output latest list
             this.outputInstitutions(outputMap,rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         outputMap.put("method", methodName);

@@ -44,7 +44,7 @@ public class UserAdd extends HttpServlet {
             rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             authVal = rmiClient.checkAccess(userName, "Users", "create");
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         RoleUtils roleUtils = new RoleUtils();
@@ -91,7 +91,7 @@ public class UserAdd extends HttpServlet {
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();

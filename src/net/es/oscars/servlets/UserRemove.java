@@ -66,7 +66,7 @@ public class UserRemove extends HttpServlet {
                 return;
             }
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();

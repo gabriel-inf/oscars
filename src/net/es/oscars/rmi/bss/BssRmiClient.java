@@ -129,28 +129,26 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
 
     /**
      * cancelReservation
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param gri String GlobalReservationId of reservation to be canceled
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        cancelReservation(HashMap<String, Object> params, String userName)
+    public void
+        cancelReservation(String gri, String userName)
             throws RemoteException {
 
         this.log.debug(" cancelReservation.start");
-        HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
         this.verifyRmiConnection(methodName);
         try {
-            result = this.remote.cancelReservation(params, userName);
+            this.remote.cancelReservation(gri, userName);
             this.log.debug(" cancelReservation.end");
-            return result;
         } catch (RemoteException e) {
-            this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.debug("Remote exception from RMI server: " + e.getMessage());
             throw new RemoteException(methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
-            this.log.warn("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }

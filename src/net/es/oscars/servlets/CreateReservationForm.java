@@ -37,7 +37,7 @@ public class CreateReservationForm extends HttpServlet {
                 rmiClient.checkModResAccess(userName, "Reservations", "create",
                                             0, 0, false, false );
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         if (authVal == null || authVal == AuthValue.DENIED ) {
@@ -52,7 +52,7 @@ public class CreateReservationForm extends HttpServlet {
             outputMap.put("success", Boolean.TRUE);
             this.contentSection(outputMap, userName, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

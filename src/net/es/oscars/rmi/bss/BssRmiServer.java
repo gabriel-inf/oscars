@@ -150,11 +150,11 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        cancelReservation(HashMap<String, Object> params, String userName)
-            throws IOException, RemoteException {
+    public void
+        cancelReservation(String gri, String userName)
+            throws RemoteException {
 
-        return this.cancelHandler.cancelReservation(params, userName);
+        this.cancelHandler.cancelReservation(gri, userName);
     }
 
     /**

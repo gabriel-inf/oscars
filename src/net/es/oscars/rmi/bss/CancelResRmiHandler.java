@@ -7,6 +7,7 @@ package net.es.oscars.rmi.bss;
  */
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
 import org.apache.log4j.*;
 import org.hibernate.*;
 import net.es.oscars.aaa.*;
@@ -44,10 +45,9 @@ public class CancelResRmiHandler {
      * @throws IllegalArgumentException
      * @throws IOException
      */
-    public HashMap<String, Object> cancelReservation(HashMap<String, Object> params, String userName)
-        throws IllegalArgumentException, IOException {
+    public void cancelReservation(String gri, String userName)
+        throws RemoteException {
         this.log.debug("cancel.start");
-        HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CancelReservation";
 
         ReservationManager rm = core.getReservationManager();
@@ -61,53 +61,38 @@ public class CancelResRmiHandler {
 
         AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
-            result.put("error", "no permission to cancel Reservations");
+            //result.put("error", "no permission to cancel Reservations");
             this.log.debug("cancelReservation failed: permission denied");
-            return result;
+            throw new RemoteException("CancelReservation: no permission to cancel Reservation");
         }
         if (authVal.equals(AuthValue.MYSITE)){
             institution = rmiClient.getInstitution(userName);
         } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = userName;
         }
-
-        String caller = (String) params.get("caller");
-        if (caller.equals("WBUI") || caller.equals("AAR")) {
-            result.put("method", methodName);
-            String gri = (String) params.get("gri");
-            Session bss = core.getBssSession();
-            bss.beginTransaction();
-            String errMessage = null;
-            try {
-                reservation = rm.getConstrainedResv(gri, loginConstraint, institution);
-                rm.submitCancel(reservation, loginConstraint, userName, institution);
-            } catch (BSSException e) {
-                errMessage = e.getMessage();
-            } catch (Exception e) {
-                errMessage = e.getMessage();
-            } finally {
-                if (errMessage != null) {
-                    result.put("error", errMessage);
-                    bss.getTransaction().rollback();
-                    if (reservation != null){
-                        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, caller, reservation, "", errMessage);
-                    }
-                    this.log.debug("cancelReservation failed: " + errMessage);
-                    return result;
-                }
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
+        String errMessage = null;
+        RemoteException remEx = null;
+        try {
+            reservation = rm.getConstrainedResv(gri, loginConstraint, institution);
+            rm.submitCancel(reservation, loginConstraint, userName, institution);
+        } catch (BSSException e) {
+            errMessage = e.getMessage();
+            remEx= new RemoteException(errMessage,e);
+            this.log.debug("cancelReservation failed: " + errMessage);
+        } catch (Exception e) {
+            errMessage = e.getMessage();
+            remEx= new RemoteException(errMessage,e);
+            this.log.error(errMessage,e);
+        } 
+        if (errMessage != null) {
+            bss.getTransaction().rollback();
+            if (reservation != null){
+                eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "oscars-core", reservation, "", errMessage);
             }
-            result.put("gri", reservation.getGlobalReservationId());
-            result.put("status", "Cancelled reservation with GRI " + reservation.getGlobalReservationId());
-            result.put("method", methodName);
-            result.put("success", Boolean.TRUE);
-            bss.getTransaction().commit();
-        } else {
-
-        	this.log.error("INTERNAL ERROR: invalid caller: " + caller);
-        	throw new IllegalArgumentException("Internal error: invalid caller");
-            //throw new IOException("Internal error");
+            throw  remEx;
         }
         this.log.debug("cancel.end");
-        return result;
     }
 }

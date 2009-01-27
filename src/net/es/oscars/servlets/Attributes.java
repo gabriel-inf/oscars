@@ -82,7 +82,7 @@ public class Attributes extends HttpServlet {
             }
             this.outputAttributes(outputMap, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         // always output latest list

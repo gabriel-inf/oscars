@@ -69,7 +69,7 @@ public class AuthorizationAdd extends HttpServlet {
 
             rmiResult = ServletUtils.manageAaaObject(rmiClient, "addAuthorization", log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();

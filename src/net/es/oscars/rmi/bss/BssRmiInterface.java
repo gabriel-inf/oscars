@@ -69,15 +69,13 @@ public interface BssRmiInterface extends Remote {
 
     /**
      * Cancels reservation given information from servlet.
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param gri String GlobalReservationId of reservation to be canceled
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
-     * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        cancelReservation(HashMap<String, Object> params, String userName)
-            throws IOException, RemoteException;
+    public void
+        cancelReservation(String gri, String userName)
+            throws RemoteException;
 
     /**
      * Modifies reservation given information from servlet.

@@ -52,7 +52,7 @@ public class AuthorizationList extends HttpServlet {
             }
             this.outputAuthorizations(outputMap, request, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, e, methodName);
+            ServletUtils.handleFailure(out, null, e, methodName);
             return;
         }
         outputMap.put("status", "Authorization list");

@@ -45,7 +45,7 @@ public class PathSetupReservation extends HttpServlet {
                 RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.createPath(params, userName);
         } catch (Exception ex) {
-            ServletUtils.handleFailure(out, ex, methodName);
+            ServletUtils.handleFailure(out, null, ex, methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
