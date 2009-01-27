@@ -9,6 +9,7 @@ import java.rmi.registry.*;
 import java.net.*;
 import java.net.UnknownHostException;
 
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.rmi.*;
 import net.es.oscars.PropertyLoader;
 import net.es.oscars.rmi.aaa.AaaRmiServer;
@@ -100,17 +101,17 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     /**
      * createReservation
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @return resvResult - resulting reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        createReservation(HashMap<String, Object> params, String userName)
+    public Reservation
+        createReservation(Reservation resvRequest, String userName)
             throws IOException, RemoteException {
 
-        return this.createHandler.createReservation(params, userName);
+        return this.createHandler.createReservation(resvRequest, userName);
     }
 
     /**

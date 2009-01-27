@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import net.es.oscars.rmi.BaseRmiClient;
 import net.es.oscars.rmi.bss.xface.*;
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.Logger;
@@ -25,14 +26,12 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
      * @throws RemoteException
      */
     public void init() throws RemoteException {
-        this.log.debug("BssRmiClient.init().start");
 
+        this.log.debug("BssRmiClient.init().start");
         Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
         this.setProps(props);
         super.configure();
-
         Remote remote = super.startConnection();
-
         if (this.connected) {
             this.setRemote((BssRmiInterface) remote);
             super.setRemote(remote);
@@ -40,35 +39,33 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
         this.log.debug("BssRmiClient.init().end");
     }
 
-
     /**
      * createReservation
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return resvResult - resulting reservation
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        createReservation(HashMap<String, Object> params, String userName)
+    public Reservation
+        createReservation(Reservation resvRequest, String userName)
             throws RemoteException {
 
         this.log.debug("createReservation.start");
-        HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CreateReservation";
         this.verifyRmiConnection(methodName);
+        Reservation resvResult = null;
         try {
-            result = this.remote.createReservation(params, userName);
+            resvResult = this.remote.createReservation(resvRequest, userName);
             this.log.debug("createReservation.end");
-            return result;
+            return resvResult;
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
-            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
+            throw new RemoteException(methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.debug("Exception from RMI server" + e.getMessage(), e);
-            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
+            throw new RemoteException(methodName + ": Exception from RMI server: " + e.getMessage());
         }
-        return result;
     }
 
     /**

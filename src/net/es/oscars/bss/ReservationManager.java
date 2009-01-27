@@ -55,7 +55,7 @@ public class ReservationManager {
         GEN_TOKEN = aaaProps.getProperty("useSignalTokens");
     }
 
-    public void submitCreate(Reservation resv, String login, Path path)
+    public void submitCreate(Reservation resv, String login)
         throws  BSSException {
         this.log.info("submitCreate.start");
         ReservationDAO dao = new ReservationDAO(this.dbname);
@@ -64,6 +64,7 @@ public class ReservationManager {
         resv.setLogin(login);
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
+        Path path = resv.getPath(PathType.REQUESTED);
         StringBuilder errorMsg = paramValidator.validate(resv, path);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
@@ -84,7 +85,6 @@ public class ReservationManager {
 
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
-        resv.addPath(path);
 
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);

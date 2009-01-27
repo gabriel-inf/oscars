@@ -428,22 +428,6 @@ public class WSDLTypeConverter {
     }
 
     /**
-     * Given a PathInfo instance, determines whether it contains information
-     *     requiring special authorization to set.
-     *
-     * @param pathInfo a PathInfo instance
-     * @return boolean indicating whether contains series of hops
-     */
-    public static boolean pathSpecified(PathInfo pathInfo) {
-
-        if (pathInfo.getLayer3Info() != null) {
-            CtrlPlanePathContent path = pathInfo.getPath();
-            if (path != null) { return true; }
-        }
-        return false;
-    }
-
-    /**
      * Converts a hash map to a ResDetail object for Axis2
      *
      * @param map a HashMap with reservation information
