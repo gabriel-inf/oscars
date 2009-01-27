@@ -113,21 +113,21 @@ public class IDCEventPEP implements NotifyPEP{
         if(!institutionList.isEmpty()){
             permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
         }
+        
+        if(event.getResDetails() == null ||
+           event.getResDetails().getPathInfo().getPath() == null ||
+           event.getResDetails().getPathInfo().getPath().getHop() == null){
+            this.log.debug("prepare.end");
+            return permissionMap;
+        }
 
         //Check path for end site institutions that may have not yet been added
         Session bss = null;
         try{
             bss = this.core.getBssSession();
             bss.beginTransaction();
-
-            if(event.getResDetails() == null ||
-               event.getResDetails().getPathInfo().getPath() == null ||
-               event.getResDetails().getPathInfo().getPath().getHop() == null){
-                this.log.debug("prepare.end");
-                return permissionMap;
-            }
+            
             CtrlPlaneHopContent[] hops = event.getResDetails().getPathInfo().getPath().getHop();
-
             for(CtrlPlaneHopContent hop : hops){
                 CtrlPlaneLinkContent link = hop.getLink();
                 if(link == null){
