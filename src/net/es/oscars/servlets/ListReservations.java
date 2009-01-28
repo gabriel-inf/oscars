@@ -206,7 +206,6 @@ public class ListReservations extends HttpServlet {
             if (pathStr != null) {
                 this.log.info(pathStr);
             }
-            this.log.info("past pathToString");
             String localSrc = null;
             String localDest = null;
             if (pathStr != null) {
@@ -259,13 +258,22 @@ public class ListReservations extends HttpServlet {
             if ( path != null) {
                 try {
                     vlanTag = BssUtils.getVlanTag(path);
+                    if (vlanTag == null) {
+                        Path localPath = resv.getPath(PathType.LOCAL);
+                        vlanTag = BssUtils.getVlanTag(localPath);
+                    }
                 } catch (BSSException ex) {
                     outputMap.put("error", ex.getMessage());
                 }
             }
             if (vlanTag != null) {
-                int vlanNum = Math.abs(Integer.parseInt(vlanTag));
-                resvMap.put("vlan", vlanNum + "");
+                // if not a range
+                if (!vlanTag.contains("-")) {
+                    int vlanNum = Math.abs(Integer.parseInt(vlanTag));
+                    resvMap.put("vlan", vlanNum + "");
+                } else {
+                    resvMap.put("vlan", "");
+                }
             } else {
                 resvMap.put("vlan", "");
             }

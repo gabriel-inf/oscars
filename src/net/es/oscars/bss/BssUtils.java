@@ -161,6 +161,9 @@ public class BssUtils {
      */
     public static String getVlanTag(Path path) throws BSSException {
         List<PathElem> pathElems = path.getPathElems();
+        if ((pathElems == null) || pathElems.isEmpty()) {
+            return null;
+        }
         PathElem pathElem = pathElems.get(0);
         pathElem.initializePathElemParams();
         PathElemParam pep =

@@ -84,9 +84,11 @@ public class ListResRmiHandler {
                 throw new RemoteException(errMessage);
             }
         }
+        this.log.info("initialize start");
         for (Reservation reservation: reservations) {
             BssRmiUtils.initialize(reservation);
         }
+        this.log.info("initialize end");
         result.setReservations(reservations);
         bss.getTransaction().commit();
         this.log.debug("listReservations.end");
