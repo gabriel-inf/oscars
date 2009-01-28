@@ -50,28 +50,10 @@ public class Reservation extends HibernateBean implements Serializable {
     /** persistent field */
     private Token token;
 
-    private Set paths = new HashSet<Path>();
-
-    private HashMap<String, Path> pathMap = new HashMap<String, Path>();
-
-    /* TODO
-    private HashMap<String, HashMap<String, HashMap<Integer, Path>>> pathMaps =
-        new HashMap<String, HashMap<String, HashMap<Integer, Path>>>();
-    */
+    private Map<String,Path> pathMap = new HashMap<String,Path>();
 
     /** default constructor */
     public Reservation() { }
-
-    public void initializePaths() {
-        if (!this.pathMap.isEmpty()) {
-            return;
-        }
-        Iterator pathIterator = this.paths.iterator();
-        while (pathIterator.hasNext()) {
-            Path path = (Path) pathIterator.next();
-            this.pathMap.put(path.getPathType(), path);
-        }
-    }
 
     /**
      * @return startTime A Long with the reservation start time (Unix time)
@@ -191,38 +173,30 @@ public class Reservation extends HibernateBean implements Serializable {
         this.globalReservationId = globalReservationId;
     }
 
-    /**
-     * @return list of paths that are associated with this reservation
-     */
-    public Set getPaths() { return this.paths; }
-
-    /**
-     * @param paths probably never used
-     */
-    public void setPaths(Set paths) { this.paths = paths; }
-
-    public boolean addPath(Path path) throws BSSException {
-        if (path.getPathType() == null) {
-            throw new BSSException("Path can not have null type");
-        }
-        if (this.paths.add(path)) {
-            this.pathMap.put(path.getPathType(), path);
-            return true;
-        } else {
-            return false;
-        }
+    public Map<String,Path> getPathMap() {
+        return this.pathMap;
     }
 
-    public void removePath(Path path) {
-        this.paths.remove(path);
-        this.pathMap.remove(path);
+    public void setPathMap(Map<String,Path> pathMap) {
+        this.pathMap = pathMap;
     }
 
     public Path getPath(String pathType) throws BSSException {
         if (!PathType.isValid(pathType)) {
-            throw new BSSException("Invalid pathType: " + pathType);
+            throw new BSSException("Invalid pathType: "+pathType);
         }
         return this.pathMap.get(pathType);
+    }
+
+    public void setPath(Path path) throws BSSException {
+        String pathType = path.getPathType();
+        if (pathType == null) {
+            throw new BSSException("pathType cannot be null");
+        }
+        else if (!PathType.isValid(pathType)) {
+            throw new BSSException("Invalid pathType: " + pathType);
+        }
+        this.pathMap.put(pathType, path);
     }
 
     /**

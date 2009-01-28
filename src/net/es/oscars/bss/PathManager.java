@@ -112,10 +112,10 @@ public class PathManager {
             interdomainPath = interdomainPaths.get(0);
             localPath = localPaths.get(0);
 
-            // FIXME: is addPath the method to use? maybe we want to replace the set of
+            // FIXME: is setPath the method to use? maybe we want to replace the set of
             // paths during modify
-            resv.addPath(localPath);
-            resv.addPath(interdomainPath);
+            resv.setPath(localPath);
+            resv.setPath(interdomainPath);
 
         } catch (PathfinderException ex) {
             this.log.error(ex.getMessage());

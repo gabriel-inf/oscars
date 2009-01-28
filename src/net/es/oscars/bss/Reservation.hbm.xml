@@ -71,10 +71,11 @@
 
     <!-- Associations -->
 
-    <set name="paths" fetch="subselect" cascade="all, delete-orphan">
-        <key column="reservationId" />
+    <map name="pathMap" fetch="subselect" cascade="all, delete-orphan">
+        <key column="reservationId" not-null="true" />
+	<map-key column="pathType" type="string" />
         <one-to-many class="net.es.oscars.bss.topology.Path" />
-    </set>
+    </map>
 
     <one-to-one name="token"
         class="net.es.oscars.bss.Token"

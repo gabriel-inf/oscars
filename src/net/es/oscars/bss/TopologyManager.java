@@ -960,7 +960,7 @@ public class TopologyManager {
                 continue;
             }
             if (status.equals("PENDING")) {
-                r.addPath(path);
+                r.setPath(path);
                 dao.update(r);
             } else if (status.equals("ACTIVE")) {
                 if (!this.isDuplicate(oldPath, path)) {

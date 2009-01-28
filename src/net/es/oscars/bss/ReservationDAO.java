@@ -43,7 +43,6 @@ public class ReservationDAO
         if (reservation == null) {
             throw new BSSException ("No reservation matches requested gri: " + gri);
         }
-        reservation.initializePaths();
         return reservation;
     }
 
@@ -138,9 +137,6 @@ public class ReservationDAO
         this.reservations = query.list();
         this.log.debug("done with Hibernate query");
 
-        for (Reservation resv: this.reservations) {
-            resv.initializePaths();
-        }
         if (vlanTags != null && !vlanTags.isEmpty() &&
             !vlanTags.contains("any")) {
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
@@ -355,7 +351,6 @@ public class ReservationDAO
                                         .setString(0, gri)
                                         .setString(1, login)
                                         .uniqueResult();
-        resv.initializePaths();
         return resv;
     }
 

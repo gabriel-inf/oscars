@@ -29,7 +29,7 @@
 
     <property name="pathSetupMode" />
 
-    <property name="pathType" not-null="true">
+    <property name="pathType" not-null="true" insert="false" update="false">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>
