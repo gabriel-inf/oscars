@@ -80,11 +80,11 @@ public class CancelResRmiHandler {
         } catch (BSSException e) {
             errMessage = e.getMessage();
             remEx= new RemoteException(errMessage,e);
-            this.log.debug("cancelReservation failed: " + errMessage);
+            this.log.debug(methodName + " failed: " + errMessage);
         } catch (Exception e) {
             errMessage = e.getMessage();
             remEx= new RemoteException(errMessage,e);
-            this.log.error(errMessage,e);
+            this.log.error(methodName + " failed: " +errMessage,e);
         } 
         if (errMessage != null) {
             bss.getTransaction().rollback();

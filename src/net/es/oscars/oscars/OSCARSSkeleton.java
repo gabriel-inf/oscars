@@ -105,11 +105,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.cancel(request, username, bssRmiClient);
         } catch (BSSException e) {
-            this.log.debug("cancelReservation caught BSSException: " + e.getMessage());
-            throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
+            this.log.info(methodName + " caught BSSException: " + e.getMessage());
+            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
         } catch (Exception e) {
-            this.log.error("cancelReservation caught Exception: " + e.getMessage());
-            throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
+            this.log.error(methodName + " caught Exception: " + e.getMessage());
+            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
         }
         CancelReservationResponse response = new CancelReservationResponse();
         response.setCancelReservationResponse(reply);
@@ -141,9 +141,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.query(request, username, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.error(e.getMessage());
-            throw new BSSFaultMessage(e.getMessage());
+        }  catch (BSSException e) {
+            this.log.info(methodName + " caught BSSException: " + e.getMessage());
+            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
+        } catch (Exception e) {
+            this.log.error(methodName + " caught Exception: " + e.getMessage());
+            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
         }
         QueryReservationResponse response = new QueryReservationResponse();
         response.setQueryReservationResponse(reply);

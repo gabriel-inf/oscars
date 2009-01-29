@@ -17,6 +17,7 @@ import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.notify.OSCARSEvent;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
@@ -87,17 +88,24 @@ public class QueryResRmiHandler {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String gri = request.getGlobalReservationId();
+        RemoteException remEx = null;
+        String errMessage = null;
         try {
             reservation = rm.query(gri, loginConstraint, institution);
-            if (reservation == null) {
-                throw new BSSException("Reservation with gri: "+gri+" does not exist");
-            }
             BssRmiUtils.initialize(reservation);
             result.setReservation(reservation);
         } catch (BSSException e) {
+            errMessage = e.getMessage();
+            remEx= new RemoteException(errMessage,e);
+            this.log.debug(methodName + " failed: " + errMessage);
+        } catch (Exception e) {
+            errMessage = e.getMessage();
+            remEx= new RemoteException(errMessage,e);
+            this.log.error(methodName + " failed " + errMessage,e);
+        } 
+        if (errMessage != null) {
             bss.getTransaction().rollback();
-            this.log.debug(e.getMessage());
-            throw new RemoteException(e.getMessage());
+            throw  remEx;
         }
         bss.getTransaction().commit();
         // BSS section end

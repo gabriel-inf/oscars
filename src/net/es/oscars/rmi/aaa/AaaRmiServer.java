@@ -46,8 +46,9 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
         this.setProperties(props);
-
-        this.setRmiServiceName("AAARMIServer");
+        // name of aaa service in registry, will be reset from aaa.registryName in rmi properties
+        //this.setRmiServiceName("AAARMIServer");
+        // used for logging in BaseRmiServer.init
         this.setServiceName("AAA RMI Server");
 
         super.init(staticObject);
@@ -133,7 +134,7 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
             }
         } catch (Exception ex) {
             log.error(ex);
-            throw new RemoteException(ex.getMessage());
+            throw new RemoteException(ex.getMessage(),ex);
         }
     }
 

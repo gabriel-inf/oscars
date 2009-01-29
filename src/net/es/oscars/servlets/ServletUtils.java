@@ -150,6 +150,7 @@ public class ServletUtils {
         Map<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("success", Boolean.FALSE);
         errorMap.put("status", message);
+        errorMap.put("method",method);
         //errorMap.put("method", method);
         JSONObject jsonObject = JSONObject.fromObject(errorMap);
         if (out != null) {
@@ -162,12 +163,10 @@ public class ServletUtils {
 
         String errorMsg = null;
         if (ex instanceof RemoteException) {
-            Throwable e = ex.getCause();
-            if (e != null) {
-                errorMsg = ex.getCause().getMessage();
-            } else {
-                log.debug("remote exception is " + ex.getMessage(),ex);
-                errorMsg= ex.getMessage();
+            Throwable nestEx = ex;
+            // drill down to original error message
+            while ((nestEx  = nestEx.getCause()) != null) {
+                errorMsg = nestEx.getMessage();
             }
         } else {
             log.error (method + ": caught Exception ", ex);
@@ -175,7 +174,6 @@ public class ServletUtils {
         }
         Map<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("success", Boolean.FALSE);
-        log.debug("exception message is " + errorMsg);
         errorMap.put("status", errorMsg);
         errorMap.put("method", method);
         JSONObject jsonObject = JSONObject.fromObject(errorMap);

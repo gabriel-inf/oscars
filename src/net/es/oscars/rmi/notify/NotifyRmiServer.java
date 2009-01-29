@@ -3,37 +3,22 @@ package net.es.oscars.rmi.notify;
 import java.util.*;
 
 import java.rmi.*;
-import java.rmi.server.*;
 import java.rmi.registry.*;
-import java.net.*;
-import java.net.UnknownHostException;
-
-import net.es.oscars.PropHandler;
-
+import net.es.oscars.PropertyLoader;
 import net.es.oscars.rmi.*;
 
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
-public class NotifyRmiServer  implements NotifyRmiInterface  {
+public class NotifyRmiServer  extends BaseRmiServer implements NotifyRmiInterface  {
     private Logger log = Logger.getLogger(NotifyRmiServer.class);
     private Registry registry;
 
     /** Static remote object so that GarbageCollector doesn't delete it */
     public static NotifyRmiServer staticObject;
 
-    private NotifyRmiInterface stub;
     private NotifyRmiHandler notifyHandler;
-
-    /**
-     * NotifyRmiServer constructor
-     * @throws RemoteException
-     */
-    public NotifyRmiServer() throws RemoteException {
-        NotifyRmiServer.staticObject = this;
-    }
-
 
     /**
      * init
@@ -47,50 +32,22 @@ public class NotifyRmiServer  implements NotifyRmiInterface  {
      */
     public void init() throws RemoteException {
         this.log.debug("NotifyRmiServer.init().start");
-        PropHandler propHandler = new PropHandler("rmi.properties");
+        NotifyRmiServer.staticObject = this;
+        
+        Properties props = PropertyLoader.loadProperties("rmi.properties","notify",true);
+        this.setProperties(props);
+        // used for logging in BaseRmiServer.init
+        this.setServiceName("Notify RMI Server");
 
-        Properties props = propHandler.getPropertyGroup("notify", true);
-
-        // default rmi registry port
-        int rmiPort = NotifyRmiInterface.registryPort;
-        // default rmi registry address
-        String rmiIpaddr = NotifyRmiInterface.registryAddress;
-        // default rmi registry name
-        String rmiRegName = NotifyRmiInterface.registryName;
-
-        if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
-            try {
-                rmiPort = Integer.decode(props.getProperty("registryPort"));
-            } catch (NumberFormatException e) {
-                this.log.warn(e);
-            }
-        }
-
-        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
-            rmiIpaddr = props.getProperty("registryAddress");
-        }
-
-        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
-            rmiRegName = props.getProperty("registryName");
-        }
-
-        InetAddress ipAddr = null;
-        AnchorSocketFactory sf = null;
-        // Causes the endPoint of the remote sever object to match the interface that is listened on
-        System.setProperty("java.rmi.server.hostname",rmiIpaddr);
-        try {
-            ipAddr = InetAddress.getByName(rmiIpaddr);
-            // creates a custom socket that only listens on ipAddr
-            sf = new AnchorSocketFactory(ipAddr);
-            this.registry = LocateRegistry.createRegistry(rmiPort, null, sf);
-        } catch (UnknownHostException ex) {
-            this.log.error(ex);
-        }
-
-        this.stub = (NotifyRmiInterface) UnicastRemoteObject.exportObject(NotifyRmiServer.staticObject, rmiPort, null, sf);
-        this.registry.rebind(rmiRegName, this.stub);
+        super.init(staticObject);
         this.initHandlers();
-        this.log.debug("NotifyRmiServer.init().end");
+    }
+
+    /**
+     * shutdown
+     */
+    public void shutdown() {
+        super.shutdown(staticObject);
     }
 
     public void initHandlers() {
@@ -105,20 +62,5 @@ public class NotifyRmiServer  implements NotifyRmiInterface  {
     	this.notifyHandler.Notify(request);
     }
 
-    /**
-     * shutdown
-     */
-    public void shutdown() {
-        try {
-            java.rmi.server.UnicastRemoteObject.unexportObject(NotifyRmiServer.staticObject, true);
-            java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
-            this.registry.unbind(registryName);
-        } catch (RemoteException ex) {
-            this.log.error("Remote exception shutting down Notify RMI server", ex);
-
-        } catch (NotBoundException ex) {
-            this.log.error("Notify RMI Server already unbound", ex);
-        }
-    }
 
 }

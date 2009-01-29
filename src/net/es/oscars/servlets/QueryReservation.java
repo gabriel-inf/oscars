@@ -88,13 +88,13 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("resvCloneDisplay", Boolean.FALSE);
             }
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         try {
             this.contentSection(rmiReply, outputMap);
         } catch (BSSException e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         Reservation resv = rmiReply.getReservation();

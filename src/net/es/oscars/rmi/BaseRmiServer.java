@@ -58,7 +58,7 @@ public abstract class BaseRmiServer {
                 this.log.warn("invalid registryPort value, using default");
             }
         } else {
-            this.log.info("registryPort property not set, using default");
+            this.log.warn("registryPort property not set, using default");
         }
         this.setRegistryPort(port);
 
@@ -69,7 +69,7 @@ public abstract class BaseRmiServer {
             this.setRmiServiceName(props.getProperty("registryName").trim());
             this.log.info("Service name at registry: "+this.getRmiServiceName());
         } else if (this.getRmiServiceName() == null) {
-            errorMsg = "rmiServiceName not set and registryName property not set!";
+            errorMsg = "rmiServiceName not set because registryName property not set!";
             throw new RemoteException(errorMsg);
         }
 
@@ -80,14 +80,15 @@ public abstract class BaseRmiServer {
             socketFactory = new AnchorSocketFactory(ipAddr);
         } catch (UnknownHostException ex) {
             this.log.error(ex);
+            throw new RemoteException("UnknownHostException creating socket on host: " +localhost);
         }
-
+        // Causes the endPoint of the remote sever object to match the interface that is listened on
         System.setProperty("java.rmi.server.hostname", localhost);
 
         RemoteException connectError = null;
         try {
-            this.log.info("Looking for RMI registry at localhost...");
-            this.setRegistry(LocateRegistry.getRegistry(localhost, this.getRegistryPort(), socketFactory));
+            this.log.info("Looking for RMI registry at localhost:" + this.registryPort);
+            this.setRegistry(LocateRegistry.getRegistry(localhost, this.registryPort, socketFactory));
             String[] services = this.getRegistry().list();
             for (String s: services) {
                 this.log.debug("RMI service: "+s);
@@ -99,10 +100,8 @@ public abstract class BaseRmiServer {
 
         if (this.getRegistry() == null) {
             this.log.info("Could not locate RMI registry at localhost, creating one...");
-            // Causes the endPoint of the remote sever object to match the interface that is listened on
-            System.setProperty("java.rmi.server.hostname", localhost);
             try {
-                this.registry = LocateRegistry.createRegistry(this.getRegistryPort(), null, socketFactory);
+                this.registry = LocateRegistry.createRegistry(this.registryPort, null, socketFactory);
             } catch (RemoteException ex) {
                 this.log.error("Could not locate existing registry. Error was:"+connectError.getMessage());
                 this.log.error("Tried to create registry but failed. Error was:"+ex.getMessage());

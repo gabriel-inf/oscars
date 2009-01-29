@@ -2,28 +2,19 @@ package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.util.*;
-
 import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
-import java.net.*;
-import java.net.UnknownHostException;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.rmi.*;
 import net.es.oscars.PropertyLoader;
-import net.es.oscars.rmi.aaa.AaaRmiServer;
 import net.es.oscars.rmi.bss.xface.*;
 
 import org.apache.log4j.*;
 
 public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
-    private Logger log = Logger.getLogger(BssRmiServer.class);
-    private Registry registry;
 
     /* Make remote object static so GarbageCollector doesn't delete it */
     public static BssRmiServer staticObject;
-    private BssRmiInterface stub;
     private CreateResRmiHandler createHandler;
     private QueryResRmiHandler queryHandler;
     private ListResRmiHandler listHandler;
@@ -59,8 +50,9 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
         this.setProperties(props);
-
-        this.setRmiServiceName("BSSRMIServer");
+        // name of bss service in registry, will be reset from bss.registryName in rmi properties
+        //this.setRmiServiceName("BSSRMIServer");
+        // used for logging in BaseRmiServer.init
         this.setServiceName("BSS RMI Server");
 
         super.init(staticObject);
@@ -81,19 +73,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
 
     /**
      * shutdown
-
-    public void shutdown() {
-        try {
-            java.rmi.server.UnicastRemoteObject.unexportObject(BssRmiServer.staticObject, true);
-            java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
-            this.registry.unbind(registryName);
-        } catch (RemoteException ex) {
-            this.log.error("Remote exception shutting down BSS RMI server", ex);
-
-        } catch (NotBoundException ex) {
-            this.log.error("BSS RMI Server already unbound", ex);
-        }
-    }*/
+     */
     public void shutdown() {
         super.shutdown(staticObject);
     }
@@ -125,7 +105,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public RmiQueryResReply
         queryReservation(RmiQueryResRequest request, String userName)
-            throws IOException, RemoteException {
+           throws RemoteException {
 
         return this.queryHandler.queryReservation(request, userName);
     }

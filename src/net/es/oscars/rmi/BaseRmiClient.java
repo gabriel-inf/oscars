@@ -32,7 +32,6 @@ public class BaseRmiClient implements Remote {
     protected boolean configured = false;
 
 
-
     public Remote startConnection() throws RemoteException {
         this.log.debug("startConnection().start");
 
@@ -40,25 +39,25 @@ public class BaseRmiClient implements Remote {
             throw new RemoteException("RMI client not configured");
         }
         this.remote = null;
-        this.connected = true;
-
+        this.connected = false;
+        String errMsg = null;
         try {
             Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
             this.remote = (Remote) registry.lookup(rmiServiceName);
-
-            this.log.debug("Got remote object \n" + remote.toString());
             this.connected = true;
             this.log.debug("Connected to "+rmiServiceName+" service");
         } catch (RemoteException e) {
-            this.connected = false;
+            errMsg="Remote exception from RMI server: trying to access " + this.remote.toString();
             this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
-            throw e;
         } catch (NotBoundException e) {
-            this.connected = false;
+            errMsg="Trying to access unregistered remote object: ";
             this.log.warn("Trying to access unregistered remote object: ", e);
         } catch (Exception e) {
-            this.connected = false;
-            this.log.warn("Could not connect", e);
+            errMsg= "Could not connect";
+        } finally {
+            if (errMsg != null) {
+                throw new RemoteException(errMsg);
+            }
         }
         this.log.debug("startConnection().end");
         return this.remote;
@@ -70,7 +69,7 @@ public class BaseRmiClient implements Remote {
         // default rmi registry port
         int rmiPort = Registry.REGISTRY_PORT;
         // rmi registry address
-        String rmiIpaddr;
+        String rmiIpaddr ="127.0.0.1";
         // default rmi registry name
         String rmiRegName;
 
@@ -89,7 +88,7 @@ public class BaseRmiClient implements Remote {
         if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
             rmiIpaddr = props.getProperty("registryAddress");
         } else {
-            throw new RemoteException("registryAddress property not set!");
+            this.log.warn("registryAddress property not set: using localhost");
         }
         this.registryHost = rmiIpaddr;
 
@@ -101,7 +100,7 @@ public class BaseRmiClient implements Remote {
         this.rmiServiceName = rmiRegName;
 
         this.configured = true;
-        this.log.info("Client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
+        this.log.debug("Client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
         this.log.debug("configure().end");
     }
 
