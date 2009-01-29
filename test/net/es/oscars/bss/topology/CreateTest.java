@@ -219,7 +219,6 @@ public class CreateTest {
         CommonReservation common = new CommonReservation();
         common.setParameters(resv, "path test");
         Path path = new Path();
-        path.setExplicit(false);
 
         // set up MPLS data
         MPLSData mplsData = new MPLSData();
@@ -290,7 +289,7 @@ public class CreateTest {
 
         path.setPathElems(pathElems);
         path.setPathType(PathType.LOCAL);
-        resv.addPath(path);
+        resv.setPath(path);
         reservationDAO.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
         assert path.getId() != null;

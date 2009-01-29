@@ -47,7 +47,6 @@ public class ReservationTest {
         common.setParameters(resv, DESCRIPTION);
 
         Path path = new Path();
-        path.setExplicit(false);
 
         // set up MPLS data
         MPLSData mplsData = new MPLSData();
@@ -121,7 +120,7 @@ public class ReservationTest {
         pathElems.add(ingressPathElem);
         path.setPathElems(pathElems);
         path.setPathType(PathType.LOCAL);
-        resv.addPath(path);
+        resv.setPath(path);
         dao.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
     }
@@ -147,7 +146,7 @@ public class ReservationTest {
         try {
              // if null, list all reservations by all users
             reservations = dao.list(10, 0, logins, null, null, null, null,
-                                    null, null);
+                                    null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -168,7 +167,7 @@ public class ReservationTest {
         logins.add(login);
         try {
             reservations = dao.list(10, 0, logins, null, null, null, null,
-                                    null, null);
+                                    null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

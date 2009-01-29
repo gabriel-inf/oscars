@@ -49,7 +49,6 @@ public class XMLFileLocalPathfinderTest {
         //TODO: Delete this stuff
         Path path = new Path();
         //required values
-        path.setExplicit(false);
         path.setPathType(PathType.INTERDOMAIN);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
@@ -58,7 +57,7 @@ public class XMLFileLocalPathfinderTest {
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());
         path.addPathElem(ingr);
         path.addPathElem(egr);
-        resv.addPath(path);
+        resv.setPath(path);
         
         this.sf.getCurrentSession().beginTransaction();
         try {

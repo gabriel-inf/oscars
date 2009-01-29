@@ -45,7 +45,6 @@ public class StaticDBInterPathfinderTest {
         //TODO: Delete this stuff
         Path path = new Path();
         //required values
-        path.setExplicit(false);
         path.setPathType(PathType.REQUESTED);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
@@ -59,7 +58,7 @@ public class StaticDBInterPathfinderTest {
         path.addPathElem(ingr);
         //path.addPathElem(mid);
         path.addPathElem(egr);
-        resv.addPath(path);
+        resv.setPath(path);
         
         this.sf.getCurrentSession().beginTransaction();
         try {

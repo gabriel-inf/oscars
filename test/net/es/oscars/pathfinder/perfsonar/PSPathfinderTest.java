@@ -51,7 +51,6 @@ public class PSPathfinderTest {
         //TODO: Delete this stuff
         Path path = new Path();
         //required values
-        path.setExplicit(false);
         path.setPathType(PathType.INTERDOMAIN);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
@@ -60,7 +59,7 @@ public class PSPathfinderTest {
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());
         path.addPathElem(ingr);
         path.addPathElem(egr);
-        resv.addPath(path);
+        resv.setPath(path);
         
         pathCalcResults = pf.findLocalPath(resv);
         this.sf.getCurrentSession().getTransaction().commit();
@@ -86,7 +85,6 @@ public class PSPathfinderTest {
         //TODO: Delete this stuff
         Path path = new Path();
         //required values
-        path.setExplicit(false);
         path.setPathType(PathType.REQUESTED);
         path.setDirection(PathDirection.BIDIRECTIONAL);
         PathElem ingr = new PathElem();
@@ -95,7 +93,7 @@ public class PSPathfinderTest {
         egr.setUrn(pathInfo.getLayer2Info().getDestEndpoint());
         path.addPathElem(ingr);
         path.addPathElem(egr);
-        resv.addPath(path);
+        resv.setPath(path);
         
         pathCalcResults = pf.findInterdomainPath(resv);
         this.sf.getCurrentSession().getTransaction().commit();
