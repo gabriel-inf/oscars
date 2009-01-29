@@ -119,14 +119,9 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
         } catch (BSSException e) {
             throw new PathfinderException(e.getMessage());
         }
-        localPath.setExplicit(false);//only req paths explicit?
         localPath.setPathSetupMode(interPath.getPathSetupMode());
         localPath.setDirection(PathDirection.BIDIRECTIONAL);
         results.add(localPath);
-        
         return results;
     }
-
-
-    
 }

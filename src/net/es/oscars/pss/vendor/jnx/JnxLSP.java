@@ -81,7 +81,6 @@ public class JnxLSP {
 
         this.log.info("jnx.createPath.start");
 
-        // only used if an explicit path was given
         List<String> hops = null;
         String param = null;
         Ipaddr ipaddr = null;
@@ -329,7 +328,7 @@ public class JnxLSP {
     /**
      * Sets up an LSP circuit.
      *
-     * @param hops a list of hops only used if explicit path was given
+     * @param hops list of hops
      * @return boolean indicating success
      * @throws PSSException
      */
@@ -471,7 +470,7 @@ public class JnxLSP {
      * Configure an LSP. Sends the LSP-XML command to the server
      * and sees what happens.
      *
-     * @param hops a list of hops only used if explicit path was given
+     * @param hops list of hops
      * @param fname full path of template file
      * @param conn LSP connection
      * @return boolean indicating status (not done yet)

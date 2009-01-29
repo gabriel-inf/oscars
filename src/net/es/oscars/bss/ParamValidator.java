@@ -15,7 +15,6 @@ public class ParamValidator {
 
     public StringBuilder validate(Reservation resv, Path requestedPath) {
 
-        String explicitPath = null;
         boolean isLayer2 = false;
         
         StringBuilder sb = new StringBuilder();
@@ -134,7 +133,7 @@ public class ParamValidator {
     }
 
     /**
-     * @param pathElems An explicit path containing an ERO (layer 2 or layer 3),
+     * @param pathElems A path containing an ERO (layer 2 or layer 3),
      *     or an ingress and egress (layer 3)
      * @param isLayer2 true if this is a layer 2 reservation, false otherwise
      */

@@ -202,8 +202,6 @@ public class EmailObserver implements Observer {
                                             resv.get("pathSetupMode"), msg);
             msg = this.replaceTemplateField("##pathType##", 
                                             resv.get("pathType"), msg);
-            msg = this.replaceTemplateField("##isExplicitPath##", 
-                                            resv.get("isExplicitPath"), msg);
             msg = this.replaceTemplateField("##nextDomain##",
                                             resv.get("nextDomain"), msg);
             msg = this.replaceTemplateField("##source##", 
@@ -243,7 +241,6 @@ public class EmailObserver implements Observer {
             msg = this.replaceTemplateField("##status##", "", msg);
             msg = this.replaceTemplateField("##description##", "", msg);
             msg = this.replaceTemplateField("##pathSetupMode##", "", msg);
-            msg = this.replaceTemplateField("##isExplicitPath##", "", msg);
             msg = this.replaceTemplateField("##nextDomain##", "", msg);
             msg = this.replaceTemplateField("##source##", "", msg);
             msg = this.replaceTemplateField("##destination##", "", msg);

@@ -57,7 +57,6 @@ public class LSP {
 
         this.log.info("createPath.start");
 
-        // only used if an explicit path was given
         List<String> hops = null;
         String lspFwdTo = null;
         String lspRevTo = null;
@@ -87,12 +86,6 @@ public class LSP {
             throw new PSSException(
                     "No layer 2 data associated with path");
         }
-        /*
-        if (!path.isExplicit()) {
-            throw new PSSException(
-                    "Cisco configuration currently requires an explicit path");
-        }
-        */
         if (lspData.getIngressLink() == null) {
             throw new PSSException("Path endpoints not found yet");
         }
@@ -248,7 +241,7 @@ public class LSP {
     /**
      * Sets up an LSP circuit.
      *
-     * @param hops a list of hops only used if explicit path was given
+     * @param hops list of hops
      * @throws PSSException
      */
     public void setupLSP(List<String> hops, HashMap<String, String> hm)
@@ -364,7 +357,7 @@ public class LSP {
     /**
      * Configure an LSP. Sends the template using RANCID to the server.
      *
-     * @param hops a list of hops only used if explicit path was given
+     * @param hops list of hops
      * @param fname full path of template file
      * @throws IOException
      * @throws PSSException

@@ -88,7 +88,6 @@ public class HashMapTypeConverter {
         String src = null;
         String dest = null;
 
-        map.put("isExplicitPath", genHashVal(path.isExplicit() ? "true" : "false"));
         map.put("pathSetupMode", genHashVal(path.getPathSetupMode()));
         if(nextDomain != null){
             map.put("nextDomain", genHashVal(nextDomain.getTopologyIdent()));

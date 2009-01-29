@@ -266,7 +266,6 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         Path newPath = new Path();
         newPath.setDirection(PathDirection.BIDIRECTIONAL);
         newPath.setPathType(LOCALPATH ? PathType.LOCAL : PathType.INTERDOMAIN);
-        newPath.setExplicit(false);
         
         PathElem prevHop = null;
         String ingressURN = null;

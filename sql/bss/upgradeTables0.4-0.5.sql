@@ -281,6 +281,7 @@ ALTER TABLE paths DROP layer2DataId;
 ALTER TABLE paths DROP layer3DataId;
 ALTER TABLE paths DROP mplsDataId;
 ALTER TABLE paths DROP pathElemId;
+ALTER TABLE paths DROP explicit;
 ALTER TABLE pathElems DROP nextId;
 ALTER TABLE pathElems DROP description;
 ALTER TABLE pathElems DROP linkDescr;

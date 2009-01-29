@@ -51,7 +51,7 @@ public class TemplateHandler {
      *
      * @param hm a hash map containing info retrieved from the reservation,
      *           and from OSCAR's configuration
-     * @param hops a list of hops only used if explicit path was given
+     * @param hops list of hops
      * @param fname full path of template file
      * @return doc XML Document suitable for configuring router
      * @throws IOException
@@ -75,8 +75,7 @@ public class TemplateHandler {
         xpath = XPath.newInstance("//term[@name=\"firewall_filter_marker\"]");
         List termList = xpath.selectNodes(doc);
         this.replaceFilterNames(termList, hm);
-        // removes optional sections if no explicit path given;
-        // otherwise fills in the primary element and the path-list element
+        // fills in the primary element and the path-list element
         this.handlePathElements(doc, hm, hops);
         // remove comments before sending to router
         this.removeComments(doc);
@@ -169,7 +168,7 @@ public class TemplateHandler {
     }
 
     /**
-     * Handles explicit path elements in template.  A noop with teardown
+     * Handles path elements in template.  A noop with teardown
      * template (no elements present).
      *
      * @throws JDOMException

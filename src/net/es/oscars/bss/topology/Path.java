@@ -20,9 +20,6 @@ public class Path extends HibernateBean implements Serializable {
     private static final long serialVersionUID = 4151;
 
     /** persistent field */
-    private boolean explicit;
-
-    /** persistent field */
     private String pathSetupMode;
 
     /** persistent field */
@@ -50,17 +47,6 @@ public class Path extends HibernateBean implements Serializable {
 
     /** default constructor */
     public Path() { }
-
-    /**
-     * @return explicit boolean indicating whether this path was explicitly set
-     */
-    public boolean isExplicit() { return this.explicit; }
-
-    /**
-     * @param explicit boolean indicating whether this path was explicitly set
-     */
-    public void setExplicit(boolean explicit) { this.explicit = explicit; }
-
 
     /**
      * @return path starting path instance associated with reservation
@@ -280,7 +266,6 @@ public class Path extends HibernateBean implements Serializable {
                 .isEquals();
         } else {
             return new EqualsBuilder()
-                .append(this.isExplicit(), castOther.isExplicit())
                 .append(this.getPathElems().get(0), castOther.getPathElems().get(0))
                 .append(this.getNextDomain(), castOther.getNextDomain())
                 .isEquals();

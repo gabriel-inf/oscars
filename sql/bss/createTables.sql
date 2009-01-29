@@ -140,8 +140,6 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
 CREATE TABLE IF NOT EXISTS paths (
     id                  INT NOT NULL AUTO_INCREMENT,
     reservationId       INT NOT NULL,  -- foreign key
-        -- whether path was explicitly given by user
-    explicit            BOOLEAN NOT NULL,
     pathSetupMode       TEXT,
     nextDomainId        INT,           -- optional foreign key
     pathType            TEXT NOT NULL,

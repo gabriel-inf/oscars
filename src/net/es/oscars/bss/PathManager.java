@@ -74,7 +74,6 @@ public class PathManager {
         }
         // TODO:  return which reservation path
         // Path path = this.convertPath(intraPath, pathInfo, nextDomain);
-        // path.setExplicit(isExplicit);
         return null;
 
 
@@ -93,9 +92,8 @@ public class PathManager {
      * @param resv partially filled in reservation, use startTime, endTime, bandWidth,
      *                GRI
      * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
-     *                  information, may also include explicit path hops.
-     * @return a Path structure with the intradomain path hops, nextDomain, and
-     *                  whether the path hops were explicitly set by the user.
+     *                  information, may also include path hops.
+     * @return a Path structure with the intradomain path hops, and nextDomain
      */
     public void calculatePaths(Reservation resv)
             throws BSSException {

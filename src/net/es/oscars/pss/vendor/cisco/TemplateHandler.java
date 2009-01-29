@@ -26,7 +26,7 @@ public class TemplateHandler {
      *
      * @param hm a hash map containing info retrieved from the reservation,
      *           and from OSCAR's configuration
-     * @param hops a list of hops only used if explicit path was given
+     * @param hops list of hops
      * @param fname full path of template file
      * @return string with information for configuring router
      * @throws IOException
@@ -96,7 +96,7 @@ public class TemplateHandler {
     }
 
     /**
-     * Handles adding explicit path hops to setup string, if any.
+     * Handles adding path hops to setup string.
      *
      * @param sb StringBuilder instance with filled template
      * @param hops list of strings containing hops to add, if any
