@@ -598,26 +598,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param request the Notify message
      */
     public void Notify(Notify request){
-
-        String methodName = "checkSubscriptionId";
-        log.info(methodName+".start");
-
-        NotifyRmiInterface rmiClient = null;
-        try {
-            rmiClient = RmiUtils.getNotifyRmiClient(methodName, log);
-        } catch (RemoteException e) {
-            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
-            return;
-        }
-        try {
-            rmiClient.Notify(request);
-        } catch (RemoteException e) {
-            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
-        } catch (Exception e) {
-            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
-        }
-        log.info(methodName+".end");
-
+        //TODO: Implement this method
     }
 
     /**
@@ -741,36 +722,4 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.log.debug("checkUser.end");
         return login;
     }
-
-    /**
-     * Checks subscription ID in Notify message
-     *
-     * @param address the producer URL
-     * @param msgSubRef the SubscriptionReference in the Notify message
-     * @return the domain ID of the producer, or null if subscription not found
-     */
-     public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) {
-
-        String methodName = "checkSubscriptionId";
-        log.info(methodName+".start");
-
-        NotifyRmiInterface rmiClient = null;
-        try {
-            rmiClient = RmiUtils.getNotifyRmiClient(methodName, log);
-        } catch (RemoteException e) {
-            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
-            return null;
-        }
-        String reply = null;
-        try {
-            reply = rmiClient.checkSubscriptionId(address, msgSubRef);
-        } catch (RemoteException e) {
-            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
-        } catch (Exception e) {
-            this.log.error(methodName+" caught RemoteException: " + e.getMessage());
-        }
-        log.info(methodName+".end");
-        return reply;
-
-     }
 }

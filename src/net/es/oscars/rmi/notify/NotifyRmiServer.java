@@ -7,9 +7,8 @@ import java.rmi.registry.*;
 import net.es.oscars.PropertyLoader;
 import net.es.oscars.rmi.*;
 
+import org.apache.axiom.om.OMElement;
 import org.apache.log4j.*;
-import org.oasis_open.docs.wsn.b_2.Notify;
-import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 public class NotifyRmiServer  extends BaseRmiServer implements NotifyRmiInterface  {
     private Logger log = Logger.getLogger(NotifyRmiServer.class);
@@ -51,16 +50,52 @@ public class NotifyRmiServer  extends BaseRmiServer implements NotifyRmiInterfac
     }
 
     public void initHandlers() {
-        this.notifyHandler 	= new NotifyRmiHandler();
+        this.notifyHandler = new NotifyRmiHandler();
     }
     
-    public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) throws RemoteException {
-    	return this.notifyHandler.checkSubscriptionId(address, msgSubRef);
+    public void notify(String subscriptionId, String publisherId, 
+            List<String> topics, OMElement msg) throws RemoteException {
+        //this.notifyHandler.Notify(request);
+    }
+
+    public String subscribe(String consumerUrl, Long termTime,
+            HashMap<String, String> filters, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
     }
     
-    public void Notify(Notify request) throws RemoteException {
-    	this.notifyHandler.Notify(request);
+    public Long renew(String subscriptionId, Long terminationTime, String user) 
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public void unsubscribe(String subscriptionId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        
     }
 
+    public void pauseSubscription(String subscriptionId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public void resumeSubscription(String subscriptionId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+    }
+    
+    public String registerPublisher(String publisherUrl, List<String> topics,
+            Boolean demand, Long termTime, String user) throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
+    public void destroyRegistration(String publisherId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+    }
 }

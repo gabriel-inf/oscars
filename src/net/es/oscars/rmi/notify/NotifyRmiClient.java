@@ -5,14 +5,9 @@ import java.rmi.registry.*;
 import java.util.*;
 
 import net.es.oscars.PropHandler;
+
+import org.apache.axiom.om.OMElement;
 import org.apache.log4j.Logger;
-import org.oasis_open.docs.wsn.b_2.Notify;
-import org.w3.www._2005._08.addressing.EndpointReferenceType;
-
-import net.es.oscars.aaa.AuthValue;
-import net.es.oscars.aaa.AuthMultiValue;
-import net.es.oscars.aaa.Resource;
-
 
 public class NotifyRmiClient implements NotifyRmiInterface {
     private Logger log = Logger.getLogger(NotifyRmiClient.class);
@@ -88,32 +83,14 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         this.log.debug("AaaRmiClient.init().end");
     }
     
-    
-    public String checkSubscriptionId(String address, EndpointReferenceType msgSubRef) throws RemoteException {
-    	String result = null;
-        String methodName = "checkSubscriptionId";
+    public void notify(String subscriptionId, String publisherId, 
+            List<String> topics, OMElement msg) throws RemoteException {
+        String methodName = "notify";
         if (!this.verifyRmiConnection(methodName)) {
-        	throw new RemoteException("Not connected to RMI server");
+            throw new RemoteException("Not connected to RMI server");
         }
         try {
-        	result = this.remote.checkSubscriptionId(address, msgSubRef);
-        } catch (RemoteException e) {
-            this.log.warn("Remote exception: " + e.getMessage(), e);
-            throw e;
-        } catch (Exception e) {
-            this.log.warn("Exception: " + e.getMessage(), e);
-            throw new RemoteException(e.getMessage());
-        }
-        return result;
-    }
-    
-    public void Notify(Notify request) throws RemoteException {
-        String methodName = "Notify";
-        if (!this.verifyRmiConnection(methodName)) {
-        	throw new RemoteException("Not connected to RMI server");
-        }
-        try {
-        	this.remote.Notify(request);
+            this.remote.notify(subscriptionId, publisherId, topics, msg);
         } catch (RemoteException e) {
             this.log.warn("Remote exception: " + e.getMessage(), e);
             throw e;
@@ -122,9 +99,47 @@ public class NotifyRmiClient implements NotifyRmiInterface {
             throw new RemoteException(e.getMessage());
         }
     }
+    
+    public String subscribe(String consumerUrl, Long termTime,
+            HashMap<String, String> filters, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public Long renew(String subscriptionId, Long terminationTime, String user) 
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public void unsubscribe(String subscriptionId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        
+    }
 
+    public void pauseSubscription(String subscriptionId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public void resumeSubscription(String subscriptionId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+    }
+    
+    public String registerPublisher(String publisherUrl, List<String> topics,
+            Boolean demand, Long termTime, String user) throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-
+    public void destroyRegistration(String publisherId, String user)
+            throws RemoteException {
+        // TODO Auto-generated method stub
+    }
     /**
      * @param methodName the calling method, for logging
      * @return true if the RMI connection is OK
@@ -140,7 +155,6 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         }
         return true;
     }
-
 
     /**
      * @return the remote
@@ -169,8 +183,6 @@ public class NotifyRmiClient implements NotifyRmiInterface {
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
-
-
 
 
 }
