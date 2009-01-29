@@ -29,8 +29,7 @@ public class BssRmiUtils {
     public static void initialize(Reservation reservation) {
         Hibernate.initialize(reservation);
         Hibernate.initialize(reservation.getToken());
-        Set<Path> paths = reservation.getPaths();
-        Iterator<Path> pathIt = paths.iterator();
+        Iterator<Path> pathIt = reservation.getPathMap().values().iterator();
         while (pathIt.hasNext()) {
             Path path = pathIt.next();
             // Hibernate.initialize(path);

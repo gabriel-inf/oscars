@@ -17,6 +17,7 @@ import org.ogf.schema.network.topology.ctrlplane.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.bss.xface.*;
 
@@ -53,7 +54,7 @@ public class ReservationAdapter {
         PathInfo pathInfo = soapParams.getPathInfo();
         net.es.oscars.bss.topology.Path path =
             WSDLTypeConverter.convertPath(pathInfo);
-        resv.addPath(path);
+        resv.getPathMap().put(PathType.REQUESTED, path);
         CreateReply reply = null;
         this.setPayloadSender(resv);
 
