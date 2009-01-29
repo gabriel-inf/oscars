@@ -727,8 +727,17 @@ public class ReservationManager {
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
             boolean found = false;
             for (Reservation rsv : reservations) {
-                if (!this.pathMgr.matches(rsv.getPath(PathType.LOCAL), patterns) &&
-                    !this.pathMgr.matches(rsv.getPath(PathType.INTERDOMAIN), patterns)) {
+                Path localPath = rsv.getPath(PathType.LOCAL);
+                Path interdomainPath = rsv.getPath(PathType.INTERDOMAIN);
+                boolean matches = false;
+                if ((localPath != null) &&
+                    this.pathMgr.matches(localPath, patterns)) {
+                    matches = true;
+                } else if ((interdomainPath != null) &&
+                    this.pathMgr.matches(interdomainPath, patterns)) {
+                        matches =true;
+                }
+                if (!matches) {
                     this.log.debug("not returning: " +
                                     rsv.getGlobalReservationId());
                     removeThese.add(rsv);

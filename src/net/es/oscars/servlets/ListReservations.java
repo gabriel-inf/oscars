@@ -190,10 +190,9 @@ public class ListReservations extends HttpServlet {
         int ctr = 0;
         for (Reservation resv: reservations) {
             HashMap<String,Object> resvMap = new HashMap<String,Object>();
-            // INTERDOMAIN
             Path path = null;
             try {
-                path = resv.getPath(PathType.INTERDOMAIN);
+                path = resv.getPath(PathType.LOCAL);
             } catch (BSSException ex) {
                 outputMap.put("error", ex.getMessage());
                 return;
@@ -258,10 +257,6 @@ public class ListReservations extends HttpServlet {
             if ( path != null) {
                 try {
                     vlanTag = BssUtils.getVlanTag(path);
-                    if (vlanTag == null) {
-                        Path localPath = resv.getPath(PathType.LOCAL);
-                        vlanTag = BssUtils.getVlanTag(localPath);
-                    }
                 } catch (BSSException ex) {
                     outputMap.put("error", ex.getMessage());
                 }

@@ -54,7 +54,7 @@ public class ReservationAdapter {
         PathInfo pathInfo = soapParams.getPathInfo();
         net.es.oscars.bss.topology.Path path =
             WSDLTypeConverter.convertPath(pathInfo);
-        resv.getPathMap().put(PathType.REQUESTED, path);
+        resv.setPath(path);
         CreateReply reply = null;
         this.setPayloadSender(resv);
 
