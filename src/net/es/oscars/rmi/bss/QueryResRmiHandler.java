@@ -18,11 +18,11 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.bss.xface.RmiQueryResRequest;
 import net.es.oscars.rmi.bss.xface.RmiQueryResReply;
+import net.es.oscars.ws.OSCARSCore;
 
 /**
  * QueryResRmiHandler - interfaces between servlet and ReservationManager

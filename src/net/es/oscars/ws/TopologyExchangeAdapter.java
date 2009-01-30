@@ -1,4 +1,4 @@
-package net.es.oscars.oscars;
+package net.es.oscars.ws;
 
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;

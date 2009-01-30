@@ -32,10 +32,10 @@ import org.oasis_open.docs.wsn.br_2.DestroyRegistration;
 import org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse;
 import org.w3.www._2005._08.addressing.*;
 
-import net.es.oscars.oscars.OSCARSStub;
-import net.es.oscars.oscars.AAAFaultMessage;
-import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.notifybroker.ws.*;
+import net.es.oscars.ws.AAAFaultMessage;
+import net.es.oscars.ws.BSSFaultMessage;
+import net.es.oscars.ws.OSCARSStub;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.security.KeyManagement;
 

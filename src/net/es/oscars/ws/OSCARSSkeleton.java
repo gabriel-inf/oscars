@@ -1,4 +1,4 @@
-package net.es.oscars.oscars;
+package net.es.oscars.ws;
 
 /**
  * OSCARSSkeleton.java

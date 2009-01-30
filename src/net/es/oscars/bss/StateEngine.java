@@ -4,7 +4,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.hibernate.*;
 
-import net.es.oscars.oscars.*;
+import net.es.oscars.ws.*;
 import net.es.oscars.database.*;
 
 public class StateEngine {

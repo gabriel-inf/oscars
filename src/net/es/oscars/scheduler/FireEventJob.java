@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
 
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.bss.events.*;
 
 public class FireEventJob implements Job{

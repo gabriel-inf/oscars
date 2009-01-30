@@ -22,9 +22,9 @@ import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.ws.*;
 
 public class ModifyResRmiHandler {
     private OSCARSCore core;

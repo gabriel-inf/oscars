@@ -7,7 +7,8 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
 import org.oasis_open.docs.wsn.b_2.*;
-import net.es.oscars.oscars.OSCARSCore;
+
+import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.client.Client;

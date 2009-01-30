@@ -9,7 +9,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.database.GenericHibernateDAO;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.oscars.WSDLTypeConverter;
+import net.es.oscars.ws.WSDLTypeConverter;
 
 /**
  * DomainDAO is the data access object for the bss.domains table.

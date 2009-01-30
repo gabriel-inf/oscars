@@ -13,7 +13,7 @@ import net.es.oscars.bss.topology.DomainServiceDAO;
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.lookup.LookupException;
 import net.es.oscars.lookup.PSLookupClient;
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.ws.OSCARSCore;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;

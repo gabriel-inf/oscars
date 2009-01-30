@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.PropHandler;
 
 /**

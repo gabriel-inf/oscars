@@ -5,7 +5,7 @@
  * This file was auto-generated from WSDL
  * by the Apache Axis2 version: 1.4.1  Built on : Aug 13, 2008 (05:03:35 LKT)
  */
-        package net.es.oscars.oscars;
+        package net.es.oscars.ws;
 
         
 
@@ -403,8 +403,8 @@
                      * @see net.es.oscars.oscars.OSCARS#cancelReservation
                      * @param cancelReservation138
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -417,8 +417,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[0].getName());
@@ -488,12 +488,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -534,8 +534,8 @@
                      * @see net.es.oscars.oscars.OSCARS#createReservation
                      * @param createReservation140
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -548,8 +548,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[1].getName());
@@ -619,12 +619,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -665,8 +665,8 @@
                      * @see net.es.oscars.oscars.OSCARS#queryReservation
                      * @param queryReservation142
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -679,8 +679,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
@@ -750,12 +750,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -796,8 +796,8 @@
                      * @see net.es.oscars.oscars.OSCARS#refreshPath
                      * @param refreshPath144
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -810,8 +810,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
@@ -881,12 +881,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -927,8 +927,8 @@
                      * @see net.es.oscars.oscars.OSCARS#teardownPath
                      * @param teardownPath146
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -941,8 +941,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
@@ -1012,12 +1012,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -1058,8 +1058,8 @@
                      * @see net.es.oscars.oscars.OSCARS#createPath
                      * @param createPath148
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -1072,8 +1072,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
@@ -1143,12 +1143,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -1189,8 +1189,8 @@
                      * @see net.es.oscars.oscars.OSCARS#getNetworkTopology
                      * @param getNetworkTopology150
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -1203,8 +1203,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
@@ -1274,12 +1274,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -1320,8 +1320,8 @@
                      * @see net.es.oscars.oscars.OSCARS#modifyReservation
                      * @param modifyReservation152
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -1334,8 +1334,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
@@ -1405,12 +1405,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -1504,8 +1504,8 @@
                      * @see net.es.oscars.oscars.OSCARS#forward
                      * @param forward155
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -1518,8 +1518,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[9].getName());
@@ -1589,12 +1589,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -1635,8 +1635,8 @@
                      * @see net.es.oscars.oscars.OSCARS#listReservations
                      * @param listReservations157
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -1649,8 +1649,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[10].getName());
@@ -1720,12 +1720,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 
@@ -1766,8 +1766,8 @@
                      * @see net.es.oscars.oscars.OSCARS#initiateTopologyPull
                      * @param initiateTopologyPull159
                     
-                     * @throws net.es.oscars.oscars.BSSFaultMessage : 
-                     * @throws net.es.oscars.oscars.AAAFaultMessage : 
+                     * @throws net.es.oscars.ws.BSSFaultMessage : 
+                     * @throws net.es.oscars.ws.AAAFaultMessage : 
                      */
 
                     
@@ -1780,8 +1780,8 @@
                     throws java.rmi.RemoteException
                     
                     
-                        ,net.es.oscars.oscars.BSSFaultMessage
-                        ,net.es.oscars.oscars.AAAFaultMessage{
+                        ,net.es.oscars.ws.BSSFaultMessage
+                        ,net.es.oscars.ws.AAAFaultMessage{
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[11].getName());
@@ -1851,12 +1851,12 @@
                                    new java.lang.Class[]{messageClass});
                         m.invoke(ex,new java.lang.Object[]{messageObject});
                         
-                        if (ex instanceof net.es.oscars.oscars.BSSFaultMessage){
-                          throw (net.es.oscars.oscars.BSSFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
+                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
                         }
                         
-                        if (ex instanceof net.es.oscars.oscars.AAAFaultMessage){
-                          throw (net.es.oscars.oscars.AAAFaultMessage)ex;
+                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
+                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
                         }
                         
 

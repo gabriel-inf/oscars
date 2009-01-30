@@ -5,7 +5,7 @@ import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.ws.OSCARSCore;
 
 import java.util.*;
 

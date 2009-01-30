@@ -15,9 +15,9 @@ import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.interdomain.ServiceManager;
-import net.es.oscars.oscars.OSCARSCore;
-import net.es.oscars.oscars.ReservationAdapter;
-import net.es.oscars.oscars.PathSetupAdapter;
+import net.es.oscars.ws.OSCARSCore;
+import net.es.oscars.ws.ReservationAdapter;
+import net.es.oscars.ws.PathSetupAdapter;
 import net.es.oscars.wsdlTypes.EventContent;
 
 public class NotifyRmiHandler {

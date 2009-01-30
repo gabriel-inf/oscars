@@ -3,14 +3,14 @@ package net.es.oscars.interdomain;
 import org.apache.log4j.*;
 import org.apache.axis2.AxisFault;
 
-import net.es.oscars.oscars.WSDLTypeConverter;
-import net.es.oscars.oscars.AAAFaultMessage;
-import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.ws.AAAFaultMessage;
+import net.es.oscars.ws.BSSFaultMessage;
+import net.es.oscars.ws.WSDLTypeConverter;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.*;
 

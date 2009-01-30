@@ -11,7 +11,7 @@ import javax.xml.namespace.QName;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
-import net.es.oscars.oscars.*;
+import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.scheduler.*;
 import org.apache.axis2.databinding.ADBException;

@@ -1,4 +1,4 @@
-package net.es.oscars.oscars;
+package net.es.oscars.ws;
 
 import org.apache.log4j.*;
 import org.hibernate.*;

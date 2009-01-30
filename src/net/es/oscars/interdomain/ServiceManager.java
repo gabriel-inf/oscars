@@ -4,8 +4,8 @@ import org.apache.log4j.Logger;
 import org.quartz.*;
 import java.util.*;
 import java.net.InetAddress;
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.scheduler.*;
+import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.PropHandler;
 
 /**

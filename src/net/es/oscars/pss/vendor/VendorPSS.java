@@ -8,11 +8,11 @@ import org.quartz.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.*;
 import net.es.oscars.scheduler.*;
+import net.es.oscars.ws.OSCARSCore;
 
 
 

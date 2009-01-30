@@ -16,9 +16,9 @@ import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.database.*;
-import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.ws.*;
 
 /**
  * CancelResRmiHandler - rmi interface to ReservationManager.cancelReservation

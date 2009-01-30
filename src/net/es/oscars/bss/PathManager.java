@@ -12,7 +12,7 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
-import net.es.oscars.oscars.*;
+import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.policy.*;
@@ -91,9 +91,6 @@ public class PathManager {
      *
      * @param resv partially filled in reservation, use startTime, endTime, bandWidth,
      *                GRI
-     * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
-     *                  information, may also include path hops.
-     * @return a Path structure with the intradomain path hops, and nextDomain
      */
     public void calculatePaths(Reservation resv)
             throws BSSException {
@@ -103,13 +100,10 @@ public class PathManager {
         Path interdomainPath = null;
         Path localPath = null;
         try {
-
             interdomainPaths = this.pceMgr.findInterdomainPath(resv);
-            localPaths = this.pceMgr.findInterdomainPath(resv);
-
+            localPaths = this.pceMgr.findLocalPath(resv);
             interdomainPath = interdomainPaths.get(0);
             localPath = localPaths.get(0);
-
             // FIXME: is setPath the method to use? maybe we want to replace the set of
             // paths during modify
             resv.setPath(localPath);
@@ -119,11 +113,10 @@ public class PathManager {
             this.log.error(ex.getMessage());
             throw new BSSException(ex.getMessage());
         }
-
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
+        List<Reservation> reservations =
+            dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
         this.policyMgr.checkOversubscribed(reservations, resv);
-
 
         Domain nextDomain = interdomainPath.getNextDomain();
         if (nextDomain != null) {
@@ -131,7 +124,6 @@ public class PathManager {
         } else {
             this.log.info("create.finish, reservation terminates in this domain");
         }
-
     }
 
     /**

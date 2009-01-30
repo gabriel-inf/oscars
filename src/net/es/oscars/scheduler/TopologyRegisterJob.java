@@ -17,10 +17,10 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import edu.internet2.perfsonar.*;
 
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.tss.*;
+import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.PropHandler;
 
 /**

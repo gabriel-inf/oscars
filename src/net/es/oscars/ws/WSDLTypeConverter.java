@@ -3,7 +3,7 @@
  *
  * @author David Robertson, Mary Thompson, Jason Lee
  */
-package net.es.oscars.oscars;
+package net.es.oscars.ws;
 
 import java.util.*;
 import java.net.InetAddress;

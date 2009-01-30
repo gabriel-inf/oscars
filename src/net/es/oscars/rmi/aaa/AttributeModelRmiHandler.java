@@ -9,9 +9,9 @@ import org.hibernate.Session;
 import org.hibernate.Hibernate;
 
 import net.es.oscars.aaa.*;
-import net.es.oscars.oscars.*;
 import net.es.oscars.rmi.model.*;
 import net.es.oscars.servlets.ServletUtils;
+import net.es.oscars.ws.*;
 
 
 public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {

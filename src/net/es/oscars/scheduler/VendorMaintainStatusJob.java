@@ -1,6 +1,6 @@
 package net.es.oscars.scheduler;
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.vendor.VendorStatusInput;
+import net.es.oscars.ws.OSCARSCore;
 
 import org.apache.log4j.Logger;
 import org.quartz.*;

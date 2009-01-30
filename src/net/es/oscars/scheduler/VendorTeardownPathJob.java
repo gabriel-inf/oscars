@@ -10,7 +10,7 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.*;
-import net.es.oscars.oscars.*;
+import net.es.oscars.ws.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;

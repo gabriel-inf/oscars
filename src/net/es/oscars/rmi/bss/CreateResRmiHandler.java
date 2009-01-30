@@ -20,11 +20,11 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.PathType;
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.PropHandler;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.ws.OSCARSCore;
 
 public class CreateResRmiHandler {
     private OSCARSCore core;

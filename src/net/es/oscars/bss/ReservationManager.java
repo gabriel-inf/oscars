@@ -14,8 +14,8 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.quartz.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.oscars.*;
 import net.es.oscars.scheduler.*;
+import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
@@ -112,8 +112,6 @@ public class ReservationManager {
         jobDataMap.put("start", true);
         jobDataMap.put("gri", resv.getGlobalReservationId());
         jobDataMap.put("login", login);
-        // FIXME
-        // jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
         try {
             sched.addJob(jobDetail, false);

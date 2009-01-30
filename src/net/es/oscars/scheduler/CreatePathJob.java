@@ -4,11 +4,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
 import net.es.oscars.bss.*;
-import net.es.oscars.bss.events.EventProducer;
-import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.events.*;
-import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.PathSetupManager;
+import net.es.oscars.ws.OSCARSCore;
 
 public class CreatePathJob extends ChainingJob implements Job {
     private Logger log;

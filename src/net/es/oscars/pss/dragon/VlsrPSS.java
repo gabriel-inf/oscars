@@ -8,7 +8,7 @@ import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.scheduler.VlsrPSSJob;
-import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.pss.*;
 
 public class VlsrPSS implements PSS {

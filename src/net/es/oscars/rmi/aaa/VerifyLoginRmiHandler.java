@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 
 import net.es.oscars.aaa.UserManager;
-import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.ws.AAAFaultMessage;
 import net.es.oscars.aaa.AAACore;
 
 public class VerifyLoginRmiHandler {
