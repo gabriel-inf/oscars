@@ -396,7 +396,7 @@
     <!-- Client API section -->
     <target name="clientapi" description="Create jar with client API classes" depends="compile">
         <jar destfile="build/OSCARS-client-api.jar">
-            <fileset dir="${build.classes}" includes="log4j.properties, net/es/oscars/client/**/*, net/es/oscars/lookup/PSLookupClient.class, net/es/oscars/lookup/LookupException.class, net/es/oscars/bss/topology/URNParser.class, net/es/oscars/bss/topology/GraphVizExporter.class, net/es/oscars/wsdlTypes/*, net/es/oscars/PropHandler.class, net/es/oscars/oscars/OSCARSStub.class, net/es/oscars/oscars/AAAFaultMessage.class, net/es/oscars/oscars/BSSFaultMessage.class, net/es/oscars/notify/ws/OSCARSNotifyStub.class, net/es/oscars/notify/ws/*Fault*.class, org/**/*"/>
+            <fileset dir="${build.classes}" includes="log4j.properties, net/es/oscars/client/**/*, net/es/oscars/lookup/PSLookupClient.class, net/es/oscars/lookup/LookupException.class, net/es/oscars/bss/topology/URNParser.class, net/es/oscars/bss/topology/GraphVizExporter.class, net/es/oscars/wsdlTypes/*, net/es/oscars/PropHandler.class, net/es/oscars/oscars/OSCARSStub.class, net/es/oscars/oscars/AAAFaultMessage.class, net/es/oscars/oscars/BSSFaultMessage.class, net/es/oscars/notifybroker/ws/OSCARSNotifyStub.class, net/es/oscars/notifybroker/ws/*Fault*.class, org/**/*"/>
             <metainf dir="conf/axis-tomcat" includes="*.wsdl, *.xsd, services.xml"/>
         </jar>
     </target>
@@ -493,7 +493,7 @@
             <arg value="-d"/>
             <arg value="adb"/>
             <arg value="-package"/>
-            <arg value="net.es.oscars.notify.ws"/>
+            <arg value="net.es.oscars.notifybroker.ws"/>
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
         </java>

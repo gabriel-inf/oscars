@@ -33,7 +33,7 @@ import net.es.oscars.bss.topology.L2SwitchingCapType;
 
 import net.es.oscars.rmi.bss.BssRmiInterface;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.rmi.notify.NotifyRmiInterface;
+import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
 import net.es.oscars.rmi.RmiUtils;
 
 

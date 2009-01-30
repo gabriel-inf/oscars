@@ -4,7 +4,8 @@ import java.rmi.RemoteException;
 
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.bss.*;
-import net.es.oscars.rmi.notify.*;
+import net.es.oscars.rmi.notifybroker.*;
+
 import org.apache.log4j.*;
 
 public class RmiUtils {

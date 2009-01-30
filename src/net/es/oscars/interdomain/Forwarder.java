@@ -8,11 +8,11 @@ import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.*;
-import net.es.oscars.notify.EventProducer;
-import net.es.oscars.notify.OSCARSEvent;
 
 /**
  * Forwarding client.

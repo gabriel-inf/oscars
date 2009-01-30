@@ -9,11 +9,12 @@ import org.hibernate.*;
 import org.hibernate.criterion.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.wsdlTypes.PathInfo;
-import net.es.oscars.notify.*;
 
 /**
  * This class contains methods to update the topology database, given

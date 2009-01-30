@@ -13,7 +13,7 @@ import edu.internet2.perfsonar.PSException;
 import edu.internet2.perfsonar.ServiceRegistration;
 import edu.internet2.perfsonar.dcn.*;
 import net.es.oscars.PropHandler;
-import net.es.oscars.notify.WSObserver;
+import net.es.oscars.bss.events.WSObserver;
 
 
 /**

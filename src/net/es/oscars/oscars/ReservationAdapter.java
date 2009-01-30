@@ -14,9 +14,9 @@ import java.io.IOException;
 import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane.*;
 
-import net.es.oscars.notify.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.bss.xface.*;

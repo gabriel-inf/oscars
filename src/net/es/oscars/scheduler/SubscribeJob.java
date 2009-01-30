@@ -11,7 +11,8 @@ import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.client.Client;
-import net.es.oscars.notify.ws.*;
+import net.es.oscars.notifybroker.ws.*;
+
 import org.w3.www._2005._08.addressing.*;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
 import org.apache.axis2.AxisFault;
@@ -322,7 +323,7 @@ public class SubscribeJob implements Job{
      */
     private RenewResponse sendRenew(EndpointReferenceType subRef, String url)
                 throws RemoteException, ResourceUnknownFault,
-                       net.es.oscars.notify.ws.UnacceptableTerminationTimeFault, 
+                       net.es.oscars.notifybroker.ws.UnacceptableTerminationTimeFault, 
                        AAAFaultMessage{
         if(url == null){
             return null;

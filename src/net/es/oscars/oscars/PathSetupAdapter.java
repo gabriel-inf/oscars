@@ -5,11 +5,12 @@ import org.hibernate.*;
 
 import net.es.oscars.pss.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.notify.*;
 
 /**
  * Intermediary between Axis2 and OSCARS libraries.

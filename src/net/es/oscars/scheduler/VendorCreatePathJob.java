@@ -1,5 +1,7 @@
 package net.es.oscars.scheduler;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.database.HibernateUtil;
@@ -7,7 +9,6 @@ import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.notify.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.*;

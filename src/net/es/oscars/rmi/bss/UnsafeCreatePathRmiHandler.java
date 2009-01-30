@@ -8,7 +8,8 @@ import org.hibernate.*;
 
 import net.es.oscars.aaa.*;
 import net.es.oscars.bss.*;
-import net.es.oscars.notify.*;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
 import net.es.oscars.pss.PSSException;

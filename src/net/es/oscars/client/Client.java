@@ -35,7 +35,7 @@ import org.w3.www._2005._08.addressing.*;
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
-import net.es.oscars.notify.ws.*;
+import net.es.oscars.notifybroker.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.security.KeyManagement;
 
@@ -398,7 +398,7 @@ public class Client {
                   TopicExpressionDialectUnknownFault,
                   InvalidFilterFault,NotifyMessageNotSupportedFault,
                   UnrecognizedPolicyRequestFault,
-                  net.es.oscars.notify.ws.AAAFaultMessage{
+                  net.es.oscars.notifybroker.ws.AAAFaultMessage{
        return this.notifyStub.Subscribe(request);
     }
     
@@ -415,7 +415,7 @@ public class Client {
     public RenewResponse renew(Renew request) 
                   throws RemoteException, ResourceUnknownFault,
                   UnacceptableTerminationTimeFault,
-                  net.es.oscars.notify.ws.AAAFaultMessage{
+                  net.es.oscars.notifybroker.ws.AAAFaultMessage{
        return this.notifyStub.Renew(request);
     }
     
@@ -432,7 +432,7 @@ public class Client {
     public UnsubscribeResponse unsubscribe(Unsubscribe request) 
                   throws RemoteException, ResourceUnknownFault,
                   UnableToDestroySubscriptionFault,
-                  net.es.oscars.notify.ws.AAAFaultMessage{
+                  net.es.oscars.notifybroker.ws.AAAFaultMessage{
        return this.notifyStub.Unsubscribe(request);
     }
     
@@ -449,7 +449,7 @@ public class Client {
     public PauseSubscriptionResponse pauseSubscription(PauseSubscription request) 
                   throws RemoteException, ResourceUnknownFault,
                   PauseFailedFault,
-                  net.es.oscars.notify.ws.AAAFaultMessage{
+                  net.es.oscars.notifybroker.ws.AAAFaultMessage{
        return this.notifyStub.PauseSubscription(request);
     }
     
@@ -466,7 +466,7 @@ public class Client {
     public ResumeSubscriptionResponse resumeSubscription(ResumeSubscription request) 
                   throws RemoteException, ResourceUnknownFault,
                   ResumeFailedFault,
-                  net.es.oscars.notify.ws.AAAFaultMessage{
+                  net.es.oscars.notifybroker.ws.AAAFaultMessage{
        return this.notifyStub.ResumeSubscription(request);
     }
     
@@ -509,7 +509,7 @@ public class Client {
      */
     public DestroyRegistrationResponse destroyRegistration(DestroyRegistration request) 
                   throws ResourceNotDestroyedFault, ResourceUnknownFault,
-                         RemoteException, net.es.oscars.notify.ws.AAAFaultMessage{
+                         RemoteException, net.es.oscars.notifybroker.ws.AAAFaultMessage{
        return this.notifyStub.DestroyRegistration(request);
     }
     

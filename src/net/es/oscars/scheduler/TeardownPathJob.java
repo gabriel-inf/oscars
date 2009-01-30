@@ -4,8 +4,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.pss.*;
-import net.es.oscars.notify.*;
 import net.es.oscars.oscars.OSCARSCore;
 
 public class TeardownPathJob extends ChainingJob implements Job {

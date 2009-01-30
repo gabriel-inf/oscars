@@ -6,9 +6,10 @@ import org.apache.log4j.Logger;
 import org.quartz.*;
 import java.rmi.RemoteException;
 import java.util.*;
+
+import net.es.oscars.bss.events.WSObserver;
 import net.es.oscars.client.*;
-import net.es.oscars.notify.WSObserver;
-import net.es.oscars.notify.ws.*;
+import net.es.oscars.notifybroker.ws.*;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;

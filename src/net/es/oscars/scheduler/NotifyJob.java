@@ -5,7 +5,8 @@ import org.hibernate.Session;
 import org.quartz.*;
 
 import net.es.oscars.oscars.OSCARSCore;
-import net.es.oscars.notify.*;
+import net.es.oscars.bss.events.NotifierSource;
+import net.es.oscars.bss.events.*;
 
 public class NotifyJob implements Job{
     private Logger log;

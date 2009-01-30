@@ -17,7 +17,7 @@ import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.notify.OSCARSEvent;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;

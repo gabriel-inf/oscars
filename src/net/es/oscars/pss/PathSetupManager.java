@@ -5,10 +5,11 @@ import org.quartz.*;
 import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.events.EventProducer;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.notify.*;
 import net.es.oscars.scheduler.*;
 
 import net.es.oscars.oscars.OSCARSCore;

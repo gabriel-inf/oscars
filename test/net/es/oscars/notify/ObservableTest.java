@@ -1,5 +1,9 @@
 package net.es.oscars.notify;
 
+import net.es.oscars.bss.events.NotifierSource;
+import net.es.oscars.bss.events.NotifyException;
+import net.es.oscars.bss.events.NotifyInitializer;
+
 import org.testng.annotations.*;
 
 import java.util.*;
