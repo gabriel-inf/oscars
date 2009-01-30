@@ -21,7 +21,7 @@ import net.es.oscars.notifybroker.ws.SubscriptionAdapter;
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class OSCARSNotifyCore{
+public class NotifyBrokerCore{
     private Logger log;
     private Scheduler scheduler;
     private SubscriptionAdapter sa;
@@ -30,27 +30,27 @@ public class OSCARSNotifyCore{
     private ArrayList<NotifyPEP> notifyPEPs;
 
     public boolean initialized = false;
-    private static OSCARSNotifyCore instance = null;
+    private static NotifyBrokerCore instance = null;
     final private String aaaDbName = "aaa";
     final private String notifyDbName = "notify";
     final private String bssDbName = "bss";
     
-    private OSCARSNotifyCore() {
+    private NotifyBrokerCore() {
         this.log = Logger.getLogger(this.getClass());
     }
 
-    public static OSCARSNotifyCore getInstance() {
-        if (OSCARSNotifyCore.instance == null) {
-            OSCARSNotifyCore.instance = new OSCARSNotifyCore();
+    public static NotifyBrokerCore getInstance() {
+        if (NotifyBrokerCore.instance == null) {
+            NotifyBrokerCore.instance = new NotifyBrokerCore();
         }
-        return OSCARSNotifyCore.instance;
+        return NotifyBrokerCore.instance;
     }
 
-    public static OSCARSNotifyCore init() {
-        if (OSCARSNotifyCore.instance == null) {
-            OSCARSNotifyCore.instance = new OSCARSNotifyCore();
+    public static NotifyBrokerCore init() {
+        if (NotifyBrokerCore.instance == null) {
+            NotifyBrokerCore.instance = new NotifyBrokerCore();
         }
-        OSCARSNotifyCore instance = OSCARSNotifyCore.instance;
+        NotifyBrokerCore instance = NotifyBrokerCore.instance;
         instance.initDatabases();
         instance.initScheduler();
         instance.initUserManager();

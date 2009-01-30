@@ -8,11 +8,11 @@ import org.quartz.*;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.oscars.OSCARSCore;
-import net.es.oscars.scheduler.NotifyJob;
+import net.es.oscars.scheduler.FireEventJob;
 
 /**
  * EventProducer is used by the entity generating events to schedule
- * notifications. Notifications are sent to a NotifyJob in the core
+ * notifications. Notifications are sent to a FireEventJob in the core
  * scheduler from which the notifications are sent out by the
  * configured modules.
  */
@@ -101,7 +101,7 @@ public class EventProducer{
         String jobName = "notify-"+event.hashCode();
 
 
-        JobDetail jobDetail = new JobDetail(jobName, "NOTIFY", NotifyJob.class);
+        JobDetail jobDetail = new JobDetail(jobName, "NOTIFY", FireEventJob.class);
         JobDataMap jobDataMap = new JobDataMap();
 
         this.log.debug("Adding job "+jobDetail.getFullName());

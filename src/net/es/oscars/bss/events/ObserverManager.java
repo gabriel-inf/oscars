@@ -7,22 +7,22 @@ import org.apache.log4j.Logger;
 import net.es.oscars.PropHandler;
 
 
-public class NotifyInitializer {
+public class ObserverManager {
     private Properties props;
     private Logger log;
     
-    private NotifierSource source;
+    private ObserverSource source;
     private ArrayList<Observer> observers;
 
-    public NotifyInitializer() {
+    public ObserverManager() {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("notify", true);
-        this.source = new NotifierSource();
+        this.source = new ObserverSource();
         this.observers = new ArrayList<Observer>();
     }
 
-    public void init() throws NotifyException {
+    public void init() {
         this.log.info("init.start");
         
         int i = 1;
@@ -52,7 +52,7 @@ public class NotifyInitializer {
         this.log.info("init.end");
     }
 
-    public NotifierSource getSource() {
+    public ObserverSource getSource() {
         return source;
     }
 

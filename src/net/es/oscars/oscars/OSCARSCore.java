@@ -15,8 +15,7 @@ import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.scheduler.*;
 import net.es.oscars.rmi.bss.*;
-import net.es.oscars.bss.events.NotifyException;
-import net.es.oscars.bss.events.NotifyInitializer;
+import net.es.oscars.bss.events.ObserverManager;
 import net.es.oscars.bss.policy.*;
 
 import org.quartz.SchedulerException;
@@ -49,7 +48,7 @@ public class OSCARSCore {
     private PathSetupManager pathSetupManager = null;
     private PolicyManager policyManager = null;
 
-    private NotifyInitializer notifier = null;
+    private ObserverManager observerMgr = null;
     private PSLookupClient lookupClient = null;
 
     private TopologyExchangeAdapter topologyExchangeAdapter = null;
@@ -108,7 +107,7 @@ public class OSCARSCore {
         this.initPolicyManager();
 
         this.initLookupClient();
-        this.initNotifier();
+        this.initObservers();
 
         this.initReservationAdapter();
         this.initTopologyExchangeAdapter();
@@ -191,14 +190,10 @@ public class OSCARSCore {
     /**
      * Initializes the Notifier module
      */
-    public void initNotifier()  {
+    public void initObservers()  {
         this.log.debug("initNotifier.start");
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("Could not init notifier", ex);
-        }
+        this.observerMgr = new ObserverManager();
+        this.observerMgr.init();
         this.log.debug("initNotifier.end");
     }
 
@@ -452,18 +447,18 @@ public class OSCARSCore {
     /**
      * @return the notifier
      */
-    public NotifyInitializer getNotifier() {
-        if (this.notifier == null) {
-            this.initNotifier();
+    public ObserverManager getObserverMgr() {
+        if (this.observerMgr == null) {
+            this.initObservers();
         }
-        return notifier;
+        return observerMgr;
     }
 
     /**
      * @param notifier the notifier to set
      */
-    public void setNotifier(NotifyInitializer notifier) {
-        this.notifier = notifier;
+    public void setObserverMgr(ObserverManager observerMgr) {
+        this.observerMgr = observerMgr;
     }
 
     /**

@@ -19,7 +19,7 @@ import org.w3.www._2005._08.addressing.EndpointReferenceType;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.AuthValue;
-import net.es.oscars.notifybroker.OSCARSNotifyCore;
+import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.policy.NotifyPEP;
 
 /**
@@ -32,7 +32,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private Principal certSubject;
     private SubscriptionAdapter sa;
     private ArrayList<NotifyPEP> notifyPEPs;
-    private OSCARSNotifyCore core;
+    private NotifyBrokerCore core;
 
     /**
      * Called from the Axis2 framework during initialization of the service.
@@ -45,7 +45,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     public void init(ServiceContext sc) {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("OSCARSNotify init.start");
-        this.core = OSCARSNotifyCore.init();
+        this.core = NotifyBrokerCore.init();
         this.userMgr = this.core.getUserManager();
         this.sa = this.core.getSubscriptionAdapter();
         this.notifyPEPs = this.core.getNotifyPEPs();

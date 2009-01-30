@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.notifybroker.OSCARSNotifyCore;
+import net.es.oscars.notifybroker.NotifyBrokerCore;
 
 import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
@@ -18,7 +18,7 @@ import org.quartz.SimpleTrigger;
 public class ServiceManager {
 	private Logger log;
     private ArrayList<Class> serviceJobs;
-    private OSCARSNotifyCore core;
+    private NotifyBrokerCore core;
     private String nbURL;
     private String repo;
     private String axisConfig;
@@ -36,7 +36,7 @@ public class ServiceManager {
         Properties props = propHandler.getPropertyGroup("external.service", true);
         Properties nbProps = propHandler.getPropertyGroup("notify.ws.broker", true); 
         this.serviceJobs = new ArrayList<Class>();
-        this.core = OSCARSNotifyCore.getInstance();
+        this.core = NotifyBrokerCore.getInstance();
         String localhost = null;
         this.nbURL = nbProps.getProperty("url");
         String catalinaHome = System.getProperty("catalina.home");

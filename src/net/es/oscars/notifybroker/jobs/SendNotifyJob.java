@@ -1,11 +1,9 @@
 package net.es.oscars.notifybroker.jobs;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.quartz.*;
-import net.es.oscars.notifybroker.OSCARSNotifyCore;
+import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.ws.SubscriptionAdapter;
 
 /**
@@ -16,7 +14,7 @@ import net.es.oscars.notifybroker.ws.SubscriptionAdapter;
 public class SendNotifyJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException{
         Logger log = Logger.getLogger(this.getClass());
-        OSCARSNotifyCore core = OSCARSNotifyCore.getInstance();
+        NotifyBrokerCore core = NotifyBrokerCore.getInstance();
                 SubscriptionAdapter sa = core.getSubscriptionAdapter();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String jobName = context.getJobDetail().getFullName();

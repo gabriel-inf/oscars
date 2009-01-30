@@ -4,12 +4,11 @@ import java.util.*;
 import org.apache.axiom.om.OMElement;
 import org.apache.log4j.*;
 import org.hibernate.*;
-import org.oasis_open.docs.wsn.b_2.*;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import net.es.oscars.aaa.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.notifybroker.OSCARSNotifyCore;
+import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.ws.AAAFaultMessage;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.wsdlTypes.EventContent;
@@ -23,17 +22,17 @@ import net.es.oscars.wsdlTypes.EventContent;
  */
 public class IDCEventPEP implements NotifyPEP{
     private Logger log;
-    private OSCARSNotifyCore core;
+    private NotifyBrokerCore core;
     private UserManager userMgr;
     private String dbname;
 
     public IDCEventPEP(){
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSNotifyCore.getInstance();
+        this.core = NotifyBrokerCore.getInstance();
     }
 
     public void init(String dbname){
-        this.userMgr = OSCARSNotifyCore.getInstance().getUserManager();
+        this.userMgr = NotifyBrokerCore.getInstance().getUserManager();
         this.dbname = dbname;
     }
 

@@ -25,8 +25,7 @@ import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
-import net.es.oscars.notifybroker.OSCARSNotifyCore;
-import net.es.oscars.notifybroker.SubscriptionManager;
+import net.es.oscars.notifybroker.*;
 import net.es.oscars.notifybroker.db.Publisher;
 import net.es.oscars.notifybroker.db.Subscription;
 import net.es.oscars.notifybroker.db.SubscriptionFilter;
@@ -47,13 +46,13 @@ public class SubscriptionAdapter{
     private HashMap<String,String> namespaces;
     private String dbname;
     private String repo;
-    private OSCARSNotifyCore core;
+    private NotifyBrokerCore core;
     private SubscriptionManager sm;
     
     /** Default constructor */
     public SubscriptionAdapter(String dbname){
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSNotifyCore.getInstance();
+        this.core = NotifyBrokerCore.getInstance();
         this.dbname = dbname;
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash

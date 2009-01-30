@@ -9,7 +9,7 @@ import java.util.Properties;
 import net.es.oscars.PropHandler;
 import net.es.oscars.lookup.LookupException;
 import net.es.oscars.lookup.PSLookupClient;
-import net.es.oscars.notifybroker.OSCARSNotifyCore;
+import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.db.ExternalService;
 import net.es.oscars.notifybroker.db.ExternalServiceDAO;
 import net.es.oscars.notifybroker.db.Publisher;
@@ -24,14 +24,14 @@ import org.quartz.JobExecutionException;
 
 public class LSRegisterJob  implements Job{
 	private Logger log;
-	private OSCARSNotifyCore core;
+	private NotifyBrokerCore core;
 	private long RENEW_TIME = 3600;//60 minutes
 	
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		 this.log = Logger.getLogger(this.getClass());
 	     String jobName = context.getJobDetail().getFullName();
 	     this.log.info("LSRegisterJob.start name:"+jobName);
-	     this.core = OSCARSNotifyCore.getInstance();
+	     this.core = NotifyBrokerCore.getInstance();
 	     ServiceManager serviceMgr = this.core.getServiceManager();
 	     JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 	     String nbURL = dataMap.getString("nbURL");
@@ -91,7 +91,7 @@ public class LSRegisterJob  implements Job{
 	}
 	
 	private void saveKeys(HashMap<String, String> keys) {
-     	OSCARSNotifyCore core = OSCARSNotifyCore.getInstance();
+     	NotifyBrokerCore core = NotifyBrokerCore.getInstance();
      	ExternalServiceDAO extDAO = new ExternalServiceDAO(core.getNotifyDbName());
  		for(String url : keys.keySet()){
  			ExternalService ext = extDAO.queryByParam("url", url);
