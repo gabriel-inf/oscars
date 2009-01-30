@@ -40,15 +40,23 @@ if [ -f "$CATALINA_HOME/shared/classes/server/sec-server.jks" ]; then
     OLD_KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $CATALINA_HOME/shared/classes/server/sec-server.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
     #copy axis2.xml and rampConfig.xml to repo
     if [ -f "$CATALINA_HOME/shared/classes/repo/axis2.xml" ]; then
+       OLD-SERVICE_USER=`grep "<user>" $CATALINA_HOME/shared/classes/repo/axis2.xml | sed -e 's/<\/*user>//g'`;
         rm $CATALINA_HOME/shared/classes/repo/axis2.xml
     fi
-    cp conf/examples/server/rampConfig.xml $CATALINA_HOME/shared/classes/repo/rampConfig.xml
+    cp conf/axis-tomcat/rampConfig.xml.template conf/axis-tomcat/rampConfig.xml
     #put sec-server.props password in rampConfig.xml
-    sed -i -e "s/<ramp:property name=\"org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password\">.*<\/ramp:property>/<ramp:property name=\"org.apache.ws.security.crypto.merlin.keystore.password\">$OLD_KS_PASS<\/ramp:property>/" $CATALINA_HOME/shared/classes/repo/rampConfig.xml;
+    sed -i -e "s/\*\*keystorePassword\*\*/$OLD_KS_PASS/" conf/axis-tomcat/rampConfig.xml
     if [ $? != 0 ]; then 
-        echo "-- Sed returned an error when updating '$CATALINA_HOME/shared/classes/repo/rampConfig.xml'. Please manually change the field org.apache.ws.security.crypto.merlin.keystore.password=YOUR_NEW_PASSWORD in '$CATALINA_HOME/shared/classes/repo/rampConfig.xml' to your old password for sec-server.jks.";
+        echo "-- Sed returned an error when updating 'conf/axis-tomcat/rampConfig.xml'. Please manually change the field **keystorePassword** in 'conf/axis-tomcat/rampConfig.xml' to your old password for sec-server.jks.";
         exit;
     fi
+    #put axis2.xml user in rampConfig.xml
+    sed -i -e "s/\*\*keyEntry\*\*/$OLD_SERVICE_USER/" conf/axis-tomcat/rampConfig.xml
+    if [ $? != 0 ]; then 
+        echo "-- Sed returned an error when updating 'conf/axis-tomcat/rampConfig.xml'. Please manually change the field **KeyEntry** in 'conf/axis-tomcat/rampConfig.xml' to your old OutFlowSecurity user value in $CATALINA_HOME/shared/classes/repo/axis2.xml.";
+        exit;
+    fi
+    cp conf/axis-tomat/rampConfig.xml $CATALINA_HOME/shared/classes/repo/rampConfig.xml;
     #move old keystore and delete sec-server.properties
     mv $CATALINA_HOME/shared/classes/server/sec-server.jks $CATALINA_HOME/shared/classes/repo/OSCARS.jks
     rm $CATALINA_HOME/shared/classes/server/sec-server.properties
