@@ -378,4 +378,60 @@ public class ReservationAdapter {
             ReservationAdapter.payloadSender.remove(gri);
         }
     }
+
+    /**
+     * Extracts important information from Notify messages related to
+     * creating a reservation and schedules them for execution.
+     *
+     * @param event the event that occurred
+     * @param producerId the URL of the event producer
+     * @param reqStatus the required status of the reservation
+     */
+    public void handleEvent(EventContent event, String producerId, String reqStatus){
+        String eventType = event.getType();
+        ResDetails resDetails = event.getResDetails();
+        if(resDetails == null){
+            this.log.error("No revservation details provided for event " +
+                           eventType + " from " + producerId);
+            return;
+        }
+        String gri = resDetails.getGlobalReservationId();
+        PathInfo pathInfo = resDetails.getPathInfo();
+        String confirmed = "";
+        String completed = "";
+        String failed = "";
+
+        if(reqStatus.equals(StateEngine.INCREATE)){
+            confirmed = OSCARSEvent.RESV_CREATE_CONFIRMED;
+            completed = OSCARSEvent.RESV_CREATE_COMPLETED;
+            failed = OSCARSEvent.RESV_CREATE_FAILED;
+        }else if(reqStatus.equals(StateEngine.INMODIFY)){
+            confirmed = OSCARSEvent.RESV_MODIFY_CONFIRMED;
+            completed = OSCARSEvent.RESV_MODIFY_COMPLETED;
+            failed = OSCARSEvent.RESV_MODIFY_FAILED;
+        }else if(reqStatus.equals(StateEngine.RESERVED)){
+            confirmed = OSCARSEvent.RESV_CANCEL_CONFIRMED;
+            completed = OSCARSEvent.RESV_CANCEL_COMPLETED;
+            failed = OSCARSEvent.RESV_CANCEL_FAILED;
+        }
+
+        try{
+            if(eventType.equals(confirmed)){
+                this.rm.submitResvJob(gri, pathInfo, producerId, reqStatus, true);
+            }else if(eventType.equals(completed)){
+                this.rm.submitResvJob(gri, pathInfo, producerId, reqStatus, false);
+            }else if(eventType.equals(failed)){
+                String src = event.getErrorSource();
+                String code = event.getErrorCode();
+                String msg = event.getErrorMessage();
+                this.rm.submitFailed(gri, pathInfo, producerId,
+                                     src, code, msg, reqStatus);
+            }else{
+                this.log.debug("Discarding event " + eventType);
+            }
+        }catch(BSSException e){
+            this.log.error(e.getMessage());
+        }
+    }
+
 }

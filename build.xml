@@ -161,7 +161,7 @@
             <!-- These are just the necessary OSCARS classes -->
             <fileset dir="${build.classes}"
 
-                includes="**/oscars/*.class, **/oscars/wsdlTypes/*.class,
+                includes="**/oscars/*.class, **/ws/*.class, **/oscars/wsdlTypes/*.class,
                           **/oscars/aaa/*.class, **/oscars/bss/*.class, **/oscars/bss/topology/*.class
                           **/oscars/database/HibernateBean.class, **/org/**/*.class"
 
@@ -263,7 +263,7 @@
         <copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
     </target>
 
-    <!-- Using Axis2, generates code in net.es.oscars.oscars and
+    <!-- Using Axis2, generates code in net.es.oscars.ws and
         net.es.oscars.wsdlTypes.  Also, OSCARS.wsdl is copied into resources,
         a services.xml file generated in resources, and a build.xml generated in the
         output directory.
@@ -298,7 +298,7 @@
             <arg value="-d"/>
             <arg value="adb"/>
             <arg value="-package"/>
-            <arg value="net.es.oscars.oscars"/>
+            <arg value="net.es.oscars.ws"/>
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
         </java>
@@ -378,7 +378,7 @@
         <mkdir dir="docs/client-api"/>
         <javadoc destdir="docs/client-api" author="true">
             <packageset dir="src" includes="net/es/oscars/client, net/es/oscars/client/**/*, net/es/oscars/wsdlTypes, org/**/*"/>
-            <fileset dir="src" includes="net/es/oscars/PropHandler.java, net/es/oscars/oscars/OSCARSStub.java, net/es/oscars/oscars/AAAFaultMessage.java, net/es/oscars/oscars/BSSFaultMessage.java"/>
+            <fileset dir="src" includes="net/es/oscars/PropHandler.java, net/es/oscars/ws/OSCARSStub.java, net/es/oscars/ws/AAAFaultMessage.java, net/es/oscars/ws/BSSFaultMessage.java"/>
             <classpath>
                 <fileset dir="${build.lib}" includes="*.jar"/>
                 <fileset dir="${build.axis2.lib}" includes="*.jar"/>
@@ -396,7 +396,7 @@
     <!-- Client API section -->
     <target name="clientapi" description="Create jar with client API classes" depends="compile">
         <jar destfile="build/OSCARS-client-api.jar">
-            <fileset dir="${build.classes}" includes="log4j.properties, net/es/oscars/client/**/*, net/es/oscars/lookup/PSLookupClient.class, net/es/oscars/lookup/LookupException.class, net/es/oscars/bss/topology/URNParser.class, net/es/oscars/bss/topology/GraphVizExporter.class, net/es/oscars/wsdlTypes/*, net/es/oscars/PropHandler.class, net/es/oscars/oscars/OSCARSStub.class, net/es/oscars/oscars/AAAFaultMessage.class, net/es/oscars/oscars/BSSFaultMessage.class, net/es/oscars/notifybroker/ws/OSCARSNotifyStub.class, net/es/oscars/notifybroker/ws/*Fault*.class, org/**/*"/>
+            <fileset dir="${build.classes}" includes="log4j.properties, net/es/oscars/client/**/*, net/es/oscars/lookup/PSLookupClient.class, net/es/oscars/lookup/LookupException.class, net/es/oscars/bss/topology/URNParser.class, net/es/oscars/bss/topology/GraphVizExporter.class, net/es/oscars/wsdlTypes/*, net/es/oscars/PropHandler.class, net/es/oscars/ws/OSCARSStub.class, net/es/oscars/ws/AAAFaultMessage.class, net/es/oscars/ws/BSSFaultMessage.class, net/es/oscars/notifybroker/ws/OSCARSNotifyStub.class, net/es/oscars/notifybroker/ws/*Fault*.class, org/**/*"/>
             <metainf dir="conf/axis-tomcat" includes="*.wsdl, *.xsd, services.xml"/>
         </jar>
     </target>

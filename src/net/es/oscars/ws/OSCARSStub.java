@@ -239,92 +239,92 @@
     //populates the faults
     private void populateFaults(){
          
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.oscars.BSSFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
            
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.oscars.AAAFaultMessage");
+              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
+              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
            
 
@@ -400,7 +400,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#cancelReservation
+                     * @see net.es.oscars.ws.OSCARS#cancelReservation
                      * @param cancelReservation138
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -531,7 +531,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#createReservation
+                     * @see net.es.oscars.ws.OSCARS#createReservation
                      * @param createReservation140
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -662,7 +662,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#queryReservation
+                     * @see net.es.oscars.ws.OSCARS#queryReservation
                      * @param queryReservation142
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -793,7 +793,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#refreshPath
+                     * @see net.es.oscars.ws.OSCARS#refreshPath
                      * @param refreshPath144
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -924,7 +924,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#teardownPath
+                     * @see net.es.oscars.ws.OSCARS#teardownPath
                      * @param teardownPath146
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -1055,7 +1055,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#createPath
+                     * @see net.es.oscars.ws.OSCARS#createPath
                      * @param createPath148
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -1186,7 +1186,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#getNetworkTopology
+                     * @see net.es.oscars.ws.OSCARS#getNetworkTopology
                      * @param getNetworkTopology150
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -1317,7 +1317,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#modifyReservation
+                     * @see net.es.oscars.ws.OSCARS#modifyReservation
                      * @param modifyReservation152
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -1501,7 +1501,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#forward
+                     * @see net.es.oscars.ws.OSCARS#forward
                      * @param forward155
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -1632,7 +1632,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#listReservations
+                     * @see net.es.oscars.ws.OSCARS#listReservations
                      * @param listReservations157
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
@@ -1763,7 +1763,7 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see net.es.oscars.oscars.OSCARS#initiateTopologyPull
+                     * @see net.es.oscars.ws.OSCARS#initiateTopologyPull
                      * @param initiateTopologyPull159
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
