@@ -8,10 +8,10 @@
     <service name="OSCARSNotify" scope="application">
         
         <messageReceivers>
-            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-only" class="net.es.oscars.notify.ws.OSCARSNotifyMessageReceiverInOnly"/>
-            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="net.es.oscars.notify.ws.OSCARSNotifyMessageReceiverInOut"/>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-only" class="net.es.oscars.notifybroker.ws.OSCARSNotifyMessageReceiverInOnly"/>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="net.es.oscars.notifybroker.ws.OSCARSNotifyMessageReceiverInOut"/>
         </messageReceivers>
-        <parameter name="ServiceClass">net.es.oscars.notify.ws.OSCARSNotifySkeleton</parameter>
+        <parameter name="ServiceClass">net.es.oscars.notifybroker.ws.OSCARSNotifySkeleton</parameter>
         <parameter name="useOriginalwsdl">true</parameter>
         <parameter name="modifyUserWSDLPortAddress">true</parameter>
         <parameter name="ServiceTCCL" locked="false">composite</parameter>

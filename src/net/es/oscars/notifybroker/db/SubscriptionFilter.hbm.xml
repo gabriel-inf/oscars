@@ -11,7 +11,7 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.notify.db.SubscriptionFilter" table="subscriptionFilters">
+<class name="net.es.oscars.notifybroker.db.SubscriptionFilter" table="subscriptionFilters">
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="subscriptionFilters"
     </meta>
@@ -33,7 +33,7 @@
     
     <!-- Associations -->
     <many-to-one name="subscription" column="subscriptionId"
-	    class="net.es.oscars.notify.db.Subscription" not-null="true" />
+	    class="net.es.oscars.notifybroker.db.Subscription" not-null="true" />
     
 </class>
 </hibernate-mapping>

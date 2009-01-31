@@ -7,10 +7,10 @@
 <serviceGroup>
     <service name="OSCARS" scope="application">
         <messageReceivers>
-            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-only" class="net.es.oscars.oscars.OSCARSMessageReceiverInOnly"/>
-            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="net.es.oscars.oscars.OSCARSMessageReceiverInOut"/>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-only" class="net.es.oscars.ws.OSCARSMessageReceiverInOnly"/>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="net.es.oscars.ws.OSCARSMessageReceiverInOut"/>
         </messageReceivers>
-        <parameter locked="false" name="ServiceClass">net.es.oscars.oscars.OSCARSSkeleton</parameter>
+        <parameter locked="false" name="ServiceClass">net.es.oscars.ws.OSCARSSkeleton</parameter>
         <parameter locked="false" name="useOriginalwsdl">true</parameter>
         <parameter locked="false" name="modifyUserWSDLPortAddress">true</parameter>
         <parameter name="ServiceTCCL" locked="false">composite</parameter>

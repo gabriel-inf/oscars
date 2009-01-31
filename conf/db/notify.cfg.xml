@@ -45,10 +45,10 @@
         <property name="cache.provider_class">
                   org.hibernate.cache.HashtableCacheProvider</property>
         
-        <mapping resource="net/es/oscars/notify/db/ExternalService.hbm.xml"/>
-        <mapping resource="net/es/oscars/notify/db/Publisher.hbm.xml"/>
-        <mapping resource="net/es/oscars/notify/db/Subscription.hbm.xml"/>
-        <mapping resource="net/es/oscars/notify/db/SubscriptionFilter.hbm.xml"/>
+        <mapping resource="net/es/oscars/notifybroker/db/ExternalService.hbm.xml"/>
+        <mapping resource="net/es/oscars/notifybroker/db/Publisher.hbm.xml"/>
+        <mapping resource="net/es/oscars/notifybroker/db/Subscription.hbm.xml"/>
+        <mapping resource="net/es/oscars/notifybroker/db/SubscriptionFilter.hbm.xml"/>
         
     </session-factory>
 </hibernate-configuration>
