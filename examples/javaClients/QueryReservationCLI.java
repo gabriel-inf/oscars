@@ -1,7 +1,7 @@
 import java.rmi.RemoteException;
 
 import net.es.oscars.client.Client;
-import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.ws.AAAFaultMessage;
 import net.es.oscars.wsdlTypes.GlobalReservationId;
 import net.es.oscars.wsdlTypes.Layer2Info;
 import net.es.oscars.wsdlTypes.Layer3Info;

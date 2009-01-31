@@ -8,8 +8,8 @@ import java.util.Date;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 
-import net.es.oscars.oscars.AAAFaultMessage;
-import net.es.oscars.oscars.BSSFaultMessage;
+import net.es.oscars.ws.AAAFaultMessage;
+import net.es.oscars.ws.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 

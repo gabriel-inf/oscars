@@ -1,4 +1,4 @@
-import net.es.oscars.notify.ws.*;
+import net.es.oscars.notifybroker.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.*;

@@ -1,7 +1,7 @@
 import net.es.oscars.client.*;
 import net.es.oscars.wsdlTypes.*;
 import java.rmi.RemoteException;
-import net.es.oscars.oscars.*;
+import net.es.oscars.ws.*;
 
 public class SignalClient extends Client{
     

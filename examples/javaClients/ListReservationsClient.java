@@ -12,8 +12,8 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
-import net.es.oscars.oscars.AAAFaultMessage;
-import net.es.oscars.oscars.BSSFaultMessage;
+import net.es.oscars.ws.AAAFaultMessage;
+import net.es.oscars.ws.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 import net.es.oscars.client.GraphVizExporter;

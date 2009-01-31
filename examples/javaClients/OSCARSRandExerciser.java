@@ -7,8 +7,8 @@ import java.io.*;
 import org.apache.axis2.AxisFault;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import net.es.oscars.oscars.AAAFaultMessage;
-import net.es.oscars.oscars.BSSFaultMessage;
+import net.es.oscars.ws.AAAFaultMessage;
+import net.es.oscars.ws.BSSFaultMessage;
 
 /**
  * OSCARSRandExerciser is a class that issues a series of randomized

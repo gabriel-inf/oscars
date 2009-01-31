@@ -1,7 +1,7 @@
 import net.es.oscars.client.*;
 import net.es.oscars.wsdlTypes.*;
 import java.rmi.RemoteException;
-import net.es.oscars.oscars.*;
+import net.es.oscars.ws.*;
 import org.ogf.schema.network.topology.ctrlplane.*;
 
 public class GetNetworkTopologyClient extends ExampleClient{

@@ -85,7 +85,7 @@
     <mkdir dir="${repo}/modules" />
     <mkdir dir="${build}/classes" />
     <!-- Copy public material to repo -->
-    <copy file="${public}/logging/examples.log4j.properties" tofile="${repo}/log4j.properties" />
+    <copy file="${public}/logging/client.log4j.properties" tofile="${repo}/log4j.properties" />
     <copy todir="${repo}/modules">
         <fileset dir="${public}/axis-tomcat" includes="*rampart-SNAPSHOT.mar" />
     </copy>
