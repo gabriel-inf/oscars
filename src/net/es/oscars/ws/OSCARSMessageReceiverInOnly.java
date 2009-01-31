@@ -379,34 +379,6 @@
 
             }
         
-            private  org.apache.axiom.om.OMElement  toOM(net.es.oscars.wsdlTypes.InitiateTopologyPull param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(net.es.oscars.wsdlTypes.InitiateTopologyPull.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(net.es.oscars.wsdlTypes.InitiateTopologyPullResponse param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
                     private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, net.es.oscars.wsdlTypes.CancelReservationResponse param, boolean optimizeContent)
                         throws org.apache.axis2.AxisFault{
                       try{
@@ -594,25 +566,6 @@
                     
                          private net.es.oscars.wsdlTypes.ListReservationsResponse wraplistReservations(){
                                 net.es.oscars.wsdlTypes.ListReservationsResponse wrappedElement = new net.es.oscars.wsdlTypes.ListReservationsResponse();
-                                return wrappedElement;
-                         }
-                    
-                    private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, net.es.oscars.wsdlTypes.InitiateTopologyPullResponse param, boolean optimizeContent)
-                        throws org.apache.axis2.AxisFault{
-                      try{
-                          org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
-                           
-                                    emptyEnvelope.getBody().addChild(param.getOMElement(net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.MY_QNAME,factory));
-                                
-
-                         return emptyEnvelope;
-                    } catch(org.apache.axis2.databinding.ADBException e){
-                        throw org.apache.axis2.AxisFault.makeFault(e);
-                    }
-                    }
-                    
-                         private net.es.oscars.wsdlTypes.InitiateTopologyPullResponse wrapinitiateTopologyPull(){
-                                net.es.oscars.wsdlTypes.InitiateTopologyPullResponse wrappedElement = new net.es.oscars.wsdlTypes.InitiateTopologyPullResponse();
                                 return wrappedElement;
                          }
                     
@@ -902,34 +855,6 @@
                 if (net.es.oscars.wsdlTypes.ListReservationsResponse.class.equals(type)){
                 
                            return net.es.oscars.wsdlTypes.ListReservationsResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.BSSFault.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.BSSFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.InitiateTopologyPull.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.InitiateTopologyPull.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }

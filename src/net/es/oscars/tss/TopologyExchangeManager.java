@@ -21,7 +21,7 @@ public class TopologyExchangeManager {
     private Properties props;
 
     /**
-     * Constructor that initalizes logs and the TEDB method specified by the
+     * Constructor that initializes logs and the TEDB method specified by the
      * tedb.tedbMethod property in the oscars.properties file.
      */
     public TopologyExchangeManager() {
@@ -58,22 +58,6 @@ public class TopologyExchangeManager {
         this.log.info("getNetworkTopology.end");
 
         return getTopoResponse;
-    }
-
-    /**
-     * Inserts topology into a TEDB using the method specified by the
-     * tedb.tedbMethod property in the oscars.properties file.
-     *
-     * @param topoResponse the reponse from getNetworkTopology to be inserted
-     * @throws TSSException
-     */
-    public void insertNetworkTopology(GetTopologyResponseContent topoResponse)
-        throws TSSException {
-        CtrlPlaneTopologyContent topology = topoResponse.getTopology();
-
-        this.log.info("insertNetworkTopology.start " + topology);
-        tedb.insertNetworkTopology(topology);
-        this.log.info("insertNetworkTopology.end");
     }
     
     /**

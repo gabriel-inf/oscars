@@ -279,51 +279,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     }
 
     /**
-     * @param request InitiateTopologyPull instance with with request params
-     * @return response InitiateTopologyPullResponse encapsulating library reply
-     * @throws AAAFaultMessage
-     * @throws BSSFaultMessage
-     */
-    public InitiateTopologyPullResponse
-        initiateTopologyPull(InitiateTopologyPull request)
-            throws BSSFaultMessage,AAAFaultMessage {
-
-        InitiateTopologyPullContent requestContent = request.getInitiateTopologyPull();
-        InitiateTopologyPullResponse response = new InitiateTopologyPullResponse();
-        // FIXME: move this to RMI
-        /*
-        InitiateTopologyPullResponseContent responseContent = null;
-        String login = this.checkUser();
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-
-        AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "modify");
-        aaa.getTransaction().commit();
-        if (authVal.equals(AuthValue.DENIED)) {
-            this.log.info("denied");
-            throw new AAAFaultMessage("OSCARSSkeleton:initiateTopologyPull: permission denied");
-        }
-
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
-        try{
-            responseContent = this.topoAdapter.initiateTopologyPull(requestContent);
-            response.setInitiateTopologyPullResponse(responseContent);
-        } catch(TSSException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("initiateTopologyPull: " + e.getMessage());
-        } catch(Exception e) {
-            bss.getTransaction().rollback();
-            throw new AAAFaultMessage("initiateTopologyPull: " + e.getMessage());
-        }
-        bss.getTransaction().commit();
-
-        */
-
-        return response;
-    }
-
-    /**
      * @param request CreatePath instance with with request params
      * @return response CreatePathResponse encapsulating library reply
      * @throws AAAFaultMessage

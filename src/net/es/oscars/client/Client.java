@@ -243,28 +243,6 @@ public class Client {
     }
 
     /**
-     * Tells the server to update its topology
-     *
-     * @param request a initiateTopologyPull request containing the request type
-     * @return a InitiateTopologyPullResponseContent instance containing the result
-     * @throws AAAFaultMessage
-     * @throws BSSFaultMessage
-     * @throws java.rmi.RemoteException
-     */
-    public InitiateTopologyPullResponseContent initiateTopologyPull(
-           InitiateTopologyPullContent request) throws AAAFaultMessage,
-           java.rmi.RemoteException, Exception {
-
-        InitiateTopologyPull initTopoPull = new InitiateTopologyPull();
-        initTopoPull.setInitiateTopologyPull(request);
-        InitiateTopologyPullResponse initResult =
-            this.stub.initiateTopologyPull(initTopoPull);
-        InitiateTopologyPullResponseContent response =
-            initResult.getInitiateTopologyPullResponse();
-        return response;
-    }
-
-    /**
      * Signals that a previously made reservation should be created
      *
      * @param request a createPath request containing the reservation to be built

@@ -44,7 +44,7 @@
         //creating the operations
         org.apache.axis2.description.AxisOperation __operation;
 
-        _operations = new org.apache.axis2.description.AxisOperation[12];
+        _operations = new org.apache.axis2.description.AxisOperation[11];
         
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
@@ -218,35 +218,11 @@
             _operations[10]=__operation;
             
         
-                   __operation = new org.apache.axis2.description.OutInAxisOperation();
-                
-
-            __operation.setName(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS", "initiateTopologyPull"));
-	    _service.addOperation(__operation);
-	    
-
-	    
-	    (__operation).getMessage(org.apache.axis2.wsdl.WSDLConstants.MESSAGE_LABEL_OUT_VALUE).getPolicySubject().attachPolicy(getPolicy("<wsp:Policy xmlns:wsp=\"http://schemas.xmlsoap.org/ws/2004/09/policy\"><wsp:ExactlyOne><wsp:All><sp:SignedParts xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><sp:Body /></sp:SignedParts><sp:AsymmetricBinding xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><wsp:Policy><sp:InitiatorToken><wsp:Policy><sp:X509Token sp:IncludeToken=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient\"><wsp:Policy><sp:RequireThumbprintReference /><sp:WssX509V3Token10 /></wsp:Policy></sp:X509Token></wsp:Policy></sp:InitiatorToken><sp:RecipientToken><wsp:Policy><sp:X509Token sp:IncludeToken=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Always\"><wsp:Policy><sp:RequireThumbprintReference /><sp:WssX509V3Token10 /></wsp:Policy></sp:X509Token></wsp:Policy></sp:RecipientToken><sp:AlgorithmSuite xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><wsp:Policy><sp:TripleDesRsa15 /></wsp:Policy></sp:AlgorithmSuite><sp:Layout><wsp:Policy><sp:Strict /></wsp:Policy></sp:Layout><sp:IncludeTimestamp /><sp:OnlySignEntireHeadersAndBody /></wsp:Policy></sp:AsymmetricBinding><sp:Wss10 xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><sp:Policy><sp:MustSupportRefKeyIdentifier /><sp:MustSupportRefIssuerSerial /></sp:Policy></sp:Wss10></wsp:All></wsp:ExactlyOne></wsp:Policy>"));
-	    
-	    (__operation).getMessage(org.apache.axis2.wsdl.WSDLConstants.MESSAGE_LABEL_IN_VALUE).getPolicySubject().attachPolicy(getPolicy("<wsp:Policy wsu:Id=\"X509BindingPolicy\" xmlns:wsp=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"><wsp:ExactlyOne><wsp:All><sp:AsymmetricBinding xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><wsp:Policy><sp:InitiatorToken><wsp:Policy><sp:X509Token sp:IncludeToken=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient\"><wsp:Policy><sp:RequireThumbprintReference /><sp:WssX509V3Token10 /></wsp:Policy></sp:X509Token></wsp:Policy></sp:InitiatorToken><sp:RecipientToken><wsp:Policy><sp:X509Token sp:IncludeToken=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Always\"><wsp:Policy><sp:RequireThumbprintReference /><sp:WssX509V3Token10 /></wsp:Policy></sp:X509Token></wsp:Policy></sp:RecipientToken><sp:AlgorithmSuite xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><wsp:Policy><sp:TripleDesRsa15 /></wsp:Policy></sp:AlgorithmSuite><sp:Layout><wsp:Policy><sp:Strict /></wsp:Policy></sp:Layout><sp:IncludeTimestamp /><sp:OnlySignEntireHeadersAndBody /></wsp:Policy></sp:AsymmetricBinding><sp:Wss10 xmlns:sp=\"http://schemas.xmlsoap.org/ws/2005/07/securitypolicy\"><sp:Policy><sp:MustSupportRefKeyIdentifier /><sp:MustSupportRefIssuerSerial /></sp:Policy></sp:Wss10></wsp:All></wsp:ExactlyOne></wsp:Policy>"));
-	    
-	    
-            _operations[11]=__operation;
-            
-        
         }
 
     //populates the faults
     private void populateFaults(){
          
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
-              faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
-           
-              faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
-              faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.ws.AAAFaultMessage");
-              faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","AAAFault"),"net.es.oscars.wsdlTypes.AAAFault");
-           
               faultExceptionNameMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultExceptionClassNameMap.put(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.ws.BSSFaultMessage");
               faultMessageMap.put( new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","BSSFault"),"net.es.oscars.wsdlTypes.BSSFault");
@@ -401,7 +377,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#cancelReservation
-                     * @param cancelReservation138
+                     * @param cancelReservation126
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -411,7 +387,7 @@
 
                             public  net.es.oscars.wsdlTypes.CancelReservationResponse cancelReservation(
 
-                            net.es.oscars.wsdlTypes.CancelReservation cancelReservation138)
+                            net.es.oscars.wsdlTypes.CancelReservation cancelReservation126)
                         
 
                     throws java.rmi.RemoteException
@@ -440,7 +416,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    cancelReservation138,
+                                                    cancelReservation126,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "cancelReservation")));
                                                 
@@ -532,7 +508,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#createReservation
-                     * @param createReservation140
+                     * @param createReservation128
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -542,7 +518,7 @@
 
                             public  net.es.oscars.wsdlTypes.CreateReservationResponse createReservation(
 
-                            net.es.oscars.wsdlTypes.CreateReservation createReservation140)
+                            net.es.oscars.wsdlTypes.CreateReservation createReservation128)
                         
 
                     throws java.rmi.RemoteException
@@ -571,7 +547,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    createReservation140,
+                                                    createReservation128,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "createReservation")));
                                                 
@@ -663,7 +639,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#queryReservation
-                     * @param queryReservation142
+                     * @param queryReservation130
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -673,7 +649,7 @@
 
                             public  net.es.oscars.wsdlTypes.QueryReservationResponse queryReservation(
 
-                            net.es.oscars.wsdlTypes.QueryReservation queryReservation142)
+                            net.es.oscars.wsdlTypes.QueryReservation queryReservation130)
                         
 
                     throws java.rmi.RemoteException
@@ -702,7 +678,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    queryReservation142,
+                                                    queryReservation130,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "queryReservation")));
                                                 
@@ -794,7 +770,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#refreshPath
-                     * @param refreshPath144
+                     * @param refreshPath132
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -804,7 +780,7 @@
 
                             public  net.es.oscars.wsdlTypes.RefreshPathResponse refreshPath(
 
-                            net.es.oscars.wsdlTypes.RefreshPath refreshPath144)
+                            net.es.oscars.wsdlTypes.RefreshPath refreshPath132)
                         
 
                     throws java.rmi.RemoteException
@@ -833,7 +809,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    refreshPath144,
+                                                    refreshPath132,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "refreshPath")));
                                                 
@@ -925,7 +901,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#teardownPath
-                     * @param teardownPath146
+                     * @param teardownPath134
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -935,7 +911,7 @@
 
                             public  net.es.oscars.wsdlTypes.TeardownPathResponse teardownPath(
 
-                            net.es.oscars.wsdlTypes.TeardownPath teardownPath146)
+                            net.es.oscars.wsdlTypes.TeardownPath teardownPath134)
                         
 
                     throws java.rmi.RemoteException
@@ -964,7 +940,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    teardownPath146,
+                                                    teardownPath134,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "teardownPath")));
                                                 
@@ -1056,7 +1032,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#createPath
-                     * @param createPath148
+                     * @param createPath136
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -1066,7 +1042,7 @@
 
                             public  net.es.oscars.wsdlTypes.CreatePathResponse createPath(
 
-                            net.es.oscars.wsdlTypes.CreatePath createPath148)
+                            net.es.oscars.wsdlTypes.CreatePath createPath136)
                         
 
                     throws java.rmi.RemoteException
@@ -1095,7 +1071,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    createPath148,
+                                                    createPath136,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "createPath")));
                                                 
@@ -1187,7 +1163,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#getNetworkTopology
-                     * @param getNetworkTopology150
+                     * @param getNetworkTopology138
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -1197,7 +1173,7 @@
 
                             public  net.es.oscars.wsdlTypes.GetNetworkTopologyResponse getNetworkTopology(
 
-                            net.es.oscars.wsdlTypes.GetNetworkTopology getNetworkTopology150)
+                            net.es.oscars.wsdlTypes.GetNetworkTopology getNetworkTopology138)
                         
 
                     throws java.rmi.RemoteException
@@ -1226,7 +1202,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getNetworkTopology150,
+                                                    getNetworkTopology138,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "getNetworkTopology")));
                                                 
@@ -1318,7 +1294,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#modifyReservation
-                     * @param modifyReservation152
+                     * @param modifyReservation140
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -1328,7 +1304,7 @@
 
                             public  net.es.oscars.wsdlTypes.ModifyReservationResponse modifyReservation(
 
-                            net.es.oscars.wsdlTypes.ModifyReservation modifyReservation152)
+                            net.es.oscars.wsdlTypes.ModifyReservation modifyReservation140)
                         
 
                     throws java.rmi.RemoteException
@@ -1357,7 +1333,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    modifyReservation152,
+                                                    modifyReservation140,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "modifyReservation")));
                                                 
@@ -1451,7 +1427,7 @@
                   * 
                   */
                 public void  Notify(
-                 org.oasis_open.docs.wsn.b_2.Notify notify154
+                 org.oasis_open.docs.wsn.b_2.Notify notify142
 
                 ) throws java.rmi.RemoteException
                 
@@ -1476,7 +1452,7 @@
                                                     
                                                                     
                                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                                    notify154,
+                                                                    notify142,
                                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                     "Notify")));
                                                                 
@@ -1502,7 +1478,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#forward
-                     * @param forward155
+                     * @param forward143
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -1512,7 +1488,7 @@
 
                             public  net.es.oscars.wsdlTypes.ForwardResponse forward(
 
-                            net.es.oscars.wsdlTypes.Forward forward155)
+                            net.es.oscars.wsdlTypes.Forward forward143)
                         
 
                     throws java.rmi.RemoteException
@@ -1541,7 +1517,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    forward155,
+                                                    forward143,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "forward")));
                                                 
@@ -1633,7 +1609,7 @@
                      * Auto generated method signature
                      * 
                      * @see net.es.oscars.ws.OSCARS#listReservations
-                     * @param listReservations157
+                     * @param listReservations145
                     
                      * @throws net.es.oscars.ws.BSSFaultMessage : 
                      * @throws net.es.oscars.ws.AAAFaultMessage : 
@@ -1643,7 +1619,7 @@
 
                             public  net.es.oscars.wsdlTypes.ListReservationsResponse listReservations(
 
-                            net.es.oscars.wsdlTypes.ListReservations listReservations157)
+                            net.es.oscars.wsdlTypes.ListReservations listReservations145)
                         
 
                     throws java.rmi.RemoteException
@@ -1672,7 +1648,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    listReservations157,
+                                                    listReservations145,
                                                     optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                     "listReservations")));
                                                 
@@ -1700,137 +1676,6 @@
 
                                
                                         return (net.es.oscars.wsdlTypes.ListReservationsResponse)object;
-                                   
-         }catch(org.apache.axis2.AxisFault f){
-
-            org.apache.axiom.om.OMElement faultElt = f.getDetail();
-            if (faultElt!=null){
-                if (faultExceptionNameMap.containsKey(faultElt.getQName())){
-                    //make the fault by reflection
-                    try{
-                        java.lang.String exceptionClassName = (java.lang.String)faultExceptionClassNameMap.get(faultElt.getQName());
-                        java.lang.Class exceptionClass = java.lang.Class.forName(exceptionClassName);
-                        java.lang.Exception ex=
-                                (java.lang.Exception) exceptionClass.newInstance();
-                        //message class
-                        java.lang.String messageClassName = (java.lang.String)faultMessageMap.get(faultElt.getQName());
-                        java.lang.Class messageClass = java.lang.Class.forName(messageClassName);
-                        java.lang.Object messageObject = fromOM(faultElt,messageClass,null);
-                        java.lang.reflect.Method m = exceptionClass.getMethod("setFaultMessage",
-                                   new java.lang.Class[]{messageClass});
-                        m.invoke(ex,new java.lang.Object[]{messageObject});
-                        
-                        if (ex instanceof net.es.oscars.ws.BSSFaultMessage){
-                          throw (net.es.oscars.ws.BSSFaultMessage)ex;
-                        }
-                        
-                        if (ex instanceof net.es.oscars.ws.AAAFaultMessage){
-                          throw (net.es.oscars.ws.AAAFaultMessage)ex;
-                        }
-                        
-
-                        throw new java.rmi.RemoteException(ex.getMessage(), ex);
-                    }catch(java.lang.ClassCastException e){
-                       // we cannot intantiate the class - throw the original Axis fault
-                        throw f;
-                    } catch (java.lang.ClassNotFoundException e) {
-                        // we cannot intantiate the class - throw the original Axis fault
-                        throw f;
-                    }catch (java.lang.NoSuchMethodException e) {
-                        // we cannot intantiate the class - throw the original Axis fault
-                        throw f;
-                    } catch (java.lang.reflect.InvocationTargetException e) {
-                        // we cannot intantiate the class - throw the original Axis fault
-                        throw f;
-                    }  catch (java.lang.IllegalAccessException e) {
-                        // we cannot intantiate the class - throw the original Axis fault
-                        throw f;
-                    }   catch (java.lang.InstantiationException e) {
-                        // we cannot intantiate the class - throw the original Axis fault
-                        throw f;
-                    }
-                }else{
-                    throw f;
-                }
-            }else{
-                throw f;
-            }
-            } finally {
-                _messageContext.getTransportOut().getSender().cleanup(_messageContext);
-            }
-        }
-            
-                    /**
-                     * Auto generated method signature
-                     * 
-                     * @see net.es.oscars.ws.OSCARS#initiateTopologyPull
-                     * @param initiateTopologyPull159
-                    
-                     * @throws net.es.oscars.ws.BSSFaultMessage : 
-                     * @throws net.es.oscars.ws.AAAFaultMessage : 
-                     */
-
-                    
-
-                            public  net.es.oscars.wsdlTypes.InitiateTopologyPullResponse initiateTopologyPull(
-
-                            net.es.oscars.wsdlTypes.InitiateTopologyPull initiateTopologyPull159)
-                        
-
-                    throws java.rmi.RemoteException
-                    
-                    
-                        ,net.es.oscars.ws.BSSFaultMessage
-                        ,net.es.oscars.ws.AAAFaultMessage{
-              org.apache.axis2.context.MessageContext _messageContext = null;
-              try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[11].getName());
-              _operationClient.getOptions().setAction("http://oscars.es.net/OSCARS/initiateTopologyPull");
-              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-              
-              
-                  addPropertyToOperationClient(_operationClient,org.apache.axis2.description.WSDL2Constants.ATTR_WHTTP_QUERY_PARAMETER_SEPARATOR,"&");
-              
-
-              // create a message context
-              _messageContext = new org.apache.axis2.context.MessageContext();
-
-              
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env = null;
-                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    initiateTopologyPull159,
-                                                    optimizeContent(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                    "initiateTopologyPull")));
-                                                
-        //adding SOAP soap_headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // set the message context with that soap envelope
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-        //execute the operation client
-        _operationClient.execute(true);
-
-         
-               org.apache.axis2.context.MessageContext _returnMessageContext = _operationClient.getMessageContext(
-                                           org.apache.axis2.wsdl.WSDLConstants.MESSAGE_LABEL_IN_VALUE);
-                org.apache.axiom.soap.SOAPEnvelope _returnEnv = _returnMessageContext.getEnvelope();
-                
-                
-                                java.lang.Object object = fromOM(
-                                             _returnEnv.getBody().getFirstElement() ,
-                                             net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.class,
-                                              getEnvelopeNamespaces(_returnEnv));
-
-                               
-                                        return (net.es.oscars.wsdlTypes.InitiateTopologyPullResponse)object;
                                    
          }catch(org.apache.axis2.AxisFault f){
 
@@ -2255,34 +2100,6 @@
 
             }
         
-            private  org.apache.axiom.om.OMElement  toOM(net.es.oscars.wsdlTypes.InitiateTopologyPull param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(net.es.oscars.wsdlTypes.InitiateTopologyPull.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
-            private  org.apache.axiom.om.OMElement  toOM(net.es.oscars.wsdlTypes.InitiateTopologyPullResponse param, boolean optimizeContent)
-            throws org.apache.axis2.AxisFault {
-
-            
-                        try{
-                             return param.getOMElement(net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.MY_QNAME,
-                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
-                        } catch(org.apache.axis2.databinding.ADBException e){
-                            throw org.apache.axis2.AxisFault.makeFault(e);
-                        }
-                    
-
-            }
-        
                                     
                                         private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, net.es.oscars.wsdlTypes.CancelReservation param, boolean optimizeContent)
                                         throws org.apache.axis2.AxisFault{
@@ -2502,27 +2319,6 @@
 
                                                             org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
                                                             emptyEnvelope.getBody().addChild(param.getOMElement(net.es.oscars.wsdlTypes.ListReservations.MY_QNAME,factory));
-                                                            return emptyEnvelope;
-                                                        } catch(org.apache.axis2.databinding.ADBException e){
-                                                            throw org.apache.axis2.AxisFault.makeFault(e);
-                                                        }
-                                                
-
-                                        }
-                                
-                             
-                             /* methods to provide back word compatibility */
-
-                             
-                                    
-                                        private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, net.es.oscars.wsdlTypes.InitiateTopologyPull param, boolean optimizeContent)
-                                        throws org.apache.axis2.AxisFault{
-
-                                             
-                                                    try{
-
-                                                            org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
-                                                            emptyEnvelope.getBody().addChild(param.getOMElement(net.es.oscars.wsdlTypes.InitiateTopologyPull.MY_QNAME,factory));
                                                             return emptyEnvelope;
                                                         } catch(org.apache.axis2.databinding.ADBException e){
                                                             throw org.apache.axis2.AxisFault.makeFault(e);
@@ -2821,34 +2617,6 @@
                 if (net.es.oscars.wsdlTypes.ListReservationsResponse.class.equals(type)){
                 
                            return net.es.oscars.wsdlTypes.ListReservationsResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.BSSFault.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.BSSFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.AAAFault.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.AAAFault.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.InitiateTopologyPull.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.InitiateTopologyPull.Factory.parse(param.getXMLStreamReaderWithoutCaching());
-                    
-
-                }
-           
-                if (net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.class.equals(type)){
-                
-                           return net.es.oscars.wsdlTypes.InitiateTopologyPullResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }

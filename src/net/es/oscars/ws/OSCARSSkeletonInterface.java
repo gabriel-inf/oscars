@@ -185,21 +185,5 @@
                  )
             throws BSSFaultMessage,AAAFaultMessage;
         
-         
-        /**
-         * Auto generated method signature
-         * 
-                                    * @param initiateTopologyPull
-             * @throws BSSFaultMessage : 
-             * @throws AAAFaultMessage : 
-         */
-
-        
-                public net.es.oscars.wsdlTypes.InitiateTopologyPullResponse initiateTopologyPull
-                (
-                  net.es.oscars.wsdlTypes.InitiateTopologyPull initiateTopologyPull
-                 )
-            throws BSSFaultMessage,AAAFaultMessage;
-        
          }
     
