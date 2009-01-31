@@ -10,7 +10,6 @@ import net.es.oscars.bss.*;
 import net.es.oscars.pss.*;
 import net.es.oscars.scheduler.CreatePathJob;
 import net.es.oscars.scheduler.TeardownPathJob;
-import net.es.oscars.ws.OSCARSCore;
 
 
 /**

@@ -18,7 +18,6 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.events.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.*;
-import net.es.oscars.ws.OSCARSCore;
 
 public class VlsrPSSJob extends ChainingJob implements Job {
     private Logger log;

@@ -7,11 +7,11 @@ import org.quartz.*;
 import java.rmi.RemoteException;
 import java.util.*;
 
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.events.WSObserver;
 import net.es.oscars.client.*;
 import net.es.oscars.notifybroker.ws.*;
 import net.es.oscars.PropHandler;
-import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.wsdlTypes.*;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;

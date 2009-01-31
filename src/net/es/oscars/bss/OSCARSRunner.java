@@ -1,6 +1,7 @@
-package net.es.oscars.ws;
+package net.es.oscars.bss;
 
 import java.io.*;
+
 
 import org.apache.log4j.*;
 

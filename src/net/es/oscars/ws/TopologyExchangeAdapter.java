@@ -1,5 +1,6 @@
 package net.es.oscars.ws;
 
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.client.Client;

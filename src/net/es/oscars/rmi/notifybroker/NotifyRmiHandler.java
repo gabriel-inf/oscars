@@ -11,11 +11,11 @@ import org.oasis_open.docs.wsn.b_2.Notify;
 import org.w3.www._2005._08.addressing.EndpointReferenceType;
 import org.w3.www._2005._08.addressing.ReferenceParametersType;
 
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.interdomain.ServiceManager;
-import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.ws.ReservationAdapter;
 import net.es.oscars.ws.PathSetupAdapter;
 import net.es.oscars.wsdlTypes.EventContent;

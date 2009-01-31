@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import net.es.oscars.lookup.*;
-import net.es.oscars.ws.OSCARSCore;
 import net.es.oscars.bss.topology.*;
 
 /**

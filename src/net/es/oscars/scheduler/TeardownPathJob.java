@@ -7,7 +7,6 @@ import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.pss.*;
-import net.es.oscars.ws.OSCARSCore;
 
 public class TeardownPathJob extends ChainingJob implements Job {
     private Logger log;

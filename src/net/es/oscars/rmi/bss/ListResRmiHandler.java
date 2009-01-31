@@ -15,6 +15,7 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
@@ -22,7 +23,6 @@ import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.bss.xface.RmiListResRequest;
 import net.es.oscars.rmi.bss.xface.RmiListResReply;
-import net.es.oscars.ws.OSCARSCore;
 
 public class ListResRmiHandler {
     private OSCARSCore core;

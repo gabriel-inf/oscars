@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.bss.topology.DomainService;
@@ -13,7 +14,6 @@ import net.es.oscars.bss.topology.DomainServiceDAO;
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.lookup.LookupException;
 import net.es.oscars.lookup.PSLookupClient;
-import net.es.oscars.ws.OSCARSCore;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;

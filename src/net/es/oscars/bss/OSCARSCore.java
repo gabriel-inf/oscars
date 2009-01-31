@@ -1,4 +1,4 @@
-package net.es.oscars.ws;
+package net.es.oscars.bss;
 
 import java.util.*;
 import java.rmi.*;
@@ -9,6 +9,9 @@ import org.hibernate.Session;
 import net.es.oscars.bss.*;
 import net.es.oscars.pss.*;
 import net.es.oscars.tss.*;
+import net.es.oscars.ws.PathSetupAdapter;
+import net.es.oscars.ws.ReservationAdapter;
+import net.es.oscars.ws.TopologyExchangeAdapter;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.lookup.*;
 import net.es.oscars.database.*;

@@ -3,6 +3,7 @@ package net.es.oscars.scheduler;
 import org.apache.log4j.Logger;
 import org.quartz.*;
 
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.ws.*;
 
 public class ProcessQueueJob implements Job {

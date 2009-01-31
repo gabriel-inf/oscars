@@ -6,7 +6,6 @@ import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.*;
 import net.es.oscars.pss.PathSetupManager;
-import net.es.oscars.ws.OSCARSCore;
 
 public class CreatePathJob extends ChainingJob implements Job {
     private Logger log;

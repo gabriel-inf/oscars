@@ -14,6 +14,7 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
@@ -24,7 +25,6 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.RmiUtils;
-import net.es.oscars.ws.OSCARSCore;
 
 public class CreateResRmiHandler {
     private OSCARSCore core;

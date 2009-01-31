@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.xml.namespace.QName;
 
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;

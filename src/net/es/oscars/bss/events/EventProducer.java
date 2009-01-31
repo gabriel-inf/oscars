@@ -6,9 +6,9 @@ import java.util.HashMap;
 import org.apache.log4j.*;
 import org.quartz.*;
 
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.scheduler.FireEventJob;
-import net.es.oscars.ws.OSCARSCore;
 
 /**
  * EventProducer is used by the entity generating events to schedule
