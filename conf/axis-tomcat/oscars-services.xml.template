@@ -34,8 +34,6 @@
                <policy-subject identifier="binding:soap12/operation:listReservations" />
                <policy-subject identifier="binding:soap11/operation:getNetworkTopology" />
                <policy-subject identifier="binding:soap12/operation:getNetworkTopology" /> 
-               <policy-subject identifier="binding:soap11/operation:initiateTopologyPull" />
-               <policy-subject identifier="binding:soap12/operation:initiateTopologyPull" />
                <policy-subject identifier="binding:soap11/operation:createPath" />
                <policy-subject identifier="binding:soap12/operation:createPath" />
                <policy-subject identifier="binding:soap11/operation:refreshPath" />
@@ -116,8 +114,6 @@
         	     <policy-subject identifier="binding:soap12/operation:listReservations/in" />
         	     <policy-subject identifier="binding:soap11/operation:getNetworkTopology/in" />
                  <policy-subject identifier="binding:soap12/operation:getNetworkTopology/in" /> 
-        	     <policy-subject identifier="binding:soap11/operation:initiateTopologyPull/in" />
-                 <policy-subject identifier="binding:soap12/operation:initiateTopologyPull/in" />
                	 <policy-subject identifier="binding:soap11/operation:createPath/in" />
                  <policy-subject identifier="binding:soap12/operation:createPath/in" />
         	     <policy-subject identifier="binding:soap11/operation:refreshPath/in" />
@@ -183,13 +179,6 @@
             <outputActionMapping>http://oscars.es.net/OSCARS/OSCARS/getNetworkTopologyResponse</outputActionMapping>
             <faultActionMapping faultName="AAAErrorException">http://oscars.es.net/OSCARS/OSCARS/getNetworkTopology/Fault/AAAErrorException</faultActionMapping>
             <faultActionMapping faultName="BSSErrorException">http://oscars.es.net/OSCARS/OSCARS/getNetworkTopology/Fault/BSSErrorException</faultActionMapping>
-        </operation>
-        <operation name="initiateTopologyPull" mep="http://www.w3.org/ns/wsdl/in-out">
-            <module ref="rampart" />
-            <actionMapping>http://oscars.es.net/OSCARS/initiateTopologyPull</actionMapping>
-            <outputActionMapping>http://oscars.es.net/OSCARS/OSCARS/initiateTopologyPullResponse</outputActionMapping>
-            <faultActionMapping faultName="AAAErrorException">http://oscars.es.net/OSCARS/OSCARS/initiateTopologyPull/Fault/AAAErrorException</faultActionMapping>
-            <faultActionMapping faultName="BSSErrorException">http://oscars.es.net/OSCARS/OSCARS/initiateTopologyPull/Fault/BSSErrorException</faultActionMapping>
         </operation>
         <operation name="createPath" mep="http://www.w3.org/ns/wsdl/in-out">
             <module ref="rampart" />
