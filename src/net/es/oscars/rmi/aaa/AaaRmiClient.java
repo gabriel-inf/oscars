@@ -32,11 +32,15 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
      * @throws RemoteException
      */
     public void init() throws RemoteException {
-        this.log.debug("AaaRmiClient.init().start");
+        //this.log.debug("AaaRmiClient.init().start");
         this.log.info("starting aaa rmi connection");
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
         this.setProps(props);
+        // name of aaa service in registry, will be reset from aaa.registryName in rmi properties
+        this.rmiServiceName = "AAARMIServer";
+        // used for logging in BaseRmiServer.init
+        this.serviceName = "AAA RMI Server";
         super.configure();
 
         Remote remote = super.startConnection();
@@ -45,7 +49,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
             this.setRemote((AaaRmiInterface) remote);
             super.setRemote(remote);
         }
-        this.log.debug("AaaRmiClient.init().end");
+        //this.log.debug("AaaRmiClient.init().end");
     }
 
 

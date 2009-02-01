@@ -3,6 +3,7 @@ package net.es.oscars.rmi;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.util.*;
+
 import org.apache.log4j.Logger;
 
 
@@ -22,14 +23,14 @@ public class BaseRmiClient implements Remote {
     /**
      * True if we have a connection to the RMI registry, false otherwise
      */
-    protected boolean connected;
 
-    protected Properties props;
-
-    protected int registryPort;
-    protected String rmiServiceName;
-    protected String registryHost;
+    protected Properties properties;  // set by child class
+    protected String serviceName = null;  // set by child class, used in log messages
+    protected int registryPort = Registry.REGISTRY_PORT;
+    protected String rmiServiceName = null;// may be set by child class, name of service that is registered
+    protected String registryHost ="127.0.0.1";
     protected boolean configured = false;
+    protected boolean connected;
 
 
     public Remote startConnection() throws RemoteException {
@@ -65,43 +66,48 @@ public class BaseRmiClient implements Remote {
 
 
     protected void configure() throws RemoteException {
-        this.log.debug("configure().start");
-        // default rmi registry port
-        int rmiPort = Registry.REGISTRY_PORT;
+        this.log.debug(this.serviceName + " configure().start");
+        int rmiPort = registryPort;
         // rmi registry address
         String rmiIpaddr ="127.0.0.1";
         // default rmi registry name
         String rmiRegName;
 
-        if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").trim().equals("")) {
-            try {
-                rmiPort = Integer.decode(props.getProperty("registryPort").trim());
-            } catch (NumberFormatException e) {
-                this.log.warn("invalid registryPort value, using default");
+        Properties props = this.properties;
+        if (props == null) {
+            log.warn("rmi.properties not found. Using default values");
+            //errorMsg = "Properties not set!";
+            //throw new RemoteException(errorMsg);
+        } else {
+            if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").trim().equals("")) {
+                try {
+                    rmiPort = Integer.decode(props.getProperty("registryPort").trim());
+                    this.registryPort = rmiPort; 
+                } catch (NumberFormatException e) {
+                    this.log.warn("invalid registryPort value, using default");
+                }
+            } else {
+                this.log.debug("registryPort property not set, using default");
             }
-        } else {
-            this.log.debug("registryPort property not set, using default");
+
+            if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
+                rmiIpaddr = props.getProperty("registryAddress");
+                this.registryHost = rmiIpaddr;
+            } else {
+                this.log.warn("registryAddress property not set: using localhost");
+            }
+
+
+            if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
+                rmiRegName = props.getProperty("registryName");
+                this.rmiServiceName = rmiRegName;
+            } else {
+                this.log.warn("registryName property not set. Using default: " + this.rmiServiceName);
+            }
         }
-        this.registryPort = rmiPort;
-
-
-        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
-            rmiIpaddr = props.getProperty("registryAddress");
-        } else {
-            this.log.warn("registryAddress property not set: using localhost");
-        }
-        this.registryHost = rmiIpaddr;
-
-        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
-            rmiRegName = props.getProperty("registryName");
-        } else {
-            throw new RemoteException("registryName property not set!");
-        }
-        this.rmiServiceName = rmiRegName;
-
         this.configured = true;
-        this.log.debug("Client RMI info: "+rmiIpaddr+":"+rmiPort+":"+rmiRegName);
-        this.log.debug("configure().end");
+        this.log.debug("Client RMI info: "+this.registryHost+":"+this.registryPort+":"+this.rmiServiceName);
+        this.log.debug(this.serviceName + " configure().end");
     }
 
 
@@ -160,7 +166,7 @@ public class BaseRmiClient implements Remote {
      * @return the props
      */
     public Properties getProps() {
-        return props;
+        return properties;
     }
 
 
@@ -170,7 +176,7 @@ public class BaseRmiClient implements Remote {
      * @param props the props to set
      */
     public void setProps(Properties props) {
-        this.props = props;
+        this.properties = props;
     }
 
 

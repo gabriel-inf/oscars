@@ -51,7 +51,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
         this.setProperties(props);
         // name of bss service in registry, will be reset from bss.registryName in rmi properties
-        //this.setRmiServiceName("BSSRMIServer");
+        this.setRmiServiceName("BSSRMIServer");
         // used for logging in BaseRmiServer.init
         this.setServiceName("BSS RMI Server");
 
