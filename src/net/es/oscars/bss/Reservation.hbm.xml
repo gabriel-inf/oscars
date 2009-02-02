@@ -67,6 +67,8 @@
 
     <property name="description" />
 
+    <property name="statusMessage" />
+
     <property name="globalReservationId" />
 
     <!-- Associations -->

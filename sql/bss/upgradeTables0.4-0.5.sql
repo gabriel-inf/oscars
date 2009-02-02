@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS pathElemParams (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+ALTER TABLE reservations ADD statusMessage TEXT after description;
 ALTER TABLE paths ADD reservationId INT AFTER id;
 ALTER TABLE paths ADD pathType TEXT AFTER nextDomainId;
 ALTER TABLE layer2Data ADD pathId INT AFTER id;

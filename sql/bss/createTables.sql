@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     status              TEXT NOT NULL,
     localStatus         TINYINT(1) DEFAULT 0,
     description         TEXT,
+    statusMessage       TEXT,
     globalReservationId VARCHAR(63) UNIQUE,
 PRIMARY KEY (id)
 ) type = MyISAM;
