@@ -75,7 +75,7 @@
 
     <map name="pathMap" fetch="subselect" cascade="all, delete-orphan">
         <key column="reservationId" not-null="true" />
-	<map-key column="pathType" type="string" />
+        <map-key column="pathType" type="string" />
         <one-to-many class="net.es.oscars.bss.topology.Path" />
     </map>
 

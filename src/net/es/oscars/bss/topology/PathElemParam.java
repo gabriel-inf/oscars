@@ -23,13 +23,16 @@ public class PathElemParam extends HibernateBean implements Serializable {
 
     /** persistent field */
     private String type;
-    
+
     /** persistent field */
     private String value;
-    
+
+    /** persistent field */
+    private PathElem pathElem;
+
     /** default constructor */
     public PathElemParam() {}
-    
+
     /**
      * @return string describing the switching capability
      */
@@ -43,7 +46,7 @@ public class PathElemParam extends HibernateBean implements Serializable {
     public void setSwcap(String swcap) {
         this.swcap = swcap;
     }
-    
+
     /**
      * @return a string with the type of path elem param
      */
@@ -57,7 +60,7 @@ public class PathElemParam extends HibernateBean implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
-    
+
     /**
      * @return a string with path elem param value
      */
@@ -71,7 +74,7 @@ public class PathElemParam extends HibernateBean implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {

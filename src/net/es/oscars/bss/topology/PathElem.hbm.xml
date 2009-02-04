@@ -38,7 +38,7 @@
     <!-- Associations -->
 
     <set name="pathElemParams" fetch="subselect" cascade="all, delete-orphan">
-        <key column="pathElemId" />
+        <key column="pathElemId" not-null="true" />
         <one-to-many class="net.es.oscars.bss.topology.PathElemParam" />
     </set>
 

@@ -22,7 +22,6 @@ public class Layer2Data extends HibernateBean implements Serializable {
     private String destEndpoint;
 
 
-    private Path path;
 
     /** default constructor */
     public Layer2Data() { }
@@ -54,20 +53,6 @@ public class Layer2Data extends HibernateBean implements Serializable {
     }
 
 
-
-    /**
-     * @return the path
-     */
-    public Path getPath() {
-        return path;
-    }
-
-    /**
-     * @param path the path to set
-     */
-    public void setPath(Path path) {
-        this.path = path;
-    }
 
 
     public Layer2Data copy() {
