@@ -27,9 +27,6 @@ public class PathElemParam extends HibernateBean implements Serializable {
     /** persistent field */
     private String value;
 
-    /** persistent field */
-    private PathElem pathElem;
-
     /** default constructor */
     public PathElemParam() {}
 

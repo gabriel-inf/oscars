@@ -98,6 +98,8 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             }
         }
 
+        Layer2Data l2data = requestedPath.getLayer2Data().copy();
+        path.setLayer2Data(l2data);
 
         try {
             path.setPathType(PathType.LOCAL);
