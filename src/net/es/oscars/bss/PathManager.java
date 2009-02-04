@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 import org.apache.log4j.*;
 
 
-import net.es.oscars.ws.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.policy.*;
 import net.es.oscars.pathfinder.*;

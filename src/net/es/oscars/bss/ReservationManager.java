@@ -151,27 +151,6 @@ public class ReservationManager {
 
         this.pathMgr.calculatePaths(resv);
 
-        /*
-        // FIXME: START
-         *
-         * These all seem unnecessary:
-
-        // if layer 3, forward complete path found by traceroute, minus
-        // internal hops
-        // NOTE: This should really be done in internal pathfinders
-        // since interdomain URNS of path may not always just be the same
-        // as the URNS of the local path minus internal hops
-        if (pathInfo.getLayer3Info() != null) {
-            pathCopy = this.pathMgr.copyPath(pathInfo, true);
-        }else if (pathCopy == null && pathInfo.getLayer2Info() != null) {
-            pathCopy = this.pathMgr.copyPath(pathInfo, true);
-        }
-        pathInfo.setPath(pathCopy);
-
-        *
-        * FIXME: END
-        */
-
         //chose resources not put INCREATE
         this.se.updateStatus(resv, StateEngine.INCREATE);
         this.log.info("create.finish");

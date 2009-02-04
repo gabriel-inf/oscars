@@ -4,6 +4,8 @@ import java.util.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.log4j.Logger;
+
 import net.es.oscars.lookup.*;
 import net.es.oscars.bss.topology.*;
 
@@ -11,11 +13,13 @@ import net.es.oscars.bss.topology.*;
  * Class that performs server side validation for reservation parameters.
  */
 public class ParamValidator {
+    private Logger log;
 
     public StringBuilder validate(Reservation resv, Path requestedPath) {
+        this.log = Logger.getLogger(this.getClass());
 
         boolean isLayer2 = false;
-        
+
         StringBuilder sb = new StringBuilder();
         if (resv == null) {
             return sb.append("Null resv");
@@ -35,12 +39,14 @@ public class ParamValidator {
         Layer2Data layer2Data = requestedPath.getLayer2Data();
         Layer3Data layer3Data = requestedPath.getLayer3Data();
         if (layer2Data != null) {
+            this.log.debug("Validating Layer 2 reservation");
             isLayer2 = true;
-            sb.append(this.checkVtag(layer2Data));
+            sb.append(this.checkVtag(requestedPath));
             sb.append(this.checkL2Endpoint(layer2Data, false));
             sb.append(this.checkL2Endpoint(layer2Data, true));
         }
         if (layer3Data != null) {
+            this.log.debug("Validating Layer 2 reservation");
             sb.append(this.checkSrcHost(layer3Data));
             sb.append(this.checkDestHost(layer3Data));
             sb.append(this.checkDscp(layer3Data));
@@ -168,32 +174,52 @@ public class ParamValidator {
                 return e.getMessage();
             }
         }
-        
+
         return "";
     }
 
     /**
      * @param layer2Data A Layer2Data instance (layer 2 specific)
      */
-    private String checkVtag(Layer2Data layer2Data) {
-        String srcVtag = layer2Data.getSrcVtag();
-        String destVtag = layer2Data.getDestVtag();
-        String vtag = null;
-        boolean tagged = true;
-
-        // vlan tag can be either a single integer, a range of integers, or
-        // "any"
-        if(vtag == null || vtag.equals("any")){
-            return "";
-        }
-        String[] vlanFields = vtag.split("[-,]");
-        for (int i=0; i < vlanFields.length; i++) {
-            int field = Integer.parseInt(vlanFields[i].trim());
-            if ((field < 2) || (field > 4094)) {
-                return("vlan given, " + field + " is not between 1 and 4094");
+    private String checkVtag(Path requestedPath) {
+        try {
+            if (requestedPath == null) {
+                return "Null requested path";
             }
+            if (requestedPath.getPathElems() == null) {
+                return "Null requested path elements";
+            }
+            if (requestedPath.getPathElems().isEmpty()) {
+                return "Empty requested path";
+            }
+            if (requestedPath.getPathElems().size() < 2) {
+                return "Requested path too short";
+            }
+            String srcVtag = requestedPath.getPathElems().get(0).getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
+            String destVtag = requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
+            this.log.debug("src VTAG: "+srcVtag );
+            this.log.debug("dest VTAG: "+destVtag );
+
+            String vtag = null;
+            boolean tagged = true;
+
+            // vlan tag can be either a single integer, a range of integers, or
+            // "any"
+            if(vtag == null || vtag.equals("any")){
+                return "";
+            }
+            String[] vlanFields = vtag.split("[-,]");
+            for (int i=0; i < vlanFields.length; i++) {
+                int field = Integer.parseInt(vlanFields[i].trim());
+                if ((field < 2) || (field > 4094)) {
+                    return("vlan given, " + field + " is not between 1 and 4094");
+                }
+            }
+            return "";
+        } catch (BSSException ex) {
+            this.log.error(ex);
+            return ex.getMessage();
         }
-        return "";
     }
 
     /**

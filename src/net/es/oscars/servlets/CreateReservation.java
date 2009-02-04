@@ -158,13 +158,13 @@ public class CreateReservation extends HttpServlet {
         String destination = null;
         strParam = request.getParameter("source");
         if ((strParam != null) && !strParam.trim().equals("")) {
-            source = strParam;
+            source = strParam.trim();
         } else {
             throw new BSSException("error:  source is a required parameter");
         }
         strParam = request.getParameter("destination");
         if ((strParam != null) && !strParam.trim().equals("")) {
-            destination = strParam;
+            destination = strParam.trim();
         } else {
             throw new BSSException("error:  destination is a required parameter");
         }
@@ -188,7 +188,15 @@ public class CreateReservation extends HttpServlet {
             }
             requestedPath.setPathElems(pathElems);
         } else {
-            // empty; will get filled in by ReservationManager
+            // Must fill this in or we can't attach things like VLAN tags!
+            PathElem srcpe = new PathElem();
+            srcpe.setUrn(source);
+            srcpe.setSeqNumber(0);
+            PathElem dstpe = new PathElem();
+            dstpe.setUrn(destination);
+            dstpe.setSeqNumber(1);
+            pathElems.add(srcpe);
+            pathElems.add(dstpe);
             requestedPath.setPathElems(pathElems);
         }
         String vlanTag = "";
@@ -208,61 +216,77 @@ public class CreateReservation extends HttpServlet {
             tagDestPort = strParam.trim();
         }
 
-
-        // TODO: support VLAN tagging
+        boolean layer2 = false;
+        // TODO: support VLAN translation
 
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
         if (!vlanTag.equals("") ||
               (defaultLayer !=  null && defaultLayer.equals("2"))) {
+            layer2 = true;
+
             Layer2Data layer2Data = new Layer2Data();
             vlanTag = (vlanTag == null||vlanTag.equals("") ? "any" : vlanTag);
             boolean tagged = tagSrcPort.equals("Tagged");
             if (!tagged) {
                 vlanTag = "0";
             }
-            layer2Data.setSrcVtag(vlanTag);
             tagged = tagDestPort.equals("Tagged");
             if (!tagged) {
                 vlanTag = "0";
             }
-            layer2Data.setDestVtag(vlanTag);
 
             layer2Data.setSrcEndpoint(source);
             layer2Data.setDestEndpoint(destination);
             requestedPath.setLayer2Data(layer2Data);
+
+            PathElemParam srcVlan = new PathElemParam();
+            srcVlan.setSwcap(PathElemParamSwcap.L2SC);
+            srcVlan.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+            srcVlan.setValue(vlanTag);
+
+            PathElemParam dstVlan= new PathElemParam();
+            dstVlan.setSwcap(PathElemParamSwcap.L2SC);
+            dstVlan.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+            dstVlan.setValue(vlanTag);
+
+            requestedPath.getPathElems().get(0).addPathElemParam(srcVlan);
+            requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).addPathElemParam(dstVlan);
             return requestedPath;
         }
 
-        Layer3Data layer3Data = new Layer3Data();
-        // VLAN id wasn't supplied with layer 2 id
-        if (source.startsWith("urn:ogf:network")) {
-            throw new BSSException("VLAN tag not supplied for layer 2 reservation");
-        }
-        layer3Data.setSrcHost(source);
-        layer3Data.setDestHost(destination);
+        if (!layer2) {
 
-        strParam = request.getParameter("srcPort");
-        if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Data.setSrcIpPort(Integer.valueOf(strParam.trim()));
-        } else {
-            layer3Data.setSrcIpPort(0);
+            Layer3Data layer3Data = new Layer3Data();
+            // VLAN id wasn't supplied with layer 2 id
+            if (source.startsWith("urn:ogf:network")) {
+                throw new BSSException("VLAN tag not supplied for layer 2 reservation");
+            }
+            layer3Data.setSrcHost(source);
+            layer3Data.setDestHost(destination);
+
+            strParam = request.getParameter("srcPort");
+            if ((strParam != null) && !strParam.trim().equals("")) {
+                layer3Data.setSrcIpPort(Integer.valueOf(strParam.trim()));
+            } else {
+                layer3Data.setSrcIpPort(0);
+            }
+            strParam = request.getParameter("destPort");
+            if ((strParam != null) && !strParam.trim().equals("")) {
+                layer3Data.setDestIpPort(Integer.valueOf(strParam.trim()));
+            } else {
+                layer3Data.setDestIpPort(0);
+            }
+            strParam = request.getParameter("protocol");
+            if ((strParam != null) && !strParam.trim().equals("")) {
+                layer3Data.setProtocol(strParam.trim());
+            }
+            strParam = request.getParameter("dscp");
+            if ((strParam != null) && !strParam.trim().equals("")) {
+                layer3Data.setDscp(strParam.trim());
+            }
+            requestedPath.setLayer3Data(layer3Data);
         }
-        strParam = request.getParameter("destPort");
-        if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Data.setDestIpPort(Integer.valueOf(strParam.trim()));
-        } else {
-            layer3Data.setDestIpPort(0);
-        }
-        strParam = request.getParameter("protocol");
-        if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Data.setProtocol(strParam.trim());
-        }
-        strParam = request.getParameter("dscp");
-        if ((strParam != null) && !strParam.trim().equals("")) {
-            layer3Data.setDscp(strParam.trim());
-        }
-        requestedPath.setLayer3Data(layer3Data);
 
         MPLSData mplsData = new MPLSData();
         mplsData.setBurstLimit(10000000L);
