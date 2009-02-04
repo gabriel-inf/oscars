@@ -195,7 +195,6 @@ public class Path extends HibernateBean implements Serializable {
             this.layer2DataSet.clear();
         }
         this.layer2DataSet.add(layer2Data);
-        layer2Data.setPath(this);
     }
 
     public Layer3Data getLayer3Data() {
@@ -213,7 +212,6 @@ public class Path extends HibernateBean implements Serializable {
         if (!this.layer3DataSet.isEmpty()) {
             this.layer3DataSet.clear();
         }
-        layer3Data.setPath(this);
         this.layer3DataSet.add(layer3Data);
     }
 
