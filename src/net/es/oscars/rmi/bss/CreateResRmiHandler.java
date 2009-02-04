@@ -104,7 +104,7 @@ public class CreateResRmiHandler {
             }
         }
         bss.getTransaction().commit();
-        this.log.debug("create.end - success");
+        this.log.debug("create.end - success, gri: "+gri);
         return gri;
     }
 }

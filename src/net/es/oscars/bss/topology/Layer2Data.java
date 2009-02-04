@@ -27,18 +27,20 @@ public class Layer2Data extends HibernateBean implements Serializable {
     /** transient field */
     private String destVtag;
 
+    private Path path;
+
     /** default constructor */
     public Layer2Data() { }
 
 
     /**
      * @return srcEndpoint a string with the source endpoint
-     */ 
+     */
     public String getSrcEndpoint() { return this.srcEndpoint; }
 
     /**
      * @param srcEndpoint a string with the source endpoint
-     */ 
+     */
     public void setSrcEndpoint(String srcEndpoint) {
         this.srcEndpoint = srcEndpoint;
     }
@@ -46,12 +48,12 @@ public class Layer2Data extends HibernateBean implements Serializable {
 
     /**
      * @return destEndpoint a string with the destination endpoint
-     */ 
+     */
     public String getDestEndpoint() { return this.destEndpoint; }
 
     /**
      * @param destEndpoint a string with the destination endpoint
-     */ 
+     */
     public void setDestEndpoint(String destEndpoint) {
         this.destEndpoint = destEndpoint;
     }
@@ -59,12 +61,12 @@ public class Layer2Data extends HibernateBean implements Serializable {
 
     /**
      * @return srcVtag a string with the requested source VLAN tag (transient)
-     */ 
+     */
     public String getSrcVtag() { return this.srcVtag; }
 
     /**
      * @param srcVtag a string with the requested source VLAN tag
-     */ 
+     */
     public void setSrcVtag(String srcVtag) {
         this.srcVtag = srcVtag;
     }
@@ -73,12 +75,12 @@ public class Layer2Data extends HibernateBean implements Serializable {
     /**
      * @return destVtag a string with the requested destination VLAN id
      *         (transient)
-     */ 
+     */
     public String getDestVtag() { return this.destVtag; }
 
     /**
      * @param destVtag a string with the requested destination VLAN id
-     */ 
+     */
     public void setDestVtag(String destVtag) {
         this.destVtag = destVtag;
     }
@@ -106,11 +108,27 @@ public class Layer2Data extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
-    
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("srcEndpoint", this.getSrcEndpoint())
             .append("destEndpoint", this.getDestEndpoint())
             .toString();
+    }
+
+
+    /**
+     * @return the path
+     */
+    public Path getPath() {
+        return path;
+    }
+
+
+    /**
+     * @param path the path to set
+     */
+    public void setPath(Path path) {
+        this.path = path;
     }
 }

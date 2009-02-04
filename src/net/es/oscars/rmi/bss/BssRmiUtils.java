@@ -34,7 +34,17 @@ public class BssRmiUtils {
             Path path = paths.get(pathType);
             // Hibernate.initialize(path);
             Hibernate.initialize(path.getLayer2DataSet());
+            Iterator<Layer2Data> l2it = path.getLayer2DataSet().iterator();
+            while (l2it.hasNext()) {
+                Layer2Data l2data = l2it.next();
+                Hibernate.initialize(l2data);
+            }
             Hibernate.initialize(path.getLayer3DataSet());
+            Iterator<Layer2Data> l3it = path.getLayer3DataSet().iterator();
+            while (l3it.hasNext()) {
+                Layer2Data l3data = l3it.next();
+                Hibernate.initialize(l3data);
+            }
             Hibernate.initialize(path.getMplsDataSet());
             Hibernate.initialize(path.getNextDomain());
             for (PathElem pe : path.getPathElems()) {

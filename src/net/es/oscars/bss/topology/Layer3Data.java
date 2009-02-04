@@ -33,73 +33,76 @@ public class Layer3Data extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private String dscp;
 
+    private Path path;
+
+
     /** default constructor */
     public Layer3Data() { }
 
 
     /**
      * @return srcHost A String with the source's IP address
-     */ 
+     */
     public String getSrcHost() { return this.srcHost; }
 
     /**
      * @param srcHost A String with the source's IP address
-     */ 
+     */
     public void setSrcHost(String srcHost) { this.srcHost = srcHost; }
 
 
     /**
      * @return destHost A String with the destination's IP address
-     */ 
+     */
     public String getDestHost() { return this.destHost; }
 
     /**
      * @param destHost A String with the destination's IP address
-     */ 
+     */
     public void setDestHost(String destHost) { this.destHost = destHost; }
 
 
     /**
      * @return srcIpPort An Integer with the reservation's source port
-     */ 
+     */
     public Integer getSrcIpPort() { return this.srcIpPort; }
 
     /**
      * @param srcIpPort An Integer with the reservation's source port
-     */ 
+     */
     public void setSrcIpPort(Integer srcIpPort) { this.srcIpPort = srcIpPort; }
 
 
     /**
      * @return destIpPort An Integer with the reservation's destination port
-     */ 
+     */
     public Integer getDestIpPort() { return this.destIpPort; }
 
     /**
      * @param destIpPort An Integer with the reservation's destination port
-     */ 
+     */
     public void setDestIpPort(Integer destIpPort) { this.destIpPort = destIpPort; }
 
 
     /**
      * @return protocol A String with the reservation's desired protocol
-     */ 
+     */
     public String getProtocol() { return this.protocol; }
 
     /**
      * @param protocol A String with the reservation's desired protocol
-     */ 
+     */
     public void setProtocol(String protocol) { this.protocol = protocol; }
 
 
     /**
      * @return dscp A String with the reservation's DSCP
-     */ 
+     */
     public String getDscp() { return this.dscp; }
 
     /**
      * @param dscp A String with the reservation's DSCP
-     */ 
+     */
     public void setDscp(String dscp) { this.dscp = dscp; }
 
 
@@ -129,11 +132,27 @@ public class Layer3Data extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
-    
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("start", this.getSrcHost())
             .append("destination", this.getDestHost())
             .toString();
+    }
+
+
+    /**
+     * @return the path
+     */
+    public Path getPath() {
+        return path;
+    }
+
+
+    /**
+     * @param path the path to set
+     */
+    public void setPath(Path path) {
+        this.path = path;
     }
 }
