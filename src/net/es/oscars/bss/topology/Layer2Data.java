@@ -86,6 +86,30 @@ public class Layer2Data extends HibernateBean implements Serializable {
     }
 
 
+    /**
+     * @return the path
+     */
+    public Path getPath() {
+        return path;
+    }
+
+    /**
+     * @param path the path to set
+     */
+    public void setPath(Path path) {
+        this.path = path;
+    }
+
+
+    public Layer2Data copy() {
+        Layer2Data l2DataCopy = new Layer2Data();
+        l2DataCopy.setSrcEndpoint(this.srcEndpoint);
+        l2DataCopy.setDestEndpoint(this.destEndpoint);
+        l2DataCopy.setSrcVtag(this.srcVtag);
+        l2DataCopy.setDestVtag(this.destVtag);
+        return l2DataCopy;
+    }
+    
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
@@ -114,21 +138,5 @@ public class Layer2Data extends HibernateBean implements Serializable {
             .append("srcEndpoint", this.getSrcEndpoint())
             .append("destEndpoint", this.getDestEndpoint())
             .toString();
-    }
-
-
-    /**
-     * @return the path
-     */
-    public Path getPath() {
-        return path;
-    }
-
-
-    /**
-     * @param path the path to set
-     */
-    public void setPath(Path path) {
-        this.path = path;
     }
 }

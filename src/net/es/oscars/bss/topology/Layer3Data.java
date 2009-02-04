@@ -106,6 +106,33 @@ public class Layer3Data extends HibernateBean implements Serializable {
     public void setDscp(String dscp) { this.dscp = dscp; }
 
 
+    /**
+     * @return the path
+     */
+    public Path getPath() {
+        return path;
+    }
+
+    /**
+     * @param path the path to set
+     */
+    public void setPath(Path path) {
+        this.path = path;
+    }
+
+
+    public Layer3Data copy() {
+
+        Layer3Data l3DataCopy = new Layer3Data();
+        l3DataCopy.setSrcHost(this.srcHost);
+        l3DataCopy.setDestHost(this.destHost);
+        l3DataCopy.setSrcIpPort(this.srcIpPort);
+        l3DataCopy.setDestIpPort(this.destIpPort);
+        l3DataCopy.setProtocol(this.protocol);
+        l3DataCopy.setDscp(this.dscp);
+        return l3DataCopy;
+    }
+    
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
@@ -138,21 +165,5 @@ public class Layer3Data extends HibernateBean implements Serializable {
             .append("start", this.getSrcHost())
             .append("destination", this.getDestHost())
             .toString();
-    }
-
-
-    /**
-     * @return the path
-     */
-    public Path getPath() {
-        return path;
-    }
-
-
-    /**
-     * @param path the path to set
-     */
-    public void setPath(Path path) {
-        this.path = path;
     }
 }

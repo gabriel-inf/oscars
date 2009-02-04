@@ -47,6 +47,37 @@ public class BssUtils {
     }
 
     /**
+     * Copies fields that for now are in common to various types of paths.
+     * Note that pathElems are currently the only thing that is different.
+     *
+     * @param Path Path with information to copy
+     * @param updatePath Path with information to update
+     */
+    public static void copyPathFields(Path path, Path updatePath)
+            throws BSSException {
+        
+        updatePath.setPathSetupMode(path.getPathSetupMode());
+        updatePath.setPriority(path.getPriority());
+        // TODO:   need this?
+        updatePath.setNextDomain(path.getNextDomain());
+        updatePath.setDirection(path.getDirection());
+        updatePath.setGrouping(path.getGrouping());
+        updatePath.setPathHopType(path.getPathHopType());
+        if (path.getLayer2Data() != null) {
+            Layer2Data layer2DataCopy = path.getLayer2Data().copy();
+            updatePath.setLayer2Data(layer2DataCopy);
+        }
+        if (path.getLayer3Data() != null) {
+            Layer3Data layer3DataCopy = path.getLayer3Data().copy();
+            updatePath.setLayer3Data(layer3DataCopy);
+        }
+        if (path.getMplsData() != null) {
+            MPLSData mplsDataCopy = path.getMplsData().copy();
+            updatePath.setMplsData(mplsDataCopy);
+        }
+    }
+
+    /**
      * Converts data associated with a Hibernate path to a series of strings.
      *
      * @param path path to convert to string
