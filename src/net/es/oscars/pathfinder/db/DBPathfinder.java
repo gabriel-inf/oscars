@@ -140,11 +140,12 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
     }
 
     private Path joinPaths(Path pathA, Path pathB) {
+        this.log.debug("joinPaths.start");
 
         Path result = new Path();
-        if (!pathA.getPathElems().isEmpty()) {
+        if (pathA != null && pathA.getPathElems() != null && !pathA.getPathElems().isEmpty()) {
             // if need to join
-            if (!pathB.getPathElems().isEmpty()) {
+            if (pathB != null && pathB.getPathElems() != null && !pathB.getPathElems().isEmpty()) {
                 // probably safer than the shorter version with setPathElems
                 List<PathElem> pathAElems = pathA.getPathElems();
                 for (PathElem pathAElem: pathAElems) {
@@ -161,6 +162,7 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         } else {
             result = pathB;
         }
+        this.log.debug("joinPaths.end");
         return result;
     }
 
@@ -267,12 +269,14 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                 Link link = domDAO.getFullyQualifiedLink(topoId);
                 pathElem = new PathElem();
                 pathElem.setLink(link);
+                pathElem.setUrn(link.getFQTI());
                 path.addPathElem(pathElem);
             }
         }
         Link lastLink = domDAO.getFullyQualifiedLink(dst);
         PathElem lastPathElem = new PathElem();
         lastPathElem.setLink(lastLink);
+        lastPathElem.setUrn(lastLink.getFQTI());
         path.addPathElem(lastPathElem);
         this.log.debug("findPathBetween.end");
         return path;

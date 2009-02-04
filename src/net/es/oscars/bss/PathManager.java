@@ -6,17 +6,13 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.*;
 
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.policy.*;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.lookup.*;
 
 /**
  * PathManager performs path manipulation on behalf of the reservation manager.
@@ -28,58 +24,11 @@ public class PathManager {
     private PCEManager pceMgr;
     private PolicyManager policyMgr;
     private String dbname;
-    
+
     /** Constructor. */
     public PathManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pceMgr = new PCEManager(dbname);
-        //FIXME: START
-        //
-        // All this looks unnecessary:
-
-
-        /*  try {
-            intraPath = this.pceMgr.findLocalPath(resv);
-        } catch (PathfinderException ex) {
-            throw new BSSException(ex.getMessage());
-        } */
-
-        /*
-        if (intraPath == null || intraPath.getPath() == null) {
-            throw new BSSException("Pathfinder could not find a path!");
-        }
-
-        //Convert any local hops that are still references to link objects
-        this.expandLocalHops(pathInfo);
-        this.expandLocalHops(intraPath);
-
-        ReservationDAO dao = new ReservationDAO(this.dbname);
-        List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, resv);
-
-        Domain nextDomain = null;
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        // get next external hop (first past egress) from the complete path
-        CtrlPlaneHopContent nextExternalHop = this.getNextExternalHop(pathInfo);
-        if (nextExternalHop != null){
-            nextDomain = domainDAO.getNextDomain(nextExternalHop);
-            if (nextDomain != null) {
-                this.log.info("create.finish, next domain: " +
-                          nextDomain.getUrl());
-            } else {
-                this.log.warn(
-                        "Can't find domain url for nextExternalHop. Hop is: " +
-                        WSDLTypeConverter.hopToURN(nextExternalHop));
-            }
-        }
-        // TODO:  return which reservation path
-        // Path path = this.convertPath(intraPath, pathInfo, nextDomain);
-        return null;
-
-
-        // FIXME: END
-         */
-
         this.policyMgr = new PolicyManager(dbname);
         this.dbname = dbname;
         L2SwitchingCapType.initGlobals();
@@ -100,6 +49,7 @@ public class PathManager {
         Path interdomainPath = null;
         Path localPath = null;
         try {
+            this.resolveRequestedPath(resv);
             interdomainPaths = this.pceMgr.findInterdomainPath(resv);
             localPaths = this.pceMgr.findLocalPath(resv);
             interdomainPath = interdomainPaths.get(0);
@@ -126,76 +76,45 @@ public class PathManager {
         }
     }
 
-    /**
-     * FIXME: likely not necessary / should be rethought
-     *
-     * Expands any local linkIdRef elements in a given path and
-     * converts them to links
-     *
-     *
-     * @deprecated
-     * @param pathInfo the pathInfo containg the path to expand
-     * @throws BSSException
-     */
-    private void expandLocalHops(PathInfo pathInfo) throws BSSException{
-        CtrlPlanePathContent path = pathInfo.getPath();
-        CtrlPlanePathContent expandedPath = new CtrlPlanePathContent();
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        if(path == null){
-            throw new BSSException("Cannot expand path because no path given");
+    private void resolveRequestedPath(Reservation resv) throws BSSException {
+        Path requestedPath = resv.getPath(PathType.REQUESTED);
+        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+        PathElemDAO peDAO = new PathElemDAO(this.dbname);
+        String errMsg = "";
+        if (requestedPath == null) {
+            errMsg = "No requested path set!";
+            this.log.error(errMsg);
+            throw new BSSException(errMsg);
         }
-        CtrlPlaneHopContent[] hops = path.getHop();
-        if(hops == null || hops.length == 0 ){
-            throw new BSSException("Cannot expand path because no hops given");
+        for (PathElem pe : requestedPath.getPathElems()) {
+            if (pe.getLink() == null) {
+                if (pe.getUrn() == null) {
+                    errMsg = "No link or URN set for a pathelem!";
+                    this.log.error(errMsg);
+                    throw new BSSException(errMsg);
+                }
+                String urn = pe.getUrn();
+                Link link = TopologyUtil.getLink(urn, this.dbname);
+                if (link != null) {
+                    pe.setLink(link);
+                } else {
+                    try {
+                        PSLookupClient lookupClient = new PSLookupClient();
+                        String resolved = lookupClient.lookup(urn);
+                        link = TopologyUtil.getLink(resolved, this.dbname);
+                        if (link != null) {
+                            pe.setLink(link);
+                        }
+                    } catch (LookupException ex) {
+                        this.log.error(ex);
+                        throw new BSSException(ex.getMessage());
+                    }
+                }
+            }
         }
-
-        for(CtrlPlaneHopContent hop : hops){
-            String urn = WSDLTypeConverter.hopToURN(hop);
-            //if not link then add to path
-            if(urn == null){
-                throw new BSSException("Cannot expand path because " +
-                                   "contains invalid hop.");
-            }
-            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
-            String hopType = parseResults.get("type");
-            String domainId = parseResults.get("domainId");
-            boolean isLocal = domainDAO.isLocal(domainId);
-            if ((!isLocal) || (isLocal && hop.getLink() != null)) {
-                expandedPath.addHop(hop);
-                continue;
-            } else if(isLocal && (!"link".equals(hopType))) {
-                throw new BSSException("Cannot expand hop because it contains " +
-                                   "a hop that's not a link: " + urn);
-            }
-            Link dbLink = domainDAO.getFullyQualifiedLink(urn);
-            CtrlPlaneHopContent expandedHop = new CtrlPlaneHopContent();
-            CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
-            L2SwitchingCapabilityData l2scData = dbLink.getL2SwitchingCapabilityData();
-            CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
-            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
-            if (l2scData != null) {
-                swcapInfo.setInterfaceMTU(l2scData.getInterfaceMTU());
-                swcapInfo.setVlanRangeAvailability(l2scData.getVlanRangeAvailability());
-                swcap.setSwitchingcapType("l2sc");
-                swcap.setEncodingType("ethernet");
-            } else {
-                //TODO: What does esnet use for internal links?
-                swcapInfo.setCapability("unimplemented");
-                swcap.setSwitchingcapType(L2SwitchingCapType.DEFAULT_SWCAP_TYPE);
-                swcap.setEncodingType(L2SwitchingCapType.DEFAULT_ENC_TYPE);
-            }
-            swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
-            link.setId(urn);
-            link.setTrafficEngineeringMetric(dbLink.getTrafficEngineeringMetric());
-            link.setSwitchingCapabilityDescriptors(swcap);
-
-            expandedHop.setId(hop.getId());
-            expandedHop.setLink(link);
-            expandedPath.setId(path.getId());
-            expandedPath.addHop(expandedHop);
-        }
-        pathInfo.setPath(expandedPath);
+        resvDAO.update(resv);
     }
+
 
     /**
      *  s VLAN tags for reservation.
@@ -208,7 +127,7 @@ public class PathManager {
             throws BSSException {
 
         this.log.info("finalizing VLAN tags");
-        
+
         PathElem nextExtPathElem = null;
         String egrSugVlan = null;
         boolean localFound = false;
@@ -218,7 +137,7 @@ public class PathManager {
         List<List<PathElem>> pathsToUpdate = new ArrayList<List<PathElem>>();
         pathsToUpdate.add(interLocalSegment);
         pathsToUpdate.add(localPath.getPathElems());
-        
+
         //Find ingress pathElem of next domain (if exists)
         for(PathElem interPathElem : interdomainPath.getPathElems()){
             String domainUrn = URNParser.parseTopoIdent(interPathElem.getUrn()).get("domainFQID");
@@ -231,19 +150,19 @@ public class PathManager {
             if(domain.isLocal()){
                 localFound = true;
                 interLocalSegment.add(interPathElem);
-                egrSugVlan = interPathElem.getPathElemParam(PathElemParamSwcap.L2SC, 
+                egrSugVlan = interPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                         PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
             }else if(localFound && (!domain.isLocal())){
                 nextExtPathElem = interPathElem;
                 break;
             }
         }
-        
+
         /* Find the next hop(if any) and see if it uses the suggested VLAN.
         If not then try to choose another by doing the oversubscription
         check again. */
         if(nextExtPathElem != null){
-            nextExtVlan = nextExtPathElem.getPathElemParam(PathElemParamSwcap.L2SC, 
+            nextExtVlan = nextExtPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                     PathElemParamType.L2SC_VLAN_RANGE).getValue();
         }
         if(nextExtVlan != null && (!nextExtVlan.equals(egrSugVlan))){
@@ -252,7 +171,7 @@ public class PathManager {
                                         resv.getStartTime(), resv.getEndTime());
             this.policyMgr.checkOversubscribed(active, resv);
         }
-        
+
         /* Set the local VLAN range on each hop to the suggested VLAN
            for both interdomain and local path */
         for(List<PathElem> pathToUpdate : pathsToUpdate){
@@ -307,31 +226,6 @@ public class PathManager {
     }
 
     /**
-     * Sets VLAN tag on a pathElemenet.
-     *
-     * @param pathElem path element to be updated
-     * @param hop the hop with the link information
-     */
-    public void setL2LinkDescr(PathElem pathElem, CtrlPlaneHopContent hop) {
-        CtrlPlaneLinkContent link = hop.getLink();
-        if (link == null) {
-            return;
-        }
-        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
-                                    link.getSwitchingCapabilityDescriptors()
-                                        .getSwitchingCapabilitySpecificInfo();
-        String vlanRange = swcapInfo.getVlanRangeAvailability();
-        PathElemParam pep = new PathElemParam();
-        // TODO
-        if ("0".equals(vlanRange)) { //untagged
-            // pathElem.setLinkDescr("-"+swcapInfo.getSuggestedVLANRange());
-            swcapInfo.setSuggestedVLANRange("0");
-        } else {
-            // pathElem.setLinkDescr(swcapInfo.getSuggestedVLANRange());
-        }
-    }
-
-    /**
      * Matches if any hop in the path has a topology identifier that at
      * least partially matches a link id.
      *
@@ -349,7 +243,7 @@ public class PathManager {
             sb.append(localIdent);
         }
         for (Pattern pattern: patterns.values()) {
-            Matcher matcher = pattern.matcher(sb.toString()); 
+            Matcher matcher = pattern.matcher(sb.toString());
             if (matcher.matches()) {
                 return true;
             }

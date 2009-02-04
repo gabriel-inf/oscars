@@ -47,15 +47,16 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
         Link localIngress = null;
         Link localEgress = null;
 
+        boolean pathTerminatesLocally = this.pathTerminatesLocally(requestedPath);
+
         // Case 1: We HAVE received a set of hops in the requested path
         if (this.isPathSpecified(requestedPath)) {
 
             // if we have a set of hops, our ingress must always be specified
             localIngress = this.firstLocalLink(requestedPath);
 
-
             // if the reservation terminates here, we know our "egress"
-            if (this.pathTerminatesLocally(requestedPath)) {
+            if (pathTerminatesLocally) {
                 localEgress = this.lastLocalLink(requestedPath);
             } else {
                 // otherwise, find the path to the next hop
@@ -63,17 +64,20 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 localEgress = this.findEgressTo(firstAfterLocal);
             }
 
-            // We should always have the ingress of the next domain in our DB
-            PathElem nextDomainIngress = new PathElem();
-            nextDomainIngress.setLink(localEgress.getRemoteLink());
-            nextDomainIngress.setUrn(localEgress.getRemoteLink().getFQTI());
+            PathElem nextDomainIngress = null;
+            if (!pathTerminatesLocally) {
+                // We should always have the ingress of the next domain in our DB
+                nextDomainIngress = new PathElem();
+                nextDomainIngress.setLink(localEgress.getRemoteLink());
+                nextDomainIngress.setUrn(localEgress.getRemoteLink().getFQTI());
+            }
 
             boolean addedLocalPes = false;
 
             for (PathElem pe : requestedPath.getPathElems()) {
                 PathElem pecopy;
                 // Non-local hops get copied
-                if (pe.getLink() == null || !pe.getLink().getPort().getNode().getDomain().isLocal()) {
+                if (!pathTerminatesLocally && (pe.getLink() == null || !pe.getLink().getPort().getNode().getDomain().isLocal())) {
                     if (!pe.getUrn().equals(nextDomainIngress.getUrn())) {
                         pecopy = PathElem.copyPathElem(pe);
                         interdomainPath.addPathElem(pecopy);
@@ -91,9 +95,11 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
 
                         interdomainPath.addPathElem(ingress);
                         interdomainPath.addPathElem(egress);
-                        interdomainPath.addPathElem(nextDomainIngress);
+                        if (!pathTerminatesLocally) {
+                            interdomainPath.addPathElem(nextDomainIngress);
+                            interdomainPath.setNextDomain(nextDomainIngress.getLink().getPort().getNode().getDomain());
+                        }
 
-                        interdomainPath.setNextDomain(nextDomainIngress.getLink().getPort().getNode().getDomain());
                         addedLocalPes = true;
                     }
                 }
@@ -122,7 +128,7 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 interdomainPath.addPathElem(ingress);
                 interdomainPath.addPathElem(egress);
 
-                if (!this.pathTerminatesLocally(requestedPath)) {
+                if (!pathTerminatesLocally) {
                     // We should always have the ingress of the next domain in our DB
                     if (localEgress.getRemoteLink() == null) {
                         throw new PathfinderException("Cannot locate next domain ingress!");
