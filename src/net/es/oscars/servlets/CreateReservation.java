@@ -8,7 +8,6 @@ package net.es.oscars.servlets;
  */
 import java.io.*;
 import java.util.*;
-import java.rmi.RemoteException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.apache.log4j.*;
@@ -132,6 +131,7 @@ public class CreateReservation extends HttpServlet {
         } else {
             this.log.info("non-production circuit");
         }
+        resv.setDescription(description);
         return resv;
     }
 
@@ -141,7 +141,7 @@ public class CreateReservation extends HttpServlet {
      * @param request HttpServletRequest
      * @return requestedPath a Path instance with layer 2 or 3 information
      */
-    public Path handlePath(HttpServletRequest request)
+    private Path handlePath(HttpServletRequest request)
             throws BSSException {
 
         String strParam = null;
@@ -188,7 +188,7 @@ public class CreateReservation extends HttpServlet {
             }
             requestedPath.setPathElems(pathElems);
         } else {
-            // empty
+            // empty; will get filled in by ReservationManager
             requestedPath.setPathElems(pathElems);
         }
         String vlanTag = "";
@@ -207,6 +207,10 @@ public class CreateReservation extends HttpServlet {
         if (strParam != null && !strParam.trim().equals("")) {
             tagDestPort = strParam.trim();
         }
+
+
+        // TODO: support VLAN tagging
+
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
         if (!vlanTag.equals("") ||

@@ -64,8 +64,14 @@ public class ReservationManager {
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
         Path path = resv.getPath(PathType.REQUESTED);
+        if (path == null || path.getPathElems() == null || path.getPathElems().isEmpty()) {
+            this.log.debug("Reservation submitted with empty path");
+            this.createInitialPath(path);
+        }
+
         StringBuilder errorMsg = paramValidator.validate(resv, path);
         if (errorMsg.length() > 0) {
+            this.log.error(errorMsg.toString());
             throw new BSSException(errorMsg.toString());
         }
         this.log.info("create.validated");
@@ -73,6 +79,7 @@ public class ReservationManager {
         String gri = resv.getGlobalReservationId();
         // set GRI if none specified
         if (gri == null){
+            this.log.info("No GRI specified, generating");
             gri = this.generateGRI();
             resv.setGlobalReservationId(gri);
         } else {
@@ -87,19 +94,25 @@ public class ReservationManager {
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
 
+        this.log.info("Updating state for GRI: "+gri);
         // This will be the ONLY time we set status with setStatus
         resv.setStatus(StateEngine.SUBMITTED);
         resv.setLocalStatus(StateEngine.LOCAL_INIT);
+
+        this.log.info("Saving reservation with GRI: "+gri);
+        // Save the reservation so that the client can query for it
+        dao.update(resv);
+
+        this.log.info("Updating state engine for GRI: "+gri);
         try {
             // Assume AAA has been performed before this.
-            this.se.updateStatus(resv, StateEngine.ACCEPTED);
+            this.core.getStateEngine().updateStatus(resv, StateEngine.ACCEPTED);
         } catch (BSSException ex) {
             this.log.error(ex);
         }
 
-        // Save the reservation so that the client can query for it
-        dao.update(resv);
 
+        this.log.info("Scheduling tasks for GRI: "+gri);
         // Now create a CreateReservationJob, put it in the SERIALIZE_RESOURCE_SCHEDULING queue
         // All create / cancel / modify operations will be in this queue.
         Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -944,4 +957,40 @@ public class ReservationManager {
        }
        return resv;
    }
+
+   private void createInitialPath(Path path) throws BSSException {
+       this.log.info("createInitialPath.start");
+       String errMsg = "";
+       String src = "";
+       String dst = "";
+       if (path.getLayer2Data() != null) {
+           src = path.getLayer2Data().getSrcEndpoint();
+           dst = path.getLayer2Data().getDestEndpoint();
+       } else if (path.getLayer3Data() != null) {
+           src = path.getLayer3Data().getSrcHost();
+           dst = path.getLayer3Data().getDestHost();
+       } else {
+           errMsg = "Path has neither L2 nor L3 data attached";
+           this.log.error(errMsg);
+           throw new BSSException(errMsg);
+       }
+       if (path.getPathElems() == null) {
+           ArrayList<PathElem> pes = new ArrayList<PathElem>();
+           path.setPathElems(pes);
+       } else if (!path.getPathElems().isEmpty()) {
+           errMsg = "createInitialPath called when requested path was not empty";
+           this.log.error(errMsg);
+           throw new BSSException(errMsg);
+       }
+       PathElem srcpe = new PathElem();
+       srcpe.setUrn(src);
+       srcpe.setSeqNumber(0);
+       PathElem dstpe = new PathElem();
+       dstpe.setUrn(dst);
+       dstpe.setSeqNumber(1);
+       path.getPathElems().add(srcpe);
+       path.getPathElems().add(dstpe);
+       this.log.info("createInitialPath.end");
+   }
+
 }
