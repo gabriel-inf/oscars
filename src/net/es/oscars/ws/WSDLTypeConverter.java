@@ -25,6 +25,7 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.Token;
 import net.es.oscars.bss.HashMapTypeConverter;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.BssUtils;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 
@@ -120,7 +121,7 @@ public class WSDLTypeConverter {
         log.debug("reservationToModReply.start");
 
         ModifyResReply reply = new ModifyResReply();
-        ResDetails details = WSDLTypeConverter.reservationToDetails(resv);
+        ResDetails details = WSDLTypeConverter.reservationToDetails(resv, false);
         reply.setReservation(details);
         log.debug("reservationToModReply.end");
         return reply;
@@ -156,7 +157,9 @@ public class WSDLTypeConverter {
      * @param resv A Hibernate reservation instance
      * @return ResDetails instance
      */
-    public static ResDetails reservationToDetails(Reservation resv) throws BSSException{
+    public static ResDetails
+        reservationToDetails(Reservation resv, boolean internalPathAuthorized)
+            throws BSSException{
 
         log.debug("reservationToDetails.start");
         if (resv == null) {
@@ -175,12 +178,8 @@ public class WSDLTypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
-        // FIXME:  this needs work
         PathInfo pathInfo =
-                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN);
-        if (pathInfo == null) {
-            pathInfo = WSDLTypeConverter.getPathInfo(resv, PathType.LOCAL);
-        }
+            WSDLTypeConverter.getPathInfo(resv, null, internalPathAuthorized);
         reply.setPathInfo(pathInfo);
         log.debug("reservationToDetails.end");
         return reply;
@@ -193,7 +192,11 @@ public class WSDLTypeConverter {
      * @param reservations A list of Hibernate Reservation beans
      * @return ListReply A list of Axis2 ListReply instances
      */
-    public static ListReply reservationToListReply(List<Reservation> reservations) throws BSSException {
+    public static ListReply
+        reservationToListReply(List<Reservation> reservations,
+                               boolean internalPathAuthorized)
+            throws BSSException {
+
         ListReply reply = new ListReply();
         int ctr = 0;
 
@@ -208,7 +211,9 @@ public class WSDLTypeConverter {
         reply.setTotalResults(listLength);
 
         for (Reservation resv : reservations) {
-            ResDetails details = WSDLTypeConverter.reservationToDetails(resv);
+            ResDetails details =
+                WSDLTypeConverter.reservationToDetails(resv,
+                                                       internalPathAuthorized);
             resList[ctr] = details;
             ctr++;
         }
@@ -222,18 +227,27 @@ public class WSDLTypeConverter {
      * Hibernate Reservation bean.
      *
      * @param resv a Reservation instance
-     * @param pathType string determining path retrieved from the reservation
      * @return pathInfo a filled in PathInfo Axis2 type
      */
-    public static PathInfo getPathInfo(Reservation resv, String pathType)
+    public static PathInfo getPathInfo(Reservation resv,
+                                       String pathType,
+                                       boolean internalPathAuthorized)
             throws BSSException {
 
         log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
-        Path path = resv.getPath(pathType);
+        Path path = null;
+        if (pathType != null) {
+            path = resv.getPath(pathType);
+        } else {
+            path = BssUtils.getPath(resv);
+            pathType = path.getPathType();
+        }
         if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
-            pathInfo.setPath(pathToCtrlPlane(path));
+            // this may look at all three types of path
+            pathInfo.setPath(pathToCtrlPlane(resv, pathType,
+                                             internalPathAuthorized));
             // one of these is allowed to be null
             Layer2Info layer2Info = pathToLayer2Info(path);
             pathInfo.setLayer2Info(layer2Info);
@@ -245,113 +259,128 @@ public class WSDLTypeConverter {
             log.debug("getPathInfo.end");
             return pathInfo;
         } else {
-            log.debug("getPathInfo.end");
-            return null;
+            throw new BSSException("path: " + pathType + " does not exist");
         }
     }
 
     /**
-     * Builds Axis2 CtrlPlanePathContent, given Hibernate Path bean with
-     * information retrieved from database.  This is the reservation's
-     * internal path returned in response to a query.
+     * Builds Axis2 CtrlPlanePathContent, given Hibernate Reservation bean with
+     * information retrieved from database.  TODO:  The path is built up given
+     * a set of paths and the user's authorization.  If a path contains
+     * internal hops, for example a requested path, and the user viewing
+     * the reservation is not authorized, the internal hops are not returned.
+     * If the user is authorized and both the local and interdomain paths
+     * exist, the paths are combined and returned.  If only the local
+     * path exists, hops are returned depending on the user's
+     * authorization.
      *
-     * @param path a Path instance
-     * @param confirmed true if result path should be a confirmed path
+     * @param resv a Reservation instance with a set of paths
      * @return A CtrlPlanePathContent instance
      * @throws BSSException 
      */
-    public static CtrlPlanePathContent pathToCtrlPlane(Path path) throws BSSException {
-        log.debug("pathToCtrlPlane.start");
-        String swcapType = L2SwitchingCapType.DEFAULT_SWCAP_TYPE;
-        String encType = L2SwitchingCapType.DEFAULT_ENC_TYPE;
-        String teMetric = WSDLTypeConverter.DEFAULT_TE_METRIC;
-        int mtu = L2SwitchingCapType.DEFAULT_MTU;
-        Ipaddr ipaddr = null;
+    public static CtrlPlanePathContent
+        pathToCtrlPlane(Reservation resv, String pathType,
+                        boolean internalPathAuthorized)
+            throws BSSException {
 
+        log.debug("pathToCtrlPlane.start");
+        Path path = resv.getPath(pathType);
         List<PathElem> pathElems = path.getPathElems();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
-        int i = 1;
+        int ctr = 1;
         for (PathElem pathElem: pathElems) {
-            CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
-            CtrlPlaneLinkContent cpLink = new CtrlPlaneLinkContent();
-            CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
-            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
-                                new CtrlPlaneSwitchingCapabilitySpecificInfo();
-            Link link = pathElem.getLink();
-            String urn = pathElem.getUrn();
-            if ((urn == null) || urn.trim().equals("")) {
-                urn = link.getFQTI();
-            }
-            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
-            String hopType = parseResults.get("type");
-            hop.setId(i + "");
-            
-            /* Handle case where unconfirmed path contains domain, node, 
-             * port, or link id refs */
-            if("domain".equals(hopType)){
-                hop.setDomainIdRef(urn);
-                i++;
-                continue;
-            }else if("node".equals(hopType)){
-                hop.setNodeIdRef(urn);
-                i++;
-                continue;
-            }else if("port".equals(hopType)){
-                hop.setPortIdRef(urn);
-                i++;
-                continue;
-            }else if(link == null && pathElem.getPathElemParams().isEmpty()){
-                /*if a link URN not in the local domain and we don't have 
-                 * params for it then must be a <linkIdRef> */
-                hop.setLinkIdRef(urn);
-                i++;
-                continue;
-            }
-            
-            /* If reach this point then we have a <link> to create.. */
-            if(link == null){
-                cpLink.setTrafficEngineeringMetric(teMetric);
-            }else{
-                cpLink.setTrafficEngineeringMetric(link.getTrafficEngineeringMetric());
-            }
-            
-            //TODO: This should be in an ESnet specific location
-            if (path.getLayer2Data() == null) {
-                
-                String nodeName = link.getPort().getNode().getTopologyIdent();
-                ipaddr = link.getValidIpaddr();
-                if (ipaddr == null) {
-                    urn = "*out-of-date IP*";
-                } else {
-                    urn = nodeName + ": " + ipaddr.getIP();
-                }
-            }
-            
-            PathElemParam vlanRange = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
-            PathElemParam suggVlan = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
-            if(vlanRange == null){
-                swcap.setSwitchingcapType(swcapType);
-                swcap.setEncodingType(encType);
-                swcapInfo.setCapability("unimplemented");
-            }else{
-                swcap.setSwitchingcapType(PathElemParamSwcap.L2SC);
-                swcap.setEncodingType("ethernet");
-                swcapInfo.setInterfaceMTU(mtu);
-                swcapInfo.setVlanRangeAvailability(vlanRange.getValue());
-                if(suggVlan != null){
-                    swcapInfo.setSuggestedVLANRange(suggVlan.getValue());
-                }
-            }
-            swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
-            cpLink.setId(urn);
-            cpLink.setSwitchingCapabilityDescriptors(swcap);
-            hop.setLink(cpLink);
+            // TODO:  not final reorganization
+            CtrlPlaneHopContent hop = WSDLTypeConverter.convertHop(pathElem, ctr);
             ctrlPlanePath.addHop(hop);
-            i++;
+            ctr++;
         }
         ctrlPlanePath.setId("unimplemented");
         log.debug("pathToCtrlPlane.end");
         return ctrlPlanePath;
+    }
+
+    /**
+     * Fills in Axis2 CtrlPlaneHopContent, given a Hibernate PathElem bean.
+     * @param pathElem Hibernate PathElem instance
+     * @param ctr hop number
+     * @return A CtrlPlaneHopContent instance
+     * @throws BSSException 
+     */
+    public static CtrlPlaneHopContent convertHop(PathElem pathElem, int ctr)
+            throws BSSException {
+
+        log.debug("convertHop.start");
+        CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+        CtrlPlaneLinkContent cpLink = new CtrlPlaneLinkContent();
+        CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+        CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo =
+                                new CtrlPlaneSwitchingCapabilitySpecificInfo();
+        Link link = pathElem.getLink();
+        String urn = pathElem.getUrn();
+        if ((urn == null) || urn.trim().equals("")) {
+            if (link != null) {
+                // TODO: if could convert existing paths, would not need this
+                urn = link.getFQTI();
+            } else {
+                urn = "";
+            }
+        }
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+        String hopType = parseResults.get("type");
+        hop.setId(ctr + "");
+            
+        /* Handle case where unconfirmed path contains domain, node, 
+         * port, or link id refs */
+        if ("domain".equals(hopType)) {
+            hop.setDomainIdRef(urn);
+            return hop;
+        } else if("node".equals(hopType)) {
+            hop.setNodeIdRef(urn);
+            return hop;
+        } else if("port".equals(hopType)) {
+            hop.setPortIdRef(urn);
+            return hop;
+        } else if (link == null && pathElem.getPathElemParams().isEmpty()) {
+            /* if a link URN not in the local domain and we don't have 
+             * params for it then must be a <linkIdRef> */
+            hop.setLinkIdRef(urn);
+            return hop;
+        }
+            
+        /* If reach this point then we have a <link> to create.. */
+        if (link == null) {
+            cpLink.setTrafficEngineeringMetric(
+                    WSDLTypeConverter.DEFAULT_TE_METRIC);
+        } else {
+            cpLink.setTrafficEngineeringMetric(
+                    link.getTrafficEngineeringMetric());
+        }
+            
+        PathElemParam vlanRange =
+            pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                      PathElemParamType.L2SC_VLAN_RANGE);
+        PathElemParam suggVlan =
+            pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                      PathElemParamType.L2SC_SUGGESTED_VLAN);
+        if (vlanRange == null) {
+            swcap.setSwitchingcapType(L2SwitchingCapType.DEFAULT_SWCAP_TYPE);
+            swcap.setEncodingType(L2SwitchingCapType.DEFAULT_ENC_TYPE);
+            swcapInfo.setCapability("unimplemented");
+        } else {
+            swcap.setSwitchingcapType(PathElemParamSwcap.L2SC);
+            swcap.setEncodingType("ethernet");
+            swcapInfo.setInterfaceMTU(L2SwitchingCapType.DEFAULT_MTU);
+            swcapInfo.setVlanRangeAvailability(vlanRange.getValue());
+            if (suggVlan != null) {
+                swcapInfo.setSuggestedVLANRange(suggVlan.getValue());
+            }
+        }
+        swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
+        cpLink.setId(urn);
+        cpLink.setSwitchingCapabilityDescriptors(swcap);
+        hop.setLink(cpLink);
+        log.debug("convertHop.end");
+        return hop;
     }
 
     /**
@@ -608,7 +637,7 @@ public class WSDLTypeConverter {
      */
     public static Path convertPath(PathInfo pathInfo) throws BSSException {
 
-        log.info("convertPath.start");
+        log.debug("convertPath.start");
         Path path = new Path();
         path.setPathType(PathType.REQUESTED);
         path.setPathSetupMode(pathInfo.getPathSetupMode());

@@ -164,8 +164,9 @@ public class ReservationAdapter {
         } catch (Exception ex) {
             throw new BSSException(ex.getMessage());
         }
-        Reservation resv = result.getReservation();
-        ResDetails reply = WSDLTypeConverter.reservationToDetails(resv);
+        ResDetails reply = WSDLTypeConverter.reservationToDetails(
+                               result.getReservation(),
+                               result.isInternalPathAuthorized());
         this.log.info("QueryReservation.finish: " +
                        reply.getGlobalReservationId());
         return reply;
@@ -246,7 +247,9 @@ public class ReservationAdapter {
             throw new BSSException(ex.getMessage());
         }
         ListReply reply =
-           WSDLTypeConverter.reservationToListReply(rmiReply.getReservations());
+           WSDLTypeConverter.reservationToListReply(
+                   rmiReply.getReservations(),
+                   rmiReply.isInternalPathAuthorized());
         this.log.info("list.finish: " + reply.toString());
         return reply;
     }

@@ -20,6 +20,33 @@ public class BssUtils {
     }
 
     /**
+     * Gets path depending on reservation state and set of paths
+     * available.  Used where need to choose just one of the paths,
+     * for example in list and query.
+     *
+     * @param resv Reservation with set of paths
+     * @return path Path chosen
+     */
+    public static Path getPath(Reservation resv) throws BSSException {
+        String status = resv.getStatus();
+        Path requestedPath = resv.getPath(PathType.REQUESTED);
+        if ((requestedPath != null) && (status.equals("SUBMITTED") ||
+            status.equals("ACCEPTED"))) {
+            return requestedPath;
+        }
+        Path interdomainPath = resv.getPath(PathType.INTERDOMAIN);
+        if (interdomainPath != null) {
+            return interdomainPath;
+        }
+        Path localPath = resv.getPath(PathType.LOCAL);
+        if (localPath != null) {
+            return localPath;
+        }
+        // punt; may be null
+        return requestedPath;
+    }
+
+    /**
      * Converts data associated with a Hibernate path to a series of strings.
      *
      * @param path path to convert to string

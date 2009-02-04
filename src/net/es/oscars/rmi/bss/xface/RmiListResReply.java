@@ -16,6 +16,8 @@ public class RmiListResReply implements Serializable {
     // list of reservations, if any, matching request
     private List<Reservation> reservations;
 
+    private boolean internalPathAuthorized;  // whether to display internal path
+
     public RmiListResReply() {
     }
 
@@ -31,5 +33,19 @@ public class RmiListResReply implements Serializable {
      */
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
+    }
+
+    /**
+     * @return a boolean indicating whether can display internal path
+     */
+    public boolean isInternalPathAuthorized() {
+        return this.internalPathAuthorized;
+    }
+
+    /**
+     * @param auth a boolean indicating whether can display internal path
+     */
+    public void setInternalPathAuthorized(boolean auth) {
+        this.internalPathAuthorized = auth;
     }
 }

@@ -63,6 +63,16 @@ public class ListResRmiHandler {
         } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = userName;
         }
+        // check to see if may look at internal intradomain path elements
+        // if user can specify hops on create, he can look at them
+        AuthValue authValHops =
+            rmiClient.checkModResAccess(userName, "Reservations", "create", 0,
+                                        0, true, false );
+        if  (authValHops != AuthValue.DENIED ) {
+            result.setInternalPathAuthorized(true);
+        } else {
+            result.setInternalPathAuthorized(false);
+        }
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
