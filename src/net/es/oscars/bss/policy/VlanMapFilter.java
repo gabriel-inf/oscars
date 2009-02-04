@@ -252,6 +252,12 @@ public class VlanMapFilter implements PolicyFilter{
             this.log.debug("Suggested VLAN: " + suggestedVlan);
             for(PathElem pathElem: segments.get(i)){
                 PathElemParam peVlanRange = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                if (peVlanRange == null) {
+                    peVlanRange = new PathElemParam();
+                    peVlanRange.setSwcap(PathElemParamSwcap.L2SC);
+                    peVlanRange.setType(PathElemParamType.L2SC_VLAN_RANGE);
+                    pathElem.getPathElemParams().add(peVlanRange);
+                }
                 PathElemParam peSugVlan = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
 
                 if(untagMap.containsKey(pathElem.getLink().getId()) &&

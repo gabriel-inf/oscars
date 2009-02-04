@@ -799,6 +799,9 @@ public class ReservationManager {
     }
 
     /**
+     *
+     * FIXME: this needs to be looked at
+     *
      * Makes final changes to reservation before storage in database.
      * Stores token and vlan tags if they are returned by forwardReply
      * Stores the interdomain path elements returned by forwardReply
@@ -823,7 +826,12 @@ public class ReservationManager {
 
         // Note: we can do setPathElems here, because the previous INTERDOMAIN path
         // has not been persisted yet.
-        interdomainPath.setPathElems(fromForwardResponse.getPathElems());
+
+        // FIXME: the above is almost certainly wrong; the reservation and its attached
+        // paths are flushed during checkOversubscribed() -- haniotak
+
+
+        // interdomainPath.setPathElems(fromForwardResponse.getPathElems());
 
     }
 

@@ -78,8 +78,6 @@ public class PathManager {
 
     private void resolveRequestedPath(Reservation resv) throws BSSException {
         Path requestedPath = resv.getPath(PathType.REQUESTED);
-        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        PathElemDAO peDAO = new PathElemDAO(this.dbname);
         String errMsg = "";
         if (requestedPath == null) {
             errMsg = "No requested path set!";
@@ -112,18 +110,16 @@ public class PathManager {
                 }
             }
         }
-        resvDAO.update(resv);
     }
 
 
     /**
-     *  s VLAN tags for reservation.
+     *  Finalizes VLAN tags for reservation.
      *
      * @param resv reservation to be stored in database
-     * @param path path associated with Hibernate bean
-     * @param pathInfo reservation path information in Axis2 format
+     * @param pathFromDownstream the interdomain path received from downstream
      */
-    public void finalizeVlanTags(Reservation resv, Path interdomainPath)
+    public void finalizeVlanTags(Reservation resv, Path pathFromDownstream)
             throws BSSException {
 
         this.log.info("finalizing VLAN tags");
@@ -138,23 +134,26 @@ public class PathManager {
         pathsToUpdate.add(interLocalSegment);
         pathsToUpdate.add(localPath.getPathElems());
 
-        //Find ingress pathElem of next domain (if exists)
-        for(PathElem interPathElem : interdomainPath.getPathElems()){
-            String domainUrn = URNParser.parseTopoIdent(interPathElem.getUrn()).get("domainFQID");
-            Domain domain = null;
-            try{
-                domain = TopologyUtil.getDomain(domainUrn, this.dbname);
-            }catch(BSSException e){
-                continue;
-            }
-            if(domain.isLocal()){
-                localFound = true;
-                interLocalSegment.add(interPathElem);
-                egrSugVlan = interPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                        PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
-            }else if(localFound && (!domain.isLocal())){
-                nextExtPathElem = interPathElem;
-                break;
+        if (pathFromDownstream != null) {
+
+            //Find ingress pathElem of next domain (if exists)
+            for (PathElem interPathElem : pathFromDownstream.getPathElems()){
+                String domainUrn = URNParser.parseTopoIdent(interPathElem.getUrn()).get("domainFQID");
+                Domain domain = null;
+                try{
+                    domain = TopologyUtil.getDomain(domainUrn, this.dbname);
+                }catch(BSSException e){
+                    continue;
+                }
+                if(domain.isLocal()){
+                    localFound = true;
+                    interLocalSegment.add(interPathElem);
+                    egrSugVlan = interPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                            PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
+                }else if(localFound && (!domain.isLocal())){
+                    nextExtPathElem = interPathElem;
+                    break;
+                }
             }
         }
 
@@ -180,7 +179,15 @@ public class PathManager {
                         PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
                 PathElemParam vlanRange = elem.getPathElemParam(
                         PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
-                vlanRange.setValue(sugVlanParam.getValue());
+                if (vlanRange == null) {
+                    vlanRange = new PathElemParam();
+                    vlanRange.setType(PathElemParamType.L2SC_VLAN_RANGE);
+                    vlanRange.setSwcap(PathElemParamSwcap.L2SC);
+                }
+
+                if (sugVlanParam != null) {
+                    vlanRange.setValue(sugVlanParam.getValue());
+                }
             }
         }
     }
