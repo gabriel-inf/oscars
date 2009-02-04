@@ -14,7 +14,7 @@ import net.es.oscars.bss.topology.*;
  */
 public class BssUtils {
     private Logger log = Logger.getLogger(BssUtils.class);
-    
+
     // utils class, do not instantiate
     private BssUtils() {
     }
@@ -106,13 +106,13 @@ public class BssUtils {
 
         // FIXME:  more null checks may be necessary
         if (path == null) {
-        	return "";
+            return "";
         }
         List<PathElem> pathElems = path.getPathElems();
         if (pathElems == null) {
-        	return "";
+            return "";
         }
-        
+
         StringBuilder sb = new StringBuilder();
         int sz = pathElems.size();
         int i = 0;
@@ -123,16 +123,24 @@ public class BssUtils {
             }
             // if layer 2, send back topology identifier
             if (path.getLayer2Data() != null) {
-                String fqti = link.getFQTI();
-                sb.append(fqti);
+                if (link != null) {
+                    String fqti = link.getFQTI();
+                    sb.append(fqti);
+                } else {
+                    sb.append(pathElem.getUrn());
+                }
             // otherwise, send back host name/IP address pair
             } else {
-                nodeName = link.getPort().getNode().getTopologyIdent();
-                ipaddr = link.getValidIpaddr();
-                if ((ipaddr == null) || (ipaddr.getIP() == null)) {
-                    sb.append("*Out of date IP*");
+                if (link != null) {
+                    nodeName = link.getPort().getNode().getTopologyIdent();
+                    ipaddr = link.getValidIpaddr();
+                    if ((ipaddr == null) || (ipaddr.getIP() == null)) {
+                        sb.append("*Out of date IP*");
+                    } else {
+                        sb.append(ipaddr.getIP());
+                    }
                 } else {
-                    sb.append(ipaddr.getIP());
+                    sb.append(pathElem.getUrn());
                 }
             }
             i++;

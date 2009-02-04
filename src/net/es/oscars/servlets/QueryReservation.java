@@ -127,10 +127,19 @@ public class QueryReservation extends HttpServlet {
 
         Reservation resv = rmiReply.getReservation();
         String gri = resv.getGlobalReservationId();
+
         Path path = resv.getPath(PathType.LOCAL);
-        Layer2Data layer2Data = path.getLayer2Data();
-        Layer3Data layer3Data = path.getLayer3Data();
-        MPLSData mplsData = path.getMplsData();
+        if (path == null) {
+            path = resv.getPath(PathType.REQUESTED);
+        }
+        Layer2Data layer2Data = null;
+        Layer3Data layer3Data = null;
+        MPLSData mplsData = null;
+        if (path != null) {
+            layer2Data = path.getLayer2Data();
+            layer3Data = path.getLayer3Data();
+            mplsData = path.getMplsData();
+        }
         String status = resv.getStatus();
         // always blank NEW GRI field, current GRI is in griReplace's
         // innerHTML

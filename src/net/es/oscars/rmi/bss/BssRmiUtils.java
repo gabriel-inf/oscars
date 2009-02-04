@@ -54,6 +54,9 @@ public class BssRmiUtils {
             Hibernate.initialize(path.getMplsDataSet());
             Hibernate.initialize(path.getNextDomain());
             for (PathElem pe : path.getPathElems()) {
+                for (PathElemParam pep: pe.getPathElemParams()) {
+                    Hibernate.initialize(pep);
+                }
                 if (pe.getLink() == null) {
                     continue;
                 }
@@ -67,9 +70,6 @@ public class BssRmiUtils {
                 Hibernate.initialize(pe.getLink().getPort().getNode().getNodeAddress());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain().getSite());
-                for (PathElemParam pep: pe.getPathElemParams()) {
-                    Hibernate.initialize(pep);
-                }
             }
         }
     }
