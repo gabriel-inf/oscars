@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 
 import net.es.oscars.aaa.UserManager;
-import net.es.oscars.ws.AAAFaultMessage;
+import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.AAACore;
 
 public class VerifyLoginRmiHandler {
@@ -15,7 +15,7 @@ public class VerifyLoginRmiHandler {
 
 
     public String verifyDN(String dn) throws RemoteException {
-        this.log.debug("VerifyDN.start");
+        this.log.debug("VerifyDN.start " + dn);
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
@@ -37,8 +37,8 @@ public class VerifyLoginRmiHandler {
 
                 username = um.loginFromDN(reverseDN);
                 if (username == null) {
-                    AAAFaultMessage AAAErrorEx = new AAAFaultMessage("verifyDN: invalid user" + dn);
-                    throw AAAErrorEx;
+                    AAAException AAAEx = new AAAException("verifyDN: invalid user" + dn);
+                    throw AAAEx;
                 }
             }
         } catch (Exception ex) {
@@ -46,15 +46,13 @@ public class VerifyLoginRmiHandler {
             aaa.getTransaction().rollback();
             throw new RemoteException(ex.getMessage(),ex);
         }
-        this.log.debug("VerifyDN.end");
+        this.log.debug("VerifyDN.end " + dn);
         aaa.getTransaction().commit();
         return username;
-
     }
 
-
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException {
-        this.log.debug("VerifyLogin.start");
+        this.log.debug("VerifyLogin.start " + userName);
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
@@ -67,7 +65,7 @@ public class VerifyLoginRmiHandler {
             aaa.getTransaction().rollback();
             throw new RemoteException(ex.getMessage(),ex);
         }
-        this.log.debug("VerifyLogin.end");
+        this.log.debug("VerifyLogin.end " + userName);
         aaa.getTransaction().commit();
         return username;
 

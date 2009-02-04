@@ -41,7 +41,7 @@ public class Institutions extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
@@ -51,7 +51,7 @@ public class Institutions extends HttpServlet {
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED) {
-                this.log.error("No permission to modify Institutions table.");
+                this.log.warn(userName + " has no permission to modify Institutions table.");
                 ServletUtils.handleFailure(out, "no permission to modify Institutions table", methodName);
                 return;
             }
@@ -79,7 +79,7 @@ public class Institutions extends HttpServlet {
             // always output latest list
             this.outputInstitutions(outputMap,rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("method", methodName);

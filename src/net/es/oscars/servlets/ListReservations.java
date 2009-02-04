@@ -184,7 +184,7 @@ public class ListReservations extends HttpServlet {
         String hostName = null;
         String destination = null;
 
-        this.log.info("to outputReservations");
+        this.log.debug("to outputReservations");
         ArrayList<HashMap<String,Object>> resvList =
             new ArrayList<HashMap<String,Object>>();
         int ctr = 0;
@@ -197,13 +197,13 @@ public class ListReservations extends HttpServlet {
                 outputMap.put("error", ex.getMessage());
                 return;
             }
-            this.log.info("past getPath");
+            this.log.debug("past getPath");
             if (path == null) {
-                this.log.info("path is null");
+                this.log.debug("path is null");
             }
             String pathStr = BssUtils.pathToString(path, false);
             if (pathStr != null) {
-                this.log.info(pathStr);
+                this.log.debug(pathStr);
             }
             String localSrc = null;
             String localDest = null;

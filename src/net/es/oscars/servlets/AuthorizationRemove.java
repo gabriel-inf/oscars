@@ -31,7 +31,7 @@ public class AuthorizationRemove extends HttpServlet {
 
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            log.error("No user session: cookies invalid");
+            log.warn("No user session: cookies invalid");
             return;
         }
         String attributeName = request.getParameter("authAttributeName");
@@ -57,14 +57,14 @@ public class AuthorizationRemove extends HttpServlet {
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED)  {
                 String errorMsg = "User "+userName+" not allowed to remove authorizations";
-                log.error(errorMsg);
+                log.warn(errorMsg);
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();

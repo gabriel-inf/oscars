@@ -31,7 +31,7 @@ public class Attributes extends HttpServlet {
 
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         String[] ops = request.getQueryString().split("=");
@@ -56,7 +56,7 @@ public class Attributes extends HttpServlet {
             AuthValue authVal = rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal != null && authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" does not have permission to modify attributes.";
-                this.log.error(errorMsg);
+                this.log.warn(errorMsg);
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
@@ -82,7 +82,7 @@ public class Attributes extends HttpServlet {
             }
             this.outputAttributes(outputMap, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         // always output latest list
@@ -106,7 +106,7 @@ public class Attributes extends HttpServlet {
      */
     public void outputAttributes(Map<String, Object> outputMap,
                                  AaaRmiInterface rmiClient, PrintWriter out)
-            throws RemoteException {
+    throws RemoteException {
 
         String methodName = "Attributes.outputAttributes";
         List<Attribute> attributes = ServletUtils.getAllAttributes(rmiClient, out, log);

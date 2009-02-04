@@ -41,7 +41,7 @@ public class AuthorizationForm extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            log.error("No user session: cookies invalid");
+            log.warn("No user session: cookies invalid");
             return;
         }
         String attrsUpdated = request.getParameter("authAttrsUpdated");
@@ -57,7 +57,7 @@ public class AuthorizationForm extends HttpServlet {
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == null || authVal == AuthValue.DENIED) {
-                log.error("Not authorized to perform admin operations");
+                log.warn(userName + " not authorized to perform admin operations");
                 ServletUtils.handleFailure(out, "not authorized to perform admin operations", methodName);
                 return;
             }
@@ -77,7 +77,7 @@ public class AuthorizationForm extends HttpServlet {
                 this.outputRpcs(outputMap, rmiClient, out);
             }
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("method", methodName);
@@ -192,14 +192,14 @@ public class AuthorizationForm extends HttpServlet {
             if (rpc.getResource() != null) {
                 rpcEntry.add(rpc.getResource().getName());
             } else {
-                this.log("couldn't find resource: " +
+                this.log.debug("couldn't find resource: " +
                         rpc.getResource().getName());
                 continue;
             }
             if (rpc.getPermission() != null) {
                 rpcEntry.add(rpc.getPermission().getName());
             } else {
-                this.log("couldn't find permission: " +
+                this.log.debug("couldn't find permission: " +
                         rpc.getPermission().getName());
                 continue;
             }
@@ -207,7 +207,7 @@ public class AuthorizationForm extends HttpServlet {
                 rpcEntry.add(rpc.getConstraint().getName());
                 rpcEntry.add(rpc.getConstraint().getType());
             } else {
-                this.log("couldn't find constraint: " +
+                this.log.debug("couldn't find constraint: " +
                         rpc.getConstraint().getName());
                 continue;
             }

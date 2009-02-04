@@ -12,8 +12,6 @@ import org.apache.log4j.*;
 
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
-import net.es.oscars.aaa.Resource;
-import net.es.oscars.aaa.Permission;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 
@@ -54,13 +52,9 @@ public class AuthenticateUser extends HttpServlet {
             String loginUserName =
                 rmiClient.verifyLogin(userName, password, sessionName);
             userName = (String) loginUserName;
-            if (userName == null) {
-                ServletUtils.handleFailure(out, "Login not allowed", methodName);
-                return;
-            }
             this.handleDisplay(rmiClient, userName, outputMap, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         log.info("setting cookie name to " + userName);

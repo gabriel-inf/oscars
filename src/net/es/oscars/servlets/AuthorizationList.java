@@ -35,7 +35,7 @@ public class AuthorizationList extends HttpServlet {
 
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
@@ -46,13 +46,13 @@ public class AuthorizationList extends HttpServlet {
                 rmiClient.checkAccess(userName, "AAA", "list");
             if (authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" has no permission to list authorizations";
-                this.log.error(errorMsg);
+                this.log.warn(errorMsg);
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
             this.outputAuthorizations(outputMap, request, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("status", "Authorization list");

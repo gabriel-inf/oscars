@@ -82,7 +82,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         try {
             result = this.remote.validSession(userName, sessionName);
         } catch (RemoteException e) {
-            this.log.debug("Remote exception: " + e.getMessage());
+            this.log.debug("Remote exception from RMI server: " + e.getMessage());
             throw e;
         } catch (Exception e) {
             this.log.error(methodName + ": Exception:" + e.getMessage(), e);
@@ -96,7 +96,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
             throws RemoteException {
 
         String methodName = "verifyLogin";
-        this.log.debug("verifyLogin.start");
+        this.log.debug("verifyLogin.start for: "+ userName);
 
         String result = null;
         this.verifyRmiConnection(methodName);
@@ -109,7 +109,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
             this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         }
-        this.log.debug("verifyLogin.end");
+        this.log.debug("verifyLogin.end for: " + userName);
         return result;
     }
 
@@ -117,7 +117,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
     public String verifyDN(String dn) throws RemoteException {
 
         String methodName = "verifyDN";
-        this.log.debug("verifyDN.start");
+        this.log.debug("verifyDN.start for: " + dn);
 
         String result = null;
         this.verifyRmiConnection(methodName);
@@ -131,7 +131,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
             this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         }
-        this.log.debug("verifyDN.end");
+        this.log.debug("verifyDN.end for:" + dn);
         return result;
     }
 
@@ -182,9 +182,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("checkMultiAccess.start");
 
         AuthMultiValue result = new AuthMultiValue();
-
         this.verifyRmiConnection(methodName);
-
         try {
             result = this.remote.checkMultiAccess(userName, resourcePermissions);
         } catch (RemoteException e) {

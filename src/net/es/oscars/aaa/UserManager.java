@@ -248,7 +248,7 @@ public class UserManager {
 
         User user = null;
 
-        this.log.debug("verifyLogin.start");
+        this.log.debug("verifyLogin.start " + userName);
         UserDAO userDAO = new UserDAO(this.dbname);
         if (userDAO.isAuthenticated(userName)) { return userName; }
         if (password == null) {
@@ -388,7 +388,7 @@ public class UserManager {
                     if (auth.getConstraintValue().equals("true")) {
                         // found an authorization with allUsers allowed,
                         // highest level access, so return it
-                        this.log.info("checkAccess: " +userName + ":" + resourceName + ":" + resourceName + ":ALLUSERS");
+                        this.log.info("checkAccess: " +userName + ":" + resourceName + ":" + permissionName + ":ALLUSERS");
                         return AuthValue.ALLUSERS;
                    } else {
                         // found a self-only constrained authorization, remember it
@@ -404,11 +404,11 @@ public class UserManager {
         }
 
         if (retVal == null ) {
-            this.log.info("checkAccess: no auth found for " +userName + ":" + resourceName + ":" + resourceName);
+            this.log.info("checkAccess: no auth found for " +userName + ":" + resourceName + ":" + permissionName);
             retVal = AuthValue.DENIED;
         }
         retValSt = retVal.toString();
-        this.log.info("checkAccess: " +userName + ":" + resourceName + ":" + resourceName + ":" + retValSt);
+        this.log.info("checkAccess: " +userName + ":" + resourceName + ":" + permissionName + ":" + retValSt);
         return retVal;
     }
 

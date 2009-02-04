@@ -32,7 +32,7 @@ public class AuthorizationModify extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            log.error("No user session: cookies invalid");
+            log.warn("No user session: cookies invalid");
             return;
         }
 
@@ -72,13 +72,13 @@ public class AuthorizationModify extends HttpServlet {
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "list");
             if (authVal == AuthValue.DENIED)  {
-                log.error("Not allowed to modify an authorization");
+                log.warn("Not allowed to modify an authorization");
                 ServletUtils.handleFailure(out, "not allowed to modify an authorization", methodName);
                 return;
             }
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();

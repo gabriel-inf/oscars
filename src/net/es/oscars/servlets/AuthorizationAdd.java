@@ -2,7 +2,6 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
-import java.rmi.RemoteException;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -31,7 +30,7 @@ public class AuthorizationAdd extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
 
@@ -61,7 +60,7 @@ public class AuthorizationAdd extends HttpServlet {
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED)  {
                 String errorMsg = "User "+userName+" is not allowed to add an authorization";
-                this.log.error(errorMsg);
+                this.log.warn(errorMsg);
                 ServletUtils.handleFailure(out, errorMsg, methodName);
                 return;
             }
@@ -69,7 +68,7 @@ public class AuthorizationAdd extends HttpServlet {
 
             rmiResult = ServletUtils.manageAaaObject(rmiClient, "addAuthorization", log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
