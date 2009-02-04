@@ -43,11 +43,12 @@ public class PSSScheduler {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.pendingReservations(timeInterval);
         for (Reservation resv: reservations) {
+            this.log.debug("Examining pending reservation: "+resv.getGlobalReservationId());
             try {
                 // call PSS to schedule LSP setup(s)
                 String pathSetupMode = resv.getPath(PathType.LOCAL).getPathSetupMode();
-                if (pathSetupMode.equals("timer-automatic")) {
-                    this.log.info("pendingReservation: " + resv.getGlobalReservationId());
+                if (pathSetupMode.equals(PathSetupMode.SCHEDULED)) {
+                    this.log.info("Scheduling setup for: " + resv.getGlobalReservationId());
                     // resv must be set to proper status inside PSS
                     //TODO: Throw RESV_PERIOD_STARTED for signal-xml only once
                     eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_STARTED, "", "SCHEDULER", resv);

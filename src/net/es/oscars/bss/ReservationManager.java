@@ -19,7 +19,7 @@ import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
-import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.*;
 
 /**
  * ReservationManager handles all networking and data access object calls

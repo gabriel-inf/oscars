@@ -17,6 +17,7 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.pss.PathSetupMode;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 
@@ -153,6 +154,9 @@ public class CreateReservation extends HttpServlet {
 
         Path requestedPath = new Path();
         requestedPath.setPathType(PathType.REQUESTED);
+        requestedPath.setPathSetupMode(PathSetupMode.SCHEDULED);
+
+
         String explicitPath = "";
         String source = null;
         String destination = null;

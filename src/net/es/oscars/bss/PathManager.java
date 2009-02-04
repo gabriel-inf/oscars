@@ -52,6 +52,10 @@ public class PathManager {
             localPaths = this.pceMgr.findLocalPath(resv);
             interdomainPath = interdomainPaths.get(0);
             localPath = localPaths.get(0);
+            Path requestedPath = resv.getPath(PathType.REQUESTED);
+            localPath.setPathSetupMode(requestedPath.getPathSetupMode());
+            interdomainPath.setPathSetupMode(requestedPath.getPathSetupMode());
+
             // FIXME: is setPath the method to use? maybe we want to replace the set of
             // paths during modify
             resv.setPath(localPath);
