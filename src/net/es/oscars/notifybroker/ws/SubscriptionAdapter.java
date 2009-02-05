@@ -166,15 +166,33 @@ public class SubscriptionAdapter{
      * @return an Axis2 object with the result of the renewal
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
+     * @throws RemoteException 
      * @throws UnacceptableInitialTerminationTimeFault
      */
-    public RenewResponse renew(Renew request, HashMap<String,String> permissionMap)
-                               throws AAAFaultMessage, 
-                                      ResourceUnknownFault,
-                                      UnacceptableTerminationTimeFault{
-        this.log.info("renew.start");
-        this.log.info("renew.end");
-        return null;
+    public RenewResponse renew(Renew request, String user) 
+        throws AAAFaultMessage,  ResourceUnknownFault,
+               UnacceptableTerminationTimeFault, RemoteException{
+        this.log.debug("renew.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        RenewResponse response = new RenewResponse();
+        Long termTime = this.parseTermTime(request.getTerminationTime());
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String subscriptionId = this.verifySubscriptionRef(subRef);
+        
+        /* Call the rmi component to renew the subscription */
+        termTime = nbRmiClient.renew(subscriptionId, termTime, user);
+        
+        /* Convert creation and termination time to Calendar object */
+        GregorianCalendar currCal = new GregorianCalendar();
+        GregorianCalendar termCal = new GregorianCalendar();
+        currCal.setTimeInMillis(System.currentTimeMillis());
+        termCal.setTimeInMillis(termTime * 1000);
+        response.setSubscriptionReference(subRef);
+        response.setCurrentTime(currCal);
+        response.setTerminationTime(termCal);
+        
+        this.log.debug("renew.end");
+        return response;
     }
     
      /**
@@ -186,15 +204,23 @@ public class SubscriptionAdapter{
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
      * @throws UnableToDestroySubscriptionFault
+     * @throws RemoteException 
      */
-    public UnsubscribeResponse unsubscribe(Unsubscribe request, String userLogin,
-                               HashMap<String,String> permissionMap)
-                               throws AAAFaultMessage, 
-                                      ResourceUnknownFault,
-                                      UnableToDestroySubscriptionFault{
-        this.log.info("unsubscribe.start");
-        this.log.info("unsubscribe.end");
-        return null;
+    public UnsubscribeResponse unsubscribe(Unsubscribe request, String user)
+                        throws AAAFaultMessage, ResourceUnknownFault,
+                               UnableToDestroySubscriptionFault, RemoteException{
+        this.log.debug("unsubscribe.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        UnsubscribeResponse response = new UnsubscribeResponse();
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String subscriptionId = this.verifySubscriptionRef(subRef);
+        
+        //Call the rmi component to unsubscribe
+        nbRmiClient.unsubscribe(subscriptionId, user);
+        response.setSubscriptionReference(subRef);
+        
+        this.log.debug("unsubscribe.end");
+        return response;
     }
     
     /**
@@ -529,5 +555,31 @@ public class SubscriptionAdapter{
         }
         
         return timestamp;
+    }
+    
+    private String verifySubscriptionRef(EndpointReferenceType subRef) throws ResourceUnknownFault{
+        
+        /* Find subscription ID */
+        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
+        if(refParams == null){ 
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                        "No subscription reference provided.");
+        }
+        String subscriptionId = refParams.getSubscriptionId();
+        if(subscriptionId == null){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                                           "No subscription ID provided.");
+        }
+        
+        /* Verify they want to be talking to this NB */
+        String address = this.parseEPR(subRef);
+        if(!this.subscriptionManagerURL.equals(address)){
+            throw new ResourceUnknownFault("Could not find subscription." +
+                  "Invalid subcription manager address. This notification" +
+                  " broker requires you to use address " + 
+                   this.subscriptionManagerURL);
+        }
+        
+        return subscriptionId;
     }
 }

@@ -87,7 +87,29 @@ public class NBValidator {
             }
         }
     }
-    public static void validateDestroyRegistration(String publisherId, 
+    
+    public static AuthValue validateSubscriptionMod(String subscriptionId,
+            String user, Logger log) throws RemoteException{
+        if(subscriptionId == null){
+            throw new RemoteException("Required argument subscriptionId not provided");
+        }
+        if(user == null){
+            throw new RemoteException("Required argument user not provided");
+        }
+        //Check user permissions
+        AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(log);
+        AuthValue authVal = aaaRmiClient.checkAccess(user, "Subscriptions", "modify");
+        if (authVal.equals(AuthValue.DENIED)) {
+            String msg = "User " + user + " does not have modify permissons for " +
+            "Subscription resources.";
+            log.error(msg);
+            throw new RemoteException(msg);
+        }
+        
+        return authVal;
+    }
+    
+    public static AuthValue validateDestroyRegistration(String publisherId, 
             String user, Logger log) throws RemoteException{
         if(publisherId == null){
             throw new RemoteException("Required argument publisherId is null");
@@ -100,7 +122,6 @@ public class NBValidator {
         //Check user permissions
         AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(log);
         AuthValue authVal = aaaRmiClient.checkAccess(user, "Publishers", "modify");
-        
         if (authVal.equals(AuthValue.DENIED)) {
             String msg = "DestroyRegistration access denied because " +
             "user " + user + " does not have modify permissons for " +
@@ -108,6 +129,8 @@ public class NBValidator {
             log.error(msg);
             throw new RemoteException(msg);
         }
+        
+        return authVal;
     }
     
         

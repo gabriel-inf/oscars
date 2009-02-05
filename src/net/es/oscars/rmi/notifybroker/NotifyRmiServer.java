@@ -3,9 +3,9 @@ package net.es.oscars.rmi.notifybroker;
 import java.util.*;
 
 import java.rmi.*;
-import java.rmi.registry.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.SubscriptionManager;
 import net.es.oscars.rmi.*;
@@ -18,7 +18,6 @@ import org.hibernate.Session;
 public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface  {
     private Logger log = Logger.getLogger(NotifyRmiServer.class);
     private SubscriptionManager sm;
-    private Registry registry;
     private NotifyBrokerCore core;
 
     /** Static remote object so that GarbageCollector doesn't delete it */
@@ -71,7 +70,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         //Also adds AAA filters for specific event types.
         NBValidator.validateSubscribe(consumerUrl, termTime, filters, user, log);
         
-        //Save publisher
+        //Create subscription
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         RmiSubscribeResponse response = null;
@@ -91,14 +90,53 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
     
     public Long renew(String subscriptionId, Long terminationTime, String user) 
             throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
+        this.log.debug("renew.start");
+        //Check RMI request and AAA parameters. 
+        //Also adds AAA filters for specific event types.
+        AuthValue authValue = NBValidator.validateSubscriptionMod(subscriptionId, user, this.log);
+        
+        //Create subscription
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        Long response = null;
+        try{
+            response = this.sm.renew(subscriptionId, terminationTime, user, authValue);
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException(e.getMessage());
+        }
+        sess.getTransaction().commit();
+        this.log.debug("renew.end");
+        
+        return response;
     }
     
     public void unsubscribe(String subscriptionId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        this.log.debug("unsubscribe.start");
+        //Check RMI request and AAA parameters. 
+        //Also adds AAA filters for specific event types.
+        AuthValue authValue = NBValidator.validateSubscriptionMod(subscriptionId, user, this.log);
         
+        //Create subscription
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            if(subscriptionId.equals("ALL")){
+                this.sm.updateStatusAll(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user);
+           }else{
+               this.sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user, authValue);
+           }
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException(e.getMessage());
+        }
+        sess.getTransaction().commit();
+        this.log.debug("unsubscribe.end");
     }
 
     public void pauseSubscription(String subscriptionId, String user)
@@ -142,12 +180,12 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
             throws RemoteException {
         this.log.info("destroyRegistration.start");
         //Check RMI request and AAA parameters
-        NBValidator.validateDestroyRegistration(publisherId, user, this.log);
+        AuthValue authVal = NBValidator.validateDestroyRegistration(publisherId, user, this.log);
         
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.sm.destroyRegistration(publisherId, user);
+            this.sm.destroyRegistration(publisherId, user, authVal);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());

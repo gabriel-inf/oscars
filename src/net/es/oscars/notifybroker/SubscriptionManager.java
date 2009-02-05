@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notifybroker.ws.UnacceptableInitialTerminationTimeFault;
 import net.es.oscars.notifybroker.ws.UnacceptableTerminationTimeFault;
 import net.es.oscars.notifybroker.ws.ResourceUnknownFault;
@@ -123,15 +124,19 @@ public class SubscriptionManager{
         return publisher.getReferenceId();
     }
     
-    public void destroyRegistration(String pubRefId, String user) 
+    public void destroyRegistration(String pubRefId, String user, AuthValue authVal) 
                                 throws RemoteException{
         this.log.debug("destroyRegistration.start");
         PublisherDAO dao = new PublisherDAO(this.dbname);
-        Publisher publisher = dao.queryByRefId(pubRefId, user, false);
+        String modifyConstraint = null;
+        if(authVal.equals(AuthValue.SELFONLY)){
+            modifyConstraint = user;
+        }
+        Publisher publisher = dao.queryByRefId(pubRefId, modifyConstraint, false);
         
         if(publisher == null){
-            this.log.error("Publisher not found: id=" + pubRefId +", user=" + user);
-            RemoteException re = new RemoteException();
+            this.log.error("Publisher not found: id=" + pubRefId +", user=" + 
+                    user + ", modifyConstraint=" + modifyConstraint);
             throw new RemoteException("Publisher " + pubRefId + " not found.");
         }
         
@@ -174,22 +179,31 @@ public class SubscriptionManager{
         return subscriptions;
     }
     
-    public long renew(String subRefId, long termTime, 
-                      HashMap<String, String> permissionMap)
-                      throws ResourceUnknownFault,
+    public Long renew(String subRefId, Long termTime,String user, AuthValue authVal)
+                      throws RemoteException,
                              UnacceptableTerminationTimeFault{
         this.log.debug("renew.start");
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
-        String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
-        Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
+        String modifyConstraint = null;
+        if(authVal.equals(AuthValue.SELFONLY)){
+            modifyConstraint = user;
+        }
+        Subscription subscription = dao.queryByRefId(subRefId, modifyConstraint);
+        if(termTime == null){ termTime = 0L; }
         long curTime = System.currentTimeMillis()/1000;
         long expTime = 0L;
         
         // make sure matching subscription found
         if(subscription == null){
             this.log.error("Subscription not found: id=" + subRefId +
-                          ", user=" + modifyLoginConstraint);
-            throw new ResourceUnknownFault("Subscription " + subRefId + " not found.");
+                          ", user=" + user + ", modifyConstraint=" + 
+                          modifyConstraint);
+            throw new RemoteException("Subscription " + subRefId + " not found.");
+        }
+        
+        if(subscription.getStatus() != SubscriptionManager.ACTIVE_STATUS){
+            throw new RemoteException("Subscription " + subRefId + " cannot " +
+                        "be renewed because it has already been unsubscribed");
         }
         
         //check time
@@ -200,20 +214,20 @@ public class SubscriptionManager{
         }catch(UnacceptableInitialTerminationTimeFault ex){
             throw new UnacceptableTerminationTimeFault(ex.getMessage());
         }
-        
-        //TODO: update filters
-        
         this.log.debug("renew.end");
         
-        return expTime;
+        return subscription.getTerminationTime();
     }
     
     public synchronized void updateStatus(int newStatus, String subRefId, 
-                      HashMap<String, String> permissionMap) 
+                      String user, AuthValue authVal) 
                       throws Exception, ResourceUnknownFault{
         this.log.debug("updateStatus.start");
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
-        String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
+        String modifyLoginConstraint = null;
+        if(authVal.equals(AuthValue.SELFONLY)){
+            modifyLoginConstraint = user;
+        }
         Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
         long curTime = System.currentTimeMillis()/1000;
         if(subscription == null){

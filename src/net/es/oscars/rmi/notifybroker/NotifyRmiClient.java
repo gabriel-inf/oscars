@@ -123,14 +123,33 @@ public class NotifyRmiClient implements NotifyRmiInterface {
     
     public Long renew(String subscriptionId, Long terminationTime, String user) 
             throws RemoteException {
-        // TODO Auto-generated method stub
-        
-        return null;
+        this.log.debug("renew.start");
+        String methodName = "Renew";
+        this.verifyRmiConnection(methodName);
+        try {
+            Long termTime = this.remote.renew(subscriptionId, terminationTime, user);
+            this.log.debug("renew.end");
+            return termTime;
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
     }
     
     public void unsubscribe(String subscriptionId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        this.log.debug("unsubscribe.start");
+        String methodName = "Unsubscribe";
+        this.verifyRmiConnection(methodName);
+        try {
+            this.remote.unsubscribe(subscriptionId, user);
+            this.log.debug("unsubscribe.end");
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
         
     }
 

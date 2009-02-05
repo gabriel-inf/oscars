@@ -69,12 +69,31 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 
     public RenewResponse Renew(Renew request)
         throws AAAFaultMessage, ResourceUnknownFault, UnacceptableTerminationTimeFault{
-        return null;
+        
+        RenewResponse response = null;
+        try {
+            String login = this.verifyCert();
+            response = this.sa.renew(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new ResourceUnknownFault(e.getMessage());
+        }
+        
+        return response;
     }
 
     public UnsubscribeResponse Unsubscribe(Unsubscribe request)
         throws AAAFaultMessage, ResourceUnknownFault, UnableToDestroySubscriptionFault{
-        return null;
+        UnsubscribeResponse response = null;
+        try {
+            String login = this.verifyCert();
+            response = this.sa.unsubscribe(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new ResourceUnknownFault(e.getMessage());
+        }
+        
+        return response;
     }
 
     public PauseSubscriptionResponse PauseSubscription(
