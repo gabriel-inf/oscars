@@ -9,12 +9,13 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.SubscriptionManager;
 import net.es.oscars.rmi.*;
+import net.es.oscars.rmi.notifybroker.xface.*;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.log4j.*;
 import org.hibernate.Session;
 
-public class NotifyRmiServer  extends BaseRmiServer implements NotifyRmiInterface  {
+public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface  {
     private Logger log = Logger.getLogger(NotifyRmiServer.class);
     private SubscriptionManager sm;
     private Registry registry;
@@ -61,11 +62,31 @@ public class NotifyRmiServer  extends BaseRmiServer implements NotifyRmiInterfac
         //this.notifyHandler.Notify(request);
     }
 
-    public String subscribe(String consumerUrl, Long termTime,
-            HashMap<String, String> filters, String user)
+    public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime,
+            HashMap<String, List<String>> filters, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
+        
+        this.log.debug("subscribe.start");
+        //Check RMI request and AAA parameters. 
+        //Also adds AAA filters for specific event types.
+        NBValidator.validateSubscribe(consumerUrl, termTime, filters, user, log);
+        
+        //Save publisher
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        RmiSubscribeResponse response = null;
+        try{
+            response = this.sm.subscribe(consumerUrl, termTime, filters, user);
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException(e.getMessage());
+        }
+        sess.getTransaction().commit();
+        this.log.debug("subscribe.end");
+        
+        return response;
     }
     
     public Long renew(String subscriptionId, Long terminationTime, String user) 

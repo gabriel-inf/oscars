@@ -3,11 +3,14 @@ package net.es.oscars.rmi.notifybroker;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import net.es.oscars.aaa.AuthValue;
+import net.es.oscars.notifybroker.NotifyBrokerCore;
+import net.es.oscars.notifybroker.policy.NotifyPEP;
 import net.es.oscars.rmi.aaa.AaaRmiClient;
 
 public class NBValidator {
@@ -42,6 +45,48 @@ public class NBValidator {
         }
     }
     
+    public static void validateSubscribe(String consumerUrl, Long termTime,
+            HashMap<String, List<String>> filters, String user, Logger log) 
+            throws RemoteException{
+        if(consumerUrl == null){
+            throw new RemoteException("Required argument consumerUrl is null");
+        }
+        try {
+            new URL(consumerUrl);
+        } catch (MalformedURLException e) {
+            throw new RemoteException("Invalid consumer URL provided");
+        }
+        
+        if(filters == null){
+            throw new RemoteException("Required argument filters is null");
+        }
+        
+        if(user == null){
+            throw new RemoteException("Required argument user is null");
+        }
+        
+        //Check user permissions
+        AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(log);
+        AuthValue authVal = aaaRmiClient.checkAccess(user, "Subscriptions", "create");
+        if (authVal.equals(AuthValue.DENIED)) {
+            String msg = "You do not have permission to create subscriptions.";
+            log.error(msg);
+            throw new RemoteException(msg);
+        }
+        
+        //Further constrain user on topic specific values.
+        List<String> topics = filters.get("TOPIC");
+        NotifyBrokerCore core = NotifyBrokerCore.getInstance();
+        for(NotifyPEP notifyPep : core.getNotifyPEPs()){
+            if(!notifyPep.matches(topics)){
+                continue;
+            }
+            HashMap<String,List<String>> pepMap = notifyPep.prepare(user);
+            if(pepMap != null){
+                filters.putAll(pepMap);
+            }
+        }
+    }
     public static void validateDestroyRegistration(String publisherId, 
             String user, Logger log) throws RemoteException{
         if(publisherId == null){

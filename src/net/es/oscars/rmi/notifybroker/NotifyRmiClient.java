@@ -5,6 +5,7 @@ import java.rmi.registry.*;
 import java.util.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.rmi.notifybroker.xface.*;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.log4j.Logger;
@@ -21,7 +22,11 @@ public class NotifyRmiClient implements NotifyRmiInterface {
      * True if we have a connection to the RMI registry, false otherwise
      */
     private boolean connected;
-
+    
+    final public static String FILTER_PRODXPATH = "PRODXPATH";
+    final public static String FILTER_MSGXPATH = "MSGXPATH";
+    final public static String FILTER_TOPIC = "TOPIC";
+    
     /**
      * Initializes the client and connects to the AAA RMI registry.
      *
@@ -98,16 +103,28 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         }
     }
     
-    public String subscribe(String consumerUrl, Long termTime,
-            HashMap<String, String> filters, String user)
+    public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime,
+            HashMap<String, List<String>> filters, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
+        this.log.debug("subscribe.start");
+        String methodName = "Subscribe";
+        this.verifyRmiConnection(methodName);
+        try {
+            RmiSubscribeResponse response = this.remote.subscribe(consumerUrl, 
+                    termTime, filters, user);
+            this.log.debug("subscribe.end");
+            return response;
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
     }
     
     public Long renew(String subscriptionId, Long terminationTime, String user) 
             throws RemoteException {
         // TODO Auto-generated method stub
+        
         return null;
     }
     

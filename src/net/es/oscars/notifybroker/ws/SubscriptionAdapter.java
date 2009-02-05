@@ -22,6 +22,7 @@ import org.jaxen.SimpleNamespaceContext;
 import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.notifybroker.NotifyRmiClient;
 import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
+import net.es.oscars.rmi.notifybroker.xface.RmiSubscribeResponse;
 
 /** 
  * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
@@ -82,14 +83,77 @@ public class SubscriptionAdapter{
      * @throws TopicExpressionDialectUnknownFault
      * @throws TopicNotSupportedFault
      * @throws UnacceptableInitialTerminationTimeFault
+     * @throws RemoteException 
      */
-    public SubscribeResponse subscribe(Subscribe request, String userLogin, HashMap<String,String> permissionMap)
+    public SubscribeResponse subscribe(Subscribe request, String user)
         throws TopicExpressionDialectUnknownFault, InvalidTopicExpressionFault,TopicNotSupportedFault,
                InvalidProducerPropertiesExpressionFault,InvalidFilterFault,InvalidMessageContentExpressionFault,
-               UnacceptableInitialTerminationTimeFault{
-        this.log.info("subscribe.start");
-        this.log.info("subscribe.end");
-        return null;
+               UnacceptableInitialTerminationTimeFault, RemoteException{
+        
+        this.log.debug("subscribe.start");
+        SubscribeResponse response = null;
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        String consumerUrl = this.parseEPR(request.getConsumerReference());
+        long initTermTime = 0L;
+        HashMap<String,List<String>> filters = new HashMap<String,List<String>>();
+        
+        /* NOTE: Requires a filter and topic to specified.
+         * Filter and TopicExpression are checked here and not in
+         * schema because this is an optional behavior defined in the
+         * WS-Notification spec. It also allows for a better error.
+         * See http://docs.oasis-open.org/wsn/wsn-ws_base_notification-1.3-spec-os.pdf line 544-545.
+         */
+        FilterType requestFilter = request.getFilter();
+        if(requestFilter == null || requestFilter.getTopicExpression() == null){
+            throw new InvalidFilterFault("Invalid filter specified. This " +
+                                         "NotificationBroker implementation" +
+                                         " requires a filter containing at " +
+                                         "least one TopicExpression.");
+        }
+        QueryExpressionType[] producerPropsFilters = requestFilter.getProducerProperties();
+        QueryExpressionType[] messageContentFilters =  requestFilter.getMessageContent();
+        TopicExpressionType[] topicFilters = requestFilter.getTopicExpression();
+        
+        //Add producer filters
+        List<String> prodFilterList = new ArrayList<String>();
+        if(producerPropsFilters != null){
+            for(QueryExpressionType producerPropsFilter : producerPropsFilters){
+                if(this.validateQueryExpression(producerPropsFilter, true)){
+                    String xpath = producerPropsFilter.getString();
+                    prodFilterList.add(xpath);
+                }
+            }
+        }
+        filters.put(NotifyRmiClient.FILTER_PRODXPATH, prodFilterList);
+        
+        //Add message filters
+        List<String> msgFilterList = new ArrayList<String>();
+        if(messageContentFilters != null){
+            for(QueryExpressionType messageContentFilter : messageContentFilters){
+                if(this.validateQueryExpression(messageContentFilter, false)){
+                    String xpath = messageContentFilter.getString();
+                    msgFilterList.add(xpath);    
+                }
+            }
+        }
+        filters.put(NotifyRmiClient.FILTER_MSGXPATH, msgFilterList);
+        
+        //Add topic filters
+        filters.put(NotifyRmiClient.FILTER_TOPIC, this.parseTopics(topicFilters));
+        
+        //Get initial termination time
+        try{
+            initTermTime = this.parseTermTime(request.getInitialTerminationTime());
+        }catch(UnacceptableTerminationTimeFault ex){
+            throw new UnacceptableInitialTerminationTimeFault(ex.getMessage());
+        }
+        
+        //send to RMI server
+        RmiSubscribeResponse rmiResponse = nbRmiClient.subscribe(consumerUrl, new Long(initTermTime), filters, user);
+        response = this.createSubscribeResponse(rmiResponse);
+        
+        this.log.debug("subscribe.end");
+        return response;
     }
     
     /**
@@ -175,6 +239,45 @@ public class SubscriptionAdapter{
     }
     
     /**
+     * Registers a publisher in the database using the given registration parameters
+     *
+     * @param request the registration request
+     * @param login the login of the user that sent the registration
+     * @return an Axis2 RegisterPublisherResponse with the result of the registration
+     * @throws UnacceptableInitialTerminationTimeFault
+     * @throws PublisherRegistrationFailedFault
+     * @throws RemoteException 
+     */
+    public RegisterPublisherResponse registerPublisher(RegisterPublisher request, String login)
+                                throws UnacceptableInitialTerminationTimeFault,
+                                       PublisherRegistrationFailedFault, RemoteException{
+        this.log.debug("registerPublisher.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        RegisterPublisherResponse response = null;
+        String publisherUrl = this.parseEPR(request.getPublisherReference());
+        Calendar termTimeCal = request.getInitialTerminationTime();
+        Long termTime = null;
+        boolean demand = request.getDemand();
+        
+        //TODO:Support demand based publishing
+        if(demand){
+            throw new PublisherRegistrationFailedFault("Demand publishing is not supported by this implementation.");
+        }
+        
+        if(termTimeCal != null){
+            termTime = termTimeCal.getTimeInMillis()/1000L;
+        }
+        
+        String registrationId = nbRmiClient.registerPublisher(publisherUrl, 
+                null, demand, termTime, login);
+        response = this.createRegisterPublisherResponse(registrationId);
+        this.log.debug("registerPublisher.end");
+        
+        return response;
+    }
+    
+    
+    /**
      * Destroy a PublisherRegistration based on the parameters of the request. 
      * 
      * @param request the Axis2 object with the registration to destroy
@@ -216,44 +319,34 @@ public class SubscriptionAdapter{
         return response;
     }
     
-    /**
-     * Registers a publisher in the database using the given registration parameters
-     *
-     * @param request the registration request
-     * @param login the login of the user that sent the registration
-     * @return an Axis2 RegisterPublisherResponse with the result of the registration
-     * @throws UnacceptableInitialTerminationTimeFault
-     * @throws PublisherRegistrationFailedFault
-     * @throws RemoteException 
-     */
-    public RegisterPublisherResponse registerPublisher(RegisterPublisher request, String login)
-                                throws UnacceptableInitialTerminationTimeFault,
-                                       PublisherRegistrationFailedFault, RemoteException{
-        this.log.debug("registerPublisher.start");
-        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
-        RegisterPublisherResponse response = null;
-        String publisherUrl = this.parseEPR(request.getPublisherReference());
-        Calendar termTimeCal = request.getInitialTerminationTime();
-        Long termTime = null;
-        boolean demand = request.getDemand();
+    public SubscribeResponse createSubscribeResponse(RmiSubscribeResponse subscription){
+        SubscribeResponse response = new SubscribeResponse();
         
-        //TODO:Support demand based publishing
-        if(demand){
-            throw new PublisherRegistrationFailedFault("Demand publishing is not supported by this implementation.");
-        }
+        /* Set subscription reference */
+        EndpointReferenceType subRef = new EndpointReferenceType();
+        AttributedURIType subAttrUri = new AttributedURIType();
+        try{
+            URI subRefUri = new URI(this.subscriptionManagerURL);
+            subAttrUri.setAnyURI(subRefUri);
+        }catch(Exception e){}
+        subRef.setAddress(subAttrUri);
+        //set ReferenceParameters
+        ReferenceParametersType subRefParams = new ReferenceParametersType();
+        subRefParams.setSubscriptionId(subscription.getSubscriptionId());
+        subRef.setReferenceParameters(subRefParams);
+                
+        /* Convert creation and termination time to Calendar object */
+        GregorianCalendar createCal = new GregorianCalendar();
+        GregorianCalendar termCal = new GregorianCalendar();
+        createCal.setTimeInMillis(subscription.getCreatedTime() * 1000);
+        termCal.setTimeInMillis(subscription.getTerminationTime() * 1000);
         
-        if(termTimeCal != null){
-            termTime = termTimeCal.getTimeInMillis()/1000L;
-        }
-        
-        String registrationId = nbRmiClient.registerPublisher(publisherUrl, 
-                null, demand, termTime, login);
-        response = this.createRegisterPublisherResponse(registrationId);
-        this.log.debug("registerPublisher.end");
+        response.setSubscriptionReference(subRef);
+        response.setCurrentTime(createCal);
+        response.setTerminationTime(termCal);
         
         return response;
     }
-    
     /**
      * Creates a RegisterPublisherResponse from an ID
      *

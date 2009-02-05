@@ -1,15 +1,12 @@
 package net.es.oscars.notifybroker.policy;
 
+import java.rmi.RemoteException;
 import java.util.*;
 import org.apache.axiom.om.OMElement;
 import org.apache.log4j.*;
-import org.hibernate.*;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import net.es.oscars.aaa.*;
-import net.es.oscars.bss.topology.*;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
-import net.es.oscars.notifybroker.ws.AAAFaultMessage;
+import net.es.oscars.rmi.aaa.AaaRmiClient;
+import net.es.oscars.rmi.notifybroker.NBValidator;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.wsdlTypes.EventContent;
 
@@ -23,18 +20,21 @@ import net.es.oscars.wsdlTypes.EventContent;
 public class IDCEventPEP implements NotifyPEP{
     private Logger log;
     private NotifyBrokerCore core;
-    private String dbname;
-
+    
+    final public static String FILTER_RESV_USER = "IDC_RESV_USER";
+    final public static String FILTER_RESV_ENDSITE = "IDC_RESV_ENDSITE_INSTITUTION";
+    final public static String ALLOW_ALL_USERS = "ALL";
+    
     public IDCEventPEP(){
         this.log = Logger.getLogger(this.getClass());
         this.core = NotifyBrokerCore.getInstance();
     }
 
-    public void init(String dbname){
-        this.dbname = dbname;
+    public void init(){
+        return;
     }
 
-    public boolean matches(ArrayList<String> topics){
+    public boolean matches(List<String> topics){
         for(String topic : topics){
             if(topic.startsWith("idc:")){
                 return true;
@@ -43,26 +43,31 @@ public class IDCEventPEP implements NotifyPEP{
         return false;
     }
 
-    public HashMap<String,String> prepare(String subscriberLogin) throws AAAFaultMessage{
-        HashMap<String,String> permissionMap = new HashMap<String,String>();
-      /*  AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
+    public HashMap<String,List<String>> prepare(String subscriberLogin) throws RemoteException{
+        HashMap<String,List<String>> permissionMap = new HashMap<String,List<String>>();
+        String permissionKey = IDCEventPEP.FILTER_RESV_USER;
+        List<String> permissionValue = new ArrayList<String>();
+        AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(log);
+        AuthValue authVal = aaaRmiClient.checkAccess(subscriberLogin, "Reservations", "query");
         if (authVal.equals(AuthValue.DENIED)) {
-            throw new AAAFaultMessage("Subscriber " + subscriberLogin +
+            throw new RemoteException("Subscriber " + subscriberLogin +
                     "does not have permission to view this notification.");
         }else if (authVal.equals(AuthValue.SELFONLY)){
-            permissionMap.put("IDC_RESV_USER", subscriberLogin);
+            permissionValue.add(subscriberLogin);
         }else if (authVal.equals(AuthValue.MYSITE)) {
-            String institution = this.userMgr.getInstitution(subscriberLogin);
-            permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institution);
+            String institution = aaaRmiClient.getInstitution(subscriberLogin);
+            permissionKey = IDCEventPEP.FILTER_RESV_ENDSITE;
+            permissionValue.add(institution);
         }else{
-            permissionMap.put("IDC_RESV_USER", "ALL");
-        } */
-
+            permissionValue.add(IDCEventPEP.ALLOW_ALL_USERS);
+        }
+        permissionMap.put(permissionKey, permissionValue);
+        
         return permissionMap;
     }
 
-    public HashMap<String, ArrayList<String>> enforce(OMElement[] omEvents) throws AAAFaultMessage{
-        HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
+    public HashMap<String, List<String>> enforce(OMElement[] omEvents) throws RemoteException{
+        HashMap<String, List<String>> permissionMap = new HashMap<String, List<String>>();
         for(OMElement omEvent : omEvents){
             HashMap<String, ArrayList<String>> tmpMap = this.enforce(omEvent);
             if(tmpMap != null){
@@ -72,7 +77,7 @@ public class IDCEventPEP implements NotifyPEP{
         return permissionMap;
     }
 
-    public HashMap<String, ArrayList<String>> enforce(OMElement omEvent) throws AAAFaultMessage{
+    public HashMap<String, ArrayList<String>> enforce(OMElement omEvent) throws RemoteException{
         this.log.debug("prepare.start");
         HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
         ArrayList<String> userList = new ArrayList<String>();
@@ -93,7 +98,7 @@ public class IDCEventPEP implements NotifyPEP{
         }
 
         //Add user
-        userList.add("ALL");
+        userList.add(IDCEventPEP.ALLOW_ALL_USERS);
         if(userLogin != null && (!userLogin.trim().equals(""))){
             this.log.debug("Adding user login '"+ userLogin + "'");
             userList.add(userLogin);
@@ -106,9 +111,9 @@ public class IDCEventPEP implements NotifyPEP{
             this.addInst(resvLogin, institutionList);
         }
 
-        permissionMap.put("IDC_RESV_USER", userList);
+        permissionMap.put(IDCEventPEP.FILTER_RESV_USER, userList);
         if(!institutionList.isEmpty()){
-            permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
+            permissionMap.put(IDCEventPEP.FILTER_RESV_ENDSITE, institutionList);
         }
         
         if(event.getResDetails() == null ||
@@ -135,7 +140,7 @@ public class IDCEventPEP implements NotifyPEP{
                 this.addRemoteInst(urn,institutionList, domainInsts);
             }
             if(!institutionList.isEmpty()){
-                permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institutionList);
+                permissionMap.put(IDCEventPEP.FILTER_RESV_ENDSITE, institutionList);
             }
             bss.getTransaction().commit();
         }catch(Exception e){

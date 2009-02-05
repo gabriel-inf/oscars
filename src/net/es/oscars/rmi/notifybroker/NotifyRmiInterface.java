@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 
+import net.es.oscars.rmi.notifybroker.xface.*;
+
 import org.apache.axiom.om.OMElement;
 
 public interface NotifyRmiInterface extends Remote {
@@ -26,8 +28,8 @@ public interface NotifyRmiInterface extends Remote {
     public void notify(String subscriptionId, String publisherId, 
             List<String> topics, OMElement msg) throws RemoteException;
 
-    public String subscribe(String consumerUrl, Long termTime, 
-            HashMap<String,String> filters, String user) throws RemoteException;
+    public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime, 
+            HashMap<String,List<String>> filters, String user) throws RemoteException;
     
     public Long renew(String subscriptionId, Long terminationTime, String user) throws RemoteException;
     

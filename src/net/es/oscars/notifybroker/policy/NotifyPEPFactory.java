@@ -14,7 +14,7 @@ public class NotifyPEPFactory{
             String pep = props.getProperty("pep." + i);
             if("net.es.oscars.notify.ws.policy.IDCEventPEP".equals(pep)){
                 IDCEventPEP idcEventPEP = new IDCEventPEP();
-                idcEventPEP.init(dbname);
+                idcEventPEP.init();
                 peps.add(idcEventPEP);
             }
             i++;

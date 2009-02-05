@@ -14,6 +14,7 @@ import net.es.oscars.notifybroker.db.Subscription;
 import net.es.oscars.notifybroker.db.SubscriptionDAO;
 import net.es.oscars.notifybroker.db.SubscriptionFilter;
 import net.es.oscars.notifybroker.db.SubscriptionFilterDAO;
+import net.es.oscars.rmi.notifybroker.xface.*;
 
 public class SubscriptionManager{
     private Logger log;
@@ -50,31 +51,46 @@ public class SubscriptionManager{
         }
     }
     
-    public Subscription subscribe(Subscription subscription, 
-                                  ArrayList<SubscriptionFilter> filters)
-                                  throws UnacceptableInitialTerminationTimeFault{
+    public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime, 
+            HashMap<String,List<String>> filters, String user)
+            throws UnacceptableInitialTerminationTimeFault{
         this.log.debug("subscribe.start");
+        RmiSubscribeResponse response = new RmiSubscribeResponse();
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
+        if(termTime == null){ termTime = 0L; }
         long curTime = System.currentTimeMillis()/1000;
-        long expTime = this.checkTermTime(curTime, subscription.getTerminationTime());
+        long expTime = this.checkTermTime(curTime, termTime);
+        Subscription subscription = new Subscription();
         
         /* Save subscription */
         subscription.setReferenceId(this.generateId());
+        subscription.setUrl(consumerUrl);
+        subscription.setUserLogin(user);
         subscription.setCreatedTime(new Long(curTime));
         subscription.setTerminationTime(new Long(expTime));
         subscription.setStatus(SubscriptionManager.ACTIVE_STATUS);
         dao.create(subscription);
         
         /* Save filters */
-        for(SubscriptionFilter filter:filters){
-            filter.setSubscription(subscription);
-            filterDAO.create(filter);
+        for(String filterType : filters.keySet()){
+            for(String filterValue : filters.get(filterType)){
+                SubscriptionFilter filter = new SubscriptionFilter();
+                filter.setType(filterType);
+                filter.setValue(filterValue);
+                filter.setSubscription(subscription);
+                filterDAO.create(filter);
+            }
         }
+        
+        /* Create return type */
+        response.setSubscriptionId(subscription.getReferenceId());
+        response.setTerminationTime(expTime);
+        response.setCreatedTime(curTime);
         
         this.log.debug("subscribe.finish");
         
-        return subscription;
+        return response;
     }
     
     public String registerPublisher(String publisherUrl, Boolean demand,

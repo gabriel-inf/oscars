@@ -1,10 +1,9 @@
 package net.es.oscars.notifybroker.policy;
 
-import java.util.ArrayList;
+import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.List;
 import org.apache.axiom.om.OMElement;
-
-import net.es.oscars.notifybroker.ws.AAAFaultMessage;
 
 import java.io.Serializable;
 
@@ -16,12 +15,12 @@ import java.io.Serializable;
  */
 public interface NotifyPEP extends Serializable{
     
-    public void init(String dbname);
+    public void init();
     
-    public boolean matches(ArrayList<String> topics);
+    public boolean matches(List<String> topics);
     
-    public HashMap<String, String> prepare(String subscriberLogin) throws AAAFaultMessage;
+    public HashMap<String, List<String>> prepare(String subscriberLogin) throws RemoteException;
     
-    public HashMap<String, ArrayList<String>> enforce(OMElement[] messages) throws AAAFaultMessage;
+    public HashMap<String, List<String>> enforce(OMElement[] messages) throws RemoteException;
     
 }

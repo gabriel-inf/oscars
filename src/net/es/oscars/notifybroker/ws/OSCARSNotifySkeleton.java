@@ -55,7 +55,16 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                   TopicExpressionDialectUnknownFault, TopicNotSupportedFault,
                   UnacceptableInitialTerminationTimeFault, UnrecognizedPolicyRequestFault,
                   UnsupportedPolicyRequestFault{
-        return null;
+        SubscribeResponse response = null;
+        try {
+            String login = this.verifyCert();
+            response = this.sa.subscribe(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new SubscribeCreationFailedFault(e.getMessage());
+        }
+        
+        return response;
     }
 
     public RenewResponse Renew(Renew request)
@@ -144,7 +153,6 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         try {
             MessageContext inContext =
                     MessageContext.getCurrentMessageContext();
-            // opContext.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
             if (inContext == null) {
                 this.log.debug("setOperationContext.start: context is NULL");
                 return;
@@ -177,11 +185,6 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                     // Encryption action returns what ?
                 } else if (((java.lang.Integer) eResult.get(
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.TS) {
-                    // Timestamp action returns a Timestamp
-                    //System.out.println("Timestamp created: " +
-                    //eResult.getTimestamp().getCreated());
-                    //System.out.println("Timestamp expires: " +
-                    //eResult.getTimestamp().getExpires());
                 }
             }
 
