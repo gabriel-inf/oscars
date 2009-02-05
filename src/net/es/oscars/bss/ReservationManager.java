@@ -517,7 +517,7 @@ public class ReservationManager {
             throws BSSException {
 
         this.log.info("query.start: " + gri + " login: " + login + " institution: " + institution);
-        Reservation resv = getConstrainedResv(gri,login,institution);
+        Reservation resv = getConstrainedResv(gri, login, institution,  null);
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
     }
@@ -542,7 +542,8 @@ public class ReservationManager {
         this.log.info("modify.start: login: " +  loginConstraint +
                       " institution: " +  institution );
         String gri = resv.getGlobalReservationId();
-        Reservation persistentResv = this.getConstrainedResv(gri,loginConstraint,institution);
+        Reservation persistentResv =
+            this.getConstrainedResv(gri, loginConstraint, institution, null);
         // need to set this before validation
         // leave it the same, do not set to current user
         resv.setLogin(persistentResv.getLogin());
@@ -909,17 +910,24 @@ public class ReservationManager {
      *  @param gri String global reservation Id identifies the reservation
      *  @param loginConstraint reservation must be owned by this login
      *  @param institutionConstraint reservation must belong to this institution
+     *  @param tokenValue authorization token
      *
      *  @return Reservation - a reservation that meets the constraint,
      *  @throws PSSException if no such reservation exists
      *
      */
-   public Reservation getConstrainedResv(String gri, String loginConstraint,
-               String institutionConstraint)  throws BSSException {
+   public Reservation getConstrainedResv(String gri,
+               String loginConstraint,
+               String institutionConstraint,
+               String tokenValue)  throws BSSException {
 
        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
        Reservation resv = null;
 
+       // check  token first, it is sufficient to authorize request
+       if (tokenValue != null){
+           resv = this.validateToken(tokenValue, gri);
+       }
        if (loginConstraint == null ) {
            try {
               resv = resvDAO.query(gri);
@@ -979,5 +987,38 @@ public class ReservationManager {
        path.getPathElems().add(dstpe);
        this.log.info("createInitialPath.end");
    }
+
+    /**
+     * Retrieves a reservation by token. throws an exception if not found
+     *
+     * @param tokenValue the value of the token to use in lookup
+     * @return the matching reservation
+     * @throws PSSException
+     */
+    private Reservation validateToken(String tokenValue, String gri)
+            throws BSSException{
+
+        TokenDAO tokenDAO = new TokenDAO(this.dbname);
+        Token token = tokenDAO.fromValue(tokenValue);
+        Reservation resv = null;
+
+        /* Check token value */
+        this.log.info("token received");
+        if (token == null) {
+            this.log.error("unrecognized token");
+            throw new BSSException("Unrecognized token specified.");
+        }
+
+        /* Check GRI */
+        resv = token.getReservation();
+        if (!resv.getGlobalReservationId().equals(gri)) {
+            this.log.error("token and GRI do not match");
+            throw new BSSException("Token and GRI do not match");
+        }
+        this.log.info("token matched");
+
+        return token.getReservation();
+
+    }
 
 }

@@ -191,22 +191,51 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     /**
      * createPath
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path setup for reservation
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        createPath(HashMap<String, Object> params, String userName)
+    public String
+        createPath(RmiPathRequest request, String userName)
             throws RemoteException {
 
         this.log.debug("createPath.start");
         String methodName = "CreatePath";
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        String result = null;
         this.verifyRmiConnection(methodName);
         try {
-            result = this.remote.createPath(params, userName);
+            result = this.remote.createPath(request, userName);
             this.log.debug("createPath.end");
+            return result;
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException (e.getMessage(),e);
+        }
+    }
+
+    /**
+     * unsafeCreatePath
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path setup for reservation
+     * @throws RemoteException
+     */
+    public String
+        unsafeCreatePath(RmiPathRequest request, String userName)
+            throws RemoteException {
+
+        this.log.debug("unsafeCreatePath.start");
+        String methodName = "UnsafeCreatePath";
+        String result = null;
+        this.verifyRmiConnection(methodName);
+        try {
+            result = this.remote.unsafeCreatePath(request, userName);
+            this.log.debug("unsafeCreatePath.end");
             return result;
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);

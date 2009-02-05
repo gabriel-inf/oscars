@@ -255,6 +255,39 @@ public class ReservationAdapter {
     }
 
     /**
+     * Sets up a path. Forwards request
+     * first, and sets-up path is reply successful. If there is an error during
+     * local path setup a teardownPath message is issued.
+     *
+     * @param params CreatePathContent instance with with request params.
+     * @param login String with user's login name
+     * @return reply CreatePathResponseContent encapsulating library reply.
+     * @throws BSSException
+     */
+    public CreatePathResponseContent
+        createPath(CreatePathContent soapParams, String login,
+               BssRmiInterface rmiClient) throws BSSException {
+
+        this.log.info("createPath.start");
+        CreatePathResponseContent reply = null;
+        RmiPathRequest rmiRequest = new RmiPathRequest();
+        String gri = soapParams.getGlobalReservationId();
+        rmiRequest.setGlobalReservationId(gri);
+        rmiRequest.setToken(soapParams.getToken());
+        String status = null;
+        try {
+            status = rmiClient.createPath(rmiRequest, login);
+        } catch (IOException e) {
+            this.log.error(e.getMessage());
+            throw new BSSException(e.getMessage());
+        }
+        reply.setGlobalReservationId(gri);
+        reply.setStatus(status);
+        this.log.info("createPath.finish");
+        return reply;
+    }
+
+    /**
      * Adds the remote hops to the local hops to create the complete path.
      *
      * @param localPathInfo - the path from the local reservation, has the
@@ -351,7 +384,6 @@ public class ReservationAdapter {
         }else if (resv.getGlobalReservationId() != null) {
            errMsg = "Reservation scheduling through API failed with " + errMsg;
         }
-
         return errMsg;
     }
 

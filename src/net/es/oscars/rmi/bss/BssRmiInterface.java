@@ -92,17 +92,33 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Immediately creates reservation circuit given information from servlet.
-     * Only for network engineers from local domain.
+     * Sets up a path.  Forwards the request first, and sets up path if reply.
+     * If there is an error during local path setup a teardownPath message
+     * is issued.  Different from unsafeCreatePath, which is only for
+     * local paths.
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return result string with status of path setup for reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        createPath(HashMap<String, Object> params, String userName)
+    public String
+        createPath(RmiPathRequest request, String userName)
+            throws IOException, RemoteException;
+
+    /**
+     * Immediately creates reservation circuit given information from servlet.
+     * Only for network engineers from local domain.
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with authenticated login name of user
+     * @return result string with status of path setup for reservation
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public String
+        unsafeCreatePath(RmiPathRequest request, String userName)
             throws IOException, RemoteException;
 
     /**

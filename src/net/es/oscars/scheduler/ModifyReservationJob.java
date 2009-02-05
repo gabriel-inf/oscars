@@ -58,7 +58,8 @@ public class ModifyReservationJob extends ChainingJob implements Job {
 
         /* Get reservation */
         try {
-            persistentResv = rm.getConstrainedResv(gri,loginConstraint,institution);
+            persistentResv =
+                rm.getConstrainedResv(gri, loginConstraint, institution, null);
         } catch(BSSException ex) {
             bss.getTransaction().rollback();
             this.log.error(ex.getMessage());

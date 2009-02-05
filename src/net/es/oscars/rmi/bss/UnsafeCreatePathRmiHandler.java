@@ -2,11 +2,12 @@ package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
 
-import net.es.oscars.aaa.*;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
@@ -14,7 +15,7 @@ import net.es.oscars.interdomain.*;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.ws.*;
+import net.es.oscars.rmi.bss.xface.RmiPathRequest;
 
 public class UnsafeCreatePathRmiHandler {
     private OSCARSCore core;
@@ -27,27 +28,25 @@ public class UnsafeCreatePathRmiHandler {
     }
 
     public
-        HashMap<String, Object> createPath(HashMap<String, Object> params,
-                                           String userName)
+        String unsafeCreatePath(RmiPathRequest params,
+                                String userName)
             throws IOException {
 
-         this.log.debug("createPath.start");
-         HashMap<String, Object> result = new HashMap<String, Object>();
-         String methodName = "CreatePath";
-         UserManager userMgr =  new UserManager("aaa");
+         this.log.debug("unsafeCreatePath.start");
+         String result = "success";   // unused for now
+         String methodName = "UnsafeCreatePath";
          EventProducer eventProducer = new EventProducer();
          Reservation resv = null;
-         result.put("method", methodName);
 
          AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
-         AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "modify");
+         AuthValue authVal =
+             rmiClient.checkAccess(userName, "Reservations", "modify");
          if (authVal == AuthValue.DENIED) {
-             result.put("error", "no permission to force path creation");
              this.log.debug("createPath failed: permission denied");
-             return result;
+             throw new RemoteException("no permission to force path creation");
          }
 
-         String gri = (String) params.get("gri");
+         String gri = params.getGlobalReservationId();
          Session bss = core.getBssSession();
          bss.beginTransaction();
          String errMessage = null;
@@ -65,24 +64,15 @@ public class UnsafeCreatePathRmiHandler {
              errMessage = e.getMessage();
          } finally {
              if (errMessage != null) {
-                 result.put("error", errMessage);
                  bss.getTransaction().rollback();
                  if (resv != null){
                      eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName, "WBUI", resv, "", errMessage);
                  }
-                 this.log.debug("createPath failed: " + errMessage);
-                 return result;
+                 throw new RemoteException(errMessage);
              }
          }
-         result.put("gri", resv.getGlobalReservationId());
-         result.put("status", "Manually set up path for GRI " + resv.getGlobalReservationId());
-         /* REMOVE THIS LINE FOR TESTING */
-         //result.put("status", "Not implemented yet");
-         result.put("method", methodName);
-         result.put("success", Boolean.TRUE);
-
          bss.getTransaction().commit();
-         this.log.debug("createPath.end");
+         this.log.debug("unsafeCreatePath.end");
          return result;
     }
 }

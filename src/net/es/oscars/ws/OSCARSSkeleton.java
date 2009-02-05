@@ -288,48 +288,27 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         createPath(CreatePath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
-        CreatePathContent requestContent = request.getCreatePath();
+        CreatePathContent params = request.getCreatePath();
         CreatePathResponse response = new CreatePathResponse();
-        // FIXME: move this to RMI
-
-        /*
-        CreatePathResponseContent responseContent = null;
-        String loginConstraint = null;
-        String institution = null; // not used yet
-        String login = this.checkUser();
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-
-        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
-        if (authVal.equals(AuthValue.DENIED)) {
-            this.log.info("denied");
-            throw new AAAFaultMessage("OSCARSSkeleton:createPath: permission denied");
-        }
-        if (authVal.equals(AuthValue.MYSITE)) {
-           institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-           loginConstraint = login;
-        }
-        aaa.getTransaction().commit();
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
+        CreatePathResponseContent reply = null;
+        String methodName = "createPath";
+        BssRmiInterface bssRmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
         try {
-            responseContent = this.pathSetupAdapter.create(requestContent,
-                                        loginConstraint, login, institution);
-            response.setCreatePathResponse(responseContent);
-        } catch(PSSException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("createPath: " + e.getMessage());
-        } catch(InterdomainException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("createPath: " + e.getMessage());
-        } catch(Exception e) {
-            bss.getTransaction().rollback();
-            throw new AAAFaultMessage("createPath: " + e.getMessage());
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+        } catch (RemoteException ex) {
+            throw new BSSFaultMessage(ex.getMessage());
         }
-        bss.getTransaction().commit();
-        */
-
+        String login = this.checkUser(aaaRmiClient);
+        ReservationAdapter resAdapter = new ReservationAdapter();
+        try {
+            reply = resAdapter.createPath(params, login, bssRmiClient);
+        } catch (BSSException e) {
+            this.log.error("createPath: " + e.getMessage());
+            throw new BSSFaultMessage("createPath " + e.getMessage());
+        }
+        response.setCreatePathResponse(reply);
         return response;
     }
 

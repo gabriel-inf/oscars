@@ -44,7 +44,8 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         
         /* Get reservation */
         try{
-            resv = rm.getConstrainedResv(gri,loginConstraint,institution);
+            resv =
+                rm.getConstrainedResv(gri, loginConstraint, institution, null);
         }catch(BSSException ex){
             bss.getTransaction().rollback();
             this.log.error(ex.getMessage());

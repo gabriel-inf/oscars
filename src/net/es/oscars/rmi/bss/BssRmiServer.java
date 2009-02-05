@@ -20,6 +20,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     private ListResRmiHandler listHandler;
     private CancelResRmiHandler cancelHandler;
     private ModifyResRmiHandler modifyHandler;
+    private PathRmiHandler pathHandler;
     private UnsafeCreatePathRmiHandler unsafeCreatePathHandler;
     private UnsafeTeardownPathRmiHandler unsafeTeardownPathHandler;
     private UnsafeModifyStatusRmiHandler unsafeModifyStatusHandler;
@@ -66,8 +67,9 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         this.listHandler = new ListResRmiHandler();
         this.cancelHandler = new CancelResRmiHandler();
         this.modifyHandler = new ModifyResRmiHandler();
-        this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
+        this.pathHandler = new PathRmiHandler();
         this.unsafeCreatePathHandler = new UnsafeCreatePathRmiHandler();
+        this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
         this.unsafeModifyStatusHandler = new UnsafeModifyStatusRmiHandler();
     }
 
@@ -157,16 +159,31 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     /**
      * createPath
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @return result string with status of path setup for reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        createPath(HashMap<String, Object> params, String userName)
+    public String
+        createPath(RmiPathRequest request, String userName)
             throws IOException, RemoteException {
-        return this.unsafeCreatePathHandler.createPath(params, userName);
+        return this.pathHandler.createPath(request, userName);
+    }
+
+    /**
+     * unsafeCreatePath
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with authenticated login name of user
+     * @return result string with status of path setup for reservation
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public String
+        unsafeCreatePath(RmiPathRequest request, String userName)
+            throws IOException, RemoteException {
+        return this.unsafeCreatePathHandler.unsafeCreatePath(request, userName);
     }
 
     /**

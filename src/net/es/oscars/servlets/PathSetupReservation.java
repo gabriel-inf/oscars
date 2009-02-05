@@ -11,6 +11,7 @@ import net.sf.json.*;
 
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
+import net.es.oscars.rmi.bss.xface.RmiPathRequest;
 
 
 public class PathSetupReservation extends HttpServlet {
@@ -30,24 +31,23 @@ public class PathSetupReservation extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        RmiPathRequest rmiRequest = new RmiPathRequest();
+        String status = null;
+        String gri = request.getParameter("gri");
+        rmiRequest.setGlobalReservationId(gri);
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        params.put("style", "wbui");
-
-        Enumeration e = request.getParameterNames();
-        while (e.hasMoreElements()) {
-            String paramName = (String) e.nextElement();
-            String[] paramValues = request.getParameterValues(paramName);
-            params.put(paramName, paramValues);
-        }
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-            outputMap = rmiClient.createPath(params, userName);
+            status = rmiClient.unsafeCreatePath(rmiRequest, userName);
         } catch (Exception ex) {
             ServletUtils.handleFailure(out, null, ex, methodName);
             return;
         }
+        outputMap.put("gri", gri);
+        outputMap.put("status", "Manually set up path for GRI " + gri);
+        outputMap.put("method", methodName);
+        outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
@@ -57,6 +57,4 @@ public class PathSetupReservation extends HttpServlet {
         throws IOException, ServletException {
         this.doGet(request, response);
     }
-
-
 }
