@@ -247,23 +247,24 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * teardownPath
+     * unsafeTeardownPath
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path teardown for reservation
+     * @throws RemoteException
      */
-    public HashMap<String, Object>
-        teardownPath(HashMap<String, Object> params, String userName)
+    public String
+        unsafeTeardownPath(RmiPathRequest request, String userName)
             throws RemoteException {
 
-        this.log.debug("teardownPath.start");
-        String methodName = "TeardownPath";
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        this.log.debug("unsafeTeardownPath.start");
+        String methodName = "UnsafeTeardownPath";
+        String result = null;
         this.verifyRmiConnection(methodName);
         try {
-            result = this.remote.teardownPath(params, userName);
-            this.log.debug("teardownPath.end");
+            result = this.remote.unsafeTeardownPath(request, userName);
+            this.log.debug("unsafeTeardownPath.end");
             return result;
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
@@ -275,24 +276,24 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * modifyStatus
+     * unsafeModifyStatus
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @param request RmiModifyStatusRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of forced status change for reservation
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        modifyStatus(HashMap<String, Object> params, String userName)
+    public String
+        unsafeModifyStatus(RmiModifyStatusRequest request, String userName)
             throws RemoteException {
 
-        this.log.debug("modifyStatus.start");
-        String methodName = "ModifyStatus";
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        this.log.debug("unsafeModifyStatus.start");
+        String methodName = "UnsafeModifyStatus";
+        String result = null;
         this.verifyRmiConnection(methodName);
         try {
-            result = this.remote.modifyStatus(params, userName);
-            this.log.debug("modifyStatus.end");
+            result = this.remote.unsafeModifyStatus(request, userName);
+            this.log.debug("unsafeModifyStatus.end");
             return result;
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);

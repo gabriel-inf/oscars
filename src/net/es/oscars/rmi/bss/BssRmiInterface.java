@@ -125,25 +125,25 @@ public interface BssRmiInterface extends Remote {
      * Immediately tears down reservation circuit given info from servlet.
      * Only for network engineers from the local domain.
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path teardown for reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        teardownPath(HashMap<String, Object> params, String userName)
+    public String
+        unsafeTeardownPath(RmiPathRequest request, String userName)
             throws IOException, RemoteException;
 
     /**
      * Forces the immediate status change of a reservation.
      * Only for network engineers from the local domain.
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @param request RmiModifyStatusRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of forced status change for reservation
      */
-    public HashMap<String, Object>
-        modifyStatus(HashMap<String, Object> params, String userName)
+    public String
+        unsafeModifyStatus(RmiModifyStatusRequest request, String userName)
             throws IOException, RemoteException;
 }

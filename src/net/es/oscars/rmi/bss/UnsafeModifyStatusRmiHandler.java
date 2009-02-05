@@ -2,15 +2,16 @@ package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.util.*;
+import java.rmi.RemoteException;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
 
-import net.es.oscars.aaa.*;
+import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.bss.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.ws.*;
+import net.es.oscars.rmi.bss.xface.RmiModifyStatusRequest;
 
 public class UnsafeModifyStatusRmiHandler {
     private OSCARSCore core;
@@ -22,28 +23,26 @@ public class UnsafeModifyStatusRmiHandler {
         this.core = OSCARSCore.getInstance();
     }
 
-    public HashMap<String, Object> modifyStatus(HashMap<String, Object> params, String userName)
-        throws IOException {
-        this.log.debug("overrideStatus.start");
-        HashMap<String, Object> result = new HashMap<String, Object>();
-        String methodName = "OverrideStatus";
+    public String unsafeModifyStatus(RmiModifyStatusRequest params,
+                                     String userName)
+            throws IOException {
 
-        UserManager userMgr =  new UserManager("aaa");
-        Reservation resv = null;
-        result.put("method", methodName);
+        this.log.debug("unsafeModifyStatus.start");
+        String result = "success";  // unused for now
+        String methodName = "UnsafeModifyStatus";
 
         AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
-
-        AuthValue authVal = rmiClient.checkAccess(userName, "Reservations", "modify");
+        AuthValue authVal =
+            rmiClient.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
-            result.put("error", "no permission to override reservation status");
-            this.log.debug("overrideStatus failed: permission denied");
-            return result;
+            this.log.debug("permission denied to override reservation status");
+            throw new RemoteException(
+                    "no permission to override reservation status");
         }
-        String gri = (String) params.get("gri");
 
-        String status = (String) params.get("forcedStatus");
-
+        Reservation resv = null;
+        String gri = params.getGlobalReservationId();
+        String status = params.getStatus();
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
@@ -55,21 +54,12 @@ public class UnsafeModifyStatusRmiHandler {
             errMessage = e.getMessage();
         } finally {
             if (errMessage != null) {
-                result.put("error", errMessage);
                 bss.getTransaction().rollback();
-                this.log.debug("overrideStatusfailed: " + errMessage);
-                return result;
+                throw new RemoteException(errMessage);
             }
         }
-        result.put("gri", resv.getGlobalReservationId());
-        result.put("status", "Overrode status for reservation with GRI " + resv.getGlobalReservationId());
-        /* REMOVE THIS LINE FOR TESTING */
-        //result.put("status", "Not implemented yet");
-        result.put("method", methodName);
-        result.put("success", Boolean.TRUE);
-
         bss.getTransaction().commit();
-        this.log.debug("overrideStatus.end");
+        this.log.debug("unsafeModifyStatus.end");
         return result;
     }
 }

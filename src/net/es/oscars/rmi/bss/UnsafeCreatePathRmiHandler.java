@@ -27,16 +27,12 @@ public class UnsafeCreatePathRmiHandler {
         this.core = OSCARSCore.getInstance();
     }
 
-    public
-        String unsafeCreatePath(RmiPathRequest params,
-                                String userName)
+    public String unsafeCreatePath(RmiPathRequest params, String userName)
             throws IOException {
 
          this.log.debug("unsafeCreatePath.start");
          String result = "success";   // unused for now
          String methodName = "UnsafeCreatePath";
-         EventProducer eventProducer = new EventProducer();
-         Reservation resv = null;
 
          AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
          AuthValue authVal =
@@ -46,6 +42,8 @@ public class UnsafeCreatePathRmiHandler {
              throw new RemoteException("no permission to force path creation");
          }
 
+         EventProducer eventProducer = new EventProducer();
+         Reservation resv = null;
          String gri = params.getGlobalReservationId();
          Session bss = core.getBssSession();
          bss.beginTransaction();

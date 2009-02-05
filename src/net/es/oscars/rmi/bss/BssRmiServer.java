@@ -187,35 +187,36 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * teardownPath
+     * unsafeTeardownPath
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path teardown for reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        teardownPath(HashMap<String, Object> params, String userName)
+    public String
+        unsafeTeardownPath(RmiPathRequest request, String userName)
             throws IOException, RemoteException {
 
-        return this.unsafeTeardownPathHandler.teardownPath(params, userName);
+        return this.unsafeTeardownPathHandler.unsafeTeardownPath(request,
+                                                                 userName);
     }
 
     /**
-     * modifyStatus
+     * unsafeModifyStatus
      *
-     * @param params HashMap<String, Object> - contains input from web request
-     * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @param request RmiModifyStatusRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of forced status change for reservation
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        modifyStatus(HashMap<String, Object> params, String userName)
+    public String
+        unsafeModifyStatus(RmiModifyStatusRequest request, String userName)
             throws IOException, RemoteException {
 
-        return this.unsafeModifyStatusHandler.modifyStatus(params, userName);
+        return this.unsafeModifyStatusHandler.unsafeModifyStatus(request,
+                                                                 userName);
     }
-
 }

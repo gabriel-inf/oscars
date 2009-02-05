@@ -10,6 +10,7 @@ import net.sf.json.*;
 
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
+import net.es.oscars.rmi.bss.xface.RmiModifyStatusRequest;
 
 
 public class OverrideStatusReservation extends HttpServlet {
@@ -29,24 +30,26 @@ public class OverrideStatusReservation extends HttpServlet {
             this.log.error("No user session: cookies invalid");
             return;
         }
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        params.put("style", "wbui");
-
-        Enumeration e = request.getParameterNames();
-        while (e.hasMoreElements()) {
-            String paramName = (String) e.nextElement();
-            String[] paramValues = request.getParameterValues(paramName);
-            params.put(paramName, paramValues);
-        }
+        RmiModifyStatusRequest rmiRequest = new RmiModifyStatusRequest();
+        String gri = request.getParameter("gri");
+        String status = request.getParameter("forcedStatus");
+        rmiRequest.setGlobalReservationId(gri);
+        rmiRequest.setStatus(status);
+        String result = null;
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-            outputMap = rmiClient.modifyStatus(params, userName);
+            result = rmiClient.unsafeModifyStatus(rmiRequest, userName);
         } catch (Exception ex) {
             ServletUtils.handleFailure(out, null, ex, methodName);
             return;
         }
+        HashMap<String, Object> outputMap = new HashMap<String, Object>();
+        outputMap.put("gri", gri);
+        outputMap.put("status", "New status for reservation with GRI: " + gri +
+                             " is " + status);
+        outputMap.put("method", methodName);
+        outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info("servlet.end");
@@ -56,6 +59,4 @@ public class OverrideStatusReservation extends HttpServlet {
         throws IOException, ServletException {
         this.doGet(request, response);
     }
-
-
 }
