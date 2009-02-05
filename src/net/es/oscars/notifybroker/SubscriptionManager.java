@@ -1,11 +1,12 @@
 package net.es.oscars.notifybroker;
 
+import java.rmi.RemoteException;
 import java.util.*;
+
 import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notifybroker.ws.UnacceptableInitialTerminationTimeFault;
 import net.es.oscars.notifybroker.ws.UnacceptableTerminationTimeFault;
-import net.es.oscars.notifybroker.ws.ResourceNotDestroyedFault;
 import net.es.oscars.notifybroker.ws.ResourceUnknownFault;
 import net.es.oscars.notifybroker.db.Publisher;
 import net.es.oscars.notifybroker.db.PublisherDAO;
@@ -36,7 +37,7 @@ public class SubscriptionManager{
         }catch(Exception e){}
         //set to default to one hour if not set
         if(this.subMaxExpTime <= 0){
-            this.log.info("Defaulting to 1 hour expiration for subscriptions.");
+            this.log.debug("Defaulting to 1 hour expiration for subscriptions.");
             this.subMaxExpTime = 3600;
         }
         try{
@@ -44,7 +45,7 @@ public class SubscriptionManager{
         }catch(Exception e){}
         //set to default to one hour if not set
         if(this.pubMaxExpTime <= 0){
-            this.log.info("Defaulting to 12 hour expiration for publisher registrations.");
+            this.log.debug("Defaulting to 12 hour expiration for publisher registrations.");
             this.pubMaxExpTime = 3600*12;
         }
     }
@@ -52,7 +53,7 @@ public class SubscriptionManager{
     public Subscription subscribe(Subscription subscription, 
                                   ArrayList<SubscriptionFilter> filters)
                                   throws UnacceptableInitialTerminationTimeFault{
-        this.log.info("subscribe.start");
+        this.log.debug("subscribe.start");
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         SubscriptionFilterDAO filterDAO = new SubscriptionFilterDAO(this.dbname);
         long curTime = System.currentTimeMillis()/1000;
@@ -71,49 +72,55 @@ public class SubscriptionManager{
             filterDAO.create(filter);
         }
         
-        this.log.info("subscribe.finish");
+        this.log.debug("subscribe.finish");
         
         return subscription;
     }
     
-    public Publisher registerPublisher(Publisher publisher) 
-                                throws UnacceptableInitialTerminationTimeFault{
-        this.log.info("registerPublisher.start");
+    public String registerPublisher(String publisherUrl, Boolean demand,
+            Long termTime, String user) throws RemoteException{
+        this.log.debug("registerPublisher.start");
         PublisherDAO dao = new PublisherDAO(this.dbname);
+        Publisher publisher = new Publisher();
         long curTime = System.currentTimeMillis()/1000;
-        long expTime = curTime + 3600L;
-        //ignoring expiration for now since no good way to put it in response.
-        //this.checkTermTime(curTime, publisher.getTerminationTime());
+        long expTime = curTime + this.pubMaxExpTime;
         
-        /* Save subscription */
+        /* Save registration */
+        publisher.setUserLogin(user);
+        publisher.setUrl(publisherUrl);
+        publisher.setDemand(false);
         publisher.setReferenceId(this.generateId());
-        publisher.setCreatedTime(new Long(curTime));
-        publisher.setTerminationTime(new Long(expTime));
+        publisher.setCreatedTime(curTime);
+        if(termTime != null && termTime <= expTime && termTime >= curTime){
+            publisher.setTerminationTime(termTime);
+        }else if(termTime != null){
+            throw new RemoteException("Requested termination must be " +
+                    "greater than the current time and less than " + 
+                    this.pubMaxExpTime/3600 + " hours in the future." );
+        }else{
+            publisher.setTerminationTime(expTime);
+        }
         publisher.setStatus(SubscriptionManager.ACTIVE_STATUS);
         dao.create(publisher);
-        this.log.info("registerPublisher.finish");
+        this.log.debug("registerPublisher.finish");
         
-        return publisher;
+        return publisher.getReferenceId();
     }
     
-    public void destroyRegistration(String pubRefId, HashMap<String, String> permissionMap) 
-                                throws ResourceUnknownFault, ResourceNotDestroyedFault{
-        this.log.info("destroyRegistration.start");
+    public void destroyRegistration(String pubRefId, String user) 
+                                throws RemoteException{
+        this.log.debug("destroyRegistration.start");
         PublisherDAO dao = new PublisherDAO(this.dbname);
-        String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
-        Publisher publisher = dao.queryByRefId(pubRefId, modifyLoginConstraint, false);
-        long curTime = System.currentTimeMillis()/1000;
+        Publisher publisher = dao.queryByRefId(pubRefId, user, false);
         
         if(publisher == null){
-            this.log.error("Publisher not found: id=" + pubRefId +
-                          ", user=" + modifyLoginConstraint);
-            throw new ResourceUnknownFault("Publisher " + pubRefId + " not found.");
-        }/*else if(publisher.getTerminationTime() <= curTime){
-            throw new ResourceNotDestroyedFault("Registration is already expired.");
-        }*/
+            this.log.error("Publisher not found: id=" + pubRefId +", user=" + user);
+            RemoteException re = new RemoteException();
+            throw new RemoteException("Publisher " + pubRefId + " not found.");
+        }
         
         if(publisher.getStatus() != SubscriptionManager.ACTIVE_STATUS){
-            throw new ResourceNotDestroyedFault("Registration has already been destroyed.");
+            throw new RemoteException("Registration has already been destroyed.");
         }
         
         publisher.setStatus(SubscriptionManager.INACTIVE_STATUS);
@@ -123,7 +130,7 @@ public class SubscriptionManager{
     
     public void queryPublisher(String pubRefId) 
                                 throws ResourceUnknownFault{
-        this.log.info("queryPublisher.start");
+        this.log.debug("queryPublisher.start");
         PublisherDAO dao = new PublisherDAO(this.dbname);
         Publisher publisher = dao.queryByRefId(pubRefId, null, true);
         if(publisher == null){
@@ -135,14 +142,14 @@ public class SubscriptionManager{
     }
     
     public List<Subscription> findSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
-        this.log.info("findSubscriptions.start");
+        this.log.debug("findSubscriptions.start");
         
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         List<Subscription> subscriptions = dao.getAuthorizedSubscriptions(permissionMap);
         if(subscriptions == null || subscriptions.isEmpty()){
-            this.log.info("No matching subscriptions found");
+            this.log.debug("No matching subscriptions found");
         }else{
-            this.log.info("Matching subscriptions found");
+            this.log.debug("Matching subscriptions found");
             for(Subscription subscription : subscriptions){
                 this.log.debug("Matched subscription: " + subscription.getReferenceId());
             }
@@ -155,7 +162,7 @@ public class SubscriptionManager{
                       HashMap<String, String> permissionMap)
                       throws ResourceUnknownFault,
                              UnacceptableTerminationTimeFault{
-        this.log.info("renew.start");
+        this.log.debug("renew.start");
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
         String modifyLoginConstraint = permissionMap.get("modifyLoginConstraint");
         Subscription subscription = dao.queryByRefId(subRefId, modifyLoginConstraint);
@@ -180,7 +187,7 @@ public class SubscriptionManager{
         
         //TODO: update filters
         
-        this.log.info("renew.end");
+        this.log.debug("renew.end");
         
         return expTime;
     }

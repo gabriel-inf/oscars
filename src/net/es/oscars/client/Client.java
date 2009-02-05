@@ -50,12 +50,6 @@ public class Client {
     protected OSCARSStub stub;
     protected OSCARSNotifyStub notifyStub;
     
-    /* Constants */
-    public static final String WS_TOPIC_SIMPLE = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Simple";
-    public static final String WS_TOPIC_CONCRETE= "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Concrete";
-    public static final String WS_TOPIC_FULL = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full";
-    public static final String XPATH_URI = "http://www.w3.org/TR/1999/REC-xpath-19991116";
-    
     public void setUp(boolean useKeyStore, String url, String repo)
             throws AxisFault {
         this.setUp(useKeyStore, url, null, repo, null);
@@ -563,7 +557,7 @@ public class Client {
         TopicExpressionType topicExpr = new TopicExpressionType();
         //dialect is a constant so there should be no malformed exception
         try{
-            URI topicDialectUri = new URI(Client.WS_TOPIC_FULL);
+            URI topicDialectUri = new URI(WSNotifyConstants.WS_TOPIC_FULL);
             topicExpr.setDialect(topicDialectUri);
         }catch(MalformedURIException e){}
         topicExpr.setString(topics);
@@ -598,7 +592,7 @@ public class Client {
         QueryExpressionType query = new QueryExpressionType();
         //dialect is a constant so there should be no malformed exception
         try{
-            URI dialect = new URI(Client.XPATH_URI);
+            URI dialect = new URI(WSNotifyConstants.XPATH_URI);
             query.setDialect(dialect);
         }catch(MalformedURIException e){}
         query.setString(xpath);

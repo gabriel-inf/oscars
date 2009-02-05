@@ -29,7 +29,7 @@ public class VerifyLoginRmiHandler {
                 // if that fails try the reverse of the elements in the DN
                 dnElems = dn.split(",");
                 String reverseDN = " " + dnElems[0];
-                for (int i = 1; i < dnElems.length; i++) {
+                for (int i = 0; i < dnElems.length; i++) {
                     dn = dnElems[i] + "," + dn;
                 }
                 reverseDN = reverseDN.substring(1);

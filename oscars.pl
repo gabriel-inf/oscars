@@ -17,6 +17,12 @@ my $aaa = Proc::Background->new("./oscars-aaa.sh");
 # wait a bit
 sleep(5);
 
+# spawn the notifybroker service in the background
+my $nb = Proc::Background->new("./oscars-nb.sh");
+
+# wait a bit
+sleep(5);
+
 # spawn the core service in the background
 my $core = Proc::Background->new("./oscars-core.sh");
 
@@ -29,6 +35,8 @@ exit(0);
 # handle signals by killing the processes and exiting
 sub sig_handler {
     $core->die;
+    sleep(5);
+    $nb->die;
     sleep(5);
     $aaa->die;
     exit 0;

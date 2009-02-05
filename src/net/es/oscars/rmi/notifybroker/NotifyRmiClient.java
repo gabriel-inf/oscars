@@ -30,7 +30,7 @@ public class NotifyRmiClient implements NotifyRmiInterface {
      *
      * @throws RemoteException
      */
-    public void init() throws RemoteException {
+    public NotifyRmiClient() throws RemoteException {
         this.remote = null;
         this.log.debug("NotifyRmiClient.init().start");
         this.connected = true;
@@ -42,9 +42,8 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         // default rmi registry name
         String rmiRegName = NotifyRmiInterface.registryName;
 
-
-        PropHandler propHandler = new PropHandler("rmi.properties");
-        Properties props = propHandler.getPropertyGroup("notify", true);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi.notifybroker", true);
         if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").equals("")) {
             try {
                 rmiPort = Integer.decode(props.getProperty("registryPort"));
@@ -61,26 +60,25 @@ public class NotifyRmiClient implements NotifyRmiInterface {
             rmiRegName = props.getProperty("registryName");
         }
 
-
         try {
             Registry registry = LocateRegistry.getRegistry(rmiIpaddr, rmiPort);
             this.remote = (NotifyRmiInterface) registry.lookup(rmiRegName);
-
             this.log.debug("Got remote object \n" + remote.toString());
             this.connected = true;
             this.log.debug("Connected to "+rmiRegName+" server");
         } catch (RemoteException e) {
             this.connected = false;
-            this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
-            throw e;
+            this.log.error("Remote exception from NotifyBroker RMI server:\n" + e);
+            throw new RemoteException("Error while server tried connecting to" +
+            		" RMI Server. Please contact server administrator");
         } catch (NotBoundException e) {
             this.connected = false;
-            this.log.warn("Trying to access unregistered remote object: ", e);
+            this.log.error("Trying to access unregistered remote object: ", e);
         } catch (Exception e) {
             this.connected = false;
-            this.log.warn("Could not connect", e);
+            this.log.error("Could not connect", e);
         }
-        this.log.debug("AaaRmiClient.init().end");
+        this.log.debug("NotifyRmiClient.init().end");
     }
     
     public void notify(String subscriptionId, String publisherId, 
@@ -132,14 +130,36 @@ public class NotifyRmiClient implements NotifyRmiInterface {
     
     public String registerPublisher(String publisherUrl, List<String> topics,
             Boolean demand, Long termTime, String user) throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
+        this.log.debug("registerPublisher.start");
+        String methodName = "RegisterPublisher";
+        this.verifyRmiConnection(methodName);
+        try {
+            String publisherId = this.remote.registerPublisher(publisherUrl, topics, 
+                    demand, termTime, user);
+            this.log.debug("registerPublisher.end");
+            return publisherId;
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
     }
 
     public void destroyRegistration(String publisherId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        this.log.debug("destroyRegistration.start");
+        String methodName = "RegisterPublisher";
+        this.verifyRmiConnection(methodName);
+        try {
+            this.remote.destroyRegistration(publisherId, user);
+            this.log.debug("destroyRegistration.end");
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
     }
+    
     /**
      * @param methodName the calling method, for logging
      * @return true if the RMI connection is OK

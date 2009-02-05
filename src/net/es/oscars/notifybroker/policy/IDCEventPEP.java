@@ -23,7 +23,6 @@ import net.es.oscars.wsdlTypes.EventContent;
 public class IDCEventPEP implements NotifyPEP{
     private Logger log;
     private NotifyBrokerCore core;
-    private UserManager userMgr;
     private String dbname;
 
     public IDCEventPEP(){
@@ -32,7 +31,6 @@ public class IDCEventPEP implements NotifyPEP{
     }
 
     public void init(String dbname){
-        this.userMgr = NotifyBrokerCore.getInstance().getUserManager();
         this.dbname = dbname;
     }
 
@@ -47,7 +45,7 @@ public class IDCEventPEP implements NotifyPEP{
 
     public HashMap<String,String> prepare(String subscriberLogin) throws AAAFaultMessage{
         HashMap<String,String> permissionMap = new HashMap<String,String>();
-        AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
+      /*  AuthValue authVal = this.userMgr.checkAccess(subscriberLogin, "Reservations", "query");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("Subscriber " + subscriberLogin +
                     "does not have permission to view this notification.");
@@ -58,7 +56,7 @@ public class IDCEventPEP implements NotifyPEP{
             permissionMap.put("IDC_RESV_ENDSITE_INSTITUTION", institution);
         }else{
             permissionMap.put("IDC_RESV_USER", "ALL");
-        }
+        } */
 
         return permissionMap;
     }
@@ -121,7 +119,7 @@ public class IDCEventPEP implements NotifyPEP{
         }
 
         //Check path for end site institutions that may have not yet been added
-        Session bss = null;
+      /*  Session bss = null;
         try{
             bss = this.core.getBssSession();
             bss.beginTransaction();
@@ -144,14 +142,14 @@ public class IDCEventPEP implements NotifyPEP{
             bss.getTransaction().rollback();
             e.printStackTrace();
             this.log.info("Ignoring error");
-        }
+        } */
 
         this.log.debug("prepare.end");
         return permissionMap;
     }
 
     private void addInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
-        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+       /*DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
         this.log.debug("urn=" + urn);
         String domainId = parseResults.get("domainId");
@@ -168,11 +166,11 @@ public class IDCEventPEP implements NotifyPEP{
         }
         domainInsts.put(domainId, site.getName());
         insts.add(site.getName());
-        this.log.debug("site=" + site.getName());
+        this.log.debug("site=" + site.getName());*/
     }
 
     private void addRemoteInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
-        DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+       /* DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
         Link link = domainDAO.getFullyQualifiedLink(urn);
         if(link == null){
             return;
@@ -192,16 +190,16 @@ public class IDCEventPEP implements NotifyPEP{
         }
         domainInsts.put(remoteDomain.getTopologyIdent(), site.getName());
         insts.add(site.getName());
-        this.log.debug("site=" + site.getName());
+        this.log.debug("site=" + site.getName()); */
     }
 
     private void addInst(String userName, ArrayList<String> insts){
-        if(userName == null){ return; }
+       /* if(userName == null){ return; }
         UserDAO userDAO = new UserDAO(this.core.getAaaDbName());
         User user = userDAO.queryByParam("login", userName);
         if(user == null){ return; }
         Institution inst = user.getInstitution();
         if(inst == null) { return; }
-        insts.add(inst.getName());
+        insts.add(inst.getName()); */
     }
 }

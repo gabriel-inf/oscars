@@ -36,17 +36,4 @@ public class RmiUtils {
         return rmiClient;
     }
 
-    public static NotifyRmiInterface getNotifyRmiClient(String methodName, Logger log) throws RemoteException {
-        NotifyRmiInterface rmiClient;
-        rmiClient = new NotifyRmiClient();
-        try {
-            rmiClient.init();
-        } catch (RemoteException ex) {
-            log.error("could not init RMI client for method: "+methodName);
-            log.error(ex);
-            throw ex;
-        }
-        return rmiClient;
-    }
-
 }

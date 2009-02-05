@@ -2,6 +2,7 @@ package net.es.oscars.notifybroker.ws;
 
 import java.util.*;
 import java.net.InetAddress;
+import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
@@ -15,23 +16,12 @@ import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
-import org.hibernate.*;
 import org.jaxen.JaxenException;
 import org.jaxen.SimpleNamespaceContext;
-import org.quartz.JobDetail;
-import org.quartz.JobDataMap;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleTrigger;
-import net.es.oscars.client.Client;
+
 import net.es.oscars.PropHandler;
-import net.es.oscars.notifybroker.*;
-import net.es.oscars.notifybroker.db.Publisher;
-import net.es.oscars.notifybroker.db.Subscription;
-import net.es.oscars.notifybroker.db.SubscriptionFilter;
-import net.es.oscars.notifybroker.jobs.ProcessNotifyJob;
-import net.es.oscars.notifybroker.jobs.SendNotifyJob;
-import net.es.oscars.notifybroker.policy.NotifyPEP;
+import net.es.oscars.rmi.notifybroker.NotifyRmiClient;
+import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
 
 /** 
  * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
@@ -44,16 +34,11 @@ public class SubscriptionAdapter{
     private Logger log;
     private String subscriptionManagerURL;
     private HashMap<String,String> namespaces;
-    private String dbname;
     private String repo;
-    private NotifyBrokerCore core;
-    private SubscriptionManager sm;
     
     /** Default constructor */
-    public SubscriptionAdapter(String dbname){
+    public SubscriptionAdapter(){
         this.log = Logger.getLogger(this.getClass());
-        this.core = NotifyBrokerCore.getInstance();
-        this.dbname = dbname;
         String catalinaHome = System.getProperty("catalina.home");
         // check for trailing slash
         if (!catalinaHome.endsWith("/")) {
@@ -63,7 +48,6 @@ public class SubscriptionAdapter{
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notify.ws.broker", true); 
         this.subscriptionManagerURL = props.getProperty("url");
-        this.sm = new SubscriptionManager(this.dbname);
         if(this.subscriptionManagerURL == null){
             String localhost = null;
             try{
@@ -104,210 +88,8 @@ public class SubscriptionAdapter{
                InvalidProducerPropertiesExpressionFault,InvalidFilterFault,InvalidMessageContentExpressionFault,
                UnacceptableInitialTerminationTimeFault{
         this.log.info("subscribe.start");
-        Subscription subscription = this.axis2Subscription(request, userLogin);
-        SubscribeResponse response = null;
-        ArrayList<SubscriptionFilter> filters = new ArrayList<SubscriptionFilter>();
-        FilterType requestFilter = request.getFilter();
-        QueryExpressionType[] producerPropsFilters = requestFilter.getProducerProperties();
-        QueryExpressionType[] messageContentFilters =  requestFilter.getMessageContent();
-        TopicExpressionType[] topicFilters = requestFilter.getTopicExpression();
-        
-        /* Add filters */
-        for(String permission : permissionMap.keySet()){
-            filters.add(new SubscriptionFilter(permission, permissionMap.get(permission)));
-        }
-
-        /* TODO: Add constraint on which producers can be seen. It should be 
-           handled in a similar way as above where a producer or list of 
-           producers is passed in a HashMap */
-        producerPropsFilters = (producerPropsFilters == null) ? new QueryExpressionType[0] : producerPropsFilters;
-        for(QueryExpressionType producerPropsFilter : producerPropsFilters){
-            if(this.validateQueryExpression(producerPropsFilter, true)){
-                String xpath = producerPropsFilter.getString();
-                filters.add(new SubscriptionFilter("PRODXPATH", xpath));    
-            }
-        }
-        
-        messageContentFilters = (messageContentFilters == null) ? new QueryExpressionType[0] : messageContentFilters;
-        for(QueryExpressionType messageContentFilter : messageContentFilters){
-            if(this.validateQueryExpression(messageContentFilter, false)){
-                String xpath = messageContentFilter.getString();
-                filters.add(new SubscriptionFilter("MSGXPATH", xpath));    
-            }
-        }
-        
-        ArrayList<String> topics = this.parseTopics(topicFilters);
-        for(String topic : topics){
-             filters.add(new SubscriptionFilter("TOPIC", topic.trim()));
-        }
-        
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            subscription = this.sm.subscribe(subscription, filters);
-            response = this.subscription2Axis(subscription);
-        }catch(UnacceptableInitialTerminationTimeFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }
-        sess.getTransaction().commit();
-        
         this.log.info("subscribe.end");
-        return response;
-    }
-    
-    /**
-     * Adds a ProcessNotifyJob to the scheduler so that the caller is free to return
-     * an HTTP 200 response to publisher of this notifcation without waiting for
-     * all the send messages to be sent to subscribers.
-     *
-     * @param holder the notification message to send
-     * @param permissionMap a map of the permissions required to view this notification
-     */
-    public void schedProcessNotify(NotificationMessageHolderType holder,
-                            HashMap<String, ArrayList<String>> permissionMap){ 
-        this.log.info("schedProcessNotify.start");
-        Scheduler sched = this.core.getScheduler();
-        String triggerName = "processNotifyTrig-" + holder.hashCode();
-        String jobName = "processNotify-" + holder.hashCode();
-        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
-                                                  new Date(), null, 0, 0L);
-        JobDetail jobDetail = new JobDetail(jobName, "PROCESS_NOTIFY",
-                                            ProcessNotifyJob.class);
-        JobDataMap dataMap = new JobDataMap();
-        dataMap.put("permissionMap", permissionMap);
-        dataMap.put("message", holder);
-        jobDetail.setJobDataMap(dataMap);   
-        try{
-            this.log.debug("Adding job " + jobName);
-            sched.scheduleJob(jobDetail, trigger);
-            this.log.debug("Job added.");
-        }catch(SchedulerException ex){
-            this.log.error("Scheduler exception: " + ex);    
-        }
-        this.log.info("schedProcessNotify.end");
-    }
-    
-    /**
-     * Forwards notfications to appropriate subscribers.
-     *
-     * @param holder the notification message to send
-     * @param permissionMap a map of the permissions required to view this notification
-     */
-    public void notify(NotificationMessageHolderType holder,
-                       HashMap<String, ArrayList<String>> permissionMap,
-                       ArrayList<NotifyPEP> notifyPEPs)
-                       throws ADBException,
-                              InvalidTopicExpressionFault,
-                              JaxenException,
-                              TopicExpressionDialectUnknownFault{
-        this.log.info("notify.start");
-        TopicExpressionType topicExpr = holder.getTopic();
-        TopicExpressionType[] topicExprs = {topicExpr};
-        ArrayList<String>topics = this.parseTopics(topicExprs);
-        ArrayList<String> parentTopics = new ArrayList<String>();
-        List<Subscription> authSubscriptions = null;
-        EndpointReferenceType producerRef = holder.getProducerReference();
-        MessageType message = holder.getMessage();
-        SimpleNamespaceContext nsContext= new SimpleNamespaceContext(this.namespaces);
-        OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
-        OMElement omProducerRef = null;
-        OMElement omMessage = message.getOMElement(NotificationMessage.MY_QNAME, omFactory);
-        if(producerRef != null){
-            omProducerRef = producerRef.getOMElement(NotificationMessage.MY_QNAME, omFactory);
-        }
-        
-        //add all parent topics
-        for(String topic : topics){
-            String[] topicParts = topic.split("\\/");
-            String topicString = "";
-            for(int i = 0; i < (topicParts.length - 1); i++){
-                topicString += topicParts[i];
-                parentTopics.add(topicString);
-                topicString += "/";
-            }
-        }
-        topics.addAll(parentTopics);
-        permissionMap.put("TOPIC", topics);
-        
-        /* find all subscriptions that match this topic, have the necessary
-           authorizations on the Notification resource, and match user XPATH */
-        authSubscriptions = this.sm.findSubscriptions(permissionMap);
-        for(Subscription authSubscription : authSubscriptions){ 
-            //apply subscriber specified XPATH filters
-            this.log.debug("Applying filters for " + authSubscription.getReferenceId());
-            Set filters = authSubscription.getFilters();
-            Iterator i = filters.iterator();
-            boolean matches = true;
-            while(i.hasNext() && matches){
-                SubscriptionFilter filter = (SubscriptionFilter) i.next();
-                String type = filter.getType();
-                try{
-                    if("PRODXPATH".equals(type) && omProducerRef != null){
-                        this.log.debug("Found producer filter: " + filter.getValue());
-                        AXIOMXPath xpath = new AXIOMXPath(filter.getValue());
-                        xpath.setNamespaceContext(nsContext);
-                        matches = xpath.booleanValueOf(omProducerRef);
-                        this.log.debug(matches ? "Filter matches." : "No Match");
-                    }else if("MSGXPATH".equals(type)){
-                        this.log.debug("Found message filter: " + filter.getValue());
-                        AXIOMXPath xpath = new AXIOMXPath(filter.getValue());
-                        xpath.setNamespaceContext(nsContext);
-                        matches = xpath.booleanValueOf(omMessage);
-                        this.log.debug(matches ? "Filter matches." : "No Match");
-                    }
-                }catch(JaxenException e){
-                    this.log.error(e);
-                    e.printStackTrace();
-                    matches = false;
-                    break;
-                }
-            }
-            if(matches){
-                this.schedSendNotify(holder, authSubscription);
-            } 
-        }
-        this.log.info("notify.end");
-    }
-    
-    /**
-     * Adds a SendNotifyJob to the scheduler so that notification sending
-     * is threaded rather than doing each serially. This is desirable because
-     * one send action is taking a long amount of time it will not hold-up 
-     * other messages from sending.
-     *
-     * @param holder the message to send
-     * @param subscription a subscription containing information needed to send the notification
-     */
-    public void schedSendNotify(NotificationMessageHolderType holder,
-                                Subscription subscription){
-        this.log.info("schedSendNotify.start");
-        NotificationMessageHolderType holderCopy = this.copyHolder(holder);
-        Scheduler sched = this.core.getScheduler();
-        String triggerName = "sendNotifyTrig-" + holderCopy.hashCode() +
-                             ":" + subscription.hashCode();
-        String jobName = "sendNotify-" + holderCopy.hashCode() +
-                         ":" + subscription.hashCode();
-        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
-                                                  new Date(), null, 0, 0L);
-        JobDetail jobDetail = new JobDetail(jobName, "SEND_NOTIFY",
-                                            SendNotifyJob.class);
-        JobDataMap dataMap = new JobDataMap();
-        dataMap.put("url", subscription.getUrl());
-        dataMap.put("subRefId", subscription.getReferenceId());
-        dataMap.put("message", holderCopy);
-        jobDetail.setJobDataMap(dataMap);
-        
-        try{
-            this.log.debug("Adding job " + jobName);
-            sched.scheduleJob(jobDetail, trigger);
-            this.log.debug("Job added.");
-        }catch(SchedulerException ex){
-            this.log.error("Scheduler exception: " + ex);    
-        }
-        
-        this.log.info("schedSendNotify.end: subscription=" + 
-                       subscription.getReferenceId());
+        return null;
     }
     
     /**
@@ -327,54 +109,8 @@ public class SubscriptionAdapter{
                                       ResourceUnknownFault,
                                       UnacceptableTerminationTimeFault{
         this.log.info("renew.start");
-        RenewResponse response = new RenewResponse();
-        long termTime = this.parseTermTime(request.getTerminationTime());
-        long newTermTime = 0L;
-        EndpointReferenceType subRef = request.getSubscriptionReference();
-        String address = this.parseEPR(subRef);
-        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
-        if(refParams == null){ 
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                        "No subscription reference provided.");
-        }
-        String subscriptionId = refParams.getSubscriptionId();
-        if(subscriptionId == null){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                           "No subscription ID provided.");
-        }
-        if(!this.subscriptionManagerURL.equals(address)){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                  "Invalid subcription manager address. This notification" +
-                  " broker requires you to use address " + 
-                   this.subscriptionManagerURL);
-        }
-
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            newTermTime = this.sm.renew(subscriptionId, termTime, permissionMap);
-        }catch(UnacceptableTerminationTimeFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }catch(ResourceUnknownFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }
-        
-        sess.getTransaction().commit();
-        
-        /* Convert creation and termination time to Calendar object */
-		GregorianCalendar currCal = new GregorianCalendar();
-		GregorianCalendar termCal = new GregorianCalendar();
-		currCal.setTimeInMillis(System.currentTimeMillis());
-		termCal.setTimeInMillis(newTermTime * 1000);
-		
-        response.setSubscriptionReference(subRef);
-        response.setCurrentTime(currCal);
-        response.setTerminationTime(termCal);
-        
         this.log.info("renew.end");
-        return response;
+        return null;
     }
     
      /**
@@ -393,47 +129,8 @@ public class SubscriptionAdapter{
                                       ResourceUnknownFault,
                                       UnableToDestroySubscriptionFault{
         this.log.info("unsubscribe.start");
-        UnsubscribeResponse response = new UnsubscribeResponse();
-        Subscription subscription = null;
-        EndpointReferenceType subRef = request.getSubscriptionReference();
-        String address = this.parseEPR(subRef);
-        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
-        if(refParams == null){ 
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                        "No subscription reference provided.");
-        }
-        String subscriptionId = refParams.getSubscriptionId();
-        if(subscriptionId == null){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                           "No subscription ID provided.");
-        }
-        if(!this.subscriptionManagerURL.equals(address)){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                  "Invalid subcription manager address. This notification" +
-                  " broker requires you to use address " + 
-                   this.subscriptionManagerURL);
-        }
-
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            if(subscriptionId.equals("ALL")){
-                 this.sm.updateStatusAll(SubscriptionManager.INACTIVE_STATUS, subscriptionId, userLogin);
-            }else{
-                this.sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, permissionMap);
-            }
-        }catch(ResourceUnknownFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }catch(Exception e){
-            sess.getTransaction().rollback();
-            throw new UnableToDestroySubscriptionFault(e.getMessage());
-        }
-        sess.getTransaction().commit();
-		
-        response.setSubscriptionReference(subRef);
         this.log.info("unsubscribe.end");
-        return response;
+        return null;
     }
     
     /**
@@ -453,42 +150,8 @@ public class SubscriptionAdapter{
                                       ResourceUnknownFault,
                                       PauseFailedFault{
         this.log.info("pause.start");
-        PauseSubscriptionResponse response = new PauseSubscriptionResponse();
-        EndpointReferenceType subRef = request.getSubscriptionReference();
-        String address = this.parseEPR(subRef);
-        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
-        if(refParams == null){ 
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                        "No subscription reference provided.");
-        }
-        String subscriptionId = refParams.getSubscriptionId();
-        if(subscriptionId == null){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                           "No subscription ID provided.");
-        }
-        if(!this.subscriptionManagerURL.equals(address)){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                  "Invalid subcription manager address. This notification" +
-                  " broker requires you to use address " + 
-                   this.subscriptionManagerURL);
-        }
-
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            this.sm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, permissionMap);
-        }catch(ResourceUnknownFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }catch(Exception e){
-            sess.getTransaction().rollback();
-            throw new PauseFailedFault(e.getMessage());
-        }
-        sess.getTransaction().commit();
-		
-        response.setSubscriptionReference(subRef);
         this.log.info("pause.end");
-        return response;
+        return null;
     }
     
     /**
@@ -507,42 +170,8 @@ public class SubscriptionAdapter{
                                       ResourceUnknownFault,
                                       ResumeFailedFault{
         this.log.info("resume.start");
-        ResumeSubscriptionResponse response = new ResumeSubscriptionResponse();
-        EndpointReferenceType subRef = request.getSubscriptionReference();
-        String address = this.parseEPR(subRef);
-        ReferenceParametersType refParams = subRef.getReferenceParameters(); 
-        if(refParams == null){ 
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                        "No subscription reference provided.");
-        }
-        String subscriptionId = refParams.getSubscriptionId();
-        if(subscriptionId == null){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                                           "No subscription ID provided.");
-        }
-        if(!this.subscriptionManagerURL.equals(address)){
-            throw new ResourceUnknownFault("Could not find subscription." +
-                  "Invalid subcription manager address. This notification" +
-                  " broker requires you to use address " + 
-                   this.subscriptionManagerURL);
-        }
-
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            this.sm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, permissionMap);
-        }catch(ResourceUnknownFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }catch(Exception e){
-            sess.getTransaction().rollback();
-            throw new ResumeFailedFault(e.getMessage());
-        }
-        sess.getTransaction().commit();
-		
-        response.setSubscriptionReference(subRef);
         this.log.info("resume.end");
-        return response;
+        return null;
     }
     
     /**
@@ -553,12 +182,13 @@ public class SubscriptionAdapter{
      * @return an Axis2 object with the result of the destroy
      * @throws ResourceUnknownFault
      * @throws ResourceNotDestroyedFault
+     * @throws RemoteException 
      */
     public DestroyRegistrationResponse destroyRegistration(DestroyRegistration request, 
-                               HashMap<String,String> permissionMap)
-                               throws ResourceUnknownFault,
-                                      ResourceNotDestroyedFault{
-        this.log.info("destroyRegistration.start");
+            String login) throws ResourceUnknownFault, ResourceNotDestroyedFault, RemoteException{
+        
+        this.log.debug("destroyRegistration.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
         DestroyRegistrationResponse response = new DestroyRegistrationResponse();
         EndpointReferenceType pubRef = request.getPublisherRegistrationReference();
         String address = this.parseEPR(pubRef);
@@ -578,94 +208,12 @@ public class SubscriptionAdapter{
                   " broker requires you to use address " + 
                    this.subscriptionManagerURL);
         }
-
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            this.sm.destroyRegistration(pubId, permissionMap);
-        }catch(ResourceUnknownFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }catch(ResourceNotDestroyedFault e){
-            sess.getTransaction().rollback();
-            throw e;
-        }catch(Exception e){
-            sess.getTransaction().rollback();
-            throw new ResourceNotDestroyedFault(e.getMessage());
-        }
-        sess.getTransaction().commit();
-		
+        nbRmiClient.destroyRegistration(pubId, login);
         response.setPublisherRegistrationReference(pubRef);
-        this.log.info("destroyRegistration.end");
-        return response;
-    }
-    
-    /**
-     * Validates a publisher given a registration ID
-     * 
-     * @param epr the endpoint reference containing the publisherRegistrationId
-     * @return true if PublisherRegistration is valid, false otherwise
-     * @throws ResourceUnknownFault
-     */
-    public boolean validatePublisherRegistration(EndpointReferenceType epr){
-        this.log.info("validatePublisherRegistration.start");
-        if(epr == null){
-            this.log.error("Could not find registration. No producer reference provided.");
-            return false;
-        }
-        ReferenceParametersType refParams = epr.getReferenceParameters(); 
-        if(refParams == null){ 
-            this.log.error("Could not find registration. No registration reference provided.");
-            return false;
-        }
-        String pubId = refParams.getPublisherRegistrationId();
-        if(pubId == null){
-            this.log.error("Could not find registration. No registration ID provided.");
-            return false;
-        }
-
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            this.sm.queryPublisher(pubId);
-        }catch(ResourceUnknownFault e){
-            sess.getTransaction().rollback();
-            this.log.error(e.getMessage());
-            return false;
-        }catch(Exception e){
-            sess.getTransaction().rollback();
-            this.log.error(e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-        sess.getTransaction().commit();
-        this.log.info("validatePublisherRegistration.end");
-        return true;
-    }
-    
-    /**
-     * Sends a Notify message to a subscriber
-     *
-     * @param holder the message to send
-     * @param url a URL indication where to send the message
-     * @param subRefId the ID of the subscription to which the message belongs
-     */
-    public void sendNotify(NotificationMessageHolderType holder, String url, String subRefId){
-        this.log.debug("sendNotify.start");
-        Client client = new Client();
         
-        try{
-            EndpointReferenceType subRef = client.generateEndpointReference(
-                   this.subscriptionManagerURL, subRefId);
-            holder.setSubscriptionReference(subRef);
-            client.setUpNotify(true, url, this.repo, this.repo + "axis2-norampart.xml");
-            client.notify(holder);
-        }catch(Exception e){
-            this.log.info("Error sending notification: " + e);
-        }finally{
-            client.cleanUp();
-        }
-        this.log.debug("sendNotify.end");
+        this.log.debug("destroyRegistration.end");
+        
+        return response;
     }
     
     /**
@@ -673,120 +221,50 @@ public class SubscriptionAdapter{
      *
      * @param request the registration request
      * @param login the login of the user that sent the registration
-     * @return an Axis2 RegisterPublisherResponse withthe result of the registration
+     * @return an Axis2 RegisterPublisherResponse with the result of the registration
      * @throws UnacceptableInitialTerminationTimeFault
      * @throws PublisherRegistrationFailedFault
+     * @throws RemoteException 
      */
     public RegisterPublisherResponse registerPublisher(RegisterPublisher request, String login)
                                 throws UnacceptableInitialTerminationTimeFault,
-                                       PublisherRegistrationFailedFault{
-        this.log.info("registerPublisher.start");
+                                       PublisherRegistrationFailedFault, RemoteException{
+        this.log.debug("registerPublisher.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
         RegisterPublisherResponse response = null;
-        Publisher publisher = new Publisher();
-        String publisherAddress = this.parseEPR(request.getPublisherReference());
-        Calendar initTermTime = request.getInitialTerminationTime();
+        String publisherUrl = this.parseEPR(request.getPublisherReference());
+        Calendar termTimeCal = request.getInitialTerminationTime();
+        Long termTime = null;
         boolean demand = request.getDemand();
-        
-        publisher.setUserLogin(login);
-        publisher.setUrl(publisherAddress);
-        if(initTermTime != null){
-            publisher.setTerminationTime(initTermTime.getTimeInMillis()/1000L);
-        }else{
-            publisher.setTerminationTime(0L);
-        }
         
         //TODO:Support demand based publishing
         if(demand){
             throw new PublisherRegistrationFailedFault("Demand publishing is not supported by this implementation.");
         }
-        publisher.setDemand(demand);
         
-        Session sess = this.core.getNotifySession();
-        sess.beginTransaction();
-        try{
-            publisher = this.sm.registerPublisher(publisher);
-            response = this.publisher2Axis(publisher);
-        }catch(UnacceptableInitialTerminationTimeFault e){
-            sess.getTransaction().rollback();
-            throw e;
+        if(termTimeCal != null){
+            termTime = termTimeCal.getTimeInMillis()/1000L;
         }
-        this.log.info("registerPublisher.end");
-        sess.getTransaction().commit();
+        
+        String registrationId = nbRmiClient.registerPublisher(publisherUrl, 
+                null, demand, termTime, login);
+        response = this.createRegisterPublisherResponse(registrationId);
+        this.log.debug("registerPublisher.end");
         
         return response;
     }
     
-    /** 
-     * Converts and Axis2 Subscribe object to a Subsciption Hibernate bean
-     *
-     * @param the Subscribe object to convert
-     * @param userLogin the login of the subscriber that sent the request
-     * @return the Hibernate Bean generate from the original request
-     */
-    private Subscription axis2Subscription(Subscribe request, String userLogin)
-                                throws UnacceptableInitialTerminationTimeFault{
-        Subscription subscription = new Subscription();
-        String consumerAddress = this.parseEPR(request.getConsumerReference());
-        long initTermTime = 0L;
-        try{
-            initTermTime = this.parseTermTime(request.getInitialTerminationTime());
-        }catch(UnacceptableTerminationTimeFault ex){
-            throw new UnacceptableInitialTerminationTimeFault(ex.getMessage());
-        }
-        
-        subscription.setUrl(consumerAddress);
-        subscription.setUserLogin(userLogin);
-        subscription.setTerminationTime(initTermTime);
-        
-        return subscription;
-    }
-    
     /**
-     * Converts a complete Subscription Hibernate bean to an Axis2 object
-     *
-     * @param subscription the Subscription Hibernate bean to convert
-     * @return the Axis2 SubscribeResponse converted from the Subscribe object
-     */
-    private SubscribeResponse subscription2Axis(Subscription subscription){
-        SubscribeResponse response = new SubscribeResponse();
-        
-        /* Set subscription reference */
-		EndpointReferenceType subRef = new EndpointReferenceType();
-        AttributedURIType subAttrUri = new AttributedURIType();
-        try{
-            URI subRefUri = new URI(this.subscriptionManagerURL);
-            subAttrUri.setAnyURI(subRefUri);
-        }catch(Exception e){}
-        subRef.setAddress(subAttrUri);
-        //set ReferenceParameters
-        ReferenceParametersType subRefParams = new ReferenceParametersType();
-        subRefParams.setSubscriptionId(subscription.getReferenceId());
-        subRef.setReferenceParameters(subRefParams);
-		
-		/* Convert creation and termination time to Calendar object */
-		GregorianCalendar createCal = new GregorianCalendar();
-		GregorianCalendar termCal = new GregorianCalendar();
-		createCal.setTimeInMillis(subscription.getCreatedTime() * 1000);
-		termCal.setTimeInMillis(subscription.getTerminationTime() * 1000);
-		
-		response.setSubscriptionReference(subRef);
-		response.setCurrentTime(createCal);
-		response.setTerminationTime(termCal);
-		
-		return response;
-    }
-    
-    /**
-     * Converts a complete Publisher Hibernate bean to an Axis2 object
+     * Creates a RegisterPublisherResponse from an ID
      *
      * @param publisher the Publisher Hibernate bean to convert
      * @return the Axis2 RegisterPublisherResponse converted from the Publisher object
      */
-    private RegisterPublisherResponse publisher2Axis(Publisher publisher){
+    private RegisterPublisherResponse createRegisterPublisherResponse(String registrationId){
         RegisterPublisherResponse response = new RegisterPublisherResponse();
         
         /* Set publisher reference */
-		EndpointReferenceType pubRef = new EndpointReferenceType();
+        EndpointReferenceType pubRef = new EndpointReferenceType();
         AttributedURIType pubAttrUri = new AttributedURIType();
         try{
             URI pubRefUri = new URI(this.subscriptionManagerURL);
@@ -795,11 +273,11 @@ public class SubscriptionAdapter{
         pubRef.setAddress(pubAttrUri);
         //set ReferenceParameters
         ReferenceParametersType pubRefParams = new ReferenceParametersType();
-        pubRefParams.setPublisherRegistrationId(publisher.getReferenceId());
+        pubRefParams.setPublisherRegistrationId(registrationId);
         pubRef.setReferenceParameters(pubRefParams);
-		
-		/* Set consumer reference */
-		EndpointReferenceType conRef = new EndpointReferenceType();
+        
+        /* Set consumer reference */
+        EndpointReferenceType conRef = new EndpointReferenceType();
         AttributedURIType conAttrUri = new AttributedURIType();
         try{
             URI conRefUri = new URI(this.subscriptionManagerURL);
@@ -807,10 +285,10 @@ public class SubscriptionAdapter{
         }catch(Exception e){}
         conRef.setAddress(conAttrUri);
         
-		response.setPublisherRegistrationReference(pubRef);
+        response.setPublisherRegistrationReference(pubRef);
         response.setConsumerReference(conRef);
         
-		return response;
+        return response;
     }
     
     /**
@@ -840,12 +318,12 @@ public class SubscriptionAdapter{
             String topicString = topicFilter.getString();
             
             //check dialect
-            if(Client.XPATH_URI.equals(dialect)){
+            if(WSNotifyConstants.XPATH_URI.equals(dialect)){
                  throw new TopicExpressionDialectUnknownFault("The XPath Topic " +
                             "Expression dialect is not supported at this time.");
-            }else if(!(Client.WS_TOPIC_SIMPLE.equals(dialect) || 
-                       Client.WS_TOPIC_CONCRETE.equals(dialect) || 
-                       Client.WS_TOPIC_FULL.equals(dialect))){
+            }else if(!(WSNotifyConstants.WS_TOPIC_SIMPLE.equals(dialect) || 
+                    WSNotifyConstants.WS_TOPIC_CONCRETE.equals(dialect) || 
+                    WSNotifyConstants.WS_TOPIC_FULL.equals(dialect))){
                 throw new TopicExpressionDialectUnknownFault("Unknown Topic dialect '" + dialect + "'");
             }
             
@@ -887,7 +365,7 @@ public class SubscriptionAdapter{
         }
         
         String dialect = query.getDialect().toString();
-        if(!Client.XPATH_URI.equals(dialect)){
+        if(!WSNotifyConstants.XPATH_URI.equals(dialect)){
             throw new InvalidFilterFault("Filter dialect '" + dialect +
                                          "'is not supported by this service.");
         }
@@ -958,14 +436,5 @@ public class SubscriptionAdapter{
         }
         
         return timestamp;
-    }
-    
-    private NotificationMessageHolderType copyHolder(NotificationMessageHolderType holder){
-        NotificationMessageHolderType holderCopy = new NotificationMessageHolderType();
-        holderCopy.setTopic(holder.getTopic());
-        holderCopy.setProducerReference(holder.getProducerReference());
-        holderCopy.setMessage(holder.getMessage());
-        
-        return holderCopy;
     }
 }

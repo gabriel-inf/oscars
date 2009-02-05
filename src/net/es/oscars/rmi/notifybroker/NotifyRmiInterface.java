@@ -21,9 +21,7 @@ public interface NotifyRmiInterface extends Remote {
     /**
      * Default registry name
      */
-    static String registryName = "NotifyRMIServer";
-
-    public void init() throws RemoteException;
+    static String registryName = "net.es.oscars.rmi.notifybroker";
     
     public void notify(String subscriptionId, String publisherId, 
             List<String> topics, OMElement msg) throws RemoteException;

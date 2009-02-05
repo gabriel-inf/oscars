@@ -15,7 +15,6 @@ public class SendNotifyJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException{
         Logger log = Logger.getLogger(this.getClass());
         NotifyBrokerCore core = NotifyBrokerCore.getInstance();
-                SubscriptionAdapter sa = core.getSubscriptionAdapter();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String jobName = context.getJobDetail().getFullName();
         log.info("SendNotifyJob.start name:"+jobName);
@@ -24,7 +23,7 @@ public class SendNotifyJob implements Job{
         String url= dataMap.getString("url");
         String subRefId = dataMap.getString("subRefId");
         try{
-            sa.sendNotify(holder, url, subRefId);
+            //sa.sendNotify(holder, url, subRefId);
         }catch(Exception ex){
             log.error("Could not send Notify: " + ex);
         }

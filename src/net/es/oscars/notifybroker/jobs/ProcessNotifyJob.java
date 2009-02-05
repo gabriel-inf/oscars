@@ -21,7 +21,6 @@ public class ProcessNotifyJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         Logger log = Logger.getLogger(this.getClass());
         NotifyBrokerCore core = NotifyBrokerCore.getInstance();
-        SubscriptionAdapter sa = core.getSubscriptionAdapter();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String jobName = context.getJobDetail().getFullName();
         log.info("ProcessNotifyJob.start name:"+jobName);
@@ -32,18 +31,14 @@ public class ProcessNotifyJob implements Job{
         ArrayList<NotifyPEP> notifyPEPs = 
              (ArrayList<NotifyPEP>) dataMap.get("notifyPEPs");
         
-        Session aaa = core.getAAASession();
-        aaa.beginTransaction();
         Session notify = core.getNotifySession();
         notify.beginTransaction();
         try{
-            sa.notify(holder, permissionMap, notifyPEPs);
-            aaa.getTransaction().commit();
+            //sa.notify(holder, permissionMap, notifyPEPs);
             notify.getTransaction().commit();
         }catch(Exception ex){
             log.error(ex);
             ex.printStackTrace();
-            aaa.getTransaction().rollback();
             notify.getTransaction().rollback();
         }
         log.info("ProcessNotifyJob.end name:"+jobName);

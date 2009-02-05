@@ -1,8 +1,12 @@
 package net.es.oscars.notifybroker.ws;
 
 import java.util.*;
+import java.rmi.RemoteException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
+
+import net.es.oscars.rmi.aaa.AaaRmiClient;
+import net.es.oscars.rmi.notifybroker.NBValidator;
 
 import org.apache.axis2.context.*;
 import org.apache.axiom.om.OMElement;
@@ -11,29 +15,20 @@ import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSConstants;
 
 import org.apache.log4j.*;
-import org.hibernate.*;
 
 import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.EndpointReferenceType;
-import net.es.oscars.aaa.AAAException;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.AuthValue;
-import net.es.oscars.notifybroker.NotifyBrokerCore;
-import net.es.oscars.notifybroker.policy.NotifyPEP;
 
 /**
  *  OSCARSNotifySkeleton java skeleton for the axisService
  */
 public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private Logger log;
-    private UserManager userMgr;
     private Principal certIssuer;
     private Principal certSubject;
     private SubscriptionAdapter sa;
-    private ArrayList<NotifyPEP> notifyPEPs;
-    private NotifyBrokerCore core;
-
+    
     /**
      * Called from the Axis2 framework during initialization of the service.
      *
@@ -45,65 +40,11 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     public void init(ServiceContext sc) {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("OSCARSNotify init.start");
-        this.core = NotifyBrokerCore.init();
-        this.userMgr = this.core.getUserManager();
-        this.sa = this.core.getSubscriptionAdapter();
-        this.notifyPEPs = this.core.getNotifyPEPs();
+        this.sa =  new SubscriptionAdapter();
         this.log.info("OSCARSNotify init.end");
     }
 
-    /**
-     *  Called from the Axis2 framework during service shutdown
-     *
-     * @param sc
-     */
-    public void destroy(ServiceContext sc) {
-        this.log.info("OSCARSNotify destroy.start");
-        this.core.shutdown();
-        this.log.info("OSCARSNotify destroy.finish");
-    }
-
-
     public void Notify(Notify request){
-        this.log.debug("Received a notification message from publisher");
-        try{
-            NotificationMessageHolderType[] holders = request.getNotificationMessage();
-            for(NotificationMessageHolderType holder : holders){
-                TopicExpressionType[] topicExprs = {holder.getTopic()};
-                HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
-                ArrayList<String>topics = this.sa.parseTopics(topicExprs);
-                EndpointReferenceType producerRef = holder.getProducerReference();
-                if(!this.sa.validatePublisherRegistration(producerRef)){
-                    continue;
-                }
-                //clear out publisherRegistrationId
-                producerRef.getReferenceParameters().setPublisherRegistrationId(null);
-
-                Session aaa = this.core.getAAASession();
-                aaa.beginTransaction();
-                try{
-                    OMElement[] omElems = holder.getMessage().getExtraElement();
-                    for(NotifyPEP notifyPep : this.notifyPEPs){
-                        if(!notifyPep.matches(topics)){
-                            continue;
-                        }
-                        HashMap<String, ArrayList<String>> pepMap = notifyPep.enforce(omElems);
-                        if(pepMap != null){
-                            permissionMap.putAll(pepMap);
-                        }
-                    }
-                    aaa.getTransaction().commit();
-                }catch(Exception e){
-                    aaa.getTransaction().rollback();
-                    this.log.error(e.getMessage());
-                    return;
-                }
-                this.sa.schedProcessNotify(holder, permissionMap);
-            }
-        }catch(Exception e){
-            this.log.error(e.getMessage());
-            e.printStackTrace();
-        }
         return;
     }
 
@@ -114,154 +55,28 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                   TopicExpressionDialectUnknownFault, TopicNotSupportedFault,
                   UnacceptableInitialTerminationTimeFault, UnrecognizedPolicyRequestFault,
                   UnsupportedPolicyRequestFault{
-
-        String login = this.checkUser();
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-        /* NOTE: Requires a filter and topic to specified.
-         * Filter and TopicExpression are checked here and not in
-         * schema because this is an optional behavior defined in the
-         * WS-Notification spec. It also allows for a better error.
-         * See http://docs.oasis-open.org/wsn/wsn-ws_base_notification-1.3-spec-os.pdf line 544-545.
-         */
-        FilterType filter = request.getFilter();
-        if(filter == null || filter.getTopicExpression() == null){
-            throw new InvalidFilterFault("Invalid filter specified. This " +
-                                         "NotificationBroker implementation" +
-                                         " requires a filter containing at " +
-                                         "least one TopicExpression.");
-        }
-        TopicExpressionType[] topicFilters = filter.getTopicExpression();
-        ArrayList<String> topics = this.sa.parseTopics(topicFilters);
-
-        /* Get authorizations */
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            AuthValue authVal = this.userMgr.checkAccess(login, "Subscriptions", "create");
-            if (authVal.equals(AuthValue.DENIED)) {
-                throw new AAAFaultMessage("You do not have permission to create subscriptions.");
-            }
-            //TODO: Limit which topics someone can subscribe to?
-            //Set resource specific matching conditions
-            for(NotifyPEP notifyPep : this.notifyPEPs){
-                if(!notifyPep.matches(topics)){
-                    continue;
-                }
-                HashMap<String,String> pepMap = notifyPep.prepare(login);
-                if(pepMap != null){
-                    permissionMap.putAll(pepMap);
-                }
-            }
-            aaa.getTransaction().commit();
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage(e.getMessage());
-        }
-        SubscribeResponse response = this.sa.subscribe(request, login, permissionMap);
-
-        return response;
+        return null;
     }
 
     public RenewResponse Renew(Renew request)
         throws AAAFaultMessage, ResourceUnknownFault, UnacceptableTerminationTimeFault{
-        String login = this.checkUser();
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-
-        /* Get authorizations */
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-            if (modifyAuthVal.equals(AuthValue.DENIED)) {
-                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-                permissionMap.put("modifyLoginConstraint", login);
-            }
-            //TODO: Re-run notifyPEP
-            aaa.getTransaction().commit();
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage(e.getMessage());
-        }
-        RenewResponse response = this.sa.renew(request, permissionMap);
-
-        return response;
+        return null;
     }
 
     public UnsubscribeResponse Unsubscribe(Unsubscribe request)
         throws AAAFaultMessage, ResourceUnknownFault, UnableToDestroySubscriptionFault{
-        String login = this.checkUser();
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-
-        /* Get authorizations */
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-            if (modifyAuthVal.equals(AuthValue.DENIED)) {
-                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-                permissionMap.put("modifyLoginConstraint", login);
-            }
-            aaa.getTransaction().commit();
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage(e.getMessage());
-        }
-        UnsubscribeResponse response = this.sa.unsubscribe(request, login, permissionMap);
-
-        return response;
+        return null;
     }
 
     public PauseSubscriptionResponse PauseSubscription(
            PauseSubscription request) throws AAAFaultMessage, PauseFailedFault, ResourceUnknownFault{
-        String login = this.checkUser();
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-
-        /* Get authorizations */
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-            if (modifyAuthVal.equals(AuthValue.DENIED)) {
-                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-                permissionMap.put("modifyLoginConstraint", login);
-            }
-            aaa.getTransaction().commit();
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage(e.getMessage());
-        }
-        PauseSubscriptionResponse response = this.sa.pause(request, permissionMap);
-
-        return response;
+        return null;
     }
 
     public ResumeSubscriptionResponse ResumeSubscription(
            ResumeSubscription request)
            throws AAAFaultMessage, ResourceUnknownFault, ResumeFailedFault{
-        String login = this.checkUser();
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-
-        /* Get authorizations */
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            AuthValue modifyAuthVal = this.userMgr.checkAccess(login, "Subscriptions", "modify");
-            if (modifyAuthVal.equals(AuthValue.DENIED)) {
-                throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-            }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-                permissionMap.put("modifyLoginConstraint", login);
-            }
-            aaa.getTransaction().commit();
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage(e.getMessage());
-        }
-        ResumeSubscriptionResponse response = this.sa.resume(request, permissionMap);
-
-        return response;
+        return null;
     }
 
     public RegisterPublisherResponse RegisterPublisher(RegisterPublisher request)
@@ -270,62 +85,50 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
                 UnacceptableInitialTerminationTimeFault,
                 PublisherRegistrationRejectedFault{
 
-        String login = "";
-        try{
-            login = this.checkUser();
-        }catch(AAAFaultMessage e){
-            throw new PublisherRegistrationRejectedFault(e.getMessage());
+        RegisterPublisherResponse response = null;
+        try {
+            String login = this.verifyCert();
+            response = this.sa.registerPublisher(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new PublisherRegistrationFailedFault(e.getMessage());
         }
-        /* Get authorizations */
-        AuthValue authVal = null;
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            authVal = this.userMgr.checkAccess(login, "Publishers", "create");
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new PublisherRegistrationRejectedFault(e.getMessage());
-        }
-        if (authVal.equals(AuthValue.DENIED)) {
-             aaa.getTransaction().rollback();
-            throw new PublisherRegistrationRejectedFault("You do not have permission to publish notifications.");
-        }
-        aaa.getTransaction().commit();
-
-        /* Build subscription */
-        RegisterPublisherResponse response = this.sa.registerPublisher(request, login);
 
         return response;
     }
 
     public DestroyRegistrationResponse DestroyRegistration(DestroyRegistration request)
             throws AAAFaultMessage, ResourceNotDestroyedFault, ResourceUnknownFault{
-        String login = this.checkUser();
-        HashMap<String, String> permissionMap = new HashMap<String, String>();
-
-        /* Get authorizations */
-        AuthValue modifyAuthVal = null;
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        try{
-            modifyAuthVal = this.userMgr.checkAccess(login, "Publishers", "modify");
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage(e.getMessage());
+        DestroyRegistrationResponse response = null;
+        try {
+            String login = this.verifyCert();
+            this.log.info("DestroyRegistration.start");
+            response = this.sa.destroyRegistration(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new ResourceNotDestroyedFault(e.getMessage());
         }
-        if (modifyAuthVal.equals(AuthValue.DENIED)) {
-            aaa.getTransaction().rollback();
-            throw new AAAFaultMessage("You do not have permission to modify subscriptions.");
-        }else if (modifyAuthVal.equals(AuthValue.SELFONLY)){
-            aaa.getTransaction().commit();
-            permissionMap.put("modifyLoginConstraint", login);
-        }
-
-        DestroyRegistrationResponse response = this.sa.destroyRegistration(request, permissionMap);
 
         return response;
     }
-
+    
+    public String verifyCert() throws RemoteException{
+        this.setOperationContext();
+        String dn = this.certSubject.getName();
+        this.log.debug("Received message from user " + dn);
+        AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(log);
+        
+        String login = null;
+        try{
+            login = aaaRmiClient.verifyDN(dn);
+        }catch(RemoteException e){
+            throw new RemoteException("Unable to authenticate user " + dn);
+        }
+        this.log.debug("Found account " + login + " for " + dn);
+        
+        return login;
+    }
+    
     /**
      * COPIED FROM net.es.oscars.oscars.OSCARSSkeleton
      * Called from checkUser to get the DN out of the message context.
@@ -389,69 +192,6 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         this.log.debug("setOperationContext.finish");
     }
 
-    /**
-     *  COPIED FROM net.es.oscars.oscars.OSCARSSkeleton
-     *  Called from each of the messages to check that the user who signed the
-     *  message is entered in the user table.
-     *  Also checks to see if there was a certificate in the message, which
-     *  should never happen unless the axis2/rampart configuration is incorrect.
-     *
-     * @return login A string with the login associated with the certSubject
-     * @throws AAAFaultMessage
-     */
-    public String checkUser() throws AAAFaultMessage {
-
-        String login = null;
-        String[] dnElems = null;
-        setOperationContext();
-
-        if (this.certSubject == null){
-            this.log.error("checkUser: no certSubject found in message");
-            AAAFaultMessage AAAErrorEx = new AAAFaultMessage(
-                                 "checkUser: no certSubject found in message");
-            throw AAAErrorEx;
-        }
-
-        Session aaa = this.core.getAAASession();
-        aaa.beginTransaction();
-        String origDN = "";
-        // lookup up using input DN first
-        try {
-            origDN = this.certSubject.getName();
-            this.log.debug("checkUser: " + origDN);
-            login = this.userMgr.loginFromDN(origDN);
-            if (login == null) {
-                // if that fails try the reverse of the elements in the DN
-                dnElems = origDN.split(",");
-                String dn = " " + dnElems[0];
-                for (int i = 1; i < dnElems.length; i++) {
-                    dn = dnElems[i] + "," + dn;
-                }
-                dn = dn.substring(1);
-                this.log.debug("checkUser: " + dn);
-
-                login = this.userMgr.loginFromDN(dn);
-                if (login == null) {
-                    this.log.error("checkUser invalid user: " + origDN);
-                    AAAFaultMessage AAAErrorEx =
-                        new AAAFaultMessage("checkUser: invalid user" + origDN);
-                    aaa.getTransaction().rollback();
-                    throw AAAErrorEx;
-                }
-            }
-        } catch (AAAException ex) {
-            this.log.error("checkUser: no attributes for user: " + origDN);
-            AAAFaultMessage AAAErrorEx =
-                new AAAFaultMessage("checkUser: no attributes for user " + origDN + " :  " + ex.getMessage());
-            aaa.getTransaction().rollback();
-            throw AAAErrorEx;
-        }
-        this.log.info("checkUser authenticated user: " + login);
-        aaa.getTransaction().commit();
-        return login;
-    }
-
-    public UserManager getUserManager() { return this.userMgr; }
 
     public void setCertSubject(Principal DN) { this.certSubject = DN; }
 
