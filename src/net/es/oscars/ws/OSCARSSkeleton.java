@@ -322,48 +322,27 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         refreshPath(RefreshPath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
-        RefreshPathContent requestContent = request.getRefreshPath();
+        RefreshPathContent params = request.getRefreshPath();
         RefreshPathResponse response = new RefreshPathResponse();
-        RefreshPathResponseContent responseContent = null;
-        // FIXME: move this to RMI
-
-        /*
-
-        String loginConstraint = null;
-        String institution = null;
-        String login = this.checkUser();
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-
-        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
-        if (authVal.equals(AuthValue.DENIED)) {
-            this.log.info("denied");
-            throw new AAAFaultMessage("OSCARSSkeleton:refreshPath: permission denied");
-        }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            loginConstraint = login;
-        }
-        aaa.getTransaction().commit();
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
+        RefreshPathResponseContent reply = null;
+        String methodName = "refreshPath";
+        BssRmiInterface bssRmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
         try {
-            responseContent = this.pathSetupAdapter.refresh(requestContent, loginConstraint, institution);
-            response.setRefreshPathResponse(responseContent);
-        } catch (PSSException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("refreshPath: " + e.getMessage());
-        } catch (InterdomainException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("refreshPath: " + e.getMessage());
-        } catch (Exception e) {
-            bss.getTransaction().rollback();
-            throw new AAAFaultMessage("refreshPath: " + e.getMessage());
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+        } catch (RemoteException ex) {
+            throw new BSSFaultMessage(ex.getMessage());
         }
-
-        bss.getTransaction().commit();
-        */
+        String login = this.checkUser(aaaRmiClient);
+        ReservationAdapter resAdapter = new ReservationAdapter();
+        try {
+            reply = resAdapter.refreshPath(params, login, bssRmiClient);
+        } catch (BSSException e) {
+            this.log.error("refreshPath: " + e.getMessage());
+            throw new BSSFaultMessage("refreshPath " + e.getMessage());
+        }
+        response.setRefreshPathResponse(reply);
         return response;
     }
 
@@ -377,49 +356,27 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         teardownPath(TeardownPath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
-        TeardownPathContent requestContent = request.getTeardownPath();
+        TeardownPathContent params = request.getTeardownPath();
         TeardownPathResponse response = new TeardownPathResponse();
-        TeardownPathResponseContent responseContent = null;
-        // FIXME: move this to RMI
-
-        /*
-
-        String loginConstraint = null;
-        String institution = null;
-        String login = this.checkUser();
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-
-        AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
-        if (authVal.equals(AuthValue.DENIED)) {
-            this.log.info("denied");
-            throw new AAAFaultMessage("OSCARSSkeleton:teardownPath: permission denied");
+        TeardownPathResponseContent reply = null;
+        String methodName = "teardownPath";
+        BssRmiInterface bssRmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
+        try {
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+        } catch (RemoteException ex) {
+            throw new BSSFaultMessage(ex.getMessage());
         }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            institution = this.userMgr.getInstitution(login);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            loginConstraint = login;
+        String login = this.checkUser(aaaRmiClient);
+        ReservationAdapter resAdapter = new ReservationAdapter();
+        try {
+            reply = resAdapter.teardownPath(params, login, bssRmiClient);
+        } catch (BSSException e) {
+            this.log.error("teardownPath: " + e.getMessage());
+            throw new BSSFaultMessage("teardownPath " + e.getMessage());
         }
-        aaa.getTransaction().commit();
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
-        try{
-            responseContent = this.pathSetupAdapter.teardown(requestContent,
-                                          loginConstraint, login, institution);
-            response.setTeardownPathResponse(responseContent);
-        } catch(PSSException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("teardownPath: " + e.getMessage());
-        } catch(InterdomainException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("teardownPath: " + e.getMessage());
-        } catch(Exception e) {
-            bss.getTransaction().rollback();
-            throw new AAAFaultMessage("teardownPath: " + e.getMessage());
-        }
-        bss.getTransaction().commit();
-        */
-
+        response.setTeardownPathResponse(reply);
         return response;
     }
 

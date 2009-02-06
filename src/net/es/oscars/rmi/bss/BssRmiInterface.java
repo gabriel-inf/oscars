@@ -108,6 +108,36 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
+     * Verifies a path in response to a refreshPath request. Checks local path
+     * first and then forwards request.
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with authenticated login name of user
+     * @return result string with status of path setup for reservation
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public String
+        refreshPath(RmiPathRequest request, String userName)
+            throws IOException, RemoteException;
+
+    /**
+     * Removes a path in response to a teardown request. Removes local path
+     * first and then forwards request. If there is a failure in the local path
+     * teardown the request is still forwarded. The exception is reported
+     * upstream.
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with authenticated login name of user
+     * @return result string with status of path teardown for reservation
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public String
+        teardownPath(RmiPathRequest request, String userName)
+            throws IOException, RemoteException;
+
+    /**
      * Immediately creates reservation circuit given information from servlet.
      * Only for network engineers from local domain.
      *

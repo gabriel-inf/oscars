@@ -172,6 +172,36 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
+     * refreshPath
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with authenticated login name of user
+     * @return result string with status of path refresh for reservation
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public String
+        refreshPath(RmiPathRequest request, String userName)
+            throws IOException, RemoteException {
+        return this.pathHandler.refreshPath(request, userName);
+    }
+
+    /**
+     * teardownPath
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with authenticated login name of user
+     * @return result string with status of path teardown for reservation
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public String
+        teardownPath(RmiPathRequest request, String userName)
+            throws IOException, RemoteException {
+        return this.pathHandler.teardownPath(request, userName);
+    }
+
+    /**
      * unsafeCreatePath
      *
      * @param request RmiPathRequest containing request parameters

@@ -288,6 +288,68 @@ public class ReservationAdapter {
     }
 
     /**
+     * Verifies a path in response to a refreshPath request.
+     *
+     * @param params RefreshPathContent instance with with request params.
+     * @param login String with user's login name
+     * @return reply RefreshPathResponseContent encapsulating library reply.
+     * @throws BSSException
+     */
+    public RefreshPathResponseContent
+        refreshPath(RefreshPathContent soapParams, String login,
+               BssRmiInterface rmiClient) throws BSSException {
+
+        this.log.info("refreshPath.start");
+        RefreshPathResponseContent reply = null;
+        RmiPathRequest rmiRequest = new RmiPathRequest();
+        String gri = soapParams.getGlobalReservationId();
+        rmiRequest.setGlobalReservationId(gri);
+        rmiRequest.setToken(soapParams.getToken());
+        String status = null;
+        try {
+            status = rmiClient.refreshPath(rmiRequest, login);
+        } catch (IOException e) {
+            this.log.error(e.getMessage());
+            throw new BSSException(e.getMessage());
+        }
+        reply.setGlobalReservationId(gri);
+        reply.setStatus(status);
+        this.log.info("refreshPath.finish");
+        return reply;
+    }
+
+    /**
+     * Removes a path in response to a teardown request.
+     *
+     * @param params TeardownPathContent instance with with request params.
+     * @param login String with user's login name
+     * @return reply TeardownPathResponseContent encapsulating library reply.
+     * @throws BSSException
+     */
+    public TeardownPathResponseContent
+        teardownPath(TeardownPathContent soapParams, String login,
+               BssRmiInterface rmiClient) throws BSSException {
+
+        this.log.info("teardownPath.start");
+        TeardownPathResponseContent reply = null;
+        RmiPathRequest rmiRequest = new RmiPathRequest();
+        String gri = soapParams.getGlobalReservationId();
+        rmiRequest.setGlobalReservationId(gri);
+        rmiRequest.setToken(soapParams.getToken());
+        String status = null;
+        try {
+            status = rmiClient.teardownPath(rmiRequest, login);
+        } catch (IOException e) {
+            this.log.error(e.getMessage());
+            throw new BSSException(e.getMessage());
+        }
+        reply.setGlobalReservationId(gri);
+        reply.setStatus(status);
+        this.log.info("teardownPath.finish");
+        return reply;
+    }
+
+    /**
      * Adds the remote hops to the local hops to create the complete path.
      *
      * @param localPathInfo - the path from the local reservation, has the

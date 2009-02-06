@@ -218,6 +218,64 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
+     * refreshPath
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path refresh for reservation
+     * @throws RemoteException
+     */
+    public String
+        refreshPath(RmiPathRequest request, String userName)
+            throws RemoteException {
+
+        this.log.debug("refreshPath.start");
+        String methodName = "RefreshPath";
+        String result = null;
+        this.verifyRmiConnection(methodName);
+        try {
+            result = this.remote.refreshPath(request, userName);
+            this.log.debug("refreshPath.end");
+            return result;
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException (e.getMessage(),e);
+        }
+    }
+
+    /**
+     * teardownPath
+     *
+     * @param request RmiPathRequest containing request parameters
+     * @param userName string with login of user making request
+     * @return result string with status of path teardown for reservation
+     * @throws RemoteException
+     */
+    public String
+        teardownPath(RmiPathRequest request, String userName)
+            throws RemoteException {
+
+        this.log.debug("teardownPath.start");
+        String methodName = "TeardownPath";
+        String result = null;
+        this.verifyRmiConnection(methodName);
+        try {
+            result = this.remote.teardownPath(request, userName);
+            this.log.debug("teardownPath.end");
+            return result;
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException (e.getMessage(),e);
+        }
+    }
+
+    /**
      * unsafeCreatePath
      *
      * @param request RmiPathRequest containing request parameters
