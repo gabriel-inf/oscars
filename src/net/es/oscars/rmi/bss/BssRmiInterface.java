@@ -29,7 +29,7 @@ public interface BssRmiInterface extends Remote {
 
 
     /**
-     * Creates reservation given information from servlet.
+     * Creates reservation given information from client.
      *
      * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
@@ -42,7 +42,7 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Queries reservation given information from servlet.
+     * Queries reservation given information from client.
      *
      * @param request RmiQueryResRequest contains input from component
      * @param userName string with authenticated login name of user
@@ -55,7 +55,7 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Lists reservations given criteria from other component.
+     * Lists reservations given criteria from client.
      *
      * @param request - RmiListResRequest contains input from component
      *
@@ -69,7 +69,8 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Cancels reservation given information from servlet.
+     * Cancels reservation given information from client.
+     *
      * @param gri String GlobalReservationId of reservation to be canceled
      * @param userName string with authenticated login name of user
      * @throws RemoteException
@@ -79,7 +80,7 @@ public interface BssRmiInterface extends Remote {
             throws RemoteException;
 
     /**
-     * Modifies reservation given information from servlet.
+     * Modifies reservation given information from client.
      *
      * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
@@ -138,7 +139,7 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Immediately creates reservation circuit given information from servlet.
+     * Immediately creates reservation circuit given information from client.
      * Only for network engineers from local domain.
      *
      * @param request RmiPathRequest containing request parameters
@@ -152,7 +153,7 @@ public interface BssRmiInterface extends Remote {
             throws IOException, RemoteException;
 
     /**
-     * Immediately tears down reservation circuit given info from servlet.
+     * Immediately tears down reservation circuit given info from client.
      * Only for network engineers from the local domain.
      *
      * @param request RmiPathRequest containing request parameters

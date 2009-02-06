@@ -47,7 +47,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * createReservation
+     * Makes call to RMI server to create reservation.
      *
      * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
@@ -76,7 +76,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * queryReservation
+     * Makes call to RMI server to request reservation details.
      *
      * @param request RmiQueryResRequest contains input from component
      * @param userName string with authenticated login name of user
@@ -105,7 +105,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * listReservations
+     * Makes call to RMI server to list reservations satisfying client criteria.
      *
      * @param request RmiListResRequest containing search parameters
      * @param userName string with login of user making request
@@ -135,10 +135,11 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * cancelReservation
+     * Makes call to RMI server to cancel a reservation with the given
+     * global reservation id.
+     *
      * @param gri String GlobalReservationId of reservation to be canceled
      * @param userName string with authenticated login name of user
-     * @
      * @throws RemoteException
      */
     public void
@@ -160,7 +161,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * modifyReservation
+     * Makes call to RMI server to modifying reservation given new parameters.
      *
      * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
@@ -189,7 +190,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * createPath
+     * Makes call to RMI server to create path via signalling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -218,7 +219,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * refreshPath
+     * Makes call to RMI server to refresh path via signalling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -247,7 +248,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * teardownPath
+     * Makes call to RMI server to teardown path via signalling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -276,7 +277,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * unsafeCreatePath
+     * Makes call to RMI server to force path creation in the local domain.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -305,7 +306,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * unsafeTeardownPath
+     * Makes call to RMI server to force path teardown in local domain.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -334,7 +335,8 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * unsafeModifyStatus
+     * Makes call to RMI server to force modification of reservation's status,
+     * which can set in motion other events.
      *
      * @param request RmiModifyStatusRequest containing request parameters
      * @param userName string with login of user making request

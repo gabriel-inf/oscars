@@ -34,16 +34,10 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * init
-     *   By default initializes the RMI server registry to listen on port 1099 (the default)
-     *   the RMI server to listen on a random port, and both to listen only on the loopback
-     *   interface. These values can be overidden by oscars.properties.
-     *   Setting the serverIpaddr to localhost will allow access from remote hosts and
-     *   invalidate our security assumptions.
+     * Initializes the RMI server registry given values from rmi.properties.
      *
      * @throws remoteException
      */
-
     public void init() throws RemoteException {
         this.log = Logger.getLogger(this.getClass());
 
@@ -60,7 +54,9 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         this.initHandlers();
     }
 
-
+    /**
+     * Initialize all the RMI server method handlers.
+     */
     public void initHandlers() {
         this.createHandler = new CreateResRmiHandler();
         this.queryHandler = new QueryResRmiHandler();
@@ -74,14 +70,14 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * shutdown
+     * Shut down the server.
      */
     public void shutdown() {
         super.shutdown(staticObject);
     }
 
     /**
-     * createReservation
+     * Creates a reservation, given requested parameters.
      *
      * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
@@ -97,7 +93,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * queryReservation
+     * Returns a reservation's details, given its global reservation id.
      *
      * @param request RmiQueryResRequest contains input from component
      * @param userName string with authenticated login name of user
@@ -113,7 +109,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * listReservations
+     * Lists all reservations satisfying constraints from client.
      *
      * @param request RmiListResRequest contains list constraints from client
      * @param userName string with authenticated login name of user
@@ -126,10 +122,10 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * cancelReservationOverride
-     * @param params HashMap<String, Object> - contains input from web request
+     * Cancels a reservation, given its global reservation id.
+     *
+     * @param gri string containing reservation's global reservation id
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
      * @throws IOException
      * @throws RemoteException
      */
@@ -141,7 +137,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * modifyReservation
+     * Modifies a reservation with new parameters.
      *
      * @param params HashMap<String, Object> - contains input from web request
      * @param userName string with authenticated login name of user
@@ -157,7 +153,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * createPath
+     * Sets up a path via signalling.  Can be interdomain.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
@@ -172,7 +168,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * refreshPath
+     * Refreshes a path via signalling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
@@ -187,7 +183,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * teardownPath
+     * Tears down a path via signalling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
@@ -202,7 +198,8 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * unsafeCreatePath
+     * Forces path creation in the local domain for a reservation.
+     * Requires additional authorization.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
@@ -217,7 +214,8 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * unsafeTeardownPath
+     * Forces path teardown in the local domain for a reservation.
+     * Requires additional authorization
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -234,7 +232,8 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * unsafeModifyStatus
+     * Forces a status change in the given reservation.
+     * Requires additional authorization.
      *
      * @param request RmiModifyStatusRequest containing request parameters
      * @param userName string with login of user making request
