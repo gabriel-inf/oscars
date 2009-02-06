@@ -80,16 +80,16 @@ public interface BssRmiInterface extends Remote {
             throws RemoteException;
 
     /**
-     * Modifies reservation given information from client.
+     * Submits job to modify a reservation, given new parameters.
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param resv transient Reservation containing parameters to be modified
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return matching Reservation from database
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        modifyReservation(HashMap<String, Object> params, String userName)
+    public Reservation
+        modifyReservation(Reservation resv, String userName)
             throws IOException, RemoteException;
 
     /**

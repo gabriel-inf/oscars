@@ -137,19 +137,19 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * Modifies a reservation with new parameters.
+     * Submits job to modify a reservation, given new parameters.
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param resv transient Reservation containing parameters to be modified
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into json Object.
+     * @return persistentResv matching Reservation from database
      * @throws IOException
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        modifyReservation(HashMap<String, Object> params, String userName)
+    public Reservation
+        modifyReservation(Reservation resv, String userName)
             throws IOException, RemoteException {
 
-        return this.modifyHandler.modifyReservation(params, userName);
+        return this.modifyHandler.modifyReservation(resv, userName);
     }
 
     /**

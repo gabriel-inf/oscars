@@ -160,25 +160,26 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * Makes call to RMI server to modifying reservation given new parameters.
+     * Makes call to RMI server to submit a job to modify reservation, given
+     * new parameters.
      *
-     * @param params HashMap<String, Object> - contains input from web request
+     * @param resv transient Reservation containing parameters to modify
      * @param userName string with authenticated login name of user
-     * @return HashMap<String, Object> - out values to pour into JSON Object.
+     * @return persistentResv matching Reservation from database
      * @throws RemoteException
      */
-    public HashMap<String, Object>
-        modifyReservation(HashMap<String, Object> params, String userName)
+    public Reservation
+        modifyReservation(Reservation resv, String userName)
             throws RemoteException {
 
         this.log.debug("modifyReservation.start");
         String methodName = "ModifyReservation";
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        Reservation persistentResv = null;
         this.verifyRmiConnection(methodName);
         try {
-            result = this.remote.modifyReservation(params, userName);
+            persistentResv = this.remote.modifyReservation(resv, userName);
             this.log.debug("modifyReservation.end");
-            return result;
+            return persistentResv;
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
             throw e;
