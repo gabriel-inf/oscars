@@ -23,11 +23,12 @@ public class AuthorizationModify extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        String methodName = "AuthorizationModify";
         UserSession userSession = new UserSession();
         this.log = Logger.getLogger(this.getClass());
-        log.debug("servlet.start");
+        log.info(methodName + ":start");
 
-        String methodName = "AuthorizationModify";
+
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
@@ -87,7 +88,7 @@ public class AuthorizationModify extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        log.debug("servlet.end");
+        log.info(methodName + ":end");
     }
 
     public void

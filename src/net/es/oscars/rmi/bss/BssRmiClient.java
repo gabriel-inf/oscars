@@ -27,7 +27,6 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
      */
     public void init() throws RemoteException {
 
-        //this.log.debug("BssRmiClient.init().start");
         this.log.info("Starting BssRmi connection");
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);

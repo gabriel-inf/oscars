@@ -36,7 +36,7 @@ public class AuthorizationForm extends HttpServlet {
         UserSession userSession = new UserSession();
         this.log = Logger.getLogger(this.getClass());
         String methodName = "AuthorizationForm";
-        log.debug("servlet.start");
+        log.info(methodName + ":start");
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
@@ -85,7 +85,7 @@ public class AuthorizationForm extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        log.debug("servlet.end");
+        log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

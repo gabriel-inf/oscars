@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import net.sf.json.*;
 
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.aaa.Attribute;
 import net.es.oscars.aaa.Authorization;
 import net.es.oscars.aaa.Constraint;
@@ -167,10 +168,14 @@ public class ServletUtils {
             // drill down to original error message
             while ((nestEx  = nestEx.getCause()) != null) {
                 errorMsg = nestEx.getMessage();
+                if (!(nestEx instanceof AAAException) &&
+                        !(nestEx instanceof BSSException)) {
+                    errorMsg = "internal error in core. "  + errorMsg;
+                }
             }
         } else {
             log.error (method + ": caught Exception ", ex);
-            errorMsg = "internal error, check logs for details";
+            errorMsg = "internal error in WBUI " + ex.getMessage();
         }
         Map<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("success", Boolean.FALSE);

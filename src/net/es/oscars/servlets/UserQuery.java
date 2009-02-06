@@ -27,7 +27,7 @@ public class UserQuery extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "UserQuery";
-        this.log.debug("UserQuery.start");
+        this.log.info(methodName + ":start");
 
         boolean self =  false; // is query about the current user
         boolean modifyAllowed = false;
@@ -36,21 +36,21 @@ public class UserQuery extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
 
         String profileName = request.getParameter("profileName");
         // get here by clicking on a name in the users list
         if ((profileName != null) && !profileName.equals("")) {
-            this.log.info("profileName: " + profileName);
+            this.log.debug("profileName: " + profileName);
             if (profileName.equals(userName)) {
                 self = true;
             } else {
                 self = false;
             }
         } else { // profileName is null - get here by clicking on tab navigation
-            this.log.info("profileName is null, using " + userName);
+            this.log.debug("profileName is null, using " + userName);
             profileName = userName;
             self=true;
         }
@@ -70,6 +70,7 @@ public class UserQuery extends HttpServlet {
             if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
                 // either have permission to see others OR see self
              } else {
+                 log.warn(userName + "has no permisson to query users");
                 ServletUtils.handleFailure(out,"no permission to query users", methodName);
                 return;
             }
@@ -101,7 +102,7 @@ public class UserQuery extends HttpServlet {
                     (authVal == AuthValue.ALLUSERS),
                     institutions, attributesForUser, allAttributes);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("status", "Profile for user " + profileName);
@@ -109,7 +110,7 @@ public class UserQuery extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.debug("UserQuery.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request,

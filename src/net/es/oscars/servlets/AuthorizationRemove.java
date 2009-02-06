@@ -23,9 +23,10 @@ public class AuthorizationRemove extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        log.debug("AuthorizationRemove.start");
-        UserSession userSession = new UserSession();
         String methodName = "AuthorizationRemove";
+        log.info(methodName + ":start");
+        UserSession userSession = new UserSession();
+
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
 
@@ -73,7 +74,7 @@ public class AuthorizationRemove extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        log.debug("AuthorizationRemove.end");
+        log.info(methodName + ":end");
     }
 
     public void

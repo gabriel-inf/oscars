@@ -28,7 +28,7 @@ public class AuthorizationList extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "AuthorizationList";
-        this.log.debug("servlet.start");
+        this.log.info(methodName + ":start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
@@ -60,7 +60,7 @@ public class AuthorizationList extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.debug("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

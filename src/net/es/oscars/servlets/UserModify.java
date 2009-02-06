@@ -28,7 +28,7 @@ public class UserModify extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "UserModify";
-        this.log.info("UserModify.start");
+        this.log.info(methodName + ":start");
 
         //User requester = null;
         boolean self = false; // is user modifying own profile
@@ -39,7 +39,7 @@ public class UserModify extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         String profileName = request.getParameter("profileName");
@@ -76,6 +76,7 @@ public class UserModify extends HttpServlet {
             } else {
                 ServletUtils.handleFailure(out,"no permission to modify users",
                                            methodName);
+                log.warn(userName + " does not have permission to modify users");
                 return;
             }
             if (user == null) {
@@ -133,7 +134,7 @@ public class UserModify extends HttpServlet {
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log,
                                                      out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("status", "Profile for user " + profileName +
@@ -146,7 +147,7 @@ public class UserModify extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request,

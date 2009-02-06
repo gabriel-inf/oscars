@@ -23,9 +23,11 @@ public class AuthorizationAdd extends HttpServlet {
 
         UserSession userSession = new UserSession();
         this.log = Logger.getLogger(this.getClass());
-        this.log.debug("servlet.start");
-
+        
         String methodName = "AuthorizationAdd";
+        this.log.info(methodName + ":start");
+
+
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
@@ -77,7 +79,7 @@ public class AuthorizationAdd extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.debug("servlet.end");
+        this.log.info(methodName +":end");
     }
 
     public void

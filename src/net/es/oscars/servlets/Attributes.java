@@ -23,9 +23,9 @@ public class Attributes extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        this.log.debug("Attributes.start");
-
         String methodName = "Attributes";
+        this.log.info(methodName + ":start");
+
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
 
@@ -90,7 +90,7 @@ public class Attributes extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.debug("Attributes.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

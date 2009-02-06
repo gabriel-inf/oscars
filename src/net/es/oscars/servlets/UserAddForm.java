@@ -25,14 +25,14 @@ public class UserAddForm extends HttpServlet {
 
         UserSession userSession = new UserSession();
         List<Institution> institutions = null;
-        log.debug("servlet.start");
-
         String methodName = "UserAddForm";
+        this.log.info( methodName + ":start");
+
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            log.error("No user session: cookies invalid");
+            log.warn("No user session: cookies invalid");
             return;
         }
 
@@ -42,12 +42,12 @@ public class UserAddForm extends HttpServlet {
             rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             authVal = rmiClient.checkAccess(userName, "Users", "modify");
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         if (authVal != AuthValue.ALLUSERS) {
             String errorMsg = "User "+userName+" is not allowed to add a new user";
-            log.error(errorMsg);
+            log.warn(errorMsg);
             ServletUtils.handleFailure(out, errorMsg, methodName);
             return;
         }
@@ -57,7 +57,7 @@ public class UserAddForm extends HttpServlet {
             this.outputAttributeMenu(outputMap, rmiClient, out);
             this.outputInstitutionMenu(outputMap, rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("status", "Add a user");
@@ -65,7 +65,7 @@ public class UserAddForm extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        log.debug("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
     public void

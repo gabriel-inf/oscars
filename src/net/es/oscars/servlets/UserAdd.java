@@ -24,15 +24,16 @@ public class UserAdd extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        this.log.info("UserAdd.start");
+
         String methodName = "UserAdd";
+        this.log.info(methodName + ":start");
         UserSession userSession = new UserSession();
 
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         String profileName = request.getParameter("profileName");
@@ -44,7 +45,7 @@ public class UserAdd extends HttpServlet {
             rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             authVal = rmiClient.checkAccess(userName, "Users", "create");
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         RoleUtils roleUtils = new RoleUtils();
@@ -91,7 +92,7 @@ public class UserAdd extends HttpServlet {
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
             rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
@@ -100,7 +101,7 @@ public class UserAdd extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
 

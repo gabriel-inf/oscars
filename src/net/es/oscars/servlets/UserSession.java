@@ -30,7 +30,7 @@ public class UserSession {
         if (secureCookieProp != null) {
             this.secureCookie = secureCookieProp.equals("1") ? true : false;
         } else {
-            // TODO:  some sort of warning logging
+            log.warn("please re-configure to use secure cookies");
             this.secureCookie = false;
         }
     }
@@ -63,12 +63,13 @@ public class UserSession {
                 RmiUtils.getAaaRmiClient(methodName, log);
             validSession = rmiClient.validSession(userName, sessionName);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return null;
         }
         String cookieUserName = userName;
         if (!validSession) {
             userName = null;
+            log.error("There is a problem with the login for user " + cookieUserName );
              errorMsg = "There is a problem with the login for user " + cookieUserName + "." +
                           " Please check with a system administrator.";
             ServletUtils.handleFailure(out, "internal error: " + errorMsg, methodName);

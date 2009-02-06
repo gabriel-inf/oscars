@@ -21,20 +21,23 @@ public class UserRemove extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        log.info("UserRemove.start");
+
         String methodName = "UserRemove";
+        log.info(methodName + ":start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
 
         String userName = userSession.checkSession(out, request, methodName);
-        if (userName == null) { return; }
+        if (userName == null) { 
+            this.log.warn("No user session: cookies invalid");
+            return; }
 
         String profileName = request.getParameter("profileName");
 
         // cannot remove oneself
         if (profileName == userName) {
-            log.error("User "+userName+" not allowed to remove himself");
+            log.warn("User "+userName+" not allowed to remove himself");
             ServletUtils.handleFailure(out, "You may not remove your own account.", methodName);
             return;
         }
@@ -45,7 +48,7 @@ public class UserRemove extends HttpServlet {
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "Users", "modify");
             if (authVal != AuthValue.ALLUSERS) {
-                log.error("no permission to modify users");
+                log.warn(userName +" has no permission to modify users");
                 ServletUtils.handleFailure(out,"You do not have the permissions to modify users", methodName);
                 return;
             }
@@ -61,12 +64,12 @@ public class UserRemove extends HttpServlet {
 
             // shouldn't be able to get to this point, but just in case
             if (!(authVal == AuthValue.ALLUSERS)) {
-                log.error("no permission to list users");
+                log.error(userName + "has no permission to list users, should not have gotten this far");
                 ServletUtils.handleFailure(out, "You do not have the permissions to list users", methodName);
                 return;
             }
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
@@ -76,7 +79,7 @@ public class UserRemove extends HttpServlet {
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
 
-        log.info("UserRemove.end");
+        log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

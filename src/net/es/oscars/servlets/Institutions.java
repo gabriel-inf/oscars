@@ -26,7 +26,7 @@ public class Institutions extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "Institutions";
-        this.log.debug("Institutions.start");
+        this.log.info(methodName + ":start");
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
@@ -86,7 +86,7 @@ public class Institutions extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.debug("Institutions.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

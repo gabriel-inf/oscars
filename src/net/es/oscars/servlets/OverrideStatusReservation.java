@@ -20,14 +20,14 @@ public class OverrideStatusReservation extends HttpServlet {
         throws IOException, ServletException {
 
         String methodName = "OverrideStatusReservation";
-        this.log.info("servlet.start");
+        this.log.info(methodName + ":start");
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
 
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         RmiModifyStatusRequest rmiRequest = new RmiModifyStatusRequest();
@@ -41,7 +41,7 @@ public class OverrideStatusReservation extends HttpServlet {
                 RmiUtils.getBssRmiClient(methodName, log);
             result = rmiClient.unsafeModifyStatus(rmiRequest, userName);
         } catch (Exception ex) {
-            ServletUtils.handleFailure(out, null, ex, methodName);
+            ServletUtils.handleFailure(out, log, ex, methodName);
             return;
         }
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
@@ -52,7 +52,7 @@ public class OverrideStatusReservation extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

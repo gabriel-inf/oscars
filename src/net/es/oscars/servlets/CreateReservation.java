@@ -35,13 +35,13 @@ public class CreateReservation extends HttpServlet {
         throws IOException, ServletException {
 
         String methodName= "CreateReservation";
-        this.log.info("CreateReservation.start");
+        this.log.info(methodName + ":start");
 
         PrintWriter out = response.getWriter();
         UserSession userSession = new UserSession();
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         response.setContentType("application/json");
@@ -54,7 +54,7 @@ public class CreateReservation extends HttpServlet {
             requestedPath = this.handlePath(request);
             resv.setPath(requestedPath);
         } catch (BSSException e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         String gri = null;
@@ -63,7 +63,7 @@ public class CreateReservation extends HttpServlet {
                 RmiUtils.getBssRmiClient(methodName, log);
             gri = rmiClient.createReservation(resv, userName);
         } catch (Exception ex) {
-            ServletUtils.handleFailure(out, null, ex, methodName);
+            ServletUtils.handleFailure(out, log, ex, methodName);
             return;
         }
         outputMap.put("gri", gri);
@@ -72,8 +72,7 @@ public class CreateReservation extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("CreateReservation.end");
-        return;
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -127,10 +126,10 @@ public class CreateReservation extends HttpServlet {
         strParam = request.getParameter("productionType");
         // if not blank, check box indicating production circuit was checked
         if (strParam != null && !strParam.trim().equals("")) {
-            this.log.info("production circuit");
+            this.log.info("production reservation created");
             description = "[PRODUCTION CIRCUIT] " + strParam.trim();
         } else {
-            this.log.info("non-production circuit");
+            this.log.debug("non-production circuit");
         }
         resv.setDescription(description);
         return resv;
@@ -175,7 +174,7 @@ public class CreateReservation extends HttpServlet {
         strParam = request.getParameter("explicitPath");
         if (strParam != null && !strParam.trim().equals("")) {
             explicitPath = strParam.trim();
-            this.log.info("explicit path: " + explicitPath);
+            this.log.debug("explicit path: " + explicitPath);
 
             String[] hops = explicitPath.split("\\s+");
             for (int i = 0; i < hops.length; i++) {
@@ -187,7 +186,7 @@ public class CreateReservation extends HttpServlet {
                 // these can currently be either topology identifiers
                 // or IP addresses
                 pathElem.setUrn(hops[i]);
-                this.log.info("explicit path hop: " + hops[i]);
+                this.log.debug("explicit path hop: " + hops[i]);
                 pathElems.add(pathElem);
             }
             requestedPath.setPathElems(pathElems);

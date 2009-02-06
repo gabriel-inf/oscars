@@ -27,14 +27,15 @@ public class UserList extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        this.log.debug("UserList.start");
         String methodName = "UserList";
+        this.log.info(methodName + ":start");
+
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
@@ -53,14 +54,14 @@ public class UserList extends HttpServlet {
             outputMap.put("status", "User list");
             this.outputUsers(outputMap, userName, request,rmiClient, out);
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.debug("UserList.end");
+        this.log.info(methodName + ":end");
     }
 
     /**

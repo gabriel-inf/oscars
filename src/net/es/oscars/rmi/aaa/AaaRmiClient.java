@@ -32,7 +32,6 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
      * @throws RemoteException
      */
     public void init() throws RemoteException {
-        //this.log.debug("AaaRmiClient.init().start");
         this.log.info("starting aaa rmi connection");
 
         Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);

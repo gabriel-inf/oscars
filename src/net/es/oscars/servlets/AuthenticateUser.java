@@ -20,8 +20,9 @@ public class AuthenticateUser extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        log.debug("AuthenticateUser.start");
         String methodName = "AuthenticateUser";
+        log.info(methodName + ":start");
+
 
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
         PrintWriter out = response.getWriter();
@@ -57,9 +58,9 @@ public class AuthenticateUser extends HttpServlet {
             ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
-        log.info("setting cookie name to " + userName);
+        log.debug("setting cookie name to " + userName);
         userSession.setCookie("userName", userName, response);
-        log.info("setting session name to " + sessionName);
+        log.debug("setting session name to " + sessionName);
         userSession.setCookie("sessionName", sessionName, response);
 
         outputMap.put("method", methodName);
@@ -67,8 +68,8 @@ public class AuthenticateUser extends HttpServlet {
         outputMap.put("status", userName + " signed in.  Use tabs " + "to navigate to different pages.");
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&& " + jsonObject);
-        log.info("AuthenticateUser: user " + userName + " logged in");
-        log.debug("AuthenticateUser.end");
+        log.info("user " + userName + " logged in");
+        log.info(methodName + ":end");
 
     }
 
@@ -114,11 +115,11 @@ public class AuthenticateUser extends HttpServlet {
         AuthMultiValue resourcePerms = rmiClient.checkMultiAccess(userName, permsToCheck);
         AuthValue createResAuth = rmiClient.checkModResAccess(userName, "Reservations", "create", 0, 0, false, false);
 
-        this.log.info("Resources:");
+        this.log.debug("Resources:");
         Iterator<String> resIt = resourcePerms.keySet().iterator();
         while (resIt.hasNext()) {
             String res = resIt.next();
-            this.log.info(res);
+            this.log.debug(res);
         }
 
 
@@ -138,7 +139,7 @@ public class AuthenticateUser extends HttpServlet {
         if (authVal == null) {
             authVal = AuthValue.DENIED;
         }
-        this.log.info("Reservations:query:"+authVal.toString());
+        this.log.debug("Reservations:query:"+authVal.toString());
 
         if (authVal != AuthValue.DENIED)  {
             authorizedTabs.put("reservationDetailsPane", Boolean.TRUE);
@@ -160,7 +161,7 @@ public class AuthenticateUser extends HttpServlet {
         if (authQueryVal == null) {
             authQueryVal = AuthValue.DENIED;
         }
-        this.log.info("Users:query:"+authVal.toString());
+        this.log.debug("Users:query:"+authVal.toString());
 
         if (authQueryVal != AuthValue.DENIED)  {
             authorizedTabs.put("userProfilePane", Boolean.TRUE);
@@ -170,7 +171,7 @@ public class AuthenticateUser extends HttpServlet {
         if (authVal == null) {
             authVal = AuthValue.DENIED;
         }
-        this.log.info("Users:list:"+authVal.toString());
+        this.log.debug("Users:list:"+authVal.toString());
 
         if (authVal == AuthValue.ALLUSERS)  {
             authorizedTabs.put("userListPane", Boolean.TRUE);
@@ -191,7 +192,7 @@ public class AuthenticateUser extends HttpServlet {
         }
 
         authVal = resourcePerms.get("Users").get("create");
-        this.log.info("Users:create:"+authVal.toString());
+        this.log.debug("Users:create:"+authVal.toString());
         if (authVal == null) {
             authVal = AuthValue.DENIED;
         }
@@ -203,7 +204,7 @@ public class AuthenticateUser extends HttpServlet {
         }
 
         authVal = (AuthValue) resourcePerms.get("AAA").get("modify");
-        this.log.info("AAA:modify:"+authVal.toString());
+        this.log.debug("AAA:modify:"+authVal.toString());
         if (authVal == null) {
             authVal = AuthValue.DENIED;
         }

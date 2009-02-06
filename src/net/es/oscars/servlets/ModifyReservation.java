@@ -19,14 +19,14 @@ public class ModifyReservation extends HttpServlet {
         throws IOException, ServletException {
 
         String methodName = "ModifyReservation";
-        this.log.info("servlet.start");
+        this.log.info(methodName + ":start");
 
         UserSession userSession = new UserSession();
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         HashMap<String, Object> params = new HashMap<String, Object>();
@@ -44,12 +44,12 @@ public class ModifyReservation extends HttpServlet {
                 RmiUtils.getBssRmiClient(methodName, log);
             outputMap = rmiClient.modifyReservation(params, userName);
         } catch (Exception ex) {
-            ServletUtils.handleFailure(out, null, ex, methodName);
+            ServletUtils.handleFailure(out, log, ex, methodName);
             return;
         }
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)

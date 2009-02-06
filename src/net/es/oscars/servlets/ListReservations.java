@@ -37,7 +37,7 @@ public class ListReservations extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "ListReservations";
-        this.log.info("servlet.start");
+        this.log.info(methodName + ":start");
 
         RmiListResRequest rmiRequest = this.getParameters(servletRequest);
         RmiListResReply rmiReply = new RmiListResReply();
@@ -47,7 +47,7 @@ public class ListReservations extends HttpServlet {
         response.setContentType("application/json");
         String userName = userSession.checkSession(out, servletRequest, methodName);
         if (userName == null) {
-            this.log.error("No user session: cookies invalid");
+            this.log.warn("No user session: cookies invalid");
             return;
         }
         AuthValue authVal = null;
@@ -60,7 +60,7 @@ public class ListReservations extends HttpServlet {
             authVal =
                 aaaRmiClient.checkAccess(userName, "Reservations", "list");
         } catch (Exception e) {
-            ServletUtils.handleFailure(out, null, e, methodName);
+            ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
         HashMap<String,Object> outputMap = new HashMap<String,Object>();
@@ -81,7 +81,7 @@ public class ListReservations extends HttpServlet {
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
-        this.log.info("servlet.end");
+        this.log.info(methodName + ":end");
     }
 
     public void doPost(HttpServletRequest servletRequest,
