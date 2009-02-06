@@ -233,15 +233,22 @@ public class SubscriptionAdapter{
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
      * @throws PauseFailedFault
+     * @throws RemoteException 
      */
-    public PauseSubscriptionResponse pause(PauseSubscription request, 
-                               HashMap<String,String> permissionMap)
-                               throws AAAFaultMessage, 
-                                      ResourceUnknownFault,
-                                      PauseFailedFault{
-        this.log.info("pause.start");
-        this.log.info("pause.end");
-        return null;
+    public PauseSubscriptionResponse pause(PauseSubscription request, String user)
+                               throws AAAFaultMessage, ResourceUnknownFault,
+                                      PauseFailedFault, RemoteException{
+        this.log.debug("pause.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        PauseSubscriptionResponse response = new PauseSubscriptionResponse();
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String subscriptionId = this.verifySubscriptionRef(subRef);
+        
+        //Call the rmi component to pause
+        nbRmiClient.pauseSubscription(subscriptionId, user);
+        response.setSubscriptionReference(subRef);
+        this.log.debug("pause.end");
+        return response;
     }
     
     /**
@@ -253,15 +260,21 @@ public class SubscriptionAdapter{
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
      * @throws ResumeFailedFault
+     * @throws RemoteException 
      */
-    public ResumeSubscriptionResponse resume(ResumeSubscription request, 
-                               HashMap<String,String> permissionMap)
-                               throws AAAFaultMessage, 
-                                      ResourceUnknownFault,
-                                      ResumeFailedFault{
-        this.log.info("resume.start");
-        this.log.info("resume.end");
-        return null;
+    public ResumeSubscriptionResponse resume(ResumeSubscription request, String user)
+            throws AAAFaultMessage, ResourceUnknownFault, ResumeFailedFault, RemoteException{
+        this.log.debug("resume.start");
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        ResumeSubscriptionResponse response = new ResumeSubscriptionResponse();
+        EndpointReferenceType subRef = request.getSubscriptionReference();
+        String subscriptionId = this.verifySubscriptionRef(subRef);
+        
+        //Call the rmi component to pause
+        nbRmiClient.resumeSubscription(subscriptionId, user);
+        response.setSubscriptionReference(subRef);
+        this.log.debug("resume.end");
+        return response;
     }
     
     /**

@@ -150,18 +150,36 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         } catch (Exception e) {
             throw new RemoteException(e.getMessage(),e);
         }
-        
     }
 
     public void pauseSubscription(String subscriptionId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
-        
+        this.log.debug("pause.start");
+        String methodName = "Pause";
+        this.verifyRmiConnection(methodName);
+        try {
+            this.remote.pauseSubscription(subscriptionId, user);
+            this.log.debug("pause.end");
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
     }
     
     public void resumeSubscription(String subscriptionId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        this.log.debug("resume.start");
+        String methodName = "Resume";
+        this.verifyRmiConnection(methodName);
+        try {
+            this.remote.resumeSubscription(subscriptionId, user);
+            this.log.debug("resume.end");
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RemoteException(e.getMessage(),e);
+        }
     }
     
     public String registerPublisher(String publisherUrl, List<String> topics,

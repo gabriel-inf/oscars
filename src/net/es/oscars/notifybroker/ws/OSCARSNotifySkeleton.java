@@ -98,13 +98,31 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
 
     public PauseSubscriptionResponse PauseSubscription(
            PauseSubscription request) throws AAAFaultMessage, PauseFailedFault, ResourceUnknownFault{
-        return null;
+        PauseSubscriptionResponse response = null;
+        try {
+            String login = this.verifyCert();
+            response = this.sa.pause(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new PauseFailedFault(e.getMessage());
+        }
+        
+        return response;
     }
 
     public ResumeSubscriptionResponse ResumeSubscription(
            ResumeSubscription request)
            throws AAAFaultMessage, ResourceUnknownFault, ResumeFailedFault{
-        return null;
+        ResumeSubscriptionResponse response = null;
+        try {
+            String login = this.verifyCert();
+            response = this.sa.resume(request, login);
+        } catch (RemoteException e) {
+            this.log.debug(e);
+            throw new ResumeFailedFault(e.getMessage());
+        }
+        
+        return response;
     }
 
     public RegisterPublisherResponse RegisterPublisher(RegisterPublisher request)

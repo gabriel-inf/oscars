@@ -92,7 +92,6 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
             throws RemoteException {
         this.log.debug("renew.start");
         //Check RMI request and AAA parameters. 
-        //Also adds AAA filters for specific event types.
         AuthValue authValue = NBValidator.validateSubscriptionMod(subscriptionId, user, this.log);
         
         //Create subscription
@@ -117,7 +116,6 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
             throws RemoteException {
         this.log.debug("unsubscribe.start");
         //Check RMI request and AAA parameters. 
-        //Also adds AAA filters for specific event types.
         AuthValue authValue = NBValidator.validateSubscriptionMod(subscriptionId, user, this.log);
         
         //Create subscription
@@ -141,13 +139,44 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
 
     public void pauseSubscription(String subscriptionId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        this.log.debug("pause.start");
+        //Check RMI request and AAA parameters. 
+        AuthValue authValue = NBValidator.validateSubscriptionMod(subscriptionId, user, this.log);
         
+        //Create subscription
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            this.sm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, user, authValue);
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException(e.getMessage());
+        }
+        sess.getTransaction().commit();
+        this.log.debug("pause.end");
     }
     
     public void resumeSubscription(String subscriptionId, String user)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        this.log.debug("resume.start");
+        //Check RMI request and AAA parameters. 
+        AuthValue authValue = NBValidator.validateSubscriptionMod(subscriptionId, user, this.log);
+        
+        //Create subscription
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        try{
+            this.sm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, user, authValue);
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException(e.getMessage());
+        }
+        sess.getTransaction().commit();
+        this.log.debug("resume.end");
     }
     
     public String registerPublisher(String publisherUrl, List<String> topics,
