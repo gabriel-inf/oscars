@@ -6,6 +6,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.wsdlTypes.GetTopologyContent;
+import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.rmi.bss.xface.*;
 
 public interface BssRmiInterface extends Remote {
@@ -90,6 +92,19 @@ public interface BssRmiInterface extends Remote {
      */
     public Reservation
         modifyReservation(Reservation resv, String userName)
+            throws IOException, RemoteException;
+
+    /**
+     * Gets network topology.
+     *
+     * @param getTopoRequest Axis2 type containing network topology request
+     * @param userName string with authenticated login name of user
+     * @return result Axis2 type containing network topology
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public GetTopologyResponseContent
+        getNetworkTopology(GetTopologyContent getTopoRequest, String userName)
             throws IOException, RemoteException;
 
     /**

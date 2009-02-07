@@ -23,7 +23,7 @@ import net.es.oscars.rmi.bss.xface.*;
 
 
 /**
- * Acts as intermediary from Axis2 service to OSCARS library and Hibernate.
+ * Acts as intermediary from Axis2 service to OSCARS core via RMI calls.
  */
 public class ReservationAdapter {
     private Logger log = Logger.getLogger(ReservationAdapter.class);
@@ -40,7 +40,7 @@ public class ReservationAdapter {
      *
      * @param params ResCreateContent instance with with request params.
      * @param username String with user's login name
-     * @return reply CreateReply encapsulating library reply.
+     * @return reply CreateReply encapsulating server reply.
      * @throws BSSException
      */
     public CreateReply create(ResCreateContent soapParams, String username,
@@ -85,7 +85,7 @@ public class ReservationAdapter {
      *
      * @param request ModifyResContent instance with with request params.
      * @param username String with user's login name
-     * @return reply ModResReply encapsulating library reply.
+     * @return reply ModResReply encapsulating server reply.
      * @throws BSSException
      */
     public ModifyResReply modify(ModifyResContent request, String username,
@@ -147,7 +147,7 @@ public class ReservationAdapter {
      * @param params GlobalReservationId instance with request params.
      * @param username String user's login name
      * @param institution String user's institution name
-     * @return reply ResDetails instance encapsulating library reply.
+     * @return reply ResDetails instance encapsulating server reply.
      * @throws BSSException
      */
     public ResDetails query(QueryReservation request, String username,
@@ -183,7 +183,7 @@ public class ReservationAdapter {
      *  requested, and offset of first reservation to return.  The items
      *  in the listRequest are
      *
-     * @return reply ListReply encapsulating library reply.
+     * @return reply ListReply encapsulating server reply.
      * @throws BSSException
      */
     public ListReply
@@ -254,13 +254,39 @@ public class ReservationAdapter {
     }
 
     /**
+     * Makes a request for a network topology retrieval.
+     *
+     * @param params GetTopologyContent instance with with request params.
+     * @param username String with user's login name
+     * @return reply GetTopologyResponseContent encapsulating server reply.
+     * @throws BSSException
+     */
+    public GetTopologyResponseContent
+        getNetworkTopology(GetTopologyContent soapParams, String username,
+               BssRmiInterface rmiClient) throws BSSException {
+
+        this.log.info("getNetworkTopology.start");
+        GetTopologyResponseContent reply = null;
+        // note that Axis2 types are used in this method only
+        try {
+            reply =
+                rmiClient.getNetworkTopology(soapParams, username);
+        } catch (IOException e) {
+            this.log.error(e.getMessage());
+            throw new BSSException(e.getMessage());
+        }
+        this.log.info("createPath.finish");
+        return reply;
+    }
+
+    /**
      * Sets up a path. Forwards request
      * first, and sets-up path is reply successful. If there is an error during
      * local path setup a teardownPath message is issued.
      *
      * @param params CreatePathContent instance with with request params.
      * @param username String with user's login name
-     * @return reply CreatePathResponseContent encapsulating library reply.
+     * @return reply CreatePathResponseContent encapsulating server reply.
      * @throws BSSException
      */
     public CreatePathResponseContent
@@ -291,7 +317,7 @@ public class ReservationAdapter {
      *
      * @param params RefreshPathContent instance with with request params.
      * @param username String with user's login name
-     * @return reply RefreshPathResponseContent encapsulating library reply.
+     * @return reply RefreshPathResponseContent encapsulating server reply.
      * @throws BSSException
      */
     public RefreshPathResponseContent
@@ -322,7 +348,7 @@ public class ReservationAdapter {
      *
      * @param params TeardownPathContent instance with with request params.
      * @param username String with user's login name
-     * @return reply TeardownPathResponseContent encapsulating library reply.
+     * @return reply TeardownPathResponseContent encapsulating server reply.
      * @throws BSSException
      */
     public TeardownPathResponseContent

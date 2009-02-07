@@ -8,6 +8,8 @@ import java.util.Properties;
 import net.es.oscars.rmi.BaseRmiClient;
 import net.es.oscars.rmi.bss.xface.*;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.wsdlTypes.GetTopologyContent;
+import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.Logger;
@@ -185,6 +187,35 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             throw e;
         } catch (Exception e) {
             this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException (e.getMessage(),e);
+        }
+    }
+
+    /**
+     * Makes call to RMI server to get network topology.
+     *
+     * @param getTopoRequest Axis2 type containing network topology request
+     * @param userName string with login of user making request
+     * @return result Axis2 type containing network topology
+     * @throws RemoteException
+     */
+    public GetTopologyResponseContent
+        getNetworkTopology(GetTopologyContent getTopoRequest, String userName)
+            throws RemoteException {
+
+        this.log.debug("getNetworkTopology.start");
+        String methodName = "GetNetworkTopology";
+        GetTopologyResponseContent result = null;
+        this.verifyRmiConnection(methodName);
+        try {
+            result = this.remote.getNetworkTopology(getTopoRequest, userName);
+            this.log.debug("getNetworkTopology.end");
+            return result;
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            this.log.error("Exception from RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }

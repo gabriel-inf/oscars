@@ -244,37 +244,27 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         getNetworkTopology(GetNetworkTopology request)
             throws BSSFaultMessage,AAAFaultMessage {
 
-        GetTopologyContent requestContent = request.getGetNetworkTopology();
+        GetTopologyContent params = request.getGetNetworkTopology();
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
-        // FIXME: move this to RMI
-
-        /*
-        GetTopologyResponseContent responseContent = null;
-        String login = this.checkUser();
-        Session aaa = core.getAaaSession();
-        aaa.beginTransaction();
-        AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "query");
-        aaa.getTransaction().commit();
-
-       if (authVal.equals(AuthValue.DENIED)) {
-           this.log.info("denied");
-           throw new AAAFaultMessage("OSCARSSkeleton:getNetworkTopology: permission denied");
-       }
-
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
+        GetTopologyResponseContent reply = null;
+        String methodName = "getNetworkTopology";
+        BssRmiInterface bssRmiClient = null;
+        AaaRmiInterface aaaRmiClient = null;
         try {
-            responseContent = this.topoAdapter.getNetworkTopology(requestContent);
-            response.setGetNetworkTopologyResponse(responseContent);
-        } catch (TSSException e) {
-            bss.getTransaction().rollback();
-            throw new BSSFaultMessage("getNetworkTopology: " + e.getMessage());
-        } catch (Exception e) {
-            bss.getTransaction().rollback();
-            throw new AAAFaultMessage("getNetworkTopology: " + e.getMessage());
+            bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
+            aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+        } catch (RemoteException ex) {
+            throw new BSSFaultMessage(ex.getMessage());
         }
-        bss.getTransaction().commit();
-        */
+        String login = this.checkUser(aaaRmiClient);
+        ReservationAdapter resAdapter = new ReservationAdapter();
+        try {
+            reply = resAdapter.getNetworkTopology(params, login, bssRmiClient);
+        } catch (BSSException e) {
+            this.log.error("getNetworkTopology: " + e.getMessage());
+            throw new BSSFaultMessage("getNetworkTopology " + e.getMessage());
+        }
+        response.setGetNetworkTopologyResponse(reply);
         return response;
     }
 

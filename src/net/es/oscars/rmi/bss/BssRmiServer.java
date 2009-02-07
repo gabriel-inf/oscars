@@ -5,6 +5,8 @@ import java.util.*;
 import java.rmi.*;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.wsdlTypes.GetTopologyContent;
+import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.rmi.*;
 import net.es.oscars.PropertyLoader;
 import net.es.oscars.rmi.bss.xface.*;
@@ -20,6 +22,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     private ListResRmiHandler listHandler;
     private CancelResRmiHandler cancelHandler;
     private ModifyResRmiHandler modifyHandler;
+    private TopologyRmiHandler topologyHandler;
     private PathRmiHandler pathHandler;
     private UnsafeCreatePathRmiHandler unsafeCreatePathHandler;
     private UnsafeTeardownPathRmiHandler unsafeTeardownPathHandler;
@@ -63,6 +66,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         this.listHandler = new ListResRmiHandler();
         this.cancelHandler = new CancelResRmiHandler();
         this.modifyHandler = new ModifyResRmiHandler();
+        this.topologyHandler = new TopologyRmiHandler();
         this.pathHandler = new PathRmiHandler();
         this.unsafeCreatePathHandler = new UnsafeCreatePathRmiHandler();
         this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
@@ -150,6 +154,22 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
             throws IOException, RemoteException {
 
         return this.modifyHandler.modifyReservation(resv, userName);
+    }
+
+    /**
+     * Gets network topology.
+     *
+     * @param getTopoRequest Axis2 type containing network topology request
+     * @param userName string with authenticated login name of user
+     * @return Axis2 type containing network topology
+     * @throws IOException
+     * @throws RemoteException
+     */
+    public GetTopologyResponseContent
+        getNetworkTopology(GetTopologyContent getTopoRequest, String userName)
+            throws IOException, RemoteException {
+        return this.topologyHandler.getNetworkTopology(getTopoRequest,
+                                                       userName);
     }
 
     /**
