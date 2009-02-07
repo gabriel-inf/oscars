@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 import net.es.oscars.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.tss.*;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;

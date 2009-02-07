@@ -1,23 +1,9 @@
 package net.es.oscars.ws;
 
-import net.es.oscars.bss.OSCARSCore;
-import net.es.oscars.bss.topology.Domain;
-import net.es.oscars.bss.topology.DomainDAO;
-import net.es.oscars.client.Client;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.interdomain.*;
 import net.es.oscars.tss.*;
 import net.es.oscars.wsdlTypes.*;
 
 import org.apache.log4j.*;
-
-import org.hibernate.*;
-
-import java.rmi.RemoteException;
-
-import java.util.HashMap;
-import java.util.List;
-
 
 /**
  * Intermediary between Axis2 and OSCARS libraries for topology exchange
@@ -31,13 +17,9 @@ import java.util.List;
 public class TopologyExchangeAdapter {
     private Logger log;
     private TopologyExchangeManager tm;
-    private OSCARSCore core;
-    private String dbname;
 
     public TopologyExchangeAdapter() {
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
-        this.dbname = this.core.getBssDbName();
         this.tm = new TopologyExchangeManager();
     }
 
@@ -58,36 +40,5 @@ public class TopologyExchangeAdapter {
         this.log.info("getNetworkTopology.end");
 
         return getTopoResponse;
-    }
-
-    /**
-     * Sends a given getNetworkTopology request using the given client.
-     * It catches any exceptions and logs them as warnings.
-     *
-     * @param request the request to send
-     * @param pullClient the TopologyPuller used to send the request
-     * @return the response from the request, null if error occurred
-     */
-    private GetTopologyResponseContent pullTopology(
-        GetTopologyContent request, TopologyPuller pullClient) {
-        GetTopologyResponseContent response = null;
-
-        try {
-            response = pullClient.getNetworkTopology(request);
-        } catch (AAAFaultMessage e) {
-            response = null;
-            this.log.warn("AAA Error: " + e.getMessage());
-        } catch (BSSFaultMessage e) {
-            response = null;
-            this.log.warn("BSS Error: " + e.getMessage());
-        } catch (RemoteException e) {
-            response = null;
-            this.log.warn("Remote Error: " + e.getMessage());
-        } catch (Exception e) {
-            response = null;
-            this.log.warn("Exception: " + e.getMessage());
-        }
-
-        return response;
     }
 }
