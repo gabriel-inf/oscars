@@ -29,7 +29,7 @@ import net.es.oscars.notifybroker.jobs.ProcessNotifyJob;
 import net.es.oscars.notifybroker.jobs.SendNotifyJob;
 import net.es.oscars.rmi.notifybroker.xface.*;
 
-public class SubscriptionManager{
+public class NotifyBrokerManager{
     private Logger log;
     private long subMaxExpTime;
     private long pubMaxExpTime;
@@ -42,7 +42,7 @@ public class SubscriptionManager{
     public static int PAUSED_STATUS = 2;
     
     
-    public SubscriptionManager(String dbname){
+    public NotifyBrokerManager(String dbname){
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -241,7 +241,7 @@ public class SubscriptionManager{
         subscription.setUserLogin(user);
         subscription.setCreatedTime(new Long(curTime));
         subscription.setTerminationTime(new Long(expTime));
-        subscription.setStatus(SubscriptionManager.ACTIVE_STATUS);
+        subscription.setStatus(NotifyBrokerManager.ACTIVE_STATUS);
         dao.create(subscription);
         
         /* Save filters */
@@ -288,7 +288,7 @@ public class SubscriptionManager{
         }else{
             publisher.setTerminationTime(expTime);
         }
-        publisher.setStatus(SubscriptionManager.ACTIVE_STATUS);
+        publisher.setStatus(NotifyBrokerManager.ACTIVE_STATUS);
         dao.create(publisher);
         this.log.debug("registerPublisher.finish");
         
@@ -311,11 +311,11 @@ public class SubscriptionManager{
             throw new RemoteException("Publisher " + pubRefId + " not found.");
         }
         
-        if(publisher.getStatus() != SubscriptionManager.ACTIVE_STATUS){
+        if(publisher.getStatus() != NotifyBrokerManager.ACTIVE_STATUS){
             throw new RemoteException("Registration has already been destroyed.");
         }
         
-        publisher.setStatus(SubscriptionManager.INACTIVE_STATUS);
+        publisher.setStatus(NotifyBrokerManager.INACTIVE_STATUS);
         dao.update(publisher);
         this.log.debug("destroyRegistration.end");
     }
@@ -372,7 +372,7 @@ public class SubscriptionManager{
             throw new RemoteException("Subscription " + subRefId + " not found.");
         }
         
-        if(subscription.getStatus() != SubscriptionManager.ACTIVE_STATUS){
+        if(subscription.getStatus() != NotifyBrokerManager.ACTIVE_STATUS){
             throw new RemoteException("Subscription " + subRefId + " cannot " +
                         "be renewed because it has already been unsubscribed");
         }
@@ -410,11 +410,11 @@ public class SubscriptionManager{
         }
         int curStatus = subscription.getStatus();
         
-        if(newStatus == SubscriptionManager.ACTIVE_STATUS && curStatus != PAUSED_STATUS){
+        if(newStatus == NotifyBrokerManager.ACTIVE_STATUS && curStatus != PAUSED_STATUS){
             throw new Exception("Trying to resume a subscription that is not paused");
-        }else if(newStatus == SubscriptionManager.PAUSED_STATUS && curStatus != ACTIVE_STATUS){
+        }else if(newStatus == NotifyBrokerManager.PAUSED_STATUS && curStatus != ACTIVE_STATUS){
             throw new Exception("Trying to pause a subscription that is not active");
-        }else if(newStatus == SubscriptionManager.INACTIVE_STATUS && curStatus == INACTIVE_STATUS){
+        }else if(newStatus == NotifyBrokerManager.INACTIVE_STATUS && curStatus == INACTIVE_STATUS){
             //Unsubscribe any state that is not already unsubscribed
             throw new Exception("Trying to unsubscribe a reservation " +
                                         "that is already cancelled");

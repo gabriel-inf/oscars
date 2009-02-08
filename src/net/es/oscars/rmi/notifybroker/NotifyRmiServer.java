@@ -7,7 +7,7 @@ import java.rmi.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
-import net.es.oscars.notifybroker.SubscriptionManager;
+import net.es.oscars.notifybroker.NotifyBrokerManager;
 import net.es.oscars.notifybroker.ws.ResourceUnknownFault;
 import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.notifybroker.xface.*;
@@ -18,7 +18,7 @@ import org.jdom.Element;
 
 public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface  {
     private Logger log = Logger.getLogger(NotifyRmiServer.class);
-    private SubscriptionManager nbm;
+    private NotifyBrokerManager nbm;
     private NotifyBrokerCore core;
 
     /** Static remote object so that GarbageCollector doesn't delete it */
@@ -144,9 +144,9 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         sess.beginTransaction();
         try{
             if(subscriptionId.equals("ALL")){
-                this.nbm.updateStatusAll(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user);
+                this.nbm.updateStatusAll(NotifyBrokerManager.INACTIVE_STATUS, subscriptionId, user);
            }else{
-               this.nbm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user, authValue);
+               this.nbm.updateStatus(NotifyBrokerManager.INACTIVE_STATUS, subscriptionId, user, authValue);
            }
         }catch(Exception e){
             sess.getTransaction().rollback();
@@ -168,7 +168,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.nbm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, user, authValue);
+            this.nbm.updateStatus(NotifyBrokerManager.PAUSED_STATUS, subscriptionId, user, authValue);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
@@ -189,7 +189,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.nbm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, user, authValue);
+            this.nbm.updateStatus(NotifyBrokerManager.ACTIVE_STATUS, subscriptionId, user, authValue);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
