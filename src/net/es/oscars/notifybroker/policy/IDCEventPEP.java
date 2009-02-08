@@ -2,13 +2,16 @@ package net.es.oscars.notifybroker.policy;
 
 import java.rmi.RemoteException;
 import java.util.*;
-import org.apache.axiom.om.OMElement;
+
 import org.apache.log4j.*;
-import net.es.oscars.notifybroker.NotifyBrokerCore;
+import org.jdom.Element;
+
+import edu.internet2.perfsonar.utils.URNParser;
+
+import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 import net.es.oscars.rmi.aaa.AaaRmiClient;
 import net.es.oscars.rmi.notifybroker.NBValidator;
 import net.es.oscars.aaa.AuthValue;
-import net.es.oscars.wsdlTypes.EventContent;
 
 
 /**
@@ -19,7 +22,6 @@ import net.es.oscars.wsdlTypes.EventContent;
  */
 public class IDCEventPEP implements NotifyPEP{
     private Logger log;
-    private NotifyBrokerCore core;
     
     final public static String FILTER_RESV_USER = "IDC_RESV_USER";
     final public static String FILTER_RESV_ENDSITE = "IDC_RESV_ENDSITE_INSTITUTION";
@@ -27,7 +29,6 @@ public class IDCEventPEP implements NotifyPEP{
     
     public IDCEventPEP(){
         this.log = Logger.getLogger(this.getClass());
-        this.core = NotifyBrokerCore.getInstance();
     }
 
     public void init(){
@@ -66,10 +67,10 @@ public class IDCEventPEP implements NotifyPEP{
         return permissionMap;
     }
 
-    public HashMap<String, List<String>> enforce(OMElement[] omEvents) throws RemoteException{
+    public HashMap<String, List<String>> enforce(List<Element> events) throws RemoteException{
         HashMap<String, List<String>> permissionMap = new HashMap<String, List<String>>();
-        for(OMElement omEvent : omEvents){
-            HashMap<String, ArrayList<String>> tmpMap = this.enforce(omEvent);
+        for(Element event : events){
+            HashMap<String, List<String>> tmpMap = this.enforce(event);
             if(tmpMap != null){
                 permissionMap.putAll(tmpMap);
             }
@@ -77,20 +78,20 @@ public class IDCEventPEP implements NotifyPEP{
         return permissionMap;
     }
 
-    public HashMap<String, ArrayList<String>> enforce(OMElement omEvent) throws RemoteException{
+    public HashMap<String, List<String>> enforce(Element event) throws RemoteException{
         this.log.debug("prepare.start");
-        HashMap<String, ArrayList<String>> permissionMap = new HashMap<String, ArrayList<String>>();
+        HashMap<String, List<String>> permissionMap = new HashMap<String, List<String>>();
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> institutionList = new ArrayList<String>();
         HashMap<String,String> domainInsts = new HashMap<String,String>();
         String userLogin = null;
         String resvLogin = null;
-        EventContent event = null;
+        Element resDetails =  event.getChild("resDetails", WSNotifyConstants.IDC_NS);
+        
         try{
-            event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
-            userLogin = event.getUserLogin();
-            if(event.getResDetails() != null && event.getResDetails().getLogin() != null){
-                resvLogin = event.getResDetails().getLogin();
+            userLogin = event.getChildText("userLogin", WSNotifyConstants.IDC_NS);
+            if(resDetails != null){
+                resvLogin = resDetails.getChildText("login", WSNotifyConstants.IDC_NS);
             }
         }catch(Exception e){
             this.log.debug("notification not an idc:event");
@@ -116,95 +117,83 @@ public class IDCEventPEP implements NotifyPEP{
             permissionMap.put(IDCEventPEP.FILTER_RESV_ENDSITE, institutionList);
         }
         
-        if(event.getResDetails() == null ||
-           event.getResDetails().getPathInfo().getPath() == null ||
-           event.getResDetails().getPathInfo().getPath().getHop() == null){
-            this.log.debug("prepare.end");
+        if(resDetails == null){
+            return permissionMap;
+        }
+        Element pathInfo = resDetails.getChild("pathInfo", WSNotifyConstants.IDC_NS);
+        if(pathInfo == null){
+            this.log.debug("no pathInfo");
+            return permissionMap;
+        }
+        Element path = pathInfo.getChild("path", WSNotifyConstants.IDC_NS);
+        if(path  == null){
+            this.log.debug("no path");
+            return permissionMap;
+        }
+        List<Element> hops = path.getChildren("hop", WSNotifyConstants.NMWG_CP);
+        if(hops  == null || hops.isEmpty()){
+            this.log.debug("no hops");
             return permissionMap;
         }
 
         //Check path for end site institutions that may have not yet been added
-      /*  Session bss = null;
-        try{
-            bss = this.core.getBssSession();
-            bss.beginTransaction();
-            
-            CtrlPlaneHopContent[] hops = event.getResDetails().getPathInfo().getPath().getHop();
-            for(CtrlPlaneHopContent hop : hops){
-                CtrlPlaneLinkContent link = hop.getLink();
-                if(link == null){
+         try{
+            for(Element hop : hops){
+                Element link = hop.getChild("link", WSNotifyConstants.NMWG_CP);
+                String linkIdRef = hop.getChildText("linkIdRef", WSNotifyConstants.NMWG_CP);
+                String urn = null;
+                if(link != null){
+                    urn = link.getAttributeValue("id");
+                }else if(linkIdRef != null){
+                    urn = linkIdRef;
+                }else{
+                    this.log.debug("no urn");
                     continue;
                 }
-                String urn = link.getId();
-                this.addInst(urn,institutionList, domainInsts);
-                this.addRemoteInst(urn,institutionList, domainInsts);
+                this.addLinkInst(urn,institutionList, domainInsts);
             }
             if(!institutionList.isEmpty()){
                 permissionMap.put(IDCEventPEP.FILTER_RESV_ENDSITE, institutionList);
             }
-            bss.getTransaction().commit();
+            this.log.debug("prepare.end");
         }catch(Exception e){
-            bss.getTransaction().rollback();
             e.printStackTrace();
             this.log.info("Ignoring error");
-        } */
+        }
 
         this.log.debug("prepare.end");
         return permissionMap;
     }
 
-    private void addInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
-       /*DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+    private void addLinkInst(String urn, List<String> insts, HashMap<String,String> domainInsts){
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
         this.log.debug("urn=" + urn);
         String domainId = parseResults.get("domainId");
         if(domainId == null || domainInsts.containsKey(domainId)){
             return;
         }
-        Domain domain = domainDAO.fromTopologyIdent(domainId);
-        if(domain == null){
+        
+       /*
+        AaaRmiClient aaaRmiClient = new AaaRmiClient(); 
+        String inst = aaaRmiClient.getSite(domainId);
+        if(site == null || insts.contains(inst)){
             return;
         }
-        Site site = domain.getSite();
-        if(site == null || insts.contains(site.getName())){
-            return;
-        }
-        domainInsts.put(domainId, site.getName());
-        insts.add(site.getName());
-        this.log.debug("site=" + site.getName());*/
+        domainInsts.put(domainId, inst);
+        insts.add(inst);
+        this.log.debug("site=" + inst);*/
     }
 
-    private void addRemoteInst(String urn, ArrayList<String> insts, HashMap<String,String> domainInsts){
-       /* DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
-        Link link = domainDAO.getFullyQualifiedLink(urn);
-        if(link == null){
-            return;
+    private void addInst(String userName, List<String> insts){
+        if(userName == null){ return; }
+        AaaRmiClient aaaRmiClient = new AaaRmiClient();
+        String institution = null;
+        try {
+            institution = aaaRmiClient.getInstitution(userName);
+        } catch (RemoteException e) {
+            this.log.debug("No institution found for user");
         }
-        Link remoteLink = link.getRemoteLink();
-        if(remoteLink == null){
-            return;
-        }
-        Domain remoteDomain = remoteLink.getPort().getNode().getDomain();
-        if(domainInsts.containsKey(remoteDomain.getTopologyIdent())){
-            return;
-        }
-
-        Site site = remoteDomain.getSite();
-        if(site == null || insts.contains(site.getName())){
-            return;
-        }
-        domainInsts.put(remoteDomain.getTopologyIdent(), site.getName());
-        insts.add(site.getName());
-        this.log.debug("site=" + site.getName()); */
-    }
-
-    private void addInst(String userName, ArrayList<String> insts){
-       /* if(userName == null){ return; }
-        UserDAO userDAO = new UserDAO(this.core.getAaaDbName());
-        User user = userDAO.queryByParam("login", userName);
-        if(user == null){ return; }
-        Institution inst = user.getInstitution();
-        if(inst == null) { return; }
-        insts.add(inst.getName()); */
+        if(institution == null){ return; }
+        insts.add(institution);
     }
 }

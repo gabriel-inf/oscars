@@ -1,24 +1,27 @@
 package net.es.oscars.notifybroker.ws;
 
 import java.util.*;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.log4j.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import org.jdom.xpath.XPath;
 import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.*;
-import org.apache.axis2.databinding.ADBException;
-import org.apache.axis2.databinding.types.URI;
-import org.apache.axiom.om.xpath.AXIOMXPath;
-import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.OMFactory;
-import org.jaxen.JaxenException;
-import org.jaxen.SimpleNamespaceContext;
-
+import org.apache.axis2.databinding.types.URI;
+import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
 import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.notifybroker.NotifyRmiClient;
 import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
@@ -35,17 +38,10 @@ public class SubscriptionAdapter{
     private Logger log;
     private String subscriptionManagerURL;
     private HashMap<String,String> namespaces;
-    private String repo;
     
     /** Default constructor */
     public SubscriptionAdapter(){
         this.log = Logger.getLogger(this.getClass());
-        String catalinaHome = System.getProperty("catalina.home");
-        // check for trailing slash
-        if (!catalinaHome.endsWith("/")) {
-            catalinaHome += "/";
-        }
-        this.repo = catalinaHome + "shared/classes/repo/";
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notify.ws.broker", true); 
         this.subscriptionManagerURL = props.getProperty("url");
@@ -65,6 +61,39 @@ public class SubscriptionAdapter{
         this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
         this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
         this.namespaces.put("wsa", "http://www.w3.org/2005/08/addressing");
+    }
+    
+    public void notify(NotificationMessageHolderType holder) throws RemoteException{
+        NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
+        TopicExpressionType[] topicExprs = {holder.getTopic()};
+        EndpointReferenceType producerRef = holder.getProducerReference();
+        if(producerRef == null){
+            this.log.error("Could not find registration. No producer reference provided.");
+            return;
+        }
+        ReferenceParametersType refParams = producerRef.getReferenceParameters(); 
+        if(refParams == null){ 
+            this.log.error("Could not find registration. No registration reference provided.");
+            return;
+        }
+        String publisherRegId = refParams.getPublisherRegistrationId();
+        if(publisherRegId == null){
+            this.log.error("Could not find registration. No registration ID provided.");
+            return;
+        }
+        String publisherUrl = this.parseEPR(producerRef);
+        ArrayList<String> topics = null;
+        try {
+            topics = this.parseTopics(topicExprs);
+        } catch (TopicExpressionDialectUnknownFault e) {
+            this.log.error(e.getMessage());
+        } catch (InvalidTopicExpressionFault e) {
+            this.log.error(e.getMessage());
+        }
+        OMElement[] msg = holder.getMessage().getExtraElement();
+        List<Element> jdomMsg = this.axiom2Jdom(msg);
+        
+        nbRmiClient.notify(publisherUrl, publisherRegId, topics, jdomMsg);
     }
     
     /**
@@ -504,7 +533,7 @@ public class SubscriptionAdapter{
         
         String xpath = query.getString();
         try{
-            AXIOMXPath axiomXpath = new AXIOMXPath(xpath);
+            XPath.newInstance(xpath);
         }catch(Exception e){
             String err = "Invalid expression: " + e;
             if(isProdProps){
@@ -594,5 +623,29 @@ public class SubscriptionAdapter{
         }
         
         return subscriptionId;
+    }
+    
+    public List<Element> axiom2Jdom(OMElement[] omElems) throws RemoteException{
+        List<Element> jdomElems = new ArrayList<Element>();
+        for(OMElement omElem : omElems){
+            try {
+                Element jdomElem = null;
+                StringWriter sw = new StringWriter();
+                XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(sw);
+                MTOMAwareXMLSerializer mtom = new MTOMAwareXMLSerializer(writer);
+                omElem.serialize(writer);
+                mtom.flush();
+                SAXBuilder builder = new SAXBuilder();
+                StringReader sr = new StringReader(sw.toString());
+                Document doc = builder.build(sr);
+                jdomElem = doc.getRootElement();
+                jdomElems.add(jdomElem);
+            } catch (Exception e) {
+                this.log.error(e.getMessage());
+                throw new RemoteException("Unable to convert Notify message to JDOM object");
+            }
+        }
+        
+        return jdomElems;
     }
 }

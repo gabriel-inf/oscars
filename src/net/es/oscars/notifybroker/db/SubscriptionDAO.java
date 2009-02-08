@@ -22,7 +22,7 @@ public class SubscriptionDAO
         this.dbname = dbname;
     }
     
-    public List<Subscription> getAuthorizedSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
+    public List<Subscription> getAuthorizedSubscriptions(HashMap<String, List<String>> permissionMap){
         String sql = "SELECT DISTINCT s.* FROM subscriptions s INNER JOIN " +
                      "subscriptionFilters sf ON s.id = sf.subscriptionId " + 
                      "INNER JOIN subscriptionFilters sf2 ON sf.subscriptionId = sf2.subscriptionId " + 
@@ -33,7 +33,7 @@ public class SubscriptionDAO
         List<Subscription> subscriptions = null;
         boolean firstKey = true;
         boolean firstTopic = true;
-        ArrayList<String> topics = permissionMap.remove("TOPIC");
+        List<String> topics = permissionMap.remove("TOPIC");
         
         //Parse topics. Will always have at least one TOPIC (ALL).
         for(String topic : topics){

@@ -8,6 +8,7 @@ import java.util.List;
 import net.es.oscars.rmi.notifybroker.xface.*;
 
 import org.apache.axiom.om.OMElement;
+import org.jdom.Element;
 
 public interface NotifyRmiInterface extends Remote {
     /**
@@ -25,8 +26,8 @@ public interface NotifyRmiInterface extends Remote {
      */
     static String registryName = "net.es.oscars.rmi.notifybroker";
     
-    public void notify(String subscriptionId, String publisherId, 
-            List<String> topics, OMElement msg) throws RemoteException;
+    public void notify(String publisherUrl, String publisherRegId, 
+            List<String> topics, List<Element> msg) throws RemoteException;
 
     public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime, 
             HashMap<String,List<String>> filters, String user) throws RemoteException;

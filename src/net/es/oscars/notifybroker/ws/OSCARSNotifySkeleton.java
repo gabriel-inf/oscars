@@ -9,7 +9,6 @@ import net.es.oscars.rmi.aaa.AaaRmiClient;
 import net.es.oscars.rmi.notifybroker.NBValidator;
 
 import org.apache.axis2.context.*;
-import org.apache.axiom.om.OMElement;
 import org.apache.ws.security.handler.*;
 import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSConstants;
@@ -18,7 +17,6 @@ import org.apache.log4j.*;
 
 import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;
-import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 /**
  *  OSCARSNotifySkeleton java skeleton for the axisService
@@ -45,7 +43,14 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     }
 
     public void Notify(Notify request){
-        return;
+        NotificationMessageHolderType[] holders = request.getNotificationMessage();
+        for(NotificationMessageHolderType holder : holders){
+            try {
+                this.sa.notify(holder);
+            } catch (RemoteException e) {
+                this.log.error(e.getMessage());
+            }
+        }
     }
 
     public SubscribeResponse Subscribe(Subscribe request)

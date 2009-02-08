@@ -8,16 +8,17 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.SubscriptionManager;
+import net.es.oscars.notifybroker.ws.ResourceUnknownFault;
 import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.notifybroker.xface.*;
 
-import org.apache.axiom.om.OMElement;
 import org.apache.log4j.*;
 import org.hibernate.Session;
+import org.jdom.Element;
 
 public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface  {
     private Logger log = Logger.getLogger(NotifyRmiServer.class);
-    private SubscriptionManager sm;
+    private SubscriptionManager nbm;
     private NotifyBrokerCore core;
 
     /** Static remote object so that GarbageCollector doesn't delete it */
@@ -37,7 +38,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         this.log.debug("NotifyRmiServer.init().start");
         NotifyRmiServer.staticObject = this;
         this.core = NotifyBrokerCore.getInstance();
-        this.sm = new SubscriptionManager(this.core.getNotifyDbName());
+        this.nbm = this.core.getNotifyBrokerManager();
         
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi.notifybroker", true);
@@ -56,9 +57,29 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         super.shutdown(staticObject);
     }
     
-    public void notify(String subscriptionId, String publisherId, 
-            List<String> topics, OMElement msg) throws RemoteException {
-        //this.notifyHandler.Notify(request);
+    public void notify(String publisherUrl, String publisherRegId, 
+            List<String> topics, List<Element> msg) throws RemoteException {
+        
+        this.log.debug("notify.start");
+        Session sess = this.core.getNotifySession();
+        sess.beginTransaction();
+        //Check RMI request and AAA parameters. 
+        try {
+            this.nbm.queryPublisher(publisherRegId);
+        } catch (ResourceUnknownFault e) {
+            throw new RemoteException(e.getMessage());
+        }
+        HashMap<String, List<String>> pepMap = NBValidator.validateNotify(publisherUrl, publisherRegId, topics, msg, log);
+        
+        try{
+           this.nbm.schedProcessNotify(publisherUrl, publisherRegId, topics, msg, pepMap);
+        }catch(Exception e){
+            sess.getTransaction().rollback();
+            this.log.error(e.getMessage());
+            throw new RemoteException(e.getMessage());
+        }
+        sess.getTransaction().commit();
+        this.log.debug("notify.end");
     }
 
     public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime,
@@ -75,7 +96,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         sess.beginTransaction();
         RmiSubscribeResponse response = null;
         try{
-            response = this.sm.subscribe(consumerUrl, termTime, filters, user);
+            response = this.nbm.subscribe(consumerUrl, termTime, filters, user);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
@@ -99,7 +120,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         sess.beginTransaction();
         Long response = null;
         try{
-            response = this.sm.renew(subscriptionId, terminationTime, user, authValue);
+            response = this.nbm.renew(subscriptionId, terminationTime, user, authValue);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
@@ -123,9 +144,9 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         sess.beginTransaction();
         try{
             if(subscriptionId.equals("ALL")){
-                this.sm.updateStatusAll(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user);
+                this.nbm.updateStatusAll(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user);
            }else{
-               this.sm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user, authValue);
+               this.nbm.updateStatus(SubscriptionManager.INACTIVE_STATUS, subscriptionId, user, authValue);
            }
         }catch(Exception e){
             sess.getTransaction().rollback();
@@ -147,7 +168,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.sm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, user, authValue);
+            this.nbm.updateStatus(SubscriptionManager.PAUSED_STATUS, subscriptionId, user, authValue);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
@@ -168,7 +189,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.sm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, user, authValue);
+            this.nbm.updateStatus(SubscriptionManager.ACTIVE_STATUS, subscriptionId, user, authValue);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
@@ -192,7 +213,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         sess.beginTransaction();
         String publisherId = null;
         try{
-            publisherId = this.sm.registerPublisher(publisherUrl, demand, termTime, user);
+            publisherId = this.nbm.registerPublisher(publisherUrl, demand, termTime, user);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());
@@ -214,7 +235,7 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         Session sess = this.core.getNotifySession();
         sess.beginTransaction();
         try{
-            this.sm.destroyRegistration(publisherId, user, authVal);
+            this.nbm.destroyRegistration(publisherId, user, authVal);
         }catch(Exception e){
             sess.getTransaction().rollback();
             this.log.error(e.getMessage());

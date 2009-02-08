@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jdom.Element;
 
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
@@ -43,6 +44,51 @@ public class NBValidator {
             log.error(msg);
             throw new RemoteException(msg);
         }
+    }
+    
+    public static HashMap<String, List<String>> validateNotify(String publisherUrl, String publisherRegId, 
+            List<String> topics, List<Element> msg, Logger log) 
+            throws RemoteException{
+        
+        if(publisherUrl == null){
+            throw new RemoteException("Required argument publisherUrl is null");
+        }
+        try {
+            new URL(publisherUrl);
+        } catch (MalformedURLException e) {
+            throw new RemoteException("Invalid publisher URL provided");
+        }
+        
+        if(publisherRegId == null){
+            throw new RemoteException("Required argument publisherRegId is null");
+        }
+        
+        if(topics == null || topics.isEmpty()){
+            throw new RemoteException("Required argument topics is null or empty");
+        }
+        
+        if(msg == null || msg.size() < 1){
+            throw new RemoteException("Required argument msg is null or empty");
+        }
+        for(Element msgElem : msg){
+            //Call detach because it used to have a parent when controlled by Axis2
+            msgElem.detach();
+        }
+        
+        //Check for message specific constraints
+        HashMap<String,List<String>> pepMap = new HashMap<String,List<String>>();
+        NotifyBrokerCore core = NotifyBrokerCore.getInstance();
+        for(NotifyPEP notifyPep : core.getNotifyPEPs()){
+            if(!notifyPep.matches(topics)){
+                continue;
+            }
+            HashMap<String,List<String>> tmpPepMap = notifyPep.enforce(msg);
+            if(tmpPepMap != null){
+                pepMap.putAll(tmpPepMap);
+            }
+        }
+        
+        return pepMap;
     }
     
     public static void validateSubscribe(String consumerUrl, Long termTime,

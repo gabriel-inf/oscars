@@ -6,14 +6,11 @@ import java.util.*;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
-import org.hibernate.criterion.*;
 
-import net.es.oscars.PropHandler;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.wsdlTypes.PathInfo;
 
 /**

@@ -7,8 +7,8 @@ import java.util.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.notifybroker.xface.*;
 
-import org.apache.axiom.om.OMElement;
 import org.apache.log4j.Logger;
+import org.jdom.Element;
 
 public class NotifyRmiClient implements NotifyRmiInterface {
     private Logger log = Logger.getLogger(NotifyRmiClient.class);
@@ -86,19 +86,19 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         this.log.debug("NotifyRmiClient.init().end");
     }
     
-    public void notify(String subscriptionId, String publisherId, 
-            List<String> topics, OMElement msg) throws RemoteException {
+    public void notify(String publisherUrl, String publisherRegId, 
+            List<String> topics, List<Element> msg) throws RemoteException {
         String methodName = "notify";
         if (!this.verifyRmiConnection(methodName)) {
             throw new RemoteException("Not connected to RMI server");
         }
         try {
-            this.remote.notify(subscriptionId, publisherId, topics, msg);
+            this.remote.notify(publisherUrl, publisherRegId, topics, msg);
         } catch (RemoteException e) {
-            this.log.warn("Remote exception: " + e.getMessage(), e);
+            this.log.error("Remote exception: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.warn("Exception: " + e.getMessage(), e);
+            this.log.error("Exception: " + e.getMessage(), e);
             throw new RemoteException(e.getMessage());
         }
     }

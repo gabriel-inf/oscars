@@ -3,9 +3,10 @@ package net.es.oscars.notifybroker.policy;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.axiom.om.OMElement;
 
 import java.io.Serializable;
+
+import org.jdom.Element;
 
 /**
  * NotificationBrokerPEP is an interface for writing policy enforcement points
@@ -21,6 +22,6 @@ public interface NotifyPEP extends Serializable{
     
     public HashMap<String, List<String>> prepare(String subscriberLogin) throws RemoteException;
     
-    public HashMap<String, List<String>> enforce(OMElement[] messages) throws RemoteException;
+    public HashMap<String, List<String>> enforce(List<Element> messages) throws RemoteException;
     
 }

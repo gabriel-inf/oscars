@@ -25,8 +25,10 @@ public class NotifyBrokerCore{
     private Logger log;
     private Scheduler scheduler;
     private ServiceManager serviceManager = null;
+    private SubscriptionManager notifyBrokerManager = null;
     private ArrayList<NotifyPEP> notifyPEPs;
     private NotifyRmiServer rmiServer;
+    
     
     public boolean initialized = false;
     private static NotifyBrokerCore instance = null;
@@ -52,6 +54,7 @@ public class NotifyBrokerCore{
         instance.initScheduler();
         instance.initNotifyPEPs();
         instance.initServiceManager();
+        instance.initNotifyBrokerManager();
         instance.initRMIServer();
         
         return instance;
@@ -110,6 +113,12 @@ public class NotifyBrokerCore{
         this.serviceManager = new ServiceManager();
         this.log.debug("initServiceManager.end");
     }
+    
+    public void initNotifyBrokerManager() {
+        this.log.debug("initNotifyBrokerManager.start");
+        this.notifyBrokerManager = new SubscriptionManager(this.notifyDbName);
+        this.log.debug("initNotifyBrokerManager.end");
+    }
 
 
     /**
@@ -164,5 +173,10 @@ public class NotifyBrokerCore{
 
     public ServiceManager getServiceManager(){
         return this.serviceManager;
+    }
+
+
+    public SubscriptionManager getNotifyBrokerManager(){
+        return this.notifyBrokerManager;
     }
 }

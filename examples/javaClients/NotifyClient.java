@@ -1,11 +1,15 @@
 import net.es.oscars.notifybroker.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import org.oasis_open.docs.wsn.b_2.*;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 import org.w3.www._2005._08.addressing.*;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.databinding.ADBException;
 import java.rmi.RemoteException;
-import org.apache.axis2.AxisFault;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMAbstractFactory;
@@ -13,26 +17,24 @@ import org.apache.axiom.om.OMFactory;
 
 public class NotifyClient{
     public static void main(String[] args){
-        String url = "http://anna-lab3.internet2.edu:8080/axis2/services/OSCARSNotify";
-        String subMgrUrl = "http://anna-lab3.internet2.edu:8080/axis2/services/OSCARSNotify";
-        String notifProdUrl = "https://anna-lab3.internet2.edu:8443/axis2/services/OSCARS";
-        String subscriptionId = "dcn.internet2.edu-1";
-        String publisherRegistrationId = "urn:uuid:85502ebe-2f7c-433e-8f35-6d19ba34239f";
+        String url = "http://127.0.0.1:8080/axis2/services/OSCARSNotify";
+        String notifProdUrl = "http://127.0.0.1:8080/axis2/services/OSCARS";
+        //String subscriptionId = "dcn.internet2.edu-1";
+        String publisherRegistrationId = "urn:uuid:4c982a0d-d0fd-4f15-9276-4111d9958b5a";
         
         try{
             OSCARSNotifyStub stub = new OSCARSNotifyStub(url);
             Notify notification = new Notify();
             NotificationMessageHolderType msgHolder = new NotificationMessageHolderType();
             
-            EndpointReferenceType subRef = new EndpointReferenceType();
-            AttributedURIType subAttrUri = new AttributedURIType();
-            URI subRefUri = new URI(subMgrUrl);
-            subAttrUri.setAnyURI(subRefUri);
-            subRef.setAddress(subAttrUri);
+            //EndpointReferenceType subRef = new EndpointReferenceType();
+            //AttributedURIType subAttrUri = new AttributedURIType();
+            //URI subRefUri = new URI(subMgrUrl);
+            //subAttrUri.setAnyURI(subRefUri);
+            //subRef.setAddress(subAttrUri);
             //set ReferenceParameters
-            ReferenceParametersType subRefParams = new ReferenceParametersType();
-            subRefParams.setSubscriptionId(subscriptionId);
-            subRef.setReferenceParameters(subRefParams);
+            //subRefParams.setSubscriptionId(subscriptionId);
+            //subRef.setReferenceParameters(subRefParams);
             
             TopicExpressionType topicExpr = new TopicExpressionType();
             topicExpr.setString("idc:INFO");
@@ -68,6 +70,28 @@ public class NotifyClient{
             resDetails.setBandwidth(1000);
             resDetails.setDescription("test");
             PathInfo pathInfo = new PathInfo();
+            CtrlPlanePathContent path = new CtrlPlanePathContent();
+            path.setId("urn:ogf:network:path=test");
+            CtrlPlaneHopContent hop1 = new CtrlPlaneHopContent();
+            hop1.setId("1");
+            CtrlPlaneHopContent hop2 = new CtrlPlaneHopContent();
+            hop2.setId("2");
+            CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
+            CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+            CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+            link.setId("urn:ogf:network:domain=dcn.internet2.edu:node=CHIC:port=S28159:link=10.100.100.25");
+            link.setTrafficEngineeringMetric("100");
+            swcap.setEncodingType("ethernet");
+            swcap.setSwitchingcapType("l2sc");
+            swcapInfo.setInterfaceMTU(9000);
+            swcapInfo.setVlanRangeAvailability("3000-4000");
+            swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
+            link.setSwitchingCapabilityDescriptors(swcap);
+            hop1.setLink(link);
+            hop2.setLinkIdRef("urn:ogf:network:domain=dcn.internet2.edu:node=NEWY:port=S26367:link=10.100.80.149");
+            path.addHop(hop1);
+            path.addHop(hop2);
+            pathInfo.setPath(path);
             pathInfo.setPathSetupMode("timer-automatic");
             resDetails.setPathInfo(pathInfo);
             
@@ -77,7 +101,7 @@ public class NotifyClient{
             OMElement omEvent = event.getOMElement(Event.MY_QNAME, omFactory);
             msg.addExtraElement(omEvent);
             
-            msgHolder.setSubscriptionReference(subRef);
+            //msgHolder.setSubscriptionReference(subRef);
             msgHolder.setTopic(topicExpr);
             msgHolder.setProducerReference(prodRef);
             msgHolder.setMessage(msg);

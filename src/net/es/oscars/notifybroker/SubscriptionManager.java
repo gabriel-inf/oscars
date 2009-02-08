@@ -4,6 +4,15 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 import org.apache.log4j.*;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.xpath.*;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+
 import net.es.oscars.PropHandler;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.notifybroker.ws.UnacceptableInitialTerminationTimeFault;
@@ -15,6 +24,9 @@ import net.es.oscars.notifybroker.db.Subscription;
 import net.es.oscars.notifybroker.db.SubscriptionDAO;
 import net.es.oscars.notifybroker.db.SubscriptionFilter;
 import net.es.oscars.notifybroker.db.SubscriptionFilterDAO;
+import net.es.oscars.notifybroker.jdom.ProducerReference;
+import net.es.oscars.notifybroker.jobs.ProcessNotifyJob;
+import net.es.oscars.notifybroker.jobs.SendNotifyJob;
 import net.es.oscars.rmi.notifybroker.xface.*;
 
 public class SubscriptionManager{
@@ -22,6 +34,7 @@ public class SubscriptionManager{
     private long subMaxExpTime;
     private long pubMaxExpTime;
     private String dbname;
+    private HashMap<String,String> namespaces;
     
     //Constants
     public static int INACTIVE_STATUS = 0;
@@ -50,6 +63,164 @@ public class SubscriptionManager{
             this.log.debug("Defaulting to 12 hour expiration for publisher registrations.");
             this.pubMaxExpTime = 3600*12;
         }
+        
+        //TODO: Loads namespace prefixes from properties file
+        this.namespaces = new HashMap<String,String>();
+        this.namespaces.put("idc", "http://oscars.es.net/OSCARS");
+        this.namespaces.put("nmwg-ctrlp", "http://ogf.org/schema/network/topology/ctrlPlane/20080828/");
+        this.namespaces.put("wsa", "http://www.w3.org/2005/08/addressing");
+    }
+    
+    /**
+     * Adds a ProcessNotifyJob to the scheduler so that the caller is free to return
+     * an HTTP 200 response to publisher of this notifcation without waiting for
+     * all the send messages to be sent to subscribers.
+     *
+     * @param holder the notification message to send
+     * @param permissionMap a map of the permissions required to view this notification
+     */
+    public void schedProcessNotify(String publisherUrl, String publisherRegId, 
+            List<String> topics, List<Element> msg, HashMap<String, List<String>> pepMap){ 
+        this.log.debug("schedProcessNotify.start");
+        String jobKey = msg.hashCode() + System.currentTimeMillis() + "";
+        NotifyBrokerCore core = NotifyBrokerCore.getInstance();
+        Scheduler sched = core.getScheduler();
+        String triggerName = "processNotifyTrig-" + jobKey;
+        String jobName = "processNotify-" + jobKey;
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  new Date(), null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "PROCESS_NOTIFY",
+                                            ProcessNotifyJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("permissionMap", pepMap);
+        dataMap.put("publisherUrl", publisherUrl);
+        dataMap.put("topics", topics);
+        dataMap.put("message", msg);
+        jobDetail.setJobDataMap(dataMap);   
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);    
+        }
+        this.log.debug("schedProcessNotify.end");
+    }
+    
+    /**
+     * Forwards notfications to appropriate subscribers.
+     *
+     * @param holder the notification message to send
+     * @param permissionMap a map of the permissions required to view this notification
+     * @throws RemoteException 
+     */
+    public void notify(String publisherUrl, List<String> topics,
+                       HashMap<String, List<String>> permissionMap,
+                       List<Element> msg) throws RemoteException{
+        this.log.debug("notify.start");
+        ArrayList<String> parentTopics = new ArrayList<String>();
+        List<Subscription> authSubscriptions = null;
+        
+        //add all parent topics
+        for(String topic : topics){
+            String[] topicParts = topic.split("\\/");
+            String topicString = "";
+            for(int i = 0; i < (topicParts.length - 1); i++){
+                topicString += topicParts[i];
+                parentTopics.add(topicString);
+                topicString += "/";
+            }
+        }
+        topics.addAll(parentTopics);
+        permissionMap.put("TOPIC", topics);
+        
+        //Convert publisher URL to JDOM type so can run XPATH
+        ProducerReference prodRef = new ProducerReference();
+        prodRef.setAddress(publisherUrl);
+        
+        /* find all subscriptions that match this topic, have the necessary
+           authorizations on the Notification resource, and match user XPATH */
+        authSubscriptions = this.findSubscriptions(permissionMap);
+        for(Subscription authSubscription : authSubscriptions){ 
+            //apply subscriber specified XPATH filters
+            this.log.debug("Applying filters for " + authSubscription.getReferenceId());
+            Set filters = authSubscription.getFilters();
+            Iterator i = filters.iterator();
+            String matches = null;
+            while(i.hasNext() && matches == null){
+                SubscriptionFilter filter = (SubscriptionFilter) i.next();
+                String type = filter.getType();
+                try{
+                    if("PRODXPATH".equals(type)){
+                        this.log.debug("Found producer filter: " + filter.getValue());
+                        XPath xpath = XPath.newInstance(filter.getValue());
+                        for(String nsPrefix : this.namespaces.keySet()){
+                            xpath.addNamespace(nsPrefix, this.namespaces.get(nsPrefix));
+                        }
+                        matches = xpath.valueOf(prodRef.getJdom());
+                        this.log.debug(matches != null ? "Filter matches." : "No Match");
+                    }else if("MSGXPATH".equals(type)){
+                        this.log.debug("Found message filter: " + filter.getValue());
+                        XPath xpath = XPath.newInstance(filter.getValue());
+                        for(String nsPrefix : this.namespaces.keySet()){
+                            xpath.addNamespace(nsPrefix, this.namespaces.get(nsPrefix));
+                        }
+                        matches = xpath.valueOf(msg);
+                        this.log.debug(matches != null ? "Filter matches." : "No Match");
+                    }
+                }catch(JDOMException e){
+                    this.log.error(e);
+                    e.printStackTrace();
+                    matches = null;
+                    break;
+                }
+            }
+            if(matches != null){
+                this.schedSendNotify(publisherUrl, msg, topics, authSubscription);
+            } 
+        }
+        this.log.info("notify.end");
+    }
+    
+    /**
+     * Adds a SendNotifyJob to the scheduler so that notification sending
+     * is threaded rather than doing each serially. This is desirable because
+     * one send action is taking a long amount of time it will not hold-up 
+     * other messages from sending.
+     *
+     * @param holder the message to send
+     * @param subscription a subscription containing information needed to send the notification
+     */
+    public void schedSendNotify(String publisherUrl,  List<Element> msg, 
+            List<String> topics, Subscription subscription){
+        this.log.debug("schedSendNotify.start");
+        NotifyBrokerCore core = NotifyBrokerCore.getInstance();
+        Scheduler sched = core.getScheduler();
+        String jobKey = subscription.hashCode() + "" + System.currentTimeMillis();
+        String triggerName = "sendNotifyTrig-" + jobKey;
+        String jobName = "sendNotify-" + jobKey;
+        SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
+                                                  new Date(), null, 0, 0L);
+        JobDetail jobDetail = new JobDetail(jobName, "SEND_NOTIFY",
+                                            SendNotifyJob.class);
+        JobDataMap dataMap = new JobDataMap();
+        dataMap.put("url", subscription.getUrl());
+        dataMap.put("subRefId", subscription.getReferenceId());
+        dataMap.put("message", msg);
+        dataMap.put("publisherUrl", publisherUrl);
+        dataMap.put("topics", topics);
+        jobDetail.setJobDataMap(dataMap);
+        
+        try{
+            this.log.debug("Adding job " + jobName);
+            sched.scheduleJob(jobDetail, trigger);
+            this.log.debug("Job added.");
+        }catch(SchedulerException ex){
+            this.log.error("Scheduler exception: " + ex);    
+        }
+        
+        this.log.debug("schedSendNotify.end: subscription=" + 
+                       subscription.getReferenceId());
     }
     
     public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime, 
@@ -162,7 +333,7 @@ public class SubscriptionManager{
         this.log.debug("queryPublisher.end");
     }
     
-    public List<Subscription> findSubscriptions(HashMap<String, ArrayList<String>> permissionMap){
+    public List<Subscription> findSubscriptions(HashMap<String, List<String>> permissionMap){
         this.log.debug("findSubscriptions.start");
         
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);

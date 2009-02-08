@@ -1,15 +1,15 @@
 package net.es.oscars.notifybroker.jobs;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import org.apache.log4j.Logger;
-import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.quartz.*;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
-import net.es.oscars.notifybroker.policy.NotifyPEP;
-import net.es.oscars.notifybroker.ws.SubscriptionAdapter;
+import net.es.oscars.notifybroker.SubscriptionManager;
 
 import org.hibernate.*;
+import org.jdom.Element;
 
 /**
  * A job for finding the subscribers that want to receive a notification 
@@ -21,26 +21,26 @@ public class ProcessNotifyJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         Logger log = Logger.getLogger(this.getClass());
         NotifyBrokerCore core = NotifyBrokerCore.getInstance();
+        SubscriptionManager nbm = core.getNotifyBrokerManager();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String jobName = context.getJobDetail().getFullName();
-        log.info("ProcessNotifyJob.start name:"+jobName);
-        NotificationMessageHolderType holder = 
-             (NotificationMessageHolderType) dataMap.get("message");
-        HashMap<String, ArrayList<String>> permissionMap = 
-             (HashMap<String, ArrayList<String>>) dataMap.get("permissionMap");
-        ArrayList<NotifyPEP> notifyPEPs = 
-             (ArrayList<NotifyPEP>) dataMap.get("notifyPEPs");
+        log.debug("ProcessNotifyJob.start name:"+jobName);
+        String publisherUrl = dataMap.getString("publisherUrl");
+        List<String> topics = (List<String>) dataMap.get("topics");
+        List<Element> msg = (List<Element>) dataMap.get("message");
+        HashMap<String, List<String>> permissionMap = 
+             (HashMap<String, List<String>>) dataMap.get("permissionMap");
         
         Session notify = core.getNotifySession();
         notify.beginTransaction();
         try{
-            //sa.notify(holder, permissionMap, notifyPEPs);
+            nbm.notify(publisherUrl, topics, permissionMap, msg);
             notify.getTransaction().commit();
         }catch(Exception ex){
             log.error(ex);
             ex.printStackTrace();
             notify.getTransaction().rollback();
         }
-        log.info("ProcessNotifyJob.end name:"+jobName);
+        log.debug("ProcessNotifyJob.end name:"+jobName);
     }
 }
