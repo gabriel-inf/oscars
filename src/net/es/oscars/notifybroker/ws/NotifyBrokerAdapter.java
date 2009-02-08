@@ -28,19 +28,19 @@ import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
 import net.es.oscars.rmi.notifybroker.xface.RmiSubscribeResponse;
 
 /** 
- * SubscriptionAdapter provides a translation layer between Axis2 and Hibernate. 
+ * NotifyBrokerAdapter provides a translation layer between Axis2 and Hibernate. 
  * It is intended to provide a gateway for Axis2 into more general core functionality
  * of the notification broker.
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class SubscriptionAdapter{
+public class NotifyBrokerAdapter{
     private Logger log;
     private String subscriptionManagerURL;
     private HashMap<String,String> namespaces;
     
     /** Default constructor */
-    public SubscriptionAdapter(){
+    public NotifyBrokerAdapter(){
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("notify.ws.broker", true); 

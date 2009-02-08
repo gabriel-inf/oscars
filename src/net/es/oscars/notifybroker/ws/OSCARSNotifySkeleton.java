@@ -25,7 +25,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     private Logger log;
     private Principal certIssuer;
     private Principal certSubject;
-    private SubscriptionAdapter sa;
+    private NotifyBrokerAdapter nba;
     
     /**
      * Called from the Axis2 framework during initialization of the service.
@@ -38,7 +38,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     public void init(ServiceContext sc) {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("OSCARSNotify init.start");
-        this.sa =  new SubscriptionAdapter();
+        this.nba =  new NotifyBrokerAdapter();
         this.log.info("OSCARSNotify init.end");
     }
 
@@ -46,7 +46,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         NotificationMessageHolderType[] holders = request.getNotificationMessage();
         for(NotificationMessageHolderType holder : holders){
             try {
-                this.sa.notify(holder);
+                this.nba.notify(holder);
             } catch (RemoteException e) {
                 this.log.error(e.getMessage());
             }
@@ -63,7 +63,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         SubscribeResponse response = null;
         try {
             String login = this.verifyCert();
-            response = this.sa.subscribe(request, login);
+            response = this.nba.subscribe(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new SubscribeCreationFailedFault(e.getMessage());
@@ -78,7 +78,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         RenewResponse response = null;
         try {
             String login = this.verifyCert();
-            response = this.sa.renew(request, login);
+            response = this.nba.renew(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new ResourceUnknownFault(e.getMessage());
@@ -92,7 +92,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         UnsubscribeResponse response = null;
         try {
             String login = this.verifyCert();
-            response = this.sa.unsubscribe(request, login);
+            response = this.nba.unsubscribe(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new ResourceUnknownFault(e.getMessage());
@@ -106,7 +106,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         PauseSubscriptionResponse response = null;
         try {
             String login = this.verifyCert();
-            response = this.sa.pause(request, login);
+            response = this.nba.pause(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new PauseFailedFault(e.getMessage());
@@ -121,7 +121,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         ResumeSubscriptionResponse response = null;
         try {
             String login = this.verifyCert();
-            response = this.sa.resume(request, login);
+            response = this.nba.resume(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new ResumeFailedFault(e.getMessage());
@@ -139,7 +139,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         RegisterPublisherResponse response = null;
         try {
             String login = this.verifyCert();
-            response = this.sa.registerPublisher(request, login);
+            response = this.nba.registerPublisher(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new PublisherRegistrationFailedFault(e.getMessage());
@@ -154,7 +154,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
         try {
             String login = this.verifyCert();
             this.log.info("DestroyRegistration.start");
-            response = this.sa.destroyRegistration(request, login);
+            response = this.nba.destroyRegistration(request, login);
         } catch (RemoteException e) {
             this.log.debug(e);
             throw new ResourceNotDestroyedFault(e.getMessage());
