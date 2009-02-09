@@ -161,9 +161,14 @@ public class QueryReservation extends HttpServlet {
             outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
             String vlanTag = BssUtils.getVlanTag(path);
             if (vlanTag != null) {
-                int storedVlan = Integer.parseInt(vlanTag);
-                int vlanNum = Math.abs(storedVlan);
-                outputMap.put("vlanReplace", vlanNum + "");
+                //If its a negative number try converting it
+                //Prior to reservation completing may be a range or "any"
+                int storedVlan = 0;
+                try{
+                    storedVlan = Integer.parseInt(vlanTag);
+                    vlanTag = Math.abs(storedVlan) + "";
+                }catch(Exception e){}
+                outputMap.put("vlanReplace", vlanTag);
                 if (storedVlan >= 0) {
                     outputMap.put("taggedReplace", "true");
                 } else {
