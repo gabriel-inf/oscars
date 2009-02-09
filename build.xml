@@ -132,7 +132,8 @@
             <classes dir="${build.classes}"
                 includes="**/oscars/*.class, **/oscars/database/HibernateBean.class,
                           **/oscars/bss/*.class, **/oscars/bss/topology/*.class,
-                          **/oscars/aaa/*.class, **/oscars/servlets/**/*.class *.properties"
+                          **/oscars/aaa/*.class, **/oscars/servlets/**/*.class,
+                          **/oscars/wsdlTypes/GetTopology*.class, *.properties"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager.class,
                           **/oscars/bss/*DAO.class, **/oscars/bss/*Manager.class,
