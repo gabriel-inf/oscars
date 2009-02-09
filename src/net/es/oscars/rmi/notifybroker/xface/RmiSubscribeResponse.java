@@ -2,6 +2,12 @@ package net.es.oscars.rmi.notifybroker.xface;
 
 import java.io.Serializable;
 
+/**
+ * Java object that holds all the parameters of a response to the 
+ * Subscribe call.
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class RmiSubscribeResponse implements Serializable{
     private String subscriptionId;
     private Long terminationTime;

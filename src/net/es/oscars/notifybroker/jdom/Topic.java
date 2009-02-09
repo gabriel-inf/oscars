@@ -5,6 +5,12 @@ import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 import org.jdom.Attribute;
 import org.jdom.Element;
 
+/**
+ * Represents a Topic element as defined in WS-Notification
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ *
+ */
 public class Topic {
     private String dialect;
     private String expression;
@@ -38,7 +44,7 @@ public class Topic {
     }
 
     /**
-     * @return the jdom
+     * @return a JDOM representation of the Topic element
      */
     public Element getJdom() {
         Element jdom = new Element("Topic", WSNotifyConstants.WSN_NS);

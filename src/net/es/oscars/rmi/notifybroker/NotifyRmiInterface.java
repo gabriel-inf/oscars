@@ -7,7 +7,6 @@ import java.util.List;
 
 import net.es.oscars.rmi.notifybroker.xface.*;
 
-import org.apache.axiom.om.OMElement;
 import org.jdom.Element;
 
 public interface NotifyRmiInterface extends Remote {

@@ -4,6 +4,12 @@ import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 
 import org.jdom.Element;
 
+/**
+ * Represents a ProducerReference element as defined in WS-Notification
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ *
+ */
 public class ProducerReference {
     private String address;
     private String publisherRegId;
@@ -34,7 +40,7 @@ public class ProducerReference {
     }
     
     /**
-     * @return the jdom
+     * @return a JDOM representation of the ProducerReference element
      */
     public Element getJdom() {
         Element jdom = new Element("ProducerReference", WSNotifyConstants.WSN_NS);

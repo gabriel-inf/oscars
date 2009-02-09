@@ -34,7 +34,7 @@ public class ProcessNotifyJob implements Job{
         Session notify = core.getNotifySession();
         notify.beginTransaction();
         try{
-            nbm.notify(publisherUrl, topics, permissionMap, msg);
+            nbm.notify(publisherUrl, topics, msg, permissionMap);
             notify.getTransaction().commit();
         }catch(Exception ex){
             log.error(ex);

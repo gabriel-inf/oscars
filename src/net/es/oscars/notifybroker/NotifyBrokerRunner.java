@@ -7,6 +7,11 @@ import java.io.PrintWriter;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Launches the NotificationBroker core process
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class NotifyBrokerRunner {
     private static Logger log = Logger.getLogger(NotifyBrokerRunner.class);
     private static NotifyBrokerCore core = null;

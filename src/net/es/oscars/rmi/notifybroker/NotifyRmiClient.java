@@ -30,9 +30,6 @@ public class NotifyRmiClient implements NotifyRmiInterface {
     /**
      * Initializes the client and connects to the AAA RMI registry.
      *
-     * DO NOT use this yet; currently only here for completeness
-     * Will eventually be used by the core to connect to a separate AAA RMI server
-     *
      * @throws RemoteException
      */
     public NotifyRmiClient() throws RemoteException {

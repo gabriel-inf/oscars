@@ -28,7 +28,7 @@ import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
 import net.es.oscars.rmi.notifybroker.xface.RmiSubscribeResponse;
 
 /** 
- * NotifyBrokerAdapter provides a translation layer between Axis2 and Hibernate. 
+ * NotifyBrokerAdapter provides a translation layer between Axis2 and RMI. 
  * It is intended to provide a gateway for Axis2 into more general core functionality
  * of the notification broker.
  *
@@ -63,6 +63,12 @@ public class NotifyBrokerAdapter{
         this.namespaces.put("wsa", "http://www.w3.org/2005/08/addressing");
     }
     
+    /**
+     * Converts a Notify message into an RMI call
+     * 
+     * @param holder the Notify message
+     * @throws RemoteException
+     */
     public void notify(NotificationMessageHolderType holder) throws RemoteException{
         NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
         TopicExpressionType[] topicExprs = {holder.getTopic()};
@@ -97,22 +103,19 @@ public class NotifyBrokerAdapter{
     }
     
     /**
-     * Creates a new subscription based on the parameters of the request. It also adds
-     * entries in its database to make sure the subscriber only gets notifications it is
-     * authorized to see. 
+     * Converts a Subscribe SOAP message to an RMI call
      * 
-     * @param request the Axis2 object with the Subscribe request information
-     * @param userLogin the login of the subscriber
-     * @param permissionMap A hash containing certain authorization constraints for the subscriber
-     * @return an Axis2 object with the result of the subscription creation
+     * @param request the Subscribe request
+     * @param user the login of the user that sent the Subscribe message
+     * @return a Axis2 SubscribeResponse with the subscription ID and termination time
+     * @throws TopicExpressionDialectUnknownFault
+     * @throws InvalidTopicExpressionFault
+     * @throws TopicNotSupportedFault
+     * @throws InvalidProducerPropertiesExpressionFault
      * @throws InvalidFilterFault
      * @throws InvalidMessageContentExpressionFault
-     * @throws InvalidProducerPropertiesExpressionFault
-     * @throws InvalidTopicExpressionFault
-     * @throws TopicExpressionDialectUnknownFault
-     * @throws TopicNotSupportedFault
      * @throws UnacceptableInitialTerminationTimeFault
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     public SubscribeResponse subscribe(Subscribe request, String user)
         throws TopicExpressionDialectUnknownFault, InvalidTopicExpressionFault,TopicNotSupportedFault,
@@ -186,17 +189,15 @@ public class NotifyBrokerAdapter{
     }
     
     /**
-     * Renew a  subscription based on the parameters of the request. It also updates
-     * entries in its database to make sure the subscriber only gets notifications it is
-     * authorized to see.
+     * Converts a Renew SOAP message to an RMI call
      * 
-     * @param request the Axis2 object with the Renew request information
-     * @param permissionMap a hash containing certain authorization constraints for the renewer
-     * @return an Axis2 object with the result of the renewal
+     * @param request the Renew request
+     * @param user the login of the user that sent the Renew message
+     * @return an axis2 RenewResponse
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
-     * @throws RemoteException 
-     * @throws UnacceptableInitialTerminationTimeFault
+     * @throws UnacceptableTerminationTimeFault
+     * @throws RemoteException
      */
     public RenewResponse renew(Renew request, String user) 
         throws AAAFaultMessage,  ResourceUnknownFault,
@@ -225,16 +226,16 @@ public class NotifyBrokerAdapter{
     }
     
      /**
-     * Cancel a subscription based on the parameters of the request. 
-     * 
-     * @param request the Axis2 object with the Unsubscribe request information
-     * @param permissionMap a hash containing authorization constraints
-     * @return an Axis2 object with the result of the unsubscribe
-     * @throws AAAFaultMessage
-     * @throws ResourceUnknownFault
-     * @throws UnableToDestroySubscriptionFault
-     * @throws RemoteException 
-     */
+      * Converts an Unsubecribe SOAP request to an RMI call
+      * 
+      * @param request the Unsubscribe request
+      * @param user the login of the user that sent the request
+      * @return the axis2 response
+      * @throws AAAFaultMessage
+      * @throws ResourceUnknownFault
+      * @throws UnableToDestroySubscriptionFault
+      * @throws RemoteException
+      */
     public UnsubscribeResponse unsubscribe(Unsubscribe request, String user)
                         throws AAAFaultMessage, ResourceUnknownFault,
                                UnableToDestroySubscriptionFault, RemoteException{
@@ -253,16 +254,15 @@ public class NotifyBrokerAdapter{
     }
     
     /**
-     * Pause a subscription based on the parameters of the request. Pausing
-     * suspends the sending of notifications until the subscription is resumed.
+     * Converts a pause SOAP message to an RMI call
      * 
-     * @param request the Axis2 object with the Pause request information
-     * @param permissionMap a hash containing authorization constraints
-     * @return an Axis2 object with the result of the pause
+     * @param request the Pause request
+     * @param user the login of the user that sent the request
+     * @return an axis2 response to the call
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
      * @throws PauseFailedFault
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     public PauseSubscriptionResponse pause(PauseSubscription request, String user)
                                throws AAAFaultMessage, ResourceUnknownFault,
@@ -281,15 +281,15 @@ public class NotifyBrokerAdapter{
     }
     
     /**
-     * Resume a paused subscription.
+     * Converts a resume SOAP message to an RMI call
      * 
-     * @param request the Axis2 object with the Resume request information
-     * @param permissionMap a hash containing authorization constraints
-     * @return an Axis2 object with the result of the resume
+     * @param request the Resume request
+     * @param user the login of the user that sent the request
+     * @return the axis2 Resume response
      * @throws AAAFaultMessage
      * @throws ResourceUnknownFault
      * @throws ResumeFailedFault
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     public ResumeSubscriptionResponse resume(ResumeSubscription request, String user)
             throws AAAFaultMessage, ResourceUnknownFault, ResumeFailedFault, RemoteException{
@@ -307,16 +307,16 @@ public class NotifyBrokerAdapter{
     }
     
     /**
-     * Registers a publisher in the database using the given registration parameters
+     * Converts a RegisterPublisher SOAP call to an RMI call
      *
      * @param request the registration request
-     * @param login the login of the user that sent the registration
+     * @param user the login of the user that sent the registration
      * @return an Axis2 RegisterPublisherResponse with the result of the registration
      * @throws UnacceptableInitialTerminationTimeFault
      * @throws PublisherRegistrationFailedFault
      * @throws RemoteException 
      */
-    public RegisterPublisherResponse registerPublisher(RegisterPublisher request, String login)
+    public RegisterPublisherResponse registerPublisher(RegisterPublisher request, String user)
                                 throws UnacceptableInitialTerminationTimeFault,
                                        PublisherRegistrationFailedFault, RemoteException{
         this.log.debug("registerPublisher.start");
@@ -337,7 +337,7 @@ public class NotifyBrokerAdapter{
         }
         
         String registrationId = nbRmiClient.registerPublisher(publisherUrl, 
-                null, demand, termTime, login);
+                null, demand, termTime, user);
         response = this.createRegisterPublisherResponse(registrationId);
         this.log.debug("registerPublisher.end");
         
@@ -346,17 +346,17 @@ public class NotifyBrokerAdapter{
     
     
     /**
-     * Destroy a PublisherRegistration based on the parameters of the request. 
+     * Converts a DestroyPublisher SOAP call to an RMI call
      * 
      * @param request the Axis2 object with the registration to destroy
-     * @param permissionMap a hash containing authorization constraints
+     * @param user the login of the user that sent the request
      * @return an Axis2 object with the result of the destroy
      * @throws ResourceUnknownFault
      * @throws ResourceNotDestroyedFault
      * @throws RemoteException 
      */
     public DestroyRegistrationResponse destroyRegistration(DestroyRegistration request, 
-            String login) throws ResourceUnknownFault, ResourceNotDestroyedFault, RemoteException{
+            String user) throws ResourceUnknownFault, ResourceNotDestroyedFault, RemoteException{
         
         this.log.debug("destroyRegistration.start");
         NotifyRmiInterface nbRmiClient = new NotifyRmiClient();
@@ -379,7 +379,7 @@ public class NotifyBrokerAdapter{
                   " broker requires you to use address " + 
                    this.subscriptionManagerURL);
         }
-        nbRmiClient.destroyRegistration(pubId, login);
+        nbRmiClient.destroyRegistration(pubId, user);
         response.setPublisherRegistrationReference(pubRef);
         
         this.log.debug("destroyRegistration.end");
@@ -387,6 +387,12 @@ public class NotifyBrokerAdapter{
         return response;
     }
     
+    /**
+     * Converts an RMI response to a subscribe call to an Axis2 SubscribeResponse
+     * 
+     * @param subscription the RMI response to convert
+     * @return an Axis2 object that represents the SubscribeResponse
+     */
     public SubscribeResponse createSubscribeResponse(RmiSubscribeResponse subscription){
         SubscribeResponse response = new SubscribeResponse();
         
@@ -599,6 +605,13 @@ public class NotifyBrokerAdapter{
         return timestamp;
     }
     
+    /**
+     * Verify a subscription ID has all the required values and maps to subscription manager URL
+     * 
+     * @param subRef the SubscriptioNReference to verify
+     * @return the subscription ID
+     * @throws ResourceUnknownFault
+     */
     private String verifySubscriptionRef(EndpointReferenceType subRef) throws ResourceUnknownFault{
         
         /* Find subscription ID */
@@ -625,6 +638,13 @@ public class NotifyBrokerAdapter{
         return subscriptionId;
     }
     
+    /**
+     * Converts an Axis2 OMElement to a JDOM element.
+     * 
+     * @param omElems the axis2 elements to converts
+     * @return a list of Elements for each OMElement given
+     * @throws RemoteException
+     */
     public List<Element> axiom2Jdom(OMElement[] omElems) throws RemoteException{
         List<Element> jdomElems = new ArrayList<Element>();
         for(OMElement omElem : omElems){

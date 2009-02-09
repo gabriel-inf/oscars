@@ -15,10 +15,14 @@ import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Sends WS-Notifications over HTTP
+ */
 public class WSNotifySender implements NotifySender{
     private Logger log;
     private String subscriptionManagerURL;
     private NBSoapClient client;
+    
     public WSNotifySender(){
         this.log = Logger.getLogger(this.getClass());
         this.client = new NBSoapClient();

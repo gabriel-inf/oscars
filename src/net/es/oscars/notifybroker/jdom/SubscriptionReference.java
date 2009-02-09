@@ -4,6 +4,10 @@ import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 
 import org.jdom.Element;
 
+/**
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class SubscriptionReference {
     private String address;
     private String subscriptionId;

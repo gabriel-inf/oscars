@@ -181,11 +181,7 @@ public class OSCARSNotifySkeleton implements OSCARSNotifySkeletonInterface{
     }
     
     /**
-     * COPIED FROM net.es.oscars.oscars.OSCARSSkeleton
-     * Called from checkUser to get the DN out of the message context.
-     *
-     * @param opContext includes the MessageContext containing the message
-     *                  signer
+     * COPIED FROM net.es.oscars.ws.OSCARSSkeleton
      */
     private void setOperationContext() {
 

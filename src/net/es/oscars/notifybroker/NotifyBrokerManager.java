@@ -29,6 +29,14 @@ import net.es.oscars.notifybroker.jobs.ProcessNotifyJob;
 import net.es.oscars.notifybroker.jobs.SendNotifyJob;
 import net.es.oscars.rmi.notifybroker.xface.*;
 
+/**
+ * Core class for managing publishers subscriptions and notifications. Class
+ * adds/remove publishers to the database. It creates, modifies and deletes
+ * subscriptions from the database. It also matches subscriptions to incoming
+ * notifications and schedules the delivery of those notifications. 
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class NotifyBrokerManager{
     private Logger log;
     private long subMaxExpTime;
@@ -36,12 +44,16 @@ public class NotifyBrokerManager{
     private String dbname;
     private HashMap<String,String> namespaces;
     
-    //Constants
     public static int INACTIVE_STATUS = 0;
     public static int ACTIVE_STATUS = 1;
     public static int PAUSED_STATUS = 2;
     
     
+    /**
+     * Loads properties from oscars.properties and initializes variables.
+     * 
+     * @param dbname the location of the 'notify' database
+     */
     public NotifyBrokerManager(String dbname){
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
@@ -75,9 +87,12 @@ public class NotifyBrokerManager{
      * Adds a ProcessNotifyJob to the scheduler so that the caller is free to return
      * an HTTP 200 response to publisher of this notifcation without waiting for
      * all the send messages to be sent to subscribers.
-     *
-     * @param holder the notification message to send
-     * @param permissionMap a map of the permissions required to view this notification
+     * 
+     * @param publisherUrl the URL of the service that published the notification
+     * @param publisherRegId the registration ID of the publisher
+     * @param topics the topics to which the notification belongs
+     * @param msg the JDOM elements from the Message of the notification
+     * @param pepMap the list of policy filters that must match a subscription
      */
     public void schedProcessNotify(String publisherUrl, String publisherRegId, 
             List<String> topics, List<Element> msg, HashMap<String, List<String>> pepMap){ 
@@ -107,16 +122,19 @@ public class NotifyBrokerManager{
         this.log.debug("schedProcessNotify.end");
     }
     
+
     /**
-     * Forwards notfications to appropriate subscribers.
-     *
-     * @param holder the notification message to send
-     * @param permissionMap a map of the permissions required to view this notification
-     * @throws RemoteException 
+     * Forwards notifications to appropriate subscribers.
+     * 
+     * @param publisherUrl the URL of the service that published the notification
+     * @param topics the topics to which the notification belongs
+     * @param msg the JDOM elements from the Message of the notification
+     * @param permissionMap the list of policy filters that must match a subscription
+     * @throws RemoteException
      */
     public void notify(String publisherUrl, List<String> topics,
-                       HashMap<String, List<String>> permissionMap,
-                       List<Element> msg) throws RemoteException{
+                       List<Element> msg,
+                       HashMap<String,List<String>> permissionMap) throws RemoteException{
         this.log.debug("notify.start");
         ArrayList<String> parentTopics = new ArrayList<String>();
         List<Subscription> authSubscriptions = null;
@@ -176,7 +194,7 @@ public class NotifyBrokerManager{
                 }
             }
             if(matches != null){
-                this.schedSendNotify(publisherUrl, msg, topics, authSubscription);
+                this.schedSendNotify(publisherUrl, topics, msg, authSubscription);
             } 
         }
         this.log.info("notify.end");
@@ -185,14 +203,16 @@ public class NotifyBrokerManager{
     /**
      * Adds a SendNotifyJob to the scheduler so that notification sending
      * is threaded rather than doing each serially. This is desirable because
-     * one send action is taking a long amount of time it will not hold-up 
+     * if one send action is taking a long amount of time it will not hold-up 
      * other messages from sending.
      *
-     * @param holder the message to send
-     * @param subscription a subscription containing information needed to send the notification
+     * @param publisherUrl the URL of the service that published the notification
+     * @param topics the topics to which the notification belongs
+     * @param msg the JDOM elements from the Message of the notification
+     * @param subscription the matching subscription that will receive the notification
      */
-    public void schedSendNotify(String publisherUrl,  List<Element> msg, 
-            List<String> topics, Subscription subscription){
+    public void schedSendNotify(String publisherUrl, List<String> topics, 
+            List<Element> msg, Subscription subscription){
         this.log.debug("schedSendNotify.start");
         NotifyBrokerCore core = NotifyBrokerCore.getInstance();
         Scheduler sched = core.getScheduler();
@@ -223,6 +243,16 @@ public class NotifyBrokerManager{
                        subscription.getReferenceId());
     }
     
+    /**
+     * Creates a subscription entry in the database
+     * 
+     * @param consumerUrl the URL where matching notifications are sent
+     * @param termTime the suggested time the subscription will expire
+     * @param filters the matching subscription filters
+     * @param user the login of the user creating the subscription
+     * @return an RMI response with the subscription ID and termination time
+     * @throws UnacceptableInitialTerminationTimeFault
+     */
     public RmiSubscribeResponse subscribe(String consumerUrl, Long termTime, 
             HashMap<String,List<String>> filters, String user)
             throws UnacceptableInitialTerminationTimeFault{
@@ -265,6 +295,16 @@ public class NotifyBrokerManager{
         return response;
     }
     
+    /**
+     * Adds a publisher to the database
+     * 
+     * @param publisherUrl the URL that identifies the publisher
+     * @param demand true if this is a demand publisher (see WSN spec)
+     * @param termTime the suggested termination time of the publisher registration
+     * @param user the login of the user registering the publisher
+     * @return the publisher registration ID
+     * @throws RemoteException
+     */
     public String registerPublisher(String publisherUrl, Boolean demand,
             Long termTime, String user) throws RemoteException{
         this.log.debug("registerPublisher.start");
@@ -295,6 +335,14 @@ public class NotifyBrokerManager{
         return publisher.getReferenceId();
     }
     
+    /**
+     * Sets a publisher as INACTIVE in the database
+     * 
+     * @param pubRefId the publisher registration ID
+     * @param user the login of the user requesting the destruction
+     * @param authVal the auth value of the requester
+     * @throws RemoteException
+     */
     public void destroyRegistration(String pubRefId, String user, AuthValue authVal) 
                                 throws RemoteException{
         this.log.debug("destroyRegistration.start");
@@ -320,6 +368,12 @@ public class NotifyBrokerManager{
         this.log.debug("destroyRegistration.end");
     }
     
+    /**
+     * Returns the publisher given a publisher registration ID
+     * 
+     * @param pubRefId the publisher registration ID
+     * @throws ResourceUnknownFault
+     */
     public void queryPublisher(String pubRefId) 
                                 throws ResourceUnknownFault{
         this.log.debug("queryPublisher.start");
@@ -333,6 +387,12 @@ public class NotifyBrokerManager{
         this.log.debug("queryPublisher.end");
     }
     
+    /**
+     * Finds all subscriptions that match a particular set of policy filters
+     * 
+     * @param permissionMap the set of policy filters to match
+     * @return the list of matching subscriptions
+     */
     public List<Subscription> findSubscriptions(HashMap<String, List<String>> permissionMap){
         this.log.debug("findSubscriptions.start");
         
@@ -350,6 +410,17 @@ public class NotifyBrokerManager{
         return subscriptions;
     }
     
+    /**
+     * Extends the termination time of a subscription in the database.
+     * 
+     * @param subRefId the subscription ID
+     * @param termTime the suggested new termination time
+     * @param user the user renewing the subscription
+     * @param authVal the Auth value of the user on subscriptions
+     * @return the new termination time
+     * @throws RemoteException
+     * @throws UnacceptableTerminationTimeFault
+     */
     public Long renew(String subRefId, Long termTime,String user, AuthValue authVal)
                       throws RemoteException,
                              UnacceptableTerminationTimeFault{
@@ -390,6 +461,17 @@ public class NotifyBrokerManager{
         return subscription.getTerminationTime();
     }
     
+    /**
+     * Updates the status of a subscription. Used by Unsubscribe, Pause, and 
+     * Resume to change the state of a subscription.
+     * 
+     * @param newStatus the new status of the subscription
+     * @param subRefId the id of the subscription to update
+     * @param user the user requesting the update
+     * @param authVal the Auth value of the user requesting the update
+     * @throws Exception
+     * @throws ResourceUnknownFault
+     */
     public synchronized void updateStatus(int newStatus, String subRefId, 
                       String user, AuthValue authVal) 
                       throws Exception, ResourceUnknownFault{
@@ -424,11 +506,20 @@ public class NotifyBrokerManager{
         this.log.debug("updateStatus.end=" + newStatus);
     }
     
+    /**
+     * Updates the status of multiple subscriptions at one time. Useful for canceling all subscriptions.
+     * 
+     * @param newStatus the new status of the subscriptions
+     * @param subRefId the subscription ID
+     * @param user the login of the user requesting the change
+     * @throws Exception
+     * @throws ResourceUnknownFault
+     */
     public synchronized void updateStatusAll(int newStatus, String subRefId, 
-                      String userLogin) throws Exception, ResourceUnknownFault{
+                      String user) throws Exception, ResourceUnknownFault{
         this.log.debug("updateStatusAll.start");
         SubscriptionDAO dao = new SubscriptionDAO(this.dbname);
-        List<Subscription> subscriptions = dao.getAllActiveForUser(userLogin);
+        List<Subscription> subscriptions = dao.getAllActiveForUser(user);
         if(subscriptions == null){
             //if not found just exit
             return;
@@ -440,6 +531,14 @@ public class NotifyBrokerManager{
         this.log.debug("updateStatusAll.end=" + newStatus);
     }
     
+    /**
+     * Checks a suggested termination against the allowed time
+     * 
+     * @param curTime the current time
+     * @param expTime the suggested termination time
+     * @return the suggested termination time if less than maximum allowed. if 0 given then set to max time.
+     * @throws UnacceptableInitialTerminationTimeFault
+     */
     private long checkTermTime(long curTime, long expTime) 
                                 throws UnacceptableInitialTerminationTimeFault{
         /* calculate initial termination time */

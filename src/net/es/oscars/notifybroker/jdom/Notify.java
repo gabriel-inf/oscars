@@ -7,6 +7,12 @@ import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 
 import org.jdom.Element;
 
+/**
+ * Represents a Notify message as specified in the WS-Notification spec.
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ *
+ */
 public class Notify {
     private List<NotificationMessage> notificationMessages;
     final public static String ACTION = "http://oscars.es.net/OSCARS/Notify";
@@ -35,7 +41,7 @@ public class Notify {
     }
 
     /**
-     * @return the jdom
+     * @return A JDOM representation of the element
      */
     public Element getJdom() {
         Element jdom = new Element("Notify", WSNotifyConstants.WSN_NS);

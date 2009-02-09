@@ -6,7 +6,14 @@ import net.es.oscars.notifybroker.ws.WSNotifyConstants;
 
 import org.jdom.Element;
 
+/**
+ * Represents the NotificationMessage element of a WS-Notification
+ * Notify message.
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class NotificationMessage {
+    
     private SubscriptionReference subscriptionReference;
     private Topic topic;
     private ProducerReference producerReference;
@@ -69,7 +76,7 @@ public class NotificationMessage {
     }
     
     /**
-     * @return the jdom
+     * @return A JDOM representation of the elemen
      */
     public Element getJdom() {
         Element jdom = new Element("NotificationMessage", WSNotifyConstants.WSN_NS);

@@ -14,6 +14,13 @@ import net.es.oscars.notifybroker.NotifyBrokerCore;
 import net.es.oscars.notifybroker.policy.NotifyPEP;
 import net.es.oscars.rmi.aaa.AaaRmiClient;
 
+/**
+ * Utility class for verifying the parameters passed to RMI calls. This
+ * includes not only checking for required paramters but also verifying
+ * authorizations on some parameters.
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class NBValidator {
     public static void validateRegisterPublisher(String publisherUrl, List<String> topics,
             Boolean demand, Long termTime, String user, Logger log) throws RemoteException{

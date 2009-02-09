@@ -4,6 +4,11 @@ import java.util.List;
 
 import org.jdom.Element;
 
+/**
+ * Java object for holding information about a Notification.
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class Notification {
     private String destinationUrl;
     private String subscriptioId;

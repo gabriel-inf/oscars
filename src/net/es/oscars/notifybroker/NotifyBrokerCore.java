@@ -160,7 +160,6 @@ public class NotifyBrokerCore{
     }
 
 
-    
     public ArrayList<NotifyPEP> getNotifyPEPs() {
         return this.notifyPEPs;
     }

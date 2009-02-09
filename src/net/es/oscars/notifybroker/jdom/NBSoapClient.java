@@ -15,14 +15,27 @@ import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
+/**
+ * Simple client for sending SOAP Messages over HTTP. Uses JDOM element to
+ * construct the body of SOAP messages and the apache commons HTTPClient.
+ * 
+ * @author Andrew Lake (alake@internet2.edu)
+ */
 public class NBSoapClient {
-    
     private Logger log;
     
     public NBSoapClient(){
         this.log = Logger.getLogger(this.getClass());
     }
     
+    /**
+     * Sends SOAP message that does not expect any SOAP in the response body.
+     * 
+     * @param url Where to send the request
+     * @param action the SOAP action of the request
+     * @param bodyElem the JDOM element used as the content of the SOAP body
+     * @throws RemoteException
+     */
     public void sendAsyncSoapMessage(String url, String action, Element bodyElem) throws RemoteException{
         Element envelope = new Element("Envelope", WSNotifyConstants.SOAP_NS);
         Element body = new Element("Body", WSNotifyConstants.SOAP_NS);
