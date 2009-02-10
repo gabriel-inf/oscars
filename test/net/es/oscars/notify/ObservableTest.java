@@ -1,8 +1,7 @@
 package net.es.oscars.notify;
 
-import net.es.oscars.bss.events.NotifierSource;
-import net.es.oscars.bss.events.NotifyException;
-import net.es.oscars.bss.events.NotifyInitializer;
+import net.es.oscars.bss.events.ObserverSource;
+import net.es.oscars.bss.events.ObserverManager;
 
 import org.testng.annotations.*;
 
@@ -11,11 +10,11 @@ import javax.mail.*;
 
 @Test(groups={ "notify" })
 public class ObservableTest {
-    private NotifyInitializer notifyInitializer;
+    private ObserverManager notifyInitializer;
 
   @BeforeClass
-    public void setUpClass() throws NotifyException {
-        this.notifyInitializer = new NotifyInitializer();
+    public void setUpClass() {
+        this.notifyInitializer = new ObserverManager();
         this.notifyInitializer.init();
     }
 
@@ -28,7 +27,7 @@ public class ObservableTest {
         messageInfo.put("subject", "This is a test of email notifications.");
         messageInfo.put("body", "This is a test.");
         messageInfo.put("alertLine", "Nothing of importance.");
-        NotifierSource observable = this.notifyInitializer.getSource();
+        ObserverSource observable = this.notifyInitializer.getSource();
         Object obj = (Object) messageInfo;
         observable.eventOccured(obj);
     }
@@ -40,7 +39,7 @@ public class ObservableTest {
         messageInfo.put("subject", "This is a test of email notifications.");
         messageInfo.put("body", "This is a test.");
         messageInfo.put("alertLine", "Reservation [PRODUCTION CIRCUIT]");
-        NotifierSource observable = this.notifyInitializer.getSource();
+        ObserverSource observable = this.notifyInitializer.getSource();
         Object obj = (Object) messageInfo;
         observable.eventOccured(obj);
     }

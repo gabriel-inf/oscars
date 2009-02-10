@@ -67,6 +67,7 @@ public class PSPathfinderTest {
         for(Path p : pathCalcResults){
             for(PathElem e : p.getPathElems()){
                 assert e.getUrn() != null;
+                System.out.println(e.getUrn());
             }
         }
     }
@@ -101,6 +102,7 @@ public class PSPathfinderTest {
         for(Path p : pathCalcResults){
             for(PathElem e : p.getPathElems()){
                 assert e.getUrn() != null;
+                System.out.println(e.getUrn());
             }
         }
     }
