@@ -43,7 +43,9 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
         ArrayList<Path> results = new ArrayList<Path>();
         try {
             Path reqPath = resv.getPath(PathType.REQUESTED);
-            results.add(this.buildNewPath(reqPath));
+            Path interdomainPath = this.buildNewPath(reqPath);
+            interdomainPath.setPathType(PathType.INTERDOMAIN);
+            results.add(interdomainPath);
         } catch (BSSException e) {
             throw new PathfinderException(e.getMessage());
         }

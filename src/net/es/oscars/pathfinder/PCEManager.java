@@ -111,9 +111,9 @@ public class PCEManager {
             return null;
         }
 
-        String pathMethod = props.getProperty("pathMethod");
+        String pathMethod = props.getProperty("pathMethod." + pfType);
         if(pathMethod == null){
-            pathMethod = props.getProperty(pfType + ".pathMethod");
+            pathMethod = props.getProperty("pathMethod");
         }
         if (pathMethod == null) {
             throw new PathfinderException(

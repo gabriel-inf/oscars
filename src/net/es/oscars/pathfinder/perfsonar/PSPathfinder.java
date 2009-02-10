@@ -134,7 +134,9 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         
         ArrayList<Path> results = new ArrayList<Path>();
         try {
-            results.add(this.buildNewPath(resv, PathType.INTERDOMAIN));
+            Path localPath = this.buildNewPath(resv, PathType.INTERDOMAIN);
+            localPath.setPathType(PathType.LOCAL);
+            results.add(localPath);
         } catch (BSSException e) {
             throw new PathfinderException(e.getMessage());
         }
@@ -162,7 +164,9 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         
         ArrayList<Path> results = new ArrayList<Path>();
         try {
-            results.add(this.buildNewPath(resv, PathType.REQUESTED));
+            Path interdomainPath = this.buildNewPath(resv, PathType.REQUESTED);
+            interdomainPath.setPathType(PathType.INTERDOMAIN);
+            results.add(interdomainPath);
         } catch (BSSException e) {
             throw new PathfinderException(e.getMessage());
         }
