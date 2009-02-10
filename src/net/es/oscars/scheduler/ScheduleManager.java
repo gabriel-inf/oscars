@@ -3,7 +3,6 @@ package net.es.oscars.scheduler;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.pss.PSSScheduler;
-import net.es.oscars.ws.*;
 
 import java.util.*;
 import java.text.ParseException;

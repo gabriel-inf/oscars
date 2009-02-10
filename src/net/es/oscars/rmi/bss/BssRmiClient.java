@@ -2,7 +2,6 @@ package net.es.oscars.rmi.bss;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.Properties;
 
 import net.es.oscars.rmi.BaseRmiClient;
