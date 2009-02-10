@@ -185,8 +185,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 // this will also finalize & store
                 this.confirm(resv, null);
             } else {
-                Path fromForwardResponse = forwarder.create(resv);
-                rm.finalizeResv(resv, false, fromForwardResponse);
+                boolean replyPresent = forwarder.create(resv);
+                // TODO:  decide what to do with
+                // rm.finalizeResv(resv, false, fromForwardResponse);
                 rm.store(resv);
                 this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
             }

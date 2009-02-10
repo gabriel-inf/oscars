@@ -44,8 +44,7 @@ public class Forwarder extends Client {
         this.log.debug("setup.finish: " + url);
     }
 
-    public Path create(Reservation resv) throws InterdomainException {
-        CreateReply createReply = null;
+    public boolean create(Reservation resv) throws InterdomainException {
         String login = resv.getLogin();
         Path path = null;
         try {
@@ -59,7 +58,7 @@ public class Forwarder extends Client {
         }
         Domain nextDomain = path.getNextDomain();
         if (nextDomain == null) {
-            return null;
+            return false;
         }
         String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
@@ -67,24 +66,12 @@ public class Forwarder extends Client {
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_STARTED, login, "JOB", resv);
         ForwardReply reply = this.forward("createReservation", resv, url);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FWD_ACCEPTED, login, "JOB", resv);
-        createReply = reply.getCreateReservation();
-
-        Path fromForwardResponse = null;
-        try {
-            fromForwardResponse =
-                WSDLTypeConverter.convertPath(createReply.getPathInfo());
-        } catch (BSSException ex) {
-            this.log.error(ex);
-            throw new InterdomainException(ex.getMessage());
-        }
-
         this.log.info("create.finish GRI is: " +
-                      createReply.getGlobalReservationId());
-
-        return fromForwardResponse;
+                      resv.getGlobalReservationId());
+        return reply != null ? true : false;
     }
 
-    public ModifyResReply modify(Reservation resv, Reservation persistentResv)
+    public boolean modify(Reservation resv, Reservation persistentResv)
             throws InterdomainException {
 
         String url = null;
@@ -108,16 +95,15 @@ public class Forwarder extends Client {
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_STARTED, login, "JOB", persistentResv);
             ForwardReply reply = this.forward("modifyReservation", resv, url);
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FWD_ACCEPTED, login, "JOB", persistentResv);
-            ModifyResReply modifyReply = reply.getModifyReservation();
-            this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
-            return modifyReply;
+            this.log.info("modify.finish GRI is: " + persistentResv.getGlobalReservationId());
+            return reply != null ? true : false;
         } else {
-            return null;
+            return false;
         }
     }
 
 
-    public ResDetails query(Reservation resv) throws InterdomainException {
+    public boolean query(Reservation resv) throws InterdomainException {
 
         String url = null;
         Path path = null;
@@ -131,13 +117,13 @@ public class Forwarder extends Client {
         if (path != null && path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
-        if (url == null) { return null; }
+        if (url == null) { return false; }
         this.log.info("query forward to " + url);
         ForwardReply reply = this.forward("queryReservation", resv, url);
-        return reply.getQueryReservation();
+        return reply != null ? true : false;
     }
 
-    public String cancel(Reservation resv) throws InterdomainException {
+    public boolean cancel(Reservation resv) throws InterdomainException {
 
         String url = null;
         String login = resv.getLogin();
@@ -153,16 +139,16 @@ public class Forwarder extends Client {
             url = path.getNextDomain().getUrl();
         }
 
-        if (url == null) { return null; }
+        if (url == null) { return false; }
         this.log.info("cancel start forward to: " + url);
         EventProducer eventProducer = new EventProducer();
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FWD_STARTED, login, "JOB", resv);
         ForwardReply reply = this.forward("cancelReservation", resv, url);
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FWD_ACCEPTED, login, "JOB", resv);
-        return reply.getCancelReservation();
+        return reply != null ? true : false;
     }
 
-    public CreatePathResponseContent createPath(Reservation resv)
+    public boolean createPath(Reservation resv)
             throws InterdomainException {
 
         String url = null;
@@ -176,13 +162,13 @@ public class Forwarder extends Client {
         if (path != null && path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
-        if (url == null) { return null; }
+        if (url == null) { return false; }
         this.log.info("createPath forward to: " + url);
         ForwardReply reply = this.forward("createPath", resv, url);
-        return reply.getCreatePath();
+        return reply != null ? true : false;
     }
 
-    public RefreshPathResponseContent refreshPath(Reservation resv)
+    public boolean refreshPath(Reservation resv)
             throws InterdomainException {
 
         String url = null;
@@ -196,13 +182,13 @@ public class Forwarder extends Client {
         if (path != null && path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
-        if (url == null) { return null; }
+        if (url == null) { return false; }
         this.log.info("refreshPath forward to: " + url);
         ForwardReply reply = this.forward("refreshPath", resv, url);
-        return reply.getRefreshPath();
+        return reply != null ? true : false;
     }
 
-    public TeardownPathResponseContent teardownPath(Reservation resv)
+    public boolean teardownPath(Reservation resv)
             throws InterdomainException {
 
         String url = null;
@@ -216,10 +202,10 @@ public class Forwarder extends Client {
         if (path != null && path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
-        if (url == null) { return null; }
+        if (url == null) { return false; }
         this.log.info("teardownPath forward to: " + url);
         ForwardReply reply = this.forward("teardownPath", resv, url);
-        return reply.getTeardownPath();
+        return reply != null ? true : false;
     }
 
     public ForwardReply forward(String operation, Reservation resv,

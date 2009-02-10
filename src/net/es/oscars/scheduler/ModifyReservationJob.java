@@ -182,14 +182,14 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         ReservationManager rm = this.core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
         Forwarder forwarder = this.core.getForwarder();
-        ModifyResReply forwardReply = null;
+        boolean replyPresent = false;
         Exception error = null;
         eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_STARTED, login,
                                "JOB", persistentResv);
         rm.modify(resv, persistentResv);
 
         try {
-            forwardReply = forwarder.modify(resv, persistentResv);
+            replyPresent = forwarder.modify(resv, persistentResv);
         } catch(Exception e) {
             error = e;
         } finally {
@@ -202,7 +202,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         //TODO: Create mechanism for rolling back to original
         persistentResv = rm.finalizeModifyResv(resv);
 
-        if(forwardReply == null){
+        if(!replyPresent){
             this.confirm(persistentResv, login);
         }else{
             this.scheduleStatusCheck(CONFIRM_TIMEOUT, persistentResv);

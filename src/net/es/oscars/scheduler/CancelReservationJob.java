@@ -152,7 +152,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         String status = this.se.getStatus(resv);
         int localStatus = this.se.getLocalStatus(resv);
         Forwarder forwarder = null;
-        String remoteStatus = null;
+        boolean replyPresent = false;
         
         if(!(StateEngine.RESERVED.equals(status) || 
                 StateEngine.ACTIVE.equals(status)) ||
@@ -171,7 +171,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         InterdomainException interException = null;
         try {
             forwarder = this.core.getForwarder();
-            remoteStatus = forwarder.cancel(resv);
+            replyPresent = forwarder.cancel(resv);
         } catch (InterdomainException e) {
             interException = e;
             eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "JOB", resv, "", e.getMessage());
@@ -183,7 +183,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         }
         
         //if last domain in path
-        if(remoteStatus == null){
+        if(!replyPresent){
             this.confirm(resv, login, true);
         }else{
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);

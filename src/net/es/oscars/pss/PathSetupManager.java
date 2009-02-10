@@ -153,7 +153,7 @@ public class PathSetupManager{
         String errorMsg = null;
         String gri = resv.getGlobalReservationId();
         Forwarder forwarder = new Forwarder();
-        RefreshPathResponseContent forwardReply = null;
+        boolean replyPresent = false;
         this.rsvLogger.redirect(resv.getGlobalReservationId());
 
         /* Check reservation */
@@ -176,7 +176,7 @@ public class PathSetupManager{
         if(stillActive && doForward){
             InterdomainException interException = null;
             try{
-                forwardReply = forwarder.refreshPath(resv);
+                replyPresent = forwarder.refreshPath(resv);
             }catch(InterdomainException e){
                 interException = e;
             }finally{
@@ -188,17 +188,9 @@ public class PathSetupManager{
         }else if(doForward){
             //this.forwardTeardown(resv, errorMsg);
         }
-
-        /* Print forwarding status */
-        if(forwardReply == null){
+        if(!replyPresent){
             this.log.info("last domain in signalling path");
-        }else if(!forwardReply.getStatus().equals("ACTIVE")){
-            String errMsg = "forwardReply returned an unrecognized status: " +
-                forwardReply.getStatus();
-            this.log.error(errMsg);
-            throw new PSSException(errMsg);
         }
-
         this.rsvLogger.stop();
         return status;
     }

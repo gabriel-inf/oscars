@@ -68,7 +68,6 @@ public class PathRmiHandler {
            loginConstraint = userName;
         }
 
-        CreatePathResponseContent forwardReply = null;
         String gri = params.getGlobalReservationId();
         String tokenValue = params.getToken();
         Long currTime = System.currentTimeMillis()/1000;
@@ -107,7 +106,7 @@ public class PathRmiHandler {
             StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FWD_STARTED, userName,
                                    "core", resv);
-            forwardReply = forwarder.createPath(resv);
+            boolean replyPresent = forwarder.createPath(resv);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FWD_ACCEPTED,
                                    userName, "core", resv);
         } catch (InterdomainException e) {
@@ -173,7 +172,6 @@ public class PathRmiHandler {
            loginConstraint = userName;
         }
 
-        RefreshPathResponseContent forwardReply = null;
         String gri = params.getGlobalReservationId();
         String status = null;
         String tokenValue = params.getToken();
@@ -243,7 +241,6 @@ public class PathRmiHandler {
         }
 
         EventProducer eventProducer = new EventProducer();
-        TeardownPathResponseContent forwardReply = null;
         String gri = params.getGlobalReservationId();
         String tokenValue = params.getToken();
         String status = null;
@@ -270,7 +267,7 @@ public class PathRmiHandler {
             StateEngine.canModifyStatus(currentStatus, StateEngine.INTEARDOWN);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FWD_STARTED, userName,
                                    "core", resv);
-            forwardReply = forwarder.teardownPath(resv);
+            boolean replyPresent = forwarder.teardownPath(resv);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FWD_ACCEPTED,
                                    userName, "core", resv);
             status = this.pm.teardown(resv, StateEngine.RESERVED);
