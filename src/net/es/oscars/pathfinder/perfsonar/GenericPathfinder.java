@@ -19,10 +19,13 @@ import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.perfsonar.util.*;
+
+
 import net.es.oscars.bss.topology.URNParser;
 
 import java.util.List;
 import org.apache.log4j.*;
+
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
@@ -50,7 +53,7 @@ public class GenericPathfinder {
     private final double DEFAULT_NONLINK_COST = 0.01;
     private final double DEFAULT_LINK_COST = 10;
     private final double OPAQUE_ESTIMATED_DOMAIN_LINKS = 7;
-
+ 
     public GenericPathfinder() throws HttpException, IOException {
         this.log = Logger.getLogger(this.getClass());
         this.domains = new HashMap<String, Domain>();
@@ -86,9 +89,10 @@ public class GenericPathfinder {
             // XXX: this should remove that domain and re-add it.
             return;
         }
-
-        boolean isOpaque = true;
-
+        
+        //If its the local domain then its not opaque, it just has one node
+        boolean isOpaque = domain.isLocal() ? false : true;
+        
         // Calculate if it's an opaque topology, i.e. a domain whose internal
         // links have been removed. This allows one to keep topology secret
         // while still permitting basic pathfinding to occur.
@@ -131,21 +135,21 @@ public class GenericPathfinder {
         this.addDomainToGraph(domain, isOpaque);
 
         if (this.log.isDebugEnabled()) {
-          //  this.log.debug("Domains: ");
+            this.log.debug("Domains: ");
             Iterator<String> iter = this.domains.keySet().iterator();
             int i = 0;
             while(iter.hasNext()) {
                 String key = iter.next();
-               // this.log.debug(i+"). "+key);
+                this.log.debug(i+"). "+key);
                 i++;
             }
 
-          //  this.log.debug("Opaque Domains: ");
+            this.log.debug("Opaque Domains: ");
             Iterator<String> iter2 = this.opaqueDomains.iterator();
             int j = 0;
             while(iter2.hasNext()) {
                 String key = iter2.next();
-               // this.log.debug(j+"). "+key);
+                this.log.debug(j+"). "+key);
                 j++;
             }
         }
@@ -236,7 +240,7 @@ public class GenericPathfinder {
         this.log.info("Looking up path between "+src+" and "+dst);
 
         // if the source is opaque, we have to assume that any element we're
-        // given exists in the domain.
+        // given exists in the domain. 
         boolean srcOpaque = false;
         Hashtable<String, String> srcURN = URNParser.parseTopoIdent(src);
         if (srcURN.get("error") != null) {
@@ -270,7 +274,7 @@ public class GenericPathfinder {
         }
 
         // if the destination is opaque, we have to assume that any element
-        // we're given exists in the domain.
+        // we're given exists in the domain. 
         boolean dstOpaque = false;
         Hashtable<String, String> dstURN = URNParser.parseTopoIdent(dst);
         if (dstURN.get("error") != null) {
@@ -336,7 +340,7 @@ public class GenericPathfinder {
                 i = 0;
                 while(iter.hasNext()) {
                     String key = iter.next();
-                    //this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                    this.log.debug(i+"). "+key+" -- "+costs.get(key));
                     i++;
                 }
 
@@ -345,7 +349,7 @@ public class GenericPathfinder {
                 i = 0;
                 while(iter2.hasNext()) {
                     String key = iter2.next();
-                   // this.log.debug(i+"). "+key+" -- "+costs.get(key));
+                    this.log.debug(i+"). "+key+" -- "+costs.get(key));
                     i++;
                 }
 
@@ -354,7 +358,7 @@ public class GenericPathfinder {
                 i = 0;
                 while(iter3.hasNext()) {
                     String key = iter3.next();
-                    //this.log.debug(i+"). "+key);
+                    this.log.debug(i+"). "+key);
                     i++;
                 }
             }
@@ -369,7 +373,7 @@ public class GenericPathfinder {
             if (this.domains.get(currDomain) == null) {
                 Domain retDomain = null;
 
-        long measSTime = System.currentTimeMillis();
+                long measSTime = System.currentTimeMillis();
                 for(DomainFinder df : this.domainFinders) {
                     Domain domain = df.lookupDomain(currDomain);
 
@@ -378,9 +382,9 @@ public class GenericPathfinder {
                         break;
                     }
                 }
-        long measETime = System.currentTimeMillis();
+                long measETime = System.currentTimeMillis();
 
-        System.out.println("Time to discover "+currDomain+": "+(measETime-measSTime));
+                System.out.println("Time to discover "+currDomain+": "+(measETime-measSTime));
 
                 if (retDomain == null) {
                     if (this.cacheFailures) {
@@ -461,7 +465,7 @@ public class GenericPathfinder {
         if (this.log.isDebugEnabled()) {
             int i = 0;
             for(String currId : retIds) {
-              //  this.log.debug("Path("+i+"): "+currId);
+                this.log.debug("Path("+i+"): "+currId);
                 i++;
             }
         }
@@ -627,9 +631,9 @@ public class GenericPathfinder {
             String left_str = (String) left;
             String right_str = (String) right;
             int res = (int) (costs.get(left) - costs.get(right));
-
+          
             if (res == 0)
-                res = left_str.compareTo(right_str);
+                res = left_str.compareTo(right_str); 
 
             return res;
         }
