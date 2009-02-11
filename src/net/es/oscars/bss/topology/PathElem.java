@@ -50,6 +50,7 @@ public class PathElem extends HibernateBean implements Serializable {
             this.pathElemParamMap.put(key, param);
         }
     }
+    
     /**
      * @return seqNumber int with this path element's position in list
      */
@@ -113,6 +114,7 @@ public class PathElem extends HibernateBean implements Serializable {
      * @throws BSSException
      */
     public PathElemParam getPathElemParam(String swcap, String type) throws BSSException {
+        this.initializePathElemParams();
         if(!PathElemParamSwcap.isValid(swcap)){
             throw new BSSException("Invalid PathElemParam swcap '" + swcap + "'");
         }else if(!PathElemParamType.isValid(type)){
@@ -181,37 +183,41 @@ public class PathElem extends HibernateBean implements Serializable {
      *
      * @param pe the pathElem to copy
      * @return the copy
+     * @throws BSSException 
      */
-    public static PathElem copyPathElem(PathElem pathElem) {
+    public static PathElem copyPathElem(PathElem pathElem) throws BSSException {
         PathElem copy = new PathElem();
         copy.setLink(pathElem.getLink());
         copy.setUrn(pathElem.getUrn());
         copy.setUserName(pathElem.getUserName());
-        copy.setPathElemParams(PathElem.copyPathElemParams(pathElem, null));
+        PathElem.copyPathElemParams(copy, pathElem, null);
         return copy;
     }
 
     /** Creates a copies of the PathElemParams of this object that match the swcap given
      *
-     * @param pathElem the PathElem with the params to copy
+     *@param dest the location to get the copied params
+     * @param src the PathElem with the params to copy
      * @param swcap the type of PathElem params to copy. null if all params should be copied.
-     * @return the copy
+     * @throws BSSException 
      */
-    public static HashSet<PathElemParam> copyPathElemParams(PathElem pathElem, String swcap){
-        HashSet<PathElemParam> copy = new HashSet<PathElemParam>();
-        Iterator<PathElemParam> paramIterator = pathElem.getPathElemParams().iterator();
+    public static void copyPathElemParams(PathElem dest, PathElem src, String swcap) throws BSSException{
+        Iterator<PathElemParam> paramIterator = src.getPathElemParams().iterator();
         while(paramIterator.hasNext()){
             PathElemParam param = (PathElemParam) paramIterator.next();
+            //swcap == null means copy all
             if(swcap != null && !swcap.equals(param.getSwcap())){
                 continue;
             }
-            PathElemParam paramCopy = new PathElemParam();
-            paramCopy.setSwcap(param.getSwcap());
-            paramCopy.setType(param.getType());
+            PathElemParam paramCopy = dest.getPathElemParam(param.getSwcap(), param.getType());
+            if(paramCopy == null){
+                paramCopy = new PathElemParam();
+                paramCopy.setSwcap(param.getSwcap());
+                paramCopy.setType(param.getType());
+                dest.addPathElemParam(paramCopy);
+            }
             paramCopy.setValue(param.getValue());
-            copy.add(paramCopy);
         }
-        return copy;
     }
 
 }

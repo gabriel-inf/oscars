@@ -245,12 +245,12 @@ public class CreateReservation extends HttpServlet {
 
             PathElemParam srcVlan = new PathElemParam();
             srcVlan.setSwcap(PathElemParamSwcap.L2SC);
-            srcVlan.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+            srcVlan.setType(PathElemParamType.L2SC_VLAN_RANGE);
             srcVlan.setValue(vlanTag);
 
             PathElemParam dstVlan= new PathElemParam();
             dstVlan.setSwcap(PathElemParamSwcap.L2SC);
-            dstVlan.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+            dstVlan.setType(PathElemParamType.L2SC_VLAN_RANGE);
             dstVlan.setValue(vlanTag);
 
             requestedPath.getPathElems().get(0).addPathElemParam(srcVlan);

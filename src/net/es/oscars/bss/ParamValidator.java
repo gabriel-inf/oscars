@@ -195,24 +195,28 @@ public class ParamValidator {
             if (requestedPath.getPathElems().size() < 2) {
                 return "Requested path too short";
             }
-            String srcVtag = requestedPath.getPathElems().get(0).getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
-            String destVtag = requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
-            this.log.debug("src VTAG: "+srcVtag );
-            this.log.debug("dest VTAG: "+destVtag );
-
-            String vtag = null;
-            boolean tagged = true;
-
-            // vlan tag can be either a single integer, a range of integers, or
-            // "any"
-            if(vtag == null || vtag.equals("any")){
-                return "";
-            }
-            String[] vlanFields = vtag.split("[-,]");
-            for (int i=0; i < vlanFields.length; i++) {
-                int field = Integer.parseInt(vlanFields[i].trim());
-                if ((field < 2) || (field > 4094)) {
-                    return("vlan given, " + field + " is not between 1 and 4094");
+            
+            // Check all give vlan ranges and suggested vlans
+            for(PathElem pathElem : requestedPath.getPathElems()){
+                String[] vlanTypes = {PathElemParamType.L2SC_VLAN_RANGE, PathElemParamType.L2SC_SUGGESTED_VLAN};
+                for(String vlanType : vlanTypes){
+                    PathElemParam vtagParam = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, vlanType);
+                    if(vtagParam == null){
+                        continue;
+                    }
+                    // vlan tag can be either a single integer, a range of integers, or
+                    // "any"
+                    String vtag = vtagParam.getValue();
+                    if(vtag == null || vtag.equals("any")){
+                        continue;
+                    }
+                    String[] vlanFields = vtag.split("[-,]");
+                    for (int i=0; i < vlanFields.length; i++) {
+                        int field = Integer.parseInt(vlanFields[i].trim());
+                        if (((field < 2) && field != 0) || (field > 4094)) {
+                            return("vlan" + field + " given for " + pathElem.getUrn() + " is not between 2 and 4094");
+                        }
+                    }
                 }
             }
             return "";

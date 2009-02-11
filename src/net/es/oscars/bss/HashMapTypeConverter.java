@@ -11,7 +11,6 @@ import org.apache.log4j.*;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.Token;
-import net.es.oscars.bss.PathManager;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 
@@ -166,7 +165,7 @@ public class HashMapTypeConverter {
             infoVal += ";" + l2scData.getInterfaceMTU();
             PathElemParam pep =
                 pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                                         PathElemParamType.L2SC_SUGGESTED_VLAN);
+                                         PathElemParamType.L2SC_VLAN_RANGE);
             infoVal += ";" + pep.getValue();
             infoVal += ";null";
         }else{

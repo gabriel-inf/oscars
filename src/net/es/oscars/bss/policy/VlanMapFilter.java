@@ -72,7 +72,7 @@ public class VlanMapFilter implements PolicyFilter{
                 /* if not a layer 2 link then don't need to check VLANs */
                 continue;
             }
-            byte[] topoVlans = this.rangeStringToMask(l2scData.getVlanRangeAvailability());
+            byte[] topoVlans = VlanMapFilter.rangeStringToMask(l2scData.getVlanRangeAvailability());
            // String hopVlanStr = pathElemParams.
             if(vlanMap.containsKey(k(link))){
                 byte[] vlanMapMask = vlanMap.get(k(link));
@@ -85,44 +85,32 @@ public class VlanMapFilter implements PolicyFilter{
             PathElemParam vlanRangeParam = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             if(vlanRangeParam != null){
                 hopVlanStr = vlanRangeParam.getValue();
-                byte[] hopVlans = this.rangeStringToMask(hopVlanStr);
+                byte[] hopVlans = VlanMapFilter.rangeStringToMask(hopVlanStr);
                 for(int j = 0; j < hopVlans.length; j++){
                     topoVlans[j] &= hopVlans[j];
                 }
             }
-            String rangeStr = this.maskToRangeString(topoVlans);
+            String rangeStr = VlanMapFilter.maskToRangeString(topoVlans);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN(s) " + hopVlanStr +
                             " not available for hop " + pathElem.getUrn());
             }else if("0".equals(rangeStr)){
                 untagMap.put(link.getFQTI(), true);
-                vlanMap.put(k(link), this.rangeStringToMask(l2scData.getVlanRangeAvailability()));
+                vlanMap.put(k(link), VlanMapFilter.rangeStringToMask(l2scData.getVlanRangeAvailability()));
             }else{
                 untagMap.put(link.getFQTI(), false);
                 vlanMap.put(k(link), topoVlans);
             }
         }
 
-        /* Step 2: If srcVtag or destVtag are specified and one or both are in
-           the local domain then do another AND on the edges */
-        //TODO: Handle this in the WSDL conversion?
-        /* if(ingrLink.getFQTI().equals(src) && srcVtag != null
-                && vlanMap.containsKey(k(ingrLink))){
-            this.applyEndpointMasks(ingrLink, srcVtag, vlanMap, untagMap);
-        }
-        if(egrLink.getFQTI().equals(dest) && destVtag != null
-                && vlanMap.containsKey(k(egrLink))){
-            this.applyEndpointMasks(egrLink, destVtag, vlanMap, untagMap);
-        } */
-
-        /* Step 3: For each overlapping reservation remove the tags in use */
+        /* Step 2: For each overlapping reservation remove the tags in use */
         for (Reservation resv : activeReservations) {
             if (!resv.getGlobalReservationId().equals(newReservation.getGlobalReservationId())) {
                 this.examineReservation(resv, newReservation.getLogin(), vlanMap, untagMap);
             }
         }
 
-        /* Step 4: Remove any VLANs that won't be sent by the remote end of
+        /* Step 3: Remove any VLANs that won't be sent by the remote end of
            the ingress link or can't be sent to the remote side of the egress
            link */
         PathElem prevInterPathElem = this.getPrevExternalL2scHop(interPathElems);
@@ -131,11 +119,11 @@ public class VlanMapFilter implements PolicyFilter{
             String prevVlanString = prevInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
             prevVlanString = (prevVlanString == null ? "any" : prevVlanString);
             byte[] ingrVlans = vlanMap.get(k(ingrLink));
-            byte[] prevVlans = this.rangeStringToMask(prevVlanString);
+            byte[] prevVlans = VlanMapFilter.rangeStringToMask(prevVlanString);
             for(int j = 0; j < ingrVlans.length; j++){
                 ingrVlans[j] &= prevVlans[j];
             }
-            String remaining = this.maskToRangeString(ingrVlans);
+            String remaining = VlanMapFilter.maskToRangeString(ingrVlans);
             if("".equals(remaining)){
                 throw new BSSException("No VLANs available in the range " +
                                        "specified by the previous hop " +
@@ -150,11 +138,11 @@ public class VlanMapFilter implements PolicyFilter{
             String nextVlanString = nextInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
             nextVlanString = (nextVlanString == null ? "any" : nextVlanString);
             byte[] egrVlans = vlanMap.get(k(egrLink));
-            byte[] nextVlans = this.rangeStringToMask(nextVlanString);
+            byte[] nextVlans = VlanMapFilter.rangeStringToMask(nextVlanString);
             for(int j = 0; j < egrVlans.length; j++){
                 egrVlans[j] &= nextVlans[j];
             }
-            String remaining = this.maskToRangeString(egrVlans);
+            String remaining = VlanMapFilter.maskToRangeString(egrVlans);
             if("".equals(remaining)){
                 throw new BSSException("No VLANs available in the range " +
                                        "specified by the next hop " +
@@ -166,7 +154,7 @@ public class VlanMapFilter implements PolicyFilter{
             }
         }
 
-        /* Step 5: Locate links capable of vlan translation and merge vlan
+        /* Step 4: Locate links capable of vlan translation and merge vlan
            ranges for links that don't support it */
         ArrayList<List<PathElem>> segments = new ArrayList<List<PathElem>>();
         ArrayList<byte[]> segmentMasks = new ArrayList<byte[]>();
@@ -199,8 +187,7 @@ public class VlanMapFilter implements PolicyFilter{
                previous link then no further filtering needed
                if untagged make its own segment like translation. This assumes
                that untagged can only happen on the edges */
-            String currHopRangeStr = this.maskToRangeString(currHopMask);
-            String rangeStr = this.maskToRangeString(currSegmentMask);
+            String rangeStr = VlanMapFilter.maskToRangeString(currSegmentMask);
             if(l2scData.getVlanTranslation() &&
                     (currLink.getRemoteLink() == null ||
                     (!currLink.getRemoteLink().equals(prevLink)))){
@@ -230,7 +217,7 @@ public class VlanMapFilter implements PolicyFilter{
 
         //NOTE: ignores suggested for hops beyond the first hop
         byte[] suggested = this.findSuggested(prevInterPathElem, localPathElems.get(0));
-        String globalRange = this.maskToRangeString(globalMask);
+        String globalRange = VlanMapFilter.maskToRangeString(globalMask);
         String globalVlan = null;
         if(suggested.length > 0 && (!"".equals(globalRange))){
             globalVlan = this.chooseVlanTag(globalMask, suggested);
@@ -240,7 +227,7 @@ public class VlanMapFilter implements PolicyFilter{
 
         ///update intradomain path
         for(int i = 0; i < segments.size(); i++){
-            String vlanRange = this.maskToRangeString(segmentMasks.get(i));
+            String vlanRange = VlanMapFilter.maskToRangeString(segmentMasks.get(i));
             String suggestedVlan = null;
             if(globalVlan != null){
                 suggestedVlan = globalVlan;
@@ -279,55 +266,19 @@ public class VlanMapFilter implements PolicyFilter{
         }
 
         /* Update inter-domain path with VLAN ranges. Only need to update the ingress
-         * and egress hops. */
+         * and egress hops. THIS IS AN ASSUMPTION THAT LINK IDS IN INTERDOMAIN AND LOCAL 
+         * PATH LOOK THE SAME.*/
         PathElem ingrPathElem = localPathElems.get(0);
         PathElem egrPathElem = localPathElems.get(localPathElems.size() - 1);
         for(PathElem interPathElem : interPathElems){
             if(ingrPathElem.getUrn().equals(interPathElem.getUrn())){
-                interPathElem.setPathElemParams(PathElem.copyPathElemParams(ingrPathElem, PathElemParamSwcap.L2SC));
+                PathElem.copyPathElemParams(interPathElem, ingrPathElem, PathElemParamSwcap.L2SC);
             }else if(egrPathElem.getUrn().equals(interPathElem.getUrn())){
-                interPathElem.setPathElemParams(PathElem.copyPathElemParams(egrPathElem, PathElemParamSwcap.L2SC));
+                PathElem.copyPathElemParams(interPathElem, egrPathElem, PathElemParamSwcap.L2SC);
                 break;
             }
         }
     }
-
-    /**
-     * Applies the srcVtag or destVtag filter to the ingress or egress link
-     *
-     * @param endLink the link being checked
-     * @param endVtag the user-specified VlanTag to check
-     * @param vlanMap the current map of vlans
-     */
-    /*private void applyEndpointMasks(Link endLink, VlanTag endVtag,
-                            HashMap<String, byte[]> vlanMap,
-                            HashMap<String, Boolean> untagMap) throws BSSException{
-        if(endVtag.getTagged()){
-            byte[] endVtagMask = this.rangeStringToMask(endVtag.getString());
-            byte[] vlanMapMask = vlanMap.get(k(endLink));
-            for(int j = 0; j < vlanMapMask.length; j++){
-                vlanMapMask[j] &= endVtagMask[j];
-            }
-            String rangeStr = this.maskToRangeString(vlanMapMask);
-            if("".equals(rangeStr)){
-                throw new BSSException("VLAN not available for edge link " +
-                                       endLink.getFQTI());
-            }
-            vlanMap.put(k(endLink), vlanMapMask);
-        }else{
-            byte[] vlanMapMask = vlanMap.get(k(endLink));
-            byte[] endVtagMask = this.rangeStringToMask("0");
-            //check if untagged allowed
-            endVtagMask[0] &= vlanMapMask[0];
-            String rangeStr = this.maskToRangeString(endVtagMask);
-            if("".equals(rangeStr)){
-                throw new BSSException("Link " + endLink.getFQTI() +
-                                       " cannot be untagged");
-            }
-            untagMap.put(endLink.getFQTI(), true);
-            //vlanMap.put(k(endLink), endVtagMask);
-        }
-    }*/
 
     /**
      * Removes VLANs from potential list that are already in use
@@ -348,16 +299,38 @@ public class VlanMapFilter implements PolicyFilter{
             }
             String fqti = link.getFQTI();
             L2SwitchingCapabilityData l2scData = link.getL2SwitchingCapabilityData();
-            // TODO:  check
+            if (l2scData == null || !vlanMap.containsKey(k(link))) {
+                continue;
+            }
+            
+            /* Check VLAN range first. If VLAN not a single integer then the 
+             * reservation is likely still getting processed.Try the suggestedVlan
+             * instead since that field indicates the value being held for reservations
+             * INCREATE.
+             */
             PathElemParam pep =
                 pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                                           PathElemParamType.L2SC_VLAN_RANGE);
-            String linkDescr = pep.getValue();
-            if (l2scData == null || !vlanMap.containsKey(k(link)) ||
-                    linkDescr == null) {
+            String linkDescr = null;
+            try{
+                linkDescr = pep.getValue();
+                Integer.parseInt(linkDescr);
+            }catch(Exception e){
+                pep =
+                    pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                              PathElemParamType.L2SC_SUGGESTED_VLAN);
+                if(pep != null){
+                    linkDescr = pep.getValue();
+                }
+            }
+            //No VLAN range or suggested VLAN fields. This should not happen
+            if(linkDescr == null){
+                this.log.debug("Skipping link with no VLAN range or suggested VLAN");
                 continue;
             }
-            byte[] resvMask = this.rangeStringToMask(linkDescr);
+            
+            /* Now that we have the vlan for the link apply to the map */
+            byte[] resvMask = VlanMapFilter.rangeStringToMask(linkDescr);
             boolean resvUntagged = false;
             try {
                 resvUntagged = (Integer.parseInt(linkDescr) < 0);
@@ -398,7 +371,7 @@ public class VlanMapFilter implements PolicyFilter{
                 }
                 vlanMask[i] =(byte) newTags;
             }
-            String remainingVlans = this.maskToRangeString(vlanMask);
+            String remainingVlans = VlanMapFilter.maskToRangeString(vlanMask);
             if ("".equals(remainingVlans) && newLogin.equals(resv.getLogin())) {
                 throw new BSSException("Last VLAN in use by a reservation " +
                                        "you previously placed (" +
@@ -497,7 +470,7 @@ public class VlanMapFilter implements PolicyFilter{
             }
         }
         if(sugVlan != null){
-            suggested = this.rangeStringToMask(sugVlan);
+            suggested = VlanMapFilter.rangeStringToMask(sugVlan);
         }
 
         return suggested;
@@ -554,7 +527,7 @@ public class VlanMapFilter implements PolicyFilter{
         for (int i=0; i < suggested.length; i++) {
             suggested[i] &= mask[i];
         }
-        String remaining = this.maskToRangeString(suggested);
+        String remaining = VlanMapFilter.maskToRangeString(suggested);
         if (!"".equals(remaining)) {
             mask = suggested;
         }

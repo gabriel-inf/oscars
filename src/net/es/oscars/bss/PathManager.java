@@ -138,7 +138,26 @@ public class PathManager {
         List<List<PathElem>> pathsToUpdate = new ArrayList<List<PathElem>>();
         pathsToUpdate.add(interLocalSegment);
         pathsToUpdate.add(localPath.getPathElems());
-
+        
+        /* Find local path segment of inter-domain path so can update when VLAN chosen */
+        for(PathElem interPathElem : resv.getPath(PathType.INTERDOMAIN).getPathElems()){
+            String domainUrn = URNParser.parseTopoIdent(interPathElem.getUrn()).get("domainFQID");
+            Domain domain = null;
+            try{
+                domain = TopologyUtil.getDomain(domainUrn, this.dbname);
+            }catch(BSSException e){
+                continue;
+            }
+            if(domain.isLocal()){
+                localFound = true;
+                interLocalSegment.add(interPathElem);
+            }else if(localFound){
+                break;
+            }
+        }
+        
+        /* Examine next domain path and determine what VLAN was choses */
+        localFound = false;
         if (pathFromDownstream != null) {
 
             //Find ingress pathElem of next domain (if exists)
@@ -188,10 +207,14 @@ public class PathManager {
                     vlanRange = new PathElemParam();
                     vlanRange.setType(PathElemParamType.L2SC_VLAN_RANGE);
                     vlanRange.setSwcap(PathElemParamSwcap.L2SC);
+                    elem.addPathElemParam(vlanRange);
+                    this.log.debug("Added another VLAN Range element");
                 }
 
                 if (sugVlanParam != null) {
                     vlanRange.setValue(sugVlanParam.getValue());
+                    this.log.debug("VLAN range for " + elem.getUrn() + 
+                            " set to " + vlanRange.getValue());
                 }
             }
         }

@@ -3,7 +3,6 @@ package net.es.oscars.bss;
 import java.util.*;
 
 import org.apache.log4j.*;
-import org.hibernate.*;
 
 import net.es.oscars.bss.topology.*;
 
@@ -105,7 +104,7 @@ public class BssUtils {
                 PathElem pathElem = pathElems.get(0);
                 PathElemParam pep =
                     pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                                         PathElemParamType.L2SC_SUGGESTED_VLAN);
+                                         PathElemParamType.L2SC_VLAN_RANGE);
                 String linkDescr = pep.getValue();
                 if (linkDescr != null) {
                     sb.append("VLAN tag: " + linkDescr + "\n");
@@ -234,7 +233,7 @@ public class BssUtils {
         pathElem.initializePathElemParams();
         PathElemParam pep =
             pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                                      PathElemParamType.L2SC_SUGGESTED_VLAN);
+                                      PathElemParamType.L2SC_VLAN_RANGE);
         if (pep == null) {
             return null;
         }

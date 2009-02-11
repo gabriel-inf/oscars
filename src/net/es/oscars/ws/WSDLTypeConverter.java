@@ -6,8 +6,6 @@
 package net.es.oscars.ws;
 
 import java.util.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.apache.log4j.*;
 
