@@ -94,7 +94,6 @@ public class ListReservations extends HttpServlet {
     public RmiListResRequest getParameters(HttpServletRequest servletRequest) {
 
         RmiListResRequest rmiRequest = new RmiListResRequest();
-        String loginConstraint = null;
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
         int numRowsReq = 0;  // if default, return all results
@@ -263,9 +262,12 @@ public class ListReservations extends HttpServlet {
             }
             if (vlanTag != null) {
                 // if not a range
-                if (!vlanTag.contains("-")) {
-                    int vlanNum = Math.abs(Integer.parseInt(vlanTag));
-                    resvMap.put("vlan", vlanNum + "");
+                if (!vlanTag.contains("-") && (!"any".equals(vlanTag))) {
+                    String vlanStr = "";
+                    try{
+                        vlanStr = Math.abs(Integer.parseInt(vlanTag)) +"";
+                    }catch(Exception e){}
+                    resvMap.put("vlan", vlanStr);
                 } else {
                     resvMap.put("vlan", "");
                 }
