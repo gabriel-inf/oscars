@@ -57,7 +57,7 @@
             <fileset dir="${build.lib}/.." includes="lib/axis2/*.jar"/>
             -->
             <fileset dir="conf/db" includes="c3p0.properties, bss.cfg.xml, aaa.cfg.xml"/>
-            <fileset dir="conf/properties" includes="rmi.properties, oscars.properties"/>
+            <fileset dir="conf/properties" includes="oscars.properties"/>
             <fileset dir="conf/pss" includes="*.xml"/>
             <fileset dir="${build.home}/oscars-core/" includes="log4j.properties"/>
         </jar>
@@ -76,7 +76,7 @@
             <fileset dir="${build.classes}"
                 includes="**/*.class, **/*.hbm.xml" excludes="**/servlets/*, WEB-INF/**/*"/>
             <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml"/>
-            <fileset dir="conf/properties" includes="rmi.properties,oscars.properties"/>
+            <fileset dir="conf/properties" includes="oscars.properties"/>
             <fileset dir="${build.home}/aaa-core/" includes="log4j.properties"/>
         </jar>
         <!-- <delete dir="${build.home}/aaa-core/" /> -->
@@ -92,7 +92,6 @@
         <jar destfile="build/notifybroker-core.jar">
             <fileset dir="${build.classes}" includes="**/notifybroker/**/*, **/net/es/oscars/*,**/oscars/database/**/*,**/rmi/*,**/rmi/notifybroker/**/*,**/rmi/aaa/**/*, **/oscars/wsdlTypes/*,**/oscars/aaa/AuthValue*,**/oscars/aaa/AuthMultiValue*,**/oscars/ws/AAAFaultMessage*"/>
             <fileset dir="conf/db" includes="c3p0.properties, notify.cfg.xml"/>
-            <fileset dir="conf/properties" includes="rmi.properties"/>
             <fileset dir="${build.home}/notifybroker-core/" includes="log4j.properties"/>
         </jar>
     </target>
@@ -113,8 +112,6 @@
         <!-- Copy over the specific log4j.properties file -->
         <mkdir dir="${build.home}/oscars-war/WEB-INF/classes" />
         <copy file="conf/logging/oscars-war.log4j.properties" tofile="${build.home}/oscars-war/WEB-INF/classes/log4j.properties"/>
-
-        <copy file="conf/properties/rmi.properties" tofile="${build.home}/WEB-INF/classes/rmi.properties"/>
 
         <!-- First copy over only the necessary .jar files into a temporary directory
              This is needed because we're not allowed more than one lib dir
@@ -171,8 +168,6 @@
         <!-- Copy over the OSCARS AAR-specific log4j.properties file -->
         <copy file="conf/logging/oscars-aar.log4j.properties" tofile="${build.home}/oscars-aar/log4j.properties"/>
 
-        <!-- Copy over the rmi.properties file -->
-        <copy file="conf/properties/rmi.properties" tofile="${build.home}/oscars-aar/rmi.properties"/>
         <jar destfile="build/OSCARS.aar">
             <!-- These are just the necessary OSCARS classes -->
             <fileset dir="${build.classes}"
@@ -535,8 +530,6 @@
         <copy file="conf/axis-tomcat/notify-services.xml" tofile="${build.home}/notify-aar/META-INF/services.xml"/>
 
         <jar destfile="build/OSCARSNotify.aar">
-            <!-- TODO: remove next line -->
-            <fileset dir="conf/properties" includes="rmi.properties"/>
             <fileset dir="${build.classes}" includes="**/notifybroker/ws/**/*,**/oasis_open/**/*,**/w3/**/*,**/client/security/**/*,**/wsdlTypes/AAAFault*,**net/es/oscars/*,**/rmi/*, **/rmi/notifybroker/**/*,**/rmi/aaa/**/*,**/oscars/aaa/AuthValue*,**/oscars/aaa/AuthMultiValue*,**/oscars/ws/AAAFaultMessage*" />
             <fileset dir="${build.home}/notify-aar/"/>
         </jar>

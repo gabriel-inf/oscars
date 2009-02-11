@@ -45,7 +45,7 @@ public abstract class BaseRmiServer {
         this.log.debug(this.serviceName+".init().start");
         Properties props = this.getProperties();
         if (props == null) {
-            log.warn("rmi.properties not found. Using default values");
+            log.warn("oscars.properties not found. Using default values");
             //errorMsg = "Properties not set!";
             //throw new RemoteException(errorMsg);
         } else {
@@ -64,7 +64,7 @@ public abstract class BaseRmiServer {
                 this.setRmiServiceName(props.getProperty("registryName").trim());
                 this.log.info("Service name at registry: "+this.getRmiServiceName());
             } else if (this.getRmiServiceName() != null) {
-                this.log.warn("RegistryName not set in rmi.properties. Using default: " + this.rmiServiceName);
+                this.log.warn("RegistryName not set in oscars.properties. Using default: " + this.rmiServiceName);
             } else {
                 errorMsg = "rmiServiceName not set because registryName property not set!";
                 throw new RemoteException(errorMsg);

@@ -3,6 +3,8 @@ package net.es.oscars.rmi.aaa;
 import java.util.*;
 
 import java.rmi.*;
+
+import net.es.oscars.PropHandler;
 import net.es.oscars.PropertyLoader;
 
 import net.es.oscars.aaa.*;
@@ -44,7 +46,8 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
 
         AaaRmiServer.staticObject = this;
 
-        Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi.aaa", true);;
         this.setProperties(props);
         // name of aaa service in registry, will be reset from aaa.registryName in rmi properties
         this.setRmiServiceName("AAARMIServer");

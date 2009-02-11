@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 
+import net.es.oscars.PropHandler;
 import net.es.oscars.PropertyLoader;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
@@ -34,7 +35,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
     public void init() throws RemoteException {
         this.log.info("starting aaa rmi connection");
 
-        Properties props = PropertyLoader.loadProperties("rmi.properties","aaa",true);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi.aaa", true);
         this.setProps(props);
         // name of aaa service in registry, will be reset from aaa.registryName in rmi properties
         this.rmiServiceName = "AAARMIServer";

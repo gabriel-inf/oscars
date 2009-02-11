@@ -9,6 +9,7 @@ import net.es.oscars.rmi.bss.xface.*;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.wsdlTypes.GetTopologyContent;
 import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
+import net.es.oscars.PropHandler;
 import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.Logger;
@@ -30,7 +31,8 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
 
         this.log.info("Starting BssRmi connection");
 
-        Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi.bss", true);
         this.setProps(props);
         // name of bss service in registry, will be reset from bss.registryName in rmi properties
         this.rmiServiceName = "BSSRMIServer";

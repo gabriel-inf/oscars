@@ -8,7 +8,7 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.wsdlTypes.GetTopologyContent;
 import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.rmi.*;
-import net.es.oscars.PropertyLoader;
+import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.bss.xface.*;
 
 import org.apache.log4j.*;
@@ -37,7 +37,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * Initializes the RMI server registry given values from rmi.properties.
+     * Initializes the RMI server registry given values from oscars.properties.
      *
      * @throws remoteException
      */
@@ -46,7 +46,8 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
 
         BssRmiServer.staticObject = this;
 
-        Properties props = PropertyLoader.loadProperties("rmi.properties","bss",true);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("rmi.bss", true);
         this.setProperties(props);
         // name of bss service in registry, will be reset from bss.registryName in rmi properties
         this.setRmiServiceName("BSSRMIServer");

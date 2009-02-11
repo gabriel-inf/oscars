@@ -3,7 +3,6 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
-import java.rmi.RemoteException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
