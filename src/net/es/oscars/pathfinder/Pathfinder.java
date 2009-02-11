@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.apache.log4j.*;
 
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.lookup.*;
 
@@ -173,7 +174,12 @@ public class Pathfinder {
                         throw new PathfinderException("Two separate local segments detected");
                     }
                     localSegmentStarted = true;
-                    PathElem copy = PathElem.copyPathElem(pe);
+                    PathElem copy = null;
+                    try {
+                        copy = PathElem.copyPathElem(pe);
+                    } catch (BSSException e) {
+                        throw new PathfinderException(e.getMessage());
+                    }
                     localSegment.add(copy);
                 }
             } else if (pe.getUrn() != null) {
@@ -184,7 +190,12 @@ public class Pathfinder {
                     if (localSegmentFinished) {
                         throw new PathfinderException("Two separate local segments detected");
                     }
-                    PathElem copy = PathElem.copyPathElem(pe);
+                    PathElem copy = null;
+                    try {
+                        copy = PathElem.copyPathElem(pe);
+                    } catch (BSSException e) {
+                        throw new PathfinderException(e.getMessage());
+                    }
                     copy.setLink(link);
                     localSegment.add(copy);
                 }

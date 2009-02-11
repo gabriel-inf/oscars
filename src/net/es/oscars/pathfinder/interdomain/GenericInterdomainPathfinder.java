@@ -75,11 +75,15 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
             boolean addedLocalPes = false;
 
             for (PathElem pe : requestedPath.getPathElems()) {
-                PathElem pecopy;
+                PathElem pecopy = null;
                 // Non-local hops get copied
                 if (!pathTerminatesLocally && (pe.getLink() == null || !pe.getLink().getPort().getNode().getDomain().isLocal())) {
                     if (!pe.getUrn().equals(nextDomainIngress.getUrn())) {
-                        pecopy = PathElem.copyPathElem(pe);
+                        try {
+                            pecopy = PathElem.copyPathElem(pe);
+                        } catch (BSSException e) {
+                            throw new PathfinderException(e.getMessage());
+                        }
                         interdomainPath.addPathElem(pecopy);
                     }
 
