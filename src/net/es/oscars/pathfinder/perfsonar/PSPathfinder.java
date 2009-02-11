@@ -47,7 +47,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         this.localDomain = domDAO.getLocalDomain();
         this.log.debug("localDomain=" + this.localDomain);
         
-        if (this.psdf == null) {
+        if (PSPathfinder.psdf == null) {
             String[] gLSs = null;
             String[] hLSs = null;
             String[] TSs = null;
@@ -107,12 +107,12 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
 
             try {
                 if(gLSs != null || hLSs != null || TSs != null){
-                    this.psdf = new PerfSONARDomainFinder(gLSs, hLSs, TSs);
+                    PSPathfinder.psdf = new PerfSONARDomainFinder(gLSs, hLSs, TSs);
                 }else if(hints != null){
-                    this.psdf = new PerfSONARDomainFinder(hints);
+                    PSPathfinder.psdf = new PerfSONARDomainFinder(hints);
                 }else{
                     this.log.warn("No lookup service information specified, using defaults");
-                    this.psdf = new PerfSONARDomainFinder("http://www.perfsonar.net/gls.root.hints");
+                    PSPathfinder.psdf = new PerfSONARDomainFinder("http://www.perfsonar.net/gls.root.hints");
                 }
             } catch(Exception e) {
                 this.log.error(e.getMessage());
@@ -128,7 +128,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
      * @throws PathfinderException
      */
     public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
-        if (this.psdf == null) {
+        if (PSPathfinder.psdf == null) {
             this.log.error("The perfSONAR pathfinder is not properly configured.");
         }
         
@@ -143,7 +143,12 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
 
         for(Path p : results){
             for(PathElem e : p.getPathElems()){
-                this.log.debug("Hop) " + e.getUrn());
+                String vlan = "";
+                try {
+                    PathElemParam peParam = e.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                    if(peParam != null){ vlan =" --VLAN=" + peParam.getValue();}
+                } catch (Exception e1) {}
+                this.log.debug("Hop) " + e.getUrn() + vlan);
             }
         }
         
@@ -158,7 +163,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
      * @throws PathfinderException
      */
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
-        if (this.psdf == null) {
+        if (PSPathfinder.psdf == null) {
             this.log.error("The perfSONAR pathfinder is not properly configured.");
         }
         
@@ -173,7 +178,12 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
 
         for(Path p : results){
             for(PathElem e : p.getPathElems()){
-                this.log.debug("Hop) " + e.getUrn());
+                String vlan = "";
+                try {
+                    PathElemParam peParam = e.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                    if(peParam != null){ vlan =" --VLAN=" + peParam.getValue();}
+                } catch (Exception e1) {}
+                this.log.debug("Hop) " + e.getUrn() + vlan);
             }
         }
         
@@ -476,6 +486,21 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                         // we add ourselves to the interdomain path.
                         newPath.addPathElem(currHop);
                     }
+                }
+            }
+            
+            /* Make sure all the PathElemParams were maintained. 
+             * There is probably a more efficient way to do this */
+            int npeIndex = 0;
+            for(PathElem reqHop: reqHops){
+                while(npeIndex < newPath.getPathElems().size()){
+                    PathElem newPathElem = newPath.getPathElems().get(npeIndex);
+                    if(reqHop.getUrn().equals(newPathElem.getUrn())){
+                        PathElem.copyPathElemParams(newPathElem, reqHop, null);
+                        npeIndex++;
+                        break;
+                    }
+                    npeIndex++;
                 }
             }
         }

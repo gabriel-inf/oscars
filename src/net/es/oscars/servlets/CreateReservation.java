@@ -230,13 +230,15 @@ public class CreateReservation extends HttpServlet {
 
             Layer2Data layer2Data = new Layer2Data();
             vlanTag = (vlanTag == null||vlanTag.equals("") ? "any" : vlanTag);
+            String srcVlanTag = vlanTag;
+            String destVlanTag = vlanTag;
             boolean tagged = tagSrcPort.equals("Tagged");
             if (!tagged) {
-                vlanTag = "0";
+                srcVlanTag = "0";
             }
             tagged = tagDestPort.equals("Tagged");
             if (!tagged) {
-                vlanTag = "0";
+                destVlanTag = "0";
             }
 
             layer2Data.setSrcEndpoint(source);
@@ -246,12 +248,12 @@ public class CreateReservation extends HttpServlet {
             PathElemParam srcVlan = new PathElemParam();
             srcVlan.setSwcap(PathElemParamSwcap.L2SC);
             srcVlan.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            srcVlan.setValue(vlanTag);
+            srcVlan.setValue(srcVlanTag);
 
             PathElemParam dstVlan= new PathElemParam();
             dstVlan.setSwcap(PathElemParamSwcap.L2SC);
             dstVlan.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            dstVlan.setValue(vlanTag);
+            dstVlan.setValue(destVlanTag);
 
             requestedPath.getPathElems().get(0).addPathElemParam(srcVlan);
             requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).addPathElemParam(dstVlan);

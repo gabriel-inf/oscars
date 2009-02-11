@@ -211,11 +211,17 @@ public class PathManager {
                     this.log.debug("Added another VLAN Range element");
                 }
 
-                if (sugVlanParam != null) {
-                    vlanRange.setValue(sugVlanParam.getValue());
-                    this.log.debug("VLAN range for " + elem.getUrn() + 
-                            " set to " + vlanRange.getValue());
+                if (sugVlanParam == null) {
+                    continue;
                 }
+                
+                /* Add negative number to suggested VLAN if link is untagged. Save as 
+                 * negative so can track which VLAN untagged ports belong to on node.
+                 */
+                String negative = "0".equals(vlanRange.getValue()) ? "-" : "";
+                vlanRange.setValue(negative + sugVlanParam.getValue());
+                this.log.debug("VLAN range for " + elem.getUrn() + 
+                            " set to " + vlanRange.getValue());
             }
         }
     }

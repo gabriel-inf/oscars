@@ -91,10 +91,12 @@ public class VlanMapFilter implements PolicyFilter{
                 }
             }
             String rangeStr = VlanMapFilter.maskToRangeString(topoVlans);
+            this.log.debug("Init VLANs for " + pathElem.getUrn() + ": " + rangeStr);
             if("".equals(rangeStr)){
                 throw new BSSException("VLAN(s) " + hopVlanStr +
                             " not available for hop " + pathElem.getUrn());
             }else if("0".equals(rangeStr)){
+                this.log.debug("adding " + link.getFQTI() + " to UntagMap");
                 untagMap.put(link.getFQTI(), true);
                 vlanMap.put(k(link), VlanMapFilter.rangeStringToMask(l2scData.getVlanRangeAvailability()));
             }else{
@@ -247,9 +249,11 @@ public class VlanMapFilter implements PolicyFilter{
                 }
                 PathElemParam peSugVlan = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
 
-                if(untagMap.containsKey(pathElem.getLink().getId()) &&
-                   untagMap.get(pathElem.getLink().getId())){
+                if(untagMap.containsKey(pathElem.getLink().getFQTI()) &&
+                        untagMap.get(pathElem.getLink().getFQTI())){
                     peVlanRange.setValue("0");
+                    this.log.debug("Set untagged VLAN for " + 
+                            pathElem.getLink().getFQTI());
                 }else{
                     peVlanRange.setValue(vlanRange);
                 }
@@ -261,7 +265,7 @@ public class VlanMapFilter implements PolicyFilter{
                     pathElem.addPathElemParam(peSugVlan);
                 }
                 peSugVlan.setValue(suggestedVlan);
-                this.log.info(pathElem.getUrn() + "(" + vlanRange + ")");
+                this.log.info(pathElem.getUrn() + "(" + peVlanRange.getValue() + ")");
             }
         }
 
@@ -333,7 +337,7 @@ public class VlanMapFilter implements PolicyFilter{
             byte[] resvMask = VlanMapFilter.rangeStringToMask(linkDescr);
             boolean resvUntagged = false;
             try {
-                resvUntagged = (Integer.parseInt(linkDescr) < 0);
+                resvUntagged = (Integer.parseInt(linkDescr) <= 0);
             } catch (Exception e){}
             //NOTE: Even if untagMap contains false, it can be used to match links in path
             if (resvUntagged && untagMap.containsKey(fqti) &&
