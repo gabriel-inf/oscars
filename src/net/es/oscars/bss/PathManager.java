@@ -201,6 +201,10 @@ public class PathManager {
             for(PathElem elem : pathToUpdate){
                 PathElemParam sugVlanParam = elem.getPathElemParam(
                         PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+                if (sugVlanParam == null) {
+                    continue;
+                }
+                
                 PathElemParam vlanRange = elem.getPathElemParam(
                         PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
                 if (vlanRange == null) {
@@ -209,10 +213,6 @@ public class PathManager {
                     vlanRange.setSwcap(PathElemParamSwcap.L2SC);
                     elem.addPathElemParam(vlanRange);
                     this.log.debug("Added another VLAN Range element");
-                }
-
-                if (sugVlanParam == null) {
-                    continue;
                 }
                 
                 /* Add negative number to suggested VLAN if link is untagged. Save as 

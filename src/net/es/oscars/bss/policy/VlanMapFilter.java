@@ -240,6 +240,10 @@ public class VlanMapFilter implements PolicyFilter{
             }
             this.log.debug("Suggested VLAN: " + suggestedVlan);
             for(PathElem pathElem: segments.get(i)){
+                //If not a layer 2 link than skip it to prevent bad PathElemParam creation
+                if(pathElem.getLink() == null || pathElem.getLink().getL2SwitchingCapabilityData() == null){
+                    continue;
+                }
                 PathElemParam peVlanRange = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
                 if (peVlanRange == null) {
                     peVlanRange = new PathElemParam();
