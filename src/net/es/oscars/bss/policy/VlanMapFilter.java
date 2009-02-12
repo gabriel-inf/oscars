@@ -118,7 +118,11 @@ public class VlanMapFilter implements PolicyFilter{
         PathElem prevInterPathElem = this.getPrevExternalL2scHop(interPathElems);
         PathElem nextInterPathElem = this.getNextExternalL2scHop(interPathElems);
         if(prevInterPathElem != null && prevInterPathElem.getLink() != null){
-            String prevVlanString = prevInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
+            PathElemParam prevPathElemParam = prevInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            String prevVlanString = null;
+            if(prevPathElemParam != null){
+                prevVlanString = prevPathElemParam.getValue();
+            }
             prevVlanString = (prevVlanString == null ? "any" : prevVlanString);
             byte[] ingrVlans = vlanMap.get(k(ingrLink));
             byte[] prevVlans = VlanMapFilter.rangeStringToMask(prevVlanString);
@@ -137,7 +141,11 @@ public class VlanMapFilter implements PolicyFilter{
             }
         }
         if(nextInterPathElem != null && nextInterPathElem.getLink() != null){
-            String nextVlanString = nextInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
+            PathElemParam nextVlanParam = nextInterPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            String nextVlanString = null;
+            if(nextVlanParam != null){
+                nextVlanString = nextVlanParam.getValue();
+            }
             nextVlanString = (nextVlanString == null ? "any" : nextVlanString);
             byte[] egrVlans = vlanMap.get(k(egrLink));
             byte[] nextVlans = VlanMapFilter.rangeStringToMask(nextVlanString);

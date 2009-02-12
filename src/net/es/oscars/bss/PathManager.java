@@ -97,14 +97,28 @@ public class PathManager {
                     throw new BSSException(errMsg);
                 }
                 String urn = pe.getUrn();
-                Link link = TopologyUtil.getLink(urn, this.dbname);
+                Link link = null;
+                
+                //catch exception because inter-domain links are not in our database
+                try{
+                    link = TopologyUtil.getLink(urn, this.dbname);
+                }catch(Exception e){
+                    if(urn.startsWith("urn:ogf:network")){
+                        continue;
+                    }
+                }
+                
                 if (link != null) {
                     pe.setLink(link);
                 } else {
+                    //Not in database and not a URN so try the lookup service
                     try {
                         PSLookupClient lookupClient = new PSLookupClient();
                         String resolved = lookupClient.lookup(urn);
-                        link = TopologyUtil.getLink(resolved, this.dbname);
+                        //...again if its an interdomain link it might not be in the DB
+                        try{ 
+                            link = TopologyUtil.getLink(resolved, this.dbname); 
+                        }catch(Exception e){}
                         if (link != null) {
                             pe.setLink(link);
                         }

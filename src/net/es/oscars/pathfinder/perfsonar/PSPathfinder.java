@@ -207,6 +207,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         
         //if an interdomain path is already calculated then just calculate local path
         final boolean LOCALPATH = PathType.INTERDOMAIN.equals(inputPathType);
+        
         GenericPathfinder pf;
         try {
             pf = new GenericPathfinder();
@@ -334,7 +335,10 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             // out since we're not going to assume we know how
                             // to go anywhere in the next domain. XXX this is
                             // where we'd add in true interdomain path finding.
-
+                            
+                            //...if its a local path though skip adding these hops
+                            if(LOCALPATH){ continue; }
+                            
                             this.log.debug("Adding hop to interdomain: "+prevHop.getUrn());
 
                             egressURN = prevHop.getUrn();
