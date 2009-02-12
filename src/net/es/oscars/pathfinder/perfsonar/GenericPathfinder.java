@@ -384,7 +384,7 @@ public class GenericPathfinder {
                 }
                 long measETime = System.currentTimeMillis();
 
-                System.out.println("Time to discover "+currDomain+": "+(measETime-measSTime));
+                this.log.debug("Time to discover "+currDomain+": "+(measETime-measSTime));
 
                 if (retDomain == null) {
                     if (this.cacheFailures) {
