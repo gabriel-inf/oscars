@@ -301,8 +301,8 @@ public class PathSetupManager{
                            neighborDomain.getTopologyIdent() + " so discarding");
             return;
         }
-        
-        /* Get the institution */
+        // TODO see if this needs to be fixed
+        /* Get the institution 
         Site site = neighborDomain.getSite();
         if(site == null){
             this.log.error("No site associated with domain " +  
@@ -320,6 +320,7 @@ public class PathSetupManager{
                            "aaa.institution and bss.sites table.");
             return;
         }
+        */
         
         //check if in cancel state
         int localStatus = se.getLocalStatus(resv);
@@ -376,8 +377,8 @@ public class PathSetupManager{
                            " in the path");
             return;
         }
-        
-        /* Get the institution */
+        // TODO see if this needs to be fixed
+        /* Get the institution 
         Site site = neighborDomain.getSite();
         if(site == null){
             this.log.error("No site associated with domain " +  
@@ -395,6 +396,7 @@ public class PathSetupManager{
                            "aaa.institution and bss.sites table.");
             return;
         }
+        */
 
 		if(StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
         	this.log.warn("Reservation " + gri + " already failed so skipping.");

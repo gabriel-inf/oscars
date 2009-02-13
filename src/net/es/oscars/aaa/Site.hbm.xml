@@ -5,7 +5,7 @@
 
 <hibernate-mapping>
 
-<class name="net.es.oscars.bss.topology.Site" table="sites">
+<class name="net.es.oscars.aaa.Site" table="sites">
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="sites"
     </meta>
@@ -19,18 +19,16 @@
         <generator class="identity" />
     </id>
 
-    <property name="name" not-null="true">
+    <property name="domainTopologyId" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>
     </property>
 
     <!-- Associations -->
-
-    <many-to-one name="domain" column="domainId"
-        class="net.es.oscars.bss.topology.Domain" not-null="true"
-        unique="true" />
-
-
+    
+        <many-to-one name="institution" column="institution"
+        not-null="true" class="net.es.oscars.aaa.Institution" />
+ 
 </class>
 </hibernate-mapping>

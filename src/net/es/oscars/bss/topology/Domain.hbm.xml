@@ -60,10 +60,10 @@
         <key column="nextDomainId" />
         <one-to-many class="net.es.oscars.bss.topology.Path" />
     </set>
-
+<!-- 
     <one-to-one name="site"
         class="net.es.oscars.bss.topology.Site"
         property-ref="domain" />
-
+-->
 </class>
 </hibernate-mapping>

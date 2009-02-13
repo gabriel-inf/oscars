@@ -247,6 +247,7 @@ public class PathManager {
      *             institution
      * @param source - true returns the source , false returns the destination
      * @return institution String name of the end point
+     * @return the topology identifier of the endpoint domain
      */
     public String endPointSite(Reservation resv, Boolean source) throws BSSException {
         Path path = resv.getPath(PathType.LOCAL);
@@ -259,25 +260,29 @@ public class PathManager {
         }
         Link endPoint = hop.getLink();
         Link remoteLink = endPoint.getRemoteLink();
-        String institutionName = "UNKNOWN";
+        String topologyIdent = "UNKNOWN";
         Domain endDomain = null;
-        // String FQTI = null;
+        String FQTI = null;
         if (remoteLink != null) {
             endDomain = remoteLink.getPort().getNode().getDomain();
-            // FQTI=remoteLink.getFQTI();
-            // this.log.debug("remote link: " + FQTI + " domain: " + endDomain.getTopologyIdent() );
+            FQTI=remoteLink.getFQTI();
+            this.log.debug("remote link: " + FQTI + " domain: " + endDomain.getTopologyIdent() );
         } else {
             endDomain = endPoint.getPort().getNode().getDomain();
-            // FQTI=endPoint.getFQTI();
-            // this.log.debug("endPoint link is: " + FQTI + " domain: " + endDomain.getTopologyIdent());
+            FQTI=endPoint.getFQTI();
+            this.log.debug("endPoint link is: " + FQTI + " domain: " + endDomain.getTopologyIdent());
         }
         if (endDomain != null ) {
+            /*
             Site institution = endDomain.getSite();
             if (institution != null) {
                 institutionName = institution.getName();
             }
+            */
+            topologyIdent = endDomain.getTopologyIdent();
+            this.log.debug("toplogyIdent is " + topologyIdent);
         }
-        return institutionName;
+        return topologyIdent;
     }
 
     /**

@@ -1,25 +1,29 @@
 package net.es.oscars.bss;
 
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.net.*;
+//import java.net.*;
 import org.apache.log4j.*;
 
 import org.aaaarch.gaaapi.tvs.TokenBuilder;
 import org.aaaarch.gaaapi.tvs.TokenKey;
 
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+//import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+//import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.quartz.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.scheduler.*;
-import net.es.oscars.ws.*;
+//import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.pathfinder.*;
+//import net.es.oscars.pathfinder.*;
 import net.es.oscars.pss.*;
+
 
 /**
  * ReservationManager handles all networking and data access object calls
@@ -240,7 +244,7 @@ public class ReservationManager {
             return;
         }
 
-        /* Get the institution */
+        /* Get the institution 
         Site site = neighborDomain.getSite();
         if(site == null){
             this.log.error("No site associated with domain " +
@@ -258,7 +262,7 @@ public class ReservationManager {
                            "aaa.institution and bss.sites table.");
             return;
         }
-
+*/
         /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -270,7 +274,7 @@ public class ReservationManager {
         jobDataMap.put(op, true);
         jobDataMap.put("gri", gri);
         jobDataMap.put("login", login);
-        jobDataMap.put("institution", institution);
+        //jobDataMap.put("institution", institution);
         jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
         try {
@@ -290,7 +294,7 @@ public class ReservationManager {
      * @param errorSrc the IDC the originated the error
      * @param errorCode the error code of this event
      * @param errorMsg the error message describing the event
-     * @param reqStatus the requried status of the reservation for this to be valid
+     * @param reqStatus the required status of the reservation for this to be valid
      * @throws BSSException
      */
     public void submitFailed(String gri, PathInfo pathInfo, String producerID,
@@ -343,7 +347,7 @@ public class ReservationManager {
             return;
         }
 
-        /* Get the institution */
+        /* Get the institution 
         Site site = neighborDomain.getSite();
         if (site == null) {
             this.log.error("No site associated with domain " +
@@ -361,7 +365,7 @@ public class ReservationManager {
                            "aaa.institution and bss.sites table.");
             return;
         }
-
+*/
         /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -372,7 +376,7 @@ public class ReservationManager {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("fail", true);
         jobDataMap.put("gri", gri);
-        jobDataMap.put("institution", institution);
+        //jobDataMap.put("institution", institution);
         jobDataMap.put("pathInfo", pathInfo);
         jobDataMap.put("errorSrc", errorSrc);
         jobDataMap.put("errorCode", errorCode);
@@ -745,6 +749,7 @@ public class ReservationManager {
             // keep reservations that start or terminate at institution
             // or belong to this user
             this.log.debug("Checking " + reservations.size() + " reservations for site");
+
             for (Reservation resv : reservations) {
                 if (checkInstitution( resv, institution)) {
                     authResv.add(resv);
@@ -862,19 +867,20 @@ public class ReservationManager {
 
     public Boolean checkInstitution(Reservation resv, String institution) throws BSSException {
         // get the site associated the source of the reservation
-        String sourceSite = this.pathMgr.endPointSite(resv, true);
-        // this.log.debug("checkInstitution: sourceSite is " + sourceSite);
-        if (sourceSite.equals(institution)) {
-            return true;
-        } else {
-            // get the site associated the destination of the reservation
-            String destSite = this.pathMgr.endPointSite(resv,false);
-            // this.log.debug("checkInstitution: destinationSite is " + destSite);
-            if (destSite.equals(institution)){
-                return true;
-            }
+        String sourceTopoId = this.pathMgr.endPointSite(resv, true);
+        String destTopoId = this.pathMgr.endPointSite(resv,false);
+        this.log.debug("checkInstitution: sourceTopoId is " + sourceTopoId
+                + "destinationSite is " + destTopoId);
+        try {
+            AaaRmiInterface aaaRmiClient =
+                RmiUtils.getAaaRmiClient("checkInstitution", log);
+            Domain startDomain = this.endPointDomain(resv,true);
+            Domain endDomain = this.endPointDomain(resv,false);
+            return aaaRmiClient.checkDomainAccess(null,institution, startDomain.getTopologyIdent(),
+                    endDomain.getTopologyIdent());
+        } catch ( RemoteException e){
+            throw new BSSException ("Remote exception in checkInstitution from checkDomainAccess");
         }
-        return false;
     }
 
     /**

@@ -54,5 +54,6 @@
         <mapping resource="net/es/oscars/aaa/Constraint.hbm.xml"/>       
         <mapping resource="net/es/oscars/aaa/Rpc.hbm.xml"/>       
         <mapping resource="net/es/oscars/aaa/Authorization.hbm.xml"/>
+        <mapping resource="net/es/oscars/aaa/Site.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>

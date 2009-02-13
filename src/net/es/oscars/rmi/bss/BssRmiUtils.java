@@ -69,7 +69,7 @@ public class BssRmiUtils {
                 Hibernate.initialize(pe.getLink().getPort().getNode());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getNodeAddress());
                 Hibernate.initialize(pe.getLink().getPort().getNode().getDomain());
-                Hibernate.initialize(pe.getLink().getPort().getNode().getDomain().getSite());
+               // Hibernate.initialize(pe.getLink().getPort().getNode().getDomain().getSite());
             }
         }
     }

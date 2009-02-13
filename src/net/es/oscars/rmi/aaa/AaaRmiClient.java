@@ -218,7 +218,25 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("checkModResAccess.end");
         return result;
     }
-
+    public Boolean
+        checkDomainAccess(String userName,String institutionName, String srcTopologyId,String destTopologyId)
+            throws RemoteException {
+        this.log.debug("checkDomainAccess.start");
+        String methodName = "checkDomaniAccess";
+        Boolean result = false;
+        this.verifyRmiConnection(methodName);
+        try {
+            result = this.remote.checkDomainAccess(userName, institutionName, srcTopologyId, destTopologyId);
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException(e.getMessage(), e);
+        }
+        this.log.debug("checkDomainAccess.end");
+        return result;
+    }
     /**
      * @return the remote
      */

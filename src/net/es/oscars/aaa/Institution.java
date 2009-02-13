@@ -19,6 +19,8 @@ public class Institution extends HibernateBean implements Serializable {
     private String name;
 
     private Set users;
+    
+    private Set sites;
 
     /** default constructor */
     public Institution() { }
@@ -45,7 +47,18 @@ public class Institution extends HibernateBean implements Serializable {
         user.setInstitution(this);
         this.users.add(user);
     }
+    public void setSites(Set sites) {
+        this.sites = sites;
+    }
 
+    public Set getSites() {
+        return this.sites;
+    }
+
+    public void addSite(Site site) {
+        site.setInstitution(this);
+        this.sites.add(site);
+    }
 
     public String toString() {
         return new ToStringBuilder(this)

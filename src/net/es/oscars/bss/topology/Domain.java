@@ -37,7 +37,7 @@ public class Domain extends HibernateBean implements Serializable {
 
     private Set paths;
 
-    private Site site;
+    //private Site site;
 
     /** default constructor */
     public Domain() { }
@@ -141,7 +141,7 @@ public class Domain extends HibernateBean implements Serializable {
         }
 
     }
-
+/*
     public void setSite(Site site) {
         this.site = site;
     }
@@ -149,7 +149,7 @@ public class Domain extends HibernateBean implements Serializable {
     public Site getSite() {
         return this.site;
     }
-
+*/
     public Node getNodeByTopoId(String nodeTopologyId) {
         if (this.nodes == null) {
             return null;

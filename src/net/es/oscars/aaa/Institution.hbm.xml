@@ -36,5 +36,10 @@
         <one-to-many class="net.es.oscars.aaa.User" />
     </set>
 
+    <set name="sites" inverse="true" cascade="all, delete-orphan">
+        <key column="institution" />
+        <one-to-many class="net.es.oscars.aaa.Site" />
+    </set>
+
 </class>
 </hibernate-mapping>

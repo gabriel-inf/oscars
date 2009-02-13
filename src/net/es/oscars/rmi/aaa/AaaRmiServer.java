@@ -107,7 +107,12 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
             int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI) throws RemoteException {
         return this.checkAccessHandler.checkModResAccess(userName, resourceName, permissionName, reqBandwidth, reqDuration, specPathElems, specGRI);
     }
-
+    
+    public Boolean
+        checkDomainAccess(String userName,String institutionName,String srcTopologyId,String destTopologyId)
+            throws RemoteException{
+        return this.checkAccessHandler.checkDomainAccess(userName,institutionName,srcTopologyId,destTopologyId);
+    }
 
 
     public HashMap<String, Object> manageAaaObjects(HashMap<String, Object> parameters) throws RemoteException {

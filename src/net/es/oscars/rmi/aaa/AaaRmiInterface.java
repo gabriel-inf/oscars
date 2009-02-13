@@ -44,7 +44,19 @@ public interface AaaRmiInterface extends Remote {
     public AuthValue
         checkModResAccess(String userName, String resourceName, String permissionName,
                 int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI) throws RemoteException;
-
+/**
+ * Checks to see if the user belongs to the site containing either the specified start
+ *   or end point
+ * @param userName The name of the user.  May be null if institution is given
+ * @param Institution Institution the user belongs to. May be null if userName is given
+ * @param srcTopologyId the topologyIdentifer of the  start of a reservation
+ * @param desTopologyId the topologyIdentifer of the  termination of a reservation
+ * @return true or false
+ */
+    public Boolean
+        checkDomainAccess(String userName,String institutionName,String srcTopologyId,String destTopologyId)
+        throws RemoteException;
+    
     public HashMap<String, Object> manageAaaObjects(HashMap<String, Object> parameters) throws RemoteException;
 
 

@@ -1,4 +1,4 @@
-package net.es.oscars.bss.topology;
+package net.es.oscars.aaa;
 
 import java.util.Set;
 import java.io.Serializable;
@@ -10,7 +10,7 @@ import org.hibernate.Hibernate;
 import net.es.oscars.database.HibernateBean;
 
 /**
- * Site is the Hibernate bean for the bss.sites table.
+ * Site is the Hibernate bean for the aaa.sites table.
  */
 public class Site extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
@@ -18,37 +18,41 @@ public class Site extends HibernateBean implements Serializable {
     private static final long serialVersionUID = 4151;
 
     /** persistent field */
-    private String name;
-
-    /** persistent field */
-    private Domain domain;
+    private String domainTopologyId;
+    
+    private Institution institution;
 
     /** default constructor */
     public Site() { }
 
+    /**
+     * @return a string with the domainTopologyIdentifier
+     */
+    public String getDomainTopologyId() { return this.domainTopologyId; }
 
     /**
-     * @return name a string with the site name
+     * @param domainTopologyId a string with the domainTopologyIdentifier
      */
-    public String getName() { return this.name; }
-
-    /**
-     * @param name a string with the site name
-     */
-    public void setName(String name) {
-        this.name = name;
+    public void setDomainTopologyId(String domainTopologyId) {
+        this.domainTopologyId = domainTopologyId;
     }
+    /**
+     * @return name a string with the domainTopologyIdentifier
+     */
+    public String getDomain() { return this.domainTopologyId; }
 
     /**
-     * @return domain a Domain instance (uses association)
+     * @param domain a string with the domainTopologyIdentifier
      */
-    public Domain getDomain() { return this.domain; }
-
-    /**
-     * @param domain a Domain instance (uses association)
-     */
-    public void setDomain(Domain domain) { this.domain = domain; }
-
+    public void setDomain(String domain) {
+        this.domainTopologyId = domain;
+    }
+    public Institution getInstitution(){
+        return this.institution;
+    }
+    public void setInstitution(Institution inst){
+        this.institution = inst;
+    }
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
@@ -66,8 +70,8 @@ public class Site extends HibernateBean implements Serializable {
                 .isEquals();
         } else {
             return new EqualsBuilder()
-                .append(this.getName(), castOther.getName())
-                .append(this.getDomain(), castOther.getDomain())
+                .append(this.getDomainTopologyId(), castOther.getDomainTopologyId())
+                .append(this.getInstitution(), castOther.getInstitution())
                 .isEquals();
         }
     }
