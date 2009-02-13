@@ -6,6 +6,8 @@ import java.util.HashMap;
 import org.apache.log4j.*;
 import org.quartz.*;
 
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.HashMapTypeConverter;
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.scheduler.FireEventJob;
@@ -80,14 +82,20 @@ public class EventProducer{
                          String errorMessage){
        // this.addEvent(type, userLogin, source, resv, errorCode, errorMessage);
         OSCARSEvent event = new OSCARSEvent();
-        HashMap <String,String[]> resvParams = new HashMap<String,String[]>();
-        // TODO fill in the reservation params from the reservation.
+        HashMap<String, String[]> resvParams= null;
+        try {
+            resvParams = HashMapTypeConverter.reservationToHashMap(resv);
+        } catch (BSSException e) {
+            this.log.error("Unable to convert resv to HashMap for event " + 
+                    type + ": " + e.getMessage());
+        }
         event.setType(type);
         event.setUserLogin(userLogin);
         event.setSource(source);
         event.setErrorCode(errorCode);
         event.setErrorMessage(errorMessage);
         event.setReservationParams(resvParams);
+        this.addEvent(event);
     }
 
     /**
@@ -98,7 +106,7 @@ public class EventProducer{
     public void addEvent(OSCARSEvent event) {
         this.log.info("Scheduling notifcation of event " + event.getType());
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = "notify-"+event.hashCode();
+        String jobName = "notify-"+event.hashCode()+System.currentTimeMillis();
 
 
         JobDetail jobDetail = new JobDetail(jobName, "NOTIFY", FireEventJob.class);

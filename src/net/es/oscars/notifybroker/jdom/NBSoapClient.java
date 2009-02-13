@@ -43,6 +43,7 @@ public class NBSoapClient {
         envelope.addContent(body);
         XMLOutputter outputter = new XMLOutputter();
         
+        this.log.debug("Sending to URL " + url);
         PostMethod postMethod = new PostMethod(url);
         try {
             StringRequestEntity entity = new StringRequestEntity(outputter.outputString(envelope), "application/soap+xml",null);

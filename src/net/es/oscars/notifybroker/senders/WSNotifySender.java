@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.Properties;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.client.security.KeyManagement;
 import net.es.oscars.notifybroker.jdom.NBSoapClient;
 import net.es.oscars.notifybroker.jdom.NotificationMessage;
 import net.es.oscars.notifybroker.jdom.Notify;
@@ -40,6 +41,13 @@ public class WSNotifySender implements NotifySender{
             this.subscriptionManagerURL = "https://" + localhost + ":8443/axis2/services/OSCARSNotify";
         }
         this.log.debug("OSCARSNotify.url=" + this.subscriptionManagerURL);
+        
+        //Activate ssl for https
+        //TODO: Set this somewhere else
+        String catalinaHome = System.getProperty("catalina.home");
+        String repo = catalinaHome + "/shared/classes/repo";
+        this.log.debug("SSL repo is " + repo);
+        KeyManagement.setKeyStore(repo);
     }
     
     public void sendNotify(Notification notify) throws RemoteException {

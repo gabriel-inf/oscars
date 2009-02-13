@@ -480,7 +480,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param request the Notify message
      */
     public void Notify(Notify request){
-        this.log.debug("Received Notify");
+        this.log.info("Received Notify");
         NotificationMessageHolderType[] holders = request.getNotificationMessage();
         for(NotificationMessageHolderType holder : holders){
             MessageType message = holder.getMessage();
@@ -489,7 +489,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                 try{
                     EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
                     String eventType = event.getType();
-                    this.log.debug("Event Type=" + eventType);
+                    this.log.info("Event Type=" + eventType);
                 }catch(Exception e){ 
                     this.log.error(e.getMessage());
                     continue;
