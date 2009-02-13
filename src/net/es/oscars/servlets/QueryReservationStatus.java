@@ -19,8 +19,6 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.bss.BssRmiInterface;
 import net.es.oscars.rmi.bss.xface.RmiQueryResReply;
-import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.aaa.AuthValue;
 
 /**
  * Query reservation servlet
@@ -28,11 +26,11 @@ import net.es.oscars.aaa.AuthValue;
  * @author David Robertson, Mary Thompson
  *
  */
-public class QueryReservation extends HttpServlet {
-    private Logger log = Logger.getLogger(QueryReservation.class);
+public class QueryReservationStatus extends HttpServlet {
+    private Logger log = Logger.getLogger(QueryReservationStatus.class);
 
     /**
-     * Handles QueryReservation servlet request.
+     * Handles QueryReservationStatus servlet request.
      *
      * @param request HttpServletRequest contains the gri of the reservation
      * @param response HttpServletResponse contains: gri, status, user,
@@ -43,7 +41,7 @@ public class QueryReservation extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String methodName = "QueryReservation";
+        String methodName = "QueryReservationStatus";
         this.log.info(methodName + ":start");
 
         UserSession userSession = new UserSession();
@@ -57,33 +55,10 @@ public class QueryReservation extends HttpServlet {
         RmiQueryResReply rmiReply = new RmiQueryResReply();
         Map<String, Object> outputMap = new HashMap<String, Object>();
         String gri = request.getParameter("gri");
-        AuthValue authVal = null;
         try {
             BssRmiInterface bssRmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
             rmiReply = bssRmiClient.queryReservation(gri, userName);
-            AaaRmiInterface aaaRmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
-            authVal =
-                aaaRmiClient.checkAccess(userName, "Reservations", "modify");
-            // check to see if user is allowed to see the buttons allowing
-            // reservation modification
-            if (authVal != AuthValue.DENIED) {
-                outputMap.put("resvModifyDisplay", Boolean.TRUE);
-                outputMap.put("resvCautionDisplay", Boolean.TRUE);
-            } else {
-                outputMap.put("resvModifyDisplay", Boolean.FALSE);
-                outputMap.put("resvCautionDisplay", Boolean.FALSE);
-            }
-            // check to see if user is allowed to see the clone button, which
-            // requires generic reservation create authorization
-            authVal = aaaRmiClient.checkModResAccess(userName, "Reservations",
-                                                "create", 0, 0, false, false);
-            if (authVal != AuthValue.DENIED) {
-                outputMap.put("resvCloneDisplay", Boolean.TRUE);
-            } else {
-                outputMap.put("resvCloneDisplay", Boolean.FALSE);
-            }
         } catch (Exception e) {
             ServletUtils.handleFailure(out, log, e, methodName);
             return;
@@ -110,6 +85,10 @@ public class QueryReservation extends HttpServlet {
         this.doGet(request, response);
     }
 
+    /**
+     * Only fills in those fields that might have changed due to change
+     * in reservation status.
+     */
     public void
         contentSection(RmiQueryResReply rmiReply, Map<String,Object> outputMap)
             throws BSSException {
@@ -128,41 +107,21 @@ public class QueryReservation extends HttpServlet {
             path = resv.getPath(PathType.REQUESTED);
         }
         Layer2Data layer2Data = null;
-        Layer3Data layer3Data = null;
-        MPLSData mplsData = null;
         if (path != null) {
             layer2Data = path.getLayer2Data();
-            layer3Data = path.getLayer3Data();
-            mplsData = path.getMplsData();
         }
         String status = resv.getStatus();
-        // always blank NEW GRI field, current GRI is in griReplace's
-        // innerHTML
-        outputMap.put("newGri", "");
-        outputMap.put("griReplace", gri);
         outputMap.put("statusReplace", status);
-        outputMap.put("userReplace", resv.getLogin());
-        String sanitized = resv.getDescription().replace("<", "");
-        String sanitized2 = sanitized.replace(">", "");
-        outputMap.put("descriptionReplace", sanitized2);
-
-        outputMap.put("modifyStartSeconds", resv.getStartTime());
-        outputMap.put("modifyEndSeconds", resv.getEndTime());
-        outputMap.put("createdTimeConvert", resv.getCreatedTime());
-        // convert to Mbps, commas added by Dojo
-        outputMap.put("bandwidthReplace", resv.getBandwidth()/1000000);
         if (layer2Data != null) {
-            outputMap.put("sourceReplace", layer2Data.getSrcEndpoint());
-            outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
             String vlanTag = BssUtils.getVlanTag(path);
             if (vlanTag != null) {
                 //If its a negative number try converting it
                 //Prior to reservation completing may be a range or "any"
                 int storedVlan = 0;
-                try{
+                try {
                     storedVlan = Integer.parseInt(vlanTag);
                     vlanTag = Math.abs(storedVlan) + "";
-                }catch(Exception e){}
+                } catch(Exception e) {}
                 outputMap.put("vlanReplace", vlanTag);
                 if (storedVlan >= 0) {
                     outputMap.put("taggedReplace", "true");
@@ -176,48 +135,6 @@ public class QueryReservation extends HttpServlet {
                     outputMap.put("vlanReplace",
                                   "No VLAN tag was ever set up");
                 }
-            }
-        } else if (layer3Data != null) {
-            strParam = layer3Data.getSrcHost();
-            try {
-                inetAddress = InetAddress.getByName(strParam);
-                hostName = inetAddress.getHostName();
-            } catch (UnknownHostException e) {
-                hostName = strParam;
-            }
-            outputMap.put("sourceReplace", hostName);
-            strParam = layer3Data.getDestHost();
-            try {
-                inetAddress = InetAddress.getByName(strParam);
-                hostName = inetAddress.getHostName();
-            } catch (UnknownHostException e) {
-                hostName = strParam;
-            }
-            outputMap.put("destinationReplace", hostName);
-            intParam = layer3Data.getSrcIpPort();
-            if ((intParam != null) && (intParam != 0)) {
-                outputMap.put("sourcePortReplace", intParam);
-            }
-            intParam = layer3Data.getDestIpPort();
-            if ((intParam != null) && (intParam != 0)) {
-                outputMap.put("destinationPortReplace", intParam);
-            }
-            strParam = layer3Data.getProtocol();
-            if (strParam != null) {
-                outputMap.put("protocolReplace", strParam);
-            }
-            strParam = layer3Data.getDscp();
-            if (strParam !=  null) {
-                outputMap.put("dscpReplace", strParam);
-            }
-        }
-        if (mplsData != null) {
-            longParam = mplsData.getBurstLimit();
-            if (longParam != null) {
-                outputMap.put("burstLimitReplace", longParam);
-            }
-            if (mplsData.getLspClass() != null) {
-                outputMap.put("lspClassReplace", mplsData.getLspClass());
             }
         }
         String pathStr = BssUtils.pathToString(path, false);

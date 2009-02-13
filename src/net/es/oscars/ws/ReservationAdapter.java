@@ -157,11 +157,9 @@ public class ReservationAdapter {
 
         String gri = request.getQueryReservation().getGri();
         this.log.info("QueryReservation.start: " + gri);
-        RmiQueryResRequest rmiRequest = new RmiQueryResRequest();
-        rmiRequest.setGlobalReservationId(gri);
         RmiQueryResReply result = null;
         try {
-            result = rmiClient.queryReservation(rmiRequest, username);
+            result = rmiClient.queryReservation(gri, username);
         } catch (Exception ex) {
             throw new BSSException(ex.getMessage());
         }

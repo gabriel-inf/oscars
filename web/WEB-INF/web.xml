@@ -31,6 +31,10 @@
         <servlet-class>net.es.oscars.servlets.QueryReservation</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>QueryReservationStatus</servlet-name>
+        <servlet-class>net.es.oscars.servlets.QueryReservationStatus</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>ModifyReservation</servlet-name>
         <servlet-class>net.es.oscars.servlets.ModifyReservation</servlet-class>
     </servlet>
@@ -125,6 +129,10 @@
     <servlet-mapping>
         <servlet-name>QueryReservation</servlet-name>
         <url-pattern>/servlet/QueryReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>QueryReservationStatus</servlet-name>
+        <url-pattern>/servlet/QueryReservationStatus</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ModifyReservation</servlet-name>

@@ -100,14 +100,14 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     /**
      * Returns a reservation's details, given its global reservation id.
      *
-     * @param request RmiQueryResRequest contains input from component
+     * @param request string with global reservation id
      * @param userName string with authenticated login name of user
      * @return RmiQueryResReply bean containing reservation
      * @throws IOException
      * @throws RemoteException
      */
     public RmiQueryResReply
-        queryReservation(RmiQueryResRequest request, String userName)
+        queryReservation(String request, String userName)
            throws RemoteException {
 
         return this.queryHandler.queryReservation(request, userName);

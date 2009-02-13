@@ -21,7 +21,6 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.rmi.bss.xface.RmiQueryResRequest;
 import net.es.oscars.rmi.bss.xface.RmiQueryResReply;
 
 /**
@@ -39,14 +38,14 @@ public class QueryResRmiHandler {
     /**
      * Finds reservation based on information passed from servlet.
      *
-     * @param request RmiQueryResRequest contains the gri of the reservation
-     * @param userName String - name of user  making request
+     * @param gri string containing the gri of the reservation
+     * @param userName string with name of user making request
      * @return RmiQueryResReply contains: gri, status, user, description
      *   start, end and create times, bandwidth, vlan tag, and path information.
      * @throws IOException
      */
     public RmiQueryResReply
-          queryReservation(RmiQueryResRequest request, String userName)
+          queryReservation(String gri, String userName)
             throws  RemoteException {
 
         this.log.debug("query.start");
@@ -87,7 +86,6 @@ public class QueryResRmiHandler {
         // BSS section start
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        String gri = request.getGlobalReservationId();
         RemoteException remEx = null;
         String errMessage = null;
         try {
