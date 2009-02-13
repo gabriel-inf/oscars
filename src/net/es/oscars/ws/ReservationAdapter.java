@@ -62,6 +62,8 @@ public class ReservationAdapter {
         try {
             gri = rmiClient.createReservation(resv, username);
             this.log.debug("create, to toReply");
+            //Set status=ACCEPTED since can be assumed by lack of exception
+            resv.setStatus(StateEngine.ACCEPTED);
             reply = WSDLTypeConverter.reservationToReply(resv);
 
             ///PathInfo is unchanged so just return the user-given pathInfo

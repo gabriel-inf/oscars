@@ -16,6 +16,7 @@ import java.security.cert.X509Certificate;
 
 import java.rmi.RemoteException;
 
+import org.apache.axiom.om.OMElement;
 import org.apache.axis2.context.*;
 import org.apache.ws.security.handler.*;
 import org.apache.ws.security.WSSecurityEngineResult;
@@ -479,7 +480,22 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param request the Notify message
      */
     public void Notify(Notify request){
-        //TODO: Implement this method
+        this.log.debug("Received Notify");
+        NotificationMessageHolderType[] holders = request.getNotificationMessage();
+        for(NotificationMessageHolderType holder : holders){
+            MessageType message = holder.getMessage();
+            OMElement[] omEvents = message.getExtraElement();
+            for(OMElement omEvent : omEvents){
+                try{
+                    EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
+                    String eventType = event.getType();
+                    this.log.debug("Event Type=" + eventType);
+                }catch(Exception e){ 
+                    this.log.error(e.getMessage());
+                    continue;
+                }
+            }
+        }
     }
 
     /**

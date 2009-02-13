@@ -54,16 +54,14 @@ public class PathManager {
             //Find interdomain path
             interdomainPaths = this.pceMgr.findInterdomainPath(resv);
             interdomainPath = interdomainPaths.get(0);
-            interdomainPath.setPathSetupMode(requestedPath.getPathSetupMode());
+            BssUtils.copyPathFields(requestedPath, interdomainPath);
             resv.setPath(interdomainPath);
             
             //Find local path
             localPaths = this.pceMgr.findLocalPath(resv);
             localPath = localPaths.get(0);
-            localPath.setPathSetupMode(requestedPath.getPathSetupMode());
+            BssUtils.copyPathFields(requestedPath, localPath);
             resv.setPath(localPath);
-            // FIXME: is setPath the method to use? maybe we want to replace the set of
-            // paths during modify
         } catch (PathfinderException ex) {
             this.log.error(ex.getMessage());
             throw new BSSException(ex.getMessage());

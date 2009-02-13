@@ -175,10 +175,23 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         } catch (BSSException e) {
             throw new PathfinderException(e.getMessage());
         }
-
+        
+        /* Print path and set next domain */
         for(Path p : results){
+            boolean localFound = false;
+            boolean nextFound = false;
             for(PathElem e : p.getPathElems()){
                 String vlan = "";
+                Hashtable<String,String> urnInfo = URNParser.parseTopoIdent(e.getUrn());
+                if((!nextFound) && localDomain.getTopologyIdent().equals(urnInfo.get("domainId"))){
+                    localFound = true;
+                }else if((!nextFound) && localFound){
+                    DomainDAO domainDAO = new DomainDAO(OSCARSCore.getInstance().getBssDbName());
+                    p.setNextDomain(domainDAO.fromTopologyIdent(urnInfo.get("domainId")));
+                    this.log.debug("Found next domain: " + urnInfo.get("domainId"));
+                    nextFound = true;
+                }
+                
                 try {
                     PathElemParam peParam = e.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
                     if(peParam != null){ vlan =" --VLAN=" + peParam.getValue();}
@@ -299,7 +312,8 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                     newPath.addPathElem(currHop);
                     prevHop = currHop;
                 } else if (ingressURN == null) {
-                    this.log.debug("Adding verbatim hop(before egress): "+ currHop.getUrn());
+                    if(LOCALPATH){ continue; }
+                    this.log.debug("Adding verbatim hop(before ingress): "+ currHop.getUrn());
                     // we've not yet found our ingress point
                     newPath.addPathElem(currHop);
                     prevHop = currHop;

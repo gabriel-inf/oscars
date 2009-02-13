@@ -346,7 +346,7 @@ public class WSDLTypeConverter {
         }
             
         /* If reach this point then we have a <link> to create.. */
-        if (link == null) {
+        if (link == null || link.getTrafficEngineeringMetric() == null) {
             cpLink.setTrafficEngineeringMetric(
                     WSDLTypeConverter.DEFAULT_TE_METRIC);
         } else {
@@ -688,14 +688,14 @@ public class WSDLTypeConverter {
         if (swcapInfo.getVlanRangeAvailability() != null) {
             PathElemParam pathElemParam = new PathElemParam();
             pathElemParam.setSwcap(switchingcapType);
-            pathElemParam.setType("vlanRangeAvailability");
+            pathElemParam.setType(PathElemParamType.L2SC_VLAN_RANGE);
             pathElemParam.setValue(swcapInfo.getVlanRangeAvailability());
             pathElemParams.add(pathElemParam);
         }
         if (swcapInfo.getSuggestedVLANRange() != null) {
             PathElemParam pathElemParam = new PathElemParam();
             pathElemParam.setSwcap(switchingcapType);
-            pathElemParam.setType("suggestedVlanRange");
+            pathElemParam.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
             pathElemParam.setValue(swcapInfo.getSuggestedVLANRange());
             pathElemParams.add(pathElemParam);
         }

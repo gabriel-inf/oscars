@@ -47,8 +47,8 @@ public class BssUtils {
 
     /**
      * Copies fields that for now are in common to various types of paths.
-     * Note that pathElems are currently the only thing that is different.
-     *
+     * Currently pathSetupMode and layer specific information is in common
+     * 
      * @param Path Path with information to copy
      * @param updatePath Path with information to update
      */
@@ -56,12 +56,6 @@ public class BssUtils {
             throws BSSException {
         
         updatePath.setPathSetupMode(path.getPathSetupMode());
-        updatePath.setPriority(path.getPriority());
-        // TODO:   need this?
-        updatePath.setNextDomain(path.getNextDomain());
-        updatePath.setDirection(path.getDirection());
-        updatePath.setGrouping(path.getGrouping());
-        updatePath.setPathHopType(path.getPathHopType());
         if (path.getLayer2Data() != null) {
             Layer2Data layer2DataCopy = path.getLayer2Data().copy();
             updatePath.setLayer2Data(layer2DataCopy);

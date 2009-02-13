@@ -88,7 +88,10 @@ public class ReservationManager {
             resv.setGlobalReservationId(gri);
         } else {
             // this should be the first time we're seeing this GRI
-            Reservation tmp = dao.query(resv.getGlobalReservationId());
+            Reservation tmp = null;
+            try{
+                tmp = dao.query(resv.getGlobalReservationId());
+            }catch(BSSException e){}
             if (tmp != null) {
                 throw new BSSException("Reservation with gri: " + gri +
                                        " already exists!");
