@@ -98,6 +98,7 @@ public class UserModify extends HttpServlet {
             String newPassword = ServletUtils.checkPassword(password,
                                                           confirmationPassword);
             if (newPassword != null) {
+                this.log.info("changing password");
                 user.setPassword(newPassword);
                 setPassword = true;
             }
@@ -128,6 +129,7 @@ public class UserModify extends HttpServlet {
             rmiParams.put("user", user);
             rmiParams.put("newRoles", newRoles);
             rmiParams.put("curRoles", curRoles);
+            rmiParams.put("setPassword", setPassword);
             rmiParams.put("objectType", ModelObject.USER);
             rmiParams.put("operation", ModelOperation.MODIFY);
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
