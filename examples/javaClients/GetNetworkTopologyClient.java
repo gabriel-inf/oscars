@@ -9,7 +9,7 @@ public class GetNetworkTopologyClient extends ExampleClient{
     
         GetNetworkTopologyClient topoClient = new GetNetworkTopologyClient();
         CtrlPlaneTopologyContent foo = new CtrlPlaneTopologyContent();
-        System.out.println(foo.getSerialVersionUID());
+        //System.out.println(foo.getSerialVersionUID());
         
         topoClient.init(args, true);
         GetTopologyContent request = new GetTopologyContent();
