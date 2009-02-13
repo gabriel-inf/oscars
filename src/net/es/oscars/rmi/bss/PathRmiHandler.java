@@ -74,31 +74,41 @@ public class PathRmiHandler {
         EventProducer eventProducer = new EventProducer();
         Forwarder forwarder = new Forwarder();
         Reservation resv = null;
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         try {
             resv = this.rm.getConstrainedResv(gri, loginConstraint,
                                               institution, tokenValue);
         } catch (BSSException e) {
+            bss.getTransaction().rollback();
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName, 
                                    "core", "", e.getMessage());
             throw new RemoteException(e.getMessage());
         }
         eventProducer.addEvent(OSCARSEvent.PATH_SETUP_RECEIVED, userName,
                                "core", resv);
+        String errMessage = null;
         /* Check reservation parameters to make sure it can be created */
         try {
 	        if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null) {
-	            throw new RemoteException("Path setup mode is null");
+	            errMessage = "Path setup mode is null";
 	        } else if (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) {
-	            throw new RemoteException("Path setup mode is not signal-xml");
+	            errMessage = "Path setup mode is not signal-xml";
 	        } else if(currTime.compareTo(resv.getStartTime()) < 0){
-	            throw new RemoteException("Path cannot be created. Reservation " +
-	            "start time not yet reached.");
+	            errMessage = "Path cannot be created. Reservation " +
+	            "start time not yet reached.";
 	        } else if(currTime.compareTo(resv.getEndTime()) > 0){
-	            throw new RemoteException("Path cannot be created. Reservation " +
-	            "end time has been reached.");
+	            errMessage = "Path cannot be created. Reservation " +
+	            "end time has been reached.";
 	        }
         } catch (BSSException ex) {
-        	throw new RemoteException(ex.getMessage());
+        	 errMessage = ex.getMessage();
+        } finally {
+            if (errMessage != null) {
+                bss.getTransaction().rollback();
+                this.log.error(errMessage);
+                throw new RemoteException(errMessage);
+            }
         }
         
         /* Forward */
@@ -111,14 +121,18 @@ public class PathRmiHandler {
                                    userName, "core", resv);
         } catch (InterdomainException e) {
             forwarder.cleanUp();
-            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName,
-                                   "core", resv, "", e.getMessage());
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
         } catch (Exception e) {
             forwarder.cleanUp();
-            eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName,
-                                   "core", resv, "", e.getMessage());
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
+        } finally {
+            if (errMessage != null) {
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName,
+                                       "core", resv, "", errMessage);
+                bss.getTransaction().rollback();
+                this.log.error(errMessage);
+                throw new RemoteException(errMessage);
+            }
         }
         
         String status = null;
@@ -126,14 +140,21 @@ public class PathRmiHandler {
             /* Schedule path setup */
             status = this.pm.create(resv, true);
         } catch (InterdomainException e) {
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
         } catch (PSSException e) {
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
+        } finally {
+            if (errMessage != null) {
+                bss.getTransaction().rollback();
+                this.log.error(errMessage);
+                throw new RemoteException(errMessage);
+            }
         }
         eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, userName,
                                "core", resv);
         eventProducer.addEvent(OSCARSEvent.PATH_SETUP_ACCEPTED, userName,
                                "core", resv);
+        bss.getTransaction().commit();
         this.log.info("createPath.end");
         return status;
     }
@@ -176,6 +197,9 @@ public class PathRmiHandler {
         String status = null;
         String tokenValue = params.getToken();
         Reservation resv = null;
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
+        String errMessage = null;
         try {
         resv = 
             this.rm.getConstrainedResv(gri, loginConstraint, institution,
@@ -183,24 +207,36 @@ public class PathRmiHandler {
 		    /* Check reservation parameters */
 		    if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
 		        (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
-		        throw new RemoteException("No reservations match request");
+		        errMessage = "No reservations match request";
 		    } else if (!resv.getStatus().equals("ACTIVE")) {
-		        throw new RemoteException("Path cannot be refreshed. " +
-		        "Reservation is not active. Please run createPath first.");
+		        errMessage = "Path cannot be refreshed. " +
+		        "Reservation is not active. Please run createPath first.";
 		    }
         } catch (BSSException ex) {
-        	throw new RemoteException(ex.getMessage());
+        	  errMessage = ex.getMessage();
+        } finally {
+            if (errMessage != null) {
+                bss.getTransaction().rollback();
+                this.log.error(errMessage);
+                throw new RemoteException(errMessage);
+            }
         }
         /* Refresh path */
         try {
             status = this.pm.refresh(resv, true);
         } catch (PSSException e) {
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
         } catch (InterdomainException e) {
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
         } finally {
             // TODO? make sure status gets updated
+            if (errMessage != null) {
+                bss.getTransaction().rollback();
+                this.log.error(errMessage);
+                throw new RemoteException(errMessage);
+            }
         }
+        bss.getTransaction().commit();
         this.log.info("refreshPath.end");
         return status;
     }
@@ -245,15 +281,18 @@ public class PathRmiHandler {
         String tokenValue = params.getToken();
         String status = null;
         Reservation resv = null;
+        String errMessage = null;
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         try {
             resv =
                 this.rm.getConstrainedResv(gri, loginConstraint, institution,
                                            tokenValue);
         } catch (BSSException e) {
-            String msg = "No reservation found matching request";
+            errMessage = "No reservation found matching request";
+            bss.getTransaction().rollback();
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,
-                                   "core", resv, "", msg);
-            throw new RemoteException(msg);
+                                   "core", resv, "", errMessage);
         }
         eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_RECEIVED, userName,
                                "core", resv);
@@ -273,17 +312,22 @@ public class PathRmiHandler {
             status = this.pm.teardown(resv, StateEngine.RESERVED);
         } catch (InterdomainException e) {
             forwarder.cleanUp();
-            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,
-                                   "core", resv, "", e.getMessage());
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
         } catch (Exception e) {
             forwarder.cleanUp();
-            eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,
-                                   "core", resv, "", e.getMessage());
-            throw new RemoteException(e.getMessage());
+            errMessage = e.getMessage();
+        } finally {
+            if (errMessage != null) {
+                bss.getTransaction().rollback();
+                this.log.error(errMessage);
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,
+                                   "core", resv, "", errMessage);
+                throw new RemoteException(errMessage);
+            }
         }
         eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_ACCEPTED, userName,
                                "core", resv);
+        bss.getTransaction().commit();
         this.log.info("teardownPath.end");
         return status;
     }
