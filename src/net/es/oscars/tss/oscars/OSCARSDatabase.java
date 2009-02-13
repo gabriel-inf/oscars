@@ -128,6 +128,7 @@ public class OSCARSDatabase implements TEDB {
         now = now / 1000;
 
         CtrlPlaneTopologyContent topology = new CtrlPlaneTopologyContent();
+        this.log.info("UID: " + topology.getSerialVersionUID());
         String topologyId = this.getLocaldomain() + "-" + now.toString();
         topology.setId(topologyId);
         topology.setIdcId(this.getLocaldomain());

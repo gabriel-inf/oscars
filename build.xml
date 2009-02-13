@@ -9,6 +9,7 @@
     <property name="catalina.home" value="${env.CATALINA_HOME}"/>
     <property name="app.name" value="oscars"/>
     <property name="app.version" value="0.5-dev"/>
+    <property name="app.uid" value="50"/>
     <property name="webapp.home" value="${catalina.home}/webapps"/>
     <property name="webservice.home" value="${webapp.home}/axis2/WEB-INF/services"/>
     <property name="build.home" value="build"/>
@@ -314,6 +315,17 @@
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes,http://ogf.org/schema/network/topology/ctrlPlane/20080828/=org.ogf.schema.network.topology.ctrlplane"/>
         </java>
+        <!-- stopgaps -->
+        <replace dir="src/net/es/oscars/wsdlTypes"
+            token="implements org.apache.axis2.databinding.ADBBean{"
+            value="implements org.apache.axis2.databinding.ADBBean{${line.separator}            private static final long serialVersionUID=${app.uid}L;"
+            includes="**/*.java"
+        />
+        <replace dir="src/org/ogf/schema/network/topology/ctrlplane"
+            token="implements org.apache.axis2.databinding.ADBBean{"
+            value="implements org.apache.axis2.databinding.ADBBean{${line.separator}            private static final long serialVersionUID=${app.uid}L;"
+            includes="**/*.java"
+        />
         <echo>
   ***
   **** Changes to resources/services.xml must be merged with

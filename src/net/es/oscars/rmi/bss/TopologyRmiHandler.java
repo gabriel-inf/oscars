@@ -53,12 +53,16 @@ public class TopologyRmiHandler {
             throw new RemoteException
                 ("permission denied for getting network topology");
         }
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         GetTopologyResponseContent getTopoResponse = null;
         try {
             getTopoResponse = this.tm.getNetworkTopology(getTopoRequest);
         } catch (TSSException e) {
+            bss.getTransaction().rollback();
             throw new RemoteException(e.getMessage());
         }
+        bss.getTransaction().commit();
         this.log.info("getNetworkTopology.end");
         return getTopoResponse;
     }
