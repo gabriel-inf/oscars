@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS links (
         -- topology exchange id; in ESnet, logical interface name
     topologyIdent       TEXT NOT NULL,
         -- probably just latency at first
-    trafficEngineeringMetric   TEXT,
+    trafficEngineeringMetric   TEXT NOT NULL,
         -- these may not always have values, so can be null
         -- total capacity of link in bps
     capacity            BIGINT UNSIGNED,

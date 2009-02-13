@@ -292,6 +292,7 @@ ALTER TABLE pathElems CHANGE linkId linkId INT;
 ALTER TABLE layer2Data CHANGE pathId pathId INT NOT NULL UNIQUE;
 ALTER TABLE layer3Data CHANGE pathId pathId INT NOT NULL UNIQUE;
 ALTER TABLE mplsData CHANGE pathId pathId INT NOT NULL UNIQUE;
+ALTER TABLE links CHANGE trafficEngineeringMetric trafficEngineeringMetric TEXT NOT NULL;
 
 -- delete any left over orphaned path elements
 
