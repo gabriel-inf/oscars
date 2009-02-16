@@ -869,16 +869,15 @@ public class ReservationManager {
      */
 
     public Boolean checkInstitution(Reservation resv, String institution) throws BSSException {
-        // get the site associated the source of the reservation
-        String sourceTopoId = this.pathMgr.endPointSite(resv, true);
-        String destTopoId = this.pathMgr.endPointSite(resv,false);
-        this.log.debug("checkInstitution: sourceTopoId is " + sourceTopoId
-                + "destinationSite is " + destTopoId);
+        Domain startDomain = this.endPointDomain(resv,true);
+        Domain endDomain = this.endPointDomain(resv,false);
+        String sourceTopoId = startDomain.getTopologyIdent();
+        String destTopoId  = endDomain.getTopologyIdent();
         try {
             AaaRmiInterface aaaRmiClient =
                 RmiUtils.getAaaRmiClient("checkInstitution", log);
-            Domain startDomain = this.endPointDomain(resv,true);
-            Domain endDomain = this.endPointDomain(resv,false);
+            this.log.debug("checkInstitution: sourceTopoId is " + sourceTopoId
+                    + "destinationSite is " + destTopoId);
             return aaaRmiClient.checkDomainAccess(null,institution, startDomain.getTopologyIdent(),
                     endDomain.getTopologyIdent());
         } catch ( RemoteException e){
@@ -895,6 +894,10 @@ public class ReservationManager {
      */
     public Domain endPointDomain(Reservation resv, Boolean source) throws BSSException {
         Path path = resv.getPath(PathType.LOCAL);
+        if (path == null ){
+            this.log.info ( "no LOCAL path found");
+            throw new BSSException("no path found for reservation in endPointDomain: " +resv.getGlobalReservationId());
+        }
         List<PathElem> hops = path.getPathElems();
         PathElem hop = null;
         if (source) {

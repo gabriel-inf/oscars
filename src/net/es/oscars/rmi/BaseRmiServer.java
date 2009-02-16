@@ -12,17 +12,18 @@ import org.apache.log4j.*;
 public abstract class BaseRmiServer {
     protected Logger log;
 
-    public final static String localhost = "127.0.0.1";
 
-    protected String serviceName = null;  // set by child class, used in log messages
-    protected Registry registry = null;
-
-    protected String rmiServiceName = null; // may be set by child class, name of service that is registered
-    protected int registryPort = Registry.REGISTRY_PORT;
     protected Properties properties = null; // set by child class.
 
+    /* default configuration values, should match the ones in BaseRmiServer.java */
+    protected String serviceName = null;  // set by child class, used in log messages
+    protected int registryPort = Registry.REGISTRY_PORT;
+    protected int serverPort = 0;
+    protected String rmiServerName = null;// should be set by child class, name of Server that is to be exported
+    protected String registryHost ="127.0.0.1";
     protected RMISocketFactory socketFactory = null;
 
+    protected Registry registry = null;
     protected boolean createdRegistry = false;
 
     /**
@@ -30,9 +31,9 @@ public abstract class BaseRmiServer {
      *   By default initializes the RMI server registry to listen on port 1099 (the default)
      *   the RMI server to listen on a random port, and both to listen only on the loopback
      *   interface. These values can be overidden by oscars.properties.
-     *   Setting the serverIpaddr to localhost will allow access from remote hosts and
+     *   Setting the registryHost to InetAddress.GetLocalHost will allow access from remote hosts and
      *   invalidate our security assumptions.
-     *   Assumes that this.rmiServiceName has been set to a default value by the caller.
+     *   Assumes that this.rmiServerName has been set to a default value by the caller.
      * @throws remoteException
      */
     public void init(Remote staticObject) throws RemoteException {
@@ -41,7 +42,6 @@ public abstract class BaseRmiServer {
         String errorMsg = null;
         this.log = Logger.getLogger(this.getClass());
 
-        int port = registryPort;
         this.log.debug(this.serviceName+".init().start");
         Properties props = this.getProperties();
         if (props == null) {
@@ -51,46 +51,56 @@ public abstract class BaseRmiServer {
         } else {
             if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").trim().equals("")) {
                 try {
-                    port = Integer.decode(props.getProperty("registryPort").trim());
-                    this.setRegistryPort(port);
+                    int port = Integer.decode(props.getProperty("registryPort").trim());
+                    this.registryPort=port;
                 } catch (NumberFormatException e) {
-                    this.log.warn("invalid registryPort value, using default");
+                    this.log.info("invalid registryPort value, using default: " + this.registryPort);
                 }
             } else {
-                this.log.warn("registryPort property not set, using default");
+                this.log.info("registryPort property not set, using default: " + this.registryPort);
             }
-            // this.log.info(serviceName+" RMI registry at: " + localhost+":"+port);
-            if (props.getProperty("registryName") != null && !props.getProperty("registryName").trim().equals("")) {
-                this.setRmiServiceName(props.getProperty("registryName").trim());
-                this.log.info("Service name at registry: "+this.getRmiServiceName());
-            } else if (this.getRmiServiceName() != null) {
-                this.log.warn("RegistryName not set in oscars.properties. Using default: " + this.rmiServiceName);
+            if (props.getProperty("serverPort") != null && !props.getProperty("serverPort").trim().equals("")) {
+                try {
+                    int port = Integer.decode(props.getProperty("serverPort").trim());
+                    this.serverPort=port;
+                } catch (NumberFormatException e) {
+                    this.log.info("invalid serverPort value, using default: " + this.serverPort);
+                }
             } else {
-                errorMsg = "rmiServiceName not set because registryName property not set!";
+                this.log.info("registryPort property not set, using default: " + this.serverPort);
+            }
+            if (props.getProperty("registeredServerName") != null && !props.getProperty("registeredServerName").trim().equals("")) {
+                this.rmiServerName=props.getProperty("registeredServerName").trim();
+                this.log.info("Server name at registry: "+this.rmiServerName);
+            } else if (this.rmiServerName != null) {
+                this.log.info("registeredServerName not set in oscars.properties. Using default: " + this.rmiServerName);
+            } else {
+                errorMsg = "rmiServerName not set because registeredServerName property not set!";
                 throw new RemoteException(errorMsg);
             }
         }
+        this.log.info(serviceName+" RMI registry at: " + this.registryHost +":"+this.registryPort);
         InetAddress ipAddr = null;
         try {
-            ipAddr = InetAddress.getByName(localhost);
+            ipAddr = InetAddress.getByName(this.registryHost);
             // creates a custom socket that only listens on ipAddr
             socketFactory = new AnchorSocketFactory(ipAddr);
         } catch (UnknownHostException ex) {
             this.log.error(ex);
-            throw new RemoteException("UnknownHostException creating socket on host: " +localhost);
+            throw new RemoteException("UnknownHostException creating socket on host: " +this.registryHost);
         }
 
 
         // Causes the endPoint of the remote sever object to match the interface that is listened on
-        System.setProperty("java.rmi.server.hostname", localhost);
+        System.setProperty("java.rmi.server.hostname", this.registryHost);
 
         RemoteException connectError = null;
         try {
-            this.log.info("Looking for RMI registry at localhost:" + this.registryPort);
-            this.setRegistry(LocateRegistry.getRegistry(localhost, this.registryPort, socketFactory));
+            this.log.info("Looking for RMI registry at " + this.registryPort);
+            this.setRegistry(LocateRegistry.getRegistry(this.registryHost, this.registryPort, socketFactory));
             String[] services = this.getRegistry().list();
             for (String s: services) {
-                this.log.debug("RMI service: "+s);
+                this.log.debug("RMI Server: "+s);
             }
         } catch (RemoteException ex) {
             connectError = ex;
@@ -98,7 +108,7 @@ public abstract class BaseRmiServer {
         }
 
         if (this.getRegistry() == null) {
-            this.log.info("Could not locate RMI registry at localhost, creating one...");
+            this.log.info("Could not locate RMI registry at " + this.registryHost +" creating one...");
             try {
                 this.registry = LocateRegistry.createRegistry(this.registryPort, null, socketFactory);
             } catch (RemoteException ex) {
@@ -108,13 +118,14 @@ public abstract class BaseRmiServer {
             }
             this.createdRegistry = true;
         } else {
-            this.log.debug("Registry found at localhost");
+            this.log.debug("Registry found at " + this.registryHost);
         }
 
         this.log.debug("Binding to registry...");
-        stub = UnicastRemoteObject.exportObject(staticObject, 0, null, this.socketFactory);
-        this.registry.rebind(this.getRmiServiceName(), stub);
-        this.log.info("RegistryPort: " + registryPort + " rmiServiceName: " + rmiServiceName );
+        stub = UnicastRemoteObject.exportObject(staticObject, this.serverPort, null, this.socketFactory);
+        this.registry.rebind(this.rmiServerName, stub);
+        this.log.info("RegistryPort: " + registryPort + " rmiServerName: " + rmiServerName  + 
+                "serverPort " + serverPort);
         this.log.debug(this.getServiceName()+".init().end");
 
     }
@@ -126,14 +137,14 @@ public abstract class BaseRmiServer {
         this.log.debug(this.getServiceName()+".shutdown().start");
         try {
             java.rmi.server.UnicastRemoteObject.unexportObject(staticObject, true);
-            this.registry.unbind(this.getRmiServiceName());
+            this.registry.unbind(this.rmiServerName);
             if (this.createdRegistry) {
                 java.rmi.server.UnicastRemoteObject.unexportObject(this.registry, true);
             }
         } catch (RemoteException ex) {
             this.log.error(this.getServiceName() + " Registry already shutdown ");
         } catch (NotBoundException ex) {
-            this.log.error(this.getServiceName()+" RMI service already unbound " + ex.getMessage());
+            this.log.error(this.getServiceName()+" RMI Server already unbound " + ex.getMessage());
         }
         this.log.debug(this.getServiceName()+".shutdown().end");
     }
@@ -167,17 +178,17 @@ public abstract class BaseRmiServer {
     }
 
     /**
-     * @return the rmiServiceName
+     * @return the rmiServerName
      */
-    public String getRmiServiceName() {
-        return rmiServiceName;
+    public String getRmiServerName() {
+        return rmiServerName;
     }
 
     /**
-     * @param rmiServiceName the rmiServiceName to set
+     * @param rmiServerName the rmiServerName to set
      */
-    public void setRmiServiceName(String rmiServiceName) {
-        this.rmiServiceName = rmiServiceName;
+    public void setRmiServerName(String rmiServerName) {
+        this.rmiServerName = rmiServerName;
     }
 
     /**

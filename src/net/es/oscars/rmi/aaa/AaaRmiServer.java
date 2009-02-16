@@ -49,10 +49,10 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi.aaa", true);;
         this.setProperties(props);
-        // name of aaa service in registry, will be reset from aaa.registryName in rmi properties
-        this.setRmiServiceName("AAARMIServer");
+        // name of aaa Server in registry, will be reset from aaa.registeredServerName in oscars.rmi.aaa properties
+        this.rmiServerName = AaaRmiInterface.registeredServerName;
         // used for logging in BaseRmiServer.init
-        this.setServiceName("AAA RMI Server");
+        this.serviceName = "AAA RMI Server";
 
         super.init(staticObject);
         this.initHandlers();

@@ -18,12 +18,12 @@ public interface NotifyRmiInterface extends Remote {
     /**
      * Default registry address
      */
-    static String registryAddress = "127.0.0.1";
+    static String registryHost = "127.0.0.1";
     
     /**
-     * Default registry name
+     * Default name in the registry of the notifybroker service
      */
-    static String registryName = "net.es.oscars.rmi.notifybroker";
+    static String registeredServerName = "net.es.oscars.rmi.notifybroker";
     
     public void notify(String publisherUrl, String publisherRegId, 
             List<String> topics, List<Element> msg) throws RemoteException;

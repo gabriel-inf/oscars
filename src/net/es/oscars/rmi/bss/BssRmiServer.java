@@ -49,10 +49,10 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi.bss", true);
         this.setProperties(props);
-        // name of bss service in registry, will be reset from bss.registryName in rmi properties
-        this.setRmiServiceName("BSSRMIServer");
+        // name of bss Server in registry, may be reset from bss.registeredServerName in oscars.bss.rmi properties
+        this.rmiServerName=BssRmiInterface.registeredServerName;
         // used for logging in BaseRmiServer.init
-        this.setServiceName("BSS RMI Server");
+        this.serviceName="BSS RMI Server";
 
         super.init(staticObject);
         this.initHandlers();

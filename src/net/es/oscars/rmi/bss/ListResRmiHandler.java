@@ -86,7 +86,7 @@ public class ListResRmiHandler {
             errMessage = e.getMessage();
         } catch (Exception e) {
             // use this so we can find NullExceptions
-            errMessage = e.getMessage();
+            errMessage = "Caught Exception " + e.toString();
         } finally {
             if (errMessage != null) {
                 bss.getTransaction().rollback();

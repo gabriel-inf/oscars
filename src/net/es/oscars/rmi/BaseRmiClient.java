@@ -15,22 +15,19 @@ import org.apache.log4j.Logger;
 public class BaseRmiClient implements Remote {
     private Logger log = Logger.getLogger(BaseRmiClient.class);
 
-    /**
-     * The remote object
-     */
-    protected Remote remote;
-
-    /**
-     * True if we have a connection to the RMI registry, false otherwise
-     */
-
     protected Properties properties;  // set by child class
+    
+    /* default configuration values, should match the ones in BaseRmiServer.java */
     protected String serviceName = null;  // set by child class, used in log messages
     protected int registryPort = Registry.REGISTRY_PORT;
-    protected String rmiServiceName = null;// may be set by child class, name of service that is registered
+    protected String rmiServerName = null;// should be set by child class, name of server that is registered
     protected String registryHost ="127.0.0.1";
-    protected boolean configured = false;
+    
+    /* The remote object  */
+    protected Remote remote;
+    /* True if we have a connection to the RMI registry, false otherwise */
     protected boolean connected;
+    protected boolean configured = false;
 
 
     public Remote startConnection() throws RemoteException {
@@ -44,9 +41,9 @@ public class BaseRmiClient implements Remote {
         String errMsg = null;
         try {
             Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
-            this.remote = (Remote) registry.lookup(rmiServiceName);
+            this.remote = (Remote) registry.lookup(rmiServerName);
             this.connected = true;
-            this.log.debug("Connected to "+rmiServiceName+" service");
+            this.log.debug("Connected to "+rmiServerName+" service");
         } catch (RemoteException e) {
             errMsg="Remote exception from RMI server: trying to access " + this.remote.toString();
             this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
@@ -67,46 +64,40 @@ public class BaseRmiClient implements Remote {
 
     protected void configure() throws RemoteException {
         this.log.debug(this.serviceName + " configure().start");
-        int rmiPort = registryPort;
-        // rmi registry address
-        String rmiIpaddr ="127.0.0.1";
-        // default rmi registry name
-        String rmiRegName;
+
 
         Properties props = this.properties;
         if (props == null) {
-            log.warn("rmi.properties not found. Using default values");
-            //errorMsg = "Properties not set!";
-            //throw new RemoteException(errorMsg);
+            log.warn("properties for " + this.serviceName + " not found. Using default values");
         } else {
             if (props.getProperty("registryPort") != null && !props.getProperty("registryPort").trim().equals("")) {
                 try {
-                    rmiPort = Integer.decode(props.getProperty("registryPort").trim());
+                    int rmiPort = Integer.decode(props.getProperty("registryPort").trim());
                     this.registryPort = rmiPort; 
                 } catch (NumberFormatException e) {
-                    this.log.warn("invalid registryPort value, using default");
+                    this.log.info("invalid registryPort value, using default: " + this.registryPort);
                 }
             } else {
-                this.log.debug("registryPort property not set, using default");
+                this.log.info("registryPort property not set, using default " + this.registryPort);
             }
 
-            if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
-                rmiIpaddr = props.getProperty("registryAddress");
+            if (props.getProperty("registryHost") != null && !props.getProperty("registryHost").equals("")) {
+                String rmiIpaddr = props.getProperty("registryHost");
                 this.registryHost = rmiIpaddr;
             } else {
-                this.log.warn("registryAddress property not set: using localhost");
+                this.log.info("registryHost property not set: using default: " + this.registryHost);
             }
 
 
-            if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
-                rmiRegName = props.getProperty("registryName");
-                this.rmiServiceName = rmiRegName;
+            if (props.getProperty("registeredServerName") != null && !props.getProperty("registeredServerName").equals("")) {
+                String rmiRegName = props.getProperty("registeredServerName");
+                this.rmiServerName = rmiRegName;
             } else {
-                this.log.warn("registryName property not set. Using default: " + this.rmiServiceName);
+                this.log.info("registeredServerName property not set. Using default: " + this.rmiServerName);
             }
         }
         this.configured = true;
-        this.log.debug("Client RMI info: "+this.registryHost+":"+this.registryPort+":"+this.rmiServiceName);
+        this.log.debug("Client RMI info: "+this.registryHost+":"+this.registryPort+":"+this.rmiServerName);
         this.log.debug(this.serviceName + " configure().end");
     }
 

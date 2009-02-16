@@ -14,7 +14,7 @@ import net.es.oscars.rmi.BaseRmiClient;
 /**
  * AAA RMI client
  *
- * Includes the wrapper functions for RMI calls to AAA RMI services
+ * Includes the wrapper functions for RMI calls to AAA RMI Servers
  *
  * @author Evangelos Chaniotakis, Mary Thompson
  */
@@ -38,10 +38,10 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi.aaa", true);
         this.setProps(props);
-        // name of aaa service in registry, will be reset from aaa.registryName in rmi properties
-        this.rmiServiceName = "AAARMIServer";
+        // name of aaa Server in registry, will be reset from aaa.registeredServerName in rmi properties
+        this.rmiServerName = AaaRmiInterface.registeredServerName;
         // used for logging in BaseRmiServer.init
-        this.serviceName = "AAA RMI Server";
+        this.serviceName = "AAA RMI Client";
         super.configure();
 
         Remote remote = super.startConnection();
@@ -169,7 +169,7 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
             this.log.debug("Remote exception from RMI server: " + e.getMessage());
             throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.debug(methodName + ": Exception from RMI server" + e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         }
         this.log.debug("checkAccess.end");

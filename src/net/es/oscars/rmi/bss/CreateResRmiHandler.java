@@ -63,7 +63,9 @@ public class CreateResRmiHandler {
         boolean specifyPath = false;
         try {
             if (!resv.getPath(PathType.REQUESTED).getPathElems().isEmpty()) {
-                specifyPath = true;
+                if (resv.getPath(PathType.REQUESTED).getPathElems().size() > 2) {
+                    specifyPath = true;
+                }
             }
         } catch (BSSException e) {
             throw new RemoteException(e.getMessage());
@@ -95,7 +97,7 @@ public class CreateResRmiHandler {
             errMessage = e.getMessage();
         } catch (Exception e) {
             // use this so we can find NullExceptions
-            errMessage = e.getMessage();
+            errMessage = "caught Exception: " + e.toString();
         } finally {
             if (errMessage != null) {
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "localhost", resv, "", errMessage);

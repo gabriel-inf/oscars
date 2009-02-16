@@ -9,6 +9,9 @@ import net.es.oscars.aaa.AuthMultiValue;
 
 public interface AaaRmiInterface extends Remote {
 
+    /* Default registered Server name */
+    static String registeredServerName = "AAARMIServer";
+
     public void init() throws RemoteException;
 
     /**

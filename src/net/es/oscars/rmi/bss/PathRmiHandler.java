@@ -44,11 +44,10 @@ public class PathRmiHandler {
      * @param params RmiPathRequest request parameters
      * @param userName name of user making request
      * @return the result containing the status.
-     * @throws IOException
      * @throws RemoteException
      */
     public String createPath(RmiPathRequest params, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
 
         this.log.debug("createPath.start");
         String methodName = "CreatePath";
@@ -124,7 +123,7 @@ public class PathRmiHandler {
             errMessage = e.getMessage();
         } catch (Exception e) {
             forwarder.cleanUp();
-            errMessage = e.getMessage();
+            errMessage = "caught Exception " + e.toString();
         } finally {
             if (errMessage != null) {
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName,
@@ -169,11 +168,10 @@ public class PathRmiHandler {
      * @param params RmiPathRequest request parameters
      * @param userName name of user making request
      * @return the result containing the status.
-     * @throws IOException
      * @throws RemoteException
      */
     public String refreshPath(RmiPathRequest params, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
 
         this.log.debug("refreshPath.start");
         String methodName = "RefreshPath";
@@ -201,17 +199,17 @@ public class PathRmiHandler {
         bss.beginTransaction();
         String errMessage = null;
         try {
-        resv = 
-            this.rm.getConstrainedResv(gri, loginConstraint, institution,
-                                       tokenValue);
-		    /* Check reservation parameters */
-		    if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
-		        (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
-		        errMessage = "No reservations match request";
-		    } else if (!resv.getStatus().equals("ACTIVE")) {
-		        errMessage = "Path cannot be refreshed. " +
-		        "Reservation is not active. Please run createPath first.";
-		    }
+            resv = 
+                this.rm.getConstrainedResv(gri, loginConstraint, institution,
+                        tokenValue);
+            /* Check reservation parameters */
+            if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
+                    (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
+                errMessage = "No reservations match request";
+            } else if (!resv.getStatus().equals("ACTIVE")) {
+                errMessage = "Path cannot be refreshed. " +
+                "Reservation is not active. Please run createPath first.";
+            }
         } catch (BSSException ex) {
         	  errMessage = ex.getMessage();
         } finally {
@@ -315,7 +313,7 @@ public class PathRmiHandler {
             errMessage = e.getMessage();
         } catch (Exception e) {
             forwarder.cleanUp();
-            errMessage = e.getMessage();
+            errMessage = "Caught Exception " + e.toString();
         } finally {
             if (errMessage != null) {
                 bss.getTransaction().rollback();

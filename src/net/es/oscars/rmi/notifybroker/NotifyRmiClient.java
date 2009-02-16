@@ -40,9 +40,9 @@ public class NotifyRmiClient implements NotifyRmiInterface {
         // default rmi registry port
         int rmiPort = NotifyRmiInterface.registryPort;
         // default rmi registry address
-        String rmiIpaddr = NotifyRmiInterface.registryAddress;
+        String rmiIpaddr = NotifyRmiInterface.registryHost;
         // default rmi registry name
-        String rmiRegName = NotifyRmiInterface.registryName;
+        String rmiRegName = NotifyRmiInterface.registeredServerName;
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi.notifybroker", true);
@@ -54,12 +54,12 @@ public class NotifyRmiClient implements NotifyRmiInterface {
             }
         }
 
-        if (props.getProperty("registryAddress") != null && !props.getProperty("registryAddress").equals("")) {
-            rmiIpaddr = props.getProperty("registryAddress");
+        if (props.getProperty("registryHost") != null && !props.getProperty("registryHost").equals("")) {
+            rmiIpaddr = props.getProperty("registryHost");
         }
 
-        if (props.getProperty("registryName") != null && !props.getProperty("registryName").equals("")) {
-            rmiRegName = props.getProperty("registryName");
+        if (props.getProperty("registeredServerName") != null && !props.getProperty("registeredServerName").equals("")) {
+            rmiRegName = props.getProperty("registeredServerName");
         }
 
         try {

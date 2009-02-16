@@ -44,8 +44,8 @@ public class NotifyRmiServer extends BaseRmiServer implements NotifyRmiInterface
         Properties props = propHandler.getPropertyGroup("rmi.notifybroker", true);
         this.setProperties(props);
         // used for logging in BaseRmiServer.init
-        this.setServiceName("NotifyBroker RMI Server");
-        this.setRmiServiceName(NotifyRmiInterface.registryName);
+        this.serviceName="NotifyBroker RMI Server";
+        this.rmiServerName=NotifyRmiInterface.registeredServerName;
 
         super.init(staticObject);
     }

@@ -39,31 +39,21 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             } else if (listType.equals("byAttr")) {
                 String attributeName = (String) parameters.get("attributeName");
                 if (attributeName == null) {
-                    aaa.getTransaction().rollback();
-
-                    throw new RemoteException("attributeName not specified");
+                    throw new AAAException("attributeName not specified");
                 }
                 UserAttributeDAO dao = new UserAttributeDAO(core.getAaaDbName());
-                try {
-                    users = dao.getUsersByAttribute(attributeName);
-                } catch (AAAException ex) {
-                    aaa.getTransaction().rollback();
-
-                    throw new RemoteException(ex.getMessage());
-                }
+                users = dao.getUsersByAttribute(attributeName);
             } else if (listType.equals("single")) {
                 String userName = (String) parameters.get("username");
                 if (userName == null) {
-                    aaa.getTransaction().rollback();
-
-                    throw new RemoteException("username not specified");
+                    throw new AAAException("username not specified");
                 }
                 UserManager mgr = core.getUserManager();
                 User user = mgr.query(userName);
                 users = new ArrayList<User>();
                 users.add(user);
             } else {
-                throw new RemoteException("unknown listType");
+                throw new AAAException("unknown listType");
             }
             for (User user : users) {
                 Hibernate.initialize(user);
@@ -74,9 +64,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } catch (Exception ex) {
             this.log.error(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
-        } finally {
-
+            throw new RemoteException(ex.toString(),ex);
         }
         result.put("users", users);
         this.log.debug("listUsers.end");
@@ -106,9 +94,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } catch (Exception ex) {
             this.log.error(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
-        } finally {
-
+            throw new RemoteException(ex.toString(),ex);
         }
         this.log.debug("addUser.end");
         return result;
@@ -141,7 +127,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             UserDAO userDAO = new UserDAO(core.getAaaDbName());
             User user = userDAO.queryByParam("login", modifiedUser.getLogin());
             if (user == null) {
-                throw new RemoteException("User " + modifiedUser.getLogin() +
+                throw new AAAException("User " + modifiedUser.getLogin() +
                                           " does not exist");
             }
             InstitutionDAO institutionDAO =
@@ -149,7 +135,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             Institution modifiedInst = institutionDAO.queryByParam(
                                "name", modifiedUser.getInstitution().getName());
             if (modifiedInst == null) {
-                throw new RemoteException("Institution " +
+                throw new AAAException("Institution " +
                                        modifiedUser.getInstitution().getName() +
                                        " not found!");
             }
@@ -189,7 +175,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } catch (Exception ex) {
             this.log.error(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
+            throw new RemoteException(ex.toString(),ex);
         } finally {
 
         }
@@ -209,9 +195,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         } catch (Exception ex) {
             this.log.error(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
-        } finally {
-
+            throw new RemoteException(ex.toString(),ex);
         }
         HashMap<String, Object> result = new HashMap<String, Object>();
         this.log.debug("deleteUser.end");
@@ -226,29 +210,28 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         User user = null;
         String findBy = (String) parameters.get("findBy");
         Session aaa = core.getAaaSession();
+        String errMessage = null;
+        RemoteException remEx = null;
         try {
             aaa.beginTransaction();
             if (findBy == null || findBy.equals("id")) {
                 UserDAO userDAO = new UserDAO(core.getAaaDbName());
                 Integer id = (Integer) parameters.get("id");
                 if (id == null) {
-                    aaa.getTransaction().rollback();
-                    throw new RemoteException("Unknown id");
+                    throw new AAAException("Unknown id");
                 }
                 user = userDAO.findById(id, false);
 
             } else if (findBy.equals("username")) {
                 String username = (String) parameters.get("username");
                 if (username == null) {
-                    aaa.getTransaction().rollback();
-                    throw new RemoteException("Unknown id");
+                    throw new AAAException("Unknown id");
                 }
                 UserManager mgr = core.getUserManager();
                 user = mgr.query(username);
 
             } else {
-                aaa.getTransaction().rollback();
-                throw new RemoteException("Unknown findBy");
+                throw new AAAException("Unknown findBy");
             }
             if (user != null) {
                 this.log.info("findUser.found:"+user.getLogin());
@@ -257,13 +240,13 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                 Hibernate.initialize(user.getInstitution().getUsers());
                 result.put("user", user);
             } else {
-                throw new RemoteException("User not found");
+                throw new AAAException("User not found");
             }
             aaa.getTransaction().commit();
         } catch (Exception ex) {
             aaa.getTransaction().rollback();
             this.log.error(ex);
-            throw new RemoteException(ex.getMessage());
+            throw new RemoteException(ex.toString(),ex);
         }
         this.log.info("findUser.end");
         return result;

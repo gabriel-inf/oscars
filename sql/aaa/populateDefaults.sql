@@ -627,8 +627,19 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from constraints where name="none"),NULL);
      
     -- Site Administrator
+    -- list and query his own profile
     -- List, query, modify, create and signal any reservation
     --   that starts or terminates at his site
+    INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-site-administrator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="query"),
+     (select id from constraints where name="none"),NULL);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-site-administrator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="modify"),
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),

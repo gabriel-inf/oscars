@@ -101,7 +101,7 @@ public class CheckAccessRmiHandler {
         } catch (Exception ex) {
             this.log.error(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.getMessage());
+            throw new RemoteException(ex.toString());
         }
         this.log.debug("checkMultiAccess.end");
         return result;

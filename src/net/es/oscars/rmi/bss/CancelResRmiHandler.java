@@ -84,7 +84,7 @@ public class CancelResRmiHandler {
             remEx= new RemoteException(errMessage,e);
             this.log.debug(methodName + " failed: " + errMessage);
         } catch (Exception e) {
-            errMessage = e.getMessage();
+            errMessage = "caught Exception " + e.toString();
             remEx= new RemoteException(errMessage,e);
             this.log.error(methodName + " failed: " +errMessage,e);
         } 

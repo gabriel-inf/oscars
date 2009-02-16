@@ -249,7 +249,13 @@ public class PathManager {
      */
     public String endPointSite(Reservation resv, Boolean source) throws BSSException {
         Path path = resv.getPath(PathType.LOCAL);
+        if (path == null){
+            this.log.error("path is null");
+        }
         List<PathElem> hops = path.getPathElems();
+        if (hops == null){
+            this.log.error("hops is null");
+        }
         PathElem hop = null;
         if (source) {
             hop = hops.get(0);

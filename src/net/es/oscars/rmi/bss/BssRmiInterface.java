@@ -12,20 +12,8 @@ import net.es.oscars.rmi.bss.xface.*;
 
 public interface BssRmiInterface extends Remote {
 
-     /**
-     * Default registry port
-     */
-    static int registryPort = 1099;
-    /**
-     * Default registry address
-     */
-    static String registryAddress = "127.0.0.1";
-    /**
-     * Default registry name
-     */
-    static String registryName = "BSSRMIServer";
-
-
+    /* Default registered Service name */
+    static String registeredServerName = "BSSRMIServer";
 
     public void init() throws RemoteException;
 

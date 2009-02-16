@@ -80,7 +80,7 @@ public class ModifyResRmiHandler {
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, userName,
                                    "core", resv);
         } catch (Exception e) {
-            String errMessage = e.getMessage();
+            String errMessage = "caught Exception " + e.toString();
             this.log.debug("Modify  failed: " + errMessage);
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, loginConstraint,
                 "RMI", resv, "", errMessage);

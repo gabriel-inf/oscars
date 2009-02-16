@@ -88,9 +88,9 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
         try {
             authDAO.create(attributeName, resourceName, permissionName, constraintName, constraintValue);
         } catch ( Exception e) {
-            this.log.error("exception: " + e.getMessage());
+            this.log.error("caught Exception: " + e.toString());
             aaa.getTransaction().rollback();
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.toString());
         }
         aaa.getTransaction().commit();
         this.log.debug("addAuthorization.end");
@@ -120,9 +120,9 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
             Authorization auth = authDAO.query(oldAttributeName, oldResourceName, oldPermissionName, oldConstraintName);
             authDAO.update(auth, attributeName, resourceName, permissionName, constraintName, constraintValue);
         } catch ( Exception e) {
-            this.log.error("exception: " + e.getMessage());
+            this.log.error("caught Exception: " + e.toString());
             aaa.getTransaction().rollback();
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.toString());
         }
 
         aaa.getTransaction().commit();
@@ -144,9 +144,9 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
         try {
             authDAO.remove(attributeName, resourceName, permissionName, constraintName);
         } catch ( Exception e) {
-            this.log.error("exception: " + e.getMessage());
+            this.log.error("Caugth Exception: " + e.toString());
             aaa.getTransaction().rollback();
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.toString());
         }
         aaa.getTransaction().commit();
         this.log.debug("deleteAuthorization.end");

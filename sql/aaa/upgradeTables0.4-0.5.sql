@@ -34,3 +34,15 @@ INSERT IGNORE INTO sites VALUES (NULL, "fnal.gov",
       (select id from institutions where name="Fermilab")); 
 INSERT IGNORE INTO sites VALUES (NULL, "geant2.net",
       (select id from institutions where name="DANTE"));   
+      
+   -- Doesn't make sense for a user not to be able to see and modify own profile
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-site-administrator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="query"),
+     (select id from constraints where name="none"),NULL);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-site-administrator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="modify"),
+     (select id from constraints where name="none"),NULL);
