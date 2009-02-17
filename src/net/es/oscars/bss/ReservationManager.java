@@ -895,8 +895,11 @@ public class ReservationManager {
     public Domain endPointDomain(Reservation resv, Boolean source) throws BSSException {
         Path path = resv.getPath(PathType.LOCAL);
         if (path == null ){
-            this.log.info ( "no LOCAL path found");
-            throw new BSSException("no path found for reservation in endPointDomain: " +resv.getGlobalReservationId());
+            this.log.error ( "no LOCAL path found, trying requested path" );
+            path = resv.getPath(PathType.REQUESTED);
+            if (path == null) {
+                throw new BSSException("no path found for reservation in endPointDomain: " +resv.getGlobalReservationId());
+            }
         }
         List<PathElem> hops = path.getPathElems();
         PathElem hop = null;
@@ -905,7 +908,15 @@ public class ReservationManager {
         } else { // get last hop
             hop = hops.get(hops.size()-1);
         }
+        if (hop ==  null) {
+            this.log.error("no hops found for source " + source + "path id " + path.getId());
+            throw new BSSException("no first or last hop found in endPointDomain");
+        }
         Link endPoint = hop.getLink();
+        if (endPoint ==  null) {
+            this.log.error("no link found for hop source " + source + "hop id " + hop.getId());
+            throw new BSSException("no first or last link found in endPointDomain");
+        }
         Link remoteLink = endPoint.getRemoteLink();
         Domain endDomain = null;
         if (remoteLink != null) {
@@ -935,34 +946,49 @@ public class ReservationManager {
 
        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
        Reservation resv = null;
+       Reservation myResv = null;
 
        // check  token first, it is sufficient to authorize request
        if (tokenValue != null){
            resv = this.validateToken(tokenValue, gri);
        }
+       /* loginConstraint must be set whenever institutionConstraint is set to avoid
+        * a race condition in getting and setting the path links during createReservation
+        */
+       if ((loginConstraint == null) && ( institutionConstraint != null)){
+           this.log.error("loginConstraint must be set when institutionConstraint is set");
+           throw new BSSException("invalid arguments to queryReservation: loginConstraint must be set when institutionConstraint is set");
+       }
+
        if (loginConstraint == null ) {
            try {
-              resv = resvDAO.query(gri);
+               resv = resvDAO.query(gri);
            } catch ( BSSException e ){
                this.log.error("No reservation matches gri: " + gri);
-                  throw new BSSException("No reservations match request");
+               throw new BSSException("No reservations match request");
            }
-           if (institutionConstraint != null) {
-              //check the institution
-              if (!this.checkInstitution(resv, institutionConstraint)) {
-                  resv = null;
-              }
+       } else {
+           myResv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);
+       }
+       if (myResv == null) {
+           if (institutionConstraint == null) {
+               this.log.error("No reservation matches gri: " + gri + " login: " +
+                       loginConstraint);
+               throw new BSSException("No reservations match request");
+           } else {
+               //check the institution
+               if (!this.checkInstitution(resv, institutionConstraint)) {
+                   this.log.info("No reservations matched gri: " + gri + " login: " +
+                           loginConstraint + " institution: " + institutionConstraint);
+                   throw new BSSException("No reservations match request");
+               }
            }
        }
-       else  {
-           resv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);
+       if (myResv != null) {
+           return myResv;
+       } else {
+           return resv;
        }
-       if (resv == null) {
-       this.log.error("No reservation matches gri: " + gri + " login: " +
-           loginConstraint + " institution: " + institutionConstraint);
-           throw new BSSException("No reservations match request");
-       }
-       return resv;
    }
 
    private void createInitialPath(Path path) throws BSSException {

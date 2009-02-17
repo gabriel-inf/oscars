@@ -67,6 +67,7 @@ public class QueryResRmiHandler {
         }
         if (authVal.equals(AuthValue.MYSITE)) {
             institution = rmiClient.getInstitution(userName);
+            loginConstraint = userName;  /* either one will grant access */
         } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = userName;
         }
