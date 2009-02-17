@@ -70,6 +70,23 @@ public class CheckAccessRmiHandler {
         this.log.debug("getInstitution.end");
         return institution;
     }
+    
+    public List<String> getDomainInstitutions(String topologyId) throws RemoteException {
+        this.log.debug("getDomainInstitutions.start");
+        List<String> institutions = null;
+        Session aaa = core.getAaaSession();
+        aaa.beginTransaction();
+        try{
+            SiteDAO siteDAO = new SiteDAO(this.core.getAaaDbName());
+            institutions = siteDAO.getInstitutions(topologyId);
+            aaa.getTransaction().commit();
+        }catch(Exception e){
+            aaa.getTransaction().rollback();
+            throw new RemoteException(e.toString());
+        }
+        this.log.debug("getDomainInstitutions.end");
+        return institutions;
+    }
 
 
     /** 

@@ -84,7 +84,11 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
     public String getInstitution(String userName) throws RemoteException {
         return this.checkAccessHandler.getInstitution(userName);
     }
-
+    
+    
+    public List<String> getDomainInstitutions(String topologyId) throws RemoteException{
+        return this.checkAccessHandler.getDomainInstitutions(topologyId);
+    }
 
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException {
         return this.verifyLoginHandler.verifyLogin(userName, password, sessionName);

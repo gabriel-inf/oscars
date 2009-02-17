@@ -2,6 +2,7 @@ package net.es.oscars.rmi.aaa;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import net.es.oscars.aaa.AuthValue;
@@ -41,6 +42,8 @@ public interface AaaRmiInterface extends Remote {
 
     public String getInstitution(String userName) throws RemoteException;
 
+    public List<String> getDomainInstitutions(String topologyId) throws RemoteException;
+    
     public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException;
     public AuthMultiValue checkMultiAccess(String userName, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException;
 

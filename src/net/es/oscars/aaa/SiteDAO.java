@@ -1,5 +1,6 @@
 package net.es.oscars.aaa;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.es.oscars.database.GenericHibernateDAO;
@@ -24,11 +25,11 @@ public class SiteDAO extends GenericHibernateDAO<Site, Integer> {
  */
     public List<String> getInstitutions(String topoId) {
 
-        List<String> institutions= null;
+        List<String> institutions= new ArrayList<String>();
 
         // query for all sites were topologyId=topoId
-        String hsql = "from Site" +
-        "where topologyId = ? ";
+        String hsql = "from Site " +
+        "where domainTopologyId = ? ";
         List<Site> sites = (List<Site>) this.getSession().createQuery(hsql)
         .setString(0, topoId)
         .list();

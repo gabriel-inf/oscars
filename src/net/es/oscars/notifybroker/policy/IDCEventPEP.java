@@ -79,11 +79,11 @@ public class IDCEventPEP implements NotifyPEP{
     }
 
     public HashMap<String, List<String>> enforce(Element event) throws RemoteException{
-        this.log.debug("prepare.start");
+        this.log.debug("enforce.start");
         HashMap<String, List<String>> permissionMap = new HashMap<String, List<String>>();
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> institutionList = new ArrayList<String>();
-        HashMap<String,String> domainInsts = new HashMap<String,String>();
+        HashMap<String,Boolean> domainInsts = new HashMap<String,Boolean>();
         String userLogin = null;
         String resvLogin = null;
         Element resDetails =  event.getChild("resDetails", WSNotifyConstants.IDC_NS);
@@ -118,6 +118,7 @@ public class IDCEventPEP implements NotifyPEP{
         }
         
         if(resDetails == null){
+            this.log.debug("no resDetails");
             return permissionMap;
         }
         Element pathInfo = resDetails.getChild("pathInfo", WSNotifyConstants.IDC_NS);
@@ -155,38 +156,43 @@ public class IDCEventPEP implements NotifyPEP{
             if(!institutionList.isEmpty()){
                 permissionMap.put(IDCEventPEP.FILTER_RESV_ENDSITE, institutionList);
             }
-            this.log.debug("prepare.end");
+            this.log.debug("enforce.end");
         }catch(Exception e){
             e.printStackTrace();
             this.log.info("Ignoring error");
         }
 
-        this.log.debug("prepare.end");
+        this.log.debug("enforce.end");
         return permissionMap;
     }
 
-    private void addLinkInst(String urn, List<String> insts, HashMap<String,String> domainInsts){
+    private void addLinkInst(String urn, List<String> insts, HashMap<String,Boolean> domainInsts) throws RemoteException{
+        //note this is the perfSONAR URNParser
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
         this.log.debug("urn=" + urn);
-        String domainId = parseResults.get("domainId");
+        String domainId = parseResults.get("domainValue");
         if(domainId == null || domainInsts.containsKey(domainId)){
             return;
         }
         
-       /*
-        AaaRmiClient aaaRmiClient = new AaaRmiClient(); 
-        String inst = aaaRmiClient.getSite(domainId);
-        if(site == null || insts.contains(inst)){
+        AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(this.log);
+        List<String> siteInsts = aaaRmiClient.getDomainInstitutions(domainId);
+        if(siteInsts == null || siteInsts.isEmpty()){
             return;
         }
-        domainInsts.put(domainId, inst);
-        insts.add(inst);
-        this.log.debug("site=" + inst);*/
+        domainInsts.put(domainId, true);
+        for(String siteInst : siteInsts){
+            if(insts.contains(siteInst)){
+                continue;
+            }
+            insts.add(siteInst);
+            this.log.debug("site=" + siteInst);
+        }
     }
 
-    private void addInst(String userName, List<String> insts){
+    private void addInst(String userName, List<String> insts) throws RemoteException{
         if(userName == null){ return; }
-        AaaRmiClient aaaRmiClient = new AaaRmiClient();
+        AaaRmiClient aaaRmiClient = NBValidator.createAaaRmiClient(this.log);
         String institution = null;
         try {
             institution = aaaRmiClient.getInstitution(userName);

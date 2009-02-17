@@ -155,6 +155,26 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.log.debug("getInstitution.end");
         return result;
     }
+    
+    public List<String> getDomainInstitutions(String topologyId) throws RemoteException {
+
+        String methodName = "getDomainInstitutions";
+        this.log.debug("getDomainInstitutions.start");
+
+        List<String> result = null;
+        this.verifyRmiConnection(methodName);
+        try {
+            result = this.remote.getDomainInstitutions(topologyId);
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException(e.getMessage(), e);
+        }
+        this.log.debug("getDomainInstitutions.end");
+        return result;
+    }
 
     public AuthValue checkAccess(String userName, String resourceName, String permissionName)
       throws RemoteException {
