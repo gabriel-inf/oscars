@@ -5,6 +5,7 @@ import java.util.*;
 import java.rmi.*;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.wsdlTypes.GetTopologyContent;
 import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.rmi.*;
@@ -24,6 +25,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     private ModifyResRmiHandler modifyHandler;
     private TopologyRmiHandler topologyHandler;
     private PathRmiHandler pathHandler;
+    private EventRmiHandler eventHandler;
     private UnsafeCreatePathRmiHandler unsafeCreatePathHandler;
     private UnsafeTeardownPathRmiHandler unsafeTeardownPathHandler;
     private UnsafeModifyStatusRmiHandler unsafeModifyStatusHandler;
@@ -69,6 +71,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         this.modifyHandler = new ModifyResRmiHandler();
         this.topologyHandler = new TopologyRmiHandler();
         this.pathHandler = new PathRmiHandler();
+        this.eventHandler = new EventRmiHandler();
         this.unsafeCreatePathHandler = new UnsafeCreatePathRmiHandler();
         this.unsafeTeardownPathHandler = new UnsafeTeardownPathRmiHandler();
         this.unsafeModifyStatusHandler = new UnsafeModifyStatusRmiHandler();
@@ -189,7 +192,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * Refreshes a path via signalling.
+     * Refreshes a path via signaling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
@@ -204,7 +207,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
     }
 
     /**
-     * Tears down a path via signalling.
+     * Tears down a path via signaling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with authenticated login name of user
@@ -216,6 +219,15 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         teardownPath(RmiPathRequest request, String userName)
             throws IOException, RemoteException {
         return this.pathHandler.teardownPath(request, userName);
+    }
+    
+    /**
+     * Handles an event received from another IDC
+     * 
+     * @param event the event received from another IDC
+     */
+    public void handleEvent(OSCARSEvent event) throws RemoteException {
+        this.eventHandler.handleEvent(event);
     }
 
     /**
@@ -269,4 +281,5 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
         return this.unsafeModifyStatusHandler.unsafeModifyStatus(request,
                                                                  userName);
     }
+    
 }

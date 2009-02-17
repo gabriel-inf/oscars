@@ -7,10 +7,10 @@ import java.util.Properties;
 import net.es.oscars.rmi.BaseRmiClient;
 import net.es.oscars.rmi.bss.xface.*;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.wsdlTypes.GetTopologyContent;
 import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.PropHandler;
-import net.es.oscars.PropertyLoader;
 
 import org.apache.log4j.Logger;
 
@@ -280,7 +280,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     }
 
     /**
-     * Makes call to RMI server to teardown path via signalling.
+     * Makes call to RMI server to teardown path via signaling.
      *
      * @param request RmiPathRequest containing request parameters
      * @param userName string with login of user making request
@@ -299,6 +299,27 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             result = this.remote.teardownPath(request, userName);
             this.log.debug("teardownPath.end");
             return result;
+        } catch (RemoteException e) {
+            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            throw new RemoteException (e.getMessage(),e);
+        }
+    }
+    
+    /**
+     * Handles an event received from another IDC
+     * 
+     * @param event the event received from another IDC
+     */
+    public void handleEvent(OSCARSEvent event) throws RemoteException {
+        this.log.debug("handleEvent.start");
+        String methodName = "HandleEvent";
+        this.verifyRmiConnection(methodName);
+        try {
+            this.remote.handleEvent(event);
+            this.log.debug("handleEvent.end");
         } catch (RemoteException e) {
             this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
             throw e;
@@ -409,5 +430,4 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
     public void setRemote(BssRmiInterface remote) {
         this.remote = remote;
     }
- 
 }

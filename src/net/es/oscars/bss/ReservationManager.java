@@ -2,26 +2,21 @@ package net.es.oscars.bss;
 
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-//import java.net.*;
 import org.apache.log4j.*;
 
 import org.aaaarch.gaaapi.tvs.TokenBuilder;
 import org.aaaarch.gaaapi.tvs.TokenKey;
 
-//import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
-//import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.quartz.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.scheduler.*;
-//import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
-//import net.es.oscars.pathfinder.*;
 import net.es.oscars.pss.*;
 
 
@@ -170,16 +165,17 @@ public class ReservationManager {
      *
      * @param gri the GRI of the reservation being confirmed
      * @param pathInfo the confirmed path
-     * @param producerID the URN of the domain that produced this event
+     * @param producerDomainID the URN of the domain that produced this event
      * @param reqStatus the required status of the reservation to perform this operation
      * @param confirm true if confirmed event, false if completed event
      * @throws BSSException
      */
-    public void submitResvJob(String gri, PathInfo pathInfo,
-                              String producerID, String reqStatus,
-                              boolean confirm) throws BSSException{
+    public void submitResvJob(String producerDomainID, String reqStatus,
+                              boolean confirm, OSCARSEvent event) throws BSSException{
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        Reservation resv = dao.query(gri);
+        Reservation eventResv = event.getReservation();
+        String gri = eventResv.getGlobalReservationId();
+        Reservation persistedResv = dao.query(gri);
         String op = "complete";
         String targetNeighbor = "previous";
         if(confirm){
@@ -208,68 +204,45 @@ public class ReservationManager {
             return;
         }
 
-        if(resv == null){
+        if(persistedResv == null){
             this.log.error("Reservation " + gri + " not found");
             return;
         }
-        String login = resv.getLogin();
+        String login = persistedResv.getLogin();
 
-        if(requirePath && pathInfo.getPath() == null){
-            this.log.error("Recieved " + op + " event from " + producerID +
+        if(requirePath && eventResv.getPath(PathType.INTERDOMAIN) == null){
+            this.log.error("Recieved " + op + " event from " + producerDomainID +
                           " with no path element.");
-             return;
-        }else if(requirePath && pathInfo.getPath().getHop() == null){
-            this.log.error("Recieved " + op + " event from " + producerID +
-                          " with a path element containing no hops");
              return;
         }
 
-        String status = this.se.getStatus(resv);
+        String status = StateEngine.getStatus(persistedResv);
         if((!reqStatus.equals(status)) && (!status.equals(altStatus))){
-            this.log.info("Trying to " + op + " a reservation that doesn't" +
+            this.log.debug("Trying to " + op + " a reservation that doesn't" +
                           " have status " + reqStatus);
             return;
         }
         if(confirm){
-            int newLocalStatus = this.se.getLocalStatus(resv) + 1;
-            this.se.canUpdateLocalStatus(resv, newLocalStatus);
+            int newLocalStatus = StateEngine.getLocalStatus(persistedResv) + 1;
+            StateEngine.canUpdateLocalStatus(persistedResv, newLocalStatus);
         }
 
-        Domain neighborDomain = this.endPointDomain(resv, !confirm);
+        Domain neighborDomain = this.endPointDomain(persistedResv, !confirm);
         if(neighborDomain == null || neighborDomain.isLocal()){
             this.log.error("Could not identify " + targetNeighbor +
                            " domain in path.");
             return;
-        }else if(!neighborDomain.getTopologyIdent().equals(producerID)){
-            this.log.debug("The event is from " + producerID + " not the " +
+        }else if(!neighborDomain.getTopologyIdent().equals(producerDomainID)){
+            this.log.debug("The event is from " + producerDomainID + " not the " +
                            targetNeighbor + " domain " +
                            neighborDomain.getTopologyIdent() + " so discarding");
             return;
         }
-
-        /* Get the institution 
-        Site site = neighborDomain.getSite();
-        if(site == null){
-            this.log.error("No site associated with domain " +
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "bss.sites table.");
-            return;
-        }
-
-        String institution = site.getName();
-        if(institution == null){
-            this.log.error("No institution associated with domain " +
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "aaa.institution and bss.sites table.");
-            return;
-        }
-*/
+        
         /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = prefix+"-"+op+"-"+resv.hashCode();
+        String jobName = prefix+"-"+op+"-"+persistedResv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", jobClass);
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
@@ -278,7 +251,7 @@ public class ReservationManager {
         jobDataMap.put("gri", gri);
         jobDataMap.put("login", login);
         //jobDataMap.put("institution", institution);
-        jobDataMap.put("pathInfo", pathInfo);
+        jobDataMap.put("path", eventResv.getPath(PathType.INTERDOMAIN));
         jobDetail.setJobDataMap(jobDataMap);
         try {
             sched.addJob(jobDetail, false);
@@ -291,22 +264,16 @@ public class ReservationManager {
     /**
      * Handles a RESERVATION_*_FAILED event
      *
-     * @param gri the GRI of the reservation that failed
-     * @param pathInfo the path
-     * @param producerID the URN of the domain that produced this event
-     * @param errorSrc the IDC the originated the error
-     * @param errorCode the error code of this event
-     * @param errorMsg the error message describing the event
+     * @param producerDomainID the URN of the domain that produced this event
      * @param reqStatus the required status of the reservation for this to be valid
      * @throws BSSException
      */
-    public void submitFailed(String gri, PathInfo pathInfo, String producerID,
-                             String errorSrc, String errorCode,
-                             String errorMsg, String reqStatus)
-                             throws BSSException {
+    public void submitFailed(String producerDomainID, String reqStatus, 
+            OSCARSEvent event) throws BSSException {
         /* Find job type */
         Class jobClass = null;
         String prefix = "";
+        String gri = event.getReservation().getGlobalReservationId();
         if (reqStatus.equals(StateEngine.INCREATE)) {
             jobClass = CreateReservationJob.class;
             prefix = "createResv";
@@ -326,7 +293,7 @@ public class ReservationManager {
             this.log.error("Reservation " + gri + " not found");
             return;
         }
-        String status = this.se.getStatus(resv);
+        String status = StateEngine.getStatus(resv);
         if (!reqStatus.equals(status)) {
             this.log.info("Trying to fail a reservation that doesn't" +
                           " have status " + reqStatus);
@@ -339,36 +306,17 @@ public class ReservationManager {
             throw new BSSException("Reservation " + gri +
                                    " is not an interdomain reservation so it" +
                                    " can't be failed by a Notification.");
-        } else if(prevDomain != null && prevDomain.getTopologyIdent().equals(producerID)) {
+        } else if(prevDomain != null && prevDomain.getTopologyIdent().equals(producerDomainID)) {
             neighborDomain = prevDomain;
-        } else if(nextDomain != null && nextDomain.getTopologyIdent().equals(producerID)) {
+        } else if(nextDomain != null && nextDomain.getTopologyIdent().equals(producerDomainID)) {
             neighborDomain = nextDomain;
         }
         if (neighborDomain == null) {
-            this.log.debug("Cannot find notification producer " + producerID +
+            this.log.debug("Cannot find notification producer " + producerDomainID +
                            " in the path");
             return;
         }
-
-        /* Get the institution 
-        Site site = neighborDomain.getSite();
-        if (site == null) {
-            this.log.error("No site associated with domain " +
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "bss.sites table.");
-            return;
-        }
-
-        String institution = site.getName();
-        if (institution == null) {
-            this.log.error("No institution associated with domain " +
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "aaa.institution and bss.sites table.");
-            return;
-        }
-*/
+        
         /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -379,11 +327,9 @@ public class ReservationManager {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("fail", true);
         jobDataMap.put("gri", gri);
-        //jobDataMap.put("institution", institution);
-        jobDataMap.put("pathInfo", pathInfo);
-        jobDataMap.put("errorSrc", errorSrc);
-        jobDataMap.put("errorCode", errorCode);
-        jobDataMap.put("errorMsg", errorMsg);
+        jobDataMap.put("errorSource", event.getSource());
+        jobDataMap.put("errorCode", event.getErrorCode());
+        jobDataMap.put("errorMsg", event.getErrorMessage());
         jobDetail.setJobDataMap(jobDataMap);
         try {
             sched.addJob(jobDetail, false);
@@ -422,8 +368,7 @@ public class ReservationManager {
      */
     public void submitCancel(Reservation resv, String loginConstraint,
                         String login, String institution) throws BSSException {
-        String gri = resv.getGlobalReservationId();
-        String status = this.se.getStatus(resv);
+        String status = StateEngine.getStatus(resv);
 
         //can't cancel a reservation in a terminal state
         if (StateEngine.CANCELLED.equals(status) ||
@@ -562,17 +507,17 @@ public class ReservationManager {
             throw new BSSException(errorMsg.toString());
         }
 
-        if(StateEngine.INMODIFY.equals(this.se.getStatus(persistentResv))){
+        if(StateEngine.INMODIFY.equals(StateEngine.getStatus(persistentResv))){
             throw new BSSException("Cannot modify reservation because it is " +
                                     "already being modified.");
         }
-        this.se.canUpdateStatus(persistentResv, StateEngine.INMODIFY);
+        StateEngine.canUpdateStatus(persistentResv, StateEngine.INMODIFY);
         if (resv.getStartTime() > resv.getEndTime()) {
             throw new BSSException("Cannot modify: start time after end time!");
         }
 
         //Schedule job
-        HashMap resvMap = HashMapTypeConverter.reservationToHashMap(resv);
+        HashMap<String, String[]> resvMap = HashMapTypeConverter.reservationToHashMap(resv);
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "submitModify-"+resv.hashCode();
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", ModifyReservationJob.class);
@@ -592,7 +537,7 @@ public class ReservationManager {
             throw new BSSException(ex);
         }
         int localStatus = 0;
-        if (this.se.getStatus(persistentResv).equals(StateEngine.ACTIVE)) {
+        if (StateEngine.getStatus(persistentResv).equals(StateEngine.ACTIVE)) {
             localStatus = StateEngine.MODIFY_ACTIVE;
         }
         this.se.updateStatus(persistentResv, StateEngine.INMODIFY);
@@ -631,7 +576,11 @@ public class ReservationManager {
         // this will throw an exception if modification isn't possible
         // Note that for now, the paths are not allowed to change and any arguments
         // are ignored.
-        this.pathMgr.calculatePaths(resv);
+        resv.setPath(persistentResv.getPath(PathType.INTERDOMAIN));
+        resv.setPath(persistentResv.getPath(PathType.LOCAL));
+        
+        //Just check oversubscription since we can't recalculate the path
+        this.pathMgr.checkOversubscription(resv);
         this.log.info("modify.finish");
     }
 
@@ -722,7 +671,6 @@ public class ReservationManager {
                 patterns.put(id, Pattern.compile(".*" + id + ".*"));
             }
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
-            boolean found = false;
             for (Reservation rsv : reservations) {
                 Path localPath = rsv.getPath(PathType.LOCAL);
                 Path interdomainPath = rsv.getPath(PathType.INTERDOMAIN);
@@ -796,31 +744,51 @@ public class ReservationManager {
      *
      * @param resv reservation to be stored in database
      */
-    public void finalizeResv(Reservation resv, boolean confirm, Path fromForwardResponse)
+    public void finalizeResv(Reservation resv, boolean confirm, Path pathFromNeighbor)
             throws BSSException {
 
         /* if user signaled and last domain create token, otherwise store
            token returned in confirm message */
-        if (confirm) {
-            // FIXME: token code is broken
-            /* if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
-                this.generateToken(forwardReply, resv);
-            } */
-            this.pathMgr.finalizeVlanTags(resv, fromForwardResponse);
-        }
-
-        // Update interdomain path:
         Path interdomainPath = resv.getPath(PathType.INTERDOMAIN);
-
-        // Note: we can do setPathElems here, because the previous INTERDOMAIN path
-        // has not been persisted yet.
-
-        // FIXME: the above is almost certainly wrong; the reservation and its attached
-        // paths are flushed during checkOversubscribed() -- haniotak
-
-
-        // interdomainPath.setPathElems(fromForwardResponse.getPathElems());
-
+        List<PathElem> interPathElems = interdomainPath.getPathElems();
+        
+        if (confirm) {
+            this.pathMgr.finalizeVlanTags(resv, pathFromNeighbor);
+        }
+        
+        //If local reservation then nothing left to do
+        if(pathFromNeighbor == null){
+            return;
+        }
+        
+        //Path from neighbor should always be the same size or bigger
+        List<PathElem> neighborElems = pathFromNeighbor.getPathElems();
+        if(neighborElems.size() < interPathElems.size()){
+            throw new BSSException("Confirmed path from neighbor contains " +
+                        "less hops than path in database");
+        }else if(neighborElems.size() != interPathElems.size()){
+            throw new BSSException("Completed path and store path do not " +
+                            "have a equal number of hops");
+        }
+        
+        //update hops before the path (but never need to add any)
+        for(int i = 0; i < neighborElems.size(); i++){
+            PathElem neighborElem = neighborElems.get(i);
+            if(i > interPathElems.size()){
+                interPathElems.add(neighborElem);
+                continue;
+            }
+            
+            PathElem interPathElem = interPathElems.get(i);
+            //use startsWith to support domain/node/port/linkId
+            if(neighborElem.getUrn().startsWith(interPathElem.getUrn())){
+                interPathElem.setUrn(neighborElem.getUrn());
+                PathElem.copyPathElemParams(interPathElem, neighborElem, null);
+            }else{
+                //more hops but this one does not match -add and continue
+                interPathElems.add(i, neighborElem);
+            }
+        }
     }
 
     /**

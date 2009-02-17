@@ -119,8 +119,7 @@ public class EventProducer{
         // this is how you schedule a job for immediate execution
         String triggerId = "notify-"+event.hashCode();
         Trigger trigger = new SimpleTrigger(triggerId, "NOTIFY", new Date());
-
-
+        
         //TODO:Handle exception better
         try {
             sched.scheduleJob(jobDetail, trigger);

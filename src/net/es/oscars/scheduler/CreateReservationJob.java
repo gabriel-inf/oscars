@@ -10,9 +10,7 @@ import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.bss.events.*;
 import net.es.oscars.pss.*;
-import net.es.oscars.ws.*;
 import net.es.oscars.PropHandler;
 
 public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
@@ -40,6 +38,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri =  dataMap.getString("gri");
+        Path path = (Path) dataMap.get("path");
         this.log.debug("GRI is: "+dataMap.get("gri")+"for job name: "+jobName);
         this.init();
 
@@ -67,11 +66,9 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             if (dataMap.containsKey("start")) {
                 this.start(resv);
             } else if(dataMap.containsKey("confirm")) {
-                // FIXME: make sure NULL is correct and that we can handle it
-                this.confirm(resv, null);
+                this.confirm(resv, path);
             } else if(dataMap.containsKey("complete")) {
-                // FIXME: make sure NULL is correct and that we can handle it
-                this.complete(resv, null);
+                this.complete(resv, path);
             } else if(dataMap.containsKey("fail")) {
                 String code = dataMap.getString("errorCode");
                 String msg = dataMap.getString("errorMsg");
@@ -185,9 +182,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 // this will also finalize & store
                 this.confirm(resv, null);
             } else {
-                boolean replyPresent = forwarder.create(resv);
-                // TODO:  decide what to do with
-                // rm.finalizeResv(resv, false, fromForwardResponse);
+                forwarder.create(resv);
                 rm.store(resv);
                 this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
             }
@@ -209,7 +204,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
      * @param resv partially completed reservation instance
      * @throws BSSException
      */
-    public void confirm(Reservation resv, Path fromForwardResponse)
+    public void confirm(Reservation resv, Path confirmedPath)
             throws BSSException {
 
         this.log.debug("confirm.start");
@@ -217,16 +212,17 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         EventProducer eventProducer = new EventProducer();
 
         String login = resv.getLogin();
-        rm.finalizeResv(resv, true, fromForwardResponse);
+        rm.finalizeResv(resv, true, confirmedPath);
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);
 
         // Get the next domain from the INTERDOMAIN path, the interdomain pathfinder
         // should have populated that field.
-        Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
-        if (nextDomain == null || nextDomain.isLocal()) {
-            this.complete(resv, fromForwardResponse);
+        Link firstLink= resv.getPath(PathType.INTERDOMAIN).getPathElems().get(0).getLink();
+        if (firstLink != null && 
+                firstLink.getPort().getNode().getDomain().isLocal()) {
+            this.complete(resv, confirmedPath);
         } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
@@ -240,7 +236,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
      * @param resv reservation instance to be completed
      * @throws BSSException
      */
-    public void complete(Reservation resv, Path fromForwardResponse)
+    public void complete(Reservation resv, Path completedPath)
             throws BSSException {
 
         this.log.debug("complete.start");
@@ -248,7 +244,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         EventProducer eventProducer = new EventProducer();
         String login = resv.getLogin();
 
-        rm.finalizeResv(resv, false,fromForwardResponse);
+        rm.finalizeResv(resv, false,completedPath);
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         this.se.updateStatus(resv, StateEngine.RESERVED);

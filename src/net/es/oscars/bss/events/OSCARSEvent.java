@@ -16,6 +16,9 @@ public class OSCARSEvent implements Serializable{
     private String errorCode;
     private String errorMessage;
     private HashMap<String, String[]> reservationParams;
+    private Reservation reservation;
+    private String producerUrl;
+    private String subscriptionId;
     private String source;
     
     public static String RESV_CREATE_RECEIVED = "RESERVATION_CREATE_RECEIVED";
@@ -219,7 +222,8 @@ public class OSCARSEvent implements Serializable{
     }
 
     /**
-     * Sets the reservation affected by this event
+     * Set reservationParams if you want a snapshot of a reservation 
+     * at the time an event happened.
      *
      * @param reservationParams the reservation parameters to set
      */
@@ -234,5 +238,50 @@ public class OSCARSEvent implements Serializable{
      */
     public HashMap<String, String[]> getReservationParams(){
         return this.reservationParams;
+    }
+
+    /**
+     * Set reservation if you received an event and want an easy
+     * way to read the fields.
+     * 
+     * @return the reservation
+     */
+    public Reservation getReservation() {
+        return this.reservation;
+    }
+
+    /**
+     * @param reservation the reservation to set
+     */
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
+
+    /**
+     * @return the producerUrl
+     */
+    public String getProducerUrl() {
+        return this.producerUrl;
+    }
+
+    /**
+     * @param producerUrl the producerUrl to set
+     */
+    public void setProducerUrl(String producerUrl) {
+        this.producerUrl = producerUrl;
+    }
+
+    /**
+     * @return the producerId
+     */
+    public String getSubscriptionId() {
+        return this.subscriptionId;
+    }
+
+    /**
+     * @param producerId the producerId to set
+     */
+    public void setSubscriptionId(String subscriptionId) {
+        this.subscriptionId = subscriptionId;
     }
 }

@@ -41,11 +41,11 @@ public class ModifyReservation extends HttpServlet {
             return;
         }
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        JSONObject jsonObject = JSONObject.fromObject(outputMap);
         outputMap.put("status", "modified reservation with GRI " +
                                 resv.getGlobalReservationId());
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
+        JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("{}&&" + jsonObject);
         this.log.info(methodName + ":end");
     }

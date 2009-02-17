@@ -24,17 +24,15 @@ import org.apache.ws.security.WSConstants;
 
 import org.apache.log4j.*;
 import org.oasis_open.docs.wsn.b_2.*;
-import org.w3.www._2005._08.addressing.*;
+import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 import net.es.oscars.wsdlTypes.*;
 
-import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.L2SwitchingCapType;
 
 import net.es.oscars.rmi.bss.BssRmiInterface;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.rmi.notifybroker.NotifyRmiInterface;
 import net.es.oscars.rmi.RmiUtils;
 
 
@@ -480,16 +478,33 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param request the Notify message
      */
     public void Notify(Notify request){
-        this.log.info("Received Notify");
+        this.log.debug("Received Notify");
+        BssRmiInterface bssRmiClient = null;
+        try {
+            bssRmiClient = RmiUtils.getBssRmiClient("HandleEvent", log);
+        } catch (RemoteException ex) {
+            this.log.error(ex.getMessage());
+            return;
+        }
         NotificationMessageHolderType[] holders = request.getNotificationMessage();
         for(NotificationMessageHolderType holder : holders){
+            EndpointReferenceType prodRef = holder.getProducerReference();
+            EndpointReferenceType subscrRef = holder.getSubscriptionReference();
+            if(subscrRef.getReferenceParameters() == null){
+                this.log.error("No ReferenceParameters provided in SubscriptionReference");
+                return;
+            }
+            
+            String producerUrl = prodRef.getAddress().toString();
+            String subscriptionId = subscrRef.getReferenceParameters().getSubscriptionId();
             MessageType message = holder.getMessage();
             OMElement[] omEvents = message.getExtraElement();
             for(OMElement omEvent : omEvents){
                 try{
                     EventContent event = EventContent.Factory.parse(omEvent.getXMLStreamReaderWithoutCaching());
-                    String eventType = event.getType();
-                    this.log.info("Event Type=" + eventType);
+                    this.log.debug("Event Type=" + event.getType());
+                    bssRmiClient.handleEvent(WSDLTypeConverter.getOSCARSEvent(
+                            event, producerUrl, subscriptionId));
                 }catch(Exception e){ 
                     this.log.error(e.getMessage());
                     continue;

@@ -6,6 +6,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.wsdlTypes.GetTopologyContent;
 import net.es.oscars.wsdlTypes.GetTopologyResponseContent;
 import net.es.oscars.rmi.bss.xface.*;
@@ -81,7 +82,7 @@ public interface BssRmiInterface extends Remote {
     public Reservation
         modifyReservation(Reservation resv, String userName)
             throws IOException, RemoteException;
-
+    
     /**
      * Gets network topology.
      *
@@ -140,6 +141,13 @@ public interface BssRmiInterface extends Remote {
     public String
         teardownPath(RmiPathRequest request, String userName)
             throws IOException, RemoteException;
+    
+    /**
+     * Handles an event received from another IDC
+     * 
+     * @param event the event received from another IDC
+     */
+    public void handleEvent(OSCARSEvent event) throws RemoteException;
 
     /**
      * Immediately creates reservation circuit given information from client.

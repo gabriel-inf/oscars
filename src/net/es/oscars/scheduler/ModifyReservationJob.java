@@ -2,9 +2,7 @@ package net.es.oscars.scheduler;
 
 import java.util.Properties;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Date;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -13,10 +11,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.ws.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.bss.events.*;
 import net.es.oscars.PropHandler;
 
 public class ModifyReservationJob extends ChainingJob implements Job {
@@ -219,29 +214,13 @@ public class ModifyReservationJob extends ChainingJob implements Job {
             throws BSSException, UnknownHostException {
         this.log.debug("confirm.start");
         EventProducer eventProducer = new EventProducer();
-        String bssDbName = this.core.getBssDbName();
-        Path path = resv.getPath(PathType.INTERDOMAIN);
         int localStatus = StateEngine.getLocalStatus(resv) + 1;
         this.se.updateLocalStatus(resv, localStatus);
         eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_CONFIRMED, login, "JOB", resv);
 
-        /* Not guaranteed interdomain path so try finding src */
-        String src = "";
-        if(path.getLayer2Data() != null){
-            src = path.getLayer2Data().getSrcEndpoint();
-        }else if(path.getLayer3Data() != null){
-            src = path.getLayer3Data().getSrcHost();
-            src = InetAddress.getByName(src).getHostAddress();
-            IpaddrDAO ipaddrDAO = new IpaddrDAO(bssDbName);
-            Ipaddr ip = ipaddrDAO.queryByParam("IP", src);
-            src = ip.getLink().getFQTI();
-        }else{
-            throw new BSSException("Cannot find src endpoint for reservation");
-        }
-        DomainDAO domainDAO = new DomainDAO(bssDbName);
-        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(src);
-        String srcDomainId = parseResults.get("domainId");
-        if (domainDAO.isLocal(srcDomainId)) {
+        Link firstLink= resv.getPath(PathType.INTERDOMAIN).getPathElems().get(0).getLink();
+        if (firstLink != null && 
+                firstLink.getPort().getNode().getDomain().isLocal()) {
             this.complete(resv, login);
         } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
@@ -332,7 +311,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
      * @param map a HashMap with parameters to initialize reservation
      * @return resv the converted Reservation
      */
-    private static Reservation hashMapToReservation(HashMap<String, String[]> map){
+    private Reservation hashMapToReservation(HashMap<String, String[]> map){
         Reservation resv = new Reservation();
         if (map == null) {
             return resv;

@@ -66,11 +66,9 @@ public class PathManager {
             this.log.error(ex.getMessage());
             throw new BSSException(ex.getMessage());
         }
-        ReservationDAO dao = new ReservationDAO(this.dbname);
-        List<Reservation> reservations =
-            dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, resv);
-
+        
+        this.checkOversubscription(resv);
+        
         Domain nextDomain = interdomainPath.getNextDomain();
         if (nextDomain != null) {
             this.log.info("create.finish, next domain: " + nextDomain.getUrl());
@@ -78,7 +76,14 @@ public class PathManager {
             this.log.info("create.finish, reservation terminates in this domain");
         }
     }
-
+    
+    public void checkOversubscription(Reservation resv) throws BSSException{
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        List<Reservation> reservations =
+            dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
+        this.policyMgr.checkOversubscribed(reservations, resv);
+    }
+    
     private void resolveRequestedPath(Reservation resv) throws BSSException {
         Path requestedPath = resv.getPath(PathType.REQUESTED);
         String errMsg = "";

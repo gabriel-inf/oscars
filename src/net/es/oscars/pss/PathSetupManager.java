@@ -9,7 +9,6 @@ import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.scheduler.*;
 
 
@@ -107,22 +106,23 @@ public class PathSetupManager{
         try{
             se.updateStatus(resv, StateEngine.INSETUP);
             /* Get next domain */
-            Domain nextDomain = resv.getPath(PathType.LOCAL).getNextDomain();
+            Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
             if(nextDomain == null){
-                this.updateCreateStatus(2, resv);
+                //no next domain so we don't need to wait for downstream confirmation
+                this.updateCreateStatus(StateEngine.DOWN_CONFIRMED, resv);
             }else{
                 this.scheduleStatusCheck(SETUP_CONFIRM_TIMEOUT, resv, "setup", false);
             }
             
             /* Get previous domain */
-            // INTERDOMAIN
             PathElem firstElem= resv.getPath(PathType.INTERDOMAIN).getPathElems().get(0);
             Domain firstDomain = null;
             if(firstElem != null && firstElem.getLink() != null){
                 firstDomain = firstElem.getLink().getPort().getNode().getDomain();
             }
-            if(firstDomain == null || firstDomain.isLocal()){
-                this.updateCreateStatus(4, resv);
+            if(firstDomain != null && firstDomain.isLocal()){
+                //no previous domain so we don't need to wait for upstream confirmation
+                this.updateCreateStatus(StateEngine.UP_CONFIRMED, resv);
             }else{
                 this.scheduleStatusCheck(SETUP_CONFIRM_TIMEOUT, resv, "setup", true);
             }
@@ -150,7 +150,6 @@ public class PathSetupManager{
                     InterdomainException{
         String status = null;
         boolean stillActive = false;
-        String errorMsg = null;
         String gri = resv.getGlobalReservationId();
         Forwarder forwarder = new Forwarder();
         boolean replyPresent = false;
@@ -168,8 +167,6 @@ public class PathSetupManager{
         }catch(Exception e){
             this.log.error("Reservation " + gri + " path failure. " +
                 "Sending teardownPath. Reason: " + e.getMessage());
-            errorMsg = "A path failure has occurred. The path is no " +
-                "longer active. Reason: " + e.getMessage();
         }
 
         /* Forward to next domain */
@@ -274,7 +271,6 @@ public class PathSetupManager{
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
         ReservationManager rm = this.core.getReservationManager();
-        StateEngine se = this.core.getStateEngine();
         int newLocalStatus = upstream ? StateEngine.UP_CONFIRMED : StateEngine.DOWN_CONFIRMED;
         String op = "setup";
         if(targStatus.equals(StateEngine.INTEARDOWN)){
@@ -301,29 +297,9 @@ public class PathSetupManager{
                            neighborDomain.getTopologyIdent() + " so discarding");
             return;
         }
-        // TODO see if this needs to be fixed
-        /* Get the institution 
-        Site site = neighborDomain.getSite();
-        if(site == null){
-            this.log.error("No site associated with domain " +  
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "bss.sites table.");
-            return;
-        }
-        
-        String institution = site.getName();
-        if(institution == null){
-            this.log.error("No institution associated with domain " +  
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "aaa.institution and bss.sites table.");
-            return;
-        }
-        */
         
         //check if in cancel state
-        int localStatus = se.getLocalStatus(resv);
+        int localStatus = StateEngine.getLocalStatus(resv);
         if((localStatus & StateEngine.NEXT_STATUS) == StateEngine.NEXT_STATUS_CANCEL){
             //ignore and wait for cancel event
             return;
@@ -377,30 +353,10 @@ public class PathSetupManager{
                            " in the path");
             return;
         }
-        // TODO see if this needs to be fixed
-        /* Get the institution 
-        Site site = neighborDomain.getSite();
-        if(site == null){
-            this.log.error("No site associated with domain " +  
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "bss.sites table.");
-            return;
-        }
         
-        String institution = site.getName();
-        if(institution == null){
-            this.log.error("No institution associated with domain " +  
-                           neighborDomain.getTopologyIdent() + ". Please specify" +
-                           " institution associated with domain in your " +
-                           "aaa.institution and bss.sites table.");
+        if(StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
+            this.log.warn("Reservation " + gri + " already failed so skipping.");
             return;
-        }
-        */
-
-		if(StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
-        	this.log.warn("Reservation " + gri + " already failed so skipping.");
-        	return;
         }
         
         eventProducer.addEvent(failedType, login, errorSrc, resv, errorCode, errorMsg);
@@ -424,14 +380,14 @@ public class PathSetupManager{
      */
      synchronized public void updateCreateStatus(int newLocalStatus, Reservation resv) throws BSSException{
         StateEngine se = this.core.getStateEngine();
-        int localStatus = se.getLocalStatus(resv);
+        int localStatus = StateEngine.getLocalStatus(resv);
         if((newLocalStatus & localStatus) == 1){
             throw new BSSException("Already set local status bit " + newLocalStatus);
         }
         this.log.debug("create.newLocalStatus=" + newLocalStatus);
         this.log.debug("create.oldLocalStatus=" + localStatus);
         se.updateLocalStatus(resv, localStatus + newLocalStatus);
-        localStatus = se.getLocalStatus(resv);
+        localStatus = StateEngine.getLocalStatus(resv);
         String login = resv.getLogin();
         EventProducer eventProducer = new EventProducer();
         
@@ -469,14 +425,14 @@ public class PathSetupManager{
      */
      synchronized public void updateTeardownStatus(int newLocalStatus, Reservation resv) throws BSSException{
         StateEngine se = this.core.getStateEngine();
-        int localStatus = se.getLocalStatus(resv);
+        int localStatus = StateEngine.getLocalStatus(resv);
         if((newLocalStatus & localStatus) == 1){
             throw new BSSException("Already set local status bit " + newLocalStatus);
         }
-        if(!se.getStatus(resv).equals(StateEngine.FAILED)){
+        if(!StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
             se.updateLocalStatus(resv, localStatus + newLocalStatus);
         }
-        localStatus = se.getLocalStatus(resv);
+        localStatus = StateEngine.getLocalStatus(resv);
         String login = resv.getLogin();
         EventProducer eventProducer = new EventProducer();
         int newStatusBits = (localStatus >> 3) & 255;
@@ -582,7 +538,6 @@ public class PathSetupManager{
      */
      public void scheduleStatusCheck(long timeout, Reservation resv, String op, boolean upstream){
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        StateEngine se = this.core.getStateEngine();
         String prefix = op + (upstream?"-up-":"-down-");
         String triggerName = prefix + "pathTimeoutTrig-" + resv.hashCode();
         String jobName = prefix + "pathTimeoutJob-" + resv.hashCode();
@@ -595,7 +550,7 @@ public class PathSetupManager{
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
         dataMap.put("gri", resv.getGlobalReservationId());
-        dataMap.put("status", se.getStatus(resv));
+        dataMap.put("status", StateEngine.getStatus(resv));
         dataMap.put("newLocalStatus", 0);//unused
         dataMap.put("retries", 0);//unused
         dataMap.put("op", op);

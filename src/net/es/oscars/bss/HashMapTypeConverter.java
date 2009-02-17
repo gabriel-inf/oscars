@@ -126,15 +126,10 @@ public class HashMapTypeConverter {
 
         ArrayList<String> pathHopInfo = new ArrayList<String>();
         for (PathElem pathElem: pathElems) {
-            Link link = pathElem.getLink();
-            if (link != null) {
-                String linkId = link.getFQTI();
-                pathListStr.add(linkId);
-                pathHopInfo.add(getPathElemInfo(pathElem));
-                map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
-            } else {
-                log.error("Could not locate a link for pathElem, id: "+pathElem.getId());
-            }
+            String linkId = pathElem.getUrn();
+            pathListStr.add(linkId);
+            pathHopInfo.add(getPathElemInfo(pathElem));
+            map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
         }
         if (path.getPathType().equals(PathType.LOCAL)) {
             map.put("intradomainPath", pathListStr.toArray(new String[pathListStr.size()]));
@@ -205,7 +200,7 @@ public class HashMapTypeConverter {
             return map;
         }
 
-        String linkId = elem.getLink().getFQTI();
+        String linkId = elem.getUrn();
         // FIXME:  this was originally ingress, egress, or NULL, linkDescr
         // meant instead?
         // String descr = elem.getDescription();

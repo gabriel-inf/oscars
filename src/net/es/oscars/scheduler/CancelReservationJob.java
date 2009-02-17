@@ -1,7 +1,6 @@
 package net.es.oscars.scheduler;
 
 import java.util.*;
-import java.net.InetAddress;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
@@ -9,11 +8,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.ws.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.bss.events.*;
-import net.es.oscars.pss.*;
 import net.es.oscars.PropHandler;
 
 public class CancelReservationJob  extends ChainingJob  implements Job {
@@ -65,8 +60,8 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
             }else if(dataMap.containsKey("fail")){
                 this.fail(resv, login, dataMap);
             }else if(dataMap.containsKey("statusCheck")){
-               String status = this.se.getStatus(resv);
-                int localStatus = this.se.getLocalStatus(resv);
+               String status = StateEngine.getStatus(resv);
+                int localStatus = StateEngine.getLocalStatus(resv);
                 if(status.equals(dataMap.getString("status")) && 
                     localStatus == dataMap.getInt("localStatus")){
                     String op = ((localStatus & StateEngine.CONFIRMED) == StateEngine.CONFIRMED ? 
@@ -149,8 +144,8 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
     public void start(Reservation resv, String login) throws BSSException, InterdomainException{
         this.log.debug("start.start");
         EventProducer eventProducer = new EventProducer();
-        String status = this.se.getStatus(resv);
-        int localStatus = this.se.getLocalStatus(resv);
+        String status = StateEngine.getStatus(resv);
+        int localStatus = StateEngine.getLocalStatus(resv);
         Forwarder forwarder = null;
         boolean replyPresent = false;
         
@@ -186,7 +181,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         if(!replyPresent){
             this.confirm(resv, login, true);
         }else{
-            this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
+            this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
         }
         this.log.debug("start.end");
     }
@@ -197,7 +192,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         if(doCancel){
             ReservationManager rm = this.core.getReservationManager();
             rm.cancel(resv);
-            String status = this.se.getStatus(resv);
+            String status = StateEngine.getStatus(resv);
             if(status.equals(StateEngine.CANCELLED)){
                 //if was cancelled then complete immediately
                 eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_CONFIRMED, 
@@ -215,7 +210,9 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_CONFIRMED, 
                                login, "JOB", resv);
         
-        if(this.isFirstDomain(resv)){
+        Link firstLink = resv.getPath(PathType.INTERDOMAIN).getPathElems().get(0).getLink();
+        if (firstLink != null && 
+                firstLink.getPort().getNode().getDomain().isLocal()){
             this.complete(resv, login);
         }else{
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
@@ -240,7 +237,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         String code = dataMap.getString("errorCode");
         String msg = dataMap.getString("errorMsg");
         String src = dataMap.getString("errorSource");
-        int localStatus = this.se.getLocalStatus(resv);
+        int localStatus = StateEngine.getLocalStatus(resv);
         if((localStatus & StateEngine.CONFIRMED) == StateEngine.CONFIRMED){
             //set to failed if already been confirmed
             this.se.updateStatus(resv, StateEngine.FAILED);
@@ -249,34 +246,6 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login,
                               src, resv, code, msg);
         this.log.debug("fail.end");
-    }
-   
-    public boolean isFirstDomain(Reservation resv) throws BSSException{
-        /* Not guaranteed interdomain path so try finding src */
-        Path path = resv.getPath(PathType.LOCAL);
-        String src = "";
-        String bssDbName = this.core.getBssDbName();
-        
-        if(path.getLayer2Data() != null){
-            src = path.getLayer2Data().getSrcEndpoint();
-        }else if(path.getLayer3Data() != null){
-            src = path.getLayer3Data().getSrcHost();
-            try{
-                src = InetAddress.getByName(src).getHostAddress();
-            }catch(Exception e){
-                e.printStackTrace();
-                throw new BSSException(e);
-            }
-            IpaddrDAO ipaddrDAO = new IpaddrDAO(bssDbName);
-            Ipaddr ip = ipaddrDAO.queryByParam("IP", src);
-            src = ip.getLink().getFQTI();
-        }else{
-            throw new BSSException("Cannot find src endpoint for reservation");
-        }
-        DomainDAO domainDAO = new DomainDAO(bssDbName);
-        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(src);
-        String srcDomainId = parseResults.get("domainId");
-        return domainDAO.isLocal(srcDomainId);
     }
     
     /**
@@ -297,8 +266,8 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
         dataMap.put("gri", resv.getGlobalReservationId());
-        dataMap.put("status", this.se.getStatus(resv));
-        dataMap.put("localStatus", this.se.getLocalStatus(resv));
+        dataMap.put("status", StateEngine.getStatus(resv));
+        dataMap.put("localStatus", StateEngine.getLocalStatus(resv));
         jobDetail.setJobDataMap(dataMap);
         try{
             this.log.debug("Adding job " + jobName);

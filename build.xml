@@ -131,7 +131,8 @@
                 includes="**/oscars/*.class, **/oscars/database/HibernateBean.class,
                           **/oscars/bss/*.class, **/oscars/bss/topology/*.class,
                           **/oscars/aaa/*.class, **/oscars/servlets/**/*.class,
-                          **/oscars/wsdlTypes/GetTopology*.class, *.properties"
+                          **/oscars/wsdlTypes/GetTopology*.class, 
+                          **/oscars/bss/events/OSCARSEvent*.class, *.properties"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager.class,
                           **/oscars/bss/*DAO.class, **/oscars/bss/*Manager.class,
@@ -175,7 +176,8 @@
 
                 includes="**/oscars/*.class, **/ws/*.class, **/oscars/wsdlTypes/*.class,
                           **/oscars/aaa/*.class, **/oscars/bss/*.class, **/oscars/bss/topology/*.class
-                          **/oscars/database/HibernateBean.class, **/org/**/*.class"
+                          **/oscars/database/HibernateBean.class, **/org/**/*.class,
+                          **/oscars/bss/events/OSCARSEvent*.class,"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager*.class,
                           **/oscars/bss/*DAO.class, **/oscars/bss/*Manager*.class,
