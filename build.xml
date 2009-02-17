@@ -437,7 +437,7 @@
             <zipfileset dir="examples/javaClients" includes="example.l2.properties, example.l3.properties, run.sh" prefix="OSCARS-client-api/examples"/>
             <zipfileset dir="examples/javaClients" includes="*.java" excludes="InitiateTopologyPullClient.java" prefix="OSCARS-client-api/examples/src"/>
             <zipfileset dir="examples/javaClients/repo" includes="*.*" prefix="OSCARS-client-api/examples/repo"/>
-            <zipfileset dir="lib" includes="jdom*" prefix="OSCARS-client-api/lib"/>
+            <zipfileset dir="lib" includes="jdom*, perfsonar*.jar" prefix="OSCARS-client-api/lib"/>
             <zipfileset dir="conf" includes="rampart-SNAPSHOT.mar" prefix="OSCARS-client-api/examples/repo/modules"/>
         </zip>
     </target>
