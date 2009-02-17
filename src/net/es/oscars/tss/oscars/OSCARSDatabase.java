@@ -4,16 +4,12 @@ import net.es.oscars.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.tss.*;
-import net.es.oscars.wsdlTypes.*;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
 
 import org.jdom.*;
 
-import org.apache.axiom.om.*;
-
-import org.ogf.schema.network.topology.ctrlplane.*;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneAddressContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
@@ -21,7 +17,6 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 
-import java.sql.Time;
 import java.util.*;
 
 
@@ -203,7 +198,7 @@ public class OSCARSDatabase implements TEDB {
                 port.addLink(link);
                 link.setId(linkXML.getAttributeValue("id"));
                 this.log.debug("link:"+link.getId());
-                
+
                 Element remLinkXML = linkXML.getChild("remoteLinkId", ns);
                 if (remLinkXML != null) {
                   String remLinkId = remLinkXML.getValue();
