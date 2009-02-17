@@ -863,9 +863,10 @@ public class ReservationManager {
     public Domain endPointDomain(Reservation resv, Boolean source) throws BSSException {
         Path path = resv.getPath(PathType.LOCAL);
         if (path == null ){
-            this.log.error ( "no LOCAL path found, trying requested path" );
+            this.log.info ( "no LOCAL path found, trying requested path" );
             path = resv.getPath(PathType.REQUESTED);
             if (path == null) {
+                this.log.warn ("neither LOCAL or REQUESTED path found in endPointDomain " + resv.getGlobalReservationId());
                 throw new BSSException("no path found for reservation in endPointDomain: " +resv.getGlobalReservationId());
             }
         }
@@ -877,12 +878,12 @@ public class ReservationManager {
             hop = hops.get(hops.size()-1);
         }
         if (hop ==  null) {
-            this.log.error("no hops found for source " + source + "path id " + path.getId());
+            this.log.warn("no hops found for source " + source + "path id " + path.getId());
             throw new BSSException("no first or last hop found in endPointDomain");
         }
         Link endPoint = hop.getLink();
         if (endPoint ==  null) {
-            this.log.error("no link found for hop source " + source + "hop id " + hop.getId());
+            this.log.warn("no link found for hop source " + source + "hop id " + hop.getId());
             throw new BSSException("no first or last link found in endPointDomain");
         }
         Link remoteLink = endPoint.getRemoteLink();
@@ -931,7 +932,7 @@ public class ReservationManager {
        try {
            resv = resvDAO.query(gri);
        } catch ( BSSException e ){
-           this.log.error("No reservation matches gri: " + gri);
+           this.log.info("No reservation matches gri: " + gri);
            throw new BSSException("No reservations match request");
        }
        
@@ -943,7 +944,7 @@ public class ReservationManager {
        myResv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);
        if (myResv == null) {
            if (institutionConstraint == null) {
-               this.log.error("No reservation matches gri: " + gri + " login: " +
+               this.log.info("No reservation matches gri: " + gri + " login: " +
                        loginConstraint);
                throw new BSSException("No reservations match request");
            } else {
