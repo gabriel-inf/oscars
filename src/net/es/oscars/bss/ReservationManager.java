@@ -927,17 +927,20 @@ public class ReservationManager {
            this.log.error("loginConstraint must be set when institutionConstraint is set");
            throw new BSSException("invalid arguments to queryReservation: loginConstraint must be set when institutionConstraint is set");
        }
-
-       if (loginConstraint == null ) {
-           try {
-               resv = resvDAO.query(gri);
-           } catch ( BSSException e ){
-               this.log.error("No reservation matches gri: " + gri);
-               throw new BSSException("No reservations match request");
-           }
-       } else {
-           myResv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);
+       
+       try {
+           resv = resvDAO.query(gri);
+       } catch ( BSSException e ){
+           this.log.error("No reservation matches gri: " + gri);
+           throw new BSSException("No reservations match request");
        }
+       
+       //user with no constraints so return the reservation
+       if (loginConstraint == null ) {
+           return resv;
+       }
+       
+       myResv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);
        if (myResv == null) {
            if (institutionConstraint == null) {
                this.log.error("No reservation matches gri: " + gri + " login: " +
