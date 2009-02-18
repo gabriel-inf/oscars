@@ -295,7 +295,7 @@ public class ReservationAdapter {
                BssRmiInterface rmiClient) throws BSSException {
 
         this.log.info("createPath.start");
-        CreatePathResponseContent reply = null;
+        CreatePathResponseContent reply = new CreatePathResponseContent();
         RmiPathRequest rmiRequest = new RmiPathRequest();
         String gri = soapParams.getGlobalReservationId();
         rmiRequest.setGlobalReservationId(gri);
@@ -326,7 +326,7 @@ public class ReservationAdapter {
                BssRmiInterface rmiClient) throws BSSException {
 
         this.log.info("refreshPath.start");
-        RefreshPathResponseContent reply = null;
+        RefreshPathResponseContent reply = new RefreshPathResponseContent();
         RmiPathRequest rmiRequest = new RmiPathRequest();
         String gri = soapParams.getGlobalReservationId();
         rmiRequest.setGlobalReservationId(gri);
@@ -357,7 +357,7 @@ public class ReservationAdapter {
                BssRmiInterface rmiClient) throws BSSException {
 
         this.log.info("teardownPath.start");
-        TeardownPathResponseContent reply = null;
+        TeardownPathResponseContent reply = new TeardownPathResponseContent();
         RmiPathRequest rmiRequest = new RmiPathRequest();
         String gri = soapParams.getGlobalReservationId();
         rmiRequest.setGlobalReservationId(gri);
