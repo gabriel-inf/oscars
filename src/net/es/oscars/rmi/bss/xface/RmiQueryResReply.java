@@ -15,7 +15,10 @@ public class RmiQueryResReply implements Serializable {
     // reservation, if any, matching request
     private Reservation reservation;
 
-    private boolean internalPathAuthorized;  // whether to display internal path
+    // whether to display internal path
+    private boolean internalPathAuthorized;
+
+    private String localDomain;  // local domain topology identifier
 
     public RmiQueryResReply() {
     }
@@ -46,5 +49,19 @@ public class RmiQueryResReply implements Serializable {
      */
     public void setInternalPathAuthorized(boolean auth) {
         this.internalPathAuthorized = auth;
+    }
+
+    /**
+     * @return a string with the local domain id
+     */
+    public String getLocalDomain() {
+        return this.localDomain;
+    }
+
+    /**
+     * @param localDomain a string with the local domain id
+     */
+    public void setLocalDomain(String localDomain) {
+        this.localDomain = localDomain;
     }
 }

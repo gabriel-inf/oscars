@@ -118,7 +118,12 @@ public class QueryReservationCLI {
             }
             System.out.println("Path: ");
             String output ="";
-            for (CtrlPlaneHopContent hop : path.getHop()){
+            CtrlPlaneHopContent[] hops = path.getHop();
+            if (hops == null) {
+                System.out.print(output);
+                return;
+            }
+            for (CtrlPlaneHopContent hop : hops) {
             	CtrlPlaneLinkContent link = hop.getLink();
                 if(link==null){
                     //should not happen

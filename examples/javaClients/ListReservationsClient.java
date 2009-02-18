@@ -243,7 +243,12 @@ public class ListReservationsClient extends ExampleClient {
              sb.append("LSP Class: " + mplsInfo.getLspClass() + "\n");
          }
          sb.append("Path: \n");
-         for (CtrlPlaneHopContent hop : path.getHop()) {
+         CtrlPlaneHopContent[] hops = path.getHop();
+         if (hops == null) {
+             System.out.println(sb.toString());
+             return;
+         }
+         for (CtrlPlaneHopContent hop : hops) {
             CtrlPlaneLinkContent link = hop.getLink();
             if (link==null) {
                 //should not happen

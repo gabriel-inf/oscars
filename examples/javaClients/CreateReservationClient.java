@@ -410,6 +410,9 @@ public class CreateReservationClient {
     public void outputHops(CtrlPlanePathContent path) {
         System.out.println("Path is:");
         CtrlPlaneHopContent[] hops = path.getHop();
+        if (hops == null) {
+            return;
+        }
         for (int i = 0; i < hops.length; i++) {
             // What is passed back depends on what layer information is
             // associated with a reservation.  This will be a topology

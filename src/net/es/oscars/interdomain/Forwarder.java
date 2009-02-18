@@ -279,7 +279,8 @@ public class Forwarder extends Client {
         PathInfo pathInfo = null;
         try {
             pathInfo =
-                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN, false);
+                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN, false,
+                                              null);
         } catch (BSSException e) {
             throw new InterdomainException(e.getMessage());
         }
@@ -303,7 +304,7 @@ public class Forwarder extends Client {
         PathInfo pathInfo = null;
         try {
             pathInfo =
-                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN, false);
+                WSDLTypeConverter.getPathInfo(resv, PathType.INTERDOMAIN, false, null);
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }

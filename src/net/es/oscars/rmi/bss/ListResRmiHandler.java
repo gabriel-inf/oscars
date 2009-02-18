@@ -19,6 +19,8 @@ import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.rmi.bss.xface.RmiListResRequest;
@@ -100,6 +102,8 @@ public class ListResRmiHandler {
         }
         this.log.info("initialize end");
         result.setReservations(reservations);
+        DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
+        result.setLocalDomain(domainDAO.getLocalDomain().getTopologyIdent());
         bss.getTransaction().commit();
         this.log.debug("listReservations.end");
         return result;

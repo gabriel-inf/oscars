@@ -27,8 +27,6 @@ import net.es.oscars.rmi.bss.xface.*;
  */
 public class ReservationAdapter {
     private Logger log = Logger.getLogger(ReservationAdapter.class);
-    private ReservationManager rm;
-    private String dbname;
     private static HashMap<String, String> payloadSender;
 
     /**
@@ -166,7 +164,8 @@ public class ReservationAdapter {
         }
         ResDetails reply = WSDLTypeConverter.reservationToDetails(
                                result.getReservation(),
-                               result.isInternalPathAuthorized());
+                               result.isInternalPathAuthorized(),
+                               result.getLocalDomain());
         this.log.info("QueryReservation.finish: " +
                        reply.getGlobalReservationId());
         return reply;
@@ -249,7 +248,8 @@ public class ReservationAdapter {
         ListReply reply =
            WSDLTypeConverter.reservationToListReply(
                    rmiReply.getReservations(),
-                   rmiReply.isInternalPathAuthorized());
+                   rmiReply.isInternalPathAuthorized(),
+                   rmiReply.getLocalDomain());
         this.log.info("list.finish: " + reply.toString());
         return reply;
     }

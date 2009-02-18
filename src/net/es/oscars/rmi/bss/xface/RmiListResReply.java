@@ -18,6 +18,8 @@ public class RmiListResReply implements Serializable {
 
     private boolean internalPathAuthorized;  // whether to display internal path
 
+    private String localDomain;  // local domain topology identifier
+
     public RmiListResReply() {
     }
 
@@ -47,5 +49,19 @@ public class RmiListResReply implements Serializable {
      */
     public void setInternalPathAuthorized(boolean auth) {
         this.internalPathAuthorized = auth;
+    }
+
+    /**
+     * @return a string with the local domain id
+     */
+    public String getLocalDomain() {
+        return this.localDomain;
+    }
+
+    /**
+     * @param localDomain a string with the local domain id
+     */
+    public void setLocalDomain(String localDomain) {
+        this.localDomain = localDomain;
     }
 }

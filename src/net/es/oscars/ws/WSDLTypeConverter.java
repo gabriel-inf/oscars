@@ -122,7 +122,8 @@ public class WSDLTypeConverter {
         log.debug("reservationToModReply.start");
 
         ModifyResReply reply = new ModifyResReply();
-        ResDetails details = WSDLTypeConverter.reservationToDetails(resv, false);
+        ResDetails details =
+            WSDLTypeConverter.reservationToDetails(resv, false, null);
         reply.setReservation(details);
         log.debug("reservationToModReply.end");
         return reply;
@@ -159,7 +160,8 @@ public class WSDLTypeConverter {
      * @return ResDetails instance
      */
     public static ResDetails
-        reservationToDetails(Reservation resv, boolean internalPathAuthorized)
+        reservationToDetails(Reservation resv, boolean internalPathAuthorized,
+                             String localDomain)
             throws BSSException{
 
         log.debug("reservationToDetails.start");
@@ -180,7 +182,8 @@ public class WSDLTypeConverter {
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
         PathInfo pathInfo =
-            WSDLTypeConverter.getPathInfo(resv, null, internalPathAuthorized);
+            WSDLTypeConverter.getPathInfo(resv, null, internalPathAuthorized,
+                                          localDomain);
         reply.setPathInfo(pathInfo);
         log.debug("reservationToDetails.end");
         return reply;
@@ -195,7 +198,8 @@ public class WSDLTypeConverter {
      */
     public static ListReply
         reservationToListReply(List<Reservation> reservations,
-                               boolean internalPathAuthorized)
+                               boolean internalPathAuthorized,
+                               String localDomain)
             throws BSSException {
 
         ListReply reply = new ListReply();
@@ -214,7 +218,8 @@ public class WSDLTypeConverter {
         for (Reservation resv : reservations) {
             ResDetails details =
                 WSDLTypeConverter.reservationToDetails(resv,
-                                                       internalPathAuthorized);
+                                                       internalPathAuthorized,
+                                                       localDomain);
             resList[ctr] = details;
             ctr++;
         }
@@ -232,7 +237,8 @@ public class WSDLTypeConverter {
      */
     public static PathInfo getPathInfo(Reservation resv,
                                        String pathType,
-                                       boolean internalPathAuthorized)
+                                       boolean internalPathAuthorized,
+                                       String localDomain)
             throws BSSException {
 
         log.debug("getPathInfo.start");
@@ -248,7 +254,8 @@ public class WSDLTypeConverter {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
             // this may look at all three types of path
             pathInfo.setPath(pathToCtrlPlane(resv, pathType,
-                                             internalPathAuthorized));
+                                             internalPathAuthorized,
+                                             localDomain));
             // one of these is allowed to be null
             Layer2Info layer2Info = pathToLayer2Info(path);
             pathInfo.setLayer2Info(layer2Info);
@@ -266,35 +273,75 @@ public class WSDLTypeConverter {
 
     /**
      * Builds Axis2 CtrlPlanePathContent, given Hibernate Reservation bean with
-     * information retrieved from database.  TODO:  The path is built up given
-     * a set of paths and the user's authorization.  If a path contains
-     * internal hops, for example a requested path, and the user viewing
-     * the reservation is not authorized, the internal hops are not returned.
-     * If the user is authorized and both the local and interdomain paths
-     * exist, the paths are combined and returned.  If only the local
-     * path exists, hops are returned depending on the user's
-     * authorization.
+     * information retrieved from database.  The path is built up given a set
+     * of paths and the user's authorization.  If any type of path contains
+     * internal hops to the local domain, for example a requested path, and
+     * the user viewing the reservation is not authorized, the internal hops
+     * are not returned.  If the user is authorized and both the local and
+     * interdomain paths exist, the paths are combined and returned.
      *
      * @param resv a Reservation instance with a set of paths
+     * @param pathType String with best path type
+     * @param internalPathAuthorized boolean indicating whether internal hops viewable
+     * @param localDomain String with id of local domain
      * @return A CtrlPlanePathContent instance
      * @throws BSSException 
      */
     public static CtrlPlanePathContent
         pathToCtrlPlane(Reservation resv, String pathType,
-                        boolean internalPathAuthorized)
+                        boolean internalPathAuthorized, String localDomain)
             throws BSSException {
 
         log.debug("pathToCtrlPlane.start");
         Path path = resv.getPath(pathType);
         List<PathElem> pathElems = path.getPathElems();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
+        List<Boolean> isLocalHop = new ArrayList<Boolean>();
         int ctr = 1;
         for (PathElem pathElem: pathElems) {
-            // TODO:  not final reorganization
-            CtrlPlaneHopContent hop = WSDLTypeConverter.convertHop(pathElem, ctr);
+            CtrlPlaneHopContent hop =
+                WSDLTypeConverter.convertHop(pathElem, ctr, localDomain,
+                                             isLocalHop);
             ctrlPlanePath.addHop(hop);
             ctr++;
         }
+        // if not set, ignore authorization check or attempt to combine
+        // local and interdomain paths
+        if (localDomain == null) {
+            ctrlPlanePath.setId("unimplemented");
+            return ctrlPlanePath;
+        }
+        if (pathType.equals(PathType.INTERDOMAIN)) {
+            // attempt to combine if authorized
+            if (internalPathAuthorized) {
+                Path localPath = resv.getPath(PathType.LOCAL);
+                if (localPath != null) {
+                    CtrlPlanePathContent localCtrlPlanePath =
+                        new CtrlPlanePathContent();
+                    List<PathElem> localPathElems = localPath.getPathElems();
+                    int localCtr = 1;
+                    for (PathElem localPathElem: localPathElems) {
+                        CtrlPlaneHopContent localHop =
+                            WSDLTypeConverter.convertHop(localPathElem, ctr,
+                                                         null, null);
+                        localCtrlPlanePath.addHop(localHop);
+                        localCtr++;
+                    }
+                    ctrlPlanePath =
+                        WSDLTypeConverter.mergeHops(ctrlPlanePath,
+                                                    localCtrlPlanePath,
+                                                    isLocalHop);
+                }
+            } else {
+                ctrlPlanePath =
+                    WSDLTypeConverter.removeInternalHops(ctrlPlanePath,
+                                                         isLocalHop);
+            }
+        } else if (!internalPathAuthorized) {
+            ctrlPlanePath =
+                WSDLTypeConverter.removeInternalHops(ctrlPlanePath,
+                                                     isLocalHop);
+        } 
         ctrlPlanePath.setId("unimplemented");
         log.debug("pathToCtrlPlane.end");
         return ctrlPlanePath;
@@ -304,10 +351,13 @@ public class WSDLTypeConverter {
      * Fills in Axis2 CtrlPlaneHopContent, given a Hibernate PathElem bean.
      * @param pathElem Hibernate PathElem instance
      * @param ctr hop number
+     * @param isLocalHop list whose element indicates whether hop is in the local domain
      * @return A CtrlPlaneHopContent instance
      * @throws BSSException 
      */
-    public static CtrlPlaneHopContent convertHop(PathElem pathElem, int ctr)
+    public static CtrlPlaneHopContent
+        convertHop(PathElem pathElem, int ctr, String localDomain,
+                   List<Boolean> isLocalHop)
             throws BSSException {
 
         log.debug("convertHop.start");
@@ -320,13 +370,27 @@ public class WSDLTypeConverter {
         String urn = pathElem.getUrn();
         if ((urn == null) || urn.trim().equals("")) {
             if (link != null) {
-                // TODO: if could convert existing paths, would not need this
+                // TODO: if could convert pre-0.5 paths, would not need this
                 urn = link.getFQTI();
             } else {
                 urn = "";
             }
         }
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
+        // if null, isLocalHop ignored in calling method
+        if (localDomain != null) {
+            String hopDomain = parseResults.get("domainId");
+            if ((hopDomain != null) && !hopDomain.equals("")) {
+                if (hopDomain.equals(localDomain)) {
+                    isLocalHop.add(Boolean.TRUE);
+                } else {
+                    isLocalHop.add(Boolean.FALSE);
+                }
+            } else {  // this shouldn't happen
+                isLocalHop.add(Boolean.FALSE);
+            }
+        }
+
         String hopType = parseResults.get("type");
         hop.setId(ctr + "");
             
@@ -382,6 +446,65 @@ public class WSDLTypeConverter {
         hop.setLink(cpLink);
         log.debug("convertHop.end");
         return hop;
+    }
+
+    /**
+     * Remove hops internal to domain, leaving ingress and egress.
+     * @param ctrlPlanePath CtrlPlanePathContent with path
+     * @param isLocalHop list of booleans with whether corresponding hop is local to domain
+     * @return CtrlPlanePathContent newPath path with internal hops removed
+     */
+    public static CtrlPlanePathContent
+        removeInternalHops(CtrlPlanePathContent ctrlPlanePath,
+                           List<Boolean> isLocalHop) {
+
+        CtrlPlanePathContent newPath = new CtrlPlanePathContent();
+        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
+        for (int i = 0; i < hops.length; i++) {
+            if ((i > 0) && (i < (hops.length-1))) {
+                if (!isLocalHop.get(i-1) || !isLocalHop.get(i+1)) {
+                    newPath.addHop(hops[i]);
+                }
+            } else {
+                newPath.addHop(hops[i]);
+            }
+        }
+        return newPath;
+    }
+
+    /**
+     * Merge interdomain and local path.
+     * @param interPath CtrlPlanePathContent with interdomain path
+     * @param localPath CtrlPlanePathContent with local path
+     * @param isLocalHop list of booleans with whether corresponding interdomain hop is local to domain
+     * @return CtrlPlanePathContent merged path
+     */
+    public static CtrlPlanePathContent
+        mergeHops(CtrlPlanePathContent interPath,
+                  CtrlPlanePathContent localPath,
+                  List<Boolean> isLocalHop) {
+
+        CtrlPlanePathContent newPath = new CtrlPlanePathContent();
+        CtrlPlaneHopContent[] hops = interPath.getHop();
+        CtrlPlaneHopContent[] localHops = localPath.getHop();
+        boolean localHopFound = false;
+        for (int i = 0; i < hops.length; i++) {
+            if ((i > 0) && (i < (hops.length-1))) {
+                if (!isLocalHop.get(i-1) || !isLocalHop.get(i+1)) {
+                    newPath.addHop(hops[i]);
+                }
+            } else {
+                newPath.addHop(hops[i]);
+            }
+            if (isLocalHop.get(i) && !localHopFound) {
+                localHopFound = true;
+                // assumes first and last hops are in interdomain path
+                for (int j = 1; j < (localHops.length-1); j++) {
+                    newPath.addHop(localHops[j]);
+                }
+            }
+        }
+        return newPath;
     }
 
     /**

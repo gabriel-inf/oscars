@@ -41,7 +41,7 @@ public class BssUtils {
         if (localPath != null) {
             return localPath;
         }
-        // punt; may be null
+        // punt; may be null.  TODO:  throw exception if so?
         return requestedPath;
     }
 
