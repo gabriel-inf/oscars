@@ -657,10 +657,15 @@ public class WSDLTypeConverter {
             MPLSData dbMplsData = mplsInfoToData(mplsInfo);
             path.setMplsData(dbMplsData);
         }
-        CtrlPlanePathContent requestedPath = pathInfo.getPath();
-        CtrlPlaneHopContent[] hops = requestedPath.getHop();
+        
         List<PathElem> pathElems = new ArrayList<PathElem>();
-
+        CtrlPlanePathContent requestedPath = pathInfo.getPath();
+        if(requestedPath == null){
+            log.debug("convertPath.end");
+            return path;
+        }
+        
+        CtrlPlaneHopContent[] hops = requestedPath.getHop();
         for (int i = 0; i < hops.length; i++) {
             PathElem pathElem = new PathElem();
             CtrlPlaneLinkContent link = hops[i].getLink();

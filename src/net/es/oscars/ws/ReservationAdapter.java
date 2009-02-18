@@ -64,6 +64,7 @@ public class ReservationAdapter {
             this.log.debug("create, to toReply");
             //Set status=ACCEPTED since can be assumed by lack of exception
             resv.setStatus(StateEngine.ACCEPTED);
+            resv.setGlobalReservationId(gri);
             reply = WSDLTypeConverter.reservationToReply(resv);
 
             ///PathInfo is unchanged so just return the user-given pathInfo
