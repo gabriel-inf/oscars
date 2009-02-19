@@ -35,7 +35,6 @@ public class PCEManager {
 
         List<String> pathMethods = this.getPathMethods(PathType.LOCAL);
         List<Path> results = null;
-        
         if (pathMethods != null) {
             for( String method : pathMethods ) {
                 try {
@@ -51,6 +50,12 @@ public class PCEManager {
                  if (results != null && !results.isEmpty())
                      break;
             }
+        }
+        
+        if(results == null || results.isEmpty()){
+            throw new PathfinderException("Unable to find a local path that " +
+                        "meets request constraints. This may be caused " +
+                        "by lack of remaining network bandwidth.");
         }
         
         this.log.info("PCEManager.findLocalPath.end");
@@ -87,6 +92,13 @@ public class PCEManager {
                  if (results != null && !results.isEmpty())
                      break;
             }
+        }
+        
+        
+        if(results == null || results.isEmpty()){
+            throw new PathfinderException("Unable to find an interdomain path that " +
+                        "meets request constraints. This may be caused " +
+                        "by lack of remaining network bandwidth.");
         }
         
         this.log.info("PCEManager.findInterdomainPath.end");
