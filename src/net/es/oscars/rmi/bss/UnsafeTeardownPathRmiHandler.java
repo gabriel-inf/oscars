@@ -30,7 +30,6 @@ public class UnsafeTeardownPathRmiHandler {
             throws IOException {
 
         this.log.debug("unsafeTeardownPath.start");
-        String result = "success";  // unused for  now
         String methodName = "UnsafeTeardownPath";
         EventProducer eventProducer = new EventProducer();
         Reservation resv = null;
@@ -65,7 +64,9 @@ public class UnsafeTeardownPathRmiHandler {
             }
         }
         bss.getTransaction().commit();
+        String statusMessage =
+            "Manually tearing down path for reservation with GRI " + gri;
         this.log.debug("unsafeTeardownPath.end");
-        return result;
+        return statusMessage;
     }
 }

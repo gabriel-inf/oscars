@@ -28,7 +28,6 @@ public class UnsafeModifyStatusRmiHandler {
             throws IOException {
 
         this.log.debug("unsafeModifyStatus.start");
-        String result = "success";  // unused for now
         String methodName = "UnsafeModifyStatus";
 
         AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
@@ -42,14 +41,16 @@ public class UnsafeModifyStatusRmiHandler {
 
         Reservation resv = null;
         String gri = params.getGlobalReservationId();
-        String status = params.getStatus();
+        String forcedStatus = params.getStatus();
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
+        String oldStatus = null;
         try {
             ReservationDAO resvDAO = new ReservationDAO(core.getBssDbName());
             resv = resvDAO.query(gri);
-            resv.setStatus(status);
+            oldStatus = resv.getStatus();
+            resv.setStatus(forcedStatus);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } finally {
@@ -59,7 +60,10 @@ public class UnsafeModifyStatusRmiHandler {
             }
         }
         bss.getTransaction().commit();
+        String statusMessage =
+            "Manually changing status for reservation with GRI " + gri +
+            " from " + oldStatus + " to " + forcedStatus; 
         this.log.debug("unsafeModifyStatus.end");
-        return result;
+        return statusMessage;
     }
 }

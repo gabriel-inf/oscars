@@ -35,19 +35,18 @@ public class OverrideStatusReservation extends HttpServlet {
         String status = request.getParameter("forcedStatus");
         rmiRequest.setGlobalReservationId(gri);
         rmiRequest.setStatus(status);
-        String result = null;
+        String statusMessage = null;
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-            result = rmiClient.unsafeModifyStatus(rmiRequest, userName);
+            statusMessage = rmiClient.unsafeModifyStatus(rmiRequest, userName);
         } catch (Exception ex) {
             ServletUtils.handleFailure(out, log, ex, methodName);
             return;
         }
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("gri", gri);
-        outputMap.put("status", "New status for reservation with GRI: " + gri +
-                             " is " + status);
+        outputMap.put("status", statusMessage);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

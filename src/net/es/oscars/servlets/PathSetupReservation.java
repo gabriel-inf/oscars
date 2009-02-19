@@ -32,20 +32,20 @@ public class PathSetupReservation extends HttpServlet {
             return;
         }
         RmiPathRequest rmiRequest = new RmiPathRequest();
-        String status = null;
+        String statusMessage = null;
         String gri = request.getParameter("gri");
         rmiRequest.setGlobalReservationId(gri);
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-            status = rmiClient.unsafeCreatePath(rmiRequest, userName);
+            statusMessage = rmiClient.unsafeCreatePath(rmiRequest, userName);
         } catch (Exception ex) {
             ServletUtils.handleFailure(out, log, ex, methodName);
             return;
         }
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
         outputMap.put("gri", gri);
-        outputMap.put("status", "Manually set up path for GRI " + gri);
+        outputMap.put("status", statusMessage);
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

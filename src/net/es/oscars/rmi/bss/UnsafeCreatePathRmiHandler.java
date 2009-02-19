@@ -31,7 +31,6 @@ public class UnsafeCreatePathRmiHandler {
             throws IOException {
 
          this.log.debug("unsafeCreatePath.start");
-         String result = "success";   // unused for now
          String methodName = "UnsafeCreatePath";
 
          AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
@@ -70,7 +69,9 @@ public class UnsafeCreatePathRmiHandler {
              }
          }
          bss.getTransaction().commit();
+         String statusMessage =
+             "Manually setting up path for reservation with GRI " + gri;
          this.log.debug("unsafeCreatePath.end");
-         return result;
+         return statusMessage;
     }
 }
