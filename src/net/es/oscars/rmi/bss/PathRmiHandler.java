@@ -1,7 +1,6 @@
 package net.es.oscars.rmi.bss;
 
 import java.io.*;
-import java.util.*;
 import java.rmi.RemoteException;
 
 import org.apache.log4j.*;
@@ -13,7 +12,6 @@ import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.pss.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
@@ -22,18 +20,14 @@ import net.es.oscars.rmi.bss.xface.RmiPathRequest;
 public class PathRmiHandler {
     private OSCARSCore core;
     private Logger log;
-    private String dbname;
     private PathSetupManager pm;
     private ReservationManager rm;
-    private StateEngine se;
     
     public PathRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-        this.dbname = this.core.getBssDbName();
         this.rm = this.core.getReservationManager();
         this.pm = this.core.getPathSetupManager();
-        this.se = this.core.getStateEngine();
     }
 
     /**
@@ -288,9 +282,9 @@ public class PathRmiHandler {
                                            tokenValue);
         } catch (BSSException e) {
             errMessage = "No reservation found matching request";
-            bss.getTransaction().rollback();
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,
                                    "core", resv, "", errMessage);
+            bss.getTransaction().rollback();
         }
         eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_RECEIVED, userName,
                                "core", resv);
@@ -316,10 +310,10 @@ public class PathRmiHandler {
             errMessage = "Caught Exception " + e.toString();
         } finally {
             if (errMessage != null) {
-                bss.getTransaction().rollback();
                 this.log.error(errMessage);
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,
                                    "core", resv, "", errMessage);
+                bss.getTransaction().rollback();
                 throw new RemoteException(errMessage);
             }
         }

@@ -7,7 +7,6 @@ package net.es.oscars.rmi.bss;
  */
 
 import java.io.*;
-import java.util.*;
 import java.rmi.RemoteException;
 
 import org.apache.log4j.*;
@@ -21,8 +20,6 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.PathType;
-import net.es.oscars.PropHandler;
-import net.es.oscars.interdomain.*;
 import net.es.oscars.rmi.aaa.*;
 import net.es.oscars.rmi.RmiUtils;
 

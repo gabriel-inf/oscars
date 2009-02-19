@@ -10,6 +10,7 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.HashMapTypeConverter;
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.scheduler.FireEventJob;
 
 /**
@@ -80,7 +81,10 @@ public class EventProducer{
     public void addEvent(String type, String userLogin, String source, 
                          Reservation resv, String errorCode, 
                          String errorMessage){
-       // this.addEvent(type, userLogin, source, resv, errorCode, errorMessage);
+        //set the status message on an error
+        if(errorMessage != null && resv != null){
+            this.updateResvStatusMsg(errorMessage, resv.getGlobalReservationId());
+        }
         OSCARSEvent event = new OSCARSEvent();
         HashMap<String, String[]> resvParams= null;
         try {
@@ -103,7 +107,7 @@ public class EventProducer{
      *
      * @param event the event to schedule
      */
-    public void addEvent(OSCARSEvent event) {
+    private void addEvent(OSCARSEvent event) {
         this.log.info("Scheduling notifcation of event " + event.getType());
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "notify-"+event.hashCode()+System.currentTimeMillis();
@@ -126,5 +130,21 @@ public class EventProducer{
         } catch (SchedulerException ex) {
             this.log.error(ex);
         }
+    }
+    
+    private void updateResvStatusMsg(String errorMessage, String gri){
+        if(gri == null){
+            return;
+        }
+        ReservationDAO resvDAO = new ReservationDAO(this.core.getBssDbName());
+        //Query the db so modify untainted reservation copy
+        Reservation dbResv = null;
+        try{
+            dbResv = resvDAO.query(gri);
+        }catch(BSSException e){
+            return;
+        }
+        dbResv.setStatusMessage(errorMessage);
+        resvDAO.update(dbResv);
     }
 }

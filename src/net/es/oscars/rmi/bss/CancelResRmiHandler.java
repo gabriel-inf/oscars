@@ -6,19 +6,15 @@ package net.es.oscars.rmi.bss;
  * @author David Robertson, Mary Thompson
  */
 import java.io.*;
-import java.util.*;
 import java.rmi.RemoteException;
 import org.apache.log4j.*;
 import org.hibernate.*;
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.database.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.ws.*;
 
 /**
  * CancelResRmiHandler - rmi interface to ReservationManager.cancelReservation
@@ -89,10 +85,10 @@ public class CancelResRmiHandler {
             this.log.error(methodName + " failed: " +errMessage,e);
         } 
         if (errMessage != null) {
-            bss.getTransaction().rollback();
             if (reservation != null){
                 eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "oscars-core", reservation, "", errMessage);
             }
+            bss.getTransaction().rollback();
             throw  remEx;
         }
         this.log.debug("cancel.end");

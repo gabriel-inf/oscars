@@ -6,7 +6,6 @@ import java.util.*;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.PropertyLoader;
 import net.es.oscars.aaa.AuthValue;
 import net.es.oscars.aaa.AuthMultiValue;
 import net.es.oscars.rmi.BaseRmiClient;

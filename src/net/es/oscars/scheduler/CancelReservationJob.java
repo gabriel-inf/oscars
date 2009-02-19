@@ -77,13 +77,13 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         }catch(Exception ex){
             ex.printStackTrace();
             //Rollback any changes...
-            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, 
-                                   idcURL, resv, "", ex.getMessage());
             bss.getTransaction().rollback();
             try{
                 bss = core.getBssSession();
                 bss.beginTransaction();
                 this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
+                eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, 
+                        idcURL, resv, "", ex.getMessage());
                 bss.getTransaction().commit();
             }catch(BSSException e){
                 bss.getTransaction().rollback();

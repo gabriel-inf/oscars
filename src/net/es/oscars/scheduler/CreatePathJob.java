@@ -15,7 +15,6 @@ public class CreatePathJob extends ChainingJob implements Job {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("CreatePathJob.start name:"+context.getJobDetail().getFullName());
         this.core = OSCARSCore.getInstance();
-        StateEngine se = this.core.getStateEngine();
         PathSetupManager pm = this.core.getPathSetupManager();
         EventProducer eventProducer = new EventProducer();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();

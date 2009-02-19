@@ -8,7 +8,6 @@ package net.es.oscars.rmi.bss;
 
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.*;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
@@ -18,7 +17,6 @@ import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.rmi.RmiUtils;
@@ -54,7 +52,6 @@ public class QueryResRmiHandler {
         String methodName = "QueryReservation";
         RmiQueryResReply result = new RmiQueryResReply();
         ReservationManager rm = core.getReservationManager();
-        boolean internalIntradomainHops = false;
         Reservation reservation = null;
         String institution = null;
         String loginConstraint = null;
