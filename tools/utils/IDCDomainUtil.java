@@ -89,7 +89,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
             domain.setPaths(null);
             domain.setNodes(null);
             SiteDAO siteDAO = new SiteDAO(this.aaaDbName);
-            Site site = siteDAO.queryByParam("domainTopologyIdent", domain.getTopologyIdent());
+            Site site = siteDAO.queryByParam("domainTopologyId", domain.getTopologyIdent());
             if(site != null){
                 aaa.delete(site);
             }
@@ -101,6 +101,31 @@ public class IDCDomainUtil extends IDCCmdUtil{
        
         bss.getTransaction().commit();
         aaa.getTransaction().commit();
+    }
+    
+    /**
+     * Lists the topology identifier and URL of all the domains in the database.
+     */
+    public void listDomains(){
+        Initializer initializer = new Initializer();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add(this.dbname);
+        initializer.initDatabase(dbnames);
+        Session bss =
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        bss.beginTransaction();
+        
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        List<Domain> domains = domainDAO.list();
+        int i = 1;
+        
+        System.out.println();
+        for(Domain domain : domains){
+            System.out.println((domain.isLocal() ? "*" : "") + i + ". " + 
+                    domain.getTopologyIdent() + " : " + domain.getUrl());
+            i++;
+        } 
+        bss.getTransaction().commit();
     }
     
     /**
@@ -165,8 +190,9 @@ public class IDCDomainUtil extends IDCCmdUtil{
             site.setInstitution(insts.get(n-1));
         }else{
             IDCOrgUtil orgUtil = new IDCOrgUtil();
-            String instName = orgUtil.addOrg(false);
-            site.setInstitution(instDAO.queryByName(instName));
+            Institution org = orgUtil.addOrg(false);
+            instDAO.update(org);
+            site.setInstitution(org);
         }
         return site;
     }
@@ -296,6 +322,8 @@ public class IDCDomainUtil extends IDCCmdUtil{
         IDCDomainUtil util = new IDCDomainUtil();
         if(args[0] == null || args[0].equals("add")){
             util.addDomain();
+        }else if(args[0].equals("list")){
+            util.listDomains();
         }else if(args[0].equals("remove")){
             util.removeDomain();
         }else if(args[0].equals("addService")){

@@ -1,5 +1,4 @@
 import java.util.*;
-import java.io.*;
 
 import net.es.oscars.aaa.*;
 import net.es.oscars.database.*;
@@ -19,7 +18,7 @@ public class IDCOrgUtil extends IDCCmdUtil{
         this.dbname = "aaa";
     }
     
-     public String addOrg(){
+     public Institution addOrg(){
         return this.addOrg(true);
      }
     
@@ -27,23 +26,26 @@ public class IDCOrgUtil extends IDCCmdUtil{
      * Main logic that adds organization to the database
      *
      */
-    public String addOrg(boolean initDb){
+    public Institution addOrg(boolean initDb){
         Scanner in = new Scanner(System.in);
         String name = readInput(in, "Organization Name", "", true);
-
+        Institution org = new Institution();
+        
         /* Init database */
         if(initDb){
             Initializer initializer = new Initializer();
             ArrayList<String> dbnames = new ArrayList<String>();
             dbnames.add(this.dbname);
             initializer.initDatabase(dbnames);
+        }else{
+            org.setName(name);
+            return org;
         }
         try { // if there is a unique index defined on the institution name 
               // hibernate will throw an exception if you try to add a duplicate name
             Session aaa =
                 HibernateUtil.getSessionFactory("aaa").getCurrentSession();
             aaa.beginTransaction();
-            Institution org = new Institution();
             org.setName(name);
             aaa.save(org);
             aaa.getTransaction().commit();
@@ -55,7 +57,7 @@ public class IDCOrgUtil extends IDCCmdUtil{
         }
         
         System.out.println("New organization '" + name + "' added.");
-        return name;
+        return org;
     }
     
     /**
