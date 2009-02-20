@@ -1,5 +1,4 @@
 import java.util.*;
-import java.io.*;
 
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.*;
@@ -34,6 +33,9 @@ public class IDCDomainUtil extends IDCCmdUtil{
         dbnames.add(this.dbname);
         dbnames.add(this.aaaDbName);
         initializer.initDatabase(dbnames);
+        Session aaa =
+            HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        aaa.beginTransaction();
         Session bss =
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         
@@ -52,8 +54,9 @@ public class IDCDomainUtil extends IDCCmdUtil{
             domain.setLocal(false);
         }
         bss.save(domain);
-        bss.save(site);
+        aaa.save(site);
         bss.getTransaction().commit();
+        aaa.getTransaction().commit();
         
         System.out.println("New domain '" + domain.getTopologyIdent() + "' added.");
     }
@@ -71,6 +74,9 @@ public class IDCDomainUtil extends IDCCmdUtil{
         dbnames.add(this.dbname);
         dbnames.add(this.aaaDbName);
         initializer.initDatabase(dbnames);
+        Session aaa =
+            HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        aaa.beginTransaction();
         Session bss =
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         bss.beginTransaction();
@@ -82,10 +88,10 @@ public class IDCDomainUtil extends IDCCmdUtil{
         if(ans.toLowerCase().startsWith("y")){
             domain.setPaths(null);
             domain.setNodes(null);
-            Site site = domain.getSite();
-            domain.setSite(null);
+            SiteDAO siteDAO = new SiteDAO(this.aaaDbName);
+            Site site = siteDAO.queryByParam("domainTopologyIdent", domain.getTopologyIdent());
             if(site != null){
-                bss.delete(site);
+                aaa.delete(site);
             }
             bss.delete(domain);
             System.out.println("Domain '" + domain.getTopologyIdent() + "' deleted.");
@@ -94,6 +100,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
         }
        
         bss.getTransaction().commit();
+        aaa.getTransaction().commit();
     }
     
     /**
@@ -136,10 +143,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
      */
     protected Site selectSite(Domain domain, Scanner in){
         Site site = new Site();
-        site.setDomain(domain);
-        Session aaa =
-            HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
-        aaa.beginTransaction();
+        site.setDomainTopologyId(domain.getTopologyIdent());
         InstitutionDAO instDAO = new InstitutionDAO(this.aaaDbName);
         List<Institution> insts = instDAO.list();
         int i = 1;
@@ -158,14 +162,12 @@ public class IDCDomainUtil extends IDCCmdUtil{
             System.err.println("Invalid organization number '" +n + "' entered");
             System.exit(0);
         }else if(n < i){
-            site.setName(insts.get(n-1).getName());
-            aaa.getTransaction().commit();
+            site.setInstitution(insts.get(n-1));
         }else{
-            aaa.getTransaction().commit();
             IDCOrgUtil orgUtil = new IDCOrgUtil();
-            site.setName(orgUtil.addOrg(false));
+            String instName = orgUtil.addOrg(false);
+            site.setInstitution(instDAO.queryByName(instName));
         }
-        domain.setSite(site);
         return site;
     }
     
@@ -278,16 +280,16 @@ public class IDCDomainUtil extends IDCCmdUtil{
         dbnames.add(this.dbname);
         dbnames.add(this.aaaDbName);
         initializer.initDatabase(dbnames);
-        Session bss =
-            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        Session aaa =
+            HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
         
-        bss.beginTransaction();
+        aaa.beginTransaction();
         Domain domain = this.selectDomain(in, "domain");
         Site site = this.selectSite(domain, in);
-        bss.save(site);
-        bss.getTransaction().commit();
+        aaa.save(site);
+        aaa.getTransaction().commit();
         
-        System.out.println("New site created that associates domain '" + domain.getTopologyIdent() + "' with organization '" + site.getName() + "'.");
+        System.out.println("New site created that associates domain '" + domain.getTopologyIdent() + "' with organization '" + site.getInstitution().getName() + "'.");
     }
     
     public static void main(String[] args){
