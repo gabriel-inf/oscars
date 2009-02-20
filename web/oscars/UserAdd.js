@@ -43,7 +43,7 @@ oscars.UserAdd.handleReply = function (responseObject, ioArgs) {
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
     if (responseObject.method == "UserAddForm") {
-        // set institution menu values (TODO:  attributes)
+        // set institution menu values and attributes
         oscars.Form.applyParams(responseObject);
     } else if (responseObject.method == "UserAdd") {
         // after adding a user, refresh the user list and

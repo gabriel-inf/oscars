@@ -31,6 +31,7 @@
         dojo.require("oscars.Authorizations");
         dojo.require("oscars.AuthorizationDetails");
         dojo.require("oscars.AuthorizationState");
+        dojo.require("oscars.StatusPoll");
         dojo.require("oscars.UserProfile");
         dojo.require("oscars.DigitalClock");
         dojo.require("oscars.Utils");
@@ -64,6 +65,7 @@
             constructor: function(args, node){
                 dojo.mixin(this, args);
                 this.authorizationState = new oscars.AuthorizationState();
+                this.statusPoll = new oscars.StatusPoll();
             },
             login: "",
             userGridInitialized: false,

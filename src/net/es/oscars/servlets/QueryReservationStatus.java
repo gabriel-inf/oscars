@@ -111,6 +111,7 @@ public class QueryReservationStatus extends HttpServlet {
             layer2Data = path.getLayer2Data();
         }
         String status = resv.getStatus();
+        outputMap.put("griReplace", gri);
         outputMap.put("statusReplace", status);
         if (layer2Data != null) {
             String vlanTag = BssUtils.getVlanTag(path);

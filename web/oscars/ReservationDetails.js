@@ -5,10 +5,11 @@ David Robertson (dwrobertson@lbl.gov)
 
 /* Functions:
 postQueryReservation()
+postQueryReservationStatus()
 postCancelReservation(dialogFields)
 postCreatePath(dialogFields)
 postTeardownPath(dialogFields)
-postOverrideStatuus(dialogFields)
+postOverrideStatus(dialogFields)
 handleReply(responseObject, ioArgs)
 hideParams(responseObject)
 tabSelected(contentPaneWidget, oscarsStatus)
@@ -36,6 +37,17 @@ oscars.ReservationDetails.postQueryReservation = function (newGri) {
     }
     dojo.xhrPost({
         url: 'servlet/QueryReservation',
+        handleAs: "json",
+        load: oscars.ReservationDetails.handleReply,
+        error: oscars.Form.handleError,
+        form: dijit.byId("reservationDetailsForm").domNode
+    });
+};
+
+// posts reservation status query to server
+oscars.ReservationDetails.postQueryReservationStatus = function () {
+    dojo.xhrPost({
+        url: 'servlet/QueryReservationStatus',
         handleAs: "json",
         load: oscars.ReservationDetails.handleReply,
         error: oscars.Form.handleError,
@@ -112,7 +124,8 @@ oscars.ReservationDetails.postTeardownPath = function (dialogFields) {
 oscars.ReservationDetails.postOverrideStatus = function (dialogFields) {
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     oscars.ReservationDetails.setCurrentGri(formNode);
-    if(formNode.forcedStatus.value == null || formNode.forcedStatus.value == ""){
+    if ((formNode.forcedStatus.value === null) ||
+        oscars.Utils.isBlank(formNode.forcedStatus.value)) {
         oscars.ReservationDetails.forcedStatus();
     }
     dojo.xhrPost({
@@ -213,6 +226,8 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
+    // table cell
+    var statusN = dojo.byId("statusReplace");
     if (responseObject.method == "QueryReservation") {
         // reset node which indicates whether layer 2 or layer 3 before
         // applying results of query
@@ -227,10 +242,24 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         oscars.ReservationDetails.setDateTimes();
         var reservationDetailsNode = dojo.byId("reservationDetailsDisplay");
         reservationDetailsNode.style.display = "";
+    } else if (responseObject.method == "QueryReservationStatus") {
+        // set parameter values in form from responseObject if current
+        if (oscarsState.statusPoll.gri == responseObject.griReplace) {
+            oscars.Form.applyParams(responseObject);
+        }
     } else if (responseObject.method == "CancelReservation") {
-        var statusN = dojo.byId("statusReplace");
-        // table cell
-        statusN.innerHTML = "CANCELLED";
+        if (statusN.innerHTML == "PENDING") {
+            statusN.innerHTML = "CANCELLED";
+        } else {
+            statusN.innerHTML = "INTEARDOWN";
+        }
+    } else if (responseObject.method == "OverrideStatusReservation") {
+        var formNode = dijit.byId("reservationDetailsForm").domNode;
+        formNode.forcedStatus.value = "";
+    }
+    if (responseObject.method != "QueryReservationStatus") {
+        var griN = dojo.byId("griReplace");
+        oscarsState.statusPoll.restart(statusN.innerHTML, griN.innerHTML);
     }
 };
 
