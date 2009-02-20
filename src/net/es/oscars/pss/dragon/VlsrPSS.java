@@ -3,7 +3,6 @@ package net.es.oscars.pss.dragon;
 import java.util.Properties;
 import net.es.oscars.PropHandler;
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
 import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
@@ -69,7 +68,6 @@ public class VlsrPSS implements PSS {
      */
     public String refreshPath(Reservation resv) throws PSSException{
         this.log.info("vlsrpss.refresh.start");
-        this.log.info("vlsrpss.teardown.start");
         
         try {
 	        Path path = resv.getPath(PathType.LOCAL);

@@ -124,11 +124,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
-        	return;
-       }
+            return;
+        }
         ArrayList<String> ero = null;
         ArrayList<String> subnetEro = null;
         Layer2Data layer2Data = path.getLayer2Data();
@@ -187,7 +187,6 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         if(layer2Data != null){
             String bandwidth = this.prepareBandwidth(resv.getBandwidth(), path);
             lsp.setBandwidth(bandwidth);
-            int vtag = 0;
             
             if(ingressLinkDescr <= 0 && 
                 ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
@@ -709,7 +708,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
         PathElemParam pep =
             pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                                      PathElemParamType.L2SC_SUGGESTED_VLAN);
+                                      PathElemParamType.L2SC_VLAN_RANGE);
         linkDescr = pep.getValue();
         if (linkDescr == null) {
             return -1;
@@ -982,7 +981,6 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         // don't care about the last edge hop
         while (ctr < elems.size()-1) {
             PathElem elem = elems.get(ctr);
-            PathElem nextElem = elems.get(ctr+1);
             Link link = elem.getLink();
             Port port = link.getPort();
             String linkId = link.getTopologyIdent();
@@ -997,7 +995,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             
             /* Verify the link ID is an IPv4 address */
             try {
-                InetAddress address = InetAddress.getByName(linkId);
+                InetAddress.getByName(linkId);
             } catch (UnknownHostException e) {
                 throw  new PSSException("Invalid link id " + linkId + 
                     ". Link IDs must be IP addresses on IDCs running DRAGON.");
