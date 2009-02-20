@@ -476,6 +476,8 @@ public class TERCETopologyUpdate{
                 link.setMinimumReservableCapacity(new Long(0));
                 link.setUnreservedCapacity(new Long(0));
                 link.setRemoteLink(remoteLink);
+                link.setTrafficEngineeringMetric("100");
+                link.setValid(true);
                 bss.save(link);
             }
         }else{
