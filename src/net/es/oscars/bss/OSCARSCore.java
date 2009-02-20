@@ -11,7 +11,6 @@ import net.es.oscars.pss.*;
 import net.es.oscars.tss.*;
 import net.es.oscars.ws.PathSetupAdapter;
 import net.es.oscars.ws.ReservationAdapter;
-import net.es.oscars.ws.TopologyExchangeAdapter;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.lookup.*;
 import net.es.oscars.database.*;
@@ -54,7 +53,6 @@ public class OSCARSCore {
     private ObserverManager observerMgr = null;
     private PSLookupClient lookupClient = null;
 
-    private TopologyExchangeAdapter topologyExchangeAdapter = null;
     private PathSetupAdapter pathSetupAdapter = null;
     private ReservationAdapter reservationAdapter = null;
     private Forwarder forwarder = null;
@@ -113,7 +111,6 @@ public class OSCARSCore {
         this.initObservers();
 
         this.initReservationAdapter();
-        this.initTopologyExchangeAdapter();
         this.initPathSetupAdapter();
         this.initForwarder();
         this.initRMIServer();
@@ -244,15 +241,6 @@ public class OSCARSCore {
         this.log.debug("initReservationAdapter.start");
         this.reservationAdapter = new ReservationAdapter();
         this.log.debug("initReservationAdapter.end");
-    }
-
-    /**
-     * Initializes the TopologyExchangeAdapter module
-     */
-    public void initTopologyExchangeAdapter() {
-        this.log.debug("initTopologyExchangeAdapter.start");
-        this.topologyExchangeAdapter = new TopologyExchangeAdapter();
-        this.log.debug("initTopologyExchangeAdapter.end");
     }
 
     /**
@@ -479,24 +467,6 @@ public class OSCARSCore {
      */
     public void setLookupClient(PSLookupClient lookupClient) {
         this.lookupClient = lookupClient;
-    }
-
-    /**
-     * @return the topologyExchangeAdapter
-     */
-    public TopologyExchangeAdapter getTopologyExchangeAdapter() {
-        if (this.topologyExchangeAdapter == null) {
-            this.initTopologyExchangeAdapter();
-        }
-        return topologyExchangeAdapter;
-    }
-
-    /**
-     * @param topologyExchangeAdapter the topologyExchangeAdapter to set
-     */
-    public void setTopologyExchangeAdapter(
-            TopologyExchangeAdapter topologyExchangeAdapter) {
-        this.topologyExchangeAdapter = topologyExchangeAdapter;
     }
 
     /**

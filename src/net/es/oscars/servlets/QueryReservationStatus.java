@@ -3,8 +3,6 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -93,15 +91,7 @@ public class QueryReservationStatus extends HttpServlet {
         contentSection(RmiQueryResReply rmiReply, Map<String,Object> outputMap)
             throws BSSException {
 
-        InetAddress inetAddress = null;
-        String hostName = null;
-        Long longParam = null;
-        Integer intParam = null;
-        String strParam = null;
-
         Reservation resv = rmiReply.getReservation();
-        String gri = resv.getGlobalReservationId();
-
         Path path = resv.getPath(PathType.LOCAL);
         if (path == null) {
             path = resv.getPath(PathType.REQUESTED);
@@ -111,7 +101,7 @@ public class QueryReservationStatus extends HttpServlet {
             layer2Data = path.getLayer2Data();
         }
         String status = resv.getStatus();
-        outputMap.put("griReplace", gri);
+        outputMap.put("griReplace", resv.getGlobalReservationId());
         outputMap.put("statusReplace", status);
         if (layer2Data != null) {
             String vlanTag = BssUtils.getVlanTag(path);
