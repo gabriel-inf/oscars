@@ -63,7 +63,7 @@ public class TERCETopologyImport {
      * @throws TEDBFaultMessage 
      * @throws RemoteException 
      */
-    @BeforeGroups(groups={ "pathfinder.staticroute", "pathfinder.perfsonar" })
+    @BeforeGroups(groups={ "pathfinder.staticroute", "pathfinder.perfsonar", "pathfinder.terce" })
     @Test
     public void updateDatabase() throws BSSException, RemoteException, TEDBFaultMessage{
 	this.setUpClass();
