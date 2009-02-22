@@ -67,7 +67,12 @@ public class QueryReservationStatus extends HttpServlet {
             ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
-        outputMap.put("status", "Reservation details for " + gri);
+        Reservation resv = rmiReply.getReservation();
+        if (resv.getStatusMessage() == null) {
+            outputMap.put("status", "Reservation details for " + gri);
+        } else {
+            outputMap.put("status", resv.getStatusMessage());
+        }
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
