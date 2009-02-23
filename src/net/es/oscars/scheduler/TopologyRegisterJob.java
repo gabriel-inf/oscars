@@ -31,6 +31,7 @@ public class TopologyRegisterJob implements Job{
     private OSCARSCore core;
     private long RENEW_TIME = 1800;//30 minutes
     private String URL = "http://127.0.0.1:8089/perfSONAR_PS/services/topology";
+    private boolean UPDATE_LOCAL = false;
     private boolean makeDomainsOpaque = false;
     
     /**
@@ -57,6 +58,14 @@ public class TopologyRegisterJob implements Job{
             CtrlPlaneTopologyContent topology = tedb.selectNetworkTopology("all");
             CtrlPlaneDomainContent[] domains = topology.getDomain();
             DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
+            
+            //Update local OSCARS database
+            if(UPDATE_LOCAL){
+                TopologyAxis2Importer topoImporter = new TopologyAxis2Importer(this.core.getBssDbName());
+                topoImporter.updateDatabase(topology);
+            }
+            
+            //Send to perfsonar topology service
             for(CtrlPlaneDomainContent domain : domains){
                 Hashtable<String, String> parseResults = 
                                     URNParser.parseTopoIdent(domain.getId());
@@ -164,6 +173,10 @@ public class TopologyRegisterJob implements Job{
             }catch(Exception e){}
         }
         
+        if(props.getProperty("updateLocal") != null){
+            UPDATE_LOCAL = "1".equals(props.getProperty("updateLocal"));
+        }
+    
         if(psProps.getProperty("topology_url") != null){
             try{
                 URL = psProps.getProperty("topology_url");
