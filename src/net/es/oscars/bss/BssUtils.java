@@ -172,27 +172,12 @@ public class BssUtils {
             if(i != 0){
                 sb.append("\n");
             }
-            // if layer 2, send back topology identifier
-            if (path.getLayer2Data() != null) {
-                if (link != null) {
-                    String fqti = link.getFQTI();
-                    sb.append(fqti);
-                } else {
-                    sb.append(pathElem.getUrn());
-                }
-            // otherwise, send back host name/IP address pair
+            //  send back topology identifier in both layer 2 and layer 3 case
+            if (link != null) {
+                String fqti = link.getFQTI();
+                sb.append(fqti);
             } else {
-                if (link != null) {
-                    nodeName = link.getPort().getNode().getTopologyIdent();
-                    ipaddr = link.getValidIpaddr();
-                    if ((ipaddr == null) || (ipaddr.getIP() == null)) {
-                        sb.append("*Out of date IP*");
-                    } else {
-                        sb.append(ipaddr.getIP());
-                    }
-                } else {
-                    sb.append(pathElem.getUrn());
-                }
+                sb.append(pathElem.getUrn());
             }
             i++;
         }
