@@ -138,12 +138,14 @@ public class PCEManager {
 
         for( String method : methods) {
             String newMethod = method.trim();
+            //TODO: Delete this check - its not scalable
             if (!newMethod.equals(PCEMethod.DATABASE) &&
                 !newMethod.equals(PCEMethod.STATIC) &&
-                !newMethod.equals(PCEMethod.PERFSONAR)) {
+                !newMethod.equals(PCEMethod.PERFSONAR)&&
+                !newMethod.equals(PCEMethod.TERCE)) {
                 throw new PathfinderException(
                     "Path computation method specified in oscars.properties " +
-                    "must be one of: static, database or perfsonar.");
+                    "must be one of: static, database, terce or perfsonar.");
             }
             retMethods.add(newMethod);
         }

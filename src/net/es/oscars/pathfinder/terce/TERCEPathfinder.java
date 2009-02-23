@@ -21,6 +21,7 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathDirection;
 import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.TopologyUtil;
@@ -66,6 +67,13 @@ public class TERCEPathfinder extends Pathfinder implements LocalPCE{
         
         //Find the local path
         Path intraPath = new Path();
+        try {
+            intraPath.setPathType(PathType.LOCAL);
+            intraPath.setDirection(PathDirection.BIDIRECTIONAL);
+        } catch (BSSException e) {
+            throw new PathfinderException(e.getMessage());
+        }
+        
         boolean firstHop = true;
         //iterate through all hops until second-to-last is reached since we do an i+1
         for(int i = 0; i < (interElems.size() - 1); i++){
@@ -80,6 +88,15 @@ public class TERCEPathfinder extends Pathfinder implements LocalPCE{
                 //not in database to continue
                 continue;
             }
+            
+            //if source or destination are not in local domain then continue
+            if(!srcLink.getPort().getNode().getDomain().isLocal()){
+                continue;
+            }
+            if(!destLink.getPort().getNode().getDomain().isLocal()){
+                continue;
+            }
+            
             Link srcRemoteLink = srcLink.getRemoteLink();
             Node srcNode = srcLink.getPort().getNode();
             Node destNode = destLink.getPort().getNode();
