@@ -43,9 +43,8 @@ public class TopologyAxis2Importer {
 
         this.log.debug("updateDatabase.start");
         for(CtrlPlaneDomainContent d : domains){
-            d.setId(this.convertToLocalId(d.getId()));
-            this.log.debug("DOMAIN: " + d.getId());
-            if(d.getId().equals(localDomainId)){
+            String xmlDomainId = this.convertToLocalId(d.getId());
+            if(xmlDomainId.equals(localDomainId)){
                 this.log.debug("local domain found: " + localDomainId);
                 CtrlPlaneNodeContent[] nodes = d.getNode();
                 if(nodes == null){
@@ -94,16 +93,16 @@ public class TopologyAxis2Importer {
         NodeAddress dbNodeAddress = null;
 
         /* Convert node ID to local ID */
-        node.setId(this.convertToLocalId(node.getId()));
-        this.log.debug("NODE: " + node.getId());
-        dbNode = nodeDAO.fromTopologyIdent(node.getId(), parent);
+        String xmlNodeId = this.convertToLocalId(node.getId());
+        this.log.debug("NODE: " + xmlNodeId);
+        dbNode = nodeDAO.fromTopologyIdent(xmlNodeId, parent);
 
         /* Check if node already in database */
         if(dbNode == null){
-            this.log.debug("node.create - " + node.getId());
+            this.log.debug("node.create - " + xmlNodeId);
             dbNode = new Node();
         }else{
-            this.log.debug("node.exists - " + node.getId());
+            this.log.debug("node.exists - " + xmlNodeId);
         }
 
         /* Check if node address exists */
@@ -124,7 +123,7 @@ public class TopologyAxis2Importer {
 
         /* Update node values */
         dbNode.setValid(true);
-        dbNode.setTopologyIdent(node.getId());
+        dbNode.setTopologyIdent(xmlNodeId);
         dbNode.setDomain(parent);
 
         nodeDAO.update(dbNode);
@@ -142,7 +141,6 @@ public class TopologyAxis2Importer {
      */
     private Port preparePortforDB(CtrlPlanePortContent port, Node parent){
         PortDAO portDAO = new PortDAO(this.dbname);
-        String portId = null;
         Port dbPort = null;    
         String capacity = null;
         String maxResCapacity = null;
@@ -150,16 +148,15 @@ public class TopologyAxis2Importer {
         String unresCapacity = null;
 
         /* Convert port ID to local ID */
-        port.setId(this.convertToLocalId(port.getId()));
-        portId = port.getId();
-        dbPort = portDAO.fromTopologyIdent(portId, parent);
+        String xmlPortId = this.convertToLocalId(port.getId());
+        dbPort = portDAO.fromTopologyIdent(xmlPortId, parent);
 
         /* Check if port exists */
         if(dbPort == null){
-            this.log.debug("port.create - " + port.getId());
+            this.log.debug("port.create - " + xmlPortId);
             dbPort = new Port();
         }else{
-            this.log.debug("port.exists - " + port.getId());
+            this.log.debug("port.exists - " + xmlPortId);
         }        
 
         /* Check for given capacity values */
@@ -170,7 +167,7 @@ public class TopologyAxis2Importer {
         if(capacity != null){
             dbPort.setCapacity(Long.parseLong(capacity));
         }else{
-            this.log.warn("port with topology ID " + portId + 
+            this.log.warn("port with topology ID " + xmlPortId + 
             " does not contain capacity.  Element was not saved.");
         }
 
@@ -178,7 +175,7 @@ public class TopologyAxis2Importer {
             dbPort.setMaximumReservableCapacity(Long.parseLong(maxResCapacity));
         }else{
             dbPort.setMaximumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("port with topology ID " + portId +
+            this.log.warn("port with topology ID " + xmlPortId +
                     " does not contain setMaximumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -187,7 +184,7 @@ public class TopologyAxis2Importer {
             dbPort.setMinimumReservableCapacity(Long.parseLong(minResCapacity));
         }else{
             dbPort.setMinimumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("port with topology ID " + portId +
+            this.log.warn("port with topology ID " + xmlPortId +
                     " does not contain MinimumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -196,7 +193,7 @@ public class TopologyAxis2Importer {
             dbPort.setUnreservedCapacity(Long.parseLong(unresCapacity));
         }else{
             dbPort.setUnreservedCapacity(Long.parseLong(capacity));
-            this.log.warn("port with topology ID " + portId +
+            this.log.warn("port with topology ID " + xmlPortId +
                     " does not contain UnreservedCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -204,9 +201,9 @@ public class TopologyAxis2Importer {
         /* Set remaining values */
         dbPort.setValid(true);
         dbPort.setSnmpIndex(1);
-        dbPort.setTopologyIdent(portId);
+        dbPort.setTopologyIdent(xmlPortId);
         dbPort.setGranularity(Long.parseLong(port.getGranularity()));
-        dbPort.setAlias(portId);
+        dbPort.setAlias(xmlPortId);
         dbPort.setNode(parent);
 
         portDAO.update(dbPort);
@@ -224,7 +221,6 @@ public class TopologyAxis2Importer {
      */
     private Link prepareLinkforDB(CtrlPlaneLinkContent link, Port parent){
         LinkDAO linkDAO = new LinkDAO(this.dbname);
-        String linkId = null;
         Link dbLink = null;
         String capacity = null;
         String maxResCapacity = null;
@@ -232,16 +228,15 @@ public class TopologyAxis2Importer {
         String unresCapacity = null;
 
         /* Convert link ID to local ID */
-        link.setId(this.convertToLocalId(link.getId()));
-        linkId = link.getId();
-        dbLink = linkDAO.fromTopologyIdent(linkId, parent);
+        String xmlLinkId = this.convertToLocalId(link.getId());
+        dbLink = linkDAO.fromTopologyIdent(xmlLinkId, parent);
 
         /* Check if link exists */
         if(dbLink == null){
-            this.log.debug("link.create - " + linkId);
+            this.log.debug("link.create - " + xmlLinkId);
             dbLink = new Link();
         }else{
-            this.log.debug("link.exists - " + linkId);
+            this.log.debug("link.exists - " + xmlLinkId);
         }
 
         /* Check for given capacity values */
@@ -252,7 +247,7 @@ public class TopologyAxis2Importer {
         if(capacity != null){
             dbLink.setCapacity(Long.parseLong(capacity));
         }else{
-            this.log.warn("link with topology ID " + linkId +
+            this.log.warn("link with topology ID " + xmlLinkId +
             " does not contain capacity.  Element was not saved.");
         }
 
@@ -260,7 +255,7 @@ public class TopologyAxis2Importer {
             dbLink.setMaximumReservableCapacity(Long.parseLong(maxResCapacity));
         }else{
             dbLink.setMaximumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("link with topology ID " + linkId +
+            this.log.warn("link with topology ID " + xmlLinkId +
                     " does not contain MaximumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -269,7 +264,7 @@ public class TopologyAxis2Importer {
             dbLink.setMinimumReservableCapacity(Long.parseLong(minResCapacity));
         }else{
             dbLink.setMinimumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("link with topology ID " + linkId +
+            this.log.warn("link with topology ID " + xmlLinkId +
                     " does not contain MinimumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -278,7 +273,7 @@ public class TopologyAxis2Importer {
             dbLink.setUnreservedCapacity(Long.parseLong(unresCapacity));
         }else{
             dbLink.setUnreservedCapacity(Long.parseLong(capacity));
-            this.log.warn("link with topology ID " + linkId +
+            this.log.warn("link with topology ID " + xmlLinkId +
                     " does not contain UnreservedCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -286,10 +281,10 @@ public class TopologyAxis2Importer {
         /* Set remaining values */
         dbLink.setValid(true);
         dbLink.setSnmpIndex(1);
-        dbLink.setTopologyIdent(linkId);
+        dbLink.setTopologyIdent(xmlLinkId);
         dbLink.setTrafficEngineeringMetric(link.getTrafficEngineeringMetric());
         dbLink.setGranularity(Long.parseLong(link.getGranularity()));
-        dbLink.setAlias(linkId);
+        dbLink.setAlias(xmlLinkId);
         dbLink.setPort(parent);
 
         linkDAO.update(dbLink);
@@ -311,7 +306,7 @@ public class TopologyAxis2Importer {
      */
     private void updateRemoteLink(CtrlPlaneLinkContent link, Port parent){
         LinkDAO linkDAO = new LinkDAO(this.dbname);
-        String linkId = link.getId();
+        String linkId = this.convertToLocalId(link.getId());
         String remoteLinkId =link.getRemoteLinkId();
         Link dbLink = linkDAO.fromTopologyIdent(linkId, parent);
         Link dbRemoteLink = null;

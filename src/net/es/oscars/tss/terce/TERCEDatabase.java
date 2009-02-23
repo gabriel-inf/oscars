@@ -43,7 +43,7 @@ public class TERCEDatabase implements TEDB{
      */
     public CtrlPlaneTopologyContent selectNetworkTopology(String type) 
             throws TSSException{
-        this.log.info("selectNetworkTopology.start"); 
+        this.log.debug("selectNetworkTopology.start"); 
         TERCEStub terce = null;
         SelectNetworkTopology selectTopology = null;
         SelectNetworkTopologyContent request = null;
@@ -52,7 +52,7 @@ public class TERCEDatabase implements TEDB{
         CtrlPlaneTopologyContent topology = null;
         String terceURL = this.props.getProperty("url");
         SelectTypes topoType = this.stringToSelectType(type);
-        this.log.info("url=" + terceURL); 
+        this.log.debug("url=" + terceURL); 
         
         if(topoType == null){
             throw new TSSException("Invalid topology type specifed");
@@ -78,7 +78,7 @@ public class TERCEDatabase implements TEDB{
         }catch(Exception e){
             throw new TSSException("Unable to contact TERCE: " + e.getMessage());
         }
-        this.log.info("selectNetworkTopology.end"); 
+        this.log.debug("selectNetworkTopology.end"); 
         return topology;
     }
     
@@ -90,14 +90,14 @@ public class TERCEDatabase implements TEDB{
      */
     public void insertNetworkTopology(CtrlPlaneTopologyContent topology)
             throws TSSException{
-        this.log.info("insertNetworkTopology.start"); 
+        this.log.debug("insertNetworkTopology.start"); 
         TERCEStub terce = null;
         InsertNetworkTopology insertTopology = null;
         InsertNetworkTopologyContent request = null;
         InsertNetworkTopologyResponse response = null;
         InsertNetworkTopologyResponseContent responseContent = null;
         String terceURL = this.props.getProperty("url");
-        this.log.info("url=" + terceURL);
+        this.log.debug("url=" + terceURL);
         
         try {
             terce = new TERCEStub(terceURL);
@@ -110,7 +110,7 @@ public class TERCEDatabase implements TEDB{
             
             response = terce.insertNetworkTopology(insertTopology);
             responseContent = response.getInsertNetworkTopologyResponse();      
-            this.log.info("TERCE Result " + responseContent.getResultCode() +
+            this.log.debug("TERCE Result " + responseContent.getResultCode() +
                 ":  " + responseContent.getResultMessage());
         } catch (RemoteException e) {
             throw new TSSException("Remote TERCE Exception: " + e.getMessage());
@@ -120,7 +120,7 @@ public class TERCEDatabase implements TEDB{
             throw new TSSException("Unable to contact TERCE: " + e.getMessage());
         }
         
-        this.log.info("insertNetworkTopology.end"); 
+        this.log.debug("insertNetworkTopology.end"); 
         
         return;
     }

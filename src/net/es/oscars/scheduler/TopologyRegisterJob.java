@@ -1,6 +1,11 @@
 package net.es.oscars.scheduler;
 
 import java.util.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -15,7 +20,8 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
-import edu.internet2.perfsonar.*;
+
+import edu.internet2.perfsonar.PSTopologyClient;
 
 import net.es.oscars.interdomain.ServiceManager;
 import net.es.oscars.bss.OSCARSCore;
@@ -29,11 +35,14 @@ import net.es.oscars.PropHandler;
 public class TopologyRegisterJob implements Job{
     private Logger log;
     private OSCARSCore core;
-    private long RENEW_TIME = 1800;//30 minutes
+    private long RENEW_TIME = 60;//1 minute
     private String URL = "http://127.0.0.1:8089/perfSONAR_PS/services/topology";
     private boolean UPDATE_LOCAL = false;
+    private boolean LS_UPDATE = false;
     private boolean makeDomainsOpaque = false;
+    private static File tempFile = null;
     
+    private final String TEMP_FILE_PREFIX = "OSCARS-topoReg";
     /**
      * Registers topology with the topology service
      *
@@ -42,7 +51,7 @@ public class TopologyRegisterJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         String jobName = context.getJobDetail().getFullName();
-        this.log.info("TopologyRegisterJob.start name:"+jobName);
+        this.log.debug("TopologyRegisterJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
         TopologyExchangeManager texManager = this.core.getTopologyExchangeManager();
         ServiceManager serviceMgr = this.core.getServiceManager();
@@ -58,13 +67,8 @@ public class TopologyRegisterJob implements Job{
             CtrlPlaneTopologyContent topology = tedb.selectNetworkTopology("all");
             CtrlPlaneDomainContent[] domains = topology.getDomain();
             DomainDAO domainDAO = new DomainDAO(this.core.getBssDbName());
-            
-            //Update local OSCARS database
-            if(UPDATE_LOCAL){
-                TopologyAxis2Importer topoImporter = new TopologyAxis2Importer(this.core.getBssDbName());
-                topoImporter.updateDatabase(topology);
-            }
-            
+            boolean registered = false;
+
             //Send to perfsonar topology service
             for(CtrlPlaneDomainContent domain : domains){
                 Hashtable<String, String> parseResults = 
@@ -82,8 +86,29 @@ public class TopologyRegisterJob implements Job{
                     domain.serialize(org.ogf.schema.network.topology.ctrlplane.Domain.MY_QNAME, 
                                      OMAbstractFactory.getOMFactory(), mtom);
                     mtom.flush();
-                    psClient.addReplaceDomain(sw.toString());
+                    String domainXMLString = sw.toString();
+                    //skip if no change in topology
+                    if(!this.diff(domainXMLString)){ 
+                        this.log.debug("No topology change since last update");
+                        break; 
+                    }
+                    psClient.addReplaceDomain(domainXMLString);
+                    registered = true;
                     break;
+                }
+            }
+            
+            //Update local OSCARS database
+            if(UPDATE_LOCAL && registered){
+                int startDomainCount = domainDAO.list().size();
+                TopologyAxis2Importer topoImporter = new TopologyAxis2Importer(this.core.getBssDbName());
+                topoImporter.updateDatabase(topology);
+                int endDomainCount = domainDAO.list().size();
+                //run LS update immediately if there are more domains
+                if(startDomainCount < endDomainCount && LS_UPDATE){
+                    LSDomainUpdateJob lsUpdateJob = new LSDomainUpdateJob();
+                    lsUpdateJob.init();
+                    lsUpdateJob.updateDB();
                 }
             }
             bss.getTransaction().commit();
@@ -96,7 +121,55 @@ public class TopologyRegisterJob implements Job{
         //Schedule next job
         long nextJobTime = System.currentTimeMillis() + RENEW_TIME*1000;
         serviceMgr.scheduleServiceJob(TopologyRegisterJob.class, dataMap, new Date(nextJobTime));
-        this.log.info("TopologyRegisterJob.end name:"+jobName);
+        this.log.debug("TopologyRegisterJob.end name:"+jobName);
+    }
+    
+    /**
+     * Compares XML string to value stored in temporary file. Used to determine
+     * if registration is required.
+     * 
+     * @param newDomainString the most recent domain as a string
+     * @return true if there is a difference, false otherwise
+     * @throws IOException
+     */
+    synchronized private boolean diff(String newDomainString) throws IOException{
+        boolean isDiff = false;
+        if(TopologyRegisterJob.tempFile == null){
+            //if no temp file then create one
+            TopologyRegisterJob.tempFile = File.createTempFile(TEMP_FILE_PREFIX, "xml");
+            this.log.debug("Created temp file " + 
+                    TopologyRegisterJob.tempFile.getCanonicalPath());
+            isDiff = true;
+        }else{
+            //if temp file then compare to most recent XML
+            StringReader newReader = new StringReader(newDomainString);
+            FileReader oldReader = new FileReader(TopologyRegisterJob.tempFile);
+
+            /* If properly formated the below is sufficient for diff. 
+             * Do not need to handle case where diferent sizes because 
+             * closing tags will be different */
+            char[] oldData = new char[1024];
+            char[] newData = new char[1024];
+            while((oldReader.read(oldData) != -1) && (newReader.read(newData) != -1)){
+                String newStr = new String(newData);
+                String oldStr = new String(oldData);
+                if(!newStr.equals(oldStr)){
+                    isDiff = true;
+                    break;
+                }
+            }
+            newReader.close();
+            oldReader.close();
+        }
+        
+        //If topology changes then update temp file
+        if(isDiff){
+            FileWriter fw = new FileWriter(TopologyRegisterJob.tempFile);
+            fw.write(newDomainString);
+            fw.close();
+        }
+        
+        return isDiff;
     }
 
     /**
@@ -164,17 +237,25 @@ public class TopologyRegisterJob implements Job{
      */
     private void init(){
         PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("external.service.topology", true);
+        Properties props = propHandler.getPropertyGroup("external.service", true);
         Properties psProps = propHandler.getPropertyGroup("perfsonar", true);
         
-        if(props.getProperty("renewTime") != null){
+        if(props.getProperty(ServiceManager.TOPOLOGY_REGISTER + ".renewTime") != null){
             try{
-                RENEW_TIME = Long.parseLong(props.getProperty("renewTime"));
+                RENEW_TIME = Long.parseLong(props.getProperty(
+                        ServiceManager.TOPOLOGY_REGISTER + ".renewTime"));
             }catch(Exception e){}
         }
         
-        if(props.getProperty("updateLocal") != null){
-            UPDATE_LOCAL = "1".equals(props.getProperty("updateLocal"));
+        if(props.getProperty(ServiceManager.TOPOLOGY_REGISTER + ".updateLocal") != null){
+            UPDATE_LOCAL = "1".equals(props.getProperty(
+                    ServiceManager.TOPOLOGY_REGISTER + ".updateLocal"));
+        }
+        
+        for(int i = 1; props.getProperty(i+"") != null; i++){
+            if(ServiceManager.LOOKUP_UPDATE.equals(props.getProperty(i+""))){
+                LS_UPDATE = true;
+            }
         }
     
         if(psProps.getProperty("topology_url") != null){

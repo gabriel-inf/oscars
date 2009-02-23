@@ -24,6 +24,11 @@ public class ServiceManager{
     private String axisConfig;
     private String axisConfigNoRampart;
     
+    final static public String LOOKUP_REGISTER = "lsregister";
+    final static public String LOOKUP_UPDATE = "lsdomainupdate";
+    final static public String TOPOLOGY_REGISTER = "topology";
+    final static public String SUBSCRIBE = "subscribe";
+    
     /**
      * Default constructor. Schedules those
      * jobs that are specified in oscars.properties.
@@ -74,13 +79,13 @@ public class ServiceManager{
         /* Load service modules */
         for(int i = 1; props.getProperty(i+"") != null; i++){
             String service = props.getProperty(i+"");
-            if("lsregister".equals(service.toLowerCase())){
+            if(LOOKUP_REGISTER.equals(service.toLowerCase())){
                 this.serviceJobs.add(LSRegisterJob.class);
-            }else if("lsdomainupdate".equals(service.toLowerCase())){
+            }else if(LOOKUP_UPDATE.equals(service.toLowerCase())){
                 this.serviceJobs.add(LSDomainUpdateJob.class);
-            }else if("topology".equals(service.toLowerCase())){
+            }else if(TOPOLOGY_REGISTER.equals(service.toLowerCase())){
                 this.serviceJobs.add(TopologyRegisterJob.class);
-            }else if("subscribe".equals(service.toLowerCase())){
+            }else if(SUBSCRIBE.equals(service.toLowerCase())){
                 this.serviceJobs.add(SubscribeJob.class);
             }
         }
