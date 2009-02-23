@@ -154,7 +154,10 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                     result.addPathElem(pathAElem);
                 }
                 List<PathElem> pathBElems = pathB.getPathElems();
-                for (PathElem pathBElem: pathBElems) {
+                int pathLength = pathBElems.size();
+                // don't duplicate first element
+                for (int ctr = 1; ctr < pathLength; ctr++) {
+                    PathElem pathBElem = pathBElems.get(ctr);
                     result.addPathElem(pathBElem);
                 }
                 // FIXME: check for sane path
@@ -169,12 +172,14 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
     }
 
     private Path directPath(Link src, Link dst) throws PathfinderException {
-        this.log.debug("checking if "+src.getFQTI()+" and "+dst.getFQTI()+" are directly connected");
+        String srcUrn = src.getFQTI();
+        String dstUrn = dst.getFQTI();
+        this.log.debug("checking if "+srcUrn+" and "+dstUrn+" are directly connected");
         boolean linked = false;
         if (!src.isValid()) {
-            throw new PathfinderException("Link with id: "+src.getFQTI()+" is no longer valid");
+            throw new PathfinderException("Link with id: "+srcUrn+" is no longer valid");
         } else if (!dst.isValid()) {
-            throw new PathfinderException("Link with id: "+dst.getFQTI()+" is no longer valid");
+            throw new PathfinderException("Link with id: "+dstUrn+" is no longer valid");
         }
 
         // Special case: if links are in same node
@@ -190,10 +195,12 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             Path newPath = new Path();
             PathElem pathElemSrc = new PathElem();
             pathElemSrc.setLink(src);
+            pathElemSrc.setUrn(srcUrn);
             newPath.addPathElem(pathElemSrc);
 
             PathElem pathElemDst = new PathElem();
             pathElemDst.setLink(dst);
+            pathElemDst.setUrn(dstUrn);
             newPath.addPathElem(pathElemDst);
 
             return(newPath);
