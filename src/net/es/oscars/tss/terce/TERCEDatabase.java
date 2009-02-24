@@ -1,6 +1,10 @@
 package net.es.oscars.tss.terce;
 
+import org.apache.axis2.context.ConfigurationContext;
+import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.log4j.*;
+
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -52,14 +56,23 @@ public class TERCEDatabase implements TEDB{
         CtrlPlaneTopologyContent topology = null;
         String terceURL = this.props.getProperty("url");
         SelectTypes topoType = this.stringToSelectType(type);
+        String axis2Config = null;
         this.log.debug("url=" + terceURL); 
+        try {
+            axis2Config = ConfigFinder.getInstance().find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2-norampart.xml");
+        } catch (RemoteException e) {
+           throw new TSSException(e.getMessage());
+        }
+        String repo = (new File(axis2Config)).getParent();
         
         if(topoType == null){
             throw new TSSException("Invalid topology type specifed");
         }
         
         try {
-            terce = new TERCEStub(terceURL);
+            ConfigurationContext configContext = ConfigurationContextFactory
+            .createConfigurationContextFromFileSystem(repo, axis2Config);
+            terce = new TERCEStub(configContext, terceURL);
             selectTopology = new SelectNetworkTopology();
             request = new SelectNetworkTopologyContent();
             /* Format Request */ 
