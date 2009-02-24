@@ -59,8 +59,10 @@ public class ConfigFinder {
      public String find(String dir, String fname) throws RemoteException{
         List<String> propFileCanidates = new ArrayList<String>();
         //1. Check OSCARS_HOME/conf
-        propFileCanidates.add(System.getenv("OSCARS_HOME") + "/conf/" + 
+        if(System.getenv("OSCARS_HOME") != null){
+            propFileCanidates.add(System.getenv("OSCARS_HOME") + "/conf/" + 
                 dir + "/" + fname);
+        }
         
         //2. Check CATALINA_HOME (requires mapping to server/repo)
         if(this.catalinaDirectoryMap.containsKey(dir)){
