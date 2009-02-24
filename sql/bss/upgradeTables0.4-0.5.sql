@@ -267,6 +267,7 @@ BEGIN
         END IF;
         IF linkDescription IS NOT NULL THEN
             INSERT INTO pathElemParams VALUES(NULL, pElemId, "l2sc", "suggestedVlan", linkDescription);
+            INSERT INTO pathElemParams VALUES(NULL, pElemId, "l2sc", "vlanRangeAvailability", linkDescription);
         END IF;
     END LOOP insertPathElemParam;
 END
