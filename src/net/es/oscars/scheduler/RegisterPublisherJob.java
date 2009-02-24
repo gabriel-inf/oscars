@@ -1,19 +1,18 @@
 package net.es.oscars.scheduler;
 
-import org.apache.axis2.AxisFault;
 import org.apache.axis2.databinding.types.URI.MalformedURIException;
 import org.apache.log4j.Logger;
 import org.quartz.*;
+
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.*;
 
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.events.WSObserver;
 import net.es.oscars.client.*;
-import net.es.oscars.notifybroker.ws.*;
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
-import net.es.oscars.wsdlTypes.*;
-import org.oasis_open.docs.wsn.b_2.*;
 import org.oasis_open.docs.wsn.br_2.*;
 import org.w3.www._2005._08.addressing.*;
 
@@ -23,14 +22,13 @@ public class RegisterPublisherJob implements Job{
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
+        ConfigFinder configFinder = ConfigFinder.getInstance();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         this.core = OSCARSCore.getInstance();
         String jobName = context.getJobDetail().getFullName();
         log.info("ProcessNotifyJob.start name:"+jobName);
-        String repo = dataMap.getString("repo");
         String publisherURL = dataMap.getString("publisher");
         String consumerURL = dataMap.getString("url");
-        String axisConfig = repo + "axis2.xml";
         Client client = new Client();
         RegisterPublisher request = new RegisterPublisher();
         EndpointReferenceType publisherRef = null;
@@ -45,6 +43,8 @@ public class RegisterPublisherJob implements Job{
         //send message
         boolean error = true;
         try{
+            String axisConfig = configFinder.find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2.xml");
+            String repo = (new File(axisConfig)).getParent();
             publisherRef = client.generateEndpointReference(publisherURL);
             request.setPublisherReference(publisherRef);
             client.setUpNotify(true, consumerURL, repo, axisConfig);
@@ -104,7 +104,7 @@ public class RegisterPublisherJob implements Job{
                            "Additionally, you should verify that you have "+
                            "created a user for the local IDC that is " +
                            "associated with the certificate in " +
-                           "$CATALINA_HOME/shared/classes/repo/sec-client.jks.");
+                           "OSCARS.jks.");
             return;
         }else if(retryAttempts > 0){
             retryAttempts--;

@@ -2,11 +2,15 @@ package net.es.oscars.interdomain;
 
 import org.apache.log4j.Logger;
 import org.quartz.*;
+
+import java.rmi.RemoteException;
 import java.util.*;
+import java.io.File;
 import java.net.InetAddress;
 
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.scheduler.*;
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 
 /**
@@ -35,6 +39,7 @@ public class ServiceManager{
      */
     public ServiceManager(){
         this.log = Logger.getLogger(this.getClass());
+        ConfigFinder configFinder = ConfigFinder.getInstance();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("external.service", true);
         Properties idcProps = propHandler.getPropertyGroup("idc", true); 
@@ -44,24 +49,15 @@ public class ServiceManager{
         String localhost = null;
         this.idcURL = idcProps.getProperty("url");
         
-        /* FIXME */
-        String catalinaHome = System.getProperty("catalina.home");
-        if (catalinaHome == null) {
-            catalinaHome = System.getenv("CATALINA_HOME");
-        }
-        // check for trailing slash
-        if (catalinaHome != null) {
-            if (!catalinaHome.endsWith("/")) {
-                catalinaHome += "/";
-            }
-            this.repo = catalinaHome + "shared/classes/repo/";
-        } else {
-        	// this is a better place..
-        	this.repo = "conf/server/";
+        try{
+            this.axisConfig = configFinder.find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2.xml");
+            this.axisConfigNoRampart = configFinder.find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2-norampart.xml");
+            this.repo = (new File(this.axisConfig)).getParent();
+        }catch(RemoteException e){
+            this.log.error(e.getMessage());
+            return;
         }
         this.log.debug ("repo is set to:" + this.repo);
-        this.axisConfig = this.repo + "axis2.xml";
-        this.axisConfigNoRampart = this.repo + "axis2-norampart.xml";
         
         /* Set IDC URL */
         if(this.idcURL == null){

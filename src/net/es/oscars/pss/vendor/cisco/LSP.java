@@ -7,6 +7,7 @@ import java.util.*;
 
 import org.apache.log4j.*;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
@@ -249,9 +250,8 @@ public class LSP {
 
         this.log.info("setupLSP.start");
         try {
-            String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/classes/server/";
-            fname += this.props.getProperty("setupL2Template");
+            String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
+                    this.props.getProperty("setupL2Template"));
             this.log.info("Filename: ["+fname+"]");
             this.configureLSP(hops, fname, hm);
         } catch (IOException ex) {
@@ -269,9 +269,8 @@ public class LSP {
 
         this.log.info("teardownLSP.start");
         try {
-            String fname = System.getenv("CATALINA_HOME") +
-                "/shared/classes/server/" +
-                this.props.getProperty("teardownL2Template");
+            String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR,
+                this.props.getProperty("teardownL2Template"));
             this.configureLSP(null, fname, hm);
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());

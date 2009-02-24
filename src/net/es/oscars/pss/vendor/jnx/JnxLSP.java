@@ -1,6 +1,7 @@
 package net.es.oscars.pss.vendor.jnx;
 
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
 
 import org.jdom.*;
@@ -13,6 +14,7 @@ import org.apache.log4j.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
@@ -308,7 +310,12 @@ public class JnxLSP {
      private void setupLogin(Link link, HashMap<String, String> hm) {
         hm.put("login", this.props.getProperty("login"));
         hm.put("router", link.getPort().getNode().getNodeAddress().getAddress());
-        String keyfile = System.getenv("CATALINA_HOME") + "/shared/classes/server/oscars.key";
+        String keyfile = null;
+        try {
+            keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
+        } catch (RemoteException e) {
+            this.log.error(e.getMessage());
+        }
         hm.put("keyfile", keyfile);
         hm.put("passphrase", this.props.getProperty("passphrase"));
     }
@@ -320,7 +327,12 @@ public class JnxLSP {
      private void setupLogin(String router, HashMap<String, String> hm) {
         hm.put("login", this.props.getProperty("login"));
         hm.put("router", router);
-        String keyfile = System.getenv("CATALINA_HOME") + "/shared/classes/server/oscars.key";
+        String keyfile = null;
+        try {
+            keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
+        } catch (RemoteException e) {
+            this.log.error(e.getMessage());
+        }
         hm.put("keyfile", keyfile);
         hm.put("passphrase", this.props.getProperty("passphrase"));
     }
@@ -337,6 +349,7 @@ public class JnxLSP {
         LSPConnection conn = null;
 
         this.log.info("setupLSP.start");
+        ConfigFinder configFinder = ConfigFinder.getInstance();
         try {
             // this allows testing the template without trying to configure
             // a router
@@ -347,12 +360,13 @@ public class JnxLSP {
             } else {
                 this.log.info("not setting up connection");
             }
-            String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/classes/server/";
+            String fname = null;
             if (hm.get("vlan_id") != null) {
-                fname += this.props.getProperty("setupL2Template");
+                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                        this.props.getProperty("setupL2Template"));
             } else {
-                fname += this.props.getProperty("setupL3Template");
+                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                        this.props.getProperty("setupL3Template"));
             }
             this.configureLSP(hops, fname, conn, hm);
             if (conn != null) {
@@ -377,19 +391,20 @@ public class JnxLSP {
     public boolean teardownLSP(HashMap<String, String> hm) throws PSSException {
 
         LSPConnection conn = null;
-
+        ConfigFinder configFinder = ConfigFinder.getInstance();
         this.log.info("teardownLSP.start");
         try {
             if (this.allowLSP) {
                 conn = new LSPConnection();
                 conn.createSSHConnection(hm);
             }
-            String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/classes/server/";
+            String fname = null;
             if (hm.get("vlan_id") != null) {
-                fname += this.props.getProperty("teardownL2Template");
+                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                        this.props.getProperty("teardownL2Template"));
             } else {
-                fname += this.props.getProperty("teardownL3Template");
+                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                        this.props.getProperty("teardownL3Template"));
             }
             this.configureLSP(null, fname, conn, hm);
             if (conn != null) {
@@ -431,9 +446,8 @@ public class JnxLSP {
             this.setupLogin(router, hm);
             LSPConnection conn = new LSPConnection();
             conn.createSSHConnection(hm);
-            String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/classes/server/";
-            fname += this.props.getProperty("statusL2Template");
+            String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
+                    this.props.getProperty("statusL2Template"));
             Document doc = this.th.buildTemplate(fname);
             this.sendCommand(doc, conn.out);
             doc = this.readResponse(conn.in);

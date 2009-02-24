@@ -1,5 +1,6 @@
 package net.es.oscars.pathfinder.terce;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import edu.internet2.hopi.dragon.terce.ws.service.RCEFaultMessage;
 import edu.internet2.hopi.dragon.terce.ws.service.TERCEStub;
 import edu.internet2.hopi.dragon.terce.ws.types.rce.*;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
@@ -177,15 +179,17 @@ public class TERCEPathfinder extends Pathfinder implements LocalPCE{
         TERCEStub terce= null;
         ConfigurationContext configContext = null;
         String errMessage = "";
-        String repo = System.getenv("CATALINA_HOME");
         String axis2Config = "";
         
         this.log.debug("terce.start");
         this.log.debug("src=" + src);
         this.log.debug("dest=" + dest);
-        repo += (repo.endsWith("/") ? "" :"/");
-        repo += "shared/classes/terce.conf/repo/";
-        axis2Config = repo + "axis2.xml";
+        try {
+            axis2Config = ConfigFinder.getInstance().find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2-norampart.xml");
+        } catch (RemoteException e) {
+           throw new PathfinderException(e.getMessage());
+        }
+        String repo = (new File(axis2Config)).getParent();
         
         /* Calculate path */
         try {

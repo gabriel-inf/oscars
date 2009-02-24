@@ -17,6 +17,8 @@
 
 package net.es.oscars.client.security;
 
+import net.es.oscars.ConfigFinder;
+
 import org.apache.ws.security.WSPasswordCallback;
 
 //import javax.security.auth.callback.Callback;
@@ -74,7 +76,9 @@ public class PWCallback implements CallbackHandler {
              * For the servers and the core, it will be in ${CATALINA_HOME/shared/classes 
              * For a standalone client, it will be in the working directory.
              */
-            InputStream fis = getClass().getResourceAsStream("/repo/rampConfig.xml");
+            String rampConfigFname = ConfigFinder.getInstance().find(
+                    ConfigFinder.AXIS_TOMCAT_DIR, "rampConfig.xml");
+            FileInputStream fis = new FileInputStream(rampConfigFname);
             XMLInputFactory xif= XMLInputFactory.newInstance();
             XMLStreamReader reader= xif.createXMLStreamReader(fis);
             StAXOMBuilder builder= new StAXOMBuilder(reader);
@@ -101,6 +105,7 @@ public class PWCallback implements CallbackHandler {
         } catch (XMLStreamException e){
             throw new IOException (e.getMessage());
         }   
+        
         /*
          * It would be  nice to get the password from the rampartConfiguration that
          * axis has.

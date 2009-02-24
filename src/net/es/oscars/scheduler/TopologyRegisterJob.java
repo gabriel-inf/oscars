@@ -134,7 +134,8 @@ public class TopologyRegisterJob implements Job{
      */
     synchronized private boolean diff(String newDomainString) throws IOException{
         boolean isDiff = false;
-        if(TopologyRegisterJob.tempFile == null){
+        if(TopologyRegisterJob.tempFile == null || 
+                (!TopologyRegisterJob.tempFile.exists())){
             //if no temp file then create one
             TopologyRegisterJob.tempFile = File.createTempFile(TEMP_FILE_PREFIX, "xml");
             this.log.debug("Created temp file " + 

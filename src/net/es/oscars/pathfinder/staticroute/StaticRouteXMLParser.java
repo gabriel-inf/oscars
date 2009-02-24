@@ -2,6 +2,7 @@ package net.es.oscars.pathfinder.staticroute;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.pathfinder.PathfinderException;
 
@@ -42,9 +44,11 @@ public class StaticRouteXMLParser {
         this.log = Logger.getLogger(this.getClass());
         this.staticRoutesFile = staticRoutesFile;
         if(this.staticRoutesFile == null){
-            this.staticRoutesFile= System.getenv("CATALINA_HOME");
-            this.staticRoutesFile += (this.staticRoutesFile.endsWith("/") ? "" : "/");
-            this.staticRoutesFile += "shared/classes/terce.conf/static-routes.xml";
+            try {
+                this.staticRoutesFile= ConfigFinder.getInstance().find("pathfinder", "static-routes.xml");
+            } catch (RemoteException e) {
+                this.log.error(e.getMessage());
+            }
         }
     }
     

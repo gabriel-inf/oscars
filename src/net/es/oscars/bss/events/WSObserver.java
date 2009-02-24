@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 import javax.xml.namespace.QName;
 
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.client.Client;
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 import net.es.oscars.ws.*;
 import net.es.oscars.wsdlTypes.*;
@@ -24,15 +25,12 @@ import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMFactory;
 import org.oasis_open.docs.wsn.b_2.*;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.Path;
 import org.jaxen.JaxenException;
 import org.jaxen.SimpleNamespaceContext;
 import org.jdom.*;
-import org.jdom.xpath.*;
 import org.jdom.input.*;
-import org.jdom.output.*;
 import org.quartz.*;
 import org.w3.www._2005._08.addressing.*;
 
@@ -74,9 +72,11 @@ public class WSObserver implements Observer {
     /**
      * This method does basic initialization. It will load in topic files
      * and read properties necessary to send messages.
+     * @throws RemoteException 
      *
      */
     private boolean initialize(){
+        ConfigFinder configFinder = ConfigFinder.getInstance();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties wsNotifyProps = propHandler.getPropertyGroup("notify.ws", true);
         Properties idcProps = propHandler.getPropertyGroup("idc", true);
@@ -84,17 +84,9 @@ public class WSObserver implements Observer {
         this.producerURL = idcProps.getProperty("url");
         String privateURL = wsNotifyProps.getProperty("broker.url.private");
         String registerRetryAttempts = wsNotifyProps.getProperty("broker.registerRetryAttempts");
-        String catalinaHome = System.getProperty("catalina.home");
-        if (catalinaHome == null) {
-            this.log.error("catalina.home not set!");
-            return false;
-        }
-        // check for trailing slash
-        if (!catalinaHome.endsWith("/")) {
-            catalinaHome += "/";
-        }
-        String topicNsFile = catalinaHome + "shared/classes/server/idc-topicnamespace.xml";
-        String topicSetFile = catalinaHome + "shared/classes/server/idc-topicset.xml";
+        String topicNsFile = null;
+        String topicSetFile = null;
+        
         /* Set default urls. Lots of logging so its clear what's going on to users. */
         String localhost = null;
 
@@ -104,10 +96,17 @@ public class WSObserver implements Observer {
             this.log.error("Unable to determine localhost.");
         }
 
-        /* Set client files */
-        this.repo = catalinaHome + "shared/classes/repo/";
-        this.axisConfig = this.repo + "axis2-norampart.xml";
-
+        /* Set config files */
+        try{
+            topicNsFile = configFinder.find(ConfigFinder.NOTIFY_DIR, "idc-topicnamespace.xml");
+            topicSetFile = configFinder.find(ConfigFinder.NOTIFY_DIR, "idc-topicset.xml");
+            this.axisConfig = configFinder.find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2-norampart.xml");
+            this.repo = (new File(axisConfig)).getParent();
+        }catch(RemoteException e){
+            this.log.error(e.getMessage());
+            return false;
+        }
+        
         /* Load Topics files */
         try{
             this.loadTopics(topicSetFile, topicNsFile);
@@ -159,7 +158,6 @@ public class WSObserver implements Observer {
         if(privateURL != null){
             dataMap.put("private.url", privateURL);
         }
-        dataMap.put("repo", this.repo);
         dataMap.put("publisher", this.producerURL);
         dataMap.put("retryAttempts", registerRetries);
         jobDetail.setJobDataMap(dataMap);
@@ -281,18 +279,12 @@ public class WSObserver implements Observer {
 
         LocalDetails localDetails = this.getLocalDetails(map.get("intradomainPath"),
                                                          map.get("intradomainHopInfo"));
-        Path path = new Path();
 
         for(String key: map.keySet()){
             String[] val = map.get(key);
-            //System.out.print(key + ": ");
             if(val == null){
-                //System.out.println("null");
                 continue;
             }
-            /* for(int i=0; i < val.length; i++){
-                System.out.println(val[i]);
-            } */
         }
         System.out.println("ResDetails: " + resDetails);
         event.setId("event-" + event.hashCode());

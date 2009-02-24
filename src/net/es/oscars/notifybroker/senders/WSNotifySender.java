@@ -1,9 +1,11 @@
 package net.es.oscars.notifybroker.senders;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 import net.es.oscars.client.security.KeyManagement;
 import net.es.oscars.notifybroker.jdom.NBSoapClient;
@@ -44,8 +46,14 @@ public class WSNotifySender implements NotifySender{
         
         //Activate ssl for https
         //TODO: Set this somewhere else
-        String catalinaHome = System.getProperty("catalina.home");
-        String repo = catalinaHome + "/shared/classes/repo";
+        
+        String sslKeystore = null;
+        try {
+            sslKeystore = ConfigFinder.getInstance().find(ConfigFinder.AXIS_TOMCAT_DIR, "ssl-keystore.jks");
+        } catch (RemoteException e) {
+            this.log.error("Cannot find SSL keystore");
+        }
+        String repo = (new File(sslKeystore)).getParent();
         this.log.debug("SSL repo is " + repo);
         KeyManagement.setKeyStore(repo);
     }

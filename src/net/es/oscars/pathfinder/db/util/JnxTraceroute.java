@@ -56,8 +56,7 @@ public class JnxTraceroute {
         dst = dst.replaceAll("/\\d*", "");
 
 
-        String jnxKey = System.getenv("CATALINA_HOME") +
-                        "/shared/classes/server/oscars.key";
+        String jnxKey = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
 
         // prepare traceroute command
         cmd = "ssh -x -a -i " + jnxKey + " -l " +

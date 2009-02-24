@@ -1,10 +1,13 @@
 package net.es.oscars.notifybroker.jobs;
 
+import java.io.File;
 import java.net.InetAddress;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 import net.es.oscars.notifybroker.NotifyBrokerCore;
 
@@ -31,6 +34,7 @@ public class ServiceManager {
      * jobs that are specified in oscars.properties.
      */
     public ServiceManager(){
+        ConfigFinder configFinder = ConfigFinder.getInstance();
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("external.service", true);
@@ -39,14 +43,14 @@ public class ServiceManager {
         this.core = NotifyBrokerCore.getInstance();
         String localhost = null;
         this.nbURL = nbProps.getProperty("url");
-        String catalinaHome = System.getProperty("catalina.home");
-        // check for trailing slash
-        if (!catalinaHome.endsWith("/")) {
-            catalinaHome += "/";
+        try{
+            this.axisConfig = configFinder.find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2.xml");
+            this.axisConfigNoRampart = configFinder.find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2-norampart.xml");
+            this.repo = (new File(this.axisConfig)).getParent();
+        }catch(RemoteException e){
+            this.log.error(e.getMessage());
+            return;
         }
-        this.repo = catalinaHome + "shared/classes/repo/";
-        this.axisConfig = this.repo + "axis2.xml";
-        this.axisConfigNoRampart = this.repo + "axis2-norampart.xml";
         
         /* Set IDC URL */
         if(this.nbURL == null){

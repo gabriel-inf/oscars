@@ -11,7 +11,7 @@ import org.apache.log4j.*;
 /**
  * XMLFileLocalPathfinder uses an XML file to statically lookup a path. The file location
  * is specified by the pathfinder.staticxml.file property in oscars.properties. It defaults
- * to '$CATALINA_HOME/shared/classes/terce.conf' if the property is not specified to support
+ * to 'pathfinder' if the property is not specified to support
  * older TERCE configurations.
  *              
  * @author Andrew Lake (alake@internet2.edu), David Robertson (dwrobertson@lbl.gov)

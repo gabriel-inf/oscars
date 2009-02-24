@@ -2,7 +2,7 @@ package net.es.oscars;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.regex.*;
+import java.rmi.RemoteException;
 import java.util.*;
 
 
@@ -14,16 +14,23 @@ public class PropHandler {
     private String propertiesFile;
 
     public PropHandler(String fname) {
-        this.propertiesFile = System.getenv("CATALINA_HOME") +
-            "/shared/classes/server/" + fname;
+        //has own ConfigFinder since used so many places
+        ConfigFinder configFinder = ConfigFinder.getInstance();
+        
+        try {
+            this.propertiesFile = 
+                configFinder.find(ConfigFinder.PROPERTIES_DIR, fname);
+        } catch (RemoteException e) {
+            System.out.println("fatal error: unable to find file " + fname);
+            System.exit(0);
+        }
     }
 
     /**
-     * Retreives group of properties from a file, given a prefix.
+     * Retrieves group of properties from a file, given a prefix.
      *
      * @param groupName A string with the name of the prefix
-     * @return properties Properties from
-     *     $CATALINA_HOME/shared/oscars.conf/server/oscars.properties
+     * @return properties Properties from oscars.properties
      */
     public Properties getPropertyGroup(String groupName,
                                        boolean stripPrefix) {

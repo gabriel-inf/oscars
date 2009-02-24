@@ -1,8 +1,12 @@
 package net.es.oscars.interdomain;
 
+import java.io.File;
+import java.rmi.RemoteException;
+
 import org.apache.log4j.*;
 import org.apache.axis2.AxisFault;
 
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.events.EventProducer;
@@ -28,15 +32,16 @@ public class Forwarder extends Client {
             throws InterdomainException {
 
         this.log.debug("setup.start: " + url);
-        String catalinaHome = System.getProperty("catalina.home");
-        // check for trailing slash
-        if (!catalinaHome.endsWith("/")) {
-            catalinaHome += "/";
+        String axis2Xml = null;
+        try{
+            axis2Xml = ConfigFinder.getInstance().find(ConfigFinder.AXIS_TOMCAT_DIR, "axis2.xml");
+        }catch(RemoteException e){
+            throw new InterdomainException(e.getMessage());
         }
-        String repo = catalinaHome + "shared/classes/repo/";
-        System.setProperty("axis2.xml", repo + "axis2.xml");
+        String repo = (new File(axis2Xml)).getParent();
+        System.setProperty("axis2.xml", axis2Xml);
         try {
-            super.setUp(true, url, repo, repo + "axis2.xml");
+            super.setUp(true, url, repo, axis2Xml);
         } catch (AxisFault af) {
             this.log.error("setup.axisFault: " + af.getMessage());
             throw new InterdomainException("failed to reach remote domain:" + url +  af.getMessage());

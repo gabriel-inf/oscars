@@ -5,12 +5,13 @@ import java.util.regex.*;
 import java.io.*;
 import javax.mail.*;
 import javax.mail.internet.*;
+
+import java.rmi.RemoteException;
 import java.text.DateFormat;
 
 import org.apache.log4j.*;
 
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.*;
+import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
 
 /**
@@ -78,28 +79,18 @@ public class EmailObserver implements Observer {
             return;
         }
         
-        //TODO: Do not hardcode this path
         OSCARSEvent event = (OSCARSEvent) arg;
-        //String catalinaHome = System.getProperty("catalina.home");
-        String catalinaHome = System.getenv("CATALINA_HOME");
-        if(!catalinaHome.endsWith("/")){
-            catalinaHome += "/";
-        }
-        String templateDir = catalinaHome + "shared/classes/server/mail_templates/";
-        String fname = templateDir + event.getType() + ".xml";
-        File fin = new File(fname);
+        ConfigFinder configFinder = ConfigFinder.getInstance();
+        String fname = null;
+        try{
+            fname = configFinder.find(ConfigFinder.MAIL_TEMPLATES_DIR, 
+                    event.getType() + ".xml");
+        }catch(RemoteException e){ return; }
         String contentType = "text/plain";
-        
-        /* Only send email if template exists*/
-        if(!fin.exists()){
-            this.log.debug(fname + " does not exist!");
-            return;
-        }
-        
         String line = null;
         String template = null;
         try{
-            BufferedReader reader = new BufferedReader(new FileReader(fin));
+            BufferedReader reader = new BufferedReader(new FileReader(fname));
             while((line = reader.readLine()) != null){
                 template += (line + "\n");
             }
@@ -165,8 +156,6 @@ public class EmailObserver implements Observer {
         HashMap<String,String[]> resv = event.getReservationParams();
         String msg = template;
         String eventTime = this.formatTime(event.getTimestamp());
-        String val = null;
-        Integer intVal = null;
         
         //NOTE: There are more efficient ways to parse and replace fields
         //but this seems to work for now.
