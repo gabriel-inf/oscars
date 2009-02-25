@@ -306,15 +306,18 @@ public class IDCDomainUtil extends IDCCmdUtil{
         dbnames.add(this.dbname);
         dbnames.add(this.aaaDbName);
         initializer.initDatabase(dbnames);
+        Session bss =
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         Session aaa =
             HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
         
+        bss.beginTransaction();
         aaa.beginTransaction();
         Domain domain = this.selectDomain(in, "domain");
         Site site = this.selectSite(domain, in);
         aaa.save(site);
         aaa.getTransaction().commit();
-        
+        bss.getTransaction().commit();
         System.out.println("New site created that associates domain '" + domain.getTopologyIdent() + "' with organization '" + site.getInstitution().getName() + "'.");
     }
     
