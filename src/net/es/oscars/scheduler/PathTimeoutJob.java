@@ -1,18 +1,12 @@
 package net.es.oscars.scheduler;
 
 import java.util.Properties;
-import java.util.Date;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.ws.*;
-import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.interdomain.*;
-import net.es.oscars.bss.events.*;
 import net.es.oscars.pss.*;
 import net.es.oscars.PropHandler;
 
@@ -82,8 +76,14 @@ public class PathTimeoutJob implements org.quartz.Job {
         }catch(BSSException ex){
             bss.getTransaction().rollback();
             this.log.error(ex.getMessage());
-            eventProducer.addEvent(failedEvent, login, 
-                                   "JOB", "", ex.getMessage());
+            return;
+        }
+        
+        String status = StateEngine.getStatus(resv);
+        //if in a final state then return because nothing can be done
+        if(StateEngine.FINISHED.equals(status) || 
+                StateEngine.CANCELLED.equals(status) || 
+                StateEngine.FAILED.equals(status)){
             return;
         }
         
@@ -92,7 +92,6 @@ public class PathTimeoutJob implements org.quartz.Job {
                 /* try updating the status if a confirmed event was sent from
                    another domain whose clock is slightly earlier than the 
                    local clock */
-                String status = se.getStatus(resv);
                 if(targStatus.equals(status) && op.equals("setup")){
                     pm.updateCreateStatus(newLocalStatus, resv);
                 }else if(targStatus.equals(status) && op.equals("teardown")){
@@ -107,8 +106,7 @@ public class PathTimeoutJob implements org.quartz.Job {
             }else if(dataMap.containsKey("statusCheck")){
                 /* timeout a reservation if its not updated by 
                    the time this job runs */
-                String status = this.se.getStatus(resv);
-                int localStatus = this.se.getLocalStatus(resv);
+                int localStatus = StateEngine.getLocalStatus(resv);
                 int bit = (upstream ? StateEngine.UP_CONFIRMED : StateEngine.DOWN_CONFIRMED);
                 if(status.equals(dataMap.getString("status")) && 
                     (localStatus & bit) != 1){

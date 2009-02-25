@@ -295,10 +295,11 @@ public class ReservationManager {
         }
         String status = StateEngine.getStatus(resv);
         if (!reqStatus.equals(status)) {
-            this.log.info("Trying to fail a reservation that doesn't" +
+            this.log.debug("Trying to fail a reservation that doesn't" +
                           " have status " + reqStatus);
             return;
         }
+        
         Domain prevDomain = this.endPointDomain(resv, true);
         Domain nextDomain = this.endPointDomain(resv, false);
         Domain neighborDomain = null;
