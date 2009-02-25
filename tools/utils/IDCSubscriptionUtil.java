@@ -78,7 +78,7 @@ public class IDCSubscriptionUtil {
             
             String statusString = "";
             if(subscription.getStatus() == ACTIVE_STATUS &&
-                    subscription.getTerminationTime() > System.currentTimeMillis()){
+                    (subscription.getTerminationTime()*1000L) > System.currentTimeMillis()){
                 statusString = "ACTIVE";
             }else if(subscription.getStatus() == ACTIVE_STATUS){
                 statusString = "EXPIRED";
