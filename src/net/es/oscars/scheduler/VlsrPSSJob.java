@@ -456,7 +456,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         this.log.info("vlsr.refresh.start");
         
         DragonCSA csa = new DragonCSA();
-        csa.setLogger("PathScheduler");
+        csa.setLogger(this.getClass().getName());
         DragonLSP lsp = null;
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
@@ -569,7 +569,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     public void teardownPath(Reservation resv) throws PSSException{
         this.log.info("vlsr.teardown.start");
         DragonCSA csa = new DragonCSA();
-        csa.setLogger("PathScheduler");
+        csa.setLogger(this.getClass().getName());
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
         String sshPortForwardStr = this.props.getProperty("ssh.portForward");
