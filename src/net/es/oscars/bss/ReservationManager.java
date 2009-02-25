@@ -767,7 +767,7 @@ public class ReservationManager {
         if(neighborElems.size() < interPathElems.size()){
             throw new BSSException("Confirmed path from neighbor contains " +
                         "less hops than path in database");
-        }else if(neighborElems.size() != interPathElems.size()){
+        }else if(neighborElems.size() != interPathElems.size() && (!confirm)){
             throw new BSSException("Completed path and store path do not " +
                             "have a equal number of hops");
         }
