@@ -80,7 +80,7 @@ public class IDCSubscriptionUtil {
             if(subscription.getStatus() == ACTIVE_STATUS &&
                     subscription.getTerminationTime() > System.currentTimeMillis()){
                 statusString = "ACTIVE";
-            }if(subscription.getStatus() == ACTIVE_STATUS){
+            }else if(subscription.getStatus() == ACTIVE_STATUS){
                 statusString = "EXPIRED";
             }else if(subscription.getStatus() == INACTIVE_STATUS){
                 statusString = "INACTIVE";
