@@ -107,7 +107,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private void createPath(Reservation resv) throws PSSException{
         this.log.info("vlsr.create.start");
         DragonCSA csa = new DragonCSA();
-        csa.setLogger("PathScheduler");
+        csa.setLogger(this.getClass().getName());
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
         String promptPattern = this.props.getProperty("promptPattern");
@@ -1002,6 +1002,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             }
             ero.add(linkId);
             this.log.info((isSubnet ? "SUBNET" : "") + "ERO: " + linkId);
+            ctr++;
         }
         if(ero.size() == 0){
             return null;
