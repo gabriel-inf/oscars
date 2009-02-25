@@ -232,7 +232,7 @@
         <!-- for lack of a better place, need bss.cfg.xml for tools -->
         <property name="tool.classes" value="build/tools"/>
         <copy todir="${tool.classes}">
-            <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml, bss.cfg.xml"/>
+            <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml, bss.cfg.xml, notify.cfg.xml"/>
         </copy>
     </target>
     

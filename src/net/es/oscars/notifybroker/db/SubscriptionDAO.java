@@ -101,4 +101,14 @@ public class SubscriptionDAO
                                  .setString(0, login)
                                  .list();
    }
+   
+   public List<Subscription> getAllActive(){
+       String sql = "SELECT * FROM subscriptions WHERE " + 
+                    "status=1 AND terminationTime > UNIX_TIMESTAMP(NOW())";
+       
+
+       return (List<Subscription>) this.getSession().createSQLQuery(sql)
+                                .addEntity(Subscription.class)
+                                .list();
+  }
 }
