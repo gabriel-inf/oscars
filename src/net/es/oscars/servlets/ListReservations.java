@@ -252,10 +252,14 @@ public class ListReservations extends HttpServlet {
             }
             // start of second sub-row
             resvMap.put("user", resv.getLogin());
+            List<String> vlanTags = null;
             String vlanTag = null;
-            if ( path != null) {
+            if (path != null) {
                 try {
-                    vlanTag = BssUtils.getVlanTag(path);
+                    vlanTags = BssUtils.getVlanTags(path);
+                    if (!vlanTags.isEmpty()) {
+                        vlanTag = vlanTags.get(0);
+                    }
                 } catch (BSSException ex) {
                     outputMap.put("error", ex.getMessage());
                 }

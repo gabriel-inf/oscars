@@ -12,7 +12,7 @@ import net.es.oscars.bss.topology.*;
  * This class contains utility methods for use by the reservation manager.
  */
 public class BssUtils {
-    private Logger log = Logger.getLogger(BssUtils.class);
+    private static Logger log = Logger.getLogger(BssUtils.class);
 
     // utils class, do not instantiate
     private BssUtils() {
@@ -200,24 +200,30 @@ public class BssUtils {
      * Gets VLAN tag given path.  Assumes just one VLAN tag in path for now.
      *
      * @param path Path with reservation's page
-     * @return vlanTag string with VLAN tag, if any
+     * @return vlanTags list of strings with VLAN tag for each hop, if any
      * @throws BSSException
      */
-    public static String getVlanTag(Path path) throws BSSException {
+    public static List<String> getVlanTags(Path path) throws BSSException {
         List<PathElem> pathElems = path.getPathElems();
+        List<String> vlanTags = new ArrayList<String>();
         if ((pathElems == null) || pathElems.isEmpty()) {
-            return null;
+            log.info("null or empty");
+            return vlanTags;
         }
-        PathElem pathElem = pathElems.get(0);
-        pathElem.initializePathElemParams();
-        PathElemParam pep =
-            pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                                      PathElemParamType.L2SC_VLAN_RANGE);
-        if (pep == null) {
-            return null;
+        for (PathElem pathElem: pathElems) {
+            pathElem.initializePathElemParams();
+            PathElemParam pep =
+                pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                          PathElemParamType.L2SC_VLAN_RANGE);
+            if (pep == null) {
+                log.info("pep is null");
+                vlanTags.add(null);
+            } else {
+                String vlanTag = pep.getValue();
+                vlanTags.add(vlanTag);
+            }
         }
-        String vlanTag = pep.getValue();
-        return vlanTag;
+        return vlanTags;
     }
 
     /**

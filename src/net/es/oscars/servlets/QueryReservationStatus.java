@@ -109,26 +109,17 @@ public class QueryReservationStatus extends HttpServlet {
         outputMap.put("griReplace", resv.getGlobalReservationId());
         outputMap.put("statusReplace", status);
         if (layer2Data != null) {
-            String vlanTag = BssUtils.getVlanTag(path);
-            if (vlanTag != null) {
-                //If its a negative number try converting it
-                //Prior to reservation completing may be a range or "any"
-                int storedVlan = 0;
-                try {
-                    storedVlan = Integer.parseInt(vlanTag);
-                    vlanTag = Math.abs(storedVlan) + "";
-                } catch(Exception e) {}
-                outputMap.put("vlanReplace", vlanTag);
-                if (storedVlan >= 0) {
-                    outputMap.put("taggedReplace", "true");
-                } else {
-                    outputMap.put("taggedReplace", "false");
-                }
+            List<String> vlanTags = BssUtils.getVlanTags(path);
+            if (!vlanTags.isEmpty()) {
+                String vlanTag = vlanTags.get(0);
+                QueryReservation.outputVlan(vlanTag, outputMap, "src");
+                vlanTag = vlanTags.get(vlanTags.size()-1);
+                QueryReservation.outputVlan(vlanTag, outputMap, "dest");
             } else {
                 if (status.equals("SUBMITTED") || status.equals("ACCEPTED")) {
-                    outputMap.put("vlanReplace", "VLAN setup in progress");
+                    outputMap.put("srcVlanReplace", "VLAN setup in progress");
                 } else {
-                    outputMap.put("vlanReplace",
+                    outputMap.put("srcVlanReplace",
                                   "No VLAN tag was ever set up");
                 }
             }

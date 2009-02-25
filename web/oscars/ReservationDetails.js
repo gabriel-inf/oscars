@@ -175,15 +175,12 @@ oscars.ReservationDetails.cloneReservation = function () {
                 // get contents of text element in td (hop)
                 pathStr += trNodes[i].firstChild.firstChild.data + "\n";
             }
-            // don't clone layer 3 if no longer valid
-            if (!pathStr.match(/Out of date IP/)) {
-                // set path text area on create reservation page
-                var textareaWidget = dijit.byId("explicitPath");
-                textareaWidget.setValue(pathStr);
-            }
+            // set path text area on create reservation page
+            var textareaWidget = dijit.byId("explicitPath");
+            textareaWidget.setValue(pathStr);
         }
     }
-    node = dojo.byId("vlanReplace");
+    node = dojo.byId("srcVlanReplace");
     if (oscars.Utils.isBlank(node.innerHTML)) {
         layer2Reservation = false;
     }
@@ -231,7 +228,7 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
     if (responseObject.method == "QueryReservation") {
         // reset node which indicates whether layer 2 or layer 3 before
         // applying results of query
-        var node = dojo.byId("vlanReplace");
+        var node = dojo.byId("srcVlanReplace");
         node.innerHTML = "";
         var refreshButton = dojo.byId("resvRefreshDisplay");
         refreshButton.style.display = ""; 
@@ -314,7 +311,7 @@ oscars.ReservationDetails.setDateTimes = function () {
 // chooses which params to display in reservation details page
 oscars.ReservationDetails.hideParams = function (responseObject) {
     var i;
-    var n = dojo.byId("vlanReplace");
+    var n = dojo.byId("srcVlanReplace");
     var layer2Nodes = dojo.query(".layer2Replace");
     var layer3Nodes = dojo.query(".layer3Replace");
     if (!oscars.Utils.isBlank(n.innerHTML)) {

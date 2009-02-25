@@ -159,26 +159,17 @@ public class QueryReservation extends HttpServlet {
         if (layer2Data != null) {
             outputMap.put("sourceReplace", layer2Data.getSrcEndpoint());
             outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
-            String vlanTag = BssUtils.getVlanTag(path);
-            if (vlanTag != null) {
-                //If its a negative number try converting it
-                //Prior to reservation completing may be a range or "any"
-                int storedVlan = 0;
-                try{
-                    storedVlan = Integer.parseInt(vlanTag);
-                    vlanTag = Math.abs(storedVlan) + "";
-                }catch(Exception e){}
-                outputMap.put("vlanReplace", vlanTag);
-                if (storedVlan >= 0) {
-                    outputMap.put("taggedReplace", "true");
-                } else {
-                    outputMap.put("taggedReplace", "false");
-                }
+            List<String> vlanTags = BssUtils.getVlanTags(path);
+            if (!vlanTags.isEmpty()) {
+                String vlanTag = vlanTags.get(0);
+                QueryReservation.outputVlan(vlanTag, outputMap, "src");
+                vlanTag = vlanTags.get(vlanTags.size()-1);
+                QueryReservation.outputVlan(vlanTag, outputMap, "dest");
             } else {
                 if (status.equals("SUBMITTED") || status.equals("ACCEPTED")) {
-                    outputMap.put("vlanReplace", "VLAN setup in progress");
+                    outputMap.put("srcVlanReplace", "VLAN setup in progress");
                 } else {
-                    outputMap.put("vlanReplace",
+                    outputMap.put("srcVlanReplace",
                                   "No VLAN tag was ever set up");
                 }
             }
@@ -263,6 +254,26 @@ public class QueryReservation extends HttpServlet {
             }
             sb.append("</tbody>");
             outputMap.put("interPathReplace", sb.toString());
+        }
+    }
+
+   public static void outputVlan(String vlanTag, Map<String, Object> outputMap,
+                                 String prefix) {
+
+        if (vlanTag != null) {
+            //If its a negative number try converting it
+            //Prior to reservation completing may be a range or "any"
+            int storedVlan = 0;
+            try {
+                storedVlan = Integer.parseInt(vlanTag);
+                vlanTag = Math.abs(storedVlan) + "";
+            } catch (Exception e) {}
+            outputMap.put(prefix + "VlanReplace", vlanTag);
+            if (storedVlan >= 0) {
+                outputMap.put(prefix + "TaggedReplace", "true");
+            } else {
+                outputMap.put(prefix + "TaggedReplace", "false");
+            }
         }
     }
 }
