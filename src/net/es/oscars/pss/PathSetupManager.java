@@ -286,9 +286,16 @@ public class PathSetupManager{
         }
         String login = resv.getLogin();
         
+        //If in final state just ignore event
+        if(StateEngine.getStatus(resv).equals(StateEngine.FINISHED) || 
+                StateEngine.getStatus(resv).equals(StateEngine.FAILED) || 
+                StateEngine.getStatus(resv).equals(StateEngine.CANCELLED)){
+            return;
+        }
+        
         Domain neighborDomain = rm.endPointDomain(resv, upstream);
         if(neighborDomain == null || neighborDomain.isLocal()){
-            this.log.error("Could not identify " + targetNeighbor + 
+            this.log.debug("Could not identify " + targetNeighbor + 
                            " domain in path.");
             return;
         }else if(!neighborDomain.getTopologyIdent().equals(producerID)){
@@ -336,6 +343,13 @@ public class PathSetupManager{
         }
         String login = resv.getLogin();
         
+        //If in final state just ignore event
+        if(StateEngine.getStatus(resv).equals(StateEngine.FINISHED) || 
+                StateEngine.getStatus(resv).equals(StateEngine.FAILED) || 
+                StateEngine.getStatus(resv).equals(StateEngine.CANCELLED)){
+            return;
+        }
+        
         Domain prevDomain = rm.endPointDomain(resv, true);
         Domain nextDomain = rm.endPointDomain(resv, false);
         Domain neighborDomain = null;
@@ -351,11 +365,6 @@ public class PathSetupManager{
         if(neighborDomain == null){
             this.log.debug("Cannot find notification producer " + producerID +
                            " in the path");
-            return;
-        }
-        
-        if(StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
-            this.log.warn("Reservation " + gri + " already failed so skipping.");
             return;
         }
         

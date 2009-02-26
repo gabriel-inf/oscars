@@ -33,6 +33,7 @@ public class SubscribeJob implements Job{
     private static long RETRY_INTERVAL;
     private static String TOPICS;
     private Client client;
+    private static HashMap<String, Boolean> lockMap = new HashMap<String, Boolean>();
     
     private final double DEFAULT_TERM_TIME_WINDOW = .2;
     private final long DEFAULT_RETRY_INTERVAL = 1800;//30 minutes
@@ -152,6 +153,7 @@ public class SubscribeJob implements Job{
      */
     private void subscribe(JobDataMap dataMap, Domain neighbor){
         this.log.debug("subscribe.start");
+        
         if(neighbor == null && dataMap.get("neighbor") == null){
             this.log.debug("No domain provided");
             return;
@@ -170,11 +172,36 @@ public class SubscribeJob implements Job{
         String subscribeURL = this.lookup(neighbor);
         this.log.debug("subscribeURL=" + subscribeURL);
         SubscribeResponse response = null;
+        //obtain lock
+        while(!setLock(neighborID, true)){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                this.log.error(e.getMessage());
+                return;
+            }
+        }
+        //initialize if have not already done so
+        if(TOPICS == null){
+            this.init();
+        }
+        
+        if( this.serviceMgr.getServiceData("NB") == null){
+            HashMap<String, EndpointReferenceType> map = new HashMap<String, EndpointReferenceType>();
+            this.serviceMgr.putServiceData("NB", (Object) map);
+        }
+        
+        //Check if subscription already exists
+        if(this.serviceMgr.getServiceMapData("NB", neighborID) != null){
+            this.log.debug("Subscription exists so ending job");
+            return;
+        }
+        
         try{
             response = this.sendSubscribe(subscribeURL, neighborURL);
         }catch(Exception e){
             this.log.error("Error sending Subscribe message to " +
-            		subscribeURL + ": " + e);
+                    subscribeURL + ": " + e);
             e.printStackTrace();
         }
         
@@ -196,6 +223,9 @@ public class SubscribeJob implements Job{
         }else{
             dataMap.put("subscribe", true);
         }
+        
+        //release lock
+        setLock(neighborID, false);
         
         //schedule next job
         dataMap.put("neighbor", neighborID);
@@ -282,7 +312,7 @@ public class SubscribeJob implements Job{
             //if fails, try creating a new subscription
             dataMap.remove("renew");
             this.log.warn("Error sending Renew message to " +
-            		subscribeURL + ": " + e.getMessage());
+                    subscribeURL + ": " + e.getMessage());
             this.subscribe(dataMap, neighbor);
             return;
         }
@@ -347,5 +377,20 @@ public class SubscribeJob implements Job{
         //TODO: Try lookup service first
         DomainServiceDAO dao = new DomainServiceDAO(this.core.getBssDbName());
         return dao.getUrl(neighbor, "NB");
+    }
+
+    public static synchronized boolean checkLock(String neighborId) {
+        if(!SubscribeJob.lockMap.containsKey(neighborId)){
+            return false;
+        }
+        return SubscribeJob.lockMap.get(neighborId);
+    }
+
+    public static synchronized boolean setLock(String neighborId, boolean value) {
+        if(value && checkLock(neighborId)){
+            return false;
+        }
+        SubscribeJob.lockMap.put(neighborId, value);
+        return true;
     }
 }

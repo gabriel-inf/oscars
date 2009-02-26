@@ -2,16 +2,22 @@ package net.es.oscars.interdomain;
 
 import java.io.File;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.*;
 import org.apache.axis2.AxisFault;
+import org.quartz.JobDataMap;
 
 import net.es.oscars.ConfigFinder;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.scheduler.SubscribeJob;
 import net.es.oscars.ws.AAAFaultMessage;
 import net.es.oscars.ws.BSSFaultMessage;
 import net.es.oscars.ws.WSDLTypeConverter;
@@ -61,10 +67,15 @@ public class Forwarder extends Client {
            throw new InterdomainException(
                   "no path provided to forwarder create");
         }
+        
+        //check subscriptions to previous and next domain
+        this.checkSubscriptions(path);
+        
         Domain nextDomain = path.getNextDomain();
         if (nextDomain == null) {
             return false;
         }
+        
         String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
         EventProducer eventProducer = new EventProducer();
@@ -88,9 +99,16 @@ public class Forwarder extends Client {
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
-
+        
+        if(path == null){
+            return false;
+        }
+        
+        //check subscriptions to previous and next domain
+        this.checkSubscriptions(path);
+        
         // currently get the next domain from the stored path
-        if (path != null && path.getNextDomain() != null) {
+        if (path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
 
@@ -139,8 +157,15 @@ public class Forwarder extends Client {
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
-
-        if (path != null && path.getNextDomain() != null) {
+        
+        if(path == null){
+            return false;
+        }
+        
+        //check subscriptions to previous and next domain
+        this.checkSubscriptions(path);
+        
+        if (path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
 
@@ -163,8 +188,15 @@ public class Forwarder extends Client {
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
-
-        if (path != null && path.getNextDomain() != null) {
+        
+        if(path == null){
+            return false;
+        }
+        
+        //check subscriptions to previous and next domain
+        this.checkSubscriptions(path);
+        
+        if (path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
         if (url == null) { return false; }
@@ -183,8 +215,14 @@ public class Forwarder extends Client {
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
-
-        if (path != null && path.getNextDomain() != null) {
+        if(path == null){
+            return false;
+        }
+        
+        //check subscriptions to previous and next domain
+        this.checkSubscriptions(path);
+        
+        if (path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
         if (url == null) { return false; }
@@ -203,8 +241,15 @@ public class Forwarder extends Client {
         } catch (BSSException ex) {
             throw new InterdomainException(ex.getMessage());
         }
-
-        if (path != null && path.getNextDomain() != null) {
+        
+        if(path == null){
+            return false;
+        }
+        
+        //check subscriptions to previous and next domain
+        this.checkSubscriptions(path);
+        
+        if (path.getNextDomain() != null) {
             url = path.getNextDomain().getUrl();
         }
         if (url == null) { return false; }
@@ -323,5 +368,65 @@ public class Forwarder extends Client {
         resCont.setGlobalReservationId(resv.getGlobalReservationId());
         resCont.setPathInfo(pathInfo);
         return resCont;
+    }
+    
+    private void checkSubscriptions(Path path) throws InterdomainException{
+        OSCARSCore core = OSCARSCore.getInstance();
+        ServiceManager serviceMgr = core.getServiceManager();
+        List<PathElem> pathElems = path.getPathElems();
+        List<String> neighbors = new ArrayList<String>();
+        DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
+        String localDomainId = domainDAO.getLocalDomain().getTopologyIdent();
+        String prevDomainId = null;
+        
+        //Get previous domain link
+        for(PathElem elem : pathElems){
+            String elemDomainId = URNParser.parseTopoIdent(elem.getUrn()).get("domainId");
+            if(localDomainId.equals(elemDomainId)){
+                break;
+            }
+            prevDomainId = elemDomainId;
+        }
+        
+        //Check previous domain subscription
+        if(prevDomainId != null){
+            neighbors.add(prevDomainId);
+            this.log.debug("prevDomainId=" + prevDomainId);
+        }
+        //Check next domain subscription
+        if( path.getNextDomain() != null){
+            neighbors.add(path.getNextDomain().getTopologyIdent());
+            this.log.debug("nextDomainId=" + path.getNextDomain().getTopologyIdent());
+        }
+        
+        //Check subscriptions for previous and next domain
+        for(String neighbor : neighbors){
+            Object subscrId = serviceMgr.getServiceMapData("NB", neighbor);
+            if(subscrId != null){
+                this.log.debug("Subscription exists for " + neighbor);
+                continue;
+            }
+            JobDataMap dataMap = new JobDataMap();
+            dataMap.put("subscribe", true);
+            dataMap.put("neighbor", neighbor);
+            serviceMgr.scheduleServiceJob(SubscribeJob.class, dataMap, new Date());
+            //wait up to 10 seconds for subscription
+            for(int i=0; i < 30;i++){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new InterdomainException(e.getMessage());
+                }
+                if(serviceMgr.getServiceMapData("NB", neighbor) != null){
+                    break;
+                }
+            }
+            //If still null then throw an Exception
+            if(serviceMgr.getServiceMapData("NB", neighbor) == null){
+                throw new InterdomainException("Unable to complete " +
+                        "interdomain request because unable to subscribe to " +
+                        "notifications from " + neighbor);
+            }
+        }
     }
 }

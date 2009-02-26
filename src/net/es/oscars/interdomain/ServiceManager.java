@@ -155,6 +155,9 @@ public class ServiceManager{
      */
     public Object getServiceMapData(String service, String key){
         Map<String, Object> map = (Map<String, Object>)this.serviceData.get(service);
+        if(map == null){
+            return null;
+        }
         return map.get(key);
     } 
     
