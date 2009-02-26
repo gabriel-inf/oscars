@@ -14,7 +14,7 @@ import org.hibernate.Session;
 import java.util.List;
 
 
-public class IDCSubscriptionUtil {
+public class NBSubscriptionUtil {
     final private String DBNAME = "notify";
     final private int INACTIVE_STATUS = 0;
     final private int ACTIVE_STATUS = 1;
@@ -72,7 +72,7 @@ public class IDCSubscriptionUtil {
             SubscriptionDAO subscriptionDAO = new SubscriptionDAO(DBNAME);
             Subscription subscription = subscriptionDAO.queryByRefId(id, null);
             if(subscription == null){
-                System.err.println("No reservation found with id " + id);
+                System.err.println("No subscription found with id " + id);
                 System.exit(1);
             }
             
@@ -90,7 +90,7 @@ public class IDCSubscriptionUtil {
                 statusString = "**INVALID STATUS**";
             }
             
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss z");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
             System.out.println("ID: " + subscription.getReferenceId());
             System.out.println("User: " + subscription.getUserLogin());
             System.out.println("Consumer URL: " + subscription.getUrl());
@@ -123,7 +123,7 @@ public class IDCSubscriptionUtil {
     }
     
     public static void main(String[] args){
-        IDCSubscriptionUtil util = new IDCSubscriptionUtil();
+        NBSubscriptionUtil util = new NBSubscriptionUtil();
         boolean showAll = false;
         String id = null; 
         for(String arg : args){
