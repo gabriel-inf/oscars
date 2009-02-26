@@ -119,7 +119,9 @@ public class ModifyReservationJob extends ChainingJob implements Job {
                 this.log.error(ex2);
             }
         } finally {
-            this.runNextJob(context);
+            if(!dataMap.containsKey("statusCheck")){
+                this.runNextJob(context);
+            }
         }
         this.log.info("ModifyReservationJob.end");
     }
@@ -264,7 +266,7 @@ public class ModifyReservationJob extends ChainingJob implements Job {
         Date date = new Date(time);
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null,
                                                   date, null, 0, 0L);
-        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_REQ_TIMEOUT",
+        JobDetail jobDetail = new JobDetail(jobName, "REQ_TIMEOUT",
                                             ModifyReservationJob.class);
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
