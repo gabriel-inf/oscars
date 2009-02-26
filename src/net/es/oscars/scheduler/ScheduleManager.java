@@ -18,7 +18,9 @@ public class ScheduleManager {
     private OSCARSCore core;
     private Scheduler scheduler;
     private Logger log;
-
+    private HashMap<String, List<String>> jobQueues;
+    private HashMap<String, Boolean> jobQueueLocks;
+    
     private static ScheduleManager instance;
     public static ScheduleManager getInstance() {
         if (ScheduleManager.instance == null) {
@@ -32,7 +34,9 @@ public class ScheduleManager {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("scheduler.start");
         this.core = OSCARSCore.getInstance();
-
+        this.jobQueues = new HashMap<String, List<String>>();
+        this.jobQueueLocks = new HashMap<String, Boolean>();
+        
         try {
             SchedulerFactory schedFact = new StdSchedulerFactory();
             this.scheduler = schedFact.getScheduler();
@@ -88,7 +92,6 @@ public class ScheduleManager {
     @SuppressWarnings("unchecked")
     public synchronized void processQueue() {
         try {
-            this.pauseScheduler();
 
             this.queueExpiredAndPending();
 
@@ -99,8 +102,6 @@ public class ScheduleManager {
                     this.serializeQueue(queueName);
                 }
             }
-
-            this.scheduler.start();
 
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
@@ -205,21 +206,21 @@ public class ScheduleManager {
 
         String unqueuedJobsGroupName = queueName;
         String queuedJobsGroupName = "QUEUED_"+queueName;
+        List<String> queue = null;
+        try {
+            //Getting the queue gives this method a lock on the queue
+            //Nothing can change the queue until this call finished
+            this.log.debug("getting job queue lock...");
+            queue = this.getJobQueue(queuedJobsGroupName);
+        } catch (InterruptedException e) {
+            throw new SchedulerException(e.getMessage());
+        }
 
         String[] unQueuedJobNames = this.scheduler.getJobNames(unqueuedJobsGroupName);
-        String[] queuedJobNames = this.scheduler.getJobNames(queuedJobsGroupName);
         String jobToSchedule = null;
         JobDetail lastJobInQueue = null;
-        if (queuedJobNames != null) {
-            for (String queuedJobName : queuedJobNames) {
-                // the LAST in the queue chain would have null nextJobGroup, nextJobName
-                JobDetail jobDetail = this.scheduler.getJobDetail(queuedJobName, queuedJobsGroupName);
-                String nextJobName = (String) jobDetail.getJobDataMap().get("nextJobName");
-                if (nextJobName == null) {
-                    lastJobInQueue = jobDetail;
-                    break;
-                }
-            }
+        if (!queue.isEmpty()) {
+            lastJobInQueue = this.scheduler.getJobDetail(queue.get(queue.size()-1), queuedJobsGroupName);;
         }
 
         JobDetail previousUnqueuedJob = null;
@@ -230,13 +231,10 @@ public class ScheduleManager {
                 JobDetail jobDetail = this.scheduler.getJobDetail(unQueuedJobName, unqueuedJobsGroupName);
                 if (lastJobInQueue != null && previousUnqueuedJob == null) {
                     this.log.debug("Next job to added to existing queue: "+unQueuedJobName);
-                    jobToSchedule = unQueuedJobName;
                     jobDetail.setGroup(queuedJobsGroupName);
                     jobDetail.setDurability(false);
                     this.scheduler.deleteJob(unQueuedJobName, unqueuedJobsGroupName);
                     this.scheduler.addJob(jobDetail, true);
-                    lastJobInQueue.getJobDataMap().put("nextJobGroup", queuedJobsGroupName);
-                    lastJobInQueue.getJobDataMap().put("nextJobName", unQueuedJobName);
                 } else if (previousUnqueuedJob == null) {
                     this.log.debug("Next job to be first in new queue: "+unQueuedJobName);
                     jobToSchedule = unQueuedJobName;
@@ -246,14 +244,13 @@ public class ScheduleManager {
                     this.scheduler.addJob(jobDetail, true);
                 } else {
                     this.log.debug("Adding job to a queue: "+unQueuedJobName);
-                    previousUnqueuedJob.getJobDataMap().put("nextJobGroup", queuedJobsGroupName);
-                    previousUnqueuedJob.getJobDataMap().put("nextJobName", unQueuedJobName);
-                    this.scheduler.addJob(previousUnqueuedJob, true);
                     jobDetail.setGroup(queuedJobsGroupName);
                     jobDetail.setDurability(false);
                     this.scheduler.deleteJob(unQueuedJobName, unqueuedJobsGroupName);
                     this.scheduler.addJob(jobDetail, true);
                 }
+                //push unqueued job onto queue
+                queue.add(unQueuedJobName);
                 previousUnqueuedJob = jobDetail;
             }
 
@@ -264,6 +261,9 @@ public class ScheduleManager {
                 this.scheduler.scheduleJob(trigger);
             }
         }
+        //release lock
+        this.log.debug("releasing job queue lock...");
+        this.setJobQueueLock(queuedJobsGroupName, false);
     }
 
 
@@ -315,5 +315,33 @@ public class ScheduleManager {
     }
 
 
+    /**
+     * @return the jobQueue
+     * @throws InterruptedException 
+     */
+    public List<String> getJobQueue(String jobQueueName) throws InterruptedException {
+        while(!this.setJobQueueLock(jobQueueName, true)){
+            Thread.sleep(100);
+        }
+        if(this.jobQueues.get(jobQueueName) == null){
+            this.jobQueues.put(jobQueueName, new ArrayList<String>());
+        }
+        return this.jobQueues.get(jobQueueName);
+    }
+
+    public  synchronized boolean checkJobQueueLock(String jobQueueName) {
+        if(!this.jobQueueLocks.containsKey(jobQueueName)){
+            return false;
+        }
+        return this.jobQueueLocks.get(jobQueueName);
+    }
+
+    public synchronized boolean setJobQueueLock(String jobQueueName, boolean value) {
+        if(value && this.checkJobQueueLock(jobQueueName)){
+            return false;
+        }
+        this.jobQueueLocks.put(jobQueueName, value);
+        return true;
+    }
 
 }

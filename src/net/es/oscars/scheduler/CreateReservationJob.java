@@ -270,7 +270,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         Date date = new Date(time);
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null,
                                                   date, null, 0, 0L);
-        JobDetail jobDetail = new JobDetail(jobName, "REQ_TIMEOUT",
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_REQ_TIMEOUT",
                                             CreateReservationJob.class);
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("statusCheck", true);
