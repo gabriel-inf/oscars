@@ -155,7 +155,7 @@ public class BssUtils {
         String nodeName = null;
         String param = null;
 
-        // FIXME:  more null checks may be necessary
+        // FIXME:  more null checks may be necessary; return this or null
         if (path == null) {
             return "";
         }
@@ -216,8 +216,8 @@ public class BssUtils {
                 pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                                           PathElemParamType.L2SC_VLAN_RANGE);
             if (pep == null) {
-                log.info("pep is null");
-                vlanTags.add(null);
+                log.debug("pep is null");
+                vlanTags.add("");
             } else {
                 String vlanTag = pep.getValue();
                 vlanTags.add(vlanTag);

@@ -208,15 +208,15 @@ public class CreateReservation extends HttpServlet {
             vlanTag = strParam.trim();
         }
         // src and dest default to tagged
-        String tagSrcPort = "Tagged";
-        strParam = request.getParameter("tagSrcPort");
+        String tagSrcVlan = "Tagged";
+        strParam = request.getParameter("tagSrcVlan");
         if (strParam != null && !strParam.trim().equals("")) {
-            tagSrcPort = strParam.trim();
+            tagSrcVlan = strParam.trim();
         }
-        String tagDestPort = "Tagged";
-        strParam = request.getParameter("tagDestPort");
+        String tagDestVlan = "Tagged";
+        strParam = request.getParameter("tagDestVlan");
         if (strParam != null && !strParam.trim().equals("")) {
-            tagDestPort = strParam.trim();
+            tagDestVlan = strParam.trim();
         }
 
         boolean layer2 = false;
@@ -232,11 +232,11 @@ public class CreateReservation extends HttpServlet {
             vlanTag = (vlanTag == null||vlanTag.equals("") ? "any" : vlanTag);
             String srcVlanTag = vlanTag;
             String destVlanTag = vlanTag;
-            boolean tagged = tagSrcPort.equals("Tagged");
+            boolean tagged = tagSrcVlan.equals("Tagged");
             if (!tagged) {
                 srcVlanTag = "0";
             }
-            tagged = tagDestPort.equals("Tagged");
+            tagged = tagDestVlan.equals("Tagged");
             if (!tagged) {
                 destVlanTag = "0";
             }

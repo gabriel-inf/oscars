@@ -98,79 +98,94 @@
   <tr>
       <!-- setting once sets for all in this column -->
       <td width="15%">GRI</td>
-      <td id="griReplace"></td>
-      <td />
+      <td colspan="2" id="griReplace"></td>
   </tr>
-  <tr><td>Status</td><td id="statusReplace"></td><td /></tr>
-  <tr><td>User</td><td id="userReplace" /><td /></tr>
-  <tr><td>Description</td><td id="descriptionReplace" /><td /></tr>
+  <tr><td>Status</td><td colspan="2" id="statusReplace" /></tr>
+  <tr><td>User</td><td colspan="2" id="userReplace" /></tr>
+  <tr><td>Description</td><td colspan="2" id="descriptionReplace" /></tr>
   <tr>
     <td>Start date</td>
-    <td><input dojoType="dijit.form.DateTextBox" name="modifyStartDate"
+    <td colspan="2">
+        <input dojoType="dijit.form.DateTextBox" name="modifyStartDate"
                id="modifyStartDate" size="28" />
     </td>
-    <td />
   </tr>
   <tr><td>Start time</td>
-      <td><input dojoType="dijit.form.ValidationTextBox" name="modifyStartTime"
+      <td colspan="2">
+          <input dojoType="dijit.form.ValidationTextBox" name="modifyStartTime"
              id="modifyStartTime"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the start time in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" size="28" /></td>
-      <td />
   </tr>
   <tr>
     <td>End date</td>
-    <td><input dojoType="dijit.form.DateTextBox" name="modifyEndDate"
+    <td colspan="2">
+        <input dojoType="dijit.form.DateTextBox" name="modifyEndDate"
                id="modifyEndDate" size="28" />
     </td>
-    <td />
   </tr>
   <tr><td>End time</td>
-    <td><input dojoType="dijit.form.ValidationTextBox" name="modifyEndTime"
+      <td colspan="2">
+          <input dojoType="dijit.form.ValidationTextBox" name="modifyEndTime"
              id="modifyEndTime"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the end time in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" size="28" /></td>
-    <td />
   </tr>
-  <tr><td>Created time</td> <td id="createdTimeConvert" /> <td /></tr>
-  <tr><td>Bandwidth (Mbps)</td><td id="bandwidthReplace" /><td /></tr>
-  <tr><td>Source</td><td id="sourceReplace" /><td /></tr>
-  <tr><td>Destination</td><td id="destinationReplace" /><td /></tr>
   <tr>
-    <td>Intradomain hops</td>
+      <td>Created time</td> <td colspan="2" id="createdTimeConvert" />
+  </tr>
+  <tr>
+      <td>Bandwidth (Mbps)</td><td colspan="2" id="bandwidthReplace" /></tr>
+  <tr><td>Source</td><td colspan="2" id="sourceReplace" /></tr>
+  <tr><td>Destination</td><td colspan="2" id="destinationReplace" /></tr>
+  <tr class="layer2Replace">
+      <td />
+      <td>VLAN</td>
+      <td>Hop</td>
+  </tr>
+  <tr class="layer2Replace">
+    <td>Local path</td>
+    <td width="6%"><table id="vlanPathReplace"></table></td>
     <td><table id="pathReplace"></table></td>
-    <td><table id="vlanPathReplace"></table></td>
   </tr>
-  <tr>
+  <tr class="layer2Replace">
     <td>Interdomain path</td>
-    <td><table id="interPathReplace"></table></td>
     <td><table id="vlanInterPathReplace"></table></td>
+    <td><table id="interPathReplace"></table></td>
   </tr>
-  <tr class="layer2Replace"><td>Source VLAN</td><td id="srcVlanReplace" /><td /></tr>
-  <tr class="layer2Replace"><td>Tagged</td><td id="srcTaggedReplace" /><td /></tr>
-  <tr class="layer2Replace"><td>Destination VLAN</td><td id="destVlanReplace" /></td /></tr>
-  <tr class="layer2Replace"><td>Tagged</td><td id="destTaggedReplace" /><td /></tr>
+  <tr class="layer2Replace"><td>Source VLAN</td><td colspan="2" id="srcVlanReplace" /></tr>
+  <tr class="layer2Replace"><td>Tagged</td><td colspan="2" id="srcTaggedReplace" /></tr>
+  <tr class="layer2Replace"><td>Destination VLAN</td><td colspan="2" id="destVlanReplace" /></tr>
+  <tr class="layer2Replace"><td>Tagged</td><td colspan="2" id="destTaggedReplace" /></tr>
+
+  <tr class="layer3Replace">
+    <td>Local path</td>
+    <td colspan="2"><table id="path3Replace"></table></td>
+  </tr>
+  <tr class="layer3Replace">
+    <td>Interdomain path</td>
+    <td colspan="2"><table id="interPath3Replace"></table></td>
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Source port</td><td colspan="2" id="sourcePortReplace" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Destination port</td><td colspan="2" id="destinationPortReplace" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Protocol</td><td colspan="2" id="protocolReplace" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>DSCP</td><td colspan="2" id="dscpReplace" />
+  </tr>
 
   <tr class="layer3Replace" style="display: none">
-    <td>Source port</td><td id="sourcePortReplace" /><td />
+    <td>Burst limit</td><td colspan="2" id="burstLimitReplace" />
   </tr>
   <tr class="layer3Replace" style="display: none">
-    <td>Destination port</td><td id="destinationPortReplace" /><td />
-  </tr>
-  <tr class="layer3Replace" style="display: none">
-    <td>Protocol</td><td id="protocolReplace" /><td />
-  </tr>
-  <tr class="layer3Replace" style="display: none">
-    <td>DSCP</td><td id="dscpReplace" /><td />
-  </tr>
-
-  <tr class="layer3Replace" style="display: none">
-    <td>Burst limit</td><td id="burstLimitReplace" /><td />
-  </tr>
-  <tr class="layer3Replace" style="display: none">
-      <td>LSP</td><td id="lspClassReplace" /><td />
+      <td>LSP</td><td colspan="2" id="lspClassReplace" />
   </tr>
   </tbody>
 </table>

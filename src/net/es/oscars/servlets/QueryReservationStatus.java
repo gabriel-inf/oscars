@@ -101,6 +101,7 @@ public class QueryReservationStatus extends HttpServlet {
         if (path == null) {
             path = resv.getPath(PathType.REQUESTED);
         }
+        Path interPath = resv.getPath(PathType.INTERDOMAIN);
         Layer2Data layer2Data = null;
         if (path != null) {
             layer2Data = path.getLayer2Data();
@@ -109,59 +110,9 @@ public class QueryReservationStatus extends HttpServlet {
         outputMap.put("griReplace", resv.getGlobalReservationId());
         outputMap.put("statusReplace", status);
         if (layer2Data != null) {
-            List<String> vlanTags = BssUtils.getVlanTags(path);
-            if (!vlanTags.isEmpty()) {
-                String vlanTag = vlanTags.get(0);
-                QueryReservation.outputVlan(vlanTag, outputMap, "src");
-                vlanTag = vlanTags.get(vlanTags.size()-1);
-                QueryReservation.outputVlan(vlanTag, outputMap, "dest");
-            } else {
-                if (status.equals("SUBMITTED") || status.equals("ACCEPTED")) {
-                    outputMap.put("srcVlanReplace", "VLAN setup in progress");
-                } else {
-                    outputMap.put("srcVlanReplace",
-                                  "No VLAN tag was ever set up");
-                }
-            }
+            QueryReservation.handleVlans(path, interPath, status, outputMap);
         }
-        String pathStr = BssUtils.pathToString(path, false);
-        // in this case, path has not been set up yet, or an error has occurred
-        // and the path will never be set up
-        if ((pathStr != null) && pathStr.equals("")) {
-            return;
-        }
-        // don't allow non-authorized user to see internal hops
-        if ((pathStr != null) && !rmiReply.isInternalPathAuthorized()) {
-            String[] hops = pathStr.trim().split("\n");
-            pathStr = hops[0] + "\n";
-            pathStr += hops[hops.length-1];
-        }
-        if (pathStr != null) {
-            StringBuilder sb = new StringBuilder();
-            // Utils.pathToString has new line separated hops
-            String[] hops = pathStr.trim().split("\n");
-            sb.append("<tbody>");
-            // enforce one hop per line in outer table cell
-            for (int i=0; i < hops.length; i++) {
-                sb.append("<tr><td class='innerHops'>" + hops[i] + "</td></tr>");
-            }
-            sb.append("</tbody>");
-            outputMap.put("pathReplace", sb.toString());
-        }
-        path = resv.getPath(PathType.INTERDOMAIN);
-        String interPathStr = BssUtils.pathToString(path, true);
-        if ((interPathStr != null) &&
-                !interPathStr.trim().equals("")) {
-            StringBuilder sb = new StringBuilder();
-            String[] hops = interPathStr.trim().split("\n");
-            // enforce one hop per line in outer table cell
-            sb.append("<tbody>");
-            for (int i=0; i < hops.length; i++) {
-                sb.append("<tr><td class='innerHops'>" + hops[i] +
-                          "</td></tr>");
-            }
-            sb.append("</tbody>");
-            outputMap.put("interPathReplace", sb.toString());
-        }
+        QueryReservation.outputPaths(path, interPath,
+                                rmiReply.isInternalPathAuthorized(), outputMap);
     }
 }

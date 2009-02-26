@@ -190,8 +190,11 @@ public class ListReservations extends HttpServlet {
         for (Reservation resv: reservations) {
             HashMap<String,Object> resvMap = new HashMap<String,Object>();
             Path path = null;
+            Path interPath = null;
             try {
+                // no path info will be displayed if only a requested path
                 path = resv.getPath(PathType.LOCAL);
+                interPath = resv.getPath(PathType.INTERDOMAIN);
             } catch (BSSException ex) {
                 outputMap.put("error", ex.getMessage());
                 return;
@@ -201,12 +204,10 @@ public class ListReservations extends HttpServlet {
                 this.log.debug("path is null");
             }
             String pathStr = BssUtils.pathToString(path, false);
-            if (pathStr != null) {
-                this.log.debug(pathStr);
-            }
             String localSrc = null;
             String localDest = null;
-            if (pathStr != null) {
+            if (!pathStr.equals("")) {
+                this.log.debug(pathStr);
                 String[] hops = pathStr.trim().split("\n");
                 localSrc = hops[0];
                 localDest = hops[hops.length-1];
@@ -214,6 +215,7 @@ public class ListReservations extends HttpServlet {
             gri = resv.getGlobalReservationId();
             Layer3Data layer3Data = null;
             Layer2Data layer2Data = null;
+            // NOTE:  using local path for this info for now
             if (path != null ) {
                 layer3Data = path.getLayer3Data();
                 layer2Data = path.getLayer2Data();
@@ -253,18 +255,27 @@ public class ListReservations extends HttpServlet {
             // start of second sub-row
             resvMap.put("user", resv.getLogin());
             List<String> vlanTags = null;
-            String vlanTag = null;
-            if (path != null) {
-                try {
+            String vlanTag = "";
+            try {
+                // use interdomain if present for starting VLAN
+                if (interPath != null) {
+                    vlanTags = BssUtils.getVlanTags(interPath);
+                    if (!vlanTags.isEmpty()) {
+                        vlanTag = vlanTags.get(0);
+                    }
+                }
+                // may not have interdomain path, or may be older reservation
+                // with incomplete info for interdomain path
+                if (vlanTag.equals("")) {
                     vlanTags = BssUtils.getVlanTags(path);
                     if (!vlanTags.isEmpty()) {
                         vlanTag = vlanTags.get(0);
                     }
-                } catch (BSSException ex) {
-                    outputMap.put("error", ex.getMessage());
                 }
+            } catch (BSSException ex) {
+                outputMap.put("error", ex.getMessage());
             }
-            if (vlanTag != null) {
+            if (!vlanTag.equals("")) {
                 // if not a range
                 if (!vlanTag.contains("-") && (!"any".equals(vlanTag))) {
                     String vlanStr = "";

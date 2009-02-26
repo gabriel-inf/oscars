@@ -92,10 +92,10 @@ oscars.ReservationCreate.resetFields = function () {
     // that button is rechecked on reset
     oscars.ReservationCreate.toggleLayer("layer2");
     // set whether VLAN's are tagged back to default (Tagged)
-    var tagSrcPort = dojo.byId("tagSrcPort");
-    tagSrcPort.selectedIndex = 0;
-    var tagDestPort = dojo.byId("tagDestPort");
-    tagDestPort.selectedIndex = 0;
+    var tagSrcVlan = dojo.byId("tagSrcVlan");
+    tagSrcVlan.selectedIndex = 0;
+    var tagDestVlan = dojo.byId("tagDestVlan");
+    tagDestVlan.selectedIndex = 0;
 };
 
 // chooses layer 2 or layer 3 parameters to display in create reservation page

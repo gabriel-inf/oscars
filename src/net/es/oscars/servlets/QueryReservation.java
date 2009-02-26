@@ -132,6 +132,7 @@ public class QueryReservation extends HttpServlet {
         if (path == null) {
             path = resv.getPath(PathType.REQUESTED);
         }
+        Path interPath = resv.getPath(PathType.INTERDOMAIN);
         Layer2Data layer2Data = null;
         Layer3Data layer3Data = null;
         MPLSData mplsData = null;
@@ -159,20 +160,7 @@ public class QueryReservation extends HttpServlet {
         if (layer2Data != null) {
             outputMap.put("sourceReplace", layer2Data.getSrcEndpoint());
             outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
-            List<String> vlanTags = BssUtils.getVlanTags(path);
-            if (!vlanTags.isEmpty()) {
-                String vlanTag = vlanTags.get(0);
-                QueryReservation.outputVlan(vlanTag, outputMap, "src");
-                vlanTag = vlanTags.get(vlanTags.size()-1);
-                QueryReservation.outputVlan(vlanTag, outputMap, "dest");
-            } else {
-                if (status.equals("SUBMITTED") || status.equals("ACCEPTED")) {
-                    outputMap.put("srcVlanReplace", "VLAN setup in progress");
-                } else {
-                    outputMap.put("srcVlanReplace",
-                                  "No VLAN tag was ever set up");
-                }
-            }
+            QueryReservation.handleVlans(path, interPath, status, outputMap);
         } else if (layer3Data != null) {
             strParam = layer3Data.getSrcHost();
             try {
@@ -216,49 +204,65 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("lspClassReplace", mplsData.getLspClass());
             }
         }
-        String pathStr = BssUtils.pathToString(path, false);
-        // in this case, path has not been set up yet, or an error has occurred
-        // and the path will never be set up
-        if ((pathStr != null) && pathStr.equals("")) {
-            return;
-        }
-        // don't allow non-authorized user to see internal hops
-        if ((pathStr != null) && !rmiReply.isInternalPathAuthorized()) {
-            String[] hops = pathStr.trim().split("\n");
-            pathStr = hops[0] + "\n";
-            pathStr += hops[hops.length-1];
-        }
-        if (pathStr != null) {
-            StringBuilder sb = new StringBuilder();
-            // Utils.pathToString has new line separated hops
-            String[] hops = pathStr.trim().split("\n");
-            sb.append("<tbody>");
-            // enforce one hop per line in outer table cell
-            for (int i=0; i < hops.length; i++) {
-                sb.append("<tr><td class='innerHops'>" + hops[i] + "</td></tr>");
+        QueryReservation.outputPaths(path, interPath,
+                                rmiReply.isInternalPathAuthorized(), outputMap);
+    }
+
+    public static void handleVlans(Path path, Path interPath, String status,
+                                   Map<String,Object> outputMap) 
+            throws BSSException {
+
+        List<String> vlanTags = BssUtils.getVlanTags(path);
+        List<String> interVlanTags = null;
+        String srcVlanTag = "";
+        String destVlanTag = "";
+        // use interdomain path for VLAN source and dest if present
+        if (interPath != null) {
+            interVlanTags = BssUtils.getVlanTags(interPath);
+            if (!interVlanTags.isEmpty()) {
+                srcVlanTag = interVlanTags.get(0);
+                destVlanTag = interVlanTags.get(interVlanTags.size()-1);
             }
-            sb.append("</tbody>");
-            outputMap.put("pathReplace", sb.toString());
         }
-        path = resv.getPath(PathType.INTERDOMAIN);
-        String interPathStr = BssUtils.pathToString(path, true);
-        if ((interPathStr != null) &&
-                !interPathStr.trim().equals("")) {
-            StringBuilder sb = new StringBuilder();
-            String[] hops = interPathStr.trim().split("\n");
-            // enforce one hop per line in outer table cell
-            sb.append("<tbody>");
-            for (int i=0; i < hops.length; i++) {
-                sb.append("<tr><td class='innerHops'>" + hops[i] +
-                          "</td></tr>");
+        // necessary for older reservations; check local path if no
+        // associated information for interdomain path
+        if (srcVlanTag.equals("")) {
+            if (!vlanTags.isEmpty()) {
+                srcVlanTag = vlanTags.get(0);
+                destVlanTag = vlanTags.get(vlanTags.size()-1);
             }
-            sb.append("</tbody>");
-            outputMap.put("interPathReplace", sb.toString());
+        }
+        if (!srcVlanTag.equals("")) {
+            QueryReservation.outputVlan(srcVlanTag, outputMap, "src");
+            QueryReservation.outputVlan(destVlanTag, outputMap, "dest");
+        } else {
+            if (status.equals("SUBMITTED") || status.equals("ACCEPTED")) {
+                outputMap.put("srcVlanReplace", "VLAN setup in progress");
+                outputMap.put("destVlanReplace", "VLAN setup in progress");
+                outputMap.put("srcTaggedReplace", "");
+                outputMap.put("destTaggedReplace", "");
+            } else {
+                outputMap.put("srcVlanReplace",
+                              "No VLAN tag was ever set up");
+                outputMap.put("destVlanReplace",
+                              "No VLAN tag was ever set up");
+                outputMap.put("srcTaggedReplace", "");
+                outputMap.put("destTaggedReplace", "");
+            }
+        }
+        if (!vlanTags.isEmpty()) {
+            QueryReservation.outputVlanTable(vlanTags, "vlanPathReplace",
+                                             outputMap);
+        }
+        // if two or less hops, strictly local
+        if ((interPath != null) && (interVlanTags.size() > 2)) {
+            QueryReservation.outputVlanTable(interVlanTags,
+                                             "vlanInterPathReplace", outputMap);
         }
     }
 
-   public static void outputVlan(String vlanTag, Map<String, Object> outputMap,
-                                 String prefix) {
+    public static void outputVlan(String vlanTag, Map<String, Object> outputMap,
+                                  String prefix) {
 
         if (vlanTag != null) {
             //If its a negative number try converting it
@@ -275,5 +279,66 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put(prefix + "TaggedReplace", "false");
             }
         }
+    }
+
+    public static void
+        outputPaths(Path path, Path interPath, boolean internalAuth,
+                    Map<String,Object> outputMap) throws BSSException {
+
+        String pathStr = BssUtils.pathToString(path, false);
+        // in this case, path has not been set up yet, or an error has occurred
+        // and the path will never be set up
+        if (pathStr.equals("")) {
+            return;
+        }
+        // don't allow non-authorized user to see internal hops
+        if (!internalAuth) {
+            String[] hops = pathStr.split("\n");
+            pathStr = hops[0] + "\n";
+            pathStr += hops[hops.length-1];
+        } else {
+            StringBuilder sb = new StringBuilder();
+            // Utils.pathToString has new line separated hops
+            String[] hops = pathStr.split("\n");
+            sb.append("<tbody>");
+            // enforce one hop per line in outer table cell
+            for (int i=0; i < hops.length; i++) {
+                sb.append("<tr><td class='innerHops'>" + hops[i] + "</td></tr>");
+            }
+            sb.append("</tbody>");
+            if (path.getLayer2Data() != null) {
+                outputMap.put("pathReplace", sb.toString());
+            } else {
+                outputMap.put("path3Replace", sb.toString());
+            }
+        }
+        String interPathStr = BssUtils.pathToString(interPath, true);
+        if (!interPathStr.equals("")) {
+            StringBuilder sb = new StringBuilder();
+            String[] hops = interPathStr.split("\n");
+            // enforce one hop per line in outer table cell
+            sb.append("<tbody>");
+            for (int i=0; i < hops.length; i++) {
+                sb.append("<tr><td class='innerHops'>" + hops[i] +
+                          "</td></tr>");
+            }
+            sb.append("</tbody>");
+            if (interPath.getLayer2Data() != null) {
+                outputMap.put("interPathReplace", sb.toString());
+            } else {
+                outputMap.put("interPath3Replace", sb.toString());
+            }
+        }
+    }
+
+    public static void outputVlanTable(List<String> vlanTags, String nodeId,
+                                       Map<String,Object> outputMap) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<tbody>");
+        for (String vlanTag: vlanTags) {
+            sb.append("<tr><td class='innerHops'>" + vlanTag + "</td></tr>");
+        }
+        sb.append("</tbody>");
+        outputMap.put(nodeId, sb.toString());
     }
 }

@@ -11,7 +11,7 @@ postCreatePath(dialogFields)
 postTeardownPath(dialogFields)
 postOverrideStatus(dialogFields)
 handleReply(responseObject, ioArgs)
-hideParams(responseObject)
+layerParams(responseObject)
 tabSelected(contentPaneWidget, oscarsStatus)
 */
 
@@ -186,15 +186,19 @@ oscars.ReservationDetails.cloneReservation = function () {
     }
     if (layer2Reservation) {
         dijit.byId("vlanTag").setValue(node.innerHTML);
-        node = dojo.byId("taggedReplace");
-        var tagSrcPort = dojo.byId("tagSrcPort");
-        var tagDestPort = dojo.byId("tagDestPort");
+        node = dojo.byId("srcTaggedReplace");
+        var tagSrcVlan = dojo.byId("tagSrcVlan");
         if (node.innerHTML == "true") {
-            tagSrcPort.selectedIndex = 0;
-            tagDestPort.selectedIndex = 0;
+            tagSrcVlan.selectedIndex = 0;
         } else {
-            tagSrcPort.selectedIndex = 1;
-            tagDestPort.selectedIndex = 1;
+            tagSrcVlan.selectedIndex = 1;
+        }
+        node = dojo.byId("destTaggedReplace");
+        var tagDestVlan = dojo.byId("tagDestVlan");
+        if (node.innerHTML == "true") {
+            tagDestVlan.selectedIndex = 0;
+        } else {
+            tagDestVlan.selectedIndex = 1;
         }
     } else {
         var radioWidget = dijit.byId("layer3");
@@ -235,7 +239,7 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
         // for displaying only layer 2 or layer 3 fields
-        oscars.ReservationDetails.hideParams(responseObject);
+        oscars.ReservationDetails.layerParams(responseObject);
         oscars.ReservationDetails.setDateTimes();
         var reservationDetailsNode = dojo.byId("reservationDetailsDisplay");
         reservationDetailsNode.style.display = "";
@@ -308,13 +312,32 @@ oscars.ReservationDetails.setDateTimes = function () {
                                          "modifyEndTime");
 };
 
+// reset fields which may not be present in new reservation
 // chooses which params to display in reservation details page
-oscars.ReservationDetails.hideParams = function (responseObject) {
+oscars.ReservationDetails.layerParams = function (responseObject) {
     var i;
+    var tableN;
     var n = dojo.byId("srcVlanReplace");
     var layer2Nodes = dojo.query(".layer2Replace");
     var layer3Nodes = dojo.query(".layer3Replace");
     if (!oscars.Utils.isBlank(n.innerHTML)) {
+        // blank tables if not present in new reservation
+        if (!responseObject.interPathReplace) {
+            tableN = dojo.byId("interPathReplace");
+            if (tableN === null) {
+                console.log("interPathReplace is null");
+            } else {
+                tableN.innerHTML = "";
+            }
+        }
+        if (!responseObject.vlanInterPathReplace) {
+            tableN = dojo.byId("vlanInterPathReplace");
+            if (tableN === null) {
+                console.log("vlanInterPathReplace is null");
+            } else {
+                tableN.innerHTML = "";
+            }
+        }
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = ""; 
         }
@@ -322,6 +345,14 @@ oscars.ReservationDetails.hideParams = function (responseObject) {
             layer3Nodes[i].style.display = "none"; 
         }
     } else {
+        if (!responseObject.interPath3Replace) {
+            tableN = dojo.byId("interPath3Replace");
+            if (tableN === null) {
+                console.log("interPath3Replace is null");
+            } else {
+                tableN.innerHTML = "";
+            }
+        }
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none"; 
         }
