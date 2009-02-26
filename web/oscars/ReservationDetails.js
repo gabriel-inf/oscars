@@ -324,19 +324,11 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
         // blank tables if not present in new reservation
         if (!responseObject.interPathReplace) {
             tableN = dojo.byId("interPathReplace");
-            if (tableN === null) {
-                console.log("interPathReplace is null");
-            } else {
-                tableN.innerHTML = "";
-            }
+            tableN.innerHTML = "";
         }
         if (!responseObject.vlanInterPathReplace) {
             tableN = dojo.byId("vlanInterPathReplace");
-            if (tableN === null) {
-                console.log("vlanInterPathReplace is null");
-            } else {
-                tableN.innerHTML = "";
-            }
+            tableN.innerHTML = "";
         }
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = ""; 
@@ -347,11 +339,7 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
     } else {
         if (!responseObject.interPath3Replace) {
             tableN = dojo.byId("interPath3Replace");
-            if (tableN === null) {
-                console.log("interPath3Replace is null");
-            } else {
-                tableN.innerHTML = "";
-            }
+            tableN.innerHTML = "";
         }
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none"; 
