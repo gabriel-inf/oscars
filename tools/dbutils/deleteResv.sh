@@ -28,6 +28,6 @@ export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
 javac `pwd`/DeleteReservation.java -d ../../build/tools
-java DeleteReservation $*
+java -Djava.net.preferIPv4Stack=true DeleteReservation $*
 
 exit 1
