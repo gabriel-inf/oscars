@@ -251,10 +251,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
         this.se.updateStatus(resv, StateEngine.RESERVED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "JOB", resv);
-
-        // just in case this is an immediate reservation, check pending & add setup actions
-        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
-        sched.pendingReservations(0);
         this.log.debug("complete.end");
     }
 
