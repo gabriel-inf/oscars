@@ -1,5 +1,6 @@
 package net.es.oscars.pathfinder.perfsonar;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.lookup.LookupException;
+import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.PropHandler;
 
@@ -16,6 +19,8 @@ import net.es.oscars.pathfinder.perfsonar.util.*;
 import net.es.oscars.bss.topology.URNParser;
 
 import java.util.List;
+
+import org.apache.commons.httpclient.HttpException;
 import org.apache.log4j.*;
 
 /**
@@ -42,7 +47,6 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
     public PSPathfinder(String dbname) {
         super(dbname);
         this.log = Logger.getLogger(this.getClass());
-
         DomainDAO domDAO = new DomainDAO(dbname);
         this.localDomain = domDAO.getLocalDomain();
         this.log.debug("localDomain=" + this.localDomain);
@@ -51,8 +55,8 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             String[] gLSs = null;
             String[] hLSs = null;
             String[] TSs = null;
-            String hints = null;
-
+            ArrayList<String> gLSList = new ArrayList<String>();
+            ArrayList<String> hLSList = new ArrayList<String>();
             String[] sections = { "topology", "lookup" };
 
             for ( String section : sections) {
@@ -61,39 +65,16 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
 
                 PropHandler propHandler = new PropHandler("oscars.properties");
                 Properties props = propHandler.getPropertyGroup(section, true);
-
-                if (hints == null) {
-                    hints = props.getProperty("hints");
-                }
-
-                int i;
-
-                if (gLSs == null) {
-                    i = 1;
-                    ArrayList<String> gLSList = new ArrayList<String>();
-                    while(props.getProperty("global." + i) != null){
-                        gLSList.add(props.getProperty("global." + i));
-                        i++;
-                    }
-                    if(!gLSList.isEmpty()){
-                        gLSs = gLSList.toArray(new String[gLSList.size()]);
-                    }
-                }
-
-                if (hLSs == null) {
-                    i = 1;
-                    ArrayList<String> hLSList = new ArrayList<String>();
-                    while(props.getProperty("home." + i) != null){
-                        hLSList.add(props.getProperty("home." + i));
-                        i++;
-                    }
-                    if(!hLSList.isEmpty()){
-                        hLSs = hLSList.toArray(new String[hLSList.size()]);
-                    }
+                
+                //Set home and global lookup service
+                try {
+                    PSLookupClient.configLS(props, gLSList, hLSList);
+                } catch (LookupException e) {
+                    this.log.error(e.getMessage());
                 }
 
                 if (TSs == null) {
-                    i = 1;
+                    int i = 1;
                     ArrayList<String> TSList = new ArrayList<String>();
                     while(props.getProperty("topology." + i) != null){
                         TSList.add(props.getProperty("topology." + i));
@@ -104,12 +85,17 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                     }
                 }
             }
-
+            
+            if(!gLSList.isEmpty()){
+                gLSs = gLSList.toArray(new String[gLSList.size()]);
+            }
+            if(!hLSList.isEmpty()){
+                hLSs = gLSList.toArray(new String[hLSList.size()]);
+            }
+            
             try {
                 if(gLSs != null || hLSs != null || TSs != null){
                     PSPathfinder.psdf = new PerfSONARDomainFinder(gLSs, hLSs, TSs);
-                }else if(hints != null){
-                    PSPathfinder.psdf = new PerfSONARDomainFinder(hints);
                 }else{
                     this.log.warn("No lookup service information specified, using defaults");
                     PSPathfinder.psdf = new PerfSONARDomainFinder("http://www.perfsonar.net/gls.root.hints");

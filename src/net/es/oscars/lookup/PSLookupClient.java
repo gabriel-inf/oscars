@@ -27,30 +27,21 @@ public class PSLookupClient {
     private Properties props;
     private DCNLookupClient client;
     
+    //the default number of gLS URLs to pull from the hints file
+    final private static int DEFAULT_GLS_HINTS_COUNT = 2;
     /** Constructor */
     public PSLookupClient() throws LookupException {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("lookup", true);
-        String hints = this.props.getProperty("hints");
         String[] gLSs = null;
         String[] hLSs = null;
         
-        int i = 1;
         ArrayList<String> gLSList = new ArrayList<String>();
-        while(this.props.getProperty("global." + i) != null){
-            gLSList.add(this.props.getProperty("global." + i));
-            i++;
-        }
+        ArrayList<String> hLSList = new ArrayList<String>();
+        PSLookupClient.configLS(this.props, gLSList, hLSList);
         if(!gLSList.isEmpty()){
             gLSs = gLSList.toArray(new String[gLSList.size()]);
-        }
-
-        i = 1;
-        ArrayList<String> hLSList = new ArrayList<String>();
-        while(this.props.getProperty("home." + i) != null){
-            hLSList.add(this.props.getProperty("home." + i));
-            i++;
         }
         if(!hLSList.isEmpty()){
             hLSs = hLSList.toArray(new String[hLSList.size()]);
@@ -59,9 +50,7 @@ public class PSLookupClient {
         try {
             if(gLSs != null || hLSs != null){
                 this.client = new DCNLookupClient(gLSs, hLSs);
-            }else if(hints != null){
-                this.client = new DCNLookupClient(hints);
-            }else{
+            } else{
                 throw new LookupException("Cannot initialize perfSONAR lookup client " +
                     "because missing required properties. Please set " +
                     "lookup.hints, lookup.global.1 or lookup.home.1 in oscars.properties");
@@ -79,6 +68,53 @@ public class PSLookupClient {
             this.client.setUseGlobalLS(("1".equals(useGlobals) || "true".equals(useGlobals)));
         }
         this.client.setRetryOnKeyNotFound(true);
+    }
+    
+    public static void configLS(Properties lsProps, List<String> gLSList, List<String> hLSList) throws LookupException{
+        String hints = lsProps.getProperty("hints");
+        String allHints = lsProps.getProperty("hints.all");
+        
+        //Get gLS list from hints file
+        if(hints != null){
+            String[] hintUrls;
+            try {
+                hintUrls = edu.internet2.perfsonar.PSLookupClient.getGlobalHints(hints, true);
+            } catch (Exception e) {
+                throw new LookupException(e.getMessage());
+            }
+            //only add a few GLS since looking at all of them is 
+            //really slow when someone makes a typo. They should
+            //all have the same info so should work. 
+            int glsCount = DEFAULT_GLS_HINTS_COUNT;
+            if("1".equals(allHints)){
+                glsCount = hintUrls.length;
+            }
+            for(int j=0; j < glsCount && j < hintUrls.length; j++){
+                if(!gLSList.contains(hintUrls[j])){
+                    gLSList.add(hintUrls[j]);
+                }
+            }
+        }
+        
+        //Get manual gLS list
+        int i = 1;
+        while(lsProps.getProperty("global." + i) != null){
+            String prop = lsProps.getProperty("global." + i);
+            if(!gLSList.contains(prop)){
+                gLSList.add(prop);
+            }
+            i++;
+        }
+        
+        //Get manual hLS list
+        i = 1;
+        while(lsProps.getProperty("home." + i) != null){
+            String prop= lsProps.getProperty("home." + i);
+            if(!hLSList.contains(prop)){
+                hLSList.add(prop);
+            }
+            i++;
+        }
     }
 
     /**
