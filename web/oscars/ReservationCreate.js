@@ -92,10 +92,10 @@ oscars.ReservationCreate.resetFields = function () {
     // that button is rechecked on reset
     oscars.ReservationCreate.toggleLayer("layer2");
     // set whether VLAN's are tagged back to default (Tagged)
-    var tagSrcVlan = dojo.byId("tagSrcVlan");
-    tagSrcVlan.selectedIndex = 0;
-    var tagDestVlan = dojo.byId("tagDestVlan");
-    tagDestVlan.selectedIndex = 0;
+    var taggedSrcVlan = dojo.byId("taggedSrcVlan");
+    taggedSrcVlan.selectedIndex = 0;
+    var taggedDestVlan = dojo.byId("taggedDestVlan");
+    taggedDestVlan.selectedIndex = 0;
 };
 
 // chooses layer 2 or layer 3 parameters to display in create reservation page
@@ -121,6 +121,17 @@ oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
         for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = ""; 
         }
+    }
+};
+
+oscars.ReservationCreate.toggleDestDisplay = function (/*Event*/ evt) {
+    var cb = dijit.byId("sameVlan");
+    // only one
+    var nodes = dojo.query(".destVlan");
+    if (cb.checked) {
+        nodes[0].style.display = "none";
+    } else {
+        nodes[0].style.display = "";
     }
 };
 

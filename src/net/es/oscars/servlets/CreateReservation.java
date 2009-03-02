@@ -190,78 +190,79 @@ public class CreateReservation extends HttpServlet {
                 pathElems.add(pathElem);
             }
             requestedPath.setPathElems(pathElems);
-        } else {
-            // Must fill this in or we can't attach things like VLAN tags!
-            PathElem srcpe = new PathElem();
-            srcpe.setUrn(source);
-            srcpe.setSeqNumber(0);
-            PathElem dstpe = new PathElem();
-            dstpe.setUrn(destination);
-            dstpe.setSeqNumber(1);
-            pathElems.add(srcpe);
-            pathElems.add(dstpe);
-            requestedPath.setPathElems(pathElems);
         }
-        String vlanTag = "";
-        strParam = request.getParameter("vlanTag");
+        String srcVlan = "";
+        strParam = request.getParameter("srcVlan");
         if (strParam != null && !strParam.trim().equals("")) {
-            vlanTag = strParam.trim();
+            srcVlan = strParam.trim();
         }
-        // src and dest default to tagged
-        String tagSrcVlan = "Tagged";
-        strParam = request.getParameter("tagSrcVlan");
-        if (strParam != null && !strParam.trim().equals("")) {
-            tagSrcVlan = strParam.trim();
-        }
-        String tagDestVlan = "Tagged";
-        strParam = request.getParameter("tagDestVlan");
-        if (strParam != null && !strParam.trim().equals("")) {
-            tagDestVlan = strParam.trim();
-        }
-
         boolean layer2 = false;
         // TODO: support VLAN translation
 
-        // TODO:  layer 2 parameters trump layer 3 parameters for now, until
-        // handle in Javascript
-        if (!vlanTag.equals("") ||
+        if (!srcVlan.equals("") ||
               (defaultLayer !=  null && defaultLayer.equals("2"))) {
             layer2 = true;
 
             Layer2Data layer2Data = new Layer2Data();
-            vlanTag = (vlanTag == null||vlanTag.equals("") ? "any" : vlanTag);
-            String srcVlanTag = vlanTag;
-            String destVlanTag = vlanTag;
-            boolean tagged = tagSrcVlan.equals("Tagged");
-            if (!tagged) {
-                srcVlanTag = "0";
+            srcVlan = (srcVlan == null||srcVlan.equals("") ? "any" : srcVlan);
+            String destVlan = "";
+            strParam = request.getParameter("destVlan");
+            if (strParam != null && !strParam.trim().equals("")) {
+                destVlan = strParam.trim();
+            } else {
+                destVlan = srcVlan;
             }
-            tagged = tagDestVlan.equals("Tagged");
+            // src and dest default to tagged
+            String taggedSrcVlan = "Tagged";
+            strParam = request.getParameter("taggedSrcVlan");
+            if (strParam != null && !strParam.trim().equals("")) {
+                taggedSrcVlan = strParam.trim();
+            }
+            String taggedDestVlan = "Tagged";
+            strParam = request.getParameter("taggedDestVlan");
+            if (strParam != null && !strParam.trim().equals("")) {
+                taggedDestVlan = strParam.trim();
+            }
+            boolean tagged = taggedSrcVlan.equals("Tagged");
             if (!tagged) {
-                destVlanTag = "0";
+                srcVlan = "0";
+            }
+            tagged = taggedDestVlan.equals("Tagged");
+            if (!tagged) {
+                destVlan = "0";
             }
 
             layer2Data.setSrcEndpoint(source);
             layer2Data.setDestEndpoint(destination);
             requestedPath.setLayer2Data(layer2Data);
 
-            PathElemParam srcVlan = new PathElemParam();
-            srcVlan.setSwcap(PathElemParamSwcap.L2SC);
-            srcVlan.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            srcVlan.setValue(srcVlanTag);
+            // If no explicit path for layer 2, we must fill this in or we
+            // can't attach things like VLAN tags.
+            if (pathElems.isEmpty()) {
+                PathElem srcpe = new PathElem();
+                srcpe.setUrn(source);
+                srcpe.setSeqNumber(0);
+                PathElem dstpe = new PathElem();
+                dstpe.setUrn(destination);
+                dstpe.setSeqNumber(1);
+                pathElems.add(srcpe);
+                pathElems.add(dstpe);
+                requestedPath.setPathElems(pathElems);
+            }
+            PathElemParam srcVlanParam = new PathElemParam();
+            srcVlanParam.setSwcap(PathElemParamSwcap.L2SC);
+            srcVlanParam.setType(PathElemParamType.L2SC_VLAN_RANGE);
+            srcVlanParam.setValue(srcVlan);
+            PathElemParam destVlanParam = new PathElemParam();
+            destVlanParam.setSwcap(PathElemParamSwcap.L2SC);
+            destVlanParam.setType(PathElemParamType.L2SC_VLAN_RANGE);
+            destVlanParam.setValue(destVlan);
 
-            PathElemParam dstVlan= new PathElemParam();
-            dstVlan.setSwcap(PathElemParamSwcap.L2SC);
-            dstVlan.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            dstVlan.setValue(destVlanTag);
-
-            requestedPath.getPathElems().get(0).addPathElemParam(srcVlan);
-            requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).addPathElemParam(dstVlan);
+            requestedPath.getPathElems().get(0).addPathElemParam(srcVlanParam);
+            requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).addPathElemParam(destVlanParam);
             return requestedPath;
         }
-
         if (!layer2) {
-
             Layer3Data layer3Data = new Layer3Data();
             // VLAN id wasn't supplied with layer 2 id
             if (source.startsWith("urn:ogf:network")) {
@@ -292,11 +293,9 @@ public class CreateReservation extends HttpServlet {
             }
             requestedPath.setLayer3Data(layer3Data);
         }
-
         MPLSData mplsData = new MPLSData();
         mplsData.setBurstLimit(10000000L);
         requestedPath.setMplsData(mplsData);
-
         return requestedPath;
     }
 }

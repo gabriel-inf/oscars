@@ -185,20 +185,36 @@ oscars.ReservationDetails.cloneReservation = function () {
         layer2Reservation = false;
     }
     if (layer2Reservation) {
-        dijit.byId("vlanTag").setValue(node.innerHTML);
+        var srcVlan = node.innerHTML;
+        dijit.byId("srcVlan").setValue(node.innerHTML);
         node = dojo.byId("srcTaggedReplace");
-        var tagSrcVlan = dojo.byId("tagSrcVlan");
+        var taggedSrcVlan = dojo.byId("taggedSrcVlan");
         if (node.innerHTML == "true") {
-            tagSrcVlan.selectedIndex = 0;
+            taggedSrcVlan.selectedIndex = 0;
         } else {
-            tagSrcVlan.selectedIndex = 1;
+            taggedSrcVlan.selectedIndex = 1;
+        }
+        node = dojo.byId("destVlanReplace");
+        // if source VLAN same as destination VLAN, don't display extra field
+        // on reservation creation form
+        var cb = dijit.byId("sameVlan");
+        // only one
+        var nodes = dojo.query(".destVlan");
+        if (node.innerHTML == srcVlan) {
+            nodes[0].style.display = "none";
+            cb.setAttribute('checked', true);
+            dijit.byId("destVlan").setValue("");
+        } else {
+            nodes[0].style.display = "";
+            cb.setAttribute('checked', false);
+            dijit.byId("destVlan").setValue(node.innerHTML);
         }
         node = dojo.byId("destTaggedReplace");
-        var tagDestVlan = dojo.byId("tagDestVlan");
+        var taggedDestVlan = dojo.byId("taggedDestVlan");
         if (node.innerHTML == "true") {
-            tagDestVlan.selectedIndex = 0;
+            taggedDestVlan.selectedIndex = 0;
         } else {
-            tagDestVlan.selectedIndex = 1;
+            taggedDestVlan.selectedIndex = 1;
         }
     } else {
         var radioWidget = dijit.byId("layer3");

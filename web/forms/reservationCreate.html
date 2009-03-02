@@ -44,7 +44,7 @@ to the number of lines occurring in the hops list.
     </td>
     <td>
         <input dojoType="dijit.form.CheckBox" id="production"
-            name="productionType" value="on" type="checkbox" />
+            name="productionType" type="checkbox" />
       <label for="production">Production circuit</label>
     </td>
     <td>
@@ -151,26 +151,38 @@ to the number of lines occurring in the hops list.
              value="layer3" type="radio"
              onClick="oscars.ReservationCreate.layerChooser" />
       <label for="layer3">Use layer 3 parameters</label>
+      &lt; -- &gt;
+      <input dojoType="dijit.form.CheckBox" id="sameVlan"
+          name="sameVlan" type="checkbox" checked="checked"
+          onClick="oscars.ReservationCreate.toggleDestDisplay" />
+      <label for="sameVlan">Same VLAN on source and destination</label>
+    </td>
   </td></tr>
 
   <!-- layer 2 parameters -->
-  <tr class="layer2"><td>VLAN</td>
+  <tr class="layer2"><td>Source VLAN</td>
     <td>
-      <input type="text" dojoType="dijit.form.TextBox" name="vlanTag"
-             id="vlanTag" />
+      <input type="text" dojoType="dijit.form.TextBox" name="srcVlan"
+             id="srcVlan" />
     </td>
     <td>tag, or range, e.g. 3000-3100</td></tr>
-  <tr class="layer2"><td>Source VLAN</td>
+  <tr class="layer2"><td>Source VLAN type</td>
     <td colspan="2">
-      <select name="tagSrcVlan" id="tagSrcVlan">
+      <select name="taggedSrcVlan" id="taggedSrcVlan">
         <option value="Tagged" selected="selected">Tagged</option>
         <option value="Untagged">Untagged</option>
       </select>
     </td>
   </tr>
-  <tr class="layer2"><td>Destination VLAN</td>
+  <tr class="destVlan" style="display:none"><td>Destination VLAN</td>
+    <td>
+      <input type="text" dojoType="dijit.form.TextBox" name="destVlan"
+             id="destVlan" />
+    </td>
+    <td>tag, or range, e.g. 3000-3100</td></tr>
+  <tr class="layer2"><td>Destination VLAN type</td>
     <td colspan="2">
-      <select name="tagDestVlan" id="tagDestVlan">
+      <select name="taggedDestVlan" id="taggedDestVlan">
         <option value="Tagged" selected="selected">Tagged</option>
         <option value="Untagged">Untagged</option>
       </select>
