@@ -11,6 +11,10 @@ for f in ./lib/*.jar
 do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
+for f in ./lib/endorsed/*.jar
+do
+    OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
+done
 
 AXIS2_CLASSPATH=""
 for f in ./lib/axis2/*.jar
@@ -31,10 +35,10 @@ CALLING_STYLE=${DAEMON_STYLE-0}
 
 if [ $CALLING_STYLE -ne 1 ]; then
     touch /tmp/oscars_core.lock
-    java -Dcatalina.home=${CATALINA_HOME} -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $*
+    java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $*
     rm -f /tmp/oscars_core.lock
 else
-    nohup java -Dcatalina.home=${CATALINA_HOME} -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $* > /dev/null 2&>1 &
+    nohup java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $* > /dev/null 2&>1 &
     echo $! > $CORE_PID_FILE
 fi
 

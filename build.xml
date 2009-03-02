@@ -16,6 +16,7 @@
     <property name="build.home" value="build"/>
     <property name="build.classes" value="${build.home}/WEB-INF/classes"/>
     <property name="build.lib" value="lib"/>
+    <property name="build.lib.endorsed" value="lib/endorsed"/>
     <property name="build.axis2.lib" value="lib/axis2"/>
     <property name="tomcat.loc" value="${catalina.home}/common/lib"/>
     <property name="axis2.home" value="${webapp.home}/axis2"/>
@@ -39,6 +40,7 @@
             <compilerarg value="-Xlint:deprecation"/>
             <classpath>
                 <fileset dir="${build.lib}" includes="*.jar"/>
+                <fileset dir="${build.lib.endorsed}" includes="*.jar"/>
                 <fileset dir="${build.axis2.lib}" includes="*.jar"/>
             </classpath>
         </javac>
