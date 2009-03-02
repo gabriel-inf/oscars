@@ -55,15 +55,23 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         CreateReservationResponse response = new CreateReservationResponse();
         String methodName = "createReservation";
+        String gri = request.getCreateReservation().getGlobalReservationId();
         BssRmiInterface bssRmiClient = null;
         AaaRmiInterface aaaRmiClient = null;
         try {
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
+            ReservationAdapter.releasePayloadSender(gri);
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String login = this.checkUser(aaaRmiClient);
+        String login = null;
+        try{
+            login = this.checkUser(aaaRmiClient);
+        }catch(AAAFaultMessage e){
+            ReservationAdapter.releasePayloadSender(gri);
+            throw e;
+        }
         CreateReply reply = null;
         ResCreateContent params = request.getCreateReservation();
         ReservationAdapter resAdapter = new ReservationAdapter();
@@ -71,6 +79,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             reply = resAdapter.create(params, login, bssRmiClient);
         } catch (BSSException e) {
             this.log.error("createReservation: " + e.getMessage());
+            ReservationAdapter.releasePayloadSender(gri);
             throw new BSSFaultMessage("createReservation " + e.getMessage());
         }
         response.setCreateReservationResponse(reply);
@@ -166,15 +175,23 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         String methodName = "modifyReservation";
         log.info(methodName+".start");
+        String gri = request.getModifyReservation().getGlobalReservationId();
         AaaRmiInterface aaaRmiClient = null;
         BssRmiInterface bssRmiClient = null;
         try {
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
+            ReservationAdapter.releasePayloadSender(gri);
             throw new BSSFaultMessage(ex.getMessage());
         }
-        String username = this.checkUser(aaaRmiClient);
+        String username = null;
+        try{
+            username = this.checkUser(aaaRmiClient);
+        }catch(AAAFaultMessage e){
+            ReservationAdapter.releasePayloadSender(gri);
+            throw e;
+        }
         ReservationAdapter resAdapter = new ReservationAdapter();
         ModifyResReply reply = null;
         ModifyReservationResponse response = new ModifyReservationResponse();
@@ -182,9 +199,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.modify(params, username, bssRmiClient);
         } catch (BSSException e) {
+            ReservationAdapter.releasePayloadSender(gri);
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         } catch (Exception e) {
+            ReservationAdapter.releasePayloadSender(gri);
             this.log.error("modifyReservation caught Exception: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         }
@@ -414,6 +433,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             ModifyReservation message = new ModifyReservation();
             ModifyResContent params = forwardPayload.getModifyReservation();
             message.setModifyReservation(params);
+            ReservationAdapter.addPayloadSender(params.getGlobalReservationId(), payloadSender);
             ModifyReservationResponse response = this.modifyReservation(message);
             ModifyResReply reply = response.getModifyReservationResponse();
             forwardReply.setModifyReservation(reply);

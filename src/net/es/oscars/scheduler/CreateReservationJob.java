@@ -8,6 +8,7 @@ import org.quartz.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
+import net.es.oscars.bss.policy.PolicyClient;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.pss.*;
@@ -215,6 +216,11 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
 
         String login = resv.getLogin();
         rm.finalizeResv(resv, true, confirmedPath);
+        //send check policy request to verify confirmed path is ok
+        PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
+        if(policyClient.isActivated()){
+            policyClient.checkPolicy(login, PolicyClient.CREATE_ACTION_URN, resv);
+        }
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);
         eventProducer.addEvent(OSCARSEvent.RESV_CREATE_CONFIRMED, login, "JOB", resv);

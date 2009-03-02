@@ -16,6 +16,7 @@ import net.es.oscars.rmi.aaa.AaaRmiInterface;
 import net.es.oscars.scheduler.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.events.OSCARSEvent;
+import net.es.oscars.bss.policy.PolicyClient;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pss.*;
 
@@ -74,7 +75,17 @@ public class ReservationManager {
             throw new BSSException(errorMsg.toString());
         }
         this.log.info("create.validated");
-
+        
+        // This will be the ONLY time we set status with setStatus
+        resv.setStatus(StateEngine.SUBMITTED);
+        resv.setLocalStatus(StateEngine.LOCAL_INIT);
+        
+        //send check policy request
+        PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
+        if(policyClient.isActivated()){
+            policyClient.checkPolicy(login, PolicyClient.CREATE_ACTION_URN, resv);
+        }
+        
         String gri = resv.getGlobalReservationId();
         // set GRI if none specified
         if (gri == null){
@@ -95,11 +106,6 @@ public class ReservationManager {
 
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
-
-        this.log.info("Updating state for GRI: "+gri);
-        // This will be the ONLY time we set status with setStatus
-        resv.setStatus(StateEngine.SUBMITTED);
-        resv.setLocalStatus(StateEngine.LOCAL_INIT);
 
         this.log.info("Saving reservation with GRI: "+gri);
         // Save the reservation so that the client can query for it
@@ -152,8 +158,14 @@ public class ReservationManager {
         this.rsvLogger.redirect(resv.getGlobalReservationId());
 
         this.pathMgr.calculatePaths(resv);
-
-        //chose resources not put INCREATE
+        
+        //send check policy request
+        PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
+        if(policyClient.isActivated()){
+            policyClient.checkPolicy(resv.getLogin(), PolicyClient.CREATE_ACTION_URN, resv);
+        }
+        
+        //chose resources now put INCREATE
         this.se.updateStatus(resv, StateEngine.INCREATE);
         this.log.info("create.finish");
         this.rsvLogger.stop();
@@ -515,6 +527,12 @@ public class ReservationManager {
         StateEngine.canUpdateStatus(persistentResv, StateEngine.INMODIFY);
         if (resv.getStartTime() > resv.getEndTime()) {
             throw new BSSException("Cannot modify: start time after end time!");
+        }
+        
+        //send check policy request to verify modify is ok
+        PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
+        if(policyClient.isActivated()){
+            policyClient.checkPolicy(login, PolicyClient.MODIFY_ACTION_URN, persistentResv, resv);
         }
 
         //Schedule job

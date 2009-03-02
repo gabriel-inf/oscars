@@ -17,6 +17,7 @@ import net.es.oscars.PropHandler;
 public class PolicyManager {
     private Logger log;
     private String dbname;
+    private PolicyClient policyClient;
     private String vlanFilter;
 
     public PolicyManager(String dbname) {
@@ -27,6 +28,11 @@ public class PolicyManager {
         this.vlanFilter = props.getProperty("vlanFilter");
         if(this.vlanFilter == null){
             this.vlanFilter = "vlanMap";
+        }
+        try {
+            this.policyClient = new PolicyClient(props);
+        } catch (BSSException e) {
+            this.log.error("Unable to create policy client:" + e.getMessage());
         }
     }
 
@@ -49,5 +55,19 @@ public class PolicyManager {
         vlf.applyFilter(newReservation, activeReservations);
 
         this.log.info("checkOversubscribed.end");
+    }
+
+    /**
+     * @return the policyClient
+     */
+    public PolicyClient getPolicyClient() {
+        return this.policyClient;
+    }
+
+    /**
+     * @param policyClient the policyClient to set
+     */
+    public void setPolicyClient(PolicyClient policyClient) {
+        this.policyClient = policyClient;
     }
 }

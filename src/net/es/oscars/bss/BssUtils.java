@@ -4,7 +4,12 @@ import java.util.*;
 
 import org.apache.log4j.*;
 
+import net.es.oscars.aaa.User;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.rmi.RmiUtils;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.model.ModelObject;
+import net.es.oscars.rmi.model.ModelOperation;
 
 /**
  * @author David Robertson (dwrobertson@lbl.gov)
@@ -249,5 +254,33 @@ public class BssUtils {
             }
         }
         return buffer.toString();
+    }
+    
+    /**
+     * Maps a login name to an X.509 subject if it exists, 
+     * otherwise returns the login name.
+     * 
+     * @param login the login to map to an X.509 subject
+     * @return the X.509 subject if it exists or the given login otherwise
+     */
+    public static String lookupX509Subj(String login){
+        String result = login;
+        HashMap<String,Object> request = new HashMap<String,Object>();
+        request.put("objectType", ModelObject.USER);
+        request.put("operation", ModelOperation.FIND);
+        request.put("findBy", "username");
+        request.put("username", login);
+        try {
+            AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient("forwardClient", log);
+            HashMap<String, Object> results = rmiClient.manageAaaObjects(request);
+            User user = (User) results.get("user");
+            if(user.getCertSubject() != null){
+                result = user.getCertSubject();
+            }
+            log.info("result=" + result);
+        } catch (Exception e) {
+            log.warn("Error mapping login to X.509 subject: " + e.getMessage());
+        }
+        return result;
     }
 }

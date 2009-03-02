@@ -16,8 +16,6 @@ import org.ogf.schema.network.topology.ctrlplane.*;
 
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
-import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.bss.topology.*;
 import net.es.oscars.rmi.bss.*;
 import net.es.oscars.rmi.bss.xface.*;
 
@@ -48,13 +46,12 @@ public class ReservationAdapter {
         this.logCreateParams(soapParams);
         Reservation resv =
             WSDLTypeConverter.contentToReservation(soapParams);
-
+        this.setPayloadSender(resv);
         PathInfo pathInfo = soapParams.getPathInfo();
         net.es.oscars.bss.topology.Path path =
             WSDLTypeConverter.convertPath(pathInfo);
         resv.setPath(path);
         CreateReply reply = null;
-        this.setPayloadSender(resv);
 
         String gri = null;
         try {
@@ -96,6 +93,7 @@ public class ReservationAdapter {
         ModifyResReply reply = null;
         Reservation resv = new Reservation();
         resv.setGlobalReservationId(request.getGlobalReservationId());
+        this.setPayloadSender(resv);
         resv.setStartTime(request.getStartTime());
         resv.setEndTime(request.getEndTime());
         Long bandwidth = new Long(
@@ -481,10 +479,20 @@ public class ReservationAdapter {
      * @param sender the original sender of the createReservation message
      */
     static synchronized public void addPayloadSender(String gri, String sender){
+        Logger log = Logger.getLogger(ReservationAdapter.class);
         if(ReservationAdapter.payloadSender == null){
             ReservationAdapter.payloadSender = new HashMap<String,String>();
         }
+        //Try to get the lock for up to 10 seconds and then just take it because probably
+        //an uncaught exception messed with things
+        for(int i = 0; payloadSender.containsKey(gri) && i < 10; i++){
+            log.debug("Waiting for lock on payloadSenders...");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
+        }
         ReservationAdapter.payloadSender.put(gri, sender);
+        log.debug("got lock on payload senders");
     }
     /**
      * Sets the payload sender of a reservation
@@ -498,6 +506,20 @@ public class ReservationAdapter {
 
         if(ReservationAdapter.payloadSender.containsKey(gri)){
             resv.setPayloadSender(ReservationAdapter.payloadSender.get(gri));
+            ReservationAdapter.payloadSender.remove(gri);
+        }
+    }
+    
+    /**
+     * Releases the payloadSender if an error occurs before the payloadSender is set
+     * @param gri
+     */
+    public static synchronized void releasePayloadSender(String gri) {
+        if(gri == null || ReservationAdapter.payloadSender == null){
+            return;
+        }
+
+        if(ReservationAdapter.payloadSender.containsKey(gri)){
             ReservationAdapter.payloadSender.remove(gri);
         }
     }

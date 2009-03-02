@@ -12,6 +12,7 @@ import org.quartz.JobDataMap;
 
 import net.es.oscars.ConfigFinder;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.BssUtils;
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.events.EventProducer;
@@ -263,7 +264,14 @@ public class Forwarder extends Client {
 
         this.log.debug("forward.start:  to " + url);
         setup(resv, url);
-        String login = resv.getLogin();
+        //always send the first requester as payload sender
+        String login = null;
+        if(resv.getPayloadSender() != null){
+            login = resv.getPayloadSender();
+        }else{
+          //Convert to X.509 if possible
+            login = BssUtils.lookupX509Subj(resv.getLogin());
+        }
         this.log.debug("forward.login: " + login);
         ForwardReply reply = null;
         Forward fwd =  new Forward();
