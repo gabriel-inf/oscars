@@ -63,9 +63,9 @@ public class ReservationManager {
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
         Path path = resv.getPath(PathType.REQUESTED);
-        if (path == null || path.getPathElems() == null || path.getPathElems().isEmpty()) {
-            this.log.debug("Reservation submitted with empty path");
-            this.createInitialPath(path);
+        if ((path == null) || (path.getPathElems() == null ||
+             path.getPathElems().isEmpty()) && (path.getLayer2Data() != null)) {
+            throw new BSSException("No path provided for reservation");
         }
 
         StringBuilder errorMsg = paramValidator.validate(resv, path);
@@ -962,41 +962,6 @@ public class ReservationManager {
        } else {
            return resv;
        }
-   }
-
-   private void createInitialPath(Path path) throws BSSException {
-       this.log.info("createInitialPath.start");
-       String errMsg = "";
-       String src = "";
-       String dst = "";
-       if (path.getLayer2Data() != null) {
-           src = path.getLayer2Data().getSrcEndpoint();
-           dst = path.getLayer2Data().getDestEndpoint();
-       } else if (path.getLayer3Data() != null) {
-           src = path.getLayer3Data().getSrcHost();
-           dst = path.getLayer3Data().getDestHost();
-       } else {
-           errMsg = "Path has neither L2 nor L3 data attached";
-           this.log.error(errMsg);
-           throw new BSSException(errMsg);
-       }
-       if (path.getPathElems() == null) {
-           ArrayList<PathElem> pes = new ArrayList<PathElem>();
-           path.setPathElems(pes);
-       } else if (!path.getPathElems().isEmpty()) {
-           errMsg = "createInitialPath called when requested path was not empty";
-           this.log.error(errMsg);
-           throw new BSSException(errMsg);
-       }
-       PathElem srcpe = new PathElem();
-       srcpe.setUrn(src);
-       srcpe.setSeqNumber(0);
-       PathElem dstpe = new PathElem();
-       dstpe.setUrn(dst);
-       dstpe.setSeqNumber(1);
-       path.getPathElems().add(srcpe);
-       path.getPathElems().add(dstpe);
-       this.log.info("createInitialPath.end");
    }
 
     /**

@@ -783,7 +783,16 @@ public class WSDLTypeConverter {
         
         List<PathElem> pathElems = new ArrayList<PathElem>();
         CtrlPlanePathContent requestedPath = pathInfo.getPath();
-        if(requestedPath == null){
+        if ((layer2Info != null) && ((requestedPath == null) ||
+                                     (requestedPath.getHop() == null))) {
+            // If no explicit path for layer 2, we must fill this in
+            PathElem srcpe = addDefaultPathElem(layer2Info.getSrcEndpoint(),
+                                                layer2Info.getSrcVtag());
+            PathElem dstpe = addDefaultPathElem(layer2Info.getDestEndpoint(),
+                                                layer2Info.getDestVtag());
+            pathElems.add(srcpe);
+            pathElems.add(dstpe);
+            path.setPathElems(pathElems);
             log.debug("convertPath.end");
             return path;
         }
@@ -806,6 +815,25 @@ public class WSDLTypeConverter {
         path.setPathElems(pathElems);
         log.debug("convertPath.end");
         return path;
+    }
+
+    public static PathElem addDefaultPathElem(String hop, VlanTag vtag) {
+        PathElem pe = new PathElem();
+        pe.setUrn(hop);
+        PathElemParam pep = new PathElemParam();
+        pep.setSwcap(PathElemParamSwcap.L2SC);
+        pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
+        String vlan = "any";
+        if (vtag != null) {
+            vlan = vtag.getString();
+            boolean tagged = vtag.getTagged();
+            if (!tagged) {
+                vlan = "0";
+            }
+        }
+        pep.setValue(vlan);
+        pe.addPathElemParam(pep);
+        return pe;
     }
 
     public static List<PathElemParam>

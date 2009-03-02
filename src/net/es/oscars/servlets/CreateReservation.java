@@ -236,15 +236,12 @@ public class CreateReservation extends HttpServlet {
             layer2Data.setDestEndpoint(destination);
             requestedPath.setLayer2Data(layer2Data);
 
-            // If no explicit path for layer 2, we must fill this in or we
-            // can't attach things like VLAN tags.
+            // If no explicit path for layer 2, we must fill this in
             if (pathElems.isEmpty()) {
                 PathElem srcpe = new PathElem();
                 srcpe.setUrn(source);
-                srcpe.setSeqNumber(0);
                 PathElem dstpe = new PathElem();
                 dstpe.setUrn(destination);
-                dstpe.setSeqNumber(1);
                 pathElems.add(srcpe);
                 pathElems.add(dstpe);
                 requestedPath.setPathElems(pathElems);
