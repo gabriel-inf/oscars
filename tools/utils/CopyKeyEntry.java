@@ -9,7 +9,8 @@ import java.security.KeyStore.*;
 public class CopyKeyEntry {
 /**
  * CopyKeyEntry is a command-line client for copying a KeyEntry from one
- * keystore to another.
+ * keystore to another. If the output keystore is of type pkcs12, a new pkcs12
+ * file is created.
  * 
  * @author Mary R. Thompson (mrthompson@lbl.gov)
  */
@@ -24,14 +25,16 @@ public class CopyKeyEntry {
         String outPassword = null;
         String outKeyPassword = null;
         String outKeyStore = null;
-        Boolean isPKCS12 = false;
-        String usageMsg = "usage:  CopyKeyEntry -a alias  [-injks <oldKeystore> | -inpkcs12 <oldKeystore>] -out <newKeystore>";
+        Boolean isInPKCS12 = false;
+        Boolean isOutPKCS12 = false;
+        String usageMsg = "usage:  CopyKeyEntry -a alias  [-injks <oldKeystore> | -inpkcs12 <oldKeystore>] [-outjks <newKeystore> | [outpkcs12 <newKeystore>]";
         java.security.cert.Certificate[] chain = null;
         
         try {
             KeyStore inKS = KeyStore.getInstance("jks");      
             KeyStore outKS = KeyStore.getInstance("jks");
             KeyStore inP12 = KeyStore.getInstance("PKCS12");
+            KeyStore outP12 = KeyStore.getInstance("PKCS12");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             Key keyEntry = null;
 
@@ -46,12 +49,16 @@ public class CopyKeyEntry {
                     aliasName = args[i + 1];
                 } else if (args[i].equals("-injks")) {
                     inKeyStore = args[i + 1];
-                    isPKCS12 = false;
+                    isInPKCS12 = false;
                 } else if (args[i].equals("-inpkcs12")) {
                     inKeyStore = args[i + 1];
-                    isPKCS12= true;
-                } else if (args[i].equals("-out")) {
+                    isInPKCS12= true;
+                } else if (args[i].equals("-outjks")) {
                     outKeyStore = args[i + 1];
+                    isOutPKCS12 = false;
+                } else if (args[i].equals("-outpkcs12")) {
+                    outKeyStore = args[i + 1];
+                    isOutPKCS12 = true;
                 }
                 i = i + 2;
             }
@@ -66,7 +73,7 @@ public class CopyKeyEntry {
             System.out.print("input password for " + inKeyStore + " : ");
             inPassword = br.readLine().trim();
             inKeyPassword = inPassword;
-            if (isPKCS12) {
+            if (isInPKCS12) {
                 inP12.load(in,inPassword.toCharArray());
                 Enumeration<String> aliases = inP12.aliases();
                 while (aliases.hasMoreElements()) {
@@ -105,26 +112,33 @@ public class CopyKeyEntry {
                 }
                 chain = inKS.getCertificateChain(aliasName);
             }
-            in = new FileInputStream(outKeyStore);
+  
+
             System.out.print("input password for " + outKeyStore + " : ");
             outPassword = br.readLine().trim();
-            outKS.load(in,outPassword.toCharArray());
-            in.close();
-            
-            System.out.print("Do you want the key password in " + outKeyStore +
-                    " to be different from " + outPassword + "? [y/n]: ");  
-            if (br.readLine().trim().equals("y")) {
-                System.out.print("input new key password: ");
-                outKeyPassword = br.readLine().trim();  
+            if (isOutPKCS12) {
+                outP12.load(null,outPassword.toCharArray());
+                outP12.setKeyEntry(aliasName, keyEntry, outPassword.toCharArray(), chain);
+                FileOutputStream out = new FileOutputStream(outKeyStore);
+                outP12.store(out,outPassword.toCharArray());
+                out.close();
             } else {
-                outKeyPassword = outPassword;
+                in = new FileInputStream(outKeyStore);
+                outKS.load(in,outPassword.toCharArray());
+                in.close();
+                System.out.print("Do you want the key password in " + outKeyStore +
+                        " to be different from " + outPassword + "? [y/n]: ");  
+                if (br.readLine().trim().equals("y")) {
+                    System.out.print("input new key password: ");
+                    outKeyPassword = br.readLine().trim();  
+                } else {
+                    outKeyPassword = outPassword;
+                }
+                outKS.setKeyEntry(aliasName, keyEntry, outKeyPassword.toCharArray(), chain);
+                FileOutputStream out = new FileOutputStream(outKeyStore);
+                outKS.store(out,outPassword.toCharArray());
+                out.close();
             }
-
-            outKS.setKeyEntry(aliasName, keyEntry, outKeyPassword.toCharArray(), chain);
-            
-            FileOutputStream out = new FileOutputStream(outKeyStore);
-            outKS.store(out,outPassword.toCharArray());
-            out.close();
         } catch (Exception e) {
                 e.printStackTrace();
                 System.exit(1);
