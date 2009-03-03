@@ -153,7 +153,7 @@ public class ReservationAdapter {
             BssRmiInterface rmiClient) throws BSSException {
 
         String gri = request.getQueryReservation().getGri();
-        this.log.info("QueryReservation.start: " + gri);
+        this.log.debug("QueryReservation.start: " + gri);
         RmiQueryResReply result = null;
         try {
             result = rmiClient.queryReservation(gri, username);
@@ -164,7 +164,7 @@ public class ReservationAdapter {
                                result.getReservation(),
                                result.isInternalPathAuthorized(),
                                result.getLocalDomain());
-        this.log.info("QueryReservation.finish: " +
+        this.log.debug("QueryReservation.finish: " +
                        reply.getGlobalReservationId());
         return reply;
     }
@@ -188,7 +188,7 @@ public class ReservationAdapter {
         list(ListRequest request, String username, BssRmiInterface rmiClient)
             throws BSSException {
 
-        this.log.info("list.start");
+        this.log.debug("list.start");
         Long startTime = null;
         Long endTime = null;
         ListRequestSequence_type0 tmp;
@@ -248,7 +248,7 @@ public class ReservationAdapter {
                    rmiReply.getReservations(),
                    rmiReply.isInternalPathAuthorized(),
                    rmiReply.getLocalDomain());
-        this.log.info("list.finish: " + reply.toString());
+        this.log.debug("list.finish: " + reply.toString());
         return reply;
     }
 
@@ -264,7 +264,7 @@ public class ReservationAdapter {
         getNetworkTopology(GetTopologyContent soapParams, String username,
                BssRmiInterface rmiClient) throws BSSException {
 
-        this.log.info("getNetworkTopology.start");
+        this.log.debug("getNetworkTopology.start");
         GetTopologyResponseContent reply = null;
         // note that Axis2 types are used in this method only
         try {
@@ -274,7 +274,7 @@ public class ReservationAdapter {
             this.log.error(e.getMessage());
             throw new BSSException(e.getMessage());
         }
-        this.log.info("createPath.finish");
+        this.log.debug("createPath.finish");
         return reply;
     }
 
@@ -292,7 +292,7 @@ public class ReservationAdapter {
         createPath(CreatePathContent soapParams, String username,
                BssRmiInterface rmiClient) throws BSSException {
 
-        this.log.info("createPath.start");
+        this.log.debug("createPath.start");
         CreatePathResponseContent reply = new CreatePathResponseContent();
         RmiPathRequest rmiRequest = new RmiPathRequest();
         String gri = soapParams.getGlobalReservationId();
@@ -307,7 +307,7 @@ public class ReservationAdapter {
         }
         reply.setGlobalReservationId(gri);
         reply.setStatus(status);
-        this.log.info("createPath.finish");
+        this.log.debug("createPath.finish");
         return reply;
     }
 
@@ -323,7 +323,7 @@ public class ReservationAdapter {
         refreshPath(RefreshPathContent soapParams, String username,
                BssRmiInterface rmiClient) throws BSSException {
 
-        this.log.info("refreshPath.start");
+        this.log.debug("refreshPath.start");
         RefreshPathResponseContent reply = new RefreshPathResponseContent();
         RmiPathRequest rmiRequest = new RmiPathRequest();
         String gri = soapParams.getGlobalReservationId();
@@ -338,7 +338,7 @@ public class ReservationAdapter {
         }
         reply.setGlobalReservationId(gri);
         reply.setStatus(status);
-        this.log.info("refreshPath.finish");
+        this.log.debug("refreshPath.finish");
         return reply;
     }
 
@@ -354,7 +354,7 @@ public class ReservationAdapter {
         teardownPath(TeardownPathContent soapParams, String username,
                BssRmiInterface rmiClient) throws BSSException {
 
-        this.log.info("teardownPath.start");
+        this.log.debug("teardownPath.start");
         TeardownPathResponseContent reply = new TeardownPathResponseContent();
         RmiPathRequest rmiRequest = new RmiPathRequest();
         String gri = soapParams.getGlobalReservationId();
@@ -369,7 +369,7 @@ public class ReservationAdapter {
         }
         reply.setGlobalReservationId(gri);
         reply.setStatus(status);
-        this.log.info("teardownPath.finish");
+        this.log.debug("teardownPath.finish");
         return reply;
     }
 
@@ -392,8 +392,8 @@ public class ReservationAdapter {
         for (int i=0; i < remoteHops.length;  i++) {
             localPath.addHop(remoteHops[i]);
         }
-        this.log.debug("added " + remoteHops.length + " remote hops to path");
-        this.log.debug("complete path has " + localHops.length + " hops");
+        this.log.info("added " + remoteHops.length + " remote hops to path");
+        this.log.info("complete path has " + localHops.length + " hops");
     }
 
     /**

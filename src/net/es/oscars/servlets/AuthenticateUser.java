@@ -29,12 +29,14 @@ public class AuthenticateUser extends HttpServlet {
         response.setContentType("application/json");
 
         UserSession userSession = new UserSession();
+        AaaRmiInterface rmiClient = null;
         String userName;
-        String sesUserName = userSession.checkSession(null, request, methodName);
+        String sesUserName = userSession.checkSession(null, rmiClient, request, methodName);
         if (sesUserName != null) {
             userName = sesUserName;
         } else {
             userName = request.getParameter("userName");
+            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         }
         String password = request.getParameter("initialPassword");
         String guestLogin = userSession.getGuestLogin();
@@ -48,8 +50,8 @@ public class AuthenticateUser extends HttpServlet {
             sessionName = String.valueOf(r);
         }
         try {
-            AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            /*  rmiClient =
+                RmiUtils.getAaaRmiClient(methodName, log); */
             String loginUserName =
                 rmiClient.verifyLogin(userName, password, sessionName);
             userName = (String) loginUserName;

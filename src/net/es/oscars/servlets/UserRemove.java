@@ -43,8 +43,7 @@ public class UserRemove extends HttpServlet {
         }
 
         try {
-            AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient =userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "Users", "modify");
             if (authVal != AuthValue.ALLUSERS) {

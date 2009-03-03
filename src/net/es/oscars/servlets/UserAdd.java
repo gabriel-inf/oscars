@@ -42,7 +42,7 @@ public class UserAdd extends HttpServlet {
         AuthValue authVal = null;
         String errMsg = null;
         try {
-            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            rmiClient = userSession.getAaaInterface();
             authVal = rmiClient.checkAccess(userName, "Users", "create");
         } catch (Exception e) {
             ServletUtils.handleFailure(out, log, e, methodName);

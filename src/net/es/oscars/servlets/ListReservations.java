@@ -55,8 +55,7 @@ public class ListReservations extends HttpServlet {
             BssRmiInterface bssRmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
             rmiReply = bssRmiClient.listReservations(rmiRequest, userName);
-            AaaRmiInterface aaaRmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface aaaRmiClient =userSession.getAaaInterface();
             authVal =
                 aaaRmiClient.checkAccess(userName, "Reservations", "list");
         } catch (Exception e) {

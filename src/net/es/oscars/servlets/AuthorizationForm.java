@@ -53,7 +53,7 @@ public class AuthorizationForm extends HttpServlet {
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
             AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+                userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == null || authVal == AuthValue.DENIED) {

@@ -80,7 +80,7 @@ public class ReservationDAO
             List<String> vlanTags, Long startTime, Long endTime)
                 throws BSSException {
 
-        this.log.info("list.start");
+        this.log.debug("list.start");
         this.reservations = new ArrayList<Reservation>();
         ArrayList<String> criteria = new ArrayList<String>();
         String loginQ = null;
@@ -149,7 +149,7 @@ public class ReservationDAO
                 this.reservations.remove(rsv);
             }
         }
-        this.log.info("list.finish");
+        this.log.debug("list.finish");
         return this.reservations;
     }
 

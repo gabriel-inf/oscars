@@ -57,7 +57,7 @@ public class AuthorizationAdd extends HttpServlet {
         rmiParams.put("operation", ModelOperation.ADD);
 
         try {
-            AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient = userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED)  {

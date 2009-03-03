@@ -52,9 +52,10 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public CreateReservationResponse
         createReservation(CreateReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
-
-        CreateReservationResponse response = new CreateReservationResponse();
+        
         String methodName = "createReservation";
+        this.log.info(methodName + ".start");
+        CreateReservationResponse response = new CreateReservationResponse();
         String gri = request.getCreateReservation().getGlobalReservationId();
         BssRmiInterface bssRmiClient = null;
         AaaRmiInterface aaaRmiClient = null;
@@ -78,11 +79,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.create(params, login, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("createReservation: " + e.getMessage());
+            this.log.error("createReservation caught BSSException: " + e.getMessage());
             ReservationAdapter.releasePayloadSender(gri);
             throw new BSSFaultMessage("createReservation " + e.getMessage());
         }
         response.setCreateReservationResponse(reply);
+        this.log.info(methodName + ".end");
         return response;
     }
 
@@ -116,8 +118,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             this.log.info(methodName + " caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage(methodName + ": " + e.getMessage());
         } catch (Exception e) {
-            this.log.error(methodName + " caught Exception: " + e.getMessage());
-            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
+            this.log.error(methodName + " caught Exception: " + e.toString());
+            throw new BSSFaultMessage(methodName + ": " + e.toString());
         }
         CancelReservationResponse response = new CancelReservationResponse();
         response.setCancelReservationResponse(reply);
@@ -152,9 +154,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }  catch (BSSException e) {
             this.log.info(methodName + " caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage(methodName + ": " + e.getMessage());
-        } catch (Exception e) {
-            this.log.error(methodName + " caught Exception: " + e.getMessage());
-            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
+        }  catch (Exception e) {
+            this.log.error(methodName + " caught Exception: " + e.toString());
+            throw new BSSFaultMessage(methodName + ": " + e.toString());
         }
         QueryReservationResponse response = new QueryReservationResponse();
         response.setQueryReservationResponse(reply);
@@ -199,15 +201,17 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.modify(params, username, bssRmiClient);
         } catch (BSSException e) {
+            this.log.info("modifyReservation caught BSSException: " + e.getMessage());
             ReservationAdapter.releasePayloadSender(gri);
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         } catch (Exception e) {
             ReservationAdapter.releasePayloadSender(gri);
-            this.log.error("modifyReservation caught Exception: " + e.getMessage());
-            throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
+            this.log.error("modifyReservation caught Exception: " + e.toString());
+            throw new BSSFaultMessage("modifyReservation: " + e.toString());
         }
         response.setModifyReservationResponse(reply);
+        this.log.info(methodName + ".end");
         return response;
     }
 
@@ -240,11 +244,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.list(params, username, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("listReservations caught BSSException: " + e.getMessage());
+            this.log.info("listReservations caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("listReservations: " + e.getMessage());
         } catch (Exception e) {
-            this.log.error("listReservations caught Exception: " + e.getMessage());
-            throw new BSSFaultMessage("listReservations: " + e.getMessage());
+            this.log.error("listReservations caught Exception: " + e.toString());
+            throw new BSSFaultMessage("listReservations: " + e.toString());
         }
         ListReservationsResponse response = new ListReservationsResponse();
         response.setListReservationsResponse(reply);
@@ -262,10 +266,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         getNetworkTopology(GetNetworkTopology request)
             throws BSSFaultMessage,AAAFaultMessage {
 
+        String methodName = "getNetworkTopology";
+        log.info(methodName+".start");
+        GetTopologyResponseContent reply = null;
         GetTopologyContent params = request.getGetNetworkTopology();
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
-        GetTopologyResponseContent reply = null;
-        String methodName = "getNetworkTopology";
         BssRmiInterface bssRmiClient = null;
         AaaRmiInterface aaaRmiClient = null;
         try {
@@ -279,10 +284,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.getNetworkTopology(params, login, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("getNetworkTopology: " + e.getMessage());
+            this.log.info("getNetworkTopology caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("getNetworkTopology " + e.getMessage());
-        }
+        } 
         response.setGetNetworkTopologyResponse(reply);
+        log.info(methodName+".end");
         return response;
     }
 
@@ -296,10 +302,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         createPath(CreatePath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
+        String methodName = "createPath";
+        log.info(methodName+".start");
         CreatePathContent params = request.getCreatePath();
         CreatePathResponse response = new CreatePathResponse();
         CreatePathResponseContent reply = null;
-        String methodName = "createPath";
         BssRmiInterface bssRmiClient = null;
         AaaRmiInterface aaaRmiClient = null;
         try {
@@ -313,10 +320,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.createPath(params, login, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("createPath: " + e.getMessage());
+            this.log.info("createPath: " + e.getMessage());
             throw new BSSFaultMessage("createPath " + e.getMessage());
-        }
+        } 
         response.setCreatePathResponse(reply);
+        log.info(methodName+".end");
         return response;
     }
 
@@ -330,10 +338,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         refreshPath(RefreshPath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
+        String methodName = "refreshPath";
+        log.info(methodName+".start");
         RefreshPathContent params = request.getRefreshPath();
         RefreshPathResponse response = new RefreshPathResponse();
         RefreshPathResponseContent reply = null;
-        String methodName = "refreshPath";
         BssRmiInterface bssRmiClient = null;
         AaaRmiInterface aaaRmiClient = null;
         try {
@@ -347,10 +356,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.refreshPath(params, login, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("refreshPath: " + e.getMessage());
+            this.log.info("refreshPath: " + e.getMessage());
             throw new BSSFaultMessage("refreshPath " + e.getMessage());
         }
         response.setRefreshPathResponse(reply);
+        log.info(methodName+".end");
         return response;
     }
 
@@ -364,10 +374,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         teardownPath(TeardownPath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
+        String methodName = "teardownPath";
+        log.info(methodName+".start");
         TeardownPathContent params = request.getTeardownPath();
         TeardownPathResponse response = new TeardownPathResponse();
         TeardownPathResponseContent reply = null;
-        String methodName = "teardownPath";
         BssRmiInterface bssRmiClient = null;
         AaaRmiInterface aaaRmiClient = null;
         try {
@@ -381,10 +392,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             reply = resAdapter.teardownPath(params, login, bssRmiClient);
         } catch (BSSException e) {
-            this.log.error("teardownPath: " + e.getMessage());
+            this.log.info("teardownPath: " + e.getMessage());
             throw new BSSFaultMessage("teardownPath " + e.getMessage());
         }
         response.setTeardownPathResponse(reply);
+        log.info(methodName+".end");
         return response;
     }
 
@@ -408,11 +420,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ForwardResponse forwardResponse = new ForwardResponse();
         ForwardPayload forwardPayload = request.getPayload();
         String payloadSender = request.getPayloadSender();
-
         String contentType = forwardPayload.getContentType();
         forwardReply.setContentType(contentType);
 
         if (contentType.equals("cancelReservation")) {
+            log.info("forward cancelReservation");
             CancelReservation message = new CancelReservation();
             GlobalReservationId params = forwardPayload.getCancelReservation();
             message.setCancelReservation(params);
@@ -421,6 +433,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setCancelReservation(reply);
 
         } else if (contentType.equals("createReservation")) {
+            log.info("forward createReservation");
             CreateReservation message = new CreateReservation();
             ResCreateContent params = forwardPayload.getCreateReservation();
             message.setCreateReservation(params);
@@ -430,6 +443,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setCreateReservation(reply);
 
         } else if (contentType.equals("modifyReservation")) {
+            log.info("forward modifyReservation");
             ModifyReservation message = new ModifyReservation();
             ModifyResContent params = forwardPayload.getModifyReservation();
             message.setModifyReservation(params);
@@ -439,6 +453,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setModifyReservation(reply);
 
         } else if (contentType.equals("queryReservation")) {
+            log.info("forward queryReservation");
             QueryReservation message = new QueryReservation();
             GlobalReservationId params = forwardPayload.getQueryReservation();
             message.setQueryReservation(params);
@@ -455,6 +470,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setModifyReservation(reply);
 */
         } else if (contentType.equals("listReservations")) {
+            log.info("forward listReservations");
             ListReservations message = new ListReservations();
             message.setListReservations(forwardPayload.getListReservations());
             ListReservationsResponse response = this.listReservations(message);
@@ -462,6 +478,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setListReservations(reply);
 
         } else if (contentType.equals("createPath")) {
+            log.info("forward createPath");
             CreatePath message = new CreatePath();
             message.setCreatePath(forwardPayload.getCreatePath());
             CreatePathResponse response = this.createPath(message);
@@ -469,6 +486,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setCreatePath(reply);
 
         } else if (contentType.equals("refreshPath")) {
+            log.info("forward refreshPath");
             RefreshPath message = new RefreshPath();
             message.setRefreshPath(forwardPayload.getRefreshPath());
             RefreshPathResponse response = this.refreshPath(message);
@@ -477,6 +495,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setRefreshPath(reply);
 
         } else if (contentType.equals("teardownPath")) {
+            log.info("forward teardownPath");
             TeardownPath message = new TeardownPath();
             message.setTeardownPath(forwardPayload.getTeardownPath());
             TeardownPathResponse response = this.teardownPath(message);
@@ -498,7 +517,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @param request the Notify message
      */
     public void Notify(Notify request){
-        this.log.debug("Received Notify");
+        this.log.info("Received Notify");
         BssRmiInterface bssRmiClient = null;
         try {
             bssRmiClient = RmiUtils.getBssRmiClient("HandleEvent", log);
@@ -583,7 +602,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.SIGN) ||
                         (((java.lang.Integer) eResult.get(
                             WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.UT)) {
-                        this.log.info("getSecurityPrincipals.getSecurityInfo, " +
+                        this.log.debug("getSecurityPrincipals.getSecurityInfo, " +
                             "Principal's name: " +
                             ((Principal) eResult.get(
                                 WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
@@ -640,7 +659,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         // lookup up using input DN first
         String origDN = principals.get("subject").getName();
-        this.log.info("checkUser original DN: " + origDN);
+        this.log.info("checkUser DN: " + origDN);
 
         try {
             login = rmiClient.verifyDN(origDN);

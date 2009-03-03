@@ -39,7 +39,7 @@ public class UserAddForm extends HttpServlet {
         AaaRmiInterface rmiClient = null;
         AuthValue authVal = null;
         try {
-            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            rmiClient = userSession.getAaaInterface();
             authVal = rmiClient.checkAccess(userName, "Users", "modify");
         } catch (Exception e) {
             ServletUtils.handleFailure(out, log, e, methodName);

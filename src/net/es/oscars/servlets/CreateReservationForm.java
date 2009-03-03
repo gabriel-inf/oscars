@@ -32,7 +32,7 @@ public class CreateReservationForm extends HttpServlet {
         AaaRmiInterface rmiClient = null;
         AuthValue authVal = null;
         try {
-            rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            rmiClient = userSession.getAaaInterface();
             authVal =
                 rmiClient.checkModResAccess(userName, "Reservations", "create",
                                             0, 0, false, false );

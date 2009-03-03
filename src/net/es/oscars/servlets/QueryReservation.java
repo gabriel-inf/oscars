@@ -62,8 +62,7 @@ public class QueryReservation extends HttpServlet {
             BssRmiInterface bssRmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
             rmiReply = bssRmiClient.queryReservation(gri, userName);
-            AaaRmiInterface aaaRmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface aaaRmiClient = userSession.getAaaInterface();
             authVal =
                 aaaRmiClient.checkAccess(userName, "Reservations", "modify");
             // check to see if user is allowed to see the buttons allowing

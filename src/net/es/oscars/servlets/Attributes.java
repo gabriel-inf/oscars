@@ -52,7 +52,7 @@ public class Attributes extends HttpServlet {
         String attributeEditDescr = request.getParameter("attributeEditDescription").trim();
         String attributeEditType = request.getParameter("attributeTypes").trim();
         try {
-            AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient = userSession.getAaaInterface();
             AuthValue authVal = rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal != null && authVal == AuthValue.DENIED) {
                 String errorMsg = "User "+userName+" does not have permission to modify attributes.";

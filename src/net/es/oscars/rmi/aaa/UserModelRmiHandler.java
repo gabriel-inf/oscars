@@ -96,6 +96,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             aaa.getTransaction().rollback();
             throw new RemoteException(ex.toString(),ex);
         }
+        this.log.info("added user: " + user.getLogin());
         this.log.debug("addUser.end");
         return result;
     }
@@ -160,9 +161,8 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                 new UserAttributeDAO(core.getAaaDbName());
             mgr.update(user, setPassword);
             for (String newRoleItem: newRoles) {
-                this.log.info("new: " + newRoleItem);
                 if (!curRoles.contains(newRoleItem)) {
-                    this.log.info("adding user attribute");
+                    this.log.info("adding user attribute "+ newRoleItem + " for user " + user.getLogin());
                     this.addUserAttribute(newRoleItem, user);
                 }
             }
@@ -198,6 +198,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             throw new RemoteException(ex.toString(),ex);
         }
         HashMap<String, Object> result = new HashMap<String, Object>();
+        this.log.info("deleted user: "+ username);
         this.log.debug("deleteUser.end");
         return result;
     }
@@ -205,7 +206,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
     public HashMap<String, Object> find(HashMap<String, Object> parameters)
             throws RemoteException {
 
-        this.log.info("findUser.start");
+        this.log.debug("findUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         User user = null;
         String findBy = (String) parameters.get("findBy");
@@ -234,7 +235,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                 throw new AAAException("Unknown findBy");
             }
             if (user != null) {
-                this.log.info("findUser.found:"+user.getLogin());
+                this.log.debug("findUser.found:"+user.getLogin());
                 Hibernate.initialize(user);
                 Hibernate.initialize(user.getInstitution());
                 Hibernate.initialize(user.getInstitution().getUsers());
@@ -248,7 +249,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
             this.log.error(ex);
             throw new RemoteException(ex.toString(),ex);
         }
-        this.log.info("findUser.end");
+        this.log.debug("findUser.end");
         return result;
     }
 

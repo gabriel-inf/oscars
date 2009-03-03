@@ -68,8 +68,7 @@ public class AuthorizationModify extends HttpServlet {
         try {
             HashMap<String, Object> rmiResult = new HashMap<String, Object>();
 
-            AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient =userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "list");
             if (authVal == AuthValue.DENIED)  {

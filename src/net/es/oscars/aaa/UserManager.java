@@ -42,7 +42,7 @@ public class UserManager {
     /** Creates a system user.
      *
      * @param user a user instance containing user parameters
-     * @param institutionName a string with the new user's affiliation
+     * @param institutionName a string with the new user's affiliation with an existing institution
      * @param roles a list of attributes for the user
      */
     public void create(User user, List<String> roles)
@@ -52,9 +52,7 @@ public class UserManager {
         String institutionName = user.getInstitution().getName();
 
         this.log.info("create.start: " + user.getLogin());
-        this.log.debug("create.institution: " + institutionName);
         String userName = user.getLogin();
-        this.log.debug("create.userName: " + userName);
 
         UserDAO userDAO = new UserDAO(this.dbname);
         currentUser = userDAO.query(userName);
@@ -267,7 +265,7 @@ public class UserManager {
         // encrypt the password before comparison
         String encryptedPwd = Jcrypt.crypt(this.salt, password);
         if (!encryptedPwd.equals(user.getPassword())) {
-            throw new AAAException( "verifyLogin: password is incorrect");
+            throw new AAAException( "verifyLogin: password is incorrect for " + userName);
         }
 
         UserAttributeDAO  userAttrDAO = new UserAttributeDAO(this.dbname);
@@ -279,6 +277,7 @@ public class UserManager {
         }
         user.setCookieHash(sessionName);
         userDAO.update(user);
+        this.log.info("verified login for " + userName);
         this.log.debug("verifyLogin.end: " + userName);
         return userName;
     }
@@ -304,7 +303,7 @@ public class UserManager {
      */
 
     public List <Attribute> getAttributesForUser(String targetUser) {
-        this.log.debug("getUserAttributes: start");
+        //this.log.debug("getUserAttributes: start"); called by checkAccess
         List <Attribute> attributes = new ArrayList<Attribute>();
         UserDAO userDAO = new UserDAO(this.dbname);
         UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
@@ -319,7 +318,7 @@ public class UserManager {
         for (UserAttribute ua : userAttributes) {
             attributes.add(ua.getAttribute());
         }
-
+        //this.log.debug("getUserAttributes:finish");
         return attributes;
     }
 
@@ -353,6 +352,7 @@ public class UserManager {
         HashMap<String, Object> urp = this.getURPObjects(userName, resourceName, permissionName);
         if (urp == null) {
             // user has  no attributes or other error
+            this.log.info("access denied to " + permissionName +" " + resourceName + " for " + userName);
             return AuthValue.DENIED;
         }
 
@@ -431,9 +431,12 @@ public class UserManager {
 
         for (Attribute attribute: attributes) {
             if (attribute.getName().equals("OSCARS-engineer")){
+                this.log.info ("unsafe access allowed for " + userName);
                 return true;
             }
         }
+        this.log.info ("unsafe access not allowed for " + userName);
+        this.log.debug("checkAccess:finish");
         return false;
     }
 
@@ -469,10 +472,11 @@ public class UserManager {
         boolean specifyGRI = false;
         AuthValue retVal = AuthValue.DENIED;
 
-        this.log.info("checkModResAccess.start");
+        this.log.debug("checkModResAccess.start");
         HashMap<String, Object> urp = this.getURPObjects(userName, resourceName, permissionName);
         if (urp == null) {
             // user has  no attributes or other error
+            this.log.info("access denied by checkModResAccess for " + userName);
             return AuthValue.DENIED;
         }
         Permission permission = (Permission) urp.get("permission");
@@ -517,19 +521,19 @@ public class UserManager {
         }
 
         if (!bandwidthAllowed || !durationAllowed) {
-            this.log.info("denied, over bandwidth or duration limits");
+            this.log.info(userName + " denied access, over bandwidth or duration limits");
             retVal= AuthValue.DENIED;
         }
         if (specPathElems && !specifyPE) {
-            this.log.info("denied, not permitted to specify path");
+            this.log.info(userName + " access denied, not permitted to specify path");
             retVal = AuthValue.DENIED;
         }
         if (specGRI && !specifyGRI) {
-            this.log.info("denied, not permitted to specify GRI");
+            this.log.info(userName + " access denied, not permitted to specify GRI");
             retVal = AuthValue.DENIED;
         }
-
-        this.log.info("checkModResAccess.finish: " + retVal);
+        this.log.info("checkModResAccess: " +userName + ":" + resourceName + ":" + permissionName + ":" + retVal);
+        this.log.debug("checkModResAccess.finish: " + retVal);
         return retVal;
     }
 

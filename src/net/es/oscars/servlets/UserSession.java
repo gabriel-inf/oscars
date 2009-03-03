@@ -11,6 +11,7 @@ import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.bss.BssRmiInterface;
 
 public class UserSession {
 
@@ -18,6 +19,8 @@ public class UserSession {
     private String sessionCookieName;
     private boolean secureCookie;
     private String guestLogin;
+    private AaaRmiInterface aaaInterface;
+    private BssRmiInterface bssInterface;
     private Logger log = Logger.getLogger(UserSession.class);
 
     public  UserSession() {
@@ -36,6 +39,10 @@ public class UserSession {
     }
 
     public String checkSession(PrintWriter out, HttpServletRequest request, String methodName) {
+        return checkSession(out,null,request,methodName);
+    }
+    
+    public String checkSession(PrintWriter out, AaaRmiInterface rmiClient, HttpServletRequest request, String methodName) {
         String userName = this.getCookie(this.userCookieName, request);
         String sessionName = this.getCookie(this.sessionCookieName, request);
         String errorMsg;
@@ -59,13 +66,14 @@ public class UserSession {
 
         Boolean validSession = false;
         try {
-            AaaRmiInterface rmiClient =
+            rmiClient =
                 RmiUtils.getAaaRmiClient(methodName, log);
             validSession = rmiClient.validSession(userName, sessionName);
         } catch (Exception e) {
             ServletUtils.handleFailure(out, log, e, methodName);
             return null;
         }
+        this.aaaInterface = rmiClient;
         String cookieUserName = userName;
         if (!validSession) {
             userName = null;
@@ -120,6 +128,9 @@ public class UserSession {
         return this.guestLogin;
     }
 
+    public AaaRmiInterface getAaaInterface() {
+        return aaaInterface;
+    }
     private Cookie handleCookie(String cookieName, String cookieValue) {
 
         String sentCookieName = null;

@@ -66,8 +66,7 @@ public class UserModify extends HttpServlet {
         ArrayList<String> newRoles = new ArrayList<String>();
         ArrayList<String> curRoles = new ArrayList<String>();
         try {
-            AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient =userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "Users", "modify");
             if ((authVal == AuthValue.ALLUSERS) ||

@@ -96,11 +96,11 @@ public class ListResRmiHandler {
                 throw new RemoteException(errMessage);
             }
         }
-        this.log.info("initialize start");
+        this.log.debug("initialize start");
         for (Reservation reservation: reservations) {
             BssRmiUtils.initialize(reservation);
         }
-        this.log.info("initialize end");
+        this.log.debug("initialize end");
         result.setReservations(reservations);
         DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
         result.setLocalDomain(domainDAO.getLocalDomain().getTopologyIdent());

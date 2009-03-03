@@ -25,7 +25,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
     public HashMap<String, Object> list(HashMap<String, Object> parameters)
             throws RemoteException {
 
-        this.log.debug("listAttributes.start");
+        this.log.info("listAttributes.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         List<Attribute> attributes;
@@ -51,7 +51,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         }
         aaa.getTransaction().commit();
         result.put("attributes", attributes);
-        this.log.debug("listAttributes.end");
+        this.log.info("listAttributes.end");
         return result;
     }
 
@@ -76,6 +76,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         }
         dao.create(attribute);
         aaa.getTransaction().commit();
+        this.log.info("added Attribute: "+ attribute.getName());
         this.log.info("addAttribute.end");
         return result;
     }
@@ -83,7 +84,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
     public HashMap<String, Object> modify(HashMap<String, Object> parameters)
            throws RemoteException {
 
-        this.log.debug("modifyAttribute.start");
+        this.log.info("modifyAttribute.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -108,14 +109,14 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         oldAttribute.setAttrType(attribute.getAttrType());
         dao.update(oldAttribute);
         aaa.getTransaction().commit();
-        this.log.debug("modifyAttribute.end");
+        this.log.info("modifyAttribute.end");
         return result;
     }
 
     public HashMap<String, Object> delete(HashMap<String, Object> parameters)
             throws RemoteException {
 
-        this.log.debug("deleteAttribute.start");
+        this.log.info("deleteAttribute.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -167,7 +168,8 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         }
         dao.remove(attribute);
         aaa.getTransaction().commit();
-        this.log.debug("deleteAttribute.end");
+        this.log.info("deleted Attribute: "+ attribute.getName());
+        this.log.info("deleteAttribute.end");
         return result;
     }
 

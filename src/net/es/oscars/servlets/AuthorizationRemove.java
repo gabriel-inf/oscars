@@ -52,8 +52,7 @@ public class AuthorizationRemove extends HttpServlet {
         rmiParams.put("objectType", ModelObject.AUTHORIZATION);
         rmiParams.put("operation", ModelOperation.DELETE);
         try {
-            AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient =userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "AAA", "modify");
             if (authVal == AuthValue.DENIED)  {

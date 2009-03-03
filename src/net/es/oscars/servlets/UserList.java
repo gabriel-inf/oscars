@@ -40,8 +40,7 @@ public class UserList extends HttpServlet {
         }
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            AaaRmiInterface rmiClient =
-                RmiUtils.getAaaRmiClient(methodName, log);
+            AaaRmiInterface rmiClient =userSession.getAaaInterface();
             AuthValue authVal =
                 rmiClient.checkAccess(userName, "Users", "query");
             // if allowed to see all users, show help information on clicking on
