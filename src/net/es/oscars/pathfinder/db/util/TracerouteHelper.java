@@ -56,16 +56,20 @@ public class TracerouteHelper {
         List<String> hops = this.traceroute(defaultRouter, ipaddress);
 
         for (String hop : hops) {
+            this.log.info("hop: " + hop);
             Link tmpLink = null;
-            Ipaddr ipaddr = ipaddrDAO.queryByParam("IP", hop);
+            Ipaddr ipaddr = ipaddrDAO.getValidIpaddr(hop);
             if (ipaddr != null) {
                 tmpLink = ipaddr.getLink();
+                this.log.info("tmpLink: " + tmpLink.getFQTI());
                 if (!tmpLink.isValid()) {
                     throw new PathfinderException("L3 path goes through an invalid link!");
                 }
                 if (tmpLink.getPort().getNode().getDomain().isLocal()) {
                     link = tmpLink;
                 }
+            } else {
+                this.log.info("invalid ipaddr for: " + hop);
             }
         }
 

@@ -48,27 +48,47 @@ public class PathManager {
         Path localPath = null;
         try {
             //Find requested path
-            this.resolveRequestedPath(resv);
             Path requestedPath = resv.getPath(PathType.REQUESTED);
+            // only will be false for layer 3 non-explicit path
+            if ((requestedPath.getPathElems() != null) &&
+               !requestedPath.getPathElems().isEmpty()) {
+                this.resolveRequestedPath(resv);
+            }
             
-            //Find interdomain path
-            interdomainPaths = this.pceMgr.findInterdomainPath(resv);
-            interdomainPath = interdomainPaths.get(0);
-            BssUtils.copyPathFields(requestedPath, interdomainPath);
-            resv.setPath(interdomainPath);
+            //Find interdomain path (layer 2 only)
+            if (requestedPath.getLayer2Data() != null) {
+                interdomainPaths = this.pceMgr.findInterdomainPath(resv);
+                interdomainPath = interdomainPaths.get(0);
+                BssUtils.copyPathFields(requestedPath, interdomainPath);
+                resv.setPath(interdomainPath);
+            }
             
             //Find local path
             localPaths = this.pceMgr.findLocalPath(resv);
             localPath = localPaths.get(0);
             BssUtils.copyPathFields(requestedPath, localPath);
             resv.setPath(localPath);
+
+            // Set up interdomain path with local ingress and egress as
+            // placeholder if layer 3
+            if (interdomainPath == null) {
+                interdomainPath = new Path();
+                interdomainPath.setPathType(PathType.INTERDOMAIN);
+                List<PathElem> pathElems = new ArrayList<PathElem>();
+                List<PathElem> localPathElems = localPath.getPathElems();
+                pathElems.add(PathElem.copyPathElem(localPathElems.get(0)));
+                pathElems.add(PathElem.copyPathElem(
+                    localPathElems.get(localPathElems.size()-1)));
+                interdomainPath.setPathElems(pathElems);
+                BssUtils.copyPathFields(requestedPath, interdomainPath);
+                resv.setPath(interdomainPath);
+            }
         } catch (PathfinderException ex) {
             this.log.error(ex.getMessage());
             throw new BSSException(ex.getMessage());
         }
         
         this.checkOversubscription(resv);
-        
         Domain nextDomain = interdomainPath.getNextDomain();
         if (nextDomain != null) {
             this.log.info("create.finish, next domain: " + nextDomain.getUrl());

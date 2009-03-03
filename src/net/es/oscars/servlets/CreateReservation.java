@@ -154,7 +154,7 @@ public class CreateReservation extends HttpServlet {
         Path requestedPath = new Path();
         requestedPath.setPathType(PathType.REQUESTED);
         requestedPath.setPathSetupMode(PathSetupMode.SCHEDULED);
-
+        requestedPath.setPathElems(pathElems);
 
         String explicitPath = "";
         String source = null;
@@ -189,7 +189,6 @@ public class CreateReservation extends HttpServlet {
                 this.log.debug("explicit path hop: " + hops[i]);
                 pathElems.add(pathElem);
             }
-            requestedPath.setPathElems(pathElems);
         }
         String srcVlan = "";
         strParam = request.getParameter("srcVlan");
@@ -244,7 +243,6 @@ public class CreateReservation extends HttpServlet {
                 dstpe.setUrn(destination);
                 pathElems.add(srcpe);
                 pathElems.add(dstpe);
-                requestedPath.setPathElems(pathElems);
             }
             PathElemParam srcVlanParam = new PathElemParam();
             srcVlanParam.setSwcap(PathElemParamSwcap.L2SC);

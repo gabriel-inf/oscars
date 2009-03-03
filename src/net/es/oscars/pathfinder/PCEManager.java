@@ -30,13 +30,14 @@ public class PCEManager {
      * @return local path used for resource scheduling
      * @throws PathfinderException
      */
-    public List<Path> findLocalPath(Reservation resv) throws PathfinderException {
-        this.log.info("PCEManager.findLocalPath.start");
+    public List<Path> findLocalPath(Reservation resv)
+            throws PathfinderException {
 
+        this.log.info("PCEManager.findLocalPath.start");
         List<String> pathMethods = this.getPathMethods(PathType.LOCAL);
         List<Path> results = null;
         if (pathMethods != null) {
-            for( String method : pathMethods ) {
+            for (String method: pathMethods) {
                 try {
                     this.log.info("PCEManager.findLocalPath."+method+".start");
                     LocalPCE pathfinder = new PathfinderFactory().getLocalPCE(method, this.dbname);
@@ -51,13 +52,11 @@ public class PCEManager {
                      break;
             }
         }
-        
-        if(results == null || results.isEmpty()){
+        if (results == null || results.isEmpty()) {
             throw new PathfinderException("Unable to find a local path that " +
                         "meets request constraints. This may be caused " +
                         "by lack of remaining network bandwidth.");
         }
-        
         this.log.info("PCEManager.findLocalPath.end");
         return results;
     }
@@ -71,9 +70,10 @@ public class PCEManager {
      * @return local path used for resource scheduling
      * @throws PathfinderException
      */
-    public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
-        this.log.info("PCEManager.findLocalPath.start");
+    public List<Path> findInterdomainPath(Reservation resv)
+            throws PathfinderException {
 
+        this.log.info("PCEManager.findInterdomainPath.start");
         List<String> pathMethods = this.getPathMethods(PathType.INTERDOMAIN);
         List<Path> results = null;
         
@@ -88,19 +88,15 @@ public class PCEManager {
                     this.log.error("Exception caught finding interdomain path using method "+method+": "+ex.getMessage());
                     ex.printStackTrace();
                  }
-
                  if (results != null && !results.isEmpty())
                      break;
             }
         }
-        
-        
         if(results == null || results.isEmpty()){
             throw new PathfinderException("Unable to find an interdomain path that " +
                         "meets request constraints. This may be caused " +
                         "by lack of remaining network bandwidth.");
         }
-        
         this.log.info("PCEManager.findInterdomainPath.end");
         return results;
     }
@@ -112,7 +108,9 @@ public class PCEManager {
      * @return Ordered list of strings containing which pathfinding components to try.
      * @throws PathfinderException
      */
-    public List<String> getPathMethods(String pfType) throws PathfinderException {
+    public List<String> getPathMethods(String pfType)
+            throws PathfinderException {
+
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("pathfinder", true);
 
@@ -122,7 +120,6 @@ public class PCEManager {
         if (findPath == null || findPath.equals("0")) {
             return null;
         }
-
         String pathMethod = props.getProperty("pathMethod." + pfType);
         if(pathMethod == null){
             pathMethod = props.getProperty("pathMethod");
@@ -131,11 +128,8 @@ public class PCEManager {
             throw new PathfinderException(
                 "No path computation method specified in oscars.properties.");
         }
-
         String [] methods = pathMethod.split(",");
-
         ArrayList <String> retMethods = new ArrayList<String>();
-
         for( String method : methods) {
             String newMethod = method.trim();
             //TODO: Delete this check - its not scalable
@@ -149,7 +143,6 @@ public class PCEManager {
             }
             retMethods.add(newMethod);
         }
-
         return retMethods;
     }
 }

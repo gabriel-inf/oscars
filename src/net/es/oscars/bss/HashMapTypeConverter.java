@@ -128,8 +128,10 @@ public class HashMapTypeConverter {
         for (PathElem pathElem: pathElems) {
             String linkId = pathElem.getUrn();
             pathListStr.add(linkId);
-            pathHopInfo.add(getPathElemInfo(pathElem));
-            map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
+            if (layer2Data != null) {
+                pathHopInfo.add(getPathElemInfo(pathElem));
+                map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
+            }
         }
         if (path.getPathType().equals(PathType.LOCAL)) {
             map.put("intradomainPath", pathListStr.toArray(new String[pathListStr.size()]));

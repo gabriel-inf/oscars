@@ -163,14 +163,15 @@ public class WSDLTypeConverter {
                              String localDomain)
             throws BSSException{
 
-        log.debug("reservationToDetails.start");
+        log.info("reservationToDetails.start");
         if (resv == null) {
-            log.debug("reservationToDetails.end (null)");
+            log.info("reservationToDetails.end (null)");
             return null;
         }
 
         ResDetails reply = new ResDetails();
         reply.setGlobalReservationId(resv.getGlobalReservationId());
+	log.info("GRI: " + resv.getGlobalReservationId());
             reply.setLogin(resv.getLogin());
         reply.setStatus(resv.getStatus());
         reply.setStartTime(resv.getStartTime());
@@ -180,11 +181,12 @@ public class WSDLTypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
+
         PathInfo pathInfo =
             WSDLTypeConverter.getPathInfo(resv, null, internalPathAuthorized,
                                           localDomain);
         reply.setPathInfo(pathInfo);
-        log.debug("reservationToDetails.end");
+        log.info("reservationToDetails.end");
         return reply;
     }
 
@@ -240,15 +242,20 @@ public class WSDLTypeConverter {
                                        String localDomain)
             throws BSSException {
 
-        log.debug("getPathInfo.start");
+        log.info("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
         Path path = null;
         if (pathType != null) {
             path = resv.getPath(pathType);
         } else {
             path = BssUtils.getPath(resv);
+	    if (path == null ) {
+	       log.error("No path found for reservation " + resv.getGlobalReservationId());
+		return pathInfo;
+	    }
             pathType = path.getPathType();
         }
+	log.info("pathType is " + pathType);
         if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
             // this may look at all three types of path
@@ -263,7 +270,7 @@ public class WSDLTypeConverter {
             // allowed to be null
             MplsInfo mplsInfo = pathToMplsInfo(path);
             pathInfo.setMplsInfo(mplsInfo);
-            log.debug("getPathInfo.end");
+            log.info("getPathInfo.end");
             return pathInfo;
         } else {
             throw new BSSException("path: " + pathType + " does not exist");
@@ -291,8 +298,12 @@ public class WSDLTypeConverter {
                         boolean internalPathAuthorized, String localDomain)
             throws BSSException {
 
-        log.debug("pathToCtrlPlane.start");
+        log.info("pathToCtrlPlane.start");
         Path path = resv.getPath(pathType);
+	if (path == null) {
+	    log.error("No path for reservation, pathType is " + pathType);
+	    throw new BSSException("no path found for " + resv.getGlobalReservationId());
+        }
         List<PathElem> pathElems = path.getPathElems();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
         List<Boolean> isLocalHop = new ArrayList<Boolean>();
@@ -342,7 +353,7 @@ public class WSDLTypeConverter {
                                                      isLocalHop);
         } 
         ctrlPlanePath.setId("unimplemented");
-        log.debug("pathToCtrlPlane.end");
+        log.info("pathToCtrlPlane.end");
         return ctrlPlanePath;
     }
 
@@ -511,7 +522,7 @@ public class WSDLTypeConverter {
      * for layer 2 information.
      */
     public static Layer2Info pathToLayer2Info(Path path) {
-        log.debug("pathToLayer2Info.start");
+        log.info("pathToLayer2Info.start");
         // database type
         Layer2Data layer2Data = path.getLayer2Data();
         if (layer2Data == null) {
@@ -523,7 +534,7 @@ public class WSDLTypeConverter {
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
         layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
 
-        log.debug("pathToLayer2Info.end");
+        log.info("pathToLayer2Info.end");
         return layer2Info;
     }
 
@@ -532,7 +543,7 @@ public class WSDLTypeConverter {
      * for layer 3 information.
      */
     public static Layer3Info pathToLayer3Info(Path path) {
-        log.debug("pathToLayer3Info.start");
+        log.info("pathToLayer3Info.start");
 
         // database type
         Layer3Data layer3Data = path.getLayer3Data();
@@ -553,7 +564,7 @@ public class WSDLTypeConverter {
         if (layer3Data.getDestIpPort() != null) {
             layer3Info.setDestIpPort(layer3Data.getDestIpPort());
         }
-        log.debug("pathToLayer3Info.end");
+        log.info("pathToLayer3Info.end");
 
         return layer3Info;
     }
@@ -563,7 +574,7 @@ public class WSDLTypeConverter {
      * for MPLS information.
      */
     public static MplsInfo pathToMplsInfo(Path path) {
-        log.debug("pathToMplsInfo.start");
+        log.info("pathToMplsInfo.start");
 
         // database type
         MPLSData mplsData = path.getMplsData();
@@ -575,7 +586,7 @@ public class WSDLTypeConverter {
         int burstLimit = mplsData.getBurstLimit().intValue();
         mplsInfo.setBurstLimit(burstLimit);
         mplsInfo.setLspClass(mplsData.getLspClass());
-        log.debug("pathToMplsInfo.end");
+        log.info("pathToMplsInfo.end");
         return mplsInfo;
     }
 
@@ -782,15 +793,16 @@ public class WSDLTypeConverter {
         
         List<PathElem> pathElems = new ArrayList<PathElem>();
         CtrlPlanePathContent requestedPath = pathInfo.getPath();
-        if ((layer2Info != null) && ((requestedPath == null) ||
-                                     (requestedPath.getHop() == null))) {
-            // If no explicit path for layer 2, we must fill this in
-            PathElem srcpe = addDefaultPathElem(layer2Info.getSrcEndpoint(),
-                                                layer2Info.getSrcVtag());
-            PathElem dstpe = addDefaultPathElem(layer2Info.getDestEndpoint(),
-                                                layer2Info.getDestVtag());
-            pathElems.add(srcpe);
-            pathElems.add(dstpe);
+        if ((requestedPath == null) || (requestedPath.getHop() == null)) {
+            if (layer2Info != null) {
+                // If no explicit path for layer 2, we must fill this in
+                PathElem srcpe = addDefaultPathElem(layer2Info.getSrcEndpoint(),
+                                                    layer2Info.getSrcVtag());
+                PathElem dstpe = addDefaultPathElem(layer2Info.getDestEndpoint(),
+                                                    layer2Info.getDestVtag());
+                pathElems.add(srcpe);
+                pathElems.add(dstpe);
+            }
             path.setPathElems(pathElems);
             log.debug("convertPath.end");
             return path;
