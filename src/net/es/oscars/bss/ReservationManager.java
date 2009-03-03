@@ -384,9 +384,13 @@ public class ReservationManager {
         String status = StateEngine.getStatus(resv);
 
         //can't cancel a reservation in a terminal state
+        // ignore INCREATE and other states because this will go after 
+        // other resource scheduling jobs
         if (StateEngine.CANCELLED.equals(status) ||
             StateEngine.FINISHED.equals(status) ||
-            StateEngine.FAILED.equals(status)) {
+            StateEngine.FAILED.equals(status) ||
+            StateEngine.INSETUP.equals(status)||
+            StateEngine.INTEARDOWN.equals(status)) {
             throw new BSSException("Can't cancel a reservation in the state "
                                    + status);
         }
