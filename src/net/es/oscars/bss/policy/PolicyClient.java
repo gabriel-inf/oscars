@@ -12,7 +12,6 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axis2.databinding.ADBException;
 import org.hibernate.Session;
 
-import edu.internet2.perfsonar.PSException;
 import edu.internet2.perfsonar.dcn.DCNLookupClient;
 
 import net.es.oscars.ConfigFinder;
