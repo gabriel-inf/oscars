@@ -12,16 +12,21 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axis2.databinding.ADBException;
 import org.hibernate.Session;
 
+import edu.internet2.perfsonar.PSException;
+import edu.internet2.perfsonar.dcn.DCNLookupClient;
+
 import net.es.oscars.ConfigFinder;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.BssUtils;
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.URNParser;
+import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.policy.axis2.Axis2PolicyClient;
 import net.es.oscars.policy.client.CheckPolicyRequest;
 import net.es.oscars.policy.client.CheckPolicyResponse;
@@ -184,14 +189,30 @@ public class PolicyClient extends Axis2PolicyClient{
         } catch (PolicyClientException e) {
             throw new BSSException(e.getMessage());
         }
-        DomainDAO domainDAO = new DomainDAO(OSCARSCore.getInstance().getBssDbName());
-        String idcUrl = domainDAO.fromTopologyIdent(domainId).getUrl();
+        
         String qualifier = null;
         if(!name.contains(",")){
             qualifier = domainId;
         }
         requester.setSubject(name, qualifier);
-        requester.setSubjectAuthentication(idcUrl);
+        
+        DomainDAO domainDAO = new DomainDAO(OSCARSCore.getInstance().getBssDbName());
+        Domain domain = domainDAO.fromTopologyIdent(domainId);
+        if(domain == null){
+            //Try to find domain URL using LS
+            try {
+                DCNLookupClient psClient = OSCARSCore.getInstance().getLookupClient().getClient();
+                String[] idcUrl = psClient.lookupIDCUrl(domainId);
+                if(idcUrl != null){
+                    requester.setSubjectAuthentication(idcUrl[0]);
+                }
+            } catch (Exception e) {
+                this.log.debug("No SubjectAuthentication url found");
+            }
+        }else{
+            requester.setSubjectAuthentication(domain.getUrl());
+        }
+        
         return requester;
     }
     
