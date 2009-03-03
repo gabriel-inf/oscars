@@ -253,7 +253,7 @@ public class WSObserver implements Observer {
         msgHolder.setProducerReference(prodRef);
         msgHolder.setMessage(msg);
 
-        //send notifcation
+        //send notification
         try{
             client.notify(msgHolder);
         }catch(Exception e){

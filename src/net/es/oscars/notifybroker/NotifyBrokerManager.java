@@ -85,7 +85,7 @@ public class NotifyBrokerManager{
     
     /**
      * Adds a ProcessNotifyJob to the scheduler so that the caller is free to return
-     * an HTTP 200 response to publisher of this notifcation without waiting for
+     * an HTTP 200 response to publisher of this notification without waiting for
      * all the send messages to be sent to subscribers.
      * 
      * @param publisherUrl the URL of the service that published the notification

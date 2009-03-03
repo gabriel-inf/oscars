@@ -108,7 +108,7 @@ public class EventProducer{
      * @param event the event to schedule
      */
     private void addEvent(OSCARSEvent event) {
-        this.log.info("Scheduling notifcation of event " + event.getType());
+        this.log.info("Scheduling notification of event " + event.getType());
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         String jobName = "notify-"+event.hashCode()+System.currentTimeMillis();
 
