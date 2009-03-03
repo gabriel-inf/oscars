@@ -163,16 +163,15 @@ public class WSDLTypeConverter {
                              String localDomain)
             throws BSSException{
 
-        log.info("reservationToDetails.start");
+        log.debug("reservationToDetails.start");
         if (resv == null) {
-            log.info("reservationToDetails.end (null)");
+            log.debug("reservationToDetails.end (null)");
             return null;
         }
 
         ResDetails reply = new ResDetails();
         reply.setGlobalReservationId(resv.getGlobalReservationId());
-	log.info("GRI: " + resv.getGlobalReservationId());
-            reply.setLogin(resv.getLogin());
+        reply.setLogin(resv.getLogin());
         reply.setStatus(resv.getStatus());
         reply.setStartTime(resv.getStartTime());
         reply.setEndTime(resv.getEndTime());
@@ -181,12 +180,11 @@ public class WSDLTypeConverter {
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
-
         PathInfo pathInfo =
             WSDLTypeConverter.getPathInfo(resv, null, internalPathAuthorized,
                                           localDomain);
         reply.setPathInfo(pathInfo);
-        log.info("reservationToDetails.end");
+        log.debug("reservationToDetails.end");
         return reply;
     }
 
@@ -242,20 +240,19 @@ public class WSDLTypeConverter {
                                        String localDomain)
             throws BSSException {
 
-        log.info("getPathInfo.start");
+        log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
         Path path = null;
         if (pathType != null) {
             path = resv.getPath(pathType);
         } else {
             path = BssUtils.getPath(resv);
-	    if (path == null ) {
-	       log.error("No path found for reservation " + resv.getGlobalReservationId());
-		return pathInfo;
-	    }
+            if (path == null ) {
+                log.error("No path found for reservation " + resv.getGlobalReservationId());
+                return pathInfo;
+            }
             pathType = path.getPathType();
         }
-	log.info("pathType is " + pathType);
         if (path != null) {
             pathInfo.setPathSetupMode(path.getPathSetupMode());
             // this may look at all three types of path
@@ -270,7 +267,7 @@ public class WSDLTypeConverter {
             // allowed to be null
             MplsInfo mplsInfo = pathToMplsInfo(path);
             pathInfo.setMplsInfo(mplsInfo);
-            log.info("getPathInfo.end");
+            log.debug("getPathInfo.end");
             return pathInfo;
         } else {
             throw new BSSException("path: " + pathType + " does not exist");
@@ -298,12 +295,8 @@ public class WSDLTypeConverter {
                         boolean internalPathAuthorized, String localDomain)
             throws BSSException {
 
-        log.info("pathToCtrlPlane.start");
+        log.debug("pathToCtrlPlane.start");
         Path path = resv.getPath(pathType);
-	if (path == null) {
-	    log.error("No path for reservation, pathType is " + pathType);
-	    throw new BSSException("no path found for " + resv.getGlobalReservationId());
-        }
         List<PathElem> pathElems = path.getPathElems();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
         List<Boolean> isLocalHop = new ArrayList<Boolean>();
@@ -353,7 +346,7 @@ public class WSDLTypeConverter {
                                                      isLocalHop);
         } 
         ctrlPlanePath.setId("unimplemented");
-        log.info("pathToCtrlPlane.end");
+        log.debug("pathToCtrlPlane.end");
         return ctrlPlanePath;
     }
 
@@ -522,7 +515,7 @@ public class WSDLTypeConverter {
      * for layer 2 information.
      */
     public static Layer2Info pathToLayer2Info(Path path) {
-        log.info("pathToLayer2Info.start");
+        log.debug("pathToLayer2Info.start");
         // database type
         Layer2Data layer2Data = path.getLayer2Data();
         if (layer2Data == null) {
@@ -534,7 +527,7 @@ public class WSDLTypeConverter {
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
         layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
 
-        log.info("pathToLayer2Info.end");
+        log.debug("pathToLayer2Info.end");
         return layer2Info;
     }
 
@@ -543,7 +536,7 @@ public class WSDLTypeConverter {
      * for layer 3 information.
      */
     public static Layer3Info pathToLayer3Info(Path path) {
-        log.info("pathToLayer3Info.start");
+        log.debug("pathToLayer3Info.start");
 
         // database type
         Layer3Data layer3Data = path.getLayer3Data();
@@ -564,7 +557,7 @@ public class WSDLTypeConverter {
         if (layer3Data.getDestIpPort() != null) {
             layer3Info.setDestIpPort(layer3Data.getDestIpPort());
         }
-        log.info("pathToLayer3Info.end");
+        log.debug("pathToLayer3Info.end");
 
         return layer3Info;
     }
@@ -574,7 +567,7 @@ public class WSDLTypeConverter {
      * for MPLS information.
      */
     public static MplsInfo pathToMplsInfo(Path path) {
-        log.info("pathToMplsInfo.start");
+        log.debug("pathToMplsInfo.start");
 
         // database type
         MPLSData mplsData = path.getMplsData();
@@ -586,7 +579,7 @@ public class WSDLTypeConverter {
         int burstLimit = mplsData.getBurstLimit().intValue();
         mplsInfo.setBurstLimit(burstLimit);
         mplsInfo.setLspClass(mplsData.getLspClass());
-        log.info("pathToMplsInfo.end");
+        log.debug("pathToMplsInfo.end");
         return mplsInfo;
     }
 
