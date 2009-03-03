@@ -14,12 +14,11 @@ This document and the information contained herein is provided on an "AS IS" bas
 -->
 
 <xsd:schema 
-  xmlns="http://www.w3.org/2001/XMLSchema" 
   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:wsa="http://www.w3.org/2005/08/addressing"
-  xmlns:wsrf-bf=
-    "http://docs.oasis-open.org/wsrf/bf-2" 
+  xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2" 
+  xmlns:tns="http://docs.oasis-open.org/wsrf/bf-2" 
   elementFormDefault="qualified" attributeFormDefault="unqualified" 
   targetNamespace=
     "http://docs.oasis-open.org/wsrf/bf-2">
@@ -35,12 +34,12 @@ This document and the information contained herein is provided on an "AS IS" bas
       <xsd:element name="Originator" type="wsa:EndpointReferenceType" 
                minOccurs="0" maxOccurs="1"/>
       <xsd:element name="ErrorCode" 
-               minOccurs="0" maxOccurs="1" type="ErrorCodeType" />
+               minOccurs="0" maxOccurs="1" type="tns:ErrorCodeType" />
       
       <!-- made a string instead of a complex type -->
       <xsd:element name="Description" 
                minOccurs="0" maxOccurs="unbounded" type="xsd:string" />
-      <xsd:element name="FaultCause" minOccurs="0" maxOccurs="1" type="FaultCauseType"/>
+      <xsd:element name="FaultCause" minOccurs="0" maxOccurs="1" type="tns:FaultCauseType"/>
     </xsd:sequence>
     <!-- <xsd:anyAttribute namespace="##other" processContents="lax"/> -->
  </xsd:complexType>
