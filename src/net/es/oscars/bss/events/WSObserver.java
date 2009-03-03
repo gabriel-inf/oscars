@@ -213,7 +213,7 @@ public class WSObserver implements Observer {
         }
 
         //if not registered with broker, then retry later
-        if(this.publisherRegistrationId == null){
+        if(publisherRegistrationId == null){
             this.log.debug("Not registered so exiting!");
             return;
         }
@@ -227,7 +227,7 @@ public class WSObserver implements Observer {
         MessageType msg = new MessageType();
 
         try{
-            client.setUpNotify(true, this.brokerConsumerURL, this.repo, this.axisConfig);
+            client.setUpNotify(true, brokerConsumerURL, this.repo, this.axisConfig);
             prodRef = client.generateEndpointReference(this.producerURL);
             topicExpr = this.generateTopicExpression(event);
             OMFactory omFactory = (OMFactory) OMAbstractFactory.getOMFactory();
@@ -286,7 +286,6 @@ public class WSObserver implements Observer {
                 continue;
             }
         }
-        System.out.println("ResDetails: " + resDetails);
         event.setId("event-" + event.hashCode());
         event.setType(osEvent.getType());
         event.setTimestamp(osEvent.getTimestamp());
@@ -389,7 +388,7 @@ public class WSObserver implements Observer {
      */
     private void loadTopics(String topicSetFile, String topicNSFile)
                                             throws IOException, JDOMException{
-        this.topics = new HashMap<String, String>();
+        topics = new HashMap<String, String>();
         Namespace wstop = Namespace.getNamespace("http://docs.oasis-open.org/wsn/t-1");
 
         //Step 1: Figure out which Topics are supported
@@ -485,7 +484,7 @@ public class WSObserver implements Observer {
             String dialect = msgPattern.getAttributeValue("Dialect", wstop);
             if("http://www.w3.org/TR/1999/REC-xpath-19991116".equals(dialect)){
                 String xpath = msgPattern.getText();
-                this.topics.put(completeName, xpath);
+                topics.put(completeName, xpath);
             }
         }
     }
