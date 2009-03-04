@@ -8,15 +8,12 @@ import net.es.oscars.bss.OSCARSCore;
 public class ProcessQueueJob implements Job {
     private Logger log;
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
-        this.log = Logger.getLogger(this.getClass());
+    public void execute(JobExecutionContext context)
+           throws JobExecutionException {
 
         this.log = Logger.getLogger(this.getClass());
         OSCARSCore core = OSCARSCore.getInstance();
-
         ScheduleManager schedMgr = core.getScheduleManager();
         schedMgr.processQueue();
-
     }
-
 }
