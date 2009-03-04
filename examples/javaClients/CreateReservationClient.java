@@ -354,7 +354,7 @@ public class CreateReservationClient {
         }
 
         if ((response.getPathInfo() != null) &&
-            (response.getPathInfo().getLayer3Info() != null)) {
+            (response.getPathInfo().getPath() != null)) {
             this.outputHops(response.getPathInfo().getPath());
         }
     }

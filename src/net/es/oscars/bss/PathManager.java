@@ -49,11 +49,7 @@ public class PathManager {
         try {
             //Find requested path
             Path requestedPath = resv.getPath(PathType.REQUESTED);
-            // only will be false for layer 3 non-explicit path
-            if ((requestedPath.getPathElems() != null) &&
-               !requestedPath.getPathElems().isEmpty()) {
-                this.resolveRequestedPath(resv);
-            }
+            this.resolveRequestedPath(resv);
             
             //Find interdomain path (layer 2 only)
             if (requestedPath.getLayer2Data() != null) {
