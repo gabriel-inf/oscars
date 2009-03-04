@@ -56,5 +56,4 @@ public class TeardownPathJob extends ChainingJob implements Job {
             this.runNextJob(context);
         }
     }
-
 }

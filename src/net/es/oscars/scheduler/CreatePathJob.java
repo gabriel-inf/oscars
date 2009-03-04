@@ -52,7 +52,6 @@ public class CreatePathJob extends ChainingJob implements Job {
             this.runNextJob(context);
             se.safeHibernateCommit(resv, bss);
         }
-
         this.log.info("CreatePathJob.end");
     }
 }

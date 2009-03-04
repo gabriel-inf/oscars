@@ -8,7 +8,6 @@ import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.*;
-import net.es.oscars.ws.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.*;
@@ -18,7 +17,9 @@ import java.util.*;
 public class VendorCreatePathJob extends ChainingJob  implements Job {
     private Logger log;
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
+
         this.log = Logger.getLogger(this.getClass());
         String jobName = context.getJobDetail().getFullName();
         this.log.debug("VendorCreatePathJob.start name: "+jobName);
@@ -75,7 +76,6 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             this.runNextJob(context);
             return;
         }
-
         // If something has failed up to here, go to the next job
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.ACTIVE);
@@ -161,7 +161,6 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", ex.getMessage());
         }
         stateEngine.safeHibernateCommit(resv, bss);
-        
         this.runNextJob(context);
         this.log.debug("VendorCreatePathJob.end name: "+jobName);
     }

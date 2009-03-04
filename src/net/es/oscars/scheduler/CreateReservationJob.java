@@ -158,7 +158,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         }
      }
 
-
     /**
      * Processes an initial request
      *
@@ -180,7 +179,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
 
             rm.create(resv);
             Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
-
             if (nextDomain == null || nextDomain.isLocal()) {
                 // this will also finalize & store
                 this.confirm(resv, null);

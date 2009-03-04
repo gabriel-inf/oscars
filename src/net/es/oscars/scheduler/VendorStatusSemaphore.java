@@ -24,11 +24,9 @@ public class VendorStatusSemaphore {
         } else {
             reverseOp = "PATH_SETUP";
         }
-
         log.debug(gri + " "+operation+" "+direction);
 
         String reverse;
-
         if (direction.equals("FORWARD")) {
             reverse = "REVERSE";
         } else if (direction.equals("REVERSE")) {
@@ -36,11 +34,9 @@ public class VendorStatusSemaphore {
         } else {
             throw new BSSException("Invalid direction:"+direction);
         }
-
         if (statusMap == null) {
             statusMap = new HashMap<String, String>();
         }
-
         String newStatus;
         if (statusMap.get(gri) == null) {
             newStatus = operation+"_"+direction;
@@ -67,9 +63,10 @@ public class VendorStatusSemaphore {
         }
     }
 
+    public static synchronized String
+         syncSetupCheck(String gri, String operation, String direction)
+             throws BSSException {
 
-
-    public static synchronized String syncSetupCheck(String gri, String operation, String direction) throws BSSException {
         String reverseOp;
         if (!operation.equals("PATH_SETUP") && !operation.equals("PATH_TEARDOWN")) {
             throw new BSSException("Invalid operation:"+operation);
@@ -78,7 +75,6 @@ public class VendorStatusSemaphore {
         } else {
             reverseOp = "PATH_SETUP";
         }
-
         String reverse;
         if (direction.equals("forward")) {
             reverse = "reverse";
@@ -87,11 +83,9 @@ public class VendorStatusSemaphore {
         } else {
             throw new BSSException("Invalid direction:"+direction);
         }
-
         if (setupMap == null) {
             setupMap = new HashMap<String, String>();
         }
-
         String newStatus;
         if (setupMap.get(gri) == null) {
             newStatus = operation+"_"+direction;
@@ -115,11 +109,5 @@ public class VendorStatusSemaphore {
         } else {
             throw new BSSException("Corrupt setupMap for gri: "+gri+" st: "+setupMap.get(gri)+" dir: "+direction+" op: "+operation);
         }
-
     }
-
-
-
-
-
 }

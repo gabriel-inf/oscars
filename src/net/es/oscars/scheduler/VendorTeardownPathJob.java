@@ -1,4 +1,5 @@
 package net.es.oscars.scheduler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,7 +11,6 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.vendor.cisco.LSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.*;
-import net.es.oscars.ws.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -153,6 +153,5 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         stateEngine.safeHibernateCommit(resv, bss);
         this.runNextJob(context);
         this.log.debug("VendorTeardownPathJobs.end");
-
     }
 }

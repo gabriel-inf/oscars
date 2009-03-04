@@ -12,8 +12,6 @@ import org.hibernate.Session;
 import org.quartz.*;
 import org.quartz.impl.*;
 
-
-
 public class ScheduleManager {
     private OSCARSCore core;
     private Scheduler scheduler;
@@ -29,18 +27,15 @@ public class ScheduleManager {
         return ScheduleManager.instance;
     }
 
-
     private ScheduleManager() {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("scheduler.start");
         this.core = OSCARSCore.getInstance();
         this.jobQueues = new HashMap<String, List<String>>();
         this.jobQueueLocks = new HashMap<String, Boolean>();
-        
         try {
             SchedulerFactory schedFact = new StdSchedulerFactory();
             this.scheduler = schedFact.getScheduler();
-
             JobDetail pqJobDetail = new JobDetail("Process Queue", "queue", ProcessQueueJob.class);
             CronTrigger pqTrigger = null;
             try {
@@ -49,14 +44,9 @@ public class ScheduleManager {
                 this.log.error("Error parsing trigger expression", ex);
                 return;
             }
-
             pqTrigger.setStartTime(new Date());
             pqTrigger.setName("Process Queue Trigger");
-
             this.scheduler.scheduleJob(pqJobDetail, pqTrigger);
-
-
-
 
             PropHandler propHandler = new PropHandler("oscars.properties");
             Properties props = propHandler.getPropertyGroup("pss", true);
@@ -71,45 +61,30 @@ public class ScheduleManager {
                     this.log.error("Error parsing trigger expression", ex);
                     return;
                 }
-
                 msTrigger.setStartTime(new Date());
                 msTrigger.setName("Maintain Status Trigger");
                 this.scheduler.scheduleJob(msJobDetail, msTrigger);
             }
-
-
-
-
             this.scheduler.start();
-
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
         }
-
     }
-
 
     @SuppressWarnings("unchecked")
     public synchronized void processQueue() {
         try {
-
             this.queueExpiredAndPending();
-
             String[] queueNames = this.scheduler.getJobGroupNames();
-
             for (String queueName : queueNames) {
                 if (queueName.startsWith("SERIALIZE_")) {
                     this.serializeQueue(queueName);
                 }
             }
-
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
         }
-
     }
-
-
 
     // cancel means we need to remove all other jobs in the queue related to that job
     // it's initiated by the user so it trumps scheduled actions
@@ -128,9 +103,7 @@ public class ScheduleManager {
                 throw ex;
             }
 
-
             String[] queueNames = this.scheduler.getJobGroupNames();
-
             for (String queueName : queueNames) {
                 boolean wasAltered = false;
                 if (queueName.startsWith("SERIALIZE_") || queueName.startsWith("QUEUED_")) {
@@ -161,13 +134,12 @@ public class ScheduleManager {
     }
 
     public void reformQueue(String queueName) throws SchedulerException {
+
         // nothing to do here
         if (queueName.startsWith("SERIALIZE_")) {
             return;
         }
-
         JobDetail previousJobDetail = null;
-
         String[] jobNames = this.scheduler.getJobNames(queueName);
         for (String jobName : jobNames) {
             JobDetail jobDetail = this.scheduler.getJobDetail(jobName, queueName);
@@ -183,21 +155,19 @@ public class ScheduleManager {
         }
     }
 
-
-
     public void queueExpiredAndPending() {
         core = OSCARSCore.getInstance();
         Session session = core.getBssSession();
-        try{
-	        session.beginTransaction();
-	        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
-	        sched.pendingReservations(0);
-	        sched.expiredReservations(0);
-	        sched.expiringReservations(0);
-	        session.getTransaction().commit();
-        }catch(Exception e){
-        	session.getTransaction().rollback();
-        	this.log.error(e.getMessage());
+        try {
+            session.beginTransaction();
+            PSSScheduler sched = new PSSScheduler(core.getBssDbName());
+            sched.pendingReservations(0);
+            sched.expiredReservations(0);
+            sched.expiringReservations(0);
+            session.getTransaction().commit();
+        } catch(Exception e) {
+            session.getTransaction().rollback();
+            this.log.error(e.getMessage());
         }
     }
 
@@ -224,7 +194,6 @@ public class ScheduleManager {
         }
 
         JobDetail previousUnqueuedJob = null;
-
         if (unQueuedJobNames != null) {
             for (String unQueuedJobName : unQueuedJobNames) {
                 this.log.debug("Unqueued job name: "+unQueuedJobName);
@@ -266,8 +235,6 @@ public class ScheduleManager {
         this.setJobQueueLock(queuedJobsGroupName, false);
     }
 
-
-
     @SuppressWarnings("unchecked")
     public void pauseScheduler() throws SchedulerException {
         this.scheduler.standby();
@@ -298,8 +265,6 @@ public class ScheduleManager {
         this.scheduler.start();
     }
 
-
-
     /**
      * @return the scheduler
      */
@@ -313,7 +278,6 @@ public class ScheduleManager {
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
-
 
     /**
      * @return the jobQueue
@@ -343,5 +307,4 @@ public class ScheduleManager {
         this.jobQueueLocks.put(jobQueueName, value);
         return true;
     }
-
 }

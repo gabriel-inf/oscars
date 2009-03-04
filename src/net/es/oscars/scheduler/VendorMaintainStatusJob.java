@@ -20,17 +20,16 @@ public class VendorMaintainStatusJob implements Job {
         checklist.put(gri, params);
     }
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context)
+        throws JobExecutionException {
+
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-
-
         HashMap<String, HashMap<String,VendorStatusInput>> vlansPerNode =
             new HashMap<String, HashMap<String,VendorStatusInput>>();
         HashMap<String, String> nodeVendor = new HashMap<String, String>();
 
         ArrayList<String> checkedGris = new ArrayList<String>();
-
         Iterator<String> griIt = checklist.keySet().iterator();
         while (griIt.hasNext()) {
             String gri = griIt.next();
@@ -50,7 +49,6 @@ public class VendorMaintainStatusJob implements Job {
             if (ingressNodeId != null && egressNodeId != null) {
                 nodeVendor.put(ingressNodeId, ingressVendor);
                 nodeVendor.put(egressNodeId, egressVendor);
-
                 checkedGris.add(gri);
                 HashMap<String,VendorStatusInput> statusInputs =
                     vlansPerNode.get(ingressNodeId);
@@ -86,7 +84,6 @@ public class VendorMaintainStatusJob implements Job {
         while (nodeIt.hasNext()) {
             String nodeId = nodeIt.next();
             Map<String,VendorStatusInput> statusInputs = vlansPerNode.get(nodeId);
-
             String jobName = "checkStatus-"+nodeId+statusInputs.hashCode();
             JobDetail jobDetail = new JobDetail(jobName, "STATUS", VendorCheckStatusJob.class);
             JobDataMap jobDataMap = new JobDataMap();
@@ -96,7 +93,6 @@ public class VendorMaintainStatusJob implements Job {
             jobDataMap.put("vendor", nodeVendor.get(nodeId));
             jobDataMap.put("statusInputs", statusInputs);
             jobDetail.setJobDataMap(jobDataMap);
-
             String triggerId = "checkStatus-"+nodeId+statusInputs.hashCode();
             Trigger trigger = new SimpleTrigger(triggerId, "STATUS", new Date());
             try {
