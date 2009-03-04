@@ -3,6 +3,8 @@ package net.es.oscars.pss;
 import java.util.*;
 import org.quartz.*;
 import org.apache.log4j.*;
+import org.hibernate.Session;
+
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
@@ -225,9 +227,9 @@ public class PathSetupManager{
             se.updateStatus(resv, StateEngine.INTEARDOWN);
             se.updateLocalStatus(resv, newStatusBits);
             /* Get next domain */
-            Domain nextDomain = resv.getPath(PathType.LOCAL).getNextDomain();
+            Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
             if(nextDomain == null){
-                this.updateTeardownStatus(2, resv);
+                this.updateTeardownStatus(StateEngine.DOWN_CONFIRMED, resv);
             }else{
                 this.scheduleStatusCheck(TEARDOWN_CONFIRM_TIMEOUT, resv, "teardown", false);
             }
@@ -239,8 +241,8 @@ public class PathSetupManager{
             if(firstElem != null && firstElem.getLink() != null){
                 firstDomain = firstElem.getLink().getPort().getNode().getDomain();
             }
-            if(firstDomain == null || firstDomain.isLocal()){
-                this.updateTeardownStatus(4, resv);
+            if(firstDomain != null && firstDomain.isLocal()){
+                this.updateTeardownStatus(StateEngine.UP_CONFIRMED, resv);
             }else{
                 this.scheduleStatusCheck(TEARDOWN_CONFIRM_TIMEOUT, resv, "teardown", true);
             }
@@ -390,7 +392,7 @@ public class PathSetupManager{
      synchronized public void updateCreateStatus(int newLocalStatus, Reservation resv) throws BSSException{
         StateEngine se = this.core.getStateEngine();
         int localStatus = StateEngine.getLocalStatus(resv);
-        if((newLocalStatus & localStatus) == 1){
+        if((newLocalStatus & localStatus) != 0){
             throw new BSSException("Already set local status bit " + newLocalStatus);
         }
         this.log.debug("create.newLocalStatus=" + newLocalStatus);
@@ -435,7 +437,7 @@ public class PathSetupManager{
      synchronized public void updateTeardownStatus(int newLocalStatus, Reservation resv) throws BSSException{
         StateEngine se = this.core.getStateEngine();
         int localStatus = StateEngine.getLocalStatus(resv);
-        if((newLocalStatus & localStatus) == 1){
+        if((newLocalStatus & localStatus) != 0){
             throw new BSSException("Already set local status bit " + newLocalStatus);
         }
         if(!StateEngine.getStatus(resv).equals(StateEngine.FAILED)){
@@ -509,13 +511,13 @@ public class PathSetupManager{
                                boolean upstream, int retries){
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         long currTime = System.currentTimeMillis();
-        String triggerName = "pathRetryTrig-" + gri.hashCode()+currTime;
-        String jobName = "pathRetryJob-" + gri.hashCode()+currTime;
+        String triggerName = "pathRetryJob-" + op + (upstream ? "up-" :"down-") + gri+ "-" + currTime;
+        String jobName = "pathRetryJob-" + op + (upstream ? "up-" :"down-") + gri+ "-" + currTime;
         long time = currTime + wait*1000;
         Date date = new Date(time);
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
                                                   date, null, 0, 0L);
-        JobDetail jobDetail = new JobDetail(jobName, "PATH_RETRY", 
+        JobDetail jobDetail = new JobDetail(jobName, "PATH_TIMEOUT", 
                                             PathTimeoutJob.class);
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("retry", true);
@@ -547,10 +549,12 @@ public class PathSetupManager{
      */
      public void scheduleStatusCheck(long timeout, Reservation resv, String op, boolean upstream){
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String prefix = op + (upstream?"-up-":"-down-");
-        String triggerName = prefix + "pathTimeoutTrig-" + resv.hashCode();
-        String jobName = prefix + "pathTimeoutJob-" + resv.hashCode();
+        String gri = resv.getGlobalReservationId();
         long time = System.currentTimeMillis() + timeout*1000;
+        String prefix = op + (upstream?"-up-":"-down-");
+        String triggerName = prefix + "pathTimeoutTrig-" + gri + "-" + time;
+        String jobName =prefix + "pathTimeoutTrig-" + gri + "-" + time;
+        
         Date date = new Date(time);
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
                                                   date, null, 0, 0L);

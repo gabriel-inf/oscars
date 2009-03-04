@@ -21,6 +21,7 @@ public class CreatePathJob extends ChainingJob implements Job {
         String gri = (String) dataMap.get("gri");
         String bssDbName = core.getBssDbName();
         Session bss = core.getBssSession();
+        StateEngine se = this.core.getStateEngine();
         bss.beginTransaction();
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
         Reservation resv = null;
@@ -49,7 +50,7 @@ public class CreatePathJob extends ChainingJob implements Job {
                 Thread.sleep(3000);
             }catch(InterruptedException e){}
             this.runNextJob(context);
-            bss.getTransaction().commit();
+            se.safeHibernateCommit(resv, bss);
         }
 
         this.log.info("CreatePathJob.end");

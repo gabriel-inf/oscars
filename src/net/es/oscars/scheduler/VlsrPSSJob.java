@@ -73,7 +73,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             eventProducer.addEvent(failedEvent, login, 
                                    "JOB", resv, "", ex.getMessage());
         }finally{
-            bss.getTransaction().commit();
+            se.safeHibernateCommit(resv, bss);
             try{ 
                 Thread.sleep(DELAY*1000);
             }catch(InterruptedException e){}

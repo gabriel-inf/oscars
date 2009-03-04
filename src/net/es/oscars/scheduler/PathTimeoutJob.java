@@ -116,7 +116,7 @@ public class PathTimeoutJob implements org.quartz.Job {
             }else{
                 this.log.error("Unknown path timeout job cannot be executed");
             }
-            bss.getTransaction().commit();
+            se.safeHibernateCommit(resv, bss);
         }catch(Exception ex){
             ex.printStackTrace();
             //Rollback any changes...

@@ -22,10 +22,10 @@ public class PSSScheduler {
 
     public PSSScheduler(String dbname) {
         this.log = Logger.getLogger(this.getClass());
-        this.pathSetupManager = new PathSetupManager(dbname);
         this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
         this.se = this.core.getStateEngine();
+        this.pathSetupManager = this.core.getPathSetupManager();
     }
 
 

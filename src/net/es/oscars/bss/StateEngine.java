@@ -4,9 +4,6 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.hibernate.*;
 
-import net.es.oscars.ws.*;
-import net.es.oscars.database.*;
-
 public class StateEngine {
 
     public final static String SUBMITTED = "SUBMITTED";
@@ -128,8 +125,7 @@ public class StateEngine {
     
     public static void canUpdateLocalStatus(Reservation resv, int newLocalStatus) throws BSSException{
         boolean allowed = true;
-        StateEngine se = OSCARSCore.getInstance().getStateEngine();
-        String status = se.getStatus(resv);
+        String status = StateEngine.getStatus(resv);
         int localStatus = resv.getLocalStatus();
         if(status.equals(INCREATE) ){
             if((localStatus ^ newLocalStatus) != 1){
@@ -225,7 +221,23 @@ public class StateEngine {
 
         return status;
     }
-
-
+    
+    /**
+     * Utility function for verifying the status is up-to-date before committing a 
+     * Hibernate session. The statusMap is synchronized so will always be the most 
+     * accurate representation of the status. During interdomain path setup this call should 
+     * ALWAYS be used to commit the transaction. There is a time between when a path 
+     * receives a notification and makes a change where a race condition exists without this.
+     * 
+     * @param resv the reservation to save
+     * @param bss the Hibernate session to commit
+     */
+    public synchronized void safeHibernateCommit(Reservation resv, Session bss){
+        //sets the reservation status to the value of the status map
+        resv.setStatus(StateEngine.getStatus(resv));
+        //sets the reservation local status to the value of the local status map
+        resv.setLocalStatus(StateEngine.getLocalStatus(resv));
+        bss.beginTransaction().commit();
+    }
 
 }

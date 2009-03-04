@@ -50,14 +50,13 @@ public class EventRmiHandler {
             String[] eventType = event.getType().split("_");
        
             if(eventType == null || eventType.length <3){
-                this.log.warn("Unknow event " + event.getType());
-            }
-            if(eventType[0].equals(EventRmiHandler.RESOURCE_SCHED_CLASS)){
+                this.log.warn("Unknown event " + event.getType());
+            }else if(eventType[0].equals(EventRmiHandler.RESOURCE_SCHED_CLASS)){
                 this.handleResourceScheduling(eventType[1], eventType[2], producerDomainId, event);
             }else if(event.getType().contains(EventRmiHandler.PATH_SIGNAL_CLASS)){
                 this.handlePathSignaling(producerDomainId, event);
             }else{
-                this.log.debug("Received unkown event " + eventType);
+                this.log.debug("Received unknown event " + eventType);
             }
             bss.getTransaction().commit();
         }catch(Exception e){

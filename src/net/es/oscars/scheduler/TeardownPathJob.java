@@ -18,6 +18,7 @@ public class TeardownPathJob extends ChainingJob implements Job {
         this.core = OSCARSCore.getInstance();
         EventProducer eventProducer = new EventProducer();
         PathSetupManager pm = this.core.getPathSetupManager();
+        StateEngine se = this.core.getStateEngine();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String gri = dataMap.getString("gri");
         String newStatus = dataMap.getString("newStatus");
@@ -28,8 +29,11 @@ public class TeardownPathJob extends ChainingJob implements Job {
         Reservation resv = null;
         try {
             resv = resvDAO.query(gri);
+            this.log.debug("Sleeping....");
             Thread.sleep(10000);//simulate teardown time
+            this.log.debug("Done sleeping");
             pm.updateTeardownStatus(StateEngine.CONFIRMED, resv);
+            this.log.debug("Status updated");
         }catch (BSSException ex) {
             this.log.error("Could not teardown reservation "+ gri);
             this.log.error(ex);
@@ -44,12 +48,12 @@ public class TeardownPathJob extends ChainingJob implements Job {
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", 
                                    "SCHEDULER", resv, "", ex.getMessage());
         }finally{
+            se.safeHibernateCommit(resv, bss);
             //this delays the queue a domain-specific amount
             try{ 
                 Thread.sleep(3000);
             }catch(InterruptedException e){}
             this.runNextJob(context);
-            bss.getTransaction().commit();
         }
     }
 

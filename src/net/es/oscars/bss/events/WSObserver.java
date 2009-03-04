@@ -255,6 +255,7 @@ public class WSObserver implements Observer {
 
         //send notification
         try{
+            this.log.debug("Sending " + osEvent.getType() + " to NotificationBroker");
             client.notify(msgHolder);
         }catch(Exception e){
             this.log.error(e);

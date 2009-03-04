@@ -160,7 +160,8 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             this.log.error("State engine error", ex);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", ex.getMessage());
         }
-        bss.getTransaction().commit();
+        stateEngine.safeHibernateCommit(resv, bss);
+        
         this.runNextJob(context);
         this.log.debug("VendorCreatePathJob.end name: "+jobName);
     }
