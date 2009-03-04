@@ -49,7 +49,7 @@ public class PathManager {
         try {
             //Find requested path
             Path requestedPath = resv.getPath(PathType.REQUESTED);
-            this.resolveRequestedPath(resv);
+            this.resolveRequestedPath(requestedPath);
             
             //Find interdomain path (layer 2 only)
             if (requestedPath.getLayer2Data() != null) {
@@ -100,8 +100,7 @@ public class PathManager {
         this.policyMgr.checkOversubscribed(reservations, resv);
     }
     
-    private void resolveRequestedPath(Reservation resv) throws BSSException {
-        Path requestedPath = resv.getPath(PathType.REQUESTED);
+    private void resolveRequestedPath(Path requestedPath) throws BSSException {
         String errMsg = "";
         if (requestedPath == null) {
             errMsg = "No requested path set!";
