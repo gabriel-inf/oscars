@@ -69,9 +69,10 @@ public class TERCEDatabase implements TEDB{
             throw new TSSException("Invalid topology type specifed");
         }
         
+        ConfigurationContext configContext = null;
         try {
-            ConfigurationContext configContext = ConfigurationContextFactory
-            .createConfigurationContextFromFileSystem(repo, axis2Config);
+            configContext = ConfigurationContextFactory
+                .createConfigurationContextFromFileSystem(repo, axis2Config);
             terce = new TERCEStub(configContext, terceURL);
             selectTopology = new SelectNetworkTopology();
             request = new SelectNetworkTopologyContent();
@@ -83,12 +84,13 @@ public class TERCEDatabase implements TEDB{
             
             response = terce.selectNetworkTopology(selectTopology);
             responseContent = response.getSelectNetworkTopologyResponse();
-            topology = responseContent.getTopology();                
-        } catch (RemoteException e) {
-            throw new TSSException("Remote TERCE Exception: " + e.getMessage());
+            topology = responseContent.getTopology();
+            this.cleanUp(configContext);
         } catch (TEDBFaultMessage e) {
+            this.cleanUp(configContext);
             throw new TSSException("TERCE Exception while handling request: " + e.getMessage());
         }catch(Exception e){
+            this.cleanUp(configContext);
             throw new TSSException("Unable to contact TERCE: " + e.getMessage());
         }
         this.log.debug("selectNetworkTopology.end"); 
@@ -161,5 +163,22 @@ public class TERCEDatabase implements TEDB{
         }
         
         return newType;
+    }
+    
+    /**
+     * Prevents memory leak in axis2 client
+     *
+     * @param configContext an Axis2 ConfigurationContext to delete
+     */
+    private void cleanUp(ConfigurationContext configContext){
+        if(configContext == null){
+            return;
+        }
+        
+        try{
+            configContext.terminate();
+        }catch(Exception e){
+            this.log.warn("Unable to clean-up policy engine. Watch for memory leaks: " + e.getMessage());
+        }
     }
 }
