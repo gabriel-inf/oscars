@@ -57,10 +57,14 @@ public class HashMapTypeConverter {
         if (token != null) {
             map.put("token", genHashVal(token.getValue()));
         }
-        //set local path
-        map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL)));
-        // set interdomain path
-        map.putAll(pathToHashMap(resv.getPath(PathType.INTERDOMAIN)));
+        
+        //set path
+        if(resv.getPath(PathType.INTERDOMAIN) == null && resv.getPath(PathType.LOCAL) == null){
+            map.putAll(pathToHashMap(resv.getPath(PathType.REQUESTED)));
+        }else{
+            map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL)));
+            map.putAll(pathToHashMap(resv.getPath(PathType.INTERDOMAIN)));
+        }
         return map;
     }
 

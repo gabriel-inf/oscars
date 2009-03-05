@@ -333,7 +333,7 @@ public class ReservationManager {
         /* Submitting a job to the resource scheduling queue
            so there aren't any resource conflicts */
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = prefix+"-failed-"+resv.hashCode();
+        String jobName = prefix+"-failed-"+gri;
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", jobClass);
         this.log.debug("Adding job "+jobName);
         jobDetail.setDurability(true);
@@ -347,8 +347,9 @@ public class ReservationManager {
         try {
             sched.addJob(jobDetail, false);
         } catch (SchedulerException ex) {
-            this.log.error("Unable to schedule failure job");
-            ex.printStackTrace();
+            this.log.debug("Unable to schedule failure job most likely " +
+                    "because we've aleady been notified about this failure" +
+                    " from another domain: " + ex.getMessage());
         }
     }
 
