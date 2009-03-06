@@ -426,7 +426,7 @@ public class JnxLSP {
      *
      * @param router string with router id
      * @param statusInputs HashMap of VLAN's to check with their associated info
-     * @return vlanStatuses HashMap with VLAN's and their statuses
+     * @return circuitStatuses HashMap with VLAN's and their statuses
      * @throws PSSException
      */
     public Map<String,VendorStatusResult> statusLSP(String router,
@@ -435,23 +435,47 @@ public class JnxLSP {
 
         boolean status = false;
         String errMsg = null;
-        Map<String,VendorStatusResult> vlanStatuses = null;
+        Map<String,VendorStatusInput>
+            layer2Inputs = new HashMap<String,VendorStatusInput>();
+        Map<String,VendorStatusInput>
+            layer3Inputs = new HashMap<String,VendorStatusInput>();
+        Map<String,VendorStatusResult> circuitStatuses = 
+            new HashMap<String,VendorStatusResult>();
 
         this.log.info("statusLSP.start");
         if (!this.allowLSP) {
             return null;
+        }
+        for (String circuitId: statusInputs.keySet()) {
+            VendorStatusInput statusInput = statusInputs.get(circuitId);
+            if (statusInput.getLayer().equals("2")) {
+                layer2Inputs.put(circuitId, statusInput);
+            } else {
+                layer3Inputs.put(circuitId, statusInput);
+            }
         }
         try {
             HashMap<String, String> hm = new HashMap<String, String>();
             this.setupLogin(router, hm);
             LSPConnection conn = new LSPConnection();
             conn.createSSHConnection(hm);
-            String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
-                    this.props.getProperty("statusL2Template"));
-            Document doc = this.th.buildTemplate(fname);
-            this.sendCommand(doc, conn.out);
-            doc = this.readResponse(conn.in);
-            vlanStatuses = this.parseResponse(statusInputs, doc);
+            if (!layer2Inputs.isEmpty()) {
+                String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
+                        this.props.getProperty("statusL2Template"));
+                Document doc = this.th.buildTemplate(fname);
+                this.sendCommand(doc, conn.out);
+                doc = this.readResponse(conn.in);
+                circuitStatuses.putAll(this.parseLayer2Response(layer2Inputs, doc));
+            }
+            if (!layer3Inputs.isEmpty()) {
+                String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
+                        this.props.getProperty("statusL3Template"));
+                Document doc = null;
+                //Document doc = this.th.buildTemplate(fname);
+                //this.sendCommand(doc, conn.out);
+                //doc = this.readResponse(conn.in);
+                circuitStatuses.putAll(this.parseLayer3Response(layer3Inputs, doc));
+            }
             conn.shutDown();
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
@@ -459,7 +483,7 @@ public class JnxLSP {
             throw new PSSException(ex.getMessage());
         }
         this.log.info("statusLSP.finish");
-        return vlanStatuses;
+        return circuitStatuses;
     }
 
     /**
@@ -568,16 +592,18 @@ public class JnxLSP {
      *
      * @param statusInputs HashMap of VLAN's to check with their associated info
      * @param doc XML document with response from server
-     * @return vlanStatuses HashMap with VLAN's and their statuses
+     * @return circuitStatuses HashMap with VLAN's and their statuses
      * @throws IOException
      * @throws JDOMException
      */
     private Map<String,VendorStatusResult>
-        parseResponse(Map<String,VendorStatusInput> statusInputs, Document doc)
+        parseLayer2Response(Map<String,VendorStatusInput> statusInputs,
+                            Document doc)
             throws IOException, JDOMException {
 
+        this.log.info("parseLayer2Response.start");
         List connectionList = this.getConnections(doc);
-        Map<String,VendorStatusResult> vlanStatuses =
+        Map<String,VendorStatusResult> circuitStatuses =
             new HashMap<String,VendorStatusResult>();
         Map<String,JnxStatusResult> currentVlans =
             new HashMap<String,JnxStatusResult>();
@@ -678,9 +704,10 @@ public class JnxLSP {
                     statusResult.setErrorMessage(errMsg);
                 }
             }
-            vlanStatuses.put(vlanId, statusResult);
+            circuitStatuses.put(vlanId, statusResult);
         }
-        return vlanStatuses;
+        this.log.info("parseLayer2Response.finish");
+        return circuitStatuses;
     }
 
     private List getConnections(Document doc) throws JDOMException {
@@ -696,6 +723,36 @@ public class JnxLSP {
         xpath.addNamespace(l2Circuit);
         List connectionList = xpath.selectNodes(doc);
         return connectionList;
+    }
+
+    /**
+     * Parse the DOM response to see if the layer 3 circuit is up or not.
+     *
+     * @param statusInputs HashMap of circuits to check with associated info
+     * @param doc XML document with response from server
+     * @return circuitStatuses HashMap with circuits and their statuses
+     * @throws IOException
+     * @throws JDOMException
+     */
+    private Map<String,VendorStatusResult>
+        parseLayer3Response(Map<String,VendorStatusInput> statusInputs,
+                            Document doc)
+            throws IOException, JDOMException {
+
+        // TODO:  stub at present, parse results
+        Map<String,VendorStatusResult> circuitStatuses =
+            new HashMap<String,VendorStatusResult>();
+        for (String gri: statusInputs.keySet()) {
+            VendorStatusResult statusResult = new JnxStatusResult();
+            String op = statusInputs.get(gri).getOperation();
+            if (op.equals("PATH_SETUP")) {
+                statusResult.setCircuitStatus(true);
+            } else {
+                statusResult.setCircuitStatus(false);
+            }
+            circuitStatuses.put(gri, statusResult);
+        }
+        return circuitStatuses;
     }
 
     /**

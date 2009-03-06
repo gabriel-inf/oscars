@@ -350,6 +350,7 @@ public class LSP {
 //                this.log.debug("Decided that vlan:" + vlanId + " is "+currentVlans.get(vlanId));
             }
         }
+        this.log.info("statusLSP.finish");
         return vlanStatuses;
     }
 

@@ -25,7 +25,7 @@ public class VendorMaintainStatusJob implements Job {
 
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
-        HashMap<String, HashMap<String,VendorStatusInput>> vlansPerNode =
+        HashMap<String, HashMap<String,VendorStatusInput>> circuitsPerNode =
             new HashMap<String, HashMap<String,VendorStatusInput>>();
         HashMap<String, String> nodeVendor = new HashMap<String, String>();
 
@@ -36,6 +36,8 @@ public class VendorMaintainStatusJob implements Job {
             this.log.debug("examining gri :"+gri);
 
             HashMap<String, String> params = checklist.get(gri);
+            String layer		= params.get("layer");
+            // VLAN's may be null for layer 3
             String ingressVlan 		= params.get("ingressVlan");
             String egressVlan 		= params.get("egressVlan");
             String ingressNodeId	= params.get("ingressNodeId");
@@ -46,49 +48,58 @@ public class VendorMaintainStatusJob implements Job {
             String operation = params.get("operation");
             String desiredStatus = params.get("desiredStatus");
 
-            if (ingressNodeId != null && egressNodeId != null) {
+            if ((ingressNodeId != null) && ((egressNodeId != null) ||
+               layer.equals("3"))) {
                 nodeVendor.put(ingressNodeId, ingressVendor);
                 nodeVendor.put(egressNodeId, egressVendor);
                 checkedGris.add(gri);
                 HashMap<String,VendorStatusInput> statusInputs =
-                    vlansPerNode.get(ingressNodeId);
+                    circuitsPerNode.get(ingressNodeId);
                 if (statusInputs == null) {
                     statusInputs = new HashMap<String,VendorStatusInput>();
                 }
                 VendorStatusInput statusInput = new VendorStatusInput();
                 statusInput.setGri(gri);
                 statusInput.setDescription(description);
+                statusInput.setLayer(layer);
                 statusInput.setOperation(operation);
                 statusInput.setDesiredStatus(desiredStatus);
                 statusInput.setDirection("FORWARD");
-                statusInputs.put(ingressVlan, statusInput);
-                vlansPerNode.put(ingressNodeId, statusInputs);
-
-                statusInputs = vlansPerNode.get(egressNodeId);
-                if (statusInputs == null) {
-                    statusInputs = new HashMap<String,VendorStatusInput>();
+                if (layer.equals("2")) {
+                    statusInputs.put(ingressVlan, statusInput);
+                } else {
+                    statusInputs.put(gri, statusInput);
                 }
-                statusInput = new VendorStatusInput();
-                statusInput.setGri(gri);
-                statusInput.setDescription(description);
-                statusInput.setOperation(operation);
-                statusInput.setDesiredStatus(desiredStatus);
-                statusInput.setDirection("REVERSE");
-                statusInputs.put(egressVlan, statusInput);
-                vlansPerNode.put(egressNodeId, statusInputs);
+                circuitsPerNode.put(ingressNodeId, statusInputs);
+
+                if (layer.equals("2")) {
+                    statusInputs = circuitsPerNode.get(egressNodeId);
+                    if (statusInputs == null) {
+                        statusInputs = new HashMap<String,VendorStatusInput>();
+                    }
+                    statusInput = new VendorStatusInput();
+                    statusInput.setGri(gri);
+                    statusInput.setDescription(description);
+                    statusInput.setLayer(layer);
+                    statusInput.setOperation(operation);
+                    statusInput.setDesiredStatus(desiredStatus);
+                    statusInput.setDirection("REVERSE");
+                    statusInputs.put(egressVlan, statusInput);
+                    circuitsPerNode.put(egressNodeId, statusInputs);
+                }
             }
         }
 
-        Iterator<String> nodeIt = vlansPerNode.keySet().iterator();
+        Iterator<String> nodeIt = circuitsPerNode.keySet().iterator();
         Scheduler sched = this.core.getScheduleManager().getScheduler();
         while (nodeIt.hasNext()) {
             String nodeId = nodeIt.next();
-            Map<String,VendorStatusInput> statusInputs = vlansPerNode.get(nodeId);
+            Map<String,VendorStatusInput> statusInputs = circuitsPerNode.get(nodeId);
             String jobName = "checkStatus-"+nodeId+statusInputs.hashCode();
             JobDetail jobDetail = new JobDetail(jobName, "STATUS", VendorCheckStatusJob.class);
             JobDataMap jobDataMap = new JobDataMap();
             this.log.debug("Adding job "+jobDetail.getFullName());
-            // give the full checklist out so that it knows which GRI matches what vlan and where
+            // give the full checklist out so that it knows which GRI matches what circuit and where
             jobDataMap.put("nodeId", nodeId);
             jobDataMap.put("vendor", nodeVendor.get(nodeId));
             jobDataMap.put("statusInputs", statusInputs);

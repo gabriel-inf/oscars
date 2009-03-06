@@ -3,6 +3,8 @@ package net.es.oscars.scheduler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
 
@@ -34,9 +36,9 @@ public class VendorCheckStatusJob implements Job {
         this.log.debug(jobName + " for node: "+nodeId+ " vendor: "+vendor);
         HashMap<String,VendorStatusInput> statusInputs =
             (HashMap<String,VendorStatusInput>) jobDataMap.get("statusInputs");
-        String theList = "vlans to be checked: ";
-        for (String vlan : statusInputs.keySet()) {
-            theList = theList + vlan + " ";
+        String theList = "circuits to be checked: ";
+        for (String circuit : statusInputs.keySet()) {
+            theList = theList + circuit + " ";
         }
         this.log.debug(theList);
         try {
@@ -78,12 +80,12 @@ public class VendorCheckStatusJob implements Job {
                     // TODO:  mark all as error
                 }
             }
-            ArrayList<String> checkedVlans = new ArrayList<String>();
+            ArrayList<String> checkedCircuits = new ArrayList<String>();
 
-            // find out what vlan goes to which reservation
-            for (String vlanId: statusInputs.keySet()) {
-                VendorStatusInput statusInput = statusInputs.get(vlanId);
-                VendorStatusResult statusResult = results.get(vlanId);
+            // find out what circuit goes to which reservation
+            for (String circuitId: statusInputs.keySet()) {
+                VendorStatusInput statusInput = statusInputs.get(circuitId);
+                VendorStatusResult statusResult = results.get(circuitId);
                 String gri = statusInput.getGri();
                 String direction = statusInput.getDirection();
                 String desiredStatus = statusInput.getDesiredStatus();
@@ -105,7 +107,7 @@ public class VendorCheckStatusJob implements Job {
                     }
                 }
                 this.log.debug(jobName + ": in " + direction + " direction" +
-                        gri+ " at " + nodeId+":" + vlanId + " isPathUp:"+
+                        gri+ " at " + nodeId+":" + circuitId + " isPathUp:"+
                         isPathUp);
                 if (!allowLSP) {
                     // always pretend everything went well
@@ -151,7 +153,7 @@ public class VendorCheckStatusJob implements Job {
                             " " + desiredStatus + " because path is up");
                         this.updateReservation(statusInput, statusResult,
                                                StateEngine.ACTIVE);
-                        checkedVlans.add(vlanId);
+                        checkedCircuits.add(circuitId);
                     }
                 } else {
                     // if we're tearing down the circuit:
@@ -177,14 +179,14 @@ public class VendorCheckStatusJob implements Job {
                             desiredStatus + " because path is down");
                         this.updateReservation(statusInput, statusResult,
                                                desiredStatus);
-                        checkedVlans.add(vlanId);
+                        checkedCircuits.add(circuitId);
                     }
                 }
             }
             // don't recheck successfully checked reservations
-            for (String vlan : checkedVlans) {
-                this.log.debug("removing statusInput for vlan: " + vlan);
-                statusInputs.remove(vlan);
+            for (String circuit : checkedCircuits) {
+                this.log.debug("removing statusInput for circuit: " + circuit);
+                statusInputs.remove(circuit);
             }
 
             // if this is set it means at least one reservation was not found to be in the expected state
@@ -235,6 +237,7 @@ public class VendorCheckStatusJob implements Job {
         PathSetupManager pe = core.getPathSetupManager();
         String gri = resv.getGlobalReservationId();
         StateEngine stateEngine = this.core.getStateEngine();
+        Path path = resv.getPath(PathType.LOCAL);
 
         if (operation.equals("PATH_SETUP")) {
             if (newStatus.equals(StateEngine.FAILED)) {
@@ -243,7 +246,8 @@ public class VendorCheckStatusJob implements Job {
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errMsg);
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_SETUP", direction);
-                if (syncedStatus.equals("PATH_SETUP_BOTH")) {
+                if ((path.getLayer3Data() != null) ||
+                    syncedStatus.equals("PATH_SETUP_BOTH")) {
                     this.log.debug("Updating status for gri:"+gri);
                     pe.updateCreateStatus(1, resv);
                 } else {
@@ -257,7 +261,8 @@ public class VendorCheckStatusJob implements Job {
                 eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errMsg);
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncStatusCheck(gri, "PATH_TEARDOWN", direction);
-                if (syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
+                if ((path.getLayer3Data() != null) ||
+                    syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
                     this.log.debug("Updating status for gri:"+gri);
                     pe.updateTeardownStatus(1, resv);
                 } else {

@@ -17,6 +17,7 @@ public class VendorStatusInput implements Serializable {
 
     private String gri;
     private String description;
+    private String layer;
     private String operation;
     private String direction;
     private String desiredStatus;
@@ -46,6 +47,18 @@ public class VendorStatusInput implements Serializable {
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * @return layer a string with the circuit layer (2 or e)
+     */
+    public String getLayer() { return this.layer; }
+
+    /**
+     * @param op a string with the circuit layer
+     */
+    public void setLayer(String layer) {
+        this.layer = layer;
     }
 
     /**

@@ -50,11 +50,11 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         LSPData lspData = new LSPData(bssDbName);
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
             this.runNextJob(context);
-        	return;
+            return;
        }
        try {
             lspData.setPathVars(path.getPathElems());
@@ -112,16 +112,25 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncSetupCheck(gri, "PATH_TEARDOWN", direction);
                 // make sure both path teardown operations have completed
-                if (syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
+                // if layer 2
+                if ((path.getLayer3Data() != null) ||
+                        syncedStatus.equals("PATH_TEARDOWN_BOTH")) {
                     ArrayList<String> directions = new ArrayList<String>();
                     directions.add("forward");
-                    directions.add("reverse");
+                    if (path.getLayer2Data() != null) {
+                        directions.add("reverse");
+                    }
                     // add the reservation to the status checklist
                     for (String dir : directions) {
                         HashMap<String, String> params = new HashMap<String, String>();
                         params.put("desiredStatus", newStatus);
                         params.put("operation", "PATH_TEARDOWN");
                         params.put("description", resv.getDescription());
+                        if (path.getLayer2Data() != null) {
+                            params.put("layer", "2");
+                        } else {
+                            params.put("layer", "3");
+                        }
                         if (dir.equals("forward")) {
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
                             params.put("ingressVlan", lspData.getVlanTag());

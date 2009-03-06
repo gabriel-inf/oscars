@@ -57,10 +57,10 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         LSPData lspData = new LSPData(bssDbName);
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
-        	return;
+            return;
         }
         try {
             lspData.setPathVars(path.getPathElems());
@@ -101,6 +101,12 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             }
         } else if (ingressRouterType.equals("cisco")) {
             ciscoLSP = new LSP(bssDbName);
+            // can't currently set up layer 3 circuits with Cisco ingress
+            if (path.getLayer3Data() != null) {
+                errString = "Cannot set up layer 3 path with Cisco ingress";
+                this.log.error(errString);
+                pathWasSetup = false;
+            }
             try {
                 ciscoLSP.createPath(resv, lspData, direction);
             } catch (PSSException ex) {
@@ -119,17 +125,26 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errString);
             } else {
                 String syncedStatus = VendorStatusSemaphore.syncSetupCheck(gri, "PATH_SETUP", direction);
-                // make sure both path setup operations have completed
-                if (syncedStatus.equals("PATH_SETUP_BOTH")) {
+                // make sure both path setup operations have completed if layer
+                // 2; layer 3 is unidirectional
+                if ((path.getLayer3Data() != null) || 
+                     syncedStatus.equals("PATH_SETUP_BOTH")) {
                     ArrayList<String> directions = new ArrayList<String>();
                     directions.add("forward");
-                    directions.add("reverse");
+                    if (path.getLayer2Data() != null) {
+                        directions.add("reverse");
+                    }
                     // add the reservation to the status checklist
                     for (String dir : directions) {
                         HashMap<String, String> params = new HashMap<String, String>();
                         params.put("desiredStatus", StateEngine.ACTIVE);
                         params.put("operation", "PATH_SETUP");
                         params.put("description", resv.getDescription());
+                        if (path.getLayer2Data() != null) {
+                            params.put("layer", "2");
+                        } else {
+                            params.put("layer", "3");
+                        }
                         if (dir.equals("forward")) {
                             this.log.debug("setting forward status check params");
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
