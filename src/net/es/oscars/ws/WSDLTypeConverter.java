@@ -435,11 +435,19 @@ public class WSDLTypeConverter {
             swcap.setEncodingType(L2SwitchingCapType.DEFAULT_ENC_TYPE);
             swcapInfo.setCapability("unimplemented");
         } else {
+            String vlanRangeVal = vlanRange.getValue();
+            //Set to 0 for untagged. Negative only kept in database.
+            if(vlanRangeVal != null && vlanRangeVal.startsWith("-")){
+                vlanRangeVal = "0";
+            }
             swcap.setSwitchingcapType(PathElemParamSwcap.L2SC);
             swcap.setEncodingType("ethernet");
             swcapInfo.setInterfaceMTU(L2SwitchingCapType.DEFAULT_MTU);
-            swcapInfo.setVlanRangeAvailability(vlanRange.getValue());
-            if (suggVlan != null) {
+            swcapInfo.setVlanRangeAvailability(vlanRangeVal);
+            //set suggested vlan to 0 if untagged.
+            if("0".equals(vlanRangeVal)){
+                swcapInfo.setSuggestedVLANRange("0");
+            }else if (suggVlan != null) {
                 swcapInfo.setSuggestedVLANRange(suggVlan.getValue());
             }
         }

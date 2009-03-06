@@ -776,12 +776,12 @@ public class ReservationManager {
         Path interdomainPath = resv.getPath(PathType.INTERDOMAIN);
         List<PathElem> interPathElems = interdomainPath.getPathElems();
         
-        if (confirm) {
-            this.pathMgr.finalizeVlanTags(resv, pathFromNeighbor);
-        }
-        
-        //If local reservation then nothing left to do
+        //If local reservation, first domain during completed phase or
+        //last domain during confirm phase then finalize VLAN tags and return
         if(pathFromNeighbor == null){
+            if(confirm){
+                this.pathMgr.finalizeVlanTags(resv, pathFromNeighbor);
+            }
             return;
         }
         
@@ -804,6 +804,10 @@ public class ReservationManager {
             }
             
             PathElem interPathElem = interPathElems.get(i);
+            if(interPathElem.getLink() != null && 
+                    interPathElem.getLink().getPort().getNode().getDomain().isLocal()){
+                continue;
+            }
             //use startsWith to support domain/node/port/linkId
             if(neighborElem.getUrn().startsWith(interPathElem.getUrn())){
                 interPathElem.setUrn(neighborElem.getUrn());
@@ -812,6 +816,11 @@ public class ReservationManager {
                 //more hops but this one does not match -add and continue
                 interPathElems.add(i, neighborElem);
             }
+        }
+        
+        //Choose VLAN tags if we are confirming this path
+        if (confirm) {
+            this.pathMgr.finalizeVlanTags(resv, pathFromNeighbor);
         }
     }
 

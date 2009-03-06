@@ -64,7 +64,7 @@ public class PathManager {
             localPath = localPaths.get(0);
             BssUtils.copyPathFields(requestedPath, localPath);
             resv.setPath(localPath);
-
+            
             // Set up interdomain path with local ingress and egress as
             // placeholder if layer 3
             if (interdomainPath == null) {
@@ -188,7 +188,7 @@ public class PathManager {
             }
         }
         
-        /* Examine next domain path and determine what VLAN was choses */
+        /* Examine next domain path and determine what VLAN was chosen */
         localFound = false;
         if (pathFromDownstream != null) {
 
@@ -203,9 +203,12 @@ public class PathManager {
                 }
                 if(domain.isLocal()){
                     localFound = true;
-                    interLocalSegment.add(interPathElem);
-                    egrSugVlan = interPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                            PathElemParamType.L2SC_SUGGESTED_VLAN).getValue();
+                    PathElemParam interElemSugVlan = 
+                        interPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                PathElemParamType.L2SC_SUGGESTED_VLAN);
+                    if(interElemSugVlan != null){
+                        egrSugVlan = interElemSugVlan.getValue();
+                    }
                 }else if(localFound && (!domain.isLocal())){
                     nextExtPathElem = interPathElem;
                     break;
@@ -219,8 +222,10 @@ public class PathManager {
         if(nextExtPathElem != null){
             nextExtVlan = nextExtPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                     PathElemParamType.L2SC_VLAN_RANGE).getValue();
+            this.log.debug("Next domain chose VLAN "+ nextExtVlan);
         }
         if(nextExtVlan != null && (!nextExtVlan.equals(egrSugVlan))){
+            this.log.debug("need to choose a new VLAN...");
             ReservationDAO dao = new ReservationDAO(this.dbname);
             List<Reservation> active = dao.overlappingReservations(
                                         resv.getStartTime(), resv.getEndTime());

@@ -173,14 +173,24 @@ public class HashMapTypeConverter {
         PathElemParam pepVlanRange = pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                 PathElemParamType.L2SC_VLAN_RANGE);
         if(pepVlanRange != null){
+            String vlanRangeVal = pepVlanRange.getValue();
+            if(vlanRangeVal != null && vlanRangeVal.startsWith("-")){
+                vlanRangeVal = "0";
+            }
             //TEMetric;swcap;enc;MTU;VLANRangeAvail;SuggestedVLANRange
             infoVal += ";l2sc;ethernet";
             infoVal += ";" + mtu;
-            infoVal += ";" + pepVlanRange.getValue();
+            infoVal += ";" + vlanRangeVal;
             PathElemParam pepSugVlan =
                 pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                         PathElemParamType.L2SC_SUGGESTED_VLAN);
-            infoVal += (pepSugVlan==null ? ";null" : (";" + pepSugVlan.getValue()));
+            if(pepSugVlan==null){
+                infoVal += ";null";
+            }else if("0".equals(vlanRangeVal)){
+                infoVal += ";0";
+            }else{
+                infoVal += (";" + pepSugVlan.getValue());
+            }
         }else{
             //TEMetric;swcap;enc;MTU;capbility
             infoVal += ";" + defaulSwcapType + ";" + defaulEncType + ";unimplemented";

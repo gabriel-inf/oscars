@@ -349,11 +349,16 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             // what our current URN is since it will correspond
                             // to the link in the next domain.
                             this.log.debug("Adding next hop in next domain: "+urn);
-                            PathElem hop = new PathElem();
-                            hop.setUrn(urn);
-                            try{
-                                hop.setLink(TopologyUtil.getLink(urn, this.dbname));
-                            }catch(BSSException e){}
+                            PathElem hop = null;
+                            if(urn.equals(currHop.getUrn())){
+                                hop = currHop;
+                            }else{
+                                hop= new PathElem();
+                                hop.setUrn(urn);
+                                try{
+                                    hop.setLink(TopologyUtil.getLink(urn, this.dbname));
+                                }catch(BSSException e){}
+                            }
                             newPath.addPathElem(hop);
 
                             // since we can only use a given link once, remove
@@ -376,11 +381,16 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             break;
                         } else {
                             if (TopologyUtil.getURNType(urn) == TopologyUtil.LINK_URN) {
-                                PathElem hop = new PathElem();
-                                hop.setUrn(urn);
-                                try{
-                                    hop.setLink(TopologyUtil.getLink(urn, this.dbname));
-                                }catch(BSSException e){}
+                                PathElem hop = null;
+                                if(urn.equals(currHop.getUrn())){
+                                    hop = currHop;
+                                }else{
+                                    hop= new PathElem();
+                                    hop.setUrn(urn);
+                                    try{
+                                        hop.setLink(TopologyUtil.getLink(urn, this.dbname));
+                                    }catch(BSSException e){}
+                                }
                                 if(LOCALPATH){
                                     this.log.debug("Adding "+urn+" to intradomain path");
                                     newPath.addPathElem(hop);
@@ -447,12 +457,16 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             }
                         } else {
                             if (TopologyUtil.getURNType(urn) == TopologyUtil.LINK_URN) {
-                                PathElem hop = new PathElem();
-                                hop.setUrn(urn);
-                                try{
-                                    hop.setLink(TopologyUtil.getLink(urn, this.dbname));
-                                }catch(BSSException e){}
-                                
+                                PathElem hop = null;
+                                if(urn.equals(currHop.getUrn())){
+                                    hop = currHop;
+                                }else{
+                                    hop= new PathElem();
+                                    hop.setUrn(urn);
+                                    try{
+                                        hop.setLink(TopologyUtil.getLink(urn, this.dbname));
+                                    }catch(BSSException e){}
+                                }
                                 if(ingressURN == null && !LOCALPATH){
                                     // we've found our ingress point. Add it to
                                     // the interdomain path.
@@ -490,21 +504,6 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                         // we add ourselves to the interdomain path.
                         newPath.addPathElem(currHop);
                     }
-                }
-            }
-            
-            /* Make sure all the PathElemParams were maintained. 
-             * There is probably a more efficient way to do this */
-            int npeIndex = 0;
-            for(PathElem reqHop: reqHops){
-                while(npeIndex < newPath.getPathElems().size()){
-                    PathElem newPathElem = newPath.getPathElems().get(npeIndex);
-                    if(reqHop.getUrn().equals(newPathElem.getUrn())){
-                        PathElem.copyPathElemParams(newPathElem, reqHop, null);
-                        npeIndex++;
-                        break;
-                    }
-                    npeIndex++;
                 }
             }
         }

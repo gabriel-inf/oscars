@@ -11,7 +11,6 @@ import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.policy.PolicyClient;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.pss.*;
 import net.es.oscars.PropHandler;
 
 public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
@@ -228,7 +227,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         Link firstLink= resv.getPath(PathType.INTERDOMAIN).getPathElems().get(0).getLink();
         if (firstLink != null && 
                 firstLink.getPort().getNode().getDomain().isLocal()) {
-            this.complete(resv, confirmedPath);
+            this.complete(resv, null);
         } else {
             this.scheduleStatusCheck(COMPLETE_TIMEOUT, resv);
         }
