@@ -28,7 +28,7 @@ public class UnsafeCreatePathRmiHandler {
     }
 
     public String unsafeCreatePath(RmiPathRequest params, String userName)
-            throws IOException {
+            throws RemoteException {
 
          this.log.debug("unsafeCreatePath.start");
          String methodName = "UnsafeCreatePath";

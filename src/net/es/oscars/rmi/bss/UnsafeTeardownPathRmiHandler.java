@@ -27,7 +27,7 @@ public class UnsafeTeardownPathRmiHandler {
 
     public
         String unsafeTeardownPath(RmiPathRequest params, String userName)
-            throws IOException {
+            throws RemoteException {
 
         this.log.debug("unsafeTeardownPath.start");
         String methodName = "UnsafeTeardownPath";

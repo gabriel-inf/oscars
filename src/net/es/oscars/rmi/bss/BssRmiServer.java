@@ -95,7 +95,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         createReservation(Reservation resvRequest, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
 
         return this.createHandler.createReservation(resvRequest, userName);
     }
@@ -125,7 +125,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public RmiListResReply
         listReservations(RmiListResRequest request, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
         return this.listHandler.listReservations(request, userName);
     }
 
@@ -134,7 +134,6 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      *
      * @param gri string containing reservation's global reservation id
      * @param userName string with authenticated login name of user
-     * @throws IOException
      * @throws RemoteException
      */
     public void
@@ -150,12 +149,11 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      * @param resv transient Reservation containing parameters to be modified
      * @param userName string with authenticated login name of user
      * @return persistentResv matching Reservation from database
-     * @throws IOException
      * @throws RemoteException
      */
     public Reservation
         modifyReservation(Reservation resv, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
 
         return this.modifyHandler.modifyReservation(resv, userName);
     }
@@ -171,7 +169,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public GetTopologyResponseContent
         getNetworkTopology(GetTopologyContent getTopoRequest, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
         return this.topologyHandler.getNetworkTopology(getTopoRequest,
                                                        userName);
     }
@@ -187,7 +185,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         createPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
         return this.pathHandler.createPath(request, userName);
     }
 
@@ -202,7 +200,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         refreshPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
         return this.pathHandler.refreshPath(request, userName);
     }
 
@@ -217,7 +215,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         teardownPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
         return this.pathHandler.teardownPath(request, userName);
     }
     
@@ -242,7 +240,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         unsafeCreatePath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
         return this.unsafeCreatePathHandler.unsafeCreatePath(request, userName);
     }
 
@@ -258,7 +256,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         unsafeTeardownPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException {
+            throws RemoteException {
 
         return this.unsafeTeardownPathHandler.unsafeTeardownPath(request,
                                                                  userName);
@@ -276,7 +274,7 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      */
     public String
         unsafeModifyStatus(RmiModifyStatusRequest request, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
 
         return this.unsafeModifyStatusHandler.unsafeModifyStatus(request,
                                                                  userName);

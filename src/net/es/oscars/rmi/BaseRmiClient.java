@@ -34,6 +34,7 @@ public class BaseRmiClient implements Remote {
         this.log.debug("startConnection().start");
 
         if (!this.configured) {
+            this.log.error("RMI client not configured");
             throw new RemoteException("RMI client not configured");
         }
         this.remote = null;
@@ -44,14 +45,15 @@ public class BaseRmiClient implements Remote {
             this.remote = (Remote) registry.lookup(rmiServerName);
             this.connected = true;
             this.log.debug("Connected to "+rmiServerName+" service");
-        } catch (RemoteException e) {
-            errMsg="Remote exception from RMI server: trying to access " + this.remote.toString();
-            this.log.warn("Remote exception from RMI server: trying to access " + this.remote.toString(), e);
         } catch (NotBoundException e) {
-            errMsg="Trying to access unregistered remote object: ";
-            this.log.warn("Trying to access unregistered remote object: ", e);
+            errMsg="Trying to access unregistered remote object: " + rmiServerName;
+            this.log.error(errMsg);
+        } catch (RemoteException e) {
+            errMsg="Remote exception from RMI server: trying to access " + rmiServerName + " " +e.getMessage();
+            this.log.error(errMsg);
         } catch (Exception e) {
-            errMsg= "Could not connect";
+            errMsg= "Could not connect to " + rmiServerName + " " + e.toString();
+            this.log.error(errMsg, e);
         } finally {
             if (errMsg != null) {
                 throw new RemoteException(errMsg);

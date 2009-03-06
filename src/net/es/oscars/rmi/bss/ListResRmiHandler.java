@@ -30,6 +30,14 @@ public class ListResRmiHandler {
     private OSCARSCore core;
     private Logger log;
 
+    /**
+     *ListReservations rmi handler; interfaces between war,aar and core ReservationManager.
+     *
+     * @param request a RmiListRequest with the input parameters for a list request
+     * @param userName String - name of user  making request
+     * @return RmiListReply containing details for all the reservations that matched the request
+     * @throws RemoteException
+     */
     public ListResRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
@@ -37,7 +45,7 @@ public class ListResRmiHandler {
 
     public RmiListResReply
         listReservations(RmiListResRequest request, String userName)
-            throws RemoteException, IOException {
+            throws RemoteException {
 
         this.log.debug("listReservations.start");
 

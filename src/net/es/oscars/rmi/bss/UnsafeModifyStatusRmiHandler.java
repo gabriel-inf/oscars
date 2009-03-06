@@ -25,7 +25,7 @@ public class UnsafeModifyStatusRmiHandler {
 
     public String unsafeModifyStatus(RmiModifyStatusRequest params,
                                      String userName)
-            throws IOException {
+            throws RemoteException {
 
         this.log.debug("unsafeModifyStatus.start");
         String methodName = "UnsafeModifyStatus";

@@ -25,12 +25,11 @@ public interface BssRmiInterface extends Remote {
      * @param resvRequest - partially filled in reservation with requested params
      * @param userName string with authenticated login name of user
      * @return gri - new global reservation id assigned to reservation
-     * @throws IOException
      * @throws RemoteException
      */
     public String
         createReservation(Reservation resvRequest, String userName)
-            throws IOException, RemoteException;
+            throws  RemoteException;
 
     /**
      * Queries reservation given information from client.
@@ -38,12 +37,11 @@ public interface BssRmiInterface extends Remote {
      * @param request string with global reservation id
      * @param userName string with authenticated login name of user
      * @return RmiQueryResReply bean containing reservation
-     * @throws IOException
      * @throws RemoteException
      */
     public RmiQueryResReply
         queryReservation(String request, String userName)
-            throws IOException, RemoteException;
+            throws  RemoteException;
 
     /**
      * Lists reservations given criteria from client.
@@ -51,13 +49,12 @@ public interface BssRmiInterface extends Remote {
      * @param request - RmiListResRequest contains input from component
      *
      * @return RmiListResReply list of reservations satisfying criteria
-     * @throws IOException
      * @throws RemoteException
      */
 
     public RmiListResReply
         listReservations(RmiListResRequest request, String userName)
-            throws IOException, RemoteException;
+            throws RemoteException;
 
     /**
      * Cancels reservation given information from client.
@@ -81,7 +78,7 @@ public interface BssRmiInterface extends Remote {
      */
     public Reservation
         modifyReservation(Reservation resv, String userName)
-            throws IOException, RemoteException;
+            throws  RemoteException;
     
     /**
      * Gets network topology.
@@ -94,7 +91,7 @@ public interface BssRmiInterface extends Remote {
      */
     public GetTopologyResponseContent
         getNetworkTopology(GetTopologyContent getTopoRequest, String userName)
-            throws IOException, RemoteException;
+            throws  RemoteException;
 
     /**
      * Sets up a path.  Forwards the request first, and sets up path if reply.
@@ -110,7 +107,7 @@ public interface BssRmiInterface extends Remote {
      */
     public String
         createPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException;
+            throws  RemoteException;
 
     /**
      * Verifies a path in response to a refreshPath request. Checks local path
@@ -124,7 +121,7 @@ public interface BssRmiInterface extends Remote {
      */
     public String
         refreshPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException;
+            throws RemoteException;
 
     /**
      * Removes a path in response to a teardown request. Removes local path
@@ -140,7 +137,7 @@ public interface BssRmiInterface extends Remote {
      */
     public String
         teardownPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException;
+            throws RemoteException;
     
     /**
      * Handles an event received from another IDC
@@ -161,7 +158,7 @@ public interface BssRmiInterface extends Remote {
      */
     public String
         unsafeCreatePath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException;
+            throws RemoteException;
 
     /**
      * Immediately tears down reservation circuit given info from client.
@@ -175,7 +172,7 @@ public interface BssRmiInterface extends Remote {
      */
     public String
         unsafeTeardownPath(RmiPathRequest request, String userName)
-            throws IOException, RemoteException;
+            throws RemoteException;
 
     /**
      * Forces the immediate status change of a reservation.
@@ -187,5 +184,5 @@ public interface BssRmiInterface extends Remote {
      */
     public String
         unsafeModifyStatus(RmiModifyStatusRequest request, String userName)
-            throws IOException, RemoteException;
+            throws RemoteException;
 }

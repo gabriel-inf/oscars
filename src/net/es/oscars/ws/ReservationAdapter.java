@@ -10,6 +10,7 @@ package net.es.oscars.ws;
 
 import java.util.*;
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane.*;
@@ -38,9 +39,10 @@ public class ReservationAdapter {
      * @param username String with user's login name
      * @return reply CreateReply encapsulating server reply.
      * @throws BSSException
+     * @throws RemoteException
      */
     public CreateReply create(ResCreateContent soapParams, String username,
-               BssRmiInterface rmiClient) throws BSSException {
+               BssRmiInterface rmiClient) throws RemoteException, BSSException {
 
         this.log.info("create.start");
         this.logCreateParams(soapParams);
@@ -64,12 +66,12 @@ public class ReservationAdapter {
 
             ///PathInfo is unchanged so just return the user-given pathInfo
             reply.setPathInfo(pathInfo);
-        } catch (IOException e) {
+        } catch (RemoteException e) {
             // send notification in all cases
             String errMsg =
                 this.generateErrorMsg(resv, e.getMessage());
             this.log.error(errMsg);
-            throw new BSSException(e.getMessage());
+            throw e;
         }
         this.log.info("create.finish: " + resv.toString("bss"));
         return reply;
@@ -85,9 +87,10 @@ public class ReservationAdapter {
      * @param username String with user's login name
      * @return reply ModResReply encapsulating server reply.
      * @throws BSSException
+     * @throws RemoteException
      */
     public ModifyResReply modify(ModifyResContent request, String username,
-               BssRmiInterface rmiClient) throws BSSException {
+               BssRmiInterface rmiClient) throws RemoteException, BSSException {
 
         this.log.info("modify.start");
         ModifyResReply reply = null;
@@ -104,8 +107,8 @@ public class ReservationAdapter {
         Reservation modifiedResv = null;
         try {
             modifiedResv = rmiClient.modifyReservation(resv, username);
-        } catch (Exception ex) {
-            throw new BSSException(ex.getMessage());
+        } catch (RemoteException ex) {
+            throw ex;
         }
         reply = WSDLTypeConverter.reservationToModifyReply(modifiedResv);
         this.log.info("modify.finish");
@@ -119,17 +122,14 @@ public class ReservationAdapter {
      * @param params GlobalReservationId instance with with request params.
      * @param username String with user's login name
      * @return ResStatus reply CancelReservationResponse
-     * @throws BSSException
+     * @throws RemoteException
      */
     public String cancel(CancelReservation request, String username,
-            BssRmiInterface rmiClient) throws BSSException {
+            BssRmiInterface rmiClient) throws RemoteException {
 
         String gri = request.getCancelReservation().getGri();
-        try {
-            rmiClient.cancelReservation(gri, username);
-        } catch (Exception ex) {
-            throw new BSSException(ex.getMessage());
-        }
+        rmiClient.cancelReservation(gri, username);
+
         return "reservation canceled";
     }
 
@@ -148,18 +148,15 @@ public class ReservationAdapter {
      * @param institution String user's institution name
      * @return reply ResDetails instance encapsulating server reply.
      * @throws BSSException
+     * @throws RemoteException
      */
     public ResDetails query(QueryReservation request, String username,
-            BssRmiInterface rmiClient) throws BSSException {
+            BssRmiInterface rmiClient) throws RemoteException, BSSException {
 
         String gri = request.getQueryReservation().getGri();
         this.log.debug("QueryReservation.start: " + gri);
         RmiQueryResReply result = null;
-        try {
-            result = rmiClient.queryReservation(gri, username);
-        } catch (Exception ex) {
-            throw new BSSException(ex.getMessage());
-        }
+        result = rmiClient.queryReservation(gri, username);
         ResDetails reply = WSDLTypeConverter.reservationToDetails(
                                result.getReservation(),
                                result.isInternalPathAuthorized(),
@@ -183,10 +180,11 @@ public class ReservationAdapter {
      *
      * @return reply ListReply encapsulating server reply.
      * @throws BSSException
+     * @throws RemoteException
      */
     public ListReply
         list(ListRequest request, String username, BssRmiInterface rmiClient)
-            throws BSSException {
+            throws RemoteException, BSSException {
 
         this.log.debug("list.start");
         Long startTime = null;
@@ -238,11 +236,8 @@ public class ReservationAdapter {
         rmiRequest.setStartTime(startTime);
         rmiRequest.setEndTime(endTime);
         RmiListResReply rmiReply = null;
-        try {
-            rmiReply = rmiClient.listReservations(rmiRequest, username);
-        } catch (Exception ex) {
-            throw new BSSException(ex.getMessage());
-        }
+        rmiReply = rmiClient.listReservations(rmiRequest, username);
+ 
         ListReply reply =
            WSDLTypeConverter.reservationToListReply(
                    rmiReply.getReservations(),
@@ -258,22 +253,18 @@ public class ReservationAdapter {
      * @param params GetTopologyContent instance with with request params.
      * @param username String with user's login name
      * @return reply GetTopologyResponseContent encapsulating server reply.
-     * @throws BSSException
+     * @throws RemoteException
      */
     public GetTopologyResponseContent
         getNetworkTopology(GetTopologyContent soapParams, String username,
-               BssRmiInterface rmiClient) throws BSSException {
+               BssRmiInterface rmiClient) throws RemoteException {
 
         this.log.debug("getNetworkTopology.start");
         GetTopologyResponseContent reply = null;
         // note that Axis2 types are used in this method only
-        try {
-            reply =
-                rmiClient.getNetworkTopology(soapParams, username);
-        } catch (IOException e) {
-            this.log.error(e.getMessage());
-            throw new BSSException(e.getMessage());
-        }
+
+        reply = rmiClient.getNetworkTopology(soapParams, username);
+
         this.log.debug("createPath.finish");
         return reply;
     }
@@ -286,11 +277,11 @@ public class ReservationAdapter {
      * @param params CreatePathContent instance with with request params.
      * @param username String with user's login name
      * @return reply CreatePathResponseContent encapsulating server reply.
-     * @throws BSSException
+     * @throws RemoteException
      */
     public CreatePathResponseContent
         createPath(CreatePathContent soapParams, String username,
-               BssRmiInterface rmiClient) throws BSSException {
+               BssRmiInterface rmiClient) throws RemoteException {
 
         this.log.debug("createPath.start");
         CreatePathResponseContent reply = new CreatePathResponseContent();
@@ -299,12 +290,9 @@ public class ReservationAdapter {
         rmiRequest.setGlobalReservationId(gri);
         rmiRequest.setToken(soapParams.getToken());
         String status = null;
-        try {
-            status = rmiClient.createPath(rmiRequest, username);
-        } catch (IOException e) {
-            this.log.error(e.getMessage());
-            throw new BSSException(e.getMessage());
-        }
+ 
+        status = rmiClient.createPath(rmiRequest, username);
+ 
         reply.setGlobalReservationId(gri);
         reply.setStatus(status);
         this.log.debug("createPath.finish");
@@ -317,11 +305,11 @@ public class ReservationAdapter {
      * @param params RefreshPathContent instance with with request params.
      * @param username String with user's login name
      * @return reply RefreshPathResponseContent encapsulating server reply.
-     * @throws BSSException
+     * @throws RemoteException
      */
     public RefreshPathResponseContent
         refreshPath(RefreshPathContent soapParams, String username,
-               BssRmiInterface rmiClient) throws BSSException {
+               BssRmiInterface rmiClient) throws RemoteException {
 
         this.log.debug("refreshPath.start");
         RefreshPathResponseContent reply = new RefreshPathResponseContent();
@@ -330,12 +318,9 @@ public class ReservationAdapter {
         rmiRequest.setGlobalReservationId(gri);
         rmiRequest.setToken(soapParams.getToken());
         String status = null;
-        try {
-            status = rmiClient.refreshPath(rmiRequest, username);
-        } catch (IOException e) {
-            this.log.error(e.getMessage());
-            throw new BSSException(e.getMessage());
-        }
+ 
+        status = rmiClient.refreshPath(rmiRequest, username);
+
         reply.setGlobalReservationId(gri);
         reply.setStatus(status);
         this.log.debug("refreshPath.finish");
@@ -348,11 +333,11 @@ public class ReservationAdapter {
      * @param params TeardownPathContent instance with with request params.
      * @param username String with user's login name
      * @return reply TeardownPathResponseContent encapsulating server reply.
-     * @throws BSSException
+     * @throws RemoteException
      */
     public TeardownPathResponseContent
         teardownPath(TeardownPathContent soapParams, String username,
-               BssRmiInterface rmiClient) throws BSSException {
+               BssRmiInterface rmiClient) throws RemoteException {
 
         this.log.debug("teardownPath.start");
         TeardownPathResponseContent reply = new TeardownPathResponseContent();
@@ -361,12 +346,9 @@ public class ReservationAdapter {
         rmiRequest.setGlobalReservationId(gri);
         rmiRequest.setToken(soapParams.getToken());
         String status = null;
-        try {
-            status = rmiClient.teardownPath(rmiRequest, username);
-        } catch (IOException e) {
-            this.log.error(e.getMessage());
-            throw new BSSException(e.getMessage());
-        }
+ 
+        status = rmiClient.teardownPath(rmiRequest, username);
+
         reply.setGlobalReservationId(gri);
         reply.setStatus(status);
         this.log.debug("teardownPath.finish");
@@ -495,7 +477,8 @@ public class ReservationAdapter {
         log.debug("got lock on payload senders");
     }
     /**
-     * Sets the payload sender of a reservation
+     * Sets the payload sender of a reservation from the global hash map
+     * and then removes it from the global hash map
      * @param resv the reservation with the payload to set
      */
     private synchronized void setPayloadSender(Reservation resv) {
@@ -511,7 +494,8 @@ public class ReservationAdapter {
     }
     
     /**
-     * Releases the payloadSender if an error occurs before the payloadSender is set
+     * Releases the payloadSender from the global hash map, if an error occurs before the 
+     * payloadSender in the reservation is set
      * @param gri
      */
     public static synchronized void releasePayloadSender(String gri) {

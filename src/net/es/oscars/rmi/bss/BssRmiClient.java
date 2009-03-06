@@ -29,7 +29,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
      */
     public void init() throws RemoteException {
 
-        this.log.info("Starting BssRmi connection");
+        this.log.debug("Starting BssRmi connection");
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("rmi.bss", true);
@@ -45,7 +45,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.setRemote((BssRmiInterface) remote);
             super.setRemote(remote);
         }
-        //this.log.debug("BssRmiClient.init().end");
+        this.log.debug("BssRmiClient.init().end");
     }
 
     /**
@@ -68,11 +68,11 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("createReservation.end");
             return gri;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
             // shouldn't happen
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException(e.getMessage(),e);
         }
     }
@@ -98,10 +98,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("queryReservation.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage());
+            this.log.info("Remote exception from BSS RMI server " + e.getMessage());
             throw e;
         } catch (Exception e) {  // shouldn't happen
-            this.log.error(methodName +": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName +": Exception from BSS RMI server " + e.getMessage(), e);
             throw new RemoteException(e.getMessage(),e);
         }
     }
@@ -125,11 +125,11 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
         try {
             result = this.remote.listReservations(request, userName);
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage());
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage());
             throw e;
         } catch (Exception e) {
             //shouldn't happen 
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException(e.getMessage(),e);
         }
         this.log.debug("listReservations.end");
@@ -154,10 +154,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.remote.cancelReservation(gri, userName);
             this.log.debug(" cancelReservation.end");
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage());
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage());
             throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -184,10 +184,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("modifyReservation.end");
             return persistentResv;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -213,10 +213,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("getNetworkTopology.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -242,10 +242,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("createPath.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -271,10 +271,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("refreshPath.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -300,10 +300,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("teardownPath.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -321,10 +321,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.remote.handleEvent(event);
             this.log.debug("handleEvent.end");
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -350,10 +350,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("unsafeCreatePath.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error("Exception from RMI server" + e.getMessage(), e);
+            this.log.error("Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -379,10 +379,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("unsafeTeardownPath.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }
@@ -409,10 +409,10 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.debug("unsafeModifyStatus.end");
             return result;
         } catch (RemoteException e) {
-            this.log.debug("Remote exception from RMI server: " + e.getMessage(), e);
+            this.log.info("Remote exception from BSS RMI server: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from RMI server" + e.getMessage(), e);
+            this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
     }

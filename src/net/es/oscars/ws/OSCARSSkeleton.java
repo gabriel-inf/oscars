@@ -28,6 +28,7 @@ import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 import net.es.oscars.wsdlTypes.*;
 
+import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.L2SwitchingCapType;
 
@@ -64,7 +65,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
             ReservationAdapter.releasePayloadSender(gri);
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String login = null;
         try{
@@ -78,10 +79,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.create(params, login, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.error("createReservation caught BSSException: " + e.getMessage());
+        } catch (Exception e) {
             ReservationAdapter.releasePayloadSender(gri);
-            throw new BSSFaultMessage("createReservation " + e.getMessage());
+            handleException(methodName,e);
         }
         response.setCreateReservationResponse(reply);
         this.log.info(methodName + ".end");
@@ -114,12 +114,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.cancel(request, username, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info(methodName + " caught BSSException: " + e.getMessage());
-            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
         } catch (Exception e) {
-            this.log.error(methodName + " caught Exception: " + e.toString());
-            throw new BSSFaultMessage(methodName + ": " + e.toString());
+            handleException(methodName,e);
         }
         CancelReservationResponse response = new CancelReservationResponse();
         response.setCancelReservationResponse(reply);
@@ -144,19 +140,15 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String username = this.checkUser(aaaRmiClient);
         ResDetails reply = null;
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.query(request, username, bssRmiClient);
-        }  catch (BSSException e) {
-            this.log.info(methodName + " caught BSSException: " + e.getMessage());
-            throw new BSSFaultMessage(methodName + ": " + e.getMessage());
         }  catch (Exception e) {
-            this.log.error(methodName + " caught Exception: " + e.toString());
-            throw new BSSFaultMessage(methodName + ": " + e.toString());
+            handleException(methodName,e);
         }
         QueryReservationResponse response = new QueryReservationResponse();
         response.setQueryReservationResponse(reply);
@@ -185,7 +177,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
             ReservationAdapter.releasePayloadSender(gri);
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String username = null;
         try{
@@ -200,15 +192,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ModifyResContent params = request.getModifyReservation();
         try {
             reply = resAdapter.modify(params, username, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info("modifyReservation caught BSSException: " + e.getMessage());
-            ReservationAdapter.releasePayloadSender(gri);
-            this.log.error("modifyReservation caught BSSException: " + e.getMessage());
-            throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         } catch (Exception e) {
             ReservationAdapter.releasePayloadSender(gri);
-            this.log.error("modifyReservation caught Exception: " + e.toString());
-            throw new BSSFaultMessage("modifyReservation: " + e.toString());
+            handleException(methodName,e);
         }
         response.setModifyReservationResponse(reply);
         this.log.info(methodName + ".end");
@@ -235,7 +221,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
         } catch (RemoteException ex) {
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String username = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
@@ -243,12 +229,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ListRequest params = request.getListReservations();
         try {
             reply = resAdapter.list(params, username, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info("listReservations caught BSSException: " + e.getMessage());
-            throw new BSSFaultMessage("listReservations: " + e.getMessage());
         } catch (Exception e) {
-            this.log.error("listReservations caught Exception: " + e.toString());
-            throw new BSSFaultMessage("listReservations: " + e.toString());
+            handleException(methodName,e);
         }
         ListReservationsResponse response = new ListReservationsResponse();
         response.setListReservationsResponse(reply);
@@ -277,15 +259,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String login = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.getNetworkTopology(params, login, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info("getNetworkTopology caught BSSException: " + e.getMessage());
-            throw new BSSFaultMessage("getNetworkTopology " + e.getMessage());
+        } catch (Exception e) {
+            handleException(methodName,e);
         } 
         response.setGetNetworkTopologyResponse(reply);
         log.info(methodName+".end");
@@ -313,15 +294,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String login = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.createPath(params, login, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info("createPath: " + e.getMessage());
-            throw new BSSFaultMessage("createPath " + e.getMessage());
+        } catch (Exception e) {
+            handleException(methodName,e);
         } 
         response.setCreatePathResponse(reply);
         log.info(methodName+".end");
@@ -349,15 +329,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);;
         }
         String login = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.refreshPath(params, login, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info("refreshPath: " + e.getMessage());
-            throw new BSSFaultMessage("refreshPath " + e.getMessage());
+        } catch (Exception e) {
+            handleException(methodName,e);
         }
         response.setRefreshPathResponse(reply);
         log.info(methodName+".end");
@@ -385,15 +364,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bssRmiClient = RmiUtils.getBssRmiClient(methodName, log);
             aaaRmiClient = RmiUtils.getAaaRmiClient(methodName, log);
         } catch (RemoteException ex) {
-            throw new BSSFaultMessage(ex.getMessage());
+            handleException(methodName,ex);
         }
         String login = this.checkUser(aaaRmiClient);
         ReservationAdapter resAdapter = new ReservationAdapter();
         try {
             reply = resAdapter.teardownPath(params, login, bssRmiClient);
-        } catch (BSSException e) {
-            this.log.info("teardownPath: " + e.getMessage());
-            throw new BSSFaultMessage("teardownPath " + e.getMessage());
+        } catch (Exception e) {
+            handleException(methodName,e);
         }
         response.setTeardownPathResponse(reply);
         log.info(methodName+".end");
@@ -644,8 +622,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @return login A string with the login associated with the certSubject
      * @throws AAAFaultMessage
      */
-    public String checkUser(AaaRmiInterface rmiClient) throws AAAFaultMessage {
-        this.log.debug("checkUser.start");
+    public String checkUser(AaaRmiInterface rmiClient) throws AAAFaultMessage , BSSFaultMessage{
+        this.log.info("checkUser.start");
 
         String login = null;
         HashMap<String, Principal> principals = getSecurityPrincipals();
@@ -664,13 +642,55 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         try {
             login = rmiClient.verifyDN(origDN);
         } catch (Exception ex) {
-            this.log.error(ex.getMessage());
-            AAAFaultMessage AAAErrorEx = new AAAFaultMessage(ex.getMessage());
-            throw AAAErrorEx;
+            this.log.info("check caught exception");
+            handleException("checkUser",ex);
         }
 
         this.log.info("checkUser authenticated user: " + login);
         this.log.debug("checkUser.end");
         return login;
     }
+    
+    /**
+     *  handles all exceptions - logs them and maps them to AAA or BSSFaultMessages
+     *  @param methodName String containing name of operation
+     *  @param ex Exception that was caught
+     *  
+     */
+    public void handleException(String method, Exception ex) 
+        throws AAAFaultMessage, BSSFaultMessage {
+
+        String errorMsg = null;
+        if (ex instanceof RemoteException) {
+            Throwable nextEx = ex;
+            // drill down to original error message
+            while ((nextEx.getCause()) != null) {
+                nextEx = nextEx.getCause();
+            }
+            if (nextEx instanceof AAAException) {
+                ex = new AAAException(nextEx.getMessage());
+            } else if (nextEx instanceof BSSException) {
+                ex = new BSSException(nextEx.getMessage());
+            } else {
+                ex = new RemoteException("internal error in core. "  +nextEx.getMessage());
+                this.log.error("internal error in core. "  + nextEx.getMessage());
+            }
+        }
+        if (ex instanceof AAAException) {
+            errorMsg = method + ": caught AAAException " + ex.getMessage();
+            this.log.info(errorMsg);
+            throw new AAAFaultMessage(errorMsg);
+        } else if (ex instanceof BSSException) {
+            errorMsg = method + ": caught BSSException " + ex.getMessage();
+            this.log.info(errorMsg);
+        } else if (ex instanceof RemoteException){
+            errorMsg = method + " caught RemoteException " + ex.getMessage();
+            this.log.info (errorMsg);
+        } else {
+            errorMsg = method + " internal error " + ex.toString();
+            this.log.error(errorMsg, ex);
+        }
+        throw new BSSFaultMessage(errorMsg);
+    }
 }
+

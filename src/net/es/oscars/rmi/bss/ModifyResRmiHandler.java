@@ -37,17 +37,18 @@ public class ModifyResRmiHandler {
     }
 
     /**
-     * RMI handler for modifying reservation; interfaces between client and
-     * ReservationManager.
+     * RMI handler for modifying reservation; interfaces between war, aar and
+     * core ReservationManager.
      *
      * @param userName String name of user  making request
      * @param resv Reservation containing start and end times, bandwidth,
      *          description, and (TODO) path information
      * @return persistentResv Reservation from db matching GRI
+     * @throws RemoteException
      */
     public Reservation
         modifyReservation(Reservation resv, String userName)
-            throws IOException {
+            throws RemoteException {
 
         this.log.debug("modify.start");
         String methodName = "ModifyReservation";

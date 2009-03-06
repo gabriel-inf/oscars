@@ -244,11 +244,10 @@ public class PathRmiHandler {
      * @param params RmiPathRequest request parameters
      * @param userName name of user making request
      * @return the result containing the status.
-     * @throws IOException
      * @throws RemoteException
      */
     public String teardownPath(RmiPathRequest params, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
 
         this.log.debug("teardownPath.start");
         String methodName = "TeardownPath";

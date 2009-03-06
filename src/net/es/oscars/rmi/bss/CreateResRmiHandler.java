@@ -34,15 +34,16 @@ public class CreateResRmiHandler {
     }
 
     /**
-     * CreateReservation rmi handler; interfaces between servlet and ReservationManager.
+     * CreateReservation rmi handler; interfaces between war.arr and core ReservationManager.
      *
      * @param resv - partially filled in reservation with requested params
      * @param userName String - name of user  making request
      * @return gri - new global reservation id assigned to reservation
+     * @throws RemoteException
      */
     public String
         createReservation(Reservation resv, String userName)
-            throws IOException, RemoteException {
+            throws  RemoteException {
 
         this.log.debug("create.start");
         String methodName = "CreateReservation";
