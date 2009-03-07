@@ -327,6 +327,7 @@ public class JnxLSP {
      private void setupLogin(String router, HashMap<String, String> hm) {
         hm.put("login", this.props.getProperty("login"));
         hm.put("router", router);
+        this.log.info("router: " + router);
         String keyfile = null;
         try {
             keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
@@ -470,10 +471,9 @@ public class JnxLSP {
             if (!layer3Inputs.isEmpty()) {
                 String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
                         this.props.getProperty("statusL3Template"));
-                Document doc = null;
-                //Document doc = this.th.buildTemplate(fname);
-                //this.sendCommand(doc, conn.out);
-                //doc = this.readResponse(conn.in);
+                Document doc = this.th.buildTemplate(fname);
+                this.sendCommand(doc, conn.out);
+                doc = this.readResponse(conn.in);
                 circuitStatuses.putAll(this.parseLayer3Response(layer3Inputs, doc));
             }
             conn.shutDown();
@@ -602,7 +602,7 @@ public class JnxLSP {
             throws IOException, JDOMException {
 
         this.log.info("parseLayer2Response.start");
-        List connectionList = this.getConnections(doc);
+        List connectionList = this.getElements(doc, "connection");
         Map<String,VendorStatusResult> circuitStatuses =
             new HashMap<String,VendorStatusResult>();
         Map<String,JnxStatusResult> currentVlans =
@@ -710,19 +710,21 @@ public class JnxLSP {
         return circuitStatuses;
     }
 
-    private List getConnections(Document doc) throws JDOMException {
+    private List getElements(Document doc, String elementName)
+            throws JDOMException {
+
         Element root = doc.getRootElement();
         // NOTE WELL: if response format changes, this won't work
         Element rpcReply = (Element) root.getChildren().get(0);
-        Element connectionInfo = (Element) rpcReply.getChildren().get(0);
-        String uri = connectionInfo.getNamespaceURI();
+        Element firstChild = (Element) rpcReply.getChildren().get(0);
+        String uri = firstChild.getNamespaceURI();
         // XPath doesn't have way to name default namespace
-        Namespace l2Circuit = Namespace.getNamespace("l2circuit", uri);
+        Namespace ns = Namespace.getNamespace("ns", uri);
         // find all connections with status info
-        XPath xpath = XPath.newInstance("//l2circuit:connection");
-        xpath.addNamespace(l2Circuit);
-        List connectionList = xpath.selectNodes(doc);
-        return connectionList;
+        XPath xpath = XPath.newInstance("//ns:" + elementName);
+        xpath.addNamespace(ns);
+        List elementList = xpath.selectNodes(doc);
+        return elementList;
     }
 
     /**
@@ -739,16 +741,68 @@ public class JnxLSP {
                             Document doc)
             throws IOException, JDOMException {
 
-        // TODO:  stub at present, parse results
         Map<String,VendorStatusResult> circuitStatuses =
             new HashMap<String,VendorStatusResult>();
+        Map<String,JnxStatusResult> currentGris =
+            new HashMap<String,JnxStatusResult>();
+        List mplsLspList = this.getElements(doc, "mpls-lsp");
+        for (Iterator i = mplsLspList.iterator(); i.hasNext();) {
+            Element mplsLsp = (Element) i.next();
+            List mplsLspChildren = mplsLsp.getChildren();
+            String gri = "";
+            JnxStatusResult statusResult = new JnxStatusResult();
+            for (Iterator j = mplsLspChildren.iterator(); j.hasNext();) {
+                Element e = (Element) j.next();
+                if (e.getName().equals("name")) {
+                    String lspName = e.getText();
+                    // remove leading oscars and replace underscores
+                    String[] components = lspName.split("_");
+                    for (int c = 1; c < components.length-1; c++) {
+                        gri += components[c] + ".";
+                    }
+                    gri += components[components.length-1];
+                    this.log.info(gri);
+                } else if (e.getName().equals("lsp-state")) {
+                    statusResult.setConnectionStatus(e.getText());
+                }
+            }
+            if (!gri.equals("")) {
+                currentGris.put(gri, statusResult);
+            }
+        }
         for (String gri: statusInputs.keySet()) {
             VendorStatusResult statusResult = new JnxStatusResult();
-            String op = statusInputs.get(gri).getOperation();
-            if (op.equals("PATH_SETUP")) {
-                statusResult.setCircuitStatus(true);
-            } else {
+            if (!currentGris.containsKey(gri)) {
                 statusResult.setCircuitStatus(false);
+            } else {
+                StringBuilder sb = new StringBuilder();
+                JnxStatusResult currentResult = currentGris.get(gri);
+                VendorStatusInput statusInput = statusInputs.get(gri);
+                String op = statusInput.getOperation();
+                String connectionStatus = currentResult.getConnectionStatus();
+                if (op == null) {
+                    sb.append("No operation provided to statusLSP");
+                } else if (op.equals("PATH_TEARDOWN")) {
+                    sb.append("circuit still exists with status: ");
+                    if (connectionStatus == null) {
+                        sb.append("null");
+                    } else {
+                        sb.append(connectionStatus);
+                    }
+                } else if (op.equals("PATH_SETUP")) {
+                    if (connectionStatus == null) {
+                        sb.append("connection status is null");
+                    } else if (!connectionStatus.equals("Up")) {
+                        sb.append("connection status is " + connectionStatus);
+                    }
+                } else {
+                    sb.append("invalid operation provided to statusLSP");
+                }
+                statusResult.setCircuitStatus(true);
+                String errMsg = sb.toString();
+                if (!errMsg.equals("")) {
+                    statusResult.setErrorMessage(errMsg);
+                }
             }
             circuitStatuses.put(gri, statusResult);
         }
