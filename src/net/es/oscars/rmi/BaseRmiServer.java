@@ -36,7 +36,7 @@ public abstract class BaseRmiServer {
      *   Assumes that this.rmiServerName has been set to a default value by the caller.
      * @throws remoteException
      */
-    public void init(Remote staticObject) throws RemoteException {
+    public void init(Remote staticObject) throws RemoteException{
 
         Remote stub = null;
         String errorMsg = null;
@@ -123,7 +123,12 @@ public abstract class BaseRmiServer {
 
         this.log.debug("Binding to registry...");
         stub = UnicastRemoteObject.exportObject(staticObject, this.serverPort, null, this.socketFactory);
-        this.registry.rebind(this.rmiServerName, stub);
+        try {
+            this.registry.bind(this.rmiServerName, stub);
+        } catch (AlreadyBoundException ex) {
+            this.log.error(this.rmiServerName + " already running");
+            throw new RemoteException(this.rmiServerName + " already running");
+        }
         this.log.info("RegistryPort: " + registryPort + " rmiServerName: " + rmiServerName  + 
                 "serverPort " + serverPort);
         this.log.debug(this.getServiceName()+".init().end");

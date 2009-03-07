@@ -114,6 +114,9 @@ public class AAACore {
             log.error("Error initializing AAA RMI server", ex);
             aaaRmiServer.shutdown();
             aaaRmiServer = null;
+            log.error("AAAcore exiting");
+            System.out.println("AAA RMI server already running, exiting. Exception was " + ex.getMessage());
+            System.exit (1);
         }
         log.info("initRMIServer.end");
     }

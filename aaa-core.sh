@@ -1,6 +1,7 @@
 #!/bin/bash
 
 
+AAA_PID_FILE="/tmp/aaa_core.lock"
 # Try to cd to the application base directory if the variable is set
 cd ${OSCARS_BASE-.};
 
@@ -30,12 +31,35 @@ export CLASSPATH=$CLASSPATH
 CALLING_STYLE=${DAEMON_STYLE-0}
 
 if [ $CALLING_STYLE -ne 1 ]; then
-    touch /tmp/oscars_aaa.lock
-    java -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner $*
-    rm -f /tmp/oscars_aaa.lock
+    case $1 in
+    start)
+        echo "starting AAARunner"
+        echo $$ > $AAA_PID_FILE
+        java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner $*
+        rm -f $AAA_PID_FILE;;
+    stop)
+        # Note: this only kills the shell, not the AAARunner
+        echo "stopping AAARunner"
+        read pid < $AAA_PID_FILE
+        kill -n 9 $pid
+        rm -f $AAA_PID_FILE ;;
+    *)
+        echo "call with either start or stop" ;;
+    esac
 else
-    nohup java -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner $* > /dev/null 2&>1 &
-    echo $! > $AAA_PID_FILE
+    case $1 in
+    start)
+        echo "starting AAA runner in background"
+        nohup java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner $* > /dev/null 2>&1 &
+        echo $! > $AAA_PID_FILE;;
+    stop)
+        echo "stopping AAA runner"
+        read pid < $AAA_PID_FILE
+        kill $pid
+        rm -f $$AAA_PID_FILE ;;
+    *)
+        echo "call with either start or stop" ;;
+    esac
 fi
 
 

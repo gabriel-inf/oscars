@@ -133,6 +133,9 @@ public class NotifyBrokerCore{
             this.log.error("Error initializing RMI server", ex);
             this.rmiServer.shutdown();
             this.rmiServer = null;
+            System.out.println("Failure to initialize notifyBroker RMI server, exiting. Exception was " + ex.getMessage());
+            this.log.error("NotifyBroker Core exiting");
+            System.exit(1);
         }
         this.log.info("initRMIServer.end");
     }

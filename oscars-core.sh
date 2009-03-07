@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CORE_PID_FILE="/tmp/oscars_core.lock"
 
 # Try to cd to the application base directory if the variable is set
 cd ${OSCARS_BASE-.};
@@ -34,13 +35,33 @@ export CLASSPATH=$CLASSPATH
 CALLING_STYLE=${DAEMON_STYLE-0}
 
 if [ $CALLING_STYLE -ne 1 ]; then
-    touch /tmp/oscars_core.lock
-    java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $*
-    rm -f /tmp/oscars_core.lock
+    case $1 in
+    start)
+        echo "starting OSCARS ruuner"
+        echo $$ > $CORE_PID_FILE 
+        java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $* ;;
+    stop)
+        # Note: this only kills the shell, not the OSCARSRunner
+        echo "stopping OSCARS runner"
+        read pid < $CORE_PID_FILE
+        kill -n 9 $pid
+        rm -f $CORE_PID_FILE ;;
+    *)
+        echo "call with either start or stop" ;;
+    esac
 else
-    nohup java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $* > /dev/null 2&>1 &
-    echo $! > $CORE_PID_FILE
+    case $1 in
+    start)
+        echo "starting OSCARS runner in background"
+        nohup java -Dcatalina.home=${CATALINA_HOME} -Djava.endorsed.dirs=lib/endorsed -Djava.net.preferIPv4Stack=true net.es.oscars.bss.OSCARSRunner $* > /dev/null 2>&1 &
+        echo $! > $CORE_PID_FILE;;
+    stop)
+        echo "stopping OSCARS runner"
+        read pid < $CORE_PID_FILE
+        kill $pid
+        rm -f $CORE_PID_FILE ;;
+    *)
+        echo "call with either start or stop" ;;
+    esac
 fi
-
-
 exit 0

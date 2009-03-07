@@ -12,19 +12,19 @@ $SIG{KILL} = \&sig_handler;
 
 
 # spawn the aaa service in the background
-my $aaa = Proc::Background->new("./aaa-core.sh");
+my $aaa = Proc::Background->new("./aaa-core.sh start");
 
 # wait a bit
 sleep(5);
 
 # spawn the notifybroker service in the background
-my $nb = Proc::Background->new("./oscars-nb.sh");
+my $nb = Proc::Background->new("./nb-core.sh start");
 
 # wait a bit
 sleep(5);
 
 # spawn the core service in the background
-my $core = Proc::Background->new("./oscars-core.sh");
+my $core = Proc::Background->new("./oscars-core.sh start");
 
 while (1) {
 # do nothing and only wait for a signal

@@ -128,9 +128,19 @@ public class OSCARSCore {
             this.scheduleManager.getScheduler().shutdown(false);
         } catch (SchedulerException ex) {
             this.log.error("Scheduler error shutting down", ex);
+        } catch (Exception e) {
+            this.log.error("Scheduler threw exception", e);
         }
-        this.bssRmiServer.shutdown();
+        try {
+            this.bssRmiServer.shutdown();
+        } catch (Exception e) {
+            this.log.error("Caught Exception on bssRmiServer.shutdown", e);
+        }
+        try {
         HibernateUtil.closeSessionFactory(this.bssDbName);
+        } catch (Exception e) {
+            this.log.error("Caught Exception on Hibernate.closeSessionFactory", e);
+        }
         this.log.info("shutdown.end");
     }
 
@@ -290,6 +300,9 @@ public class OSCARSCore {
             this.log.error("Error initializing RMI server", ex);
             this.bssRmiServer.shutdown();
             this.bssRmiServer = null;
+            System.out.println("Failure to initialize BSS RMI server, exiting. Exception was " + ex.getMessage());
+            this.log.error("OSCARSCore exiting");
+            System.exit(1);
         }
         this.log.info("initRMIServer.end");
     }
