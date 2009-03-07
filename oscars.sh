@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-#aaa-core.sh
+#oscars.sh
 ###############################################################################
 printHelp ()
 {
@@ -31,7 +31,6 @@ do
         exit 0
     fi
 done
-
 
 #Stop tomcat but suppress any complaints about it not already running
 $CATALINA_HOME/bin/shutdown.sh > /dev/null 2>&1
