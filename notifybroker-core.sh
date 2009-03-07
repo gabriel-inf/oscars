@@ -13,7 +13,8 @@ printHelp ()
     echo "-h           prints this help message"
     echo "-o <file>    output file for daemon STDOUT and STDERR. defaults to /dev/null"
     echo "-p <file>    the name of the pid file"
-    
+    echo "Environment Variables:"
+    echo "NB_OPTS     variable used to pass java additional command-line options"
 }
 ###############################################################################
 APP_NAME="NotificationBroker core"
