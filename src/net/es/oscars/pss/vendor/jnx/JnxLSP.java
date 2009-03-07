@@ -284,6 +284,7 @@ public class JnxLSP {
             }
         } else if (layer3Data != null) {
             hm.put("resv-id", circuitName);
+            hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
 
