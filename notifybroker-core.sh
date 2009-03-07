@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ###############################################################################
-#aaa-core.sh
+#notifybroker-core.sh
 ###############################################################################
 printHelp ()
 {
-    echo "aaa-core.sh (start|stop) <options>"
-    echo "Description: Starts/stops authentication and authorization service for OSCARS"
+    echo "notifybroker-core.sh (start|stop) <options>"
+    echo "Description: Starts/stops the NotificationBroker service"
     echo "Options:"
     echo "-d           daemonize this process"
     echo "-f           force an existing process to stop with a KILL signal"
@@ -16,9 +16,9 @@ printHelp ()
     
 }
 ###############################################################################
-APP_NAME="AAA core"
+APP_NAME="NotificationBroker core"
 DEFAULT_PID_DIR="${OSCARS_HOME-.}/run"
-DEFAULT_PID_FILE="$DEFAULT_PID_DIR/aaa-core.pid"
+DEFAULT_PID_FILE="$DEFAULT_PID_DIR/notifybroker-core.pid"
 
 # Try to cd to the application base directory if the variable is set
 cd ${OSCARS_HOME-.};
@@ -91,7 +91,7 @@ fi
 if [ -f "$PID_FILE" ]; then
     rm $PID_FILE
 fi
-
+ 
 #If actions is stop then we are done
 if [ "$ACTION" == "stop" ]; then
     echo "$APP_NAME stopped."
@@ -116,17 +116,17 @@ do
     AXIS2_CLASSPATH="$AXIS2_CLASSPATH":$f
 done
 CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
-CLASSPATH=$CLASSPATH:${OSCARS_HOME-.}/build/aaa-core.jar
+CLASSPATH=$CLASSPATH:${OSCARS_HOME-.}/build/notifybroker-core.jar
 export CLASSPATH=$CLASSPATH
 
 # Start java process
 if [ $DAEMON_STYLE -eq 1 ]; then
-    nohup java $AAA_OPTS -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner > "$OUT_FILE" 2>&1 &
+    nohup java $NB_OPTS -Dcatalina.home=${CATALINA_HOME} -Djava.net.preferIPv4Stack=true net.es.oscars.notifybroker.NotifyBrokerRunner > "$OUT_FILE" 2>&1 &
     echo $! > $PID_FILE
     echo "$APP_NAME started.";
 else
     echo "$APP_NAME starting...";
-    java $AAA_OPTS -Djava.net.preferIPv4Stack=true net.es.oscars.aaa.AAARunner
+    java $NB_OPTS -Dcatalina.home=${CATALINA_HOME} -Djava.net.preferIPv4Stack=true net.es.oscars.notifybroker.NotifyBrokerRunner
 fi
 
 exit 0

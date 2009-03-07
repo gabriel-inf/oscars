@@ -18,7 +18,7 @@ my $aaa = Proc::Background->new("./aaa-core.sh start");
 sleep(5);
 
 # spawn the notifybroker service in the background
-my $nb = Proc::Background->new("./nb-core.sh start");
+my $nb = Proc::Background->new("./notifybroker-core.sh start");
 
 # wait a bit
 sleep(5);
