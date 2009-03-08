@@ -8,8 +8,6 @@ import org.hibernate.Session;
 
 import net.es.oscars.pss.*;
 import net.es.oscars.tss.*;
-import net.es.oscars.ws.PathSetupAdapter;
-import net.es.oscars.ws.ReservationAdapter;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.lookup.*;
 import net.es.oscars.database.*;
@@ -52,8 +50,6 @@ public class OSCARSCore {
     private ObserverManager observerMgr = null;
     private PSLookupClient lookupClient = null;
 
-    private PathSetupAdapter pathSetupAdapter = null;
-    private ReservationAdapter reservationAdapter = null;
     private Forwarder forwarder = null;
     private ScheduleManager scheduleManager = null;
     private ServiceManager serviceManager = null;
@@ -109,8 +105,6 @@ public class OSCARSCore {
         this.initLookupClient();
         this.initObservers();
 
-        this.initReservationAdapter();
-        this.initPathSetupAdapter();
         this.initForwarder();
         this.initRMIServer();
         this.initServiceManager();
@@ -242,25 +236,6 @@ public class OSCARSCore {
         this.topologyExchangeManager = new TopologyExchangeManager();
         this.log.debug("initTopologyExchangeManager.end");
     }
-
-    /**
-     * Initializes the ReservationAdapter module
-     */
-    public void initReservationAdapter() {
-        this.log.debug("initReservationAdapter.start");
-        this.reservationAdapter = new ReservationAdapter();
-        this.log.debug("initReservationAdapter.end");
-    }
-
-    /**
-     * Initializes the PathSetupAdapter module
-     */
-    public void initPathSetupAdapter() {
-        this.log.debug("initPathSetupAdapter.start");
-        this.pathSetupAdapter = new PathSetupAdapter();
-        this.log.debug("initPathSetupAdapter.end");
-    }
-
 
     /**
      * Initializes the Forwarder module
@@ -479,40 +454,6 @@ public class OSCARSCore {
      */
     public void setLookupClient(PSLookupClient lookupClient) {
         this.lookupClient = lookupClient;
-    }
-
-    /**
-     * @return the pathSetupAdapter
-     */
-    public PathSetupAdapter getPathSetupAdapter() {
-        if (this.pathSetupAdapter == null) {
-            this.initPathSetupAdapter();
-        }
-        return pathSetupAdapter;
-    }
-
-    /**
-     * @param pathSetupAdapter the pathSetupAdapter to set
-     */
-    public void setPathSetupAdapter(PathSetupAdapter pathSetupAdapter) {
-        this.pathSetupAdapter = pathSetupAdapter;
-    }
-
-    /**
-     * @return the reservationAdapter
-     */
-    public ReservationAdapter getReservationAdapter() {
-        if (this.reservationAdapter == null) {
-            this.initReservationAdapter();
-        }
-        return reservationAdapter;
-    }
-
-    /**
-     * @param reservationAdapter the reservationAdapter to set
-     */
-    public void setReservationAdapter(ReservationAdapter reservationAdapter) {
-        this.reservationAdapter = reservationAdapter;
     }
 
     /**
