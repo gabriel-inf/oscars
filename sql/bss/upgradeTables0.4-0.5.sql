@@ -127,6 +127,9 @@ DROP PROCEDURE IF EXISTS alterLayer3Data;
 DROP PROCEDURE IF EXISTS alterMplsData;
 DROP PROCEDURE IF EXISTS alterPathElems;
 DROP PROCEDURE IF EXISTS insertPathElemParams;
+DROP PROCEDURE IF EXISTS setUrns;
+DROP PROCEDURE IF EXISTS setTopologyIdent;
+
 
 DELIMITER //
 CREATE PROCEDURE alterPaths()
@@ -161,6 +164,7 @@ BEGIN
 	CALL alterPathElems(pId, pElemId);
     END LOOP alterPath;
     CALL insertPathElemParams();
+    CALL setUrns();
 END
 //
 DELIMITER ;
@@ -270,6 +274,68 @@ BEGIN
             INSERT INTO pathElemParams VALUES(NULL, pElemId, "l2sc", "vlanRangeAvailability", linkDescription);
         END IF;
     END LOOP insertPathElemParam;
+END
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE setUrns()
+BEGIN
+    DECLARE pElemId INT;
+    DECLARE pElemUrn TEXT;
+    DECLARE linkKey INT;
+    DECLARE finished INT DEFAULT 0;
+    DECLARE pathElemCur CURSOR FOR
+        SELECT id, urn, linkId from pathElems;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+    OPEN pathElemCur;
+    updatePathElem: LOOP
+        FETCH pathElemCur INTO pElemId, pElemUrn, linkKey;
+	SELECT linkKey;
+        IF finished THEN
+            LEAVE updatePathElem;
+        END IF;
+        IF pElemUrn != "" THEN
+            ITERATE updatePathElem;
+        END IF;
+        CALL setTopologyIdent(pElemId, linkKey);
+    END LOOP updatePathElem;
+END
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE setTopologyIdent(IN pElemId INT, IN linkKey TEXT)
+BEGIN
+    DECLARE linkTopoId TEXT;
+    DECLARE portKey INT;
+    DECLARE portTopoId TEXT;
+    DECLARE nodeKey INT;
+    DECLARE nodeTopoId TEXT;
+    DECLARE domainKey INT;
+    DECLARE domainTopoId TEXT;
+    DECLARE finalIdent TEXT;
+    DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' BEGIN END;
+
+    IF linkKey IS NOT NULL THEN
+        SELECT topologyIdent, portId INTO linkTopoId, portKey
+            FROM links where id = linkKey;
+        IF portKey IS NOT NULL THEN
+            SELECT topologyIdent, nodeId INTO portTopoId, nodeKey
+                FROM ports where id = portKey;
+            IF nodeKey IS NOT NULL THEN
+                SELECT topologyIdent, domainId INTO nodeTopoId, domainKey
+                    FROM nodes where id = nodeKey;
+                IF domainKey IS NOT NULL THEN
+                    SELECT topologyIdent INTO domainTopoId
+                        FROM domains where id = domainKey;
+                    SET finalIdent = CONCAT("urn:ogf:network:domain=", domainTopoId, ":node=", nodeTopoId, ":port=", portTopoId, ":link=", linkTopoId);
+                    UPDATE pathElems set urn = finalIdent where id=pElemId;
+                END IF;
+            END IF;
+        END IF;
+    END IF;
 END
 //
 DELIMITER ;

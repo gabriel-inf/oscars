@@ -371,14 +371,6 @@ public class WSDLTypeConverter {
                                 new CtrlPlaneSwitchingCapabilitySpecificInfo();
         Link link = pathElem.getLink();
         String urn = pathElem.getUrn();
-        if ((urn == null) || urn.trim().equals("")) {
-            if (link != null) {
-                // TODO: if could convert pre-0.5 paths, would not need this
-                urn = link.getFQTI();
-            } else {
-                urn = "";
-            }
-        }
         Hashtable<String, String> parseResults = URNParser.parseTopoIdent(urn);
         // if null, isLocalHop ignored in calling method
         if (localDomain != null) {
