@@ -6,11 +6,19 @@
 # OSCARS.jks.
 ###############################################################################
 
-if [ -z "$CATALINA_HOME" ]; then
-	echo "Required environment variable CATALINA_HOME is not set.";
-	exit 1;
+REPO_PATH=""
+if [ -n "$OSCARS_HOME" ]; then
+	REPO_PATH="$OSCARS_HOME/conf/axis-tomcat"
+elif [ -n "$CATALINA_HOME" ]; then
+	REPO_PATH="$CATALINA_HOME/shared/classes/repo"
+elif [ -d "./conf/axis-tomcat" ]; then
+	REPO_PATH="./conf/axis-tomcat"
+elif [ -d "./repo" ]; then
+	REPO_PATH="./repo"
+else
+    echo "ERROR: Unable to find keystore."
+    exit 1
 fi
-REPO_PATH="$CATALINA_HOME/shared/classes/repo";
 
 KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $REPO_PATH/rampConfig.xml | sed -e 's/\s*<ramp:property name="org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password">\(.*\)<\/ramp:property>/\1/'`;
 if [ $? != 0 ]; then

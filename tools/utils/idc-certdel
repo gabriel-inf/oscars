@@ -5,14 +5,22 @@
 # Deletes a certificate from a chosen keystore
 ###############################################################################
 
-if [ -z "$CATALINA_HOME" ]; then
-	echo "Required environment variable CATALINA_HOME is not set. Please run do_build.sh .";
-	exit 1;
+REPO_PATH=""
+if [ -n "$OSCARS_HOME" ]; then
+	REPO_PATH="$OSCARS_HOME/conf/axis-tomcat"
+elif [ -n "$CATALINA_HOME" ]; then
+	REPO_PATH="$CATALINA_HOME/shared/classes/repo"
+elif [ -d "./conf/axis-tomcat" ]; then
+	REPO_PATH="./conf/axis-tomcat"
+elif [ -d "./repo" ]; then
+	REPO_PATH="./repo"
+else
+    echo "ERROR: Unable to find keystore."
+    exit 1
 fi
 
 KS_PATH="";
 KS_PASS="";
-REPO_PATH="$CATALINA_HOME/shared/classes/repo";
 
 while [ 1 ]; do
     echo "Choose the keystore with the certificate you'd like to delete:";
@@ -26,7 +34,7 @@ while [ 1 ]; do
         KS_PATH="$REPO_PATH/OSCARS";
         break;
     elif [ "$OPCHOICE" == "2" ]; then
-        KS_PATH="$CATALINA_HOME/shared/classes/repo/ssl-keystore";
+        KS_PATH="$REPO_PATH/ssl-keystore";
         KS_PASS="oscars";
         break;
     else

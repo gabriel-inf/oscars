@@ -11,12 +11,20 @@
 ###############################################################################
 # GLOBALS
 ###############################################################################
-if [ -z "$CATALINA_HOME" ]; then
-	echo "Required environment variable CATALINA_HOME is not set.";
-	exit 1;
+REPO_PATH=""
+if [ -n "$OSCARS_HOME" ]; then
+	REPO_PATH="$OSCARS_HOME/conf/axis-tomcat"
+elif [ -n "$CATALINA_HOME" ]; then
+	REPO_PATH="$CATALINA_HOME/shared/classes/repo"
+elif [ -d "./conf/axis-tomcat" ]; then
+	REPO_PATH="./conf/axis-tomcat"
+elif [ -d "./repo" ]; then
+	REPO_PATH="./repo"
+else
+    echo "ERROR: Unable to find keystore."
+    exit 1
 fi
-REPO_PATH="$CATALINA_HOME/shared/classes/repo";
-SERVER_PATH="$CATALINA_HOME/shared/classes/repo";
+SERVER_PATH="$REPO_PATH";
 
 ###############################################################################
 # SUBROUTINES
@@ -42,7 +50,7 @@ create_new_cert ()
     fi
     
     echo "-- Using keystore password from $REPO_PATH/rampConfig.xml";
-    keytool -genkey -alias $CERT_ALIAS -keystore $REPO_PATH/OSCARS.jks -storepass $KS_PASS -keyalg RSA -keypass password -validity $CERT_VALIDITY;
+    keytool -genkey -alias $CERT_ALIAS -keystore $REPO_PATH/OSCARS.jks -storepass $KS_PASS -keyalg RSA -keypass $KS_PASS -validity $CERT_VALIDITY;
     if [ $? != 0 ]; then
         echo "-- Keytool returned an error. See the error message above and please try again.";
         exit 1;
