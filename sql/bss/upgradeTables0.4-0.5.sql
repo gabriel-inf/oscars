@@ -292,7 +292,6 @@ BEGIN
     OPEN pathElemCur;
     updatePathElem: LOOP
         FETCH pathElemCur INTO pElemId, pElemUrn, linkKey;
-	SELECT linkKey;
         IF finished THEN
             LEAVE updatePathElem;
         END IF;
