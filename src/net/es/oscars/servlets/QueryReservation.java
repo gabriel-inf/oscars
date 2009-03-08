@@ -269,10 +269,14 @@ public class QueryReservation extends HttpServlet {
             int storedVlan = 0;
             try {
                 storedVlan = Integer.parseInt(vlanTag);
-                vlanTag = Math.abs(storedVlan) + "";
+                if(0 == storedVlan){
+                    vlanTag = "unknown";
+                }else{
+                    vlanTag = Math.abs(storedVlan) + "";
+                }
             } catch (Exception e) {}
             outputMap.put(prefix + "VlanReplace", vlanTag);
-            if (storedVlan >= 0) {
+            if (storedVlan > 0) {
                 outputMap.put(prefix + "TaggedReplace", "true");
             } else {
                 outputMap.put(prefix + "TaggedReplace", "false");
@@ -335,6 +339,12 @@ public class QueryReservation extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         sb.append("<tbody>");
         for (String vlanTag: vlanTags) {
+            if("0".equals(vlanTag)){
+                vlanTag = "n/a*";
+            }else if(vlanTag.startsWith("-")){
+                vlanTag = vlanTag.replaceFirst("-", "");
+                vlanTag += "*";
+            }
             sb.append("<tr><td class='innerHops'>" + vlanTag + "</td></tr>");
         }
         sb.append("</tbody>");
