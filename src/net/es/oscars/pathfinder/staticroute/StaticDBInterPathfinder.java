@@ -1,11 +1,13 @@
 package net.es.oscars.pathfinder.staticroute;
 
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import org.apache.log4j.*;
 
@@ -50,9 +52,28 @@ public class StaticDBInterPathfinder extends Pathfinder implements InterdomainPC
             throw new PathfinderException(e.getMessage());
         }
 
+        /* Print path and set next domain */
+        DomainDAO domainDAO = new DomainDAO(OSCARSCore.getInstance().getBssDbName());
+        Domain localDomain = domainDAO.getLocalDomain();
         for(Path p : results){
+            boolean localFound = false;
+            boolean nextFound = false;
             for(PathElem e : p.getPathElems()){
-                this.log.debug(e.getUrn());
+                String vlan = "";
+                Hashtable<String,String> urnInfo = URNParser.parseTopoIdent(e.getUrn());
+                if((!nextFound) && localDomain.getTopologyIdent().equals(urnInfo.get("domainId"))){
+                    localFound = true;
+                }else if((!nextFound) && localFound){
+                    p.setNextDomain(domainDAO.fromTopologyIdent(urnInfo.get("domainId")));
+                    this.log.debug("Found next domain: " + urnInfo.get("domainId"));
+                    nextFound = true;
+                }
+                
+                try {
+                    PathElemParam peParam = e.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                    if(peParam != null){ vlan =" --VLAN=" + peParam.getValue();}
+                } catch (Exception e1) {}
+                this.log.debug("Hop) " + e.getUrn() + vlan);
             }
         }
         

@@ -1,6 +1,5 @@
 package net.es.oscars.pathfinder.perfsonar;
 
-import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import net.es.oscars.bss.topology.URNParser;
 
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.log4j.*;
 
 /**
