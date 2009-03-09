@@ -6,6 +6,7 @@ import net.es.oscars.pathfinder.*;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
+
 import org.apache.log4j.*;
 
 /**
@@ -84,7 +85,7 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
             PathElem srcPE = PathElem.copyPathElem(localHops.get(i));
             srcPE.setLink(srcLink);
             srcPE.setUrn(srcURN);
-            PathElem destPE = PathElem.copyPathElem(localHops.get(i));
+            PathElem destPE = PathElem.copyPathElem(localHops.get(i+1));
             destPE.setLink(destLink);
             destPE.setUrn(destURN);
             

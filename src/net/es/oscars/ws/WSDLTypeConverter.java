@@ -526,7 +526,32 @@ public class WSDLTypeConverter {
         Layer2Info layer2Info = new Layer2Info();
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
         layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
-
+        
+        //Set source vlan and dest vlan
+        if(path.getPathElems() != null && 
+                PathType.INTERDOMAIN.equals(path.getPathType())){
+            PathElem src = path.getPathElems().get(0);
+            try {
+                PathElemParam param = src.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                if (param != null){
+                    VlanTag srcVlan = new VlanTag();
+                    srcVlan.setTagged(!"0".equals(param.getValue()));
+                    srcVlan.setString(param.getValue());
+                    layer2Info.setSrcVtag(srcVlan);
+                }
+            } catch (BSSException e) {}
+            
+            PathElem dest = path.getPathElems().get(path.getPathElems().size() -1);
+            try {
+                PathElemParam param = dest.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+                if(param != null){
+                    VlanTag destVlan = new VlanTag();
+                    destVlan.setTagged(!"0".equals(param.getValue()));
+                    destVlan.setString(param.getValue());
+                    layer2Info.setDestVtag(destVlan);
+                }
+            } catch (BSSException e) {}
+        }
         log.debug("pathToLayer2Info.end");
         return layer2Info;
     }
@@ -811,6 +836,17 @@ public class WSDLTypeConverter {
                 for (PathElemParam pep: pathElemParams) {
                     pathElem.addPathElemParam(pep);
                 }
+            }else if(i == (hops.length - 1) && layer2Info != null &&
+                    layer2Info.getDestVtag() != null){
+                /* if last hop is a linkIdRef then copy
+                   dest VLAN params. This is for compatibility
+                   with 0.4 */
+                PathElemParam pathElemParam = new PathElemParam();
+                pathElemParam.setSwcap(PathElemParamSwcap.L2SC);
+                pathElemParam.setType(PathElemParamType.L2SC_VLAN_RANGE);
+                pathElemParam.setValue(layer2Info.getDestVtag().getTagged() ?
+                        layer2Info.getDestVtag().getString() : "0");
+                pathElem.addPathElemParam(pathElemParam);
             }
             String urn = hopToURN(hops[i], "any");
             pathElem.setUrn(urn);
