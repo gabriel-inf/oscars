@@ -732,6 +732,8 @@
 
         <copy file="conf/axis-tomcat/ssl-keystore.jks.template" tofile="conf/axis-tomcat/ssl-keystore.jks" />
         <copy file="conf/axis-tomcat/OSCARS.jks.template" tofile="conf/axis-tomcat/OSCARS.jks" />
+        <copy file="conf/axis-tomcat/axis2.xml.template" tofile="conf/axis-tomcat/axis2.xml" />
+        <copy file="conf/axis-tomcat/rampConfig.xml.template" tofile="conf/axis-tomcat/rampConfig.xml" />
         <mkdir dir="${conf.axistomcat}"/>
         <copy todir="${conf.axistomcat}">
             <fileset dir="conf/axis-tomcat">
@@ -801,7 +803,7 @@
     </target>
     
     <target name="setupServer" description="populate the shared/classes directory"
-                      depends="prepare,copydomain,copydefaults,editRampConfig,existing.keystore.warning1,
+                      depends="prepare,copydomain,copydefaults,existing.keystore.warning1,
         new.keystore.warning1,existing.keystore.warning2,new.keystore.warning2,setupTomcat">
         <mkdir dir="${conf.axistomcat}/modules"/>
         <copy todir="${conf.axistomcat}/modules/">
