@@ -101,8 +101,10 @@ public class EventRmiHandler {
         String requiredStatus = null;
         String failedEventType = null;
         if(event.getType().contains(EventRmiHandler.SETUP_OP)){
+            failedEventType = OSCARSEvent.PATH_SETUP_FAILED;
             requiredStatus = StateEngine.INSETUP;
         }else if(event.getType().contains(EventRmiHandler.TEARDOWN_OP)){
+            failedEventType = OSCARSEvent.PATH_TEARDOWN_FAILED;
             requiredStatus = StateEngine.INTEARDOWN;
         }else{
             this.log.warn("Unknown operation : " + event.getType());

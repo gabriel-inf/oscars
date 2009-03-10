@@ -127,7 +127,10 @@ public class StateEngine {
         boolean allowed = true;
         String status = StateEngine.getStatus(resv);
         int localStatus = resv.getLocalStatus();
-        if(status.equals(INCREATE) ){
+        if(StateEngine.LOCAL_INIT == newLocalStatus){
+            //always allow reset
+            allowed = true;
+        }else if(status.equals(INCREATE) ){
             if((localStatus ^ newLocalStatus) != 1){
                 allowed = false;
             }

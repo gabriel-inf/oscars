@@ -1,9 +1,10 @@
 package net.es.oscars.pss;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
+
 import org.quartz.*;
 import org.apache.log4j.*;
-import org.hibernate.Session;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
@@ -28,9 +29,13 @@ public class PathSetupManager{
     private PSS pss;
     private ReservationLogger rsvLogger;
     private OSCARSCore core;
+    private HashMap<String, Semaphore> resvLocks;
+    private HashMap<String, Integer> resvLockWaitList;
     
     private long SETUP_CONFIRM_TIMEOUT = 600;//10min
     private long TEARDOWN_CONFIRM_TIMEOUT = 600;//10min
+    private int WAIT_FOR_LOCAL_SETUP_ATTEMPTS = 12;
+    private long WAIT_FOR_LOCAL_SETUP_ATTEMPT_TIME = 10;//10 seconds
     
     /** Constructor. */
     public PathSetupManager(String dbname) {
@@ -42,6 +47,9 @@ public class PathSetupManager{
         this.log = Logger.getLogger(this.getClass());
         this.rsvLogger = new ReservationLogger(this.log);
         this.dbname = dbname;      
+        this.resvLocks = new HashMap<String, Semaphore>();
+        this.resvLockWaitList = new HashMap<String,Integer>();
+        
         //Init timeout globals
         Properties timeProps = propHandler.getPropertyGroup("timeout", true);
         String defaultTimeoutStr = timeProps.getProperty("default");
@@ -79,6 +87,28 @@ public class PathSetupManager{
         }else if(defaultTimeout > 0){
             TEARDOWN_CONFIRM_TIMEOUT = defaultTimeout;
         }
+        
+        if(timeProps.getProperty("teardownPath.waitForLocalSetupAttempts") != null){
+            try{
+                WAIT_FOR_LOCAL_SETUP_ATTEMPTS = Integer.parseInt(
+                        timeProps.getProperty("teardownPath." +
+                                "waitForLocalSetupAttempts"));
+            }catch(Exception e){
+                this.log.error("teardownPath.waitForLocalSetupAttempts " +
+                               "not a number");
+            }
+        }
+        
+        if(timeProps.getProperty("teardownPath.waitForLocalSetupAttemptTime") != null){
+            try{
+                WAIT_FOR_LOCAL_SETUP_ATTEMPT_TIME = Long.parseLong(
+                  timeProps.getProperty("teardownPath." +
+                          "waitForLocalSetupAttemptTime"));
+            }catch(Exception e){
+                this.log.error("teardownPath.waitForLocalSetupAttemptTime " +
+                               "not a number");
+            }
+        }
     }
 
     /**
@@ -91,6 +121,7 @@ public class PathSetupManager{
      */
     public String create(Reservation resv, boolean doForward) throws PSSException,
                     InterdomainException {
+        this.acquireResvLock(resv.getGlobalReservationId());
         this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("create.start");
         String status = null;
@@ -100,12 +131,20 @@ public class PathSetupManager{
         
         /* Check reservation */
         if(this.pss == null){
+            this.releaseResvLock(resv.getGlobalReservationId());
             this.log.error("PSS is null");
             throw new PSSException("Path setup not currently supported");
         }
         
         /* Create path */
         try{
+           /* If not in reserved state just exit because nothing to do
+            * May have already been failed
+            */
+            if(!StateEngine.RESERVED.equals(StateEngine.getStatus(resv))){
+                  this.releaseResvLock(resv.getGlobalReservationId());
+                  return StateEngine.getStatus(resv);
+            }
             se.updateStatus(resv, StateEngine.INSETUP);
             /* Get next domain */
             Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
@@ -130,10 +169,13 @@ public class PathSetupManager{
             }
             status = this.pss.createPath(resv);
         } catch(Exception e) {
+            this.releaseResvLock(resv.getGlobalReservationId());
             this.log.error("Error setting up local path for reservation, gri: [" +
                 gri + "]");
             e.printStackTrace();
             throw new PSSException("Path cannot be created, error setting up path.");
+        }finally{
+            this.releaseResvLock(resv.getGlobalReservationId());
         }
         this.log.info("create.end");
         this.rsvLogger.stop();
@@ -204,11 +246,14 @@ public class PathSetupManager{
      */
     public String teardown(Reservation resv, String newStatus) 
                             throws PSSException{
+        this.acquireResvLock(resv.getGlobalReservationId());
         this.rsvLogger.redirect(resv.getGlobalReservationId());
+        String status = null;
         StateEngine se = this.core.getStateEngine();
         int newStatusBits = 0;
         /* Check reservation */
         if(this.pss == null){
+            this.releaseResvLock(resv.getGlobalReservationId());
             throw new PSSException("Path teardown not currently supported");
         }
         
@@ -224,6 +269,48 @@ public class PathSetupManager{
         
         /* Teardown path in this domain */
         try{
+            /* If path is INSETUP but local segment has not yet been built
+             * then wait some amount of time for local path to finish. Most 
+             * likely this case occurs because the path is in the middle
+             * of configuring the network
+             */
+            boolean waitForLocalSetup = true;
+            for(int i = 0; i < WAIT_FOR_LOCAL_SETUP_ATTEMPTS; i++){
+                if(StateEngine.INSETUP.equals(StateEngine.getStatus(resv)) &&
+                        (StateEngine.CONFIRMED & StateEngine.getLocalStatus(resv)) == 0){
+                    this.log.debug("waiting for local setup...");
+                    Thread.sleep(WAIT_FOR_LOCAL_SETUP_ATTEMPT_TIME*1000);
+                }else{
+                    waitForLocalSetup = false;
+                    break;
+                }
+            }
+            if(waitForLocalSetup){
+                /* don't fail it because this is a strange condition 
+                 * and admin probably better informed as to what to do
+                 */
+                String msg = "Unable to teardown path because " +
+                "reservation stuck INSETUP but the local path has " +
+                "not been built. You may need to manually override " +
+                "the status.";
+                this.log.error(msg);
+                throw new PSSException(msg);
+            }else if(StateEngine.RESERVED.equals(StateEngine.getStatus(resv))){
+                /* If called before setup (such as a failure in another domain)
+                 * then just change state and don't touch network */
+                this.log.debug("Still PENDING so changing state to " + newStatus);
+                se.updateStatus(resv, newStatus);
+                se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
+                this.releaseResvLock(resv.getGlobalReservationId());
+                return newStatus;
+            }else if(StateEngine.INSETUP.equals(StateEngine.getStatus(resv))){
+                //reset local status
+                se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
+            }
+            
+            /* NOTE: At this point the reservation should be ACTIVE or
+             * INSETUP with the local path segment built
+             */
             se.updateStatus(resv, StateEngine.INTEARDOWN);
             se.updateLocalStatus(resv, newStatusBits);
             /* Get next domain */
@@ -246,12 +333,14 @@ public class PathSetupManager{
             }else{
                 this.scheduleStatusCheck(TEARDOWN_CONFIRM_TIMEOUT, resv, "teardown", true);
             }
-        }catch(BSSException e){
+            /* Teardown */
+            status = this.pss.teardownPath(resv, newStatus);
+        }catch(Exception e){
+            this.releaseResvLock(resv.getGlobalReservationId());
             throw new PSSException(e);
+        }finally{
+            this.releaseResvLock(resv.getGlobalReservationId());
         }
-        
-        /* Teardown */
-        String status = this.pss.teardownPath(resv, newStatus);
         
         this.rsvLogger.stop();
         return status;
@@ -270,6 +359,13 @@ public class PathSetupManager{
      */
     public void handleEvent(String gri, String producerID, String targStatus,
                             boolean upstream) throws BSSException{
+        //Get the lock for this gri so no other incoming 
+        //requests cause a status change
+        try {
+            this.acquireResvLock(gri);
+        } catch (PSSException e) {
+            throw new BSSException(e);
+        }
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = dao.query(gri);
         ReservationManager rm = this.core.getReservationManager();
@@ -283,6 +379,7 @@ public class PathSetupManager{
             targetNeighbor = "upstream";
         }
         if(resv == null){
+            this.releaseResvLock(gri);
             this.log.error("Reservation " + gri + " not found");
             return;
         }
@@ -292,6 +389,7 @@ public class PathSetupManager{
         if(StateEngine.getStatus(resv).equals(StateEngine.FINISHED) || 
                 StateEngine.getStatus(resv).equals(StateEngine.FAILED) || 
                 StateEngine.getStatus(resv).equals(StateEngine.CANCELLED)){
+            this.releaseResvLock(gri);
             return;
         }
         
@@ -299,11 +397,13 @@ public class PathSetupManager{
         if(neighborDomain == null || neighborDomain.isLocal()){
             this.log.debug("Could not identify " + targetNeighbor + 
                            " domain in path.");
+            this.releaseResvLock(gri);
             return;
         }else if(!neighborDomain.getTopologyIdent().equals(producerID)){
             this.log.debug("The event is from " + producerID + " not the " +
                            targetNeighbor + " domain " + 
                            neighborDomain.getTopologyIdent() + " so discarding");
+            this.releaseResvLock(gri);
             return;
         }
         
@@ -311,11 +411,13 @@ public class PathSetupManager{
         int localStatus = StateEngine.getLocalStatus(resv);
         if((localStatus & StateEngine.NEXT_STATUS) == StateEngine.NEXT_STATUS_CANCEL){
             //ignore and wait for cancel event
+            this.releaseResvLock(gri);
             return;
         }
         
         this.scheduleUpdateAttempt(0,gri,login, targStatus, newLocalStatus,
                                    op,upstream,-1);
+        this.releaseResvLock(gri);
     }
     
     /**
@@ -576,5 +678,72 @@ public class PathSetupManager{
         }catch(SchedulerException ex){
             this.log.error("Scheduler exception: " + ex);    
         }
+     }
+     
+     
+     /**
+      * Blocks until access to semaphore for GRI granted. This method
+      * is intentionally NOT synchronized because multiple threads
+      * can call this at the same time. We want them to block based on GRI
+      * which is handled inside the method.
+      * 
+      * @param gri the GRI for which to obtain the lock
+      * @throws PSSException
+      */
+     public void acquireResvLock(String gri) throws PSSException{
+         //call to synchronized init function so no race condition creating/releasing lock
+         this.updateResvLockWaitList(gri, true);
+         try {
+            this.log.debug("Waiting for lock on " + gri + "...");
+            this.resvLocks.get(gri).acquire();
+            this.log.debug("Got lock for " + gri);
+        } catch (InterruptedException e) {
+            throw new PSSException(e.getMessage());
+        }
+     }
+     
+     /**
+      * Release a lock when finished.
+      * 
+      * @param gri the lock to release
+      */
+     public void releaseResvLock(String gri){
+         if(!this.resvLocks.containsKey(gri)){
+             return;
+         }
+         this.resvLocks.get(gri).release();
+         this.updateResvLockWaitList(gri, false);
+     }
+     
+     /**
+      * This method makes sure that the lock exists but that it does
+      * not over-stay its welcome and eat up memory. Synchronized so calls
+      * to acquire and release do not step on each other when tracking who is 
+      * listening for the lock. 
+      * 
+      * @param gri the GRI of the lock
+      * @param acquire true if want to acquire the lock, false if want to release it
+      */
+     synchronized private void updateResvLockWaitList(String gri, boolean acquire){
+         if(acquire){
+             if(!this.resvLocks.containsKey(gri)){
+                 this.resvLocks.put(gri, new Semaphore(1, true));
+             }
+             if(!resvLockWaitList.containsKey(gri)){
+                 this.resvLockWaitList.put(gri, 0);
+             }else{
+                 this.resvLockWaitList.put(gri, this.resvLockWaitList.get(gri) + 1);
+                 this.log.debug("Increased wait list for " + gri + ": " + this.resvLockWaitList.get(gri));
+             }
+         }else if(resvLockWaitList.containsKey(gri)){
+             if(resvLockWaitList.get(gri) == 0){
+                 this.resvLocks.remove(gri);
+                 this.resvLockWaitList.remove(gri);
+                 this.log.debug("Cleaned out " + gri + " lock with no wait list");
+             }else{
+                 this.resvLockWaitList.put(gri, this.resvLockWaitList.get(gri) - 1);
+                 this.log.debug("Decreased wait list for " + gri + ": " + this.resvLockWaitList.get(gri));
+             }
+         }
      }
 }

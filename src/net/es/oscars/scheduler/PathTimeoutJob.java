@@ -125,13 +125,21 @@ public class PathTimeoutJob implements org.quartz.Job {
             try{
                 bss = core.getBssSession();
                 bss.beginTransaction();
-                se.updateStatus(resv, StateEngine.FAILED);
-                se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
+                ReservationDAO resvDAO = new ReservationDAO(this.core.getBssDbName());
+                resv = resvDAO.query(gri);
                 eventProducer.addEvent(failedEvent, login, idcURL, 
-                                       resv, "", ex.getMessage());
-                bss.getTransaction().commit();
+                        resv, "", ex.getMessage());
+                if(StateEngine.ACTIVE.equals(StateEngine.getStatus(resv)) ||
+                        StateEngine.INSETUP.equals(StateEngine.getStatus(resv))){
+                    pm.teardown(resvDAO.query(gri), StateEngine.FAILED);
+                }else{
+                    se.updateStatus(resv, StateEngine.FAILED);
+                    se.updateLocalStatus(resv, StateEngine.LOCAL_INIT);
+                }
+                se.safeHibernateCommit(resv, bss);
             }catch(Exception ex2){
                 bss.getTransaction().rollback();
+                ex2.printStackTrace();
                 this.log.error(ex2);
             }
         }

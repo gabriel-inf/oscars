@@ -1,6 +1,5 @@
 package net.es.oscars.rmi.bss;
 
-import java.io.*;
 import java.rmi.RemoteException;
 
 import org.apache.log4j.*;
