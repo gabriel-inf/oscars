@@ -1017,10 +1017,8 @@ public class WSDLTypeConverter {
             urnType = 2;
             childCount++;
         }
-        if("port".equals(type) && urnType == 2){
+        if("port".equals(type)){
             return urn;
-        }else if(urnType == 2){
-            return null;
         }
 
         String nodeIdRef = hop.getNodeIdRef();
@@ -1035,10 +1033,8 @@ public class WSDLTypeConverter {
             urnType = 3;
             childCount++;
         }
-        if("node".equals(type) && urnType == 3){
+        if("node".equals(type)){
             return urn;
-        }else if(urnType == 3){
-            return null;
         }
 
         String domainIdRef = hop.getDomainIdRef();
@@ -1053,10 +1049,8 @@ public class WSDLTypeConverter {
             urnType = 4;
             childCount++;
         }
-        if("domain".equals(type) && urnType == 4){
+        if("domain".equals(type)){
             return urn;
-        }else if(urnType == 4){
-            return null;
         }
 
         /* we have to tcheck errors ourselves because xsd:choice
