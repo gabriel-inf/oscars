@@ -42,28 +42,26 @@ public class UserSession {
         return checkSession(out,null,request,methodName);
     }
     
-    public String checkSession(PrintWriter out, AaaRmiInterface rmiClient, HttpServletRequest request, String methodName) {
+    public String
+        checkSession(PrintWriter out, AaaRmiInterface rmiClient,
+                     HttpServletRequest request, String methodName) {
         String userName = this.getCookie(this.userCookieName, request);
         String sessionName = this.getCookie(this.sessionCookieName, request);
         String errorMsg;
 
         if ((userName == null) || (sessionName == null)) {
-            String status = "";
+            String status = "Your login session has expired. ";
             if ((userName == null) && (sessionName == null)) {
-                status = "Login cookies are not set. ";
+                status += "Login cookies are not set. ";
             } else if (userName == null) {
-                status = "The user name cookie is not set. ";
+                status += "The user name cookie is not set. ";
             } else if (sessionName == null) {
-                status = "The session name cookie is not set. ";
+                status += "The session name cookie is not set. ";
             }
-            status += "Your login session has expired. " +
-                      "Please try logging in again.";
+            status += "Please try logging in again.";
             ServletUtils.handleFailure(out, status, methodName);
-
             return null;
         }
-
-
         Boolean validSession = false;
         try {
             rmiClient =
@@ -77,10 +75,12 @@ public class UserSession {
         String cookieUserName = userName;
         if (!validSession) {
             userName = null;
-            log.error("There is a problem with the login for user " + cookieUserName );
-             errorMsg = "There is a problem with the login for user " + cookieUserName + "." +
-                          " Please check with a system administrator.";
-            ServletUtils.handleFailure(out, "internal error: " + errorMsg, methodName);
+            errorMsg = "Your login session has an error. " +
+                "There is a problem with the login for user " + cookieUserName +
+                ".";
+            log.error(errorMsg);
+            errorMsg += " Please try logging in again.";
+            ServletUtils.handleFailure(out, errorMsg, methodName);
         }
         return userName;
     }

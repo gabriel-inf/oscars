@@ -44,6 +44,15 @@ oscars.Form.resetStatus = function (responseObject) {
             oscarsStatus.className = "failure";
         }
         oscarsStatus.innerHTML = responseObject.status;
+        if (!responseObject.success && responseObject.status) {
+            // Special error cases where user should go back to initial
+            // login page; all reply handlers must immediately return when
+            // this method returns false, so there will be no further
+            // processing.
+            if (responseObject.status.match(/^Your\slogin\ssession/)) {
+                oscars.UserLogout.handleLogout();
+            }
+        }
     }
     if (!responseObject.success) {
         return false;

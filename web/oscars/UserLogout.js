@@ -28,6 +28,13 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
+    oscars.UserLogout.handleLogout();
+};
+
+// Separated out to handle special case where cookie has expired or user login
+// has problems as indicated by resetStatus for reply handler for any method.
+// In that case resetStatus calls this method.
+oscars.UserLogout.handleLogout = function () {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var sessionPane = dijit.byId("sessionPane");
     // Reset login values because otherwise valid to login again by
