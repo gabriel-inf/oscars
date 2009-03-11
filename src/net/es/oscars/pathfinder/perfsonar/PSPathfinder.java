@@ -56,16 +56,20 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
          * hops should be ignored.
          */
         Properties psProps = propHandler.getPropertyGroup("perfsonar", true);
-        if(psProps.getProperty("domainOpacity") != null){
-            String opacity = psProps.getProperty("domainOpacity");
-            if (opacity.equals("complete")) {
-                this.makeDomainsOpaque = true;
-            } else if (opacity.equals("none")) {
-                this.makeDomainsOpaque = false;
-            } else {
-                this.log.error("Unknown domain opacity for topology registration, "+opacity+", must be 'complete' or 'none'");
-            }
+        String opacity = null;
+        if(psProps.getProperty("domainOpacity.path") != null){
+            opacity = psProps.getProperty("domainOpacity.path");
+        }else if(psProps.getProperty("domainOpacity") != null){
+            opacity = psProps.getProperty("domainOpacity");
         }
+        if ("complete".equals(opacity)) {
+            this.makeDomainsOpaque = true;
+        } else if ("none".equals(opacity)) {
+            this.makeDomainsOpaque = false;
+        } else {
+            this.log.error("Unknown domain opacity for topology registration, "+opacity+", must be 'complete' or 'none'");
+        }
+     
         if (PSPathfinder.psdf == null) {
             String[] gLSs = null;
             String[] hLSs = null;
