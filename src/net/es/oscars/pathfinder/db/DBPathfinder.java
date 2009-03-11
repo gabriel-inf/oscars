@@ -117,11 +117,31 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
     public List<Path> findL3LocalPath(Reservation resv, Path requestedPath) throws PathfinderException {
         ArrayList<Path> paths = new ArrayList<Path>();
 
-        TracerouteHelper trcHelper = new TracerouteHelper(this.dbname);
-        TracerouteResult trcResult = trcHelper.findEdgeLinks(requestedPath);
+        String src = null;
+        String dst = null;
+        boolean gotValidExplicitPath = false;
+        // if we have received an explicit path, use that:
+        if (requestedPath.getPathElems() != null &&
+            !requestedPath.getPathElems().isEmpty()) {
+            List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
+            if (localSegment != null && !localSegment.isEmpty()) {
+                if (localSegment.size() == 1) {
+                    throw new PathfinderException("Local segment of explicit path only 1 hop long");
+                } else {
+                    gotValidExplicitPath = true;
+                    src = localSegment.get(0).getUrn();
+                    dst = localSegment.get(localSegment.size()-1).getUrn();
+                }
+            }
+        }
 
-        String src = trcResult.srcLink.getFQTI();
-        String dst = trcResult.dstLink.getFQTI();
+        if (!gotValidExplicitPath) {
+            TracerouteHelper trcHelper = new TracerouteHelper(this.dbname);
+            TracerouteResult trcResult = trcHelper.findEdgeLinks(requestedPath);
+
+            src = trcResult.srcLink.getFQTI();
+            dst = trcResult.dstLink.getFQTI();
+        }
 
         Path path = this.findPathBetween(src, dst, resv, "L3");
         try {
