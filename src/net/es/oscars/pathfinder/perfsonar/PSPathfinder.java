@@ -34,8 +34,9 @@ import org.apache.log4j.*;
 public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE {
     private Logger log;
     private Domain localDomain;
+    private boolean makeDomainsOpaque;
     static private PerfSONARDomainFinder psdf = null;
-
+    static public String lastGRI = "";
     /**
      * Constructor
      *
@@ -48,7 +49,23 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         DomainDAO domDAO = new DomainDAO(dbname);
         this.localDomain = domDAO.getLocalDomain();
         this.log.debug("localDomain=" + this.localDomain);
+        this.makeDomainsOpaque=true;
+        PropHandler propHandler = new PropHandler("oscars.properties");
         
+        /* Get domainOpacity property which is used to determine if internal
+         * hops should be ignored.
+         */
+        Properties psProps = propHandler.getPropertyGroup("perfsonar", true);
+        if(psProps.getProperty("domainOpacity") != null){
+            String opacity = psProps.getProperty("domainOpacity");
+            if (opacity.equals("complete")) {
+                this.makeDomainsOpaque = true;
+            } else if (opacity.equals("none")) {
+                this.makeDomainsOpaque = false;
+            } else {
+                this.log.error("Unknown domain opacity for topology registration, "+opacity+", must be 'complete' or 'none'");
+            }
+        }
         if (PSPathfinder.psdf == null) {
             String[] gLSs = null;
             String[] hLSs = null;
@@ -58,10 +75,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             String[] sections = { "topology", "lookup" };
 
             for ( String section : sections) {
-
                 this.log.debug("Handling section: "+section);
-
-                PropHandler propHandler = new PropHandler("oscars.properties");
                 Properties props = propHandler.getPropertyGroup(section, true);
                 
                 //Set home and global lookup service
@@ -136,6 +150,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             }
         }
         
+        PSPathfinder.lastGRI = resv.getGlobalReservationId();
         return results;
     }
     
@@ -184,6 +199,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             }
         }
         
+        PSPathfinder.lastGRI = resv.getGlobalReservationId();
         return results;
     }
 
@@ -204,6 +220,26 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         
         //if an interdomain path is already calculated then just calculate local path
         final boolean LOCALPATH = PathType.INTERDOMAIN.equals(inputPathType);
+        
+        //Initialize new path
+        Path newPath = new Path();
+        newPath.setDirection(PathDirection.BIDIRECTIONAL);
+        newPath.setPathType(LOCALPATH ? PathType.LOCAL : PathType.INTERDOMAIN);
+        
+        
+        /* Optimization for using PSPathfinder as both interdomain
+         * and local pathfinder with transparent domains. Works because 
+         * resource scheduling jobs serialized
+         */
+        if(LOCALPATH &&
+                resv.getGlobalReservationId().equals(PSPathfinder.lastGRI) &&
+                (!this.makeDomainsOpaque)){
+            this.log.debug("Extracting local path from interdomain path");
+            for(PathElem elem : this.extractLocalSegment(resv.getPath(PathType.INTERDOMAIN))){
+                newPath.addPathElem(elem);
+            }
+            return newPath;
+        }
         
         GenericPathfinder pf;
         try {
@@ -275,10 +311,6 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         }
         
         List<PathElem> tmpHops = tmpPath.getPathElems();
-        Path newPath = new Path();
-        newPath.setDirection(PathDirection.BIDIRECTIONAL);
-        newPath.setPathType(LOCALPATH ? PathType.LOCAL : PathType.INTERDOMAIN);
-        
         PathElem prevHop = null;
         String ingressURN = null;
         String egressURN = null;
@@ -340,8 +372,11 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             this.log.debug("Adding hop to interdomain: "+prevHop.getUrn());
 
                             egressURN = prevHop.getUrn();
-                            newPath.addPathElem(prevHop);
-
+                            //if we this domain is NOT opaque then its already been added
+                            if(this.makeDomainsOpaque){
+                                newPath.addPathElem(prevHop);
+                            }
+                            
                             // The code assumes that we will give them what we
                             // think is the hop into the next domain. So add
                             // what our current URN is since it will correspond
@@ -389,7 +424,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                                         hop.setLink(TopologyUtil.getLink(urn, this.dbname));
                                     }catch(BSSException e){}
                                 }
-                                if(LOCALPATH){
+                                if(LOCALPATH || (!this.makeDomainsOpaque)){
                                     this.log.debug("Adding "+urn+" to intradomain path");
                                     newPath.addPathElem(hop);
                                 }
@@ -470,7 +505,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                                     // the interdomain path.
                                     this.log.debug("Adding ingress " + urn + " to interdomain path");
                                     newPath.addPathElem(hop);
-                                }else if(LOCALPATH){
+                                }else if(LOCALPATH || (!this.makeDomainsOpaque)){
                                     this.log.debug("Adding "+urn+" to intradomain path");
                                     newPath.addPathElem(hop);
                                 }
@@ -495,8 +530,10 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
                             }
                         }
                     }
-
-                    if ((i == tmpHops.size() - 1) && !LOCALPATH) {
+                    
+                    String lastUrn = newPath.getPathElems().get(newPath.getPathElems().size() -1).getUrn();
+                    if ((i == tmpHops.size() - 1) && !LOCALPATH &&
+                            (!currHop.getUrn().equals(lastUrn))) {
                         // if we're the last hop, the above has found the
                         // ingress point, but there is no egress point. Thus,
                         // we add ourselves to the interdomain path.
