@@ -66,7 +66,7 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             this.makeDomainsOpaque = true;
         } else if ("none".equals(opacity)) {
             this.makeDomainsOpaque = false;
-        } else {
+        } else if(opacity != null){
             this.log.error("Unknown domain opacity for topology registration, "+opacity+", must be 'complete' or 'none'");
         }
      
