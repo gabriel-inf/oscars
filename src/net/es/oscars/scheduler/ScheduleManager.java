@@ -161,10 +161,11 @@ public class ScheduleManager {
         try {
             session.beginTransaction();
             PSSScheduler sched = new PSSScheduler(core.getBssDbName());
-            sched.pendingReservations(0);
-            sched.expiredReservations(0);
+            ArrayList<Reservation> reservations = new ArrayList<Reservation>();
+            reservations.addAll(sched.pendingReservations(0));
+            reservations.addAll(sched.expiredReservations(0));
             sched.expiringReservations(0);
-            session.getTransaction().commit();
+            core.getStateEngine().safeHibernateCommit(reservations, session);
         } catch(Exception e) {
             session.getTransaction().rollback();
             this.log.error(e.getMessage());

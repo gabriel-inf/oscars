@@ -1,6 +1,7 @@
 package net.es.oscars.bss;
 
 import java.util.*;
+
 import org.apache.log4j.Logger;
 import org.hibernate.*;
 
@@ -225,6 +226,7 @@ public class StateEngine {
         return status;
     }
     
+    
     /**
      * Utility function for verifying the status is up-to-date before committing a 
      * Hibernate session. The statusMap is synchronized so will always be the most 
@@ -232,15 +234,31 @@ public class StateEngine {
      * ALWAYS be used to commit the transaction. There is a time between when a path 
      * receives a notification and makes a change where a race condition exists without this.
      * 
-     * @param resv the reservation to save
+     * @param reservations the reservations to save
+     * @param bss the Hibernate session to commit
+     */
+    public synchronized void safeHibernateCommit(List<Reservation> reservations,
+            Session bss) {
+        for(Reservation resv : reservations){
+            //sets the reservation status to the value of the status map
+            resv.setStatus(StateEngine.getStatus(resv));
+            //sets the reservation local status to the value of the local status map
+            resv.setLocalStatus(StateEngine.getLocalStatus(resv));
+        }
+        bss.getTransaction().commit();
+    }
+    
+    /**
+     * Convenience method for calling safeHibernateCommit(List&lt;Reservation&gt; reservations,
+     * Session bss) with only one reservation.
+     * 
+     * @param resv the reservations to save
      * @param bss the Hibernate session to commit
      */
     public synchronized void safeHibernateCommit(Reservation resv, Session bss){
-        //sets the reservation status to the value of the status map
-        resv.setStatus(StateEngine.getStatus(resv));
-        //sets the reservation local status to the value of the local status map
-        resv.setLocalStatus(StateEngine.getLocalStatus(resv));
-        bss.beginTransaction().commit();
+        List<Reservation> reservations = new ArrayList<Reservation>();
+        reservations.add(resv);
+        this.safeHibernateCommit(reservations, bss);
     }
 
 }

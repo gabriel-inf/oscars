@@ -8,6 +8,8 @@ import org.w3.www._2005._08.addressing.EndpointReferenceType;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.OSCARSCore;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.events.OSCARSEvent;
@@ -48,7 +50,7 @@ public class EventRmiHandler {
             String producerDomainId = this.checkSubscriptionId(
                     event.getProducerUrl(), event.getSubscriptionId());
             String[] eventType = event.getType().split("_");
-       
+            ReservationDAO resvDAO = new ReservationDAO(this.core.getBssDbName());
             if(eventType == null || eventType.length <3){
                 this.log.warn("Unknown event " + event.getType());
             }else if(eventType[0].equals(EventRmiHandler.RESOURCE_SCHED_CLASS)){
@@ -58,7 +60,8 @@ public class EventRmiHandler {
             }else{
                 this.log.debug("Received unknown event " + eventType);
             }
-            bss.getTransaction().commit();
+            Reservation resv = resvDAO.query(event.getReservation().getGlobalReservationId());
+            this.core.getStateEngine().safeHibernateCommit(resv, bss);
         }catch(Exception e){
             bss.getTransaction().rollback();
             throw new RemoteException(e.getMessage());

@@ -259,11 +259,11 @@ public class PathSetupManager{
         
         /* Prepare upper local status bits */
         if(StateEngine.CANCELLED.equals(newStatus)){
-            newStatusBits = 8;
+            newStatusBits = StateEngine.NEXT_STATUS_CANCEL;
         }else if(StateEngine.FINISHED.equals(newStatus)){
-            newStatusBits = 16;
+            newStatusBits = StateEngine.NEXT_STATUS_FINISHED;
         }else if(StateEngine.FAILED.equals(newStatus)){
-            newStatusBits = 24;
+            newStatusBits = StateEngine.NEXT_STATUS_FAILED;
         }
         
         
@@ -447,10 +447,15 @@ public class PathSetupManager{
         }
         String login = resv.getLogin();
         
-        //If in final state just ignore event
         if(StateEngine.getStatus(resv).equals(StateEngine.FINISHED) || 
                 StateEngine.getStatus(resv).equals(StateEngine.FAILED) || 
                 StateEngine.getStatus(resv).equals(StateEngine.CANCELLED)){
+            //If in final state just ignore event
+            return;
+        }else if(StateEngine.getStatus(resv).equals(StateEngine.INTEARDOWN) && 
+                ((StateEngine.getLocalStatus(resv) & 
+                StateEngine.NEXT_STATUS_FAILED) == 1)){
+            //already INTEARDOWN because of failure
             return;
         }
         
@@ -471,16 +476,17 @@ public class PathSetupManager{
                            " in the path");
             return;
         }
-        
-        eventProducer.addEvent(failedType, login, errorSrc, resv, errorCode, errorMsg);
+       
         /** Teardown the reservation. It may be in the queue so detecting
             status won't do much good. Just count on PSS to put in queue 
             and properly check if setup and set to failed */
         try{
             this.teardown(resv, StateEngine.FAILED);
-        }catch(PSSException e){
+        }catch(Exception e){
             e.printStackTrace();
             this.log.error("Path "+gri+" was not removed after failure.");
+        }finally{
+            eventProducer.addEvent(failedType, login, errorSrc, resv, errorCode, errorMsg);
         }
     }
     
