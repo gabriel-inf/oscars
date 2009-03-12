@@ -235,6 +235,39 @@ public class Path extends HibernateBean implements Serializable {
 
     // end kludged section
 
+    /**
+     * @return whether the Path is L2
+     * @throws BSSException if path has both or neithe L2 / L3 data set
+     *
+     * Note: at this moment L2 and L3 are mutually exclusive.
+     * TODO: think about multi-layer paths
+     */
+    public boolean isLayer2() throws BSSException {
+        if (this.getLayer3Data() != null &&
+            this.getLayer2Data() != null) {
+            throw new BSSException("Unknown layer for path: both L2 / L3 are set");
+        } else if (this.getLayer2Data() == null &&
+                   this.getLayer3Data() == null ) {
+            throw new BSSException("Unknown layer for path: neither L2 / L3 is set");
+        } else if (this.getLayer2Data() != null) {
+            return true;
+        } else if (this.getLayer3Data() != null) {
+            return false;
+        }
+        // should never reach this
+        throw new BSSException("Unknown layer for path: unexpected error");
+    }
+
+    /**
+     * @return whether the Path is L3
+     * @throws BSSException if path has both or neithe L2 / L3 data set
+     *
+     * Note: at this moment L2 and L3 are mutually exclusive.
+     * TODO: think about multi-layer paths
+     */
+    public boolean isLayer3() throws BSSException {
+        return !this.isLayer2();
+    }
 
     /**
      * @return pathHopType String with WSDL path type (transient)

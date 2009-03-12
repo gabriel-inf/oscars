@@ -53,13 +53,13 @@ public class BssUtils {
     /**
      * Copies fields that for now are in common to various types of paths.
      * Currently pathSetupMode and layer specific information is in common
-     * 
+     *
      * @param Path Path with information to copy
      * @param updatePath Path with information to update
      */
     public static void copyPathFields(Path path, Path updatePath)
             throws BSSException {
-        
+
         updatePath.setPathSetupMode(path.getPathSetupMode());
         if (path.getLayer2Data() != null) {
             Layer2Data layer2DataCopy = path.getLayer2Data().copy();
@@ -87,8 +87,12 @@ public class BssUtils {
         if (path.getPathSetupMode() != null) {
             sb.append("path setup mode: " + path.getPathSetupMode() + "\n");
         }
+
+
         Layer2Data layer2Data = path.getLayer2Data();
-        if (layer2Data != null) {
+
+
+        if (path.isLayer2()) {
             sb.append("layer: 2\n");
             if (layer2Data.getSrcEndpoint() != null) {
                 sb.append("source endpoint: " +
@@ -111,7 +115,7 @@ public class BssUtils {
             }
         }
         Layer3Data layer3Data = path.getLayer3Data();
-        if (layer3Data != null) {
+        if (path.isLayer3()) {
             sb.append("layer: 3\n");
             if (layer3Data.getSrcHost() != null) {
                 sb.append("source host: " + layer3Data.getSrcHost() + "\n");
@@ -255,11 +259,11 @@ public class BssUtils {
         }
         return buffer.toString();
     }
-    
+
     /**
-     * Maps a login name to an X.509 subject if it exists, 
+     * Maps a login name to an X.509 subject if it exists,
      * otherwise returns the login name.
-     * 
+     *
      * @param login the login to map to an X.509 subject
      * @return the X.509 subject if it exists or the given login otherwise
      */

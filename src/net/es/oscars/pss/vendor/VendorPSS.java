@@ -9,7 +9,7 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
-import net.es.oscars.pss.vendor.cisco.LSP;
+import net.es.oscars.pss.vendor.cisco.CiscoLSP;
 import net.es.oscars.pss.*;
 import net.es.oscars.scheduler.*;
 
@@ -71,9 +71,9 @@ public class VendorPSS implements PSS {
 
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
-        	throw new PSSException(ex.getMessage());
+            throw new PSSException(ex.getMessage());
         }
         lspData.setPathVars(path.getPathElems());
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
@@ -93,20 +93,22 @@ public class VendorPSS implements PSS {
             throw new PSSException("Unsupported router type " + sysDescr);
         }
 
-        Layer2Data layer2Data = path.getLayer2Data();
-        // reverse path setup needed if layer 2
-        if (layer2Data != null) {
-            doReverse = true;
-            sysDescr = this.getRouterType(lspData.getEgressLink());
-            if (sysDescr.contains("Juniper")) {
-                this.log.info("Creating Juniper-style reverse path");
-                reverseRouterType = "jnx";
-            } else if (sysDescr.contains("Cisco")) {
-                this.log.info("Creating Cisco-style reverse path");
-                reverseRouterType = "cisco";
-            } else {
-                throw new PSSException("Unsupported router type " + sysDescr);
+        try {
+            if (path.isLayer2()) {
+                doReverse = true;
+                sysDescr = this.getRouterType(lspData.getEgressLink());
+                if (sysDescr.contains("Juniper")) {
+                    this.log.info("Creating Juniper-style reverse path");
+                    reverseRouterType = "jnx";
+                } else if (sysDescr.contains("Cisco")) {
+                    this.log.info("Creating Cisco-style reverse path");
+                    reverseRouterType = "cisco";
+                } else {
+                    throw new PSSException("Unsupported router type " + sysDescr);
+                }
             }
+        } catch (BSSException ex) {
+            throw new PSSException(ex.getMessage());
         }
 
 
@@ -178,11 +180,11 @@ public class VendorPSS implements PSS {
 
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
-        	throw new PSSException(ex.getMessage());
+            throw new PSSException(ex.getMessage());
         }
-        
+
         lspData.setPathVars(path.getPathElems());
         String sysDescr = this.getRouterType(lspData.getIngressLink());
         // when Juniper status works this will be sufficient for layer 2
@@ -191,7 +193,7 @@ public class VendorPSS implements PSS {
             JnxLSP jnxLSP = new JnxLSP(this.dbname);
             status = jnxLSP.refreshPath(resv, lspData);
         } else if (sysDescr.contains("Cisco")) {
-            LSP lsp = new LSP(this.dbname);
+            CiscoLSP lsp = new CiscoLSP(this.dbname);
             status = lsp.refreshPath(resv, lspData);
         } else {
             throw new PSSException(
@@ -228,9 +230,9 @@ public class VendorPSS implements PSS {
 
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
-        	throw new PSSException(ex.getMessage());
+            throw new PSSException(ex.getMessage());
         }
         lspData.setPathVars(path.getPathElems());
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
@@ -250,20 +252,22 @@ public class VendorPSS implements PSS {
             throw new PSSException("Unsupported router type " + sysDescr);
         }
 
-        Layer2Data layer2Data = path.getLayer2Data();
-        // reverse path setup needed if layer 2
-        if (layer2Data != null) {
-            doReverse = true;
-            sysDescr = this.getRouterType(lspData.getEgressLink());
-            if (sysDescr.contains("Juniper")) {
-                this.log.info("Creating Juniper-style reverse path");
-                reverseRouterType = "jnx";
-            } else if (sysDescr.contains("Cisco")) {
-                this.log.info("Creating Cisco-style reverse path");
-                reverseRouterType = "cisco";
-            } else {
-                throw new PSSException("Unsupported router type " + sysDescr);
+        try {
+            if (path.isLayer2()) {
+                doReverse = true;
+                sysDescr = this.getRouterType(lspData.getEgressLink());
+                if (sysDescr.contains("Juniper")) {
+                    this.log.info("Creating Juniper-style reverse path");
+                    reverseRouterType = "jnx";
+                } else if (sysDescr.contains("Cisco")) {
+                    this.log.info("Creating Cisco-style reverse path");
+                    reverseRouterType = "cisco";
+                } else {
+                    throw new PSSException("Unsupported router type " + sysDescr);
+                }
             }
+        } catch (BSSException ex) {
+            throw new PSSException(ex.getMessage());
         }
 
         StateEngine stateEngine = this.core.getStateEngine();

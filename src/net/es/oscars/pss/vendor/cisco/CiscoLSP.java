@@ -20,7 +20,7 @@ import net.es.oscars.bss.topology.*;
  *
  * @author David Robertson
  */
-public class LSP {
+public class CiscoLSP {
 
     private String dbname;
     private Properties commonProps;
@@ -30,7 +30,7 @@ public class LSP {
     private boolean allowLSP;
     private static String staticAllowLSP;
 
-    public LSP(String dbname) {
+    public CiscoLSP(String dbname) {
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.commonProps = propHandler.getPropertyGroup("pss", true);
         this.log = Logger.getLogger(this.getClass());

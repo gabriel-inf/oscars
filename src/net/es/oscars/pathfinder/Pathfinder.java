@@ -218,16 +218,16 @@ public class Pathfinder {
         String srcEndpoint = null;
         String destEndpoint= null;
         HashMap<String, String> result = new HashMap<String, String>();
-        if (layer2Data != null && layer3Data != null) {
-            throw new PathfinderException("Both L2 and L3 data specified!");
-        } else if (layer2Data == null && layer3Data == null) {
-            throw new PathfinderException("No L2 or L3 data!");
-        } else if (layer2Data != null) {
-            srcEndpoint = path.getLayer2Data().getSrcEndpoint();
-            destEndpoint = path.getLayer2Data().getDestEndpoint();
-        } else if (layer3Data != null) {
-            srcEndpoint = path.getLayer3Data().getSrcHost();
-            destEndpoint = path.getLayer3Data().getDestHost();
+        try {
+            if (path.isLayer2()) {
+                srcEndpoint = path.getLayer2Data().getSrcEndpoint();
+                destEndpoint = path.getLayer2Data().getDestEndpoint();
+            } else if (path.isLayer3()) {
+                srcEndpoint = path.getLayer3Data().getSrcHost();
+                destEndpoint = path.getLayer3Data().getDestHost();
+            }
+        } catch (BSSException ex) {
+            throw new PathfinderException(ex.getMessage());
         }
         result.put("src", srcEndpoint);
         result.put("dest", destEndpoint);

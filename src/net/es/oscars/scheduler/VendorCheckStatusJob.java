@@ -58,8 +58,8 @@ public class VendorCheckStatusJob implements Job {
             // Ask the routers if these VLANs are up
             if (vendor.equals("cisco")) {
                 try {
-                    net.es.oscars.pss.vendor.cisco.LSP ciscoLSP =
-                        new net.es.oscars.pss.vendor.cisco.LSP(core.getBssDbName());
+                    net.es.oscars.pss.vendor.cisco.CiscoLSP ciscoLSP =
+                        new net.es.oscars.pss.vendor.cisco.CiscoLSP(core.getBssDbName());
                     allowLSP = ciscoLSP.isAllowLSP();
                     if (allowLSP) {
                         results.putAll(ciscoLSP.statusLSP(nodeId, statusInputs));

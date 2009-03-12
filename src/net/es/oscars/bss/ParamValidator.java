@@ -38,24 +38,25 @@ public class ParamValidator {
         }
         Layer2Data layer2Data = requestedPath.getLayer2Data();
         Layer3Data layer3Data = requestedPath.getLayer3Data();
-        if (layer2Data != null) {
-            this.log.debug("Validating Layer 2 reservation");
-            isLayer2 = true;
-            sb.append(this.checkVtag(requestedPath));
-            sb.append(this.checkL2Endpoint(layer2Data, false));
-            sb.append(this.checkL2Endpoint(layer2Data, true));
-        }
-        if (layer3Data != null) {
-            this.log.debug("Validating Layer 2 reservation");
-            sb.append(this.checkSrcHost(layer3Data));
-            sb.append(this.checkDestHost(layer3Data));
-            sb.append(this.checkDscp(layer3Data));
-            sb.append(this.checkProtocol(layer3Data));
-            sb.append(this.checkSrcIpPort(layer3Data));
-            sb.append(this.checkDestIpPort(layer3Data));
-        }
-        if ((layer2Data == null) && (layer3Data == null)) {
-            return sb.append("Null network layer info");
+        try {
+            if (requestedPath.isLayer2()) {
+                this.log.debug("Validating Layer 2 reservation");
+                isLayer2 = true;
+                sb.append(this.checkVtag(requestedPath));
+                sb.append(this.checkL2Endpoint(layer2Data, false));
+                sb.append(this.checkL2Endpoint(layer2Data, true));
+            }
+            if (requestedPath.isLayer3()) {
+                this.log.debug("Validating Layer 2 reservation");
+                sb.append(this.checkSrcHost(layer3Data));
+                sb.append(this.checkDestHost(layer3Data));
+                sb.append(this.checkDscp(layer3Data));
+                sb.append(this.checkProtocol(layer3Data));
+                sb.append(this.checkSrcIpPort(layer3Data));
+                sb.append(this.checkDestIpPort(layer3Data));
+            }
+        } catch (BSSException ex) {
+            return sb.append(ex.getMessage());
         }
         MPLSData mplsData = requestedPath.getMplsData();
         if (mplsData != null) {
@@ -195,7 +196,7 @@ public class ParamValidator {
             if (requestedPath.getPathElems().size() < 2) {
                 return "Requested path too short";
             }
-            
+
             // Check all give vlan ranges and suggested vlans
             for(PathElem pathElem : requestedPath.getPathElems()){
                 String[] vlanTypes = {PathElemParamType.L2SC_VLAN_RANGE, PathElemParamType.L2SC_SUGGESTED_VLAN};

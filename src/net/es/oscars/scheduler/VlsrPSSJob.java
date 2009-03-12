@@ -23,9 +23,9 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private OSCARSCore core;
     private Properties props;
     private long DELAY = 30;
-    
+
     final private int INSERVICE_WAIT_ATTEMPTS= 24;
-    
+
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.init();
         this.log.info("VlsrPSSJob.start name:"+context.getJobDetail().getFullName());
@@ -41,7 +41,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         ReservationDAO resvDAO = new ReservationDAO(bssDbName);
         Reservation resv = null;
         String failedEvent = null;
-        
+
         String login = null;
         try {
             resv = resvDAO.query(gri);
@@ -70,11 +70,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             }catch(BSSException e){
                 this.log.error(e);
              }
-            eventProducer.addEvent(failedEvent, login, 
+            eventProducer.addEvent(failedEvent, login,
                                    "JOB", resv, "", ex.getMessage());
         }finally{
             se.safeHibernateCommit(resv, bss);
-            try{ 
+            try{
                 Thread.sleep(DELAY*1000);
             }catch(InterruptedException e){}
             this.runNextJob(context);
@@ -82,7 +82,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
 
         this.log.info("VlsrPSSJob.end");
     }
-    
+
     public void init(){
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
@@ -97,7 +97,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             }
         }
     }
-    
+
     /**
      * Creates a the LSP for the given reservation.
      *
@@ -121,7 +121,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
-        
+
         Path path = null;
         try {
             path = resv.getPath(PathType.LOCAL);
@@ -146,7 +146,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
 
         String ingressPortTopoId = ingressLink.getPort().getTopologyIdent();
         String egressPortTopoId = egressLink.getPort().getTopologyIdent();
-        
+
         String telnetAddress = this.findTelnetAddress(ingressLink);
         String telnetAddressDest = this.findTelnetAddress(egressLink);
         int port = this.findTelnetPort(sshPortForward);
@@ -154,23 +154,23 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         Session ingressSshSess = null;
         Session egressSshSess = null;
-         
+
         /* Get source and destination node address */
         InetAddress ingress = this.linkToNodeInetAddress(ingressLink);
         this.log.info("vlsr.create.ingress=" + ingress.getHostAddress());
         InetAddress egress = this.linkToNodeInetAddress(egressLink);
         this.log.info("vlsr.create.egress=" + egress.getHostAddress());
-        
+
         /* Get source and destination local ID */
-        DragonLocalID ingLocalId = this.linkToLocalId(ingressLink, 
+        DragonLocalID ingLocalId = this.linkToLocalId(ingressLink,
                                                         ingressLinkDescr, hasNarb, true);
-        DragonLocalID egrLocalId = this.linkToLocalId(egressLink, 
+        DragonLocalID egrLocalId = this.linkToLocalId(egressLink,
                                                         egressLinkDescr, hasNarb, false);
-        int ingLocalIdIface = this.intefaceToLocalIdNum(ingressPortTopoId, 
+        int ingLocalIdIface = this.intefaceToLocalIdNum(ingressPortTopoId,
                                 (!ingLocalId.getType().equals(DragonLocalID.TAGGED_PORT_GROUP)));
-        int egrLocalIdIface = this.intefaceToLocalIdNum(egressPortTopoId, 
+        int egrLocalIdIface = this.intefaceToLocalIdNum(egressPortTopoId,
                                 (!egrLocalId.getType().equals(DragonLocalID.TAGGED_PORT_GROUP)));
-        
+
         /* Initialize LSP */
         DragonLSP lsp = new DragonLSP(ingress, ingLocalId, egress,
                                             egrLocalId, null, 0);
@@ -182,50 +182,54 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             lsp.setEro(ero);
             lsp.setSubnetEro(subnetEro);
         }
-        
+
         /* Set layer specific params */
-        if(layer2Data != null){
-            String bandwidth = this.prepareBandwidth(resv.getBandwidth(), path);
-            lsp.setBandwidth(bandwidth);
-            
-            if(ingressLinkDescr <= 0 && 
-                ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
-                tunnelMode){
-                lsp.setSrcVtag(-1);
-            }else if(ingressLinkDescr <= 0){
-                lsp.setSrcVtag(0);
-                lsp.setE2EVtag(Math.abs(ingressLinkDescr));
-            }else{
-                lsp.setSrcVtag(ingressLinkDescr);
+        try {
+            if (path.isLayer2()) {
+                String bandwidth = this.prepareBandwidth(resv.getBandwidth(), path);
+                lsp.setBandwidth(bandwidth);
+
+                if(ingressLinkDescr <= 0 &&
+                    ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
+                    tunnelMode){
+                    lsp.setSrcVtag(-1);
+                }else if(ingressLinkDescr <= 0){
+                    lsp.setSrcVtag(0);
+                    lsp.setE2EVtag(Math.abs(ingressLinkDescr));
+                }else{
+                    lsp.setSrcVtag(ingressLinkDescr);
+                }
+
+                if(egressLinkDescr <= 0 &&
+                    egrLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
+                    tunnelMode){
+                    lsp.setDstVtag(-1);
+                }else if(egressLinkDescr <= 0){
+                    lsp.setDstVtag(0);
+                    lsp.setE2EVtag(Math.abs(egressLinkDescr));
+                }else{
+                    lsp.setDstVtag(egressLinkDescr);
+                }
+
+                lsp.setSrcLocalID(ingLocalId);
+                lsp.setDstLocalID(egrLocalId);
+                lsp.setSWCAP(DragonLSP.SWCAP_L2SC);
+                lsp.setEncoding(DragonLSP.ENCODING_ETHERNET);
+                lsp.setGPID(DragonLSP.GPID_ETHERNET);
+            } else {
+                throw new PSSException("Currently only layer2 reservations " +
+                        "supported by this instance of OSCARS-DRAGON");
             }
-            
-            if(egressLinkDescr <= 0 && 
-                egrLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
-                tunnelMode){
-                lsp.setDstVtag(-1);
-            }else if(egressLinkDescr <= 0){
-                lsp.setDstVtag(0);
-                lsp.setE2EVtag(Math.abs(egressLinkDescr));
-            }else{
-                lsp.setDstVtag(egressLinkDescr);
-            }
-            
-            lsp.setSrcLocalID(ingLocalId);
-            lsp.setDstLocalID(egrLocalId);
-            lsp.setSWCAP(DragonLSP.SWCAP_L2SC);
-            lsp.setEncoding(DragonLSP.ENCODING_ETHERNET);
-            lsp.setGPID(DragonLSP.GPID_ETHERNET);
-        }else{
-            throw new PSSException("Currently only layer2 reservations " +                     
-                    "supported by this instance of OSCARS-DRAGON");
+        } catch (BSSException ex) {
+            throw new PSSException(ex.getMessage());
         }
-        
+
         /* Initialize the CSA */
         if(promptPattern == null){
             promptPattern = "vlsr";
         }
         csa.setPromptPattern(".*" + promptPattern + ".*[>#]");
-        
+
         /* Initialize ssh client */
         try{
             if(sshPortForward){
@@ -235,7 +239,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             this.log.error("SSH Error: " + e.getMessage());
             throw new PSSException(e.getMessage());
         }
-        
+
         /* Create egress local id unless a subnet interface*/
         if(hasNarb && egrLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
             /* Create egress ssh tunnel */
@@ -252,13 +256,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                     this.log.error("Unable to create egress SSH tunnel: " + e.getMessage());
                     throw new PSSException(e.getMessage());
                 }
-                
+
                 /* Create SSH tunnel and keep trying if fail */
                 int bindFailCount = 0;
                 for(int i = 0; i < 10; i++){
                     try{
                         egressSshSess.setPortForwardingL(portDest, telnetAddressDest, remotePort);
-                        this.log.info("SSH to dest VLSR bound to port " + 
+                        this.log.info("SSH to dest VLSR bound to port " +
                              portDest + " after " + i + " failures.");
                         break;
                     }catch (JSchException e) {
@@ -267,33 +271,33 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                     }
                     portDest = this.findTelnetPort(sshPortForward);
                 }
-                
+
                 /* Throw exception if couldn't create SSH tunnel after 10 tries */
                 if(bindFailCount == 10){
                     throw new PSSException("Failed to create SSH tunnel after 10 attempts");
                 }
             }
-            
+
             /* Log into egress VLSR */
             this.log.info("logging into dstVLSR " + telnetAddressDest + " " + portDest);
             if(!csa.login(telnetAddressDest, portDest, password)){
                 this.log.error("unable to login to dest VLSR " + lsp.getLSPName()
                         + ": " + csa.getError());
-                throw new PSSException("Unable to create LSP: Dest local-id " + 
+                throw new PSSException("Unable to create LSP: Dest local-id " +
                     csa.getError());
             }
-            
+
             /* Create egress local id */
-            if((!egressPortTopoId.startsWith("G")) && 
+            if((!egressPortTopoId.startsWith("G")) &&
                     DragonLocalID.UNTAGGED_PORT_GROUP != egrLocalId.getType()){
                 csa.deleteLocalId(egrLocalId);
                 if (csa.createLocalId(egrLocalId, egrLocalIdIface)) {
                     this.log.info("Created local-id " + egrLocalId.getType() +
                             " " + egrLocalId.getNumber());
                 } else {
-                    this.log.error("unable to create dest local-id " + 
+                    this.log.error("unable to create dest local-id " +
                             lsp.getLSPName() + ": " + csa.getError());
-                    throw new PSSException("Unable to create LSP: Dest local-id " + 
+                    throw new PSSException("Unable to create LSP: Dest local-id " +
                             csa.getError());
                 }
 
@@ -302,11 +306,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                     egressSshSess.disconnect();
                 }
             }
-            
+
             /* Logout */
              csa.disconnect();
         }
-        
+
         /* Create ingress ssh tunnel */
         if(sshPortForward){
             try{
@@ -321,13 +325,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 this.log.error("Unable to create ingress SSH tunnel: " + e.getMessage());
                 throw new PSSException(e.getMessage());
             }
-            
+
             /* Create SSH tunnel and keep trying if fail */
             int bindFailCount = 0;
             for(int i = 0; i < 10; i++){
                 try{
                     ingressSshSess.setPortForwardingL(port, telnetAddress, remotePort);
-                    this.log.info("SSH to src VLSR bound to port " + 
+                    this.log.info("SSH to src VLSR bound to port " +
                          port + " after " + i + " failures.");
                     break;
                 }catch (JSchException e) {
@@ -336,13 +340,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 }
                 port = this.findTelnetPort(sshPortForward);
             }
-            
+
             /* Throw exception if couldn't create SSH tunnel after 10 tries */
             if(bindFailCount == 10){
                 throw new PSSException("Failed to create SSH tunnel after 10 attempts");
             }
         }
-      
+
         /* Log into ingress VLSR */
         this.log.info("logging into VLSR " + telnetAddress + " " + port);
         if(!csa.login(telnetAddress, port, password)){
@@ -353,32 +357,32 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             }
             throw new PSSException("Unable to reach ingress VLSR");
         }
-        
+
         /* Create ingress local-id */
         if(hasNarb && ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE &&
-            (!ingressPortTopoId.startsWith("G")) && 
+            (!ingressPortTopoId.startsWith("G")) &&
             DragonLocalID.UNTAGGED_PORT_GROUP != ingLocalId.getType()){
-            
+
             /* Delete local-id if ingress and egress not the same */
-            if(!(ingress.getHostAddress().equals(egress.getHostAddress()) && 
+            if(!(ingress.getHostAddress().equals(egress.getHostAddress()) &&
                 ingLocalId.getNumber() == egrLocalId.getNumber())){
                 csa.deleteLocalId(ingLocalId);
             }
-         
+
             if(csa.createLocalId(ingLocalId, ingLocalIdIface)){
                 this.log.info("Created local-id " + ingLocalId.getType() + " " +
                     ingLocalId.getNumber());
             }else{
-                this.log.error("unable to create src local-id " + 
+                this.log.error("unable to create src local-id " +
                     lsp.getLSPName() + ": " + csa.getError());
                 if(ingressSshSess != null){
                     ingressSshSess.disconnect();
                 }
-                throw new PSSException("Unable to create LSP: src local-id " + 
+                throw new PSSException("Unable to create LSP: src local-id " +
                     csa.getError());
             }
         }
-        
+
         /* Create LSP */
         if(csa.setupLSP(lsp)){
             this.log.info("created lsp " + lsp.getLSPName());
@@ -388,48 +392,48 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             if(ingressSshSess != null){
                 ingressSshSess.disconnect();
             }
-            throw new PSSException("Unable to create LSP: " + 
+            throw new PSSException("Unable to create LSP: " +
                 csa.getError());
         }
-        
+
         /* Check lsp every few seconds */
         for(int i = 1; i <= INSERVICE_WAIT_ATTEMPTS; i++){
             String status = null;
             lsp = csa.getLSPByName(gri);
-            
+
             /* Verify LSP still exists */
             if(lsp == null){
-                this.log.error("LSP " + gri + " failed. Status: LSP could not" +                     
+                this.log.error("LSP " + gri + " failed. Status: LSP could not" +
                     " be found");
                 if(ingressSshSess != null){
                     ingressSshSess.disconnect();
                 }
                 throw new PSSException("Path failure occured.");
             }
-            
+
             /* Check if LSP status */
             status = lsp.getStatus();
             if(status.equals(DragonLSP.STATUS_INSERVICE)){
                 this.log.info(gri + " is IN SERVICE");
                 break;
-            }else if(!(status.equals(DragonLSP.STATUS_COMMIT) || 
+            }else if(!(status.equals(DragonLSP.STATUS_COMMIT) ||
                        status.equals(DragonLSP.STATUS_LISTENING)) || i == INSERVICE_WAIT_ATTEMPTS){
                 this.log.error("Path setup failed. Status=" + lsp.getStatus());
                 if(csa.teardownLSP(gri)){
                     this.log.info("Deleted " + gri + " LSP after error");
                 }else{
-                    this.log.error("Unable to delete LSP after error: " + 
+                    this.log.error("Unable to delete LSP after error: " +
                         csa.getError());
                 }
-                
+
                 if(ingressSshSess != null){
                     ingressSshSess.disconnect();
                 }
-                
-                throw new PSSException("LSP creation failed. There may be " + 
+
+                throw new PSSException("LSP creation failed. There may be " +
                     "an error in the underlying network.");
             }
-            
+
             /* Sleep for 5 seconds */
             try{
                 Thread.sleep(5000);
@@ -437,15 +441,15 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 throw new PSSException("Could not sleep to wait for circuit");
             }
         }
-        
+
         /* Remove port forwarding */
         if(sshPortForward){
             ingressSshSess.disconnect();
         }
-        
+
         this.log.info("vlsr.create.end");
     }
-    
+
      /**
      * Verifies LSP is still active by running a VLSR "show lsp" command
      *
@@ -454,7 +458,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      */
     public void refreshPath(Reservation resv) throws PSSException{
         this.log.info("vlsr.refresh.start");
-        
+
         DragonCSA csa = new DragonCSA();
         csa.setLogger(this.getClass().getName());
         DragonLSP lsp = null;
@@ -467,18 +471,18 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String promptPattern = this.props.getProperty("promptPattern");
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
-        	return;
+            return;
        }
-        Link ingressLink = path.getPathElems().get(0).getLink(); 
+        Link ingressLink = path.getPathElems().get(0).getLink();
         String telnetAddress = this.findTelnetAddress(ingressLink);
         int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         String gri = resv.getGlobalReservationId();
         Session sshSession = null;
-        
+
         /* Initialize ssh client */
         try{
             if(sshPortForward){
@@ -488,7 +492,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             this.log.error("SSH Error: " + e.getMessage());
             throw new PSSException(e.getMessage());
         }
-        
+
         /* Create  ssh tunnel */
         if(sshPortForward){
             try{
@@ -503,13 +507,13 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 this.log.error("Unable to create SSH tunnel: " + e.getMessage());
                 throw new PSSException(e.getMessage());
             }
-            
+
             /* Create SSH tunnel and keep trying if fail */
             int bindFailCount = 0;
             for(int i = 0; i < 10; i++){
                 try{
                     sshSession.setPortForwardingL(port, telnetAddress, remotePort);
-                    this.log.info("SSH bound to local port " + 
+                    this.log.info("SSH bound to local port " +
                          port + " after " + i + " failures.");
                     break;
                 }catch (JSchException e) {
@@ -518,48 +522,48 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 }
                 port = this.findTelnetPort(sshPortForward);
             }
-            
+
             /* Throw exception if couldn't create SSH tunnel after 10 tries */
             if(bindFailCount == 10){
                 throw new PSSException("Failed to create SSH tunnel after 10 attempts");
             }
         }
-        
-        
-        
+
+
+
         /* Refresh LSP */
         if(promptPattern == null){
             promptPattern = "vlsr";
         }
         csa.setPromptPattern(".*" + promptPattern + ".*[>#]");
-        
+
         this.log.info("logging into VLSR " + telnetAddress + " " + port);
         if(csa.login(telnetAddress, port, password)){
             lsp = csa.getLSPByName(gri);
             if(lsp == null ||
                 (!lsp.getStatus().equals(DragonLSP.STATUS_INSERVICE))){
-                this.log.error("LSP " + gri + " failed. Status: " + 
+                this.log.error("LSP " + gri + " failed. Status: " +
                     lsp.getStatus());
-                throw new PSSException("Path failure occured. LSP status is " + 
+                throw new PSSException("Path failure occured. LSP status is " +
                                         lsp.getStatus());
             }
         }else{
-            this.log.error("unable to login to " + telnetAddress + 
+            this.log.error("unable to login to " + telnetAddress +
                 ": " + csa.getError());
             if(sshSession != null){
                 sshSession.disconnect();
              }
             throw new PSSException("Unable to reach ingress VLSR");
         }
-        
+
         /* Remove port forwarding */
         if(sshPortForward){
             sshSession.disconnect();
         }
-       
+
         this.log.info("vlsr.refresh.end");
     }
-    
+
     /**
      * Removes LSP by running a VLSR "delete lsp" command
      *
@@ -579,18 +583,18 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String promptPattern = this.props.getProperty("promptPattern");
         Path path = null;
         try {
-        	path = resv.getPath(PathType.LOCAL);
+            path = resv.getPath(PathType.LOCAL);
         } catch (BSSException ex) {
             this.log.error(ex);
-        	return;
+            return;
        }
-        Link ingressLink = path.getPathElems().get(0).getLink();  
+        Link ingressLink = path.getPathElems().get(0).getLink();
         String gri = resv.getGlobalReservationId();
         String telnetAddress = this.findTelnetAddress(ingressLink);
         int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         Session sshSession = null;
-        
+
         /* Initialize ssh client */
         try{
             if(sshPortForward){
@@ -600,7 +604,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             this.log.error("SSH Error: " + e.getMessage());
             throw new PSSException(e.getMessage());
         }
-        
+
         /* Init ssh tunnel */
         if(sshPortForward){
             try{
@@ -628,19 +632,19 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 }
                 port = this.findTelnetPort(sshPortForward);
             }
-            
+
             /* Throw exception if couldn't create SSH tunnel after 10 tries */
             if(bindFailCount == 10){
                 throw new PSSException("Failed to create SSH tunnel after 10 attempts");
             }
         }
-        
+
         /* Teardown LSP */
         if(promptPattern == null){
             promptPattern = "vlsr";
         }
         csa.setPromptPattern(".*" + promptPattern + ".*[>#]");
-        
+
         this.log.info("logging into VLSR " + telnetAddress + " " + port);
         if(csa.login(telnetAddress, port, password)){
             if(csa.teardownLSP(gri)){
@@ -651,8 +655,8 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 if(sshSession != null){
                     sshSession.disconnect();
                 }
-                
-                throw new PSSException("Unable to teardown LSP: " + 
+
+                throw new PSSException("Unable to teardown LSP: " +
                     csa.getError());
             }
         }else{
@@ -663,18 +667,18 @@ public class VlsrPSSJob extends ChainingJob implements Job {
              }
             throw new PSSException("Unable to reach ingress VLSR");
         }
-        
+
         /* Remove port forwarding */
         if(sshPortForward){
             sshSession.disconnect();
         }
-        
+
         this.log.info("vlsr.teardown.end");
     }
-    
-    
+
+
     /**
-     * Private utility method for retrieving the last hop 
+     * Private utility method for retrieving the last hop
      * in a stored path.
      *
      * @param path the path from which the egress will be retrieved
@@ -685,7 +689,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         List<PathElem> elems = path.getPathElems();
         return elems.get(elems.size()-1).getLink();
     }
-    
+
     /**
      * Private utility method for retrieving the first or last hop linkDescr
      * in a stored path.
@@ -716,10 +720,10 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             return Integer.parseInt(linkDescr);
         }
     }
-    
+
     /**
      * Retrieves an InetAddress version of the node address given a link.
-     * 
+     *
      * @param link the Link from which the node address will be retrieved
      * @return node address of link as an InetAddress
      * @throws PSSException
@@ -728,7 +732,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         Node node = link.getPort().getNode();
         NodeAddress nodeAddr = node.getNodeAddress();
         InetAddress address = null;
-        
+
         try {
             address = InetAddress.getByName(nodeAddr.getAddress());
         } catch (UnknownHostException e) {
@@ -736,9 +740,9 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
         return address;
     }
-    
+
     /**
-     * Converts a link to a local ID. Currently uses port as 
+     * Converts a link to a local ID. Currently uses port as
      * to get local ID value.
      *
      * @param link link whose port will be used to make local-id
@@ -751,7 +755,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         boolean tagged = (vtag > 0);
         String type = null;
         int number = 0;
-        
+
         /* Get Type */
         if(!hasNarb && isIngress){
             this.log.info("lsp-id local-id");
@@ -792,7 +796,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
         return new DragonLocalID(number, type);
     }
-    
+
     /**
      * Converts a port ID to a number useable by a local ID
      *
@@ -804,7 +808,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private int intefaceToLocalIdNum(String portTopoId, boolean matchAny) throws PSSException{
         String[] componentList = portTopoId.split("-");
         int number = 0;
-        
+
         /* If just a number return the number...*/
         if(componentList.length == 1){
             try{
@@ -812,7 +816,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 return number;
             }catch(Exception e){}
         }
-        
+
         /* If in form K-M-N return local ID value... */
         if(componentList.length == 3){
             //Remove try block when E type no longer needed
@@ -820,27 +824,27 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 int k = Integer.parseInt(componentList[0]);
                 int m = Integer.parseInt(componentList[1]);
                 int n = Integer.parseInt(componentList[2]);
-                
+
                 number = (k << 12) + (m << 8) + n;
                 return number;
             }catch(Exception e){}
         }
-        
-        /* If doesn't match any of the above but isn't required to be an 
+
+        /* If doesn't match any of the above but isn't required to be an
            ethernet type return -1 */
         if(matchAny || portTopoId.indexOf('G') == 0){
             return -1;
         }
-        
+
         /* Throw exception because ethernet type required but given something
            else */
-        throw new PSSException("Port ID must be in form L or K-M-N where" + 
+        throw new PSSException("Port ID must be in form L or K-M-N where" +
             " L = (K << 12) + (M << 8) + N");
     }
-    
+
     /**
-     * Converts Long bandwidth value from database to a string recognized by the 
-     * DRAGON CLI for ethernet requests. 
+     * Converts Long bandwidth value from database to a string recognized by the
+     * DRAGON CLI for ethernet requests.
      *
      * @param bw Long bandwidth value from database
      * @param path the local path ofthe circuit
@@ -850,7 +854,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String bwString = null;
         DecimalFormat df = new DecimalFormat("#.###");
         boolean isSonet = false;
-        
+
         List<PathElem> elems = path.getPathElems();
         for (PathElem elem: elems) {
             Link link = elem.getLink();
@@ -860,7 +864,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 break;
             }
         }
-        
+
         if(isSonet){
             int stsVal = (int)(bw/(49.536*1000000));
             double bwVal = (double)stsVal * 49.536;
@@ -871,11 +875,11 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         this.log.info("prepareBandwidth.bandwidth=" + bwString);
         return bwString;
     }
-    
+
     /**
-     * Retrieves the address used to login to the VLSR CLI. Checks the 
-     * properties file first for a pss.dragon.<nodeId>=<telnetAddress> property 
-     * where <nodeId> is the topology identifier of the node and telnetAddress 
+     * Retrieves the address used to login to the VLSR CLI. Checks the
+     * properties file first for a pss.dragon.<nodeId>=<telnetAddress> property
+     * where <nodeId> is the topology identifier of the node and telnetAddress
      * is the IP used to access the VLSR CLI of that node. If null set to the * * node's address from the nodeAddresses tables.
      *
      * @param link the ingress link
@@ -888,15 +892,15 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         if(telnetAddress == null){
             telnetAddress = this.linkToNodeInetAddress(link).getHostAddress();
         }
-        
+
         return telnetAddress;
     }
-    
+
     /**
-     * Retrieves the port used to login to the VLSR CLI. Checks the 
-     * properties file first for a pss.dragon.<nodeId>.port=<port> property 
-     * where <nodeId> is the topology identifier of the node and port 
-     * is the port used to access the VLSR CLI of that node. If null set to the  
+     * Retrieves the port used to login to the VLSR CLI. Checks the
+     * properties file first for a pss.dragon.<nodeId>.port=<port> property
+     * where <nodeId> is the topology identifier of the node and port
+     * is the port used to access the VLSR CLI of that node. If null set to the
      * remotePort. Setting a specific port is most useful when using SSH tunneling.
      *
      * @param link the ingress link
@@ -911,14 +915,14 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }else{
             port = Integer.parseInt(this.props.getProperty("remotePort"));
         }
-        
+
         return port;
     }
-    
+
     /**
      * Retrieves the ssh address used for port forwarding. It looks in
-     * properties file first for a pss.dragon.<nodeId>.ssh=<address> property 
-     * where <nodeId> is the topology identifier of the node and address 
+     * properties file first for a pss.dragon.<nodeId>.ssh=<address> property
+     * where <nodeId> is the topology identifier of the node and address
      * is the address used to access the VLSR via ssh.
      *
      * @param link the ingress link
@@ -934,14 +938,14 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             throw new PSSException("Unable to create circuit. There was a configuration error on"+
                                 " the server side. Please contact IDC administrator");
         }
-        
+
         return sshAddress;
     }
-    
+
     /**
      * Retrieves the ssh port used to access the remote host. It looks in
-     * properties file first for a pss.dragon.<nodeId>.ssh.port=<port> property 
-     * where <nodeId> is the topology identifier of the node and <port> 
+     * properties file first for a pss.dragon.<nodeId>.ssh.port=<port> property
+     * where <nodeId> is the topology identifier of the node and <port>
      * is the port used to access the VLSR via ssh.
      *
      * @param link the ingress link
@@ -961,10 +965,10 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                     sshPortStr +"'. Using port 22 instead.");
             }
         }
-        
+
         return sshPort;
     }
-    
+
     /**
      * Converts a path element to list of strings to be used as an ERO.
      *
@@ -985,19 +989,19 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             Port port = link.getPort();
             String linkId = link.getTopologyIdent();
             String portId = port.getTopologyIdent();
-            
+
             /* Skip hops that are DTLs and not subnets or vice versa (XOR) */
-            if (((!isSubnet) && portId.startsWith("DTL")) || (isSubnet && 
+            if (((!isSubnet) && portId.startsWith("DTL")) || (isSubnet &&
                 (!portId.startsWith("DTL")))) {
                 ctr++;
                 continue;
             }
-            
+
             /* Verify the link ID is an IPv4 address */
             try {
                 InetAddress.getByName(linkId);
             } catch (UnknownHostException e) {
-                throw  new PSSException("Invalid link id " + linkId + 
+                throw  new PSSException("Invalid link id " + linkId +
                     ". Link IDs must be IP addresses on IDCs running DRAGON.");
             }
             ero.add(linkId);

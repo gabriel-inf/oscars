@@ -5,7 +5,7 @@ import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.pss.vendor.cisco.LSP;
+import net.es.oscars.pss.vendor.cisco.CiscoLSP;
 import net.es.oscars.pss.vendor.jnx.JnxLSP;
 import net.es.oscars.pss.*;
 
@@ -88,7 +88,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         // Try and set up the path
         String errString = "";
         boolean pathWasSetup = true;
-        LSP ciscoLSP = null;
+        CiscoLSP ciscoLSP = null;
         JnxLSP jnxLSP = null;
         if (ingressRouterType.equals("jnx")) {
             jnxLSP = new JnxLSP(bssDbName);
@@ -100,7 +100,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 pathWasSetup = false;
             }
         } else if (ingressRouterType.equals("cisco")) {
-            ciscoLSP = new LSP(bssDbName);
+            ciscoLSP = new CiscoLSP(bssDbName);
             // can't currently set up layer 3 circuits with Cisco ingress
             if (path.getLayer3Data() != null) {
                 errString = "Cannot set up layer 3 path with Cisco ingress";

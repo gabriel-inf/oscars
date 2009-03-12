@@ -23,7 +23,7 @@ public class HashMapTypeConverter {
 
     private static Logger log = Logger.getLogger(HashMapTypeConverter.class);
     final public static String DEFAULT_TE_METRIC = "10";
-    
+
     // do not instantiate
     private HashMapTypeConverter() {
     }
@@ -33,9 +33,9 @@ public class HashMapTypeConverter {
      *
      * @param resv the Reservation to convert
      * @return the converted HashMap
-     * @throws BSSException 
+     * @throws BSSException
      */
-    public static HashMap<String, String[]> 
+    public static HashMap<String, String[]>
                     reservationToHashMap(Reservation resv) throws BSSException{
 
         HashMap<String, String[]> map = new HashMap<String, String[]>();
@@ -57,7 +57,7 @@ public class HashMapTypeConverter {
         if (token != null) {
             map.put("token", genHashVal(token.getValue()));
         }
-        
+
         //set path
         if(resv.getPath(PathType.INTERDOMAIN) == null && resv.getPath(PathType.LOCAL) == null){
             map.putAll(pathToHashMap(resv.getPath(PathType.REQUESTED)));
@@ -74,7 +74,7 @@ public class HashMapTypeConverter {
      *
      * @param path the Path to convert
      * @return map the converted HashMap
-     * @throws BSSException 
+     * @throws BSSException
      * @throws BSSException
      */
     public static HashMap<String, String[]> pathToHashMap(Path path) throws BSSException {
@@ -97,7 +97,7 @@ public class HashMapTypeConverter {
         if(nextDomain != null){
             map.put("nextDomain", genHashVal(nextDomain.getTopologyIdent()));
         }
-        if(layer3Data != null){
+        if(path.isLayer3()){
             src = layer3Data.getSrcHost();
             dest = layer3Data.getDestHost();
             map.put("source", genHashVal(src));
@@ -111,7 +111,7 @@ public class HashMapTypeConverter {
             layers.add("3");
         }
 
-        if(layer2Data != null){
+        if(path.isLayer2()){
             src = layer2Data.getSrcEndpoint();
             dest = layer2Data.getDestEndpoint();
             map.put("source", genHashVal(src));
@@ -132,7 +132,7 @@ public class HashMapTypeConverter {
         for (PathElem pathElem: pathElems) {
             String linkId = pathElem.getUrn();
             pathListStr.add(linkId);
-            if (layer2Data != null) {
+            if (path.isLayer2()) {
                 pathHopInfo.add(getPathElemInfo(pathElem));
                 map.putAll(vlanToHashMap(pathElem, src, dest, layer2Data));
             }
@@ -153,7 +153,7 @@ public class HashMapTypeConverter {
      *
      * @param pathElem the pathElem for which to generate information
      * @return a ';' delimited String with detailed information about each hop
-     * @throws BSSException 
+     * @throws BSSException
      */
     private static String getPathElemInfo(PathElem pathElem) throws BSSException {
         String infoVal = "";
@@ -168,7 +168,7 @@ public class HashMapTypeConverter {
                 mtu = pathElem.getLink().getL2SwitchingCapabilityData().getInterfaceMTU() + "";
             }
         }
-        
+
         //Check for layer 2 params
         PathElemParam pepVlanRange = pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                 PathElemParamType.L2SC_VLAN_RANGE);

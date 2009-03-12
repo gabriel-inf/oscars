@@ -90,10 +90,12 @@ public class JnxLSP {
         if (lspData == null) {
             throw new PSSException("no path related configuration data present");
         }
+
         if ((direction == null) || (!direction.equals("forward") &&
                                     !direction.equals("reverse"))) {
             throw new PSSException("illegal circuit direction");
         }
+
         Path path = null;
         try {
             path = resv.getPath(PathType.LOCAL);
@@ -101,21 +103,34 @@ public class JnxLSP {
             throw new PSSException(ex.getMessage());
         }
         this.log.info("path id: " + path.getId());
+
         MPLSData mplsData = path.getMplsData();
         Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
         List<PathElem> pathElems = path.getPathElems();
-        if (layer2Data != null) {
+        boolean isL2 = false;
+        boolean isL3 = false;
+
+        try {
+            isL2 = path.isLayer2();
+            isL3 = path.isLayer3();
+        } catch (BSSException ex) {
+            throw new PSSException(ex.getMessage());
+        }
+
+        if (isL2) {
             if (lspData.getIngressLink() == null) {
                 throw new PSSException("createPath called before getting path endpoints");
             }
             // get VLAN tag and loopbacks
             lspData.setLayer2PathInfo(true);
-        } else if (layer3Data != null) {
+        } else if (isL3) {
             lspData.setLayer3PathInfo("Juniper");
         } else {
+            // won't ever get here
             throw new PSSException("no layer 2 or layer 3 data provided");
         }
+
         // Create map for filling in template.
         HashMap<String, String> hm = new HashMap<String, String>();
         String circuitName = this.getCircuitName(resv.getGlobalReservationId(),
@@ -133,7 +148,8 @@ public class JnxLSP {
             hm.put("policer_burst-size-limit", burst_size.toString());
             hm.put("lsp_class-of-service", "4");
         }
-        if (layer2Data != null) {
+
+        if (isL2) {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
             hm.put("community", "65000:" + lspData.getVlanTag());
@@ -172,7 +188,7 @@ public class JnxLSP {
                 hm.put("port", lspData.getEgressLink().getPort().getTopologyIdent());
                 this.setupLogin(lspData.getEgressLink(), hm);
             }
-        } else if (layer3Data != null) {
+        } else if (isL3) {
             hm.put("resv-id", circuitName);
             hm.put("lsp_from", lspData.getIngressRtrLoopback());
             hm.put("lsp_to", lspData.getEgressRtrLoopback());
@@ -248,16 +264,24 @@ public class JnxLSP {
         } catch (BSSException ex) {
             throw new PSSException(ex.getMessage());
         }
-        Layer2Data layer2Data = path.getLayer2Data();
-        Layer3Data layer3Data = path.getLayer3Data();
-        if (layer2Data != null) {
+        boolean isL2 = false;
+        boolean isL3 = false;
+
+        try {
+            isL2 = path.isLayer2();
+            isL3 = path.isLayer3();
+        } catch (BSSException ex) {
+            throw new PSSException(ex.getMessage());
+        }
+
+        if (isL2) {
             if (lspData.getIngressLink() == null) {
                 throw new PSSException(
                         "teardownPath called before getting path endpoints");
             }
             // get VLAN tag and loopbacks
             lspData.setLayer2PathInfo(true);
-        } else if (layer3Data != null) {
+        } else if (isL3) {
             lspData.setLayer3PathInfo("Juniper");
         } else {
             throw new PSSException("no layer 2 or layer 3 data provided");
@@ -266,7 +290,7 @@ public class JnxLSP {
         HashMap<String, String> hm = new HashMap<String, String>();
         String circuitName = this.getCircuitName(resv.getGlobalReservationId(),
                                                 resv.getDescription());
-        if (layer2Data != null) {
+        if (isL2) {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
             if (direction.equals("forward")) {
@@ -282,7 +306,7 @@ public class JnxLSP {
 
                 this.setupLogin(lspData.getEgressLink(), hm);
             }
-        } else if (layer3Data != null) {
+        } else if (isL3) {
             hm.put("resv-id", circuitName);
             hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
@@ -364,10 +388,10 @@ public class JnxLSP {
             }
             String fname = null;
             if (hm.get("vlan_id") != null) {
-                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("setupL2Template"));
             } else {
-                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("setupL3Template"));
             }
             this.configureLSP(hops, fname, conn, hm);
@@ -402,10 +426,10 @@ public class JnxLSP {
             }
             String fname = null;
             if (hm.get("vlan_id") != null) {
-                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("teardownL2Template"));
             } else {
-                fname = configFinder.find(ConfigFinder.PSS_DIR, 
+                fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("teardownL3Template"));
             }
             this.configureLSP(null, fname, conn, hm);
@@ -441,7 +465,7 @@ public class JnxLSP {
             layer2Inputs = new HashMap<String,VendorStatusInput>();
         Map<String,VendorStatusInput>
             layer3Inputs = new HashMap<String,VendorStatusInput>();
-        Map<String,VendorStatusResult> circuitStatuses = 
+        Map<String,VendorStatusResult> circuitStatuses =
             new HashMap<String,VendorStatusResult>();
 
         this.log.info("statusLSP.start");
@@ -462,7 +486,7 @@ public class JnxLSP {
             LSPConnection conn = new LSPConnection();
             conn.createSSHConnection(hm);
             if (!layer2Inputs.isEmpty()) {
-                String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
+                String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("statusL2Template"));
                 Document doc = this.th.buildTemplate(fname);
                 this.sendCommand(doc, conn.out);
@@ -470,7 +494,7 @@ public class JnxLSP {
                 circuitStatuses.putAll(this.parseLayer2Response(layer2Inputs, doc));
             }
             if (!layer3Inputs.isEmpty()) {
-                String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, 
+                String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("statusL3Template"));
                 Document doc = this.th.buildTemplate(fname);
                 this.sendCommand(doc, conn.out);
