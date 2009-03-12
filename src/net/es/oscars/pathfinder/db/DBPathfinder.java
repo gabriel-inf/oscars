@@ -6,6 +6,7 @@ import net.es.oscars.pathfinder.interdomain.*;
 import net.es.oscars.pathfinder.db.util.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
+
 import org.jgrapht.alg.*;
 import org.jgrapht.graph.*;
 
@@ -16,7 +17,7 @@ import org.apache.log4j.*;
  *
  * @author Evangelos Chaniotakis (haniotak@es.net)
  */
-public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE {
+public class DBPathfinder extends GenericInterdomainPathfinder implements LocalPCE, InterdomainPCE {
     private Logger log = Logger.getLogger(DBPathfinder.class);
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
@@ -62,39 +63,33 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         ArrayList<Path> paths = new ArrayList<Path>();
         Path path = null;
 
-        String srcEndpoint = requestedPath.getLayer2Data().getSrcEndpoint();
-        String dstEndpoint = requestedPath.getLayer2Data().getDestEndpoint();
-        Link srcLink = domDAO.getFullyQualifiedLink(srcEndpoint);
-        Link dstLink = domDAO.getFullyQualifiedLink(dstEndpoint);
+        List<PathElem> localSegment = null;
+        try {
+            List<PathElem> requestedLocalSegment = this.extractLocalSegment(requestedPath);
+            List<PathElem> interdomainLocalSegment = this.extractLocalSegment(resv.getPath(PathType.INTERDOMAIN));
 
-        if (srcLink == null) {
-            throw new PathfinderException("Source link is unknown!");
-        }
-        if (dstLink == null) {
-            throw new PathfinderException("Destination link is unknown!");
-        }
-        if (!srcLink.getPort().getNode().getDomain().isLocal()) {
-            throw new PathfinderException("Source link is not local!");
-        }
-        if (!dstLink.getPort().getNode().getDomain().isLocal()) {
-            throw new PathfinderException("Destination link is not local!");
-        }
-
-        List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
-
-        if (localSegment == null) {
-            path = this.findPathBetween(srcLink.getFQTI(), dstLink.getFQTI(), resv, "L2");
-        } else {
-            for (int i = 0; i < localSegment.size() -1; i++) {
-                String src = localSegment.get(i).getLink().getFQTI();
-                String dst = localSegment.get(i+1).getLink().getFQTI();
-                this.log.debug("Finding path between: ["+src+"] ["+dst+"] ");
-                Path partialPath = findPathBetween(src, dst, resv, "L2");
-                if (partialPath == null) {
-                    throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
-                } else {
-                    path = joinPaths(path, partialPath);
+            if (requestedLocalSegment == null || requestedLocalSegment.size() < 2) {
+                if (interdomainLocalSegment == null || interdomainLocalSegment.size() < 2) {
                 }
+                localSegment = interdomainLocalSegment;
+
+            } else {
+                localSegment = requestedLocalSegment;
+            }
+        } catch (BSSException ex) {
+            throw new PathfinderException(ex.getMessage());
+        }
+
+
+        for (int i = 0; i < localSegment.size() -1; i++) {
+            String src = localSegment.get(i).getLink().getFQTI();
+            String dst = localSegment.get(i+1).getLink().getFQTI();
+            this.log.debug("Finding path between: ["+src+"] ["+dst+"] ");
+            Path partialPath = findPathBetween(src, dst, resv, "L2");
+            if (partialPath == null) {
+                throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
+            } else {
+                path = joinPaths(path, partialPath);
             }
         }
 
@@ -107,6 +102,11 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             this.log.error(ex.getMessage());
             throw new PathfinderException(ex.getMessage());
         }
+
+        for (PathElem pe : path.getPathElems()) {
+            this.log.debug("L2 local hop:"+pe.getUrn());
+        }
+
 
         paths.add(path);
         return paths;
@@ -153,12 +153,6 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         paths.add(path);
 
         return paths;
-    }
-
-
-    public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
-        GenericInterdomainPathfinder pf = new GenericInterdomainPathfinder(dbname);
-        return pf.findInterdomainPath(resv);
     }
 
     private Path joinPaths(Path pathA, Path pathB) {
@@ -229,7 +223,21 @@ public class DBPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
         return null;
     }
 
+    protected Link findEgressTo(String src, String dst, Reservation resv) throws PathfinderException {
+        Link result = super.findEgressTo(src, dst, resv);
+        if (result != null) {
+            this.log.debug("Egress to next domain: "+result.getFQTI());
+            return result;
+        }
 
+        Path pathToOther = this.findPathBetween(src, dst, resv, "L2");
+        result = this.lastLocalLink(pathToOther);
+
+
+        this.log.debug("Egress to next domain: "+result.getFQTI());
+
+        return result;
+    }
 
 
 

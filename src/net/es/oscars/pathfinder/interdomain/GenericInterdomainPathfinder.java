@@ -43,7 +43,7 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
             throw new PathfinderException(ex.getMessage());
         }
 
-
+        List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
         Link localIngress = null;
         Link localEgress = null;
 
@@ -57,11 +57,15 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
 
             // if the reservation terminates here, we know our "egress"
             if (pathTerminatesLocally) {
+                if (localSegment.size() < 2) {
+                    throw new PathfinderException("Local segment too short");
+                }
                 localEgress = this.lastLocalLink(requestedPath);
             } else {
                 // otherwise, find the path to the next hop
                 String firstAfterLocal = this.firstHopAfterLocal(requestedPath);
-                localEgress = this.findEgressTo(firstAfterLocal);
+                localEgress = this.findEgressTo(localIngress.getFQTI(), firstAfterLocal, resv);
+                this.log.debug("Local egress is: "+localEgress.getFQTI());
             }
 
             PathElem nextDomainIngress = null;
@@ -70,11 +74,14 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 nextDomainIngress = new PathElem();
                 nextDomainIngress.setLink(localEgress.getRemoteLink());
                 nextDomainIngress.setUrn(localEgress.getRemoteLink().getFQTI());
+                this.log.debug("Next domain ingress will be: "+localEgress.getRemoteLink().getFQTI());
             }
 
             boolean addedLocalPes = false;
 
+            this.log.debug("Reconciling requested path");
             for (PathElem pe : requestedPath.getPathElems()) {
+                this.log.debug("Examining: "+pe.getUrn());
                 PathElem pecopy = null;
                 // Non-local hops get copied
                 if (!pathTerminatesLocally && (pe.getLink() == null || !pe.getLink().getPort().getNode().getDomain().isLocal())) {
@@ -85,6 +92,7 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                             throw new PathfinderException(e.getMessage());
                         }
                         interdomainPath.addPathElem(pecopy);
+                        this.log.debug("Added non-local: "+pe.getUrn());
                     }
 
                 // All the local hops we got passed are just replaced by our ingress and egress
@@ -93,15 +101,20 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                         PathElem ingress = new PathElem();
                         ingress.setLink(localIngress);
                         ingress.setUrn(localIngress.getFQTI());
+                        this.log.debug("Added local ingress: "+localIngress.getFQTI());
+
                         PathElem egress = new PathElem();
                         egress.setLink(localEgress);
                         egress.setUrn(localEgress.getFQTI());
+
+                        this.log.debug("Added local egress: "+localEgress.getFQTI());
 
                         interdomainPath.addPathElem(ingress);
                         interdomainPath.addPathElem(egress);
                         if (!pathTerminatesLocally) {
                             interdomainPath.addPathElem(nextDomainIngress);
                             interdomainPath.setNextDomain(nextDomainIngress.getLink().getPort().getNode().getDomain());
+                            this.log.debug("Added next domain ingress: "+nextDomainIngress.getLink().getFQTI());
                         }
 
                         addedLocalPes = true;
@@ -119,7 +132,8 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 // FIXME: This currently only works for L2 identifiers
                 localIngress = domDAO.getFullyQualifiedLink(this.findEndpoints(requestedPath).get("src"));
 
-                localEgress = this.findEgressTo(this.findEndpoints(requestedPath).get("dest"));
+                localEgress = this.findEgressTo(this.findEndpoints(requestedPath).get("src"),
+                                                this.findEndpoints(requestedPath).get("dest"), resv);
 
                 PathElem ingress = new PathElem();
                 ingress.setLink(localIngress);
@@ -152,7 +166,11 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
             }
         }
 
-        paths.add(interdomainPath);
+        paths.add(interdomainPath);            // If no explicit path for layer 2, we must fill this in
+
+        for (PathElem pe : interdomainPath.getPathElems()) {
+            this.log.debug("Interdomain hop:"+pe.getUrn());
+        }
 
         return paths;
     }
@@ -171,13 +189,15 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
      *
      * Should probably be overwritten by more sophisticated egress finders
      *
-     * @param urn the endpoint identifier
+     * @param src the source endpoint identifier
+     * @param dst the destination endpoint identifier
+     * @param redv the reservation
      * @return the local egress link
      * @throws PathfinderException
      */
-    protected Link findEgressTo(String urn) throws PathfinderException {
+    protected Link findEgressTo(String src, String dst, Reservation resv) throws PathfinderException {
         DomainDAO domDAO = new DomainDAO(dbname);
-        Link link = domDAO.getFullyQualifiedLink(urn);
+        Link link = domDAO.getFullyQualifiedLink(dst);
 
 
         if (link != null) {

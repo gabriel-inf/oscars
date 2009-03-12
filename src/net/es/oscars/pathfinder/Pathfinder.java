@@ -204,10 +204,6 @@ public class Pathfinder {
             }
         }
 
-        if (localSegment != null && localSegment.size() < 2) {
-            throw new PathfinderException("Local segment in requested path too short");
-        }
-
         return localSegment;
     }
 
