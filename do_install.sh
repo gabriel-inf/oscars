@@ -18,8 +18,8 @@ fi
 echo "  ";
 echo "  ";
 
-echo "--- Stopping Tomcat...";
-$CATALINA_HOME/bin/shutdown.sh;
+echo "--- Stopping OSCARS...";
+./oscars.sh stop
 echo "  ";
 echo "  ";
 STATUS2="";
@@ -42,8 +42,8 @@ echo "--- Deploying IDC...";
 ant deployall;
 echo "  ";
 echo "  ";
-echo "--- Restarting Tomcat...";
-$CATALINA_HOME/bin/startup.sh;
+echo "--- Restarting OSCARS...";
+./oscars.sh
 
 echo "  ";
 echo "  ";

@@ -230,6 +230,8 @@
         <replace summary="true" file="conf/axis-tomcat/notify-services.xml" token="**path_to_rampConfig**" value="${conf.axistomcat}"/>
         <copy file="conf/axis-tomcat/axis2.xml.template" tofile="conf/axis-tomcat/axis2.xml"/> 
         <replace summary="true" file="conf/axis-tomcat/axis2.xml" token="**path_to_rampConfig**" value="${conf.axistomcat}"/>
+        <!-- Put in the full path to rampConfig.xml in case OSCARS_HOME is set -->
+        <replace summary="true" file="conf/axis-tomcat/rampConfig.xml.template" token="**path_to_repo**" value="${conf.axistomcat}"/>
         
         <!-- for lack of a better place, need bss.cfg.xml for tools -->
         <property name="tool.classes" value="build/tools"/>
@@ -729,7 +731,7 @@
         <available property="test.properties.exists" file="${conf.properties}/test.properties" value="true"/>
         <available property="idc-topicnamespace.xml.exists" file="${conf.notify}/idc-topicnamespace.xml" value="true"/>
         <available property="idc-topicset.xml.exists" file="${conf.notify}/idc-topicset.xml" value="true"/>
-
+        
         <copy file="conf/axis-tomcat/ssl-keystore.jks.template" tofile="conf/axis-tomcat/ssl-keystore.jks" />
         <copy file="conf/axis-tomcat/OSCARS.jks.template" tofile="conf/axis-tomcat/OSCARS.jks" />
         <copy file="conf/axis-tomcat/axis2.xml.template" tofile="conf/axis-tomcat/axis2.xml" />
