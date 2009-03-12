@@ -34,7 +34,7 @@ KS_PASS=`echo "$KS_PASS" | sed 's/^[ \t]*//;s/[ \t]*$//'`; # delete leading and 
 KEY_ALIAS=`grep "ramp:user" $REPO_PATH/rampConfig.xml | sed -e 's/\s*<ramp:user>\(.*\)<\/ramp:user>/\1/'`;
 KEY_ALIAS=`echo "$KEY_ALIAS" | sed 's/^[ \t]*//;s/[ \t]*$//'`; # delete leading and trailing whitespace
 if [ "$KS_PASS" != "password" ]; then
-    echo "keytool -keypasswd -keystore $CATALINA_HOME/shared/classes/repo/OSCARS.jks -keypass password -new $KS_PASS -storepass $KS_PASS -alias $KEY_ALIAS"
+    keytool -keypasswd -keystore $CATALINA_HOME/shared/classes/repo/OSCARS.jks -keypass password -new $KS_PASS -storepass $KS_PASS -alias $KEY_ALIAS
 fi
 
 #Upgrade mysql tables
