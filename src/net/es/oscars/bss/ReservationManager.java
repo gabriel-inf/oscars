@@ -236,7 +236,13 @@ public class ReservationManager {
         }
         if(confirm){
             int newLocalStatus = StateEngine.getLocalStatus(persistedResv) + 1;
-            StateEngine.canUpdateLocalStatus(persistedResv, newLocalStatus);
+            try{
+                StateEngine.canUpdateLocalStatus(persistedResv, newLocalStatus);
+            }catch(Exception e){
+                this.log.debug("Ignoring extra message that caused '" +
+                        e.getMessage() + "'");
+                return;
+            }
         }
 
         Domain neighborDomain = this.endPointDomain(persistedResv, !confirm);
