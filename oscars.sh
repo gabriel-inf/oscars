@@ -67,6 +67,7 @@ fi
 
 # Restart core processses
 ./aaa-core.sh -d $*
+sleep 2
 ./notifybroker-core.sh -d $*
 ./oscars-core.sh -d $*
 
