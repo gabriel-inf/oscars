@@ -67,11 +67,11 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
                     String op = ((localStatus & StateEngine.CONFIRMED) == StateEngine.CONFIRMED ? 
                                  OSCARSEvent.RESV_CANCEL_COMPLETED : 
                                  OSCARSEvent.RESV_CANCEL_CONFIRMED);
-                    throw new BSSException("Modify reservation timed-out " +
+                    throw new BSSException("Cancel reservation timed-out " +
                                            "while waiting for event " +  op);
                 }
             }else{
-                this.log.error("Unknown modifyReservation job cannot be executed");
+                this.log.error("Unknown cancelReservation job cannot be executed");
             }
             bss.getTransaction().commit();
         }catch(Exception ex){
