@@ -175,14 +175,12 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                                resv);
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INCREATE);
-
             rm.create(resv);
-            Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
-            if (nextDomain == null || nextDomain.isLocal()) {
+            boolean forwarded = forwarder.create(resv); 
+            if(!forwarded) {
                 // this will also finalize & store
                 this.confirm(resv, null);
             } else {
-                forwarder.create(resv);
                 rm.store(resv);
                 this.scheduleStatusCheck(CONFIRM_TIMEOUT, resv);
             }
