@@ -40,7 +40,7 @@ fi
 #Upgrade mysql tables
 MYSQL_ANS=0;
 while [ $MYSQL_ANS == 0 ]; do
-	echo -n "Would you like to upgrade your bss MySQL tables y/n? ";
+	echo -n "Would you like to upgrade your aaa database y/n? ";
     read MYSQL_ANS;
     if [ "$MYSQL_ANS" != "y" ] && [ "$MYSQL_ANS" != "Y" ] && [ "$MYSQL_ANS" != "n" ] && [ "$MYSQL_ANS" != "N" ]; then
         MYSQL_ANS=0;
@@ -49,12 +49,12 @@ done
 if [ "$MYSQL_ANS" = "y" ] || [ "$MYSQL_ANS" = "Y" ]; then
     echo -n "Please enter your mysql user name: ";
     read MYSQL_USER;
-    mysql -u $MYSQL_USER -p bss < sql/bss/upgradeTables0.4-0.5.sql
+    mysql -u $MYSQL_USER -p aaa < sql/aaa/upgradeTables0.4-0.5.sql
     echo "--- mysql tables upgraded";
 fi
 MYSQL_ANS2=0;
 while [ $MYSQL_ANS2 == 0 ]; do
-	echo -n "Would you like to upgrade your aaa database y/n? ";
+	echo -n "Would you like to upgrade your bss MySQL tables y/n? ";
     read MYSQL_ANS2;
     if [ "$MYSQL_ANS2" != "y" ] && [ "$MYSQL_ANS2" != "Y" ] && [ "$MYSQL_ANS2" != "n" ] && [ "$MYSQL_ANS2" != "N" ]; then
         MYSQL_ANS2=0;
@@ -63,7 +63,7 @@ done
 if [ "$MYSQL_ANS2" = "y" ] || [ "$MYSQL_ANS2" = "Y" ]; then
     echo -n "Please enter your mysql user name: ";
     read MYSQL_USER;
-    mysql -u $MYSQL_USER -p aaa < sql/aaa/upgradeTables0.4-0.5.sql
+    mysql -u $MYSQL_USER -p bss < sql/bss/upgradeTables0.4-0.5.sql
     echo "--- mysql tables upgraded";
 fi
 
