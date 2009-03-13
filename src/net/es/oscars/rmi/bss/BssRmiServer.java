@@ -134,13 +134,14 @@ public class BssRmiServer extends BaseRmiServer implements BssRmiInterface {
      *
      * @param gri string containing reservation's global reservation id
      * @param userName string with authenticated login name of user
+     * @return status string with cancellation status
      * @throws RemoteException
      */
-    public void
+    public String
         cancelReservation(String gri, String userName)
             throws RemoteException {
 
-        this.cancelHandler.cancelReservation(gri, userName);
+        return this.cancelHandler.cancelReservation(gri, userName);
     }
 
     /**

@@ -142,16 +142,18 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
      *
      * @param gri String GlobalReservationId of reservation to be canceled
      * @param userName string with authenticated login name of user
+     * @return status string with cancellation status
      * @throws RemoteException
      */
-    public void
+    public String
         cancelReservation(String gri, String userName)
             throws RemoteException {
 
         String methodName = "CancelReservation";
+        String status = "unknown";
         this.verifyRmiConnection(methodName);
         try {
-            this.remote.cancelReservation(gri, userName);
+            status = this.remote.cancelReservation(gri, userName);
             this.log.debug(" cancelReservation.end");
         } catch (RemoteException e) {
             this.log.info("Remote exception from BSS RMI server: " + e.getMessage());
@@ -160,6 +162,7 @@ public class BssRmiClient extends BaseRmiClient implements BssRmiInterface  {
             this.log.error(methodName + ": Exception from BSS RMI server" + e.getMessage(), e);
             throw new RemoteException (e.getMessage(),e);
         }
+        return status;
     }
 
     /**

@@ -36,13 +36,12 @@ public class CancelResRmiHandler {
      * 
      * @param params contains the gri of the reservation at key "gri"
      * @param userName String name of user making request
-     *
-     * @return HashMap - contains gri and success or error status
+     * @return status string with cancellation status
      *
      * @throws IllegalArgumentException
      * @throws IOException
      */
-    public void cancelReservation(String gri, String userName)
+    public String cancelReservation(String gri, String userName)
         throws RemoteException {
         this.log.debug("cancel.start");
         String methodName = "CancelReservation";
@@ -74,7 +73,8 @@ public class CancelResRmiHandler {
         try {
             reservation =
                 rm.getConstrainedResv(gri, loginConstraint, institution, null);
-            rm.submitCancel(reservation, loginConstraint, userName, institution);
+            rm.submitCancel(reservation, loginConstraint, userName,
+                                     institution);
         } catch (BSSException e) {
             errMessage = e.getMessage();
             remEx= new RemoteException(errMessage,e);
@@ -92,5 +92,11 @@ public class CancelResRmiHandler {
             throw  remEx;
         }
         this.log.debug("cancel.end");
+        if ((reservation.getLocalStatus() &
+             StateEngine.NEXT_STATUS_CANCEL) == 1) {
+            return "in progress";
+        } else {
+            return "failed";
+        }
     }
 }

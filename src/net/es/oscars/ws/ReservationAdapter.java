@@ -128,9 +128,8 @@ public class ReservationAdapter {
             BssRmiInterface rmiClient) throws RemoteException {
 
         String gri = request.getCancelReservation().getGri();
-        rmiClient.cancelReservation(gri, username);
-
-        return "reservation canceled";
+        String status = rmiClient.cancelReservation(gri, username);
+        return "Reservation cancellation status: " + status;
     }
 
     /**

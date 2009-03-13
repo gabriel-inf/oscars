@@ -46,17 +46,19 @@ public class CancelReservation extends HttpServlet {
  
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
         String gri = request.getParameterValues("gri")[0];
+        String status = "unknown";
 
         try {
             BssRmiInterface rmiClient =
                 RmiUtils.getBssRmiClient(methodName, log);
-           rmiClient.cancelReservation(gri, userName);
+           status = rmiClient.cancelReservation(gri, userName);
 
         } catch (Exception e) {
             ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
-        outputMap.put("status", "Reservation " + gri + "canceled");    
+        outputMap.put("status", "Reservation " + gri + " cancellation: " +
+                                status); 
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

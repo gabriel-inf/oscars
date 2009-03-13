@@ -61,9 +61,10 @@ public interface BssRmiInterface extends Remote {
      *
      * @param gri String GlobalReservationId of reservation to be canceled
      * @param userName string with authenticated login name of user
+     * @return status string with cancellation status
      * @throws RemoteException
      */
-    public void
+    public String
         cancelReservation(String gri, String userName)
             throws RemoteException;
 
