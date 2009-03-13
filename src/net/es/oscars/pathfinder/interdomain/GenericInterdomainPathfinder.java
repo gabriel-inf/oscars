@@ -84,8 +84,8 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 this.log.debug("Examining: "+pe.getUrn());
                 PathElem pecopy = null;
                 // Non-local hops get copied
-                if (!pathTerminatesLocally && (pe.getLink() == null || !pe.getLink().getPort().getNode().getDomain().isLocal())) {
-                    if (!pe.getUrn().equals(nextDomainIngress.getUrn())) {
+                if (pe.getLink() == null || !pe.getLink().getPort().getNode().getDomain().isLocal()) {
+                    if (nextDomainIngress == null || !pe.getUrn().equals(nextDomainIngress.getUrn())) {
                         try {
                             pecopy = PathElem.copyPathElem(pe);
                         } catch (BSSException e) {
@@ -94,7 +94,6 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                         interdomainPath.addPathElem(pecopy);
                         this.log.debug("Added non-local: "+pe.getUrn());
                     }
-
                 // All the local hops we got passed are just replaced by our ingress and egress
                 } else {
                     if (!addedLocalPes) {
