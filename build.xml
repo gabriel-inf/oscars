@@ -723,8 +723,8 @@
         <uptodate property="OSCARS.jks.uptodate" 
             targetfile="${conf.axistomcat}/OSCARS.jks" 
             srcfile="conf/axis-tomcat/OSCARS.jks.template"/>
-        <available property="ssl.jks.exists" file="${conf.axistomcat}/ssl-keystore.jks"  value="true" />
-        <uptodate property="ssl.jks.uptodate" 
+        <available property="ssl-keystore.jks.exists" file="${conf.axistomcat}/ssl-keystore.jks"  value="true" />
+        <uptodate property="ssl-keystore.jks.uptodate" 
              targetfile="${conf.axistomcat}/ssl-keystore.jks" 
              srcfile="conf/axis-tomcat/ssl-keystore.jks.template"/>
         <available property="oscars.properties.exists" file="${conf.properties}/oscars.properties" value="true"/>
