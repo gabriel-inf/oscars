@@ -471,11 +471,8 @@ public class CiscoLSP {
             circuitName = circuitName.toUpperCase();
         }
         String[] columns = circuitName.split("-");
-        if (columns.length != 2) {
-            throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
-        }
         try {
-            resvNumTmp = Double.parseDouble(columns[1].trim());
+            resvNumTmp = Double.parseDouble(columns[columns.length-1].trim());
         } catch (NumberFormatException ex) {
             this.log.error("Invalid number format for GRI numerical part" +
                          ex.getMessage());
@@ -486,7 +483,7 @@ public class CiscoLSP {
         int resvNum = (int) resvNumTmp % 65534;
         String resvNumForTpt = Integer.toString(resvNum);
         this.log.info("Reservation number after cleanup is: "+resvNumForTpt+
-                       " initially: "+columns[1]);
+                       " initially: "+columns[columns.length-1]);
 
         hm.put("resv-id", circuitName);
         hm.put("resv-num", resvNumForTpt);
