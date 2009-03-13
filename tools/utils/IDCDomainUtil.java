@@ -122,7 +122,7 @@ public class IDCDomainUtil extends IDCCmdUtil{
         System.out.println();
         for(Domain domain : domains){
             System.out.println((domain.isLocal() ? "*" : "") + i + ". " + 
-                    domain.getTopologyIdent() + " : " + domain.getUrl());
+                    domain.getTopologyIdent() + " (" + domain.getUrl() + ")");
             i++;
         } 
         bss.getTransaction().commit();
@@ -142,7 +142,8 @@ public class IDCDomainUtil extends IDCCmdUtil{
         
         System.out.println();
         for(Domain domain : domains){
-            System.out.println(i + ". " + domain.getTopologyIdent());
+            System.out.println(i + ". " + domain.getTopologyIdent() + 
+                    " (" + domain.getUrl() + ")");
             i++;
         }
         
@@ -156,6 +157,27 @@ public class IDCDomainUtil extends IDCCmdUtil{
         }
         
         return domains.get(n-1);
+    }
+    
+    /**
+     * Changes the url of a selected domain
+     */
+    private void modifyDomain() {
+        Initializer initializer = new Initializer();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add(this.dbname);
+        initializer.initDatabase(dbnames);
+        Session bss =
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        bss.beginTransaction();
+        Scanner in = new Scanner(System.in);
+        Domain domain = this.selectDomain(in, "domain to edit");
+        
+        System.out.print("Enter the new URL: ");
+        String url = in.next();
+        domain.setUrl(url);
+        bss.getTransaction().commit();
+        System.out.println("Domain URL updated.");
     }
     
     /**
@@ -268,6 +290,25 @@ public class IDCDomainUtil extends IDCCmdUtil{
     }
     
     /**
+     * Modify a domain service URL
+     */
+    private void modifyDomainService() {
+        Initializer initializer = new Initializer();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add(this.dbname);
+        initializer.initDatabase(dbnames);
+        Session bss =
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        bss.beginTransaction();
+        Scanner in = new Scanner(System.in);
+        DomainService domainService = this.selectDomainService(in, "service to edit");
+        System.out.print("Enter the new URL of the service: ");
+        domainService.setUrl(in.next());
+        System.out.println("Domain service updated.");
+        bss.getTransaction().commit();
+    }
+    
+    /**
      * Main logic that removes a service from the database
      *
      */
@@ -294,6 +335,31 @@ public class IDCDomainUtil extends IDCCmdUtil{
             System.out.println("Operation cancelled. No service deleted.");
         }
        
+        bss.getTransaction().commit();
+    }
+    
+    /**
+     * Prints the current list of domain services in the database
+     */
+    protected void listDomainServices(){
+        /* Init database */
+        Initializer initializer = new Initializer();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add(this.dbname);
+        initializer.initDatabase(dbnames);
+        Session bss =
+            HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+        bss.beginTransaction();
+        DomainServiceDAO dsDAO = new DomainServiceDAO(this.dbname);
+        List<DomainService> services = dsDAO.list();
+        int i = 1;
+        
+        System.out.println();
+        for(DomainService service : services){
+            System.out.println(i + ". " + service.getDomain().getTopologyIdent() + 
+                               ", " + service.getType() + ", " + service.getUrl());
+            i++;
+        }
         bss.getTransaction().commit();
     }
     
@@ -327,12 +393,18 @@ public class IDCDomainUtil extends IDCCmdUtil{
             util.addDomain();
         }else if(args[0].equals("list")){
             util.listDomains();
+        }else if(args[0].equals("modify")){
+            util.modifyDomain();
         }else if(args[0].equals("remove")){
             util.removeDomain();
         }else if(args[0].equals("addService")){
             util.addDomainService();
+        }else if(args[0].equals("modifyService")){
+            util.modifyDomainService();
         }else if(args[0].equals("removeService")){
             util.removeDomainService();
+        }else if(args[0].equals("listServices")){
+            util.listDomainServices();
         }else if(args[0].equals("addSite")){
             util.addSite();
         }else{

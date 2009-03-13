@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Find tools/utils directory
+UTIL_PATH=""
+if [ -n "$OSCARS_HOME" ]; then
+    UTIL_PATH="$OSCARS_HOME/tools/utils"
+elif [ -d "./tools/utils" ]; then
+    UTIL_PATH="./tools/utils"
+elif [ -f "./IDCUtil.jar" ]; then
+    UTIL_PATH="."
+else
+    echo "Unable to find tools/utils directory."
+    exit 1
+fi
+
+# update classpath
+OSCARS_CLASSPATH="."
+for f in $UTIL_PATH/lib/*.jar
+do
+    OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
+done
+
+java -Djava.net.preferIPv4Stack=true -cp $OSCARS_CLASSPATH:"$UTIL_PATH/IDCUtil.jar" IDCDomainUtil modify $*
