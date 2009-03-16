@@ -43,7 +43,6 @@ public class TopologyManager {
     private Logger log;
     private SessionFactory sf;
     private String dbname;
-    private ReservationManager rm;
     private PathManager pathMgr;
     private String localDomain;
 
@@ -60,8 +59,6 @@ public class TopologyManager {
     public TopologyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
-
-        this.rm = new ReservationManager(this.dbname);
 
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         this.sf.getCurrentSession().beginTransaction();

@@ -58,10 +58,12 @@ while [ 1 ]; do
     
     #Change key password
     CERT_ALIAS=`grep "<ramp:user>.*</ramp:user>" $REPO_PATH/rampConfig.xml | sed -e 's/.*<ramp:user>\(.*\)<\/ramp:user>.*/\1/'`;
-    keytool -keypasswd -keystore $KS_PATH -keypass $OLD_PASSWD -new $NEW_PASSWD -storepass $NEW_PASSWD -alias $CERT_ALIAS
-    if [ $? != 0 ]; then 
-        echo "-- Keytool returned an error when changing your private key password. Please try again...";
-        exit 1;
+    if [ "$CERT_ALIAS" != "**keyEntry**" ]; then
+        keytool -keypasswd -keystore $KS_PATH -keypass $OLD_PASSWD -new $NEW_PASSWD -storepass $NEW_PASSWD -alias $CERT_ALIAS
+        if [ $? != 0 ]; then 
+            echo "-- Keytool returned an error when changing your private key password. Please try again...";
+            exit 1;
+        fi
     fi
     
     sed -i -e "s/<ramp:property name=\"org\.apache\.ws\.security\.crypto\.merlin\.keystore\.password\">.*<\/ramp:property>/<ramp:property name=\"org.apache.ws.security.crypto.merlin.keystore.password\">$NEW_PASSWD<\/ramp:property>/" $RAMP_CONF;

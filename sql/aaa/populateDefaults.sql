@@ -43,6 +43,20 @@ CREATE UNIQUE INDEX instName ON institutions(name(15));
 INSERT INTO institutions VALUES(1, "Energy Sciences Network");
 INSERT INTO institutions VALUES(2, "Internet2");
 
+-- Table to look up an institution associated with a domain (for site admin
+-- privileges)
+
+CREATE TABLE IF NOT EXISTS sites (
+    id                  INT NOT NULL AUTO_INCREMENT,
+        -- topologyId for a domain -- matches topologyIdent in bss domains table
+    domainTopologyId                TEXT NOT NULL,
+        -- key of corresponding domain in domains table
+    institution            INT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
+
+CREATE UNIQUE INDEX row ON sites(domainTopologyId(7),institution); 
+
 -- populate resources table
 
 CREATE TABLE IF NOT EXISTS resources (

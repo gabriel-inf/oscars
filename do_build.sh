@@ -62,8 +62,8 @@ if [ $READ_HOSTNAME ]; then
 fi
 echo "    Using $IDC_HOSTNAME . ";
 #set defaults but still inform users that they may change these in documentation
-sed -i"" -e "s/idc\.url=.*/idc\.url=https:\/\/$IDC_HOSTNAME:8443\/axis2\/services\/OSCARS/g" conf/examples/server/oscars.properties
-sed -i"" -e "s/notify\.ws\.broker\.url=.*/notify\.ws\.broker\.url=https:\/\/$IDC_HOSTNAME:8443\/axis2\/services\/OSCARSNotify/g" conf/examples/server/oscars.properties
+sed -i"" -e "s/idc\.url=.*/idc\.url=https:\/\/$IDC_HOSTNAME:8443\/axis2\/services\/OSCARS/g" conf/properties/oscars.properties
+sed -i"" -e "s/notify\.ws\.broker\.url=.*/notify\.ws\.broker\.url=https:\/\/$IDC_HOSTNAME:8443\/axis2\/services\/OSCARSNotify/g" conf/properties/oscars.properties
 
 READ_INSTALLDB=0;
 while [ $READ_INSTALLDB == 0 ]; do
@@ -159,8 +159,8 @@ if [ $INSTALL_DB == 1 ]; then
                 echo "    IDC account access verified.";
                 MYSQL_IDC_HAS_ACCESS=1;
                 MYSQL_GOT_IDC_CREDENTIALS=1;
-                sed -i"" -e "s/hibernate\.connection\.username=.*/hibernate\.connection\.username=$MYSQL_IDC_USERNAME/g" conf/examples/server/oscars.properties
-                sed -i"" -e "s/hibernate\.connection\.password=.*/hibernate\.connection\.password=$MYSQL_IDC_PASSWORD/g" conf/examples/server/oscars.properties
+                sed -i"" -e "s/hibernate\.connection\.username=.*/hibernate\.connection\.username=$MYSQL_IDC_USERNAME/g" conf/properties/oscars.properties
+                sed -i"" -e "s/hibernate\.connection\.password=.*/hibernate\.connection\.password=$MYSQL_IDC_PASSWORD/g" conf/properties/oscars.properties
             fi
         done
         echo "";
@@ -228,12 +228,12 @@ if [ $INSTALL_DB == 1 ]; then
         fi
 
         echo "    Modifying conf/server/aaa.cfg.xml ...";
-        sed -e "s/jdbc:mysql:\/\/\/aaa/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_AAA_DBNAME/g" conf/server/aaa.cfg.xml > conf/server/aaaTemp.cfg.xml;
-        mv conf/server/aaaTemp.cfg.xml conf/server/aaa.cfg.xml;
+        sed -e "s/jdbc:mysql:\/\/\/aaa/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_AAA_DBNAME/g" conf/db/aaa.cfg.xml > conf/db/aaaTemp.cfg.xml;
+        mv conf/db/aaaTemp.cfg.xml conf/db/aaa.cfg.xml;
 
         echo "   Modifying conf/server/bss.cfg.xml ...";
-        sed -e "s/jdbc:mysql:\/\/\/bss/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_BSS_DBNAME/g" conf/server/bss.cfg.xml > conf/server/bssTemp.cfg.xml;
-        mv conf/server/bssTemp.cfg.xml conf/server/bss.cfg.xml;
+        sed -e "s/jdbc:mysql:\/\/\/bss/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_BSS_DBNAME/g" conf/db/bss.cfg.xml > conf/db/bssTemp.cfg.xml;
+        mv conf/db/bssTemp.cfg.xml conf/db/bss.cfg.xml;
     fi
 fi
 

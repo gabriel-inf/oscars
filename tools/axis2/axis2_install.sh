@@ -180,9 +180,9 @@ if [ $DEPLOY_AXIS != 0 ]; then
 
   echo "";
   echo "    Stopping Tomcat...";
-  $CATALINA_HOME/bin/shutdown.sh;
+  $CATALINA_HOME/bin/shutdown.sh > /dev/null;
   echo "";
-  if [ $DEPLOYED_AXIS1_3 ]; then
+  if [ $DEPLOYED_AXIS1_3 == 1 ]; then
       echo "undeploying axis2-1.3 ...";
       rm $CATALINA_HOME/webapps/axis2.war;
       rm -rf $CATALINA_HOME/webapps/axis2;
