@@ -9,6 +9,8 @@ import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.interdomain.*;
+import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.PathSetupManager;
 import net.es.oscars.PropHandler;
 
 public class CancelReservationJob  extends ChainingJob  implements Job {
@@ -150,20 +152,33 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         int localStatus = StateEngine.getLocalStatus(resv);
         Forwarder forwarder = null;
         boolean replyPresent = false;
+        PathSetupManager pm = this.core.getPathSetupManager();
         
+        //Acquire lock so don't conflict with path create or teardown jobs
+        try {
+            pm.acquireResvLock(resv.getGlobalReservationId());
+        } catch (PSSException e) {
+            throw new BSSException(e);
+        }
         if(!(StateEngine.RESERVED.equals(status) || 
                 StateEngine.ACTIVE.equals(status)) ||
                 StateEngine.ACCEPTED.equals(status)){
+            pm.releaseResvLock(resv.getGlobalReservationId());
             throw new BSSException("Cannot cancel a reservation with status "+ 
                                     status);
         }
         if((localStatus & StateEngine.NEXT_STATUS_CANCEL) == StateEngine.NEXT_STATUS_CANCEL){
             //no-op
             this.log.debug("Already in cancel so skipping");
+            pm.releaseResvLock(resv.getGlobalReservationId());
             return;
         }
         
         this.se.updateLocalStatus(resv, StateEngine.NEXT_STATUS_CANCEL);
+        /* Now that local status is set may release lock because create and 
+           teardown check local status */
+        pm.releaseResvLock(resv.getGlobalReservationId());
+        
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_STARTED, login, "JOB", resv);
         InterdomainException interException = null;
         try {

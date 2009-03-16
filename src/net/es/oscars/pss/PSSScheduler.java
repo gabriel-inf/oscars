@@ -53,7 +53,6 @@ public class PSSScheduler {
                     //TODO: Throw RESV_PERIOD_STARTED for signal-xml only once
                     eventProducer.addEvent(OSCARSEvent.RESV_PERIOD_STARTED, "", "SCHEDULER", resv);
                     this.pathSetupManager.create(resv, true);
-                    eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "SCHEDULER", resv);
                 }
 
             } catch (Exception ex) {

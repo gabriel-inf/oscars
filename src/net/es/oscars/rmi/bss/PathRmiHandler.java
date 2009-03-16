@@ -142,8 +142,6 @@ public class PathRmiHandler {
                 throw new RemoteException(errMessage);
             }
         }
-        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, userName,
-                               "core", resv);
         eventProducer.addEvent(OSCARSEvent.PATH_SETUP_ACCEPTED, userName,
                                "core", resv);
         bss.getTransaction().commit();

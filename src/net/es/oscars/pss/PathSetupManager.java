@@ -127,7 +127,7 @@ public class PathSetupManager{
         String status = null;
         String gri = resv.getGlobalReservationId();
         StateEngine se = this.core.getStateEngine();
-        
+        EventProducer eventProducer = new EventProducer();
         
         /* Check reservation */
         if(this.pss == null){
@@ -139,13 +139,15 @@ public class PathSetupManager{
         /* Create path */
         try{
            /* If not in reserved state just exit because nothing to do
-            * May have already been failed
+            * or going to be canceled
             */
-            if(!StateEngine.RESERVED.equals(StateEngine.getStatus(resv))){
+            if(!StateEngine.RESERVED.equals(StateEngine.getStatus(resv)) || 
+                    (StateEngine.getLocalStatus(resv) & StateEngine.NEXT_STATUS_CANCEL) != 0){
                   this.releaseResvLock(resv.getGlobalReservationId());
                   return StateEngine.getStatus(resv);
             }
             se.updateStatus(resv, StateEngine.INSETUP);
+            
             /* Get next domain */
             Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
             if(nextDomain == null){
@@ -177,6 +179,7 @@ public class PathSetupManager{
         }finally{
             this.releaseResvLock(resv.getGlobalReservationId());
         }
+        eventProducer.addEvent(OSCARSEvent.PATH_SETUP_STARTED, "", "CORE", resv);
         this.log.info("create.end");
         this.rsvLogger.stop();
         return status;
