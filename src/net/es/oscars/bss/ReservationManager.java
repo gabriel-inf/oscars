@@ -606,8 +606,12 @@ public class ReservationManager {
         // this will throw an exception if modification isn't possible
         // Note that for now, the paths are not allowed to change and any arguments
         // are ignored.
-        resv.setPath(persistentResv.getPath(PathType.INTERDOMAIN));
-        resv.setPath(persistentResv.getPath(PathType.LOCAL));
+        Path interPathCopy = new Path();
+        BssUtils.copyPath(persistentResv.getPath(PathType.INTERDOMAIN), interPathCopy);
+        resv.setPath(interPathCopy);
+        Path localPathCopy = new Path();
+        BssUtils.copyPath(persistentResv.getPath(PathType.LOCAL), localPathCopy);
+        resv.setPath(localPathCopy);
         
         //Just check oversubscription since we can't recalculate the path
         this.pathMgr.checkOversubscription(resv);

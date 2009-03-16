@@ -74,6 +74,18 @@ public class BssUtils {
             updatePath.setMplsData(mplsDataCopy);
         }
     }
+    
+    /**
+     * Copies path field and path elems to new path
+     * @throws BSSException 
+     */
+    public static void copyPath(Path path, Path updatePath) throws BSSException{
+        copyPathFields(path, updatePath);
+        updatePath.setPathType(path.getPathType());
+        for(PathElem elem : path.getPathElems()){
+            updatePath.addPathElem(PathElem.copyPathElem(elem));
+        }
+    }
 
     /**
      * Converts data associated with a Hibernate path to a series of strings.
