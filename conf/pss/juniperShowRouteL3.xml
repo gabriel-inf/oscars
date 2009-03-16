@@ -1,0 +1,8 @@
+<junoscript version="1.0" release="7.3">
+<rpc>
+  <get-route-information>
+    <table><user-var>table</user-var></table>
+    <destination><user-var>destination</user-var></destination>
+  </get-route-information>
+</rpc>
+
