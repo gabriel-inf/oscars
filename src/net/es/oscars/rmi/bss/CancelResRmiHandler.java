@@ -92,11 +92,8 @@ public class CancelResRmiHandler {
             throw  remEx;
         }
         this.log.debug("cancel.end");
-        if ((reservation.getLocalStatus() &
-             StateEngine.NEXT_STATUS_CANCEL) == 1) {
-            return "in progress";
-        } else {
-            return "failed";
-        }
+        // asynchronous nature of call makes this the only thing to return;
+        // keeping as a placeholder rather than having a void return type again
+        return "submitted";
     }
 }
