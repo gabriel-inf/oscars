@@ -14,9 +14,9 @@ dojo.provide("oscars.StatusPoll");
 dojo.declare("oscars.StatusPoll", null, {
     constructor: function(){
         this.intervalId = null;
-        this.pollInterval = 10000;  // check every 10 seconds
+        this.pollInterval = 12000;  // check every 12 seconds
         this.currentStatusTime = 0;
-        // maximum time in a given status before exit
+        // maximum time in a given status before exit (5 minutes)
         this.maxStatusTime = 300000;
         this.currentStatus = "";
         this.gri = "";
@@ -25,7 +25,7 @@ dojo.declare("oscars.StatusPoll", null, {
             var status = dojo.byId("statusReplace").innerHTML;
             if (status != oscarsState.statusPoll.currentStatus) {
                 if ((status == "FINISHED") || (status == "FAILED") ||
-                    (status == "CANCELLED") || (status == "ACTIVE")) {
+                    (status == "CANCELLED")) {
                     oscarsState.statusPoll.stop();
                     return;
                 }
