@@ -75,6 +75,8 @@ public class VlanMapFilter implements PolicyFilter{
             }
             byte[] topoVlans = VlanMapFilter.rangeStringToMask(l2scData.getVlanRangeAvailability());
             PathElemParam vlanRangeParam = pathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            //initialize to tagged
+            untagMap.put(link.getFQTI(), false);
             
             //Apply filters to map unless we're requesting untagged which 
             // always occurs at the link level
@@ -88,6 +90,12 @@ public class VlanMapFilter implements PolicyFilter{
             
             if(vlanRangeParam != null){
                 hopVlanStr = vlanRangeParam.getValue();
+                /* set untagged if a negative number is given 
+                   because this may be from DB */
+                if(hopVlanStr != null && hopVlanStr.startsWith("-")){
+                    this.log.debug("added negative number to untag map " + link.getFQTI());
+                    untagMap.put(link.getFQTI(), true);
+                }
                 byte[] hopVlans = VlanMapFilter.rangeStringToMask(hopVlanStr);
                 for(int j = 0; j < hopVlans.length; j++){
                     topoVlans[j] &= hopVlans[j];
@@ -106,7 +114,6 @@ public class VlanMapFilter implements PolicyFilter{
                     vlanMap.put(k(link), VlanMapFilter.rangeStringToMask(l2scData.getVlanRangeAvailability()));
                 }
             }else{
-                untagMap.put(link.getFQTI(), false);
                 vlanMap.put(k(link), topoVlans);
             }
         }
