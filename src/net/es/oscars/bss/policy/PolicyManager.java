@@ -4,8 +4,9 @@ import java.util.*;
 
 import org.apache.log4j.*;
 
-import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.PathType;
+
 import java.util.Properties;
 import net.es.oscars.PropHandler;
 
@@ -51,9 +52,11 @@ public class PolicyManager {
         BandwidthFilter bwf = new BandwidthFilter();
         bwf.applyFilter(newReservation, activeReservations);
         
-        PolicyFilter vlf = PolicyFilterFactory.create(this.vlanFilter);
-        vlf.applyFilter(newReservation, activeReservations);
-
+        if(newReservation.getPath(PathType.LOCAL).isLayer2()){
+            PolicyFilter vlf = PolicyFilterFactory.create(this.vlanFilter);
+            vlf.applyFilter(newReservation, activeReservations);
+        }
+        
         this.log.info("checkOversubscribed.end");
     }
 
