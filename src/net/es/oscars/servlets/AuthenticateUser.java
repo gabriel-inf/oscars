@@ -34,6 +34,7 @@ public class AuthenticateUser extends HttpServlet {
         String sesUserName = userSession.checkSession(null, rmiClient, request, methodName);
         if (sesUserName != null) {
             userName = sesUserName;
+            rmiClient = userSession.getAaaInterface();
         } else {
             userName = request.getParameter("userName");
             rmiClient = RmiUtils.getAaaRmiClient(methodName, log);
