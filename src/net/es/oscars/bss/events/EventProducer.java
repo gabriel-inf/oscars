@@ -87,6 +87,13 @@ public class EventProducer{
         }
         OSCARSEvent event = new OSCARSEvent();
         HashMap<String, String[]> resvParams= null;
+        /* set userLogin to payload sender if exists
+           We should really add a list of requesters like
+           in the policy interface but this will have to do 
+           for now.*/
+        if(resv != null && resv.getPayloadSender() != null){
+            userLogin = resv.getPayloadSender();
+        }
         try {
             resvParams = HashMapTypeConverter.reservationToHashMap(resv);
         } catch (BSSException e) {
