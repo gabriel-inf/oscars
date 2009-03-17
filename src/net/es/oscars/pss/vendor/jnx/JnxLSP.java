@@ -191,7 +191,16 @@ public class JnxLSP {
         } else if (isL3) {
             hm.put("resv-id", circuitName);
             hm.put("lsp_from", lspData.getIngressRtrLoopback());
-            hm.put("lsp_to", lspData.getEgressRtrLoopback());
+            String lspTo = null;
+            // get IP associated with physical interface before egress
+            ipaddr =
+                lspData.getLastXfaceElem().getLink().getValidIpaddr();
+            if (ipaddr != null) {
+                lspTo = ipaddr.getIP();
+            } else {
+                throw new PSSException("Egress port has no IP in DB!");
+            }
+            hm.put("lsp_to", lspTo);
             hm.put("source-address", layer3Data.getSrcHost());
             hm.put("destination-address", layer3Data.getDestHost());
             Integer intParam = layer3Data.getSrcIpPort();
