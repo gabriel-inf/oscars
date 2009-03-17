@@ -280,7 +280,7 @@ public class PSLookupClient {
                 serviceName = nbURL;
             }
 
-            String serviceDescr = props.getProperty("reg.idc.description");
+            String serviceDescr = props.getProperty("reg.nb.description");
             if(serviceDescr == null){
                 serviceDescr = nbURL + "'s NB";
             }

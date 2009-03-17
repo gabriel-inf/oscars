@@ -38,7 +38,7 @@ public class LSRegisterJob  implements Job{
         Session bss = this.core.getBssSession();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("external.service.lsRegister", true);
-        Properties nbProps = propHandler.getPropertyGroup("notifybroker", true);
+        Properties nbProps = propHandler.getPropertyGroup("notify.ws.broker", true);
         String nbURL = nbProps.getProperty("url");
         if(nbURL == null){
             nbURL = idcURL + "Notify";

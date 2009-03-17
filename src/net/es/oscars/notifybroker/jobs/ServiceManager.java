@@ -19,16 +19,16 @@ import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 
 public class ServiceManager {
-	private Logger log;
+    private Logger log;
     private ArrayList<Class> serviceJobs;
     private NotifyBrokerCore core;
     private String nbURL;
     private String repo;
     private String axisConfig;
     private String axisConfigNoRampart;
-    
+
     private long INIT_WAIT = 30;
-    
+
     /**
      * Default constructor. Schedules those
      * jobs that are specified in oscars.properties.
@@ -51,7 +51,7 @@ public class ServiceManager {
             this.log.error(e.getMessage());
             return;
         }
-        
+
         /* Set IDC URL */
         if(this.nbURL == null){
             try{
@@ -64,7 +64,7 @@ public class ServiceManager {
                 return;
             }
         }
-        
+
         /* Load service modules */
         for(int i = 1; props.getProperty(i+"") != null; i++){
             String service = props.getProperty(i+"");
@@ -73,19 +73,19 @@ public class ServiceManager {
             }
         }
         if(props.getProperty("initWaitTime") != null){
-	    	 try{
-	    		 INIT_WAIT = Long.parseLong(props.getProperty("initWaitTime"));
-	         }catch(Exception e){}
-	     }
+            try{
+                INIT_WAIT = Long.parseLong(props.getProperty("initWaitTime"));
+            }catch(Exception e){}
+        }
         /* Load JobDataMap and schedule jobs */
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("init", true);
         for(Class serviceJob : serviceJobs){
-        	Date date = new Date(System.currentTimeMillis() + INIT_WAIT*1000);
+            Date date = new Date(System.currentTimeMillis() + INIT_WAIT*1000);
             this.scheduleServiceJob(serviceJob, dataMap, date);
         }
     }
-    
+
     /**
      * Schedules a service job for execution. Adds values to JobDataMap
      * common to external services such as local IDC URL and the location
@@ -101,7 +101,7 @@ public class ServiceManager {
         String triggerName = "serviceTrig-" + job.hashCode()+currTime;
         String jobName = "serviceJob-" + job.hashCode()+currTime;
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
-                                                  date, null, 0, 0L);
+                date, null, 0, 0L);
         JobDetail jobDetail = new JobDetail(jobName, "EXT_SERVICE", job);
         dataMap.put("nbURL", this.nbURL);
         dataMap.put("repo", this.repo);
@@ -116,5 +116,5 @@ public class ServiceManager {
             this.log.error("Scheduler exception: " + ex);    
         }
     }
-	    
+
 }
