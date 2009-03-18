@@ -1,19 +1,19 @@
-# Only set OSCARS_HOME if not already set
-[ -z "$OSCARS_HOME" ] && OSCARS_HOME=../..
-echo OSCARS_HOME is $OSCARS_HOME
+# Assume in trunk/examples/javaClients if OSCARS_HOME not set
+OSCARS_LIB="${OSCARS_HOME-../..}/lib"
+echo OSCARS_LIB is $OSCARS_LIB
 # update classpath
 OSCARS_CLASSPATH=""
-for f in "$OSCARS_HOME"/lib/*.jar
+for f in "$OSCARS_LIB"/*.jar
 do
  OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
-for f in "$OSCARS_HOME"/lib/axis2/*.jar
+for f in "$OSCARS_LIB"/axis2/*.jar
 do
  OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
 
 CLASSPATH=.:../../build/examples/classes:$OSCARS_CLASSPATH
-export OSCARS_HOME=$OSCARS_HOME
+export OSCARS_LIB=$OSCARS_LIB
 export CLASSPATH=$CLASSPATH
 
 #echo CLASSPATH is $CLASSPATH
