@@ -5,8 +5,6 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.output.*;
 import org.jdom.xpath.*;
 
 import org.apache.log4j.*;
@@ -149,6 +147,7 @@ public class JnxLSP {
             hm.put("lsp_class-of-service", "4");
         }
 
+        JnxConnection conn = new JnxConnection();
         if (isL2) {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
@@ -169,7 +168,11 @@ public class JnxLSP {
                 hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
                 hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
-                this.setupLogin(lspData.getIngressLink(), hm);
+                try {
+                    conn.setupLogin(lspData.getIngressLink(), hm);
+                } catch (IOException e) {
+                    throw new PSSException(e.getMessage());
+                }
             } else {
                 // get IP associated with first in-facing physical interface
                 PathElem ingressPathElem = lspData.getIngressPathElem();
@@ -186,7 +189,11 @@ public class JnxLSP {
                 hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
                 hm.put("interface", lspData.getEgressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getEgressLink().getPort().getTopologyIdent());
-                this.setupLogin(lspData.getEgressLink(), hm);
+                try {
+                    conn.setupLogin(lspData.getEgressLink(), hm);
+                } catch (IOException e) {
+                    throw new PSSException(e.getMessage());
+                }
             }
         } else if (isL3) {
             hm.put("resv-id", circuitName);
@@ -223,7 +230,11 @@ public class JnxLSP {
             hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
-            this.setupLogin(lspData.getIngressLink(), hm);
+            try {
+                conn.setupLogin(lspData.getIngressLink(), hm);
+            } catch (IOException e) {
+                throw new PSSException(e.getMessage());
+            }
             hm.put("firewall_filter_marker", this.props.getProperty("firewall_filter_marker"));
         }
         hm.put("lsp_setup-priority", this.commonProps.getProperty("lsp_setup-priority"));
@@ -232,7 +243,7 @@ public class JnxLSP {
         // reset to beginning
         pathElems = path.getPathElems();
         hops = lspData.getHops(pathElems, direction, false);
-        this.setupLSP(hops, hm);
+        this.setupLSP(conn, hops, hm);
         this.log.info("jnx.createPath.end");
     }
 
@@ -299,6 +310,7 @@ public class JnxLSP {
         HashMap<String, String> hm = new HashMap<String, String>();
         String circuitName = this.getCircuitName(resv.getGlobalReservationId(),
                                                 resv.getDescription());
+        JnxConnection conn = new JnxConnection();
         if (isL2) {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
@@ -306,25 +318,34 @@ public class JnxLSP {
                 hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
                 hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
-
-                this.setupLogin(lspData.getIngressLink(), hm);
+                try {
+                    conn.setupLogin(lspData.getIngressLink(), hm);
+                } catch (IOException e) {
+                    throw new PSSException(e.getMessage());
+                }
             } else {
                 hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
                 hm.put("interface", lspData.getEgressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getEgressLink().getPort().getTopologyIdent());
-
-                this.setupLogin(lspData.getEgressLink(), hm);
+                try {
+                    conn.setupLogin(lspData.getEgressLink(), hm);
+                } catch (IOException e) {
+                    throw new PSSException(e.getMessage());
+                }
             }
         } else if (isL3) {
             hm.put("resv-id", circuitName);
             hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
-
-            this.setupLogin(lspData.getIngressLink(), hm);
+            try {
+                conn.setupLogin(lspData.getIngressLink(), hm);
+            } catch (IOException e) {
+                throw new PSSException(e.getMessage());
+            }
         }
 
-        this.teardownLSP(hm);
+        this.teardownLSP(conn, hm);
         this.log.info("jnx.teardownPath.end");
     }
 
@@ -338,50 +359,15 @@ public class JnxLSP {
     }
 
     /**
-     * Sets up login to a router given a link.
-     *
-     */
-     private void setupLogin(Link link, HashMap<String, String> hm) {
-        hm.put("login", this.props.getProperty("login"));
-        hm.put("router", link.getPort().getNode().getNodeAddress().getAddress());
-        String keyfile = null;
-        try {
-            keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
-        } catch (RemoteException e) {
-            this.log.error(e.getMessage());
-        }
-        hm.put("keyfile", keyfile);
-        hm.put("passphrase", this.props.getProperty("passphrase"));
-    }
-
-    /**
-     * Sets up login to a router given a router name.
-     *
-     */
-     private void setupLogin(String router, HashMap<String, String> hm) {
-        hm.put("login", this.props.getProperty("login"));
-        hm.put("router", router);
-        this.log.info("router: " + router);
-        String keyfile = null;
-        try {
-            keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
-        } catch (RemoteException e) {
-            this.log.error(e.getMessage());
-        }
-        hm.put("keyfile", keyfile);
-        hm.put("passphrase", this.props.getProperty("passphrase"));
-    }
-
-    /**
      * Sets up an LSP circuit.
      *
+     * @param conn Juniper connection instance
      * @param hops list of hops
      * @return boolean indicating success
      * @throws PSSException
      */
-    public boolean setupLSP(List<String> hops, HashMap<String, String> hm) throws PSSException {
-
-        LSPConnection conn = null;
+    public boolean setupLSP(JnxConnection conn, List<String> hops,
+                            HashMap<String, String> hm) throws PSSException {
 
         this.log.info("setupLSP.start");
         ConfigFinder configFinder = ConfigFinder.getInstance();
@@ -390,7 +376,6 @@ public class JnxLSP {
             // a router
             if (this.allowLSP) {
                 this.log.info("setting up connection for " + hm.get("router"));
-                conn = new LSPConnection();
                 conn.createSSHConnection(hm);
             } else {
                 this.log.info("not setting up connection");
@@ -404,7 +389,7 @@ public class JnxLSP {
                         this.props.getProperty("setupL3Template"));
             }
             this.configureLSP(hops, fname, conn, hm);
-            if (conn != null) {
+            if (conn.isActive()) {
                 this.readBytes(conn.in);
                 conn.shutDown();
             }
@@ -420,17 +405,17 @@ public class JnxLSP {
     /**
      * Tears down an LSP circuit.
      *
+     * @param conn Juniper connection instance
      * @return boolean indicating success
      * @throws PSSException
      */
-    public boolean teardownLSP(HashMap<String, String> hm) throws PSSException {
+    public boolean teardownLSP(JnxConnection conn, HashMap<String, String> hm)
+            throws PSSException {
 
-        LSPConnection conn = null;
         ConfigFinder configFinder = ConfigFinder.getInstance();
         this.log.info("teardownLSP.start");
         try {
             if (this.allowLSP) {
-                conn = new LSPConnection();
                 conn.createSSHConnection(hm);
             }
             String fname = null;
@@ -442,7 +427,7 @@ public class JnxLSP {
                         this.props.getProperty("teardownL3Template"));
             }
             this.configureLSP(null, fname, conn, hm);
-            if (conn != null) {
+            if (conn.isActive()) {
                 this.readBytes(conn.in);
                 conn.shutDown();
             }
@@ -491,23 +476,23 @@ public class JnxLSP {
         }
         try {
             HashMap<String, String> hm = new HashMap<String, String>();
-            this.setupLogin(router, hm);
-            LSPConnection conn = new LSPConnection();
+            JnxConnection conn = new JnxConnection();
+            conn.setupLogin(router, hm);
             conn.createSSHConnection(hm);
             if (!layer2Inputs.isEmpty()) {
                 String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("statusL2Template"));
                 Document doc = this.th.buildTemplate(fname);
-                this.sendCommand(doc, conn.out);
-                doc = this.readResponse(conn.in);
+                conn.sendCommand(doc);
+                doc = conn.readResponse();
                 circuitStatuses.putAll(this.parseLayer2Response(layer2Inputs, doc));
             }
             if (!layer3Inputs.isEmpty()) {
                 String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("statusL3Template"));
                 Document doc = this.th.buildTemplate(fname);
-                this.sendCommand(doc, conn.out);
-                doc = this.readResponse(conn.in);
+                conn.sendCommand(doc);
+                doc = conn.readResponse();
                 circuitStatuses.putAll(this.parseLayer3Response(layer3Inputs, doc));
             }
             conn.shutDown();
@@ -549,76 +534,20 @@ public class JnxLSP {
      * @throws IOException
      * @throws JDOMException
      */
-    private boolean configureLSP(List<String> hops,
-                                 String fname, LSPConnection conn, HashMap<String, String> hm)
+    private boolean configureLSP(List<String> hops, String fname,
+                                JnxConnection conn, HashMap<String, String> hm)
             throws IOException, JDOMException, PSSException {
 
-        OutputStream out = null;
-
-        if (conn != null) { out = conn.out; }
         StringBuilder sb = new StringBuilder();
-
         this.log.info("configureLSP.start");
         for (String key: hm.keySet()) {
             sb.append(key + ": " + hm.get(key) + "\n");
         }
         this.log.info(sb.toString());
         Document doc = this.th.fillTemplate(hm, hops, fname);
-        this.sendCommand(doc, out);
+        conn.sendCommand(doc);
         this.log.info("configureLSP.end");
         return true;
-    }
-
-    /**
-     * Sends the XML command to the server.
-     * @param doc XML document with Junoscript commands
-     * @param out output stream
-     * @throws IOException
-     * @throws JDOMException
-     * @throws PSSException
-     */
-    private void sendCommand(Document doc, OutputStream out)
-            throws IOException, JDOMException, PSSException {
-
-        XMLOutputter outputter = new XMLOutputter();
-        Format format = outputter.getFormat();
-        format.setLineSeparator("\n");
-        format.setEncoding("US-ASCII");
-        outputter.setFormat(format);
-        // log, and then send to router
-        String logOutput = outputter.outputString(doc);
-        this.log.info("\n" + "SENDING\n" + logOutput);
-        // this will only be null if allowLSP is false
-        if (out != null) {
-            outputter.output(doc, out);
-        }
-    }
-
-    /**
-     * Reads the XML response from the socket created earlier into a DOM
-     * (makes for easier parsing).
-     *
-     * @param in InputStream
-     * @return XML document with response from server
-     * @throws IOException
-     * @throws JDOMException
-     * @throws PSSException
-     */
-    private Document readResponse(InputStream in)
-            throws IOException, JDOMException, PSSException {
-
-        ByteArrayOutputStream buff  = new ByteArrayOutputStream();
-        Document doc = null;
-        SAXBuilder b = new SAXBuilder();
-        doc = b.build(in);
-        if (doc == null) {
-            throw new PSSException("Juniper router did not return a response");
-        }
-        // for logging purposes only
-        XMLOutputter outputter = new XMLOutputter();
-        outputter.output(doc, buff);
-        this.log.info(buff.toString());
-        return doc;
     }
 
     /**
@@ -636,7 +565,7 @@ public class JnxLSP {
             throws IOException, JDOMException {
 
         this.log.info("parseLayer2Response.start");
-        List connectionList = this.getElements(doc, "connection");
+        List connectionList = JnxReplyHandler.getElements(doc, "connection");
         Map<String,VendorStatusResult> circuitStatuses =
             new HashMap<String,VendorStatusResult>();
         Map<String,JnxStatusResult> currentVlans =
@@ -740,25 +669,7 @@ public class JnxLSP {
             }
             circuitStatuses.put(vlanId, statusResult);
         }
-        this.log.info("parseLayer2Response.finish");
-        return circuitStatuses;
-    }
-
-    private List getElements(Document doc, String elementName)
-            throws JDOMException {
-
-        Element root = doc.getRootElement();
-        // NOTE WELL: if response format changes, this won't work
-        Element rpcReply = (Element) root.getChildren().get(0);
-        Element firstChild = (Element) rpcReply.getChildren().get(0);
-        String uri = firstChild.getNamespaceURI();
-        // XPath doesn't have way to name default namespace
-        Namespace ns = Namespace.getNamespace("ns", uri);
-        // find all connections with status info
-        XPath xpath = XPath.newInstance("//ns:" + elementName);
-        xpath.addNamespace(ns);
-        List elementList = xpath.selectNodes(doc);
-        return elementList;
+        this.log.info("parseLayer2Response.finish"); return circuitStatuses;
     }
 
     /**
@@ -779,7 +690,7 @@ public class JnxLSP {
             new HashMap<String,VendorStatusResult>();
         Map<String,JnxStatusResult> currentGris =
             new HashMap<String,JnxStatusResult>();
-        List mplsLspList = this.getElements(doc, "mpls-lsp");
+        List mplsLspList = JnxReplyHandler.getElements(doc, "mpls-lsp");
         for (Iterator i = mplsLspList.iterator(); i.hasNext();) {
             Element mplsLsp = (Element) i.next();
             List mplsLspChildren = mplsLsp.getChildren();
@@ -859,6 +770,7 @@ public class JnxLSP {
         }
         buffStream.close();
     }
+
     /**
      * @return the allowLSP
      */

@@ -1,10 +1,11 @@
 package net.es.oscars.pss.vendor.jnx;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
+
+import org.jdom.*;
+import org.jdom.input.*;
+import org.jdom.output.*;
 
 import java.net.Socket;
 import java.net.URL;
@@ -20,25 +21,33 @@ import org.apache.log4j.*;
 // for ssh
 import com.jcraft.jsch.*;
 
+import net.es.oscars.ConfigFinder;
+import net.es.oscars.PropHandler;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.pss.PSSException;
 
 /**
- * Class to encapsulate the connection stuff.
+ * Class to encapsulate ssh connections to routers.
  */
-public class LSPConnection {
+public class JnxConnection {
     public InputStream in;
     public OutputStream out;
     private Session session;
     private Channel channel;
     private SSLSocketFactory sslsf;
     private org.apache.log4j.Logger log;
+    private Properties props;
+    private boolean isActive;
 
-    public LSPConnection() {
+    public JnxConnection() {
         this.session = null;
         this.channel = null;
         this.in = null;
         this.out = null;
         this.sslsf = null;
+        this.isActive = false;
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("pss.jnx", true);
         this.log = org.apache.log4j.Logger.getLogger(this.getClass());
     }
 
@@ -98,6 +107,93 @@ public class LSPConnection {
         } catch (JSchException ex) {
             throw new PSSException(ex.getMessage());
         }
+        this.isActive = true;
+    }
+
+    /**
+     * Indicates whether SSH connection has been set up.
+     *
+     * @return boolean indicating whether connection has been set up
+     */
+     public boolean isActive() {
+         return this.isActive;
+    }
+
+    /**
+     * Sets up login to a router given a link.
+     *
+     */
+     public void setupLogin(Link link, HashMap<String, String> hm) 
+             throws IOException {
+        hm.put("login", this.props.getProperty("login"));
+        hm.put("router", link.getPort().getNode().getNodeAddress().getAddress());
+        String keyfile = null;
+        keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
+        hm.put("keyfile", keyfile);
+        hm.put("passphrase", this.props.getProperty("passphrase"));
+    }
+
+    /**
+     * Sets up login to a router given a router name.
+     *
+     */
+     public void setupLogin(String router, HashMap<String, String> hm)
+            throws IOException {
+        hm.put("login", this.props.getProperty("login"));
+        hm.put("router", router);
+        this.log.info("router: " + router);
+        String keyfile = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
+        hm.put("keyfile", keyfile);
+        hm.put("passphrase", this.props.getProperty("passphrase"));
+    }
+
+    /**
+     * Sends the XML command to the server.
+     * @param doc XML document with Junoscript commands
+     * @throws IOException
+     * @throws JDOMException
+     * @throws PSSException
+     */
+    public void sendCommand(Document doc)
+            throws IOException, JDOMException, PSSException {
+
+        XMLOutputter outputter = new XMLOutputter();
+        Format format = outputter.getFormat();
+        format.setLineSeparator("\n");
+        format.setEncoding("US-ASCII");
+        outputter.setFormat(format);
+        // log, and then send to router
+        String logOutput = outputter.outputString(doc);
+        this.log.info("\n" + "SENDING\n" + logOutput);
+        if (this.isActive) {
+            outputter.output(doc, this.out);
+        }
+    }
+
+    /**
+     * Reads the XML response from the socket created earlier into a DOM
+     * (makes for easier parsing).
+     *
+     * @return XML document with response from server
+     * @throws IOException
+     * @throws JDOMException
+     * @throws PSSException
+     */
+    public Document readResponse()
+            throws IOException, JDOMException, PSSException {
+
+        ByteArrayOutputStream buff  = new ByteArrayOutputStream();
+        Document doc = null;
+        SAXBuilder b = new SAXBuilder();
+        doc = b.build(this.in);
+        if (doc == null) {
+            throw new PSSException("Juniper router did not return a response");
+        }
+        // for logging purposes only
+        XMLOutputter outputter = new XMLOutputter();
+        outputter.output(doc, buff);
+        this.log.info(buff.toString());
+        return doc;
     }
 
     /**
