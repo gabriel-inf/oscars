@@ -78,6 +78,9 @@
                     <user-var>destination-address</user-var>
                   </destination-address>
                   <dscp optional="yes"><user-var>dscp</user-var></dscp>
+                  <protocol optional="yes">
+                    <user-var>protocol</user-var>
+                  </protocol>
                   <source-port optional="yes">
                     <user-var>source-port</user-var>
                   </source-port>
@@ -109,6 +112,9 @@
                     <user-var>destination-address</user-var>
                   </destination-address>
                   <dscp optional="yes"><user-var>dscp</user-var></dscp>
+                  <protocol optional="yes">
+                    <user-var>protocol</user-var>
+                  </protocol>
                   <source-port optional="yes">
                     <user-var>source-port</user-var>
                   </source-port>
@@ -140,6 +146,9 @@
                     <user-var>destination-address</user-var>
                   </destination-address>
                   <dscp optional="yes"><user-var>dscp</user-var></dscp>
+                  <protocol optional="yes">
+                    <user-var>protocol</user-var>
+                  </protocol>
                   <source-port optional="yes">
                     <user-var>source-port</user-var>
                   </source-port>
