@@ -221,12 +221,13 @@ public class JnxLSP {
             }
             param = layer3Data.getDscp();
             if (param != null) {
-                hm.put("dscp", param);
+                hm.put("traffic-class", param);
             }
             param = layer3Data.getProtocol();
             if (param != null) {
                 hm.put("protocol", param);
             }
+            hm.put("table", "inet");
             hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));

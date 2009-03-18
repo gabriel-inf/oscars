@@ -188,16 +188,19 @@
           <name><user-var>resv-id</user-var></name>
           <instance-type>forwarding</instance-type>
           <routing-options>
-            <static>
-              <route>
-                <destination>
-                  <user-var>destination-address</user-var>
-                </destination>
-                <lsp-next-hop>
-                  <name><user-var>resv-id</user-var></name>
-                </lsp-next-hop>
-              </route>
-            </static>
+            <rib>
+              <name><user-var>resv-id</user-var><txt>.</txt><user-var>table</user-var><txt>.0</txt></name>
+              <static>
+                <route>
+                  <destination>
+                    <user-var>destination-address</user-var>
+                  </destination>
+                  <lsp-next-hop>
+                    <name><user-var>resv-id</user-var></name>
+                  </lsp-next-hop>
+                </route>
+              </static>
+            </rib>
           </routing-options>
         </instance>
       </routing-instances>

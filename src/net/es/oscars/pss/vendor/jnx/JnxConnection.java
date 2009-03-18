@@ -59,6 +59,7 @@ public class JnxConnection {
         this.session.disconnect();
         this.in.close();
         this.out.close();
+        this.isActive = false;
     }
 
     /**
