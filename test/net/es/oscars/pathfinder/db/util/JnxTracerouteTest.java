@@ -39,9 +39,9 @@ public class JnxTracerouteTest {
     public void jnxTraceroute() throws PathfinderException, IOException {
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        String ingressNode = this.props.getProperty("ingressNode");
+        String src = this.props.getProperty("jnxSource");
         List<String> hops =
-            jnxTraceroute.traceroute(ingressNode,
+            jnxTraceroute.traceroute(src,
                                      this.props.getProperty("destHost"));
         assert !hops.isEmpty();
     
@@ -52,9 +52,9 @@ public class JnxTracerouteTest {
         List<String> hops = null;
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        String ingressNode = this.props.getProperty("ingressNode");
+        String src = this.props.getProperty("jnxSource");
         hops =
-            jnxTraceroute.traceroute(ingressNode,
+            jnxTraceroute.traceroute(src,
                                      this.props.getProperty("destHost"));
         // should be at least one hop
         List<String> rawHops = jnxTraceroute.getRawHopData();
