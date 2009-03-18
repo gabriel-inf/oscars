@@ -1,0 +1,203 @@
+<junoscript version="1.0" release="7.3">
+<rpc><lock-configuration /></rpc>
+<rpc>
+  <load-configuration>
+    <configuration>
+      <protocols>
+        <mpls>
+          <label-switched-path>
+            <name><user-var>resv-id</user-var></name>
+            <from><user-var>lsp_from</user-var></from>
+            <to><user-var>lsp_to</user-var></to>
+            <metric>65535</metric>
+            <bandwidth>
+              <per-traffic-class-bandwidth>
+                <user-var>bandwidth</user-var>
+              </per-traffic-class-bandwidth>
+            </bandwidth>
+	    <setup-priority>
+              <user-var>lsp_setup-priority</user-var>
+	    </setup-priority>
+	    <reservation-priority>
+              <user-var>lsp_reservation-priority</user-var>
+	    </reservation-priority>
+            <primary>
+              <name><user-var>resv-id</user-var></name>
+            </primary>
+            <policing>
+              <filter><user-var>resv-id</user-var></filter>
+            </policing>
+          </label-switched-path>
+
+          <!--
+          The specification of the
+          path element must be referenced by the <primary> label in the
+          above section.  Each hop in the path is enclosed within a <name>
+          element within a <path-list> element.  These elements are added
+          programmatically. -->
+          <path>
+             <name><user-var>resv-id</user-var></name>
+             <!--
+             <path-list>
+                 <name><user-var>hop1-addr</user-var></name>
+             </path-list>
+             ...
+             <path-list>
+                 <name><user-var>hopN-addr</user-var></name>
+             </path-list>
+             -->
+          </path>
+        </mpls>
+      </protocols>
+      <firewall>
+        <policer>
+          <name><user-var>resv-id</user-var></name>
+          <if-exceeding>
+            <bandwidth-limit>
+              <user-var>bandwidth</user-var>
+            </bandwidth-limit>
+            <burst-size-limit>
+              <user-var>policer_burst-size-limit</user-var>
+            </burst-size-limit>
+          </if-exceeding>
+          <then>
+            <forwarding-class>scavenger-service</forwarding-class>
+          </then>
+        </policer>
+        <family>
+          <inet>
+            <filter>
+              <name><user-var>tester_interface_filter</user-var></name>
+              <term>
+                <name><user-var>resv-id</user-var></name>
+                <from>
+                  <source-address>
+                    <user-var>source-address</user-var>
+                  </source-address>
+                  <destination-address>
+                    <user-var>destination-address</user-var>
+                  </destination-address>
+                  <traffic-class optional="yes"><user-var>traffic-class</user-var></traffic-class>
+                  <source-port optional="yes">
+                    <user-var>source-port</user-var>
+                  </source-port>
+                  <destination-port optional="yes">
+                    <user-var>destination-port</user-var>
+                  </destination-port>
+                </from>
+                <then>
+                  <count><user-var>resv-id</user-var></count>
+                  <forwarding-class>expedited-forwarding</forwarding-class>
+                  <routing-instance>
+                    <user-var>resv-id</user-var>
+                  </routing-instance>
+                </then>
+              </term>
+              <term insert="after" name="firewall_filter_marker">
+                <name><user-var>resv-id</user-var></name>
+              </term>
+            </filter>
+            <filter>
+              <name><user-var>internal_interface_filter</user-var></name>
+              <term>
+                <name><user-var>resv-id</user-var></name>
+                <from>
+                  <source-address>
+                    <user-var>source-address</user-var>
+                  </source-address>
+                  <destination-address>
+                    <user-var>destination-address</user-var>
+                  </destination-address>
+                  <traffic-class optional="yes"><user-var>traffic-class</user-var></traffic-class>
+                  <source-port optional="yes">
+                    <user-var>source-port</user-var>
+                  </source-port>
+                  <destination-port optional="yes">
+                    <user-var>destination-port</user-var>
+                  </destination-port>
+                </from>
+                <then>
+                  <count><user-var>resv-id</user-var></count>
+                  <forwarding-class>expedited-forwarding</forwarding-class>
+                  <routing-instance>
+                    <user-var>resv-id</user-var>
+                  </routing-instance>
+                </then>
+              </term>
+              <term insert="after" name="firewall_filter_marker">
+                <name><user-var>resv-id</user-var></name>
+              </term>
+            </filter>
+            <filter>
+              <name><user-var>external_interface_filter</user-var></name>
+              <term>
+                <name><user-var>resv-id</user-var></name>
+                <from>
+                  <source-address>
+                    <user-var>source-address</user-var>
+                  </source-address>
+                  <destination-address>
+                    <user-var>destination-address</user-var>
+                  </destination-address>
+                  <traffic-class optional="yes"><user-var>traffic-class</user-var></traffic-class>
+                  <source-port optional="yes">
+                    <user-var>source-port</user-var>
+                  </source-port>
+                  <destination-port optional="yes">
+                    <user-var>destination-port</user-var>
+                  </destination-port>
+                </from>
+                <then>
+                  <count><user-var>resv-id</user-var></count>
+                  <forwarding-class>expedited-forwarding</forwarding-class>
+                  <routing-instance><user-var>resv-id</user-var></routing-instance>
+                </then>
+              </term>
+              <term insert="after" name="firewall_filter_marker">
+                <name><user-var>resv-id</user-var></name>
+              </term>
+            </filter>
+          </inet>
+          <any>
+            <filter>
+              <name><user-var>resv-id</user-var></name>
+              <term>
+                <name><user-var>resv-id</user-var></name>
+                <then>
+                  <policer><user-var>resv-id</user-var></policer>
+                  <count><user-var>resv-id</user-var></count>
+                  <forwarding-class>expedited-forwarding</forwarding-class>
+                  <accept/>
+                </then>
+              </term>
+            </filter>
+          </any>
+        </family>
+      </firewall>
+      <routing-instances>
+        <instance>
+          <name><user-var>resv-id</user-var></name>
+          <instance-type>forwarding</instance-type>
+          <routing-options>
+            <rib>
+              <name><user-var>resv-id</user-var><txt>.</txt><user-var>table</user-var><txt>.0</txt></name>
+              <static>
+                <route>
+                  <destination>
+                    <user-var>destination-address</user-var>
+                  </destination>
+                  <lsp-next-hop>
+                    <name><user-var>resv-id</user-var></name>
+                  </lsp-next-hop>
+                </route>
+              </static>
+            </rib>
+          </routing-options>
+        </instance>
+      </routing-instances>
+    </configuration>
+  </load-configuration>
+</rpc>
+<rpc><commit-configuration /></rpc>
+<rpc><unlock-configuration /></rpc>
+</junoscript>
