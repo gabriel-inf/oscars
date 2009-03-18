@@ -221,7 +221,7 @@ public class JnxLSP {
             }
             param = layer3Data.getDscp();
             if (param != null) {
-                hm.put("traffic-class", param);
+                hm.put("dscp", param);
             }
             param = layer3Data.getProtocol();
             if (param != null) {
