@@ -77,7 +77,7 @@
                   <destination-address>
                     <user-var>destination-address</user-var>
                   </destination-address>
-                  <traffic-class optional="yes"><user-var>traffic-class</user-var></traffic-class>
+                  <dscp optional="yes"><user-var>dscp</user-var></dscp>
                   <source-port optional="yes">
                     <user-var>source-port</user-var>
                   </source-port>
@@ -108,7 +108,7 @@
                   <destination-address>
                     <user-var>destination-address</user-var>
                   </destination-address>
-                  <traffic-class optional="yes"><user-var>traffic-class</user-var></traffic-class>
+                  <dscp optional="yes"><user-var>dscp</user-var></dscp>
                   <source-port optional="yes">
                     <user-var>source-port</user-var>
                   </source-port>
@@ -139,7 +139,7 @@
                   <destination-address>
                     <user-var>destination-address</user-var>
                   </destination-address>
-                  <traffic-class optional="yes"><user-var>traffic-class</user-var></traffic-class>
+                  <dscp optional="yes"><user-var>dscp</user-var></dscp>
                   <source-port optional="yes">
                     <user-var>source-port</user-var>
                   </source-port>
