@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.*;
 
+import org.apache.axis2.databinding.types.xsd.DateTime;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
@@ -33,7 +34,8 @@ public class ListReservationsClient extends ExampleClient {
     private String between_b = null;
     private String dotfile = null;
     private String[] topNodes = null;
-    private int numResults = 10;;
+    private String maintdbfile = null;
+    private int numResults = 10;
 
     /**
      * @param args
@@ -82,6 +84,8 @@ public class ListReservationsClient extends ExampleClient {
             this.printResDetails(details[i]);
         }
         this.createDOT(details);
+        this.createMaintDB(details);
+
         return response;
     }
 
@@ -98,6 +102,7 @@ public class ListReservationsClient extends ExampleClient {
             String strOffset = "";
             String description = "";
             String strDotfile = "";
+            String strMaintDBfile = "";
 
             if (isInteractive) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -121,11 +126,16 @@ public class ListReservationsClient extends ExampleClient {
                 strDotfile = br.readLine().trim();
                 if (!strDotfile.equals("")) {
                     this.dotfile = strDotfile;
+                    System.out.print("Nodes to put on top of graph? (comma-separated list of node ids, default is auto): ");
+                    String strTopNode  = br.readLine().trim();
+                    if (!strTopNode.equals("")) {
+                        this.topNodes = strTopNode.split(",");
+                    }
                 }
-                System.out.print("Nodes to put on top of graph? (comma-separated list of node ids, default is auto): ");
-                String strTopNode  = br.readLine().trim();
-                if (!strTopNode.equals("")) {
-                    this.topNodes = strTopNode.split(",");
+                System.out.print("MaintDB filename (default none): ");
+                strMaintDBfile = br.readLine().trim();
+                if (!strMaintDBfile.equals("")) {
+                    this.maintdbfile = strMaintDBfile;
                 }
 
             } else {
@@ -268,6 +278,58 @@ public class ListReservationsClient extends ExampleClient {
             sb.append("\n");
          }
          System.out.println(sb.toString());
+    }
+
+
+
+    public void createMaintDB(ResDetails[] resList) throws IOException {
+        if (this.maintdbfile == null) {
+            return;
+        }
+        Calendar cal = Calendar.getInstance();
+        String nowSecs = ""+cal.getTimeInMillis()/1000;
+        String output = "";
+        for (ResDetails details : resList) {
+            String gri = details.getGlobalReservationId();
+            String prefix = "oscars-+-"+gri+"-+-";
+
+            String startTime = ""+details.getStartTime();
+            String endTime = ""+details.getEndTime();
+            String creator = details.getLogin();
+            String desc = details.getDescription();
+            Layer2Info l2Info = details.getPathInfo().getLayer2Info();
+            Layer3Info l3Info = details.getPathInfo().getLayer3Info();
+
+            CtrlPlaneHopContent[] hops = details.getPathInfo().getPath().getHop();
+
+            output += prefix +"carrier-+-ESnet\n";
+            output += prefix +"id-+-"+gri+"\n";
+            output += prefix +"last_update-+-"+nowSecs+"\n";
+            output += prefix +"creator-+-"+creator+"\n";
+            output += prefix +"description-+-"+desc+"\n";
+            output += prefix +"startTime-+-"+startTime+"\n";
+            output += prefix +"endTime-+-"+endTime+"\n";
+
+            int i = 0;
+            for (CtrlPlaneHopContent hop : hops) {
+                String fullLinkId = hop.getLink().getId();
+                Hashtable<String, String> parsed = URNParser.parseTopoIdent(fullLinkId);
+                String domainId = parsed.get("domainId");
+                String nodeId = parsed.get("nodeId");
+                String portId = parsed.get("portId");
+                String linkId = parsed.get("linkId");
+                String outHop = nodeId+":";
+                if (linkId.equals("*")) {
+                    outHop += portId+"."+hop.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
+                } else {
+                    outHop += linkId;
+                }
+
+                output += prefix+"path-+-seq-+-"+i+"-+-hop-+-"+outHop+"\n";
+                i++;
+            }
+        }
+        System.out.println(output);
     }
 
     public void createDOT(ResDetails[] resList) throws IOException {

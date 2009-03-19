@@ -4,11 +4,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Date;
 
 import org.apache.axis2.AxisFault;
+import org.apache.axis2.databinding.types.xsd.DateTime;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
@@ -44,17 +46,18 @@ public class ListReservationCLI {
     private String between_b = null;
     private String dotfile = null;
     private String[] topNodes = null;
-    private int numResults = 10;;
+    private String maintdbfile = null;
+    private int numResults = 10;
 
     public ListRequest readArgs(String[] args){
-        DCNLookupClient lookupClient = null; 
+        DCNLookupClient lookupClient = null;
         try{
             lookupClient = new DCNLookupClient("http://www.perfsonar.net/gls.root.hints");
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
         }
-        
+
         /* Set request parameters */
         try{
             for(int i = 0; i < args.length; i++){
@@ -122,6 +125,13 @@ public class ListReservationCLI {
                         this.topNodes = args[i+1].trim().split(",");
                     } else {
                         System.out.println("Error: topnode parameter not specified");
+                        System.exit(1);
+                    }
+                }else if(args[i].equals("-maintdb")){
+                    if (args.length >= i && args[i+1] != null) {
+                        this.maintdbfile = args[i+1].trim();
+                    } else {
+                        System.out.println("Error: dot parameter not specified");
                         System.exit(1);
                     }
                 }else if(args[i].equals("-between")){
@@ -416,6 +426,56 @@ public class ListReservationCLI {
          System.out.println("\t[-topnode \"NODE_URN\"]\t . Specify node URN (comma-separate values for multiple) to be set at the top of the graph when creating the DOT file. Used to clean up some graphs. \n\t\tExample: -topnode \"urn:ogf:network:es.net:lbl-mr1\"");
     }
 
+    public void createMaintDB(ResDetails[] resList) throws IOException {
+        if (this.maintdbfile == null) {
+            return;
+        }
+        Calendar cal = Calendar.getInstance();
+        String nowSecs = ""+cal.getTimeInMillis()/1000;
+        String output = "";
+        for (ResDetails details : resList) {
+            String gri = details.getGlobalReservationId();
+            String prefix = "oscars-+-"+gri+"-+-";
+
+            String startTime = ""+details.getStartTime();
+            String endTime = ""+details.getEndTime();
+            String creator = details.getLogin();
+            String desc = details.getDescription();
+            Layer2Info l2Info = details.getPathInfo().getLayer2Info();
+            Layer3Info l3Info = details.getPathInfo().getLayer3Info();
+
+            CtrlPlaneHopContent[] hops = details.getPathInfo().getPath().getHop();
+
+            output += prefix +"carrier-+-ESnet\n";
+            output += prefix +"id-+-"+gri+"\n";
+            output += prefix +"last_update-+-"+nowSecs+"\n";
+            output += prefix +"creator-+-"+creator+"\n";
+            output += prefix +"description-+-"+desc+"\n";
+            output += prefix +"startTime-+-"+startTime+"\n";
+            output += prefix +"endTime-+-"+endTime+"\n";
+
+            int i = 0;
+            for (CtrlPlaneHopContent hop : hops) {
+                String fullLinkId = hop.getLink().getId();
+                Hashtable<String, String> parsed = URNParser.parseTopoIdent(fullLinkId);
+                String domainId = parsed.get("domainId");
+                String nodeId = parsed.get("nodeId");
+                String portId = parsed.get("portId");
+                String linkId = parsed.get("linkId");
+                String outHop = nodeId+":";
+                if (linkId.equals("*")) {
+                    outHop += portId+"."+hop.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
+                } else {
+                    outHop += linkId;
+                }
+
+                output += prefix+"path-+-seq-+-"+i+"-+-hop-+-"+outHop+"\n";
+                i++;
+            }
+        }
+        System.out.println(output);
+    }
+
 
 
     public void createDOT(ResDetails[] resList) throws IOException {
@@ -456,6 +516,7 @@ public class ListReservationCLI {
                 cli.printResDetails(filteredDetails[i]);
             }
             cli.createDOT(filteredDetails);
+            cli.createMaintDB(filteredDetails);
 
 
 
