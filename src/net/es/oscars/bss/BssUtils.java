@@ -225,10 +225,14 @@ public class BssUtils {
      * @throws BSSException
      */
     public static List<String> getVlanTags(Path path) throws BSSException {
-        List<PathElem> pathElems = path.getPathElems();
         List<String> vlanTags = new ArrayList<String>();
+        if (path == null) {
+            log.info("path is null");
+            return vlanTags;
+        }
+        List<PathElem> pathElems = path.getPathElems();
         if ((pathElems == null) || pathElems.isEmpty()) {
-            log.info("null or empty");
+            log.info("pathElems null or empty");
             return vlanTags;
         }
         for (PathElem pathElem: pathElems) {
