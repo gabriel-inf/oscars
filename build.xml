@@ -29,9 +29,9 @@
     <available file="${tomcat.loc}" property="tomcat.local"/>
     <available file="${oscars.home}" type="dir" property="oscars.home.set" />
     <available file="${catalina.home}" type="dir" property="catalina.home.set" />
-    
+
     <target name="all" depends="clean, build-all" description="Recompile all source, build all artifacts"/>
-    
+
     <!-- Compile everything except tests.  Various targets use portions they
          need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <!-- Added the debug flags to give us line numbers in stack traces -mrt -->
@@ -48,7 +48,7 @@
 
     <!-- build all the artifacts -->
     <target name="build-all" depends="oscars-core,aaa-core,notifybroker-core,oscars-aar,oscars-war,notify-aar"/>
-        
+
     <!-- Compile the main application .jar file -->
     <target name="oscars-core" description="Main OSCARS jar file" depends="compile">
 
@@ -89,7 +89,7 @@
         <!-- <delete dir="${build.home}/aaa-core/" /> -->
     </target>
 
-	 <!-- Compile the NotificationBroker application .jar file -->
+     <!-- Compile the NotificationBroker application .jar file -->
     <target name="notifybroker-core" description="NotificationBroker core" depends="compile">
 
         <!-- Copy over the specific log4j.properties file -->
@@ -102,7 +102,7 @@
             <fileset dir="${build.home}/notifybroker-core/" includes="log4j.properties"/>
         </jar>
     </target>
-	
+
     <!-- Compile the RMI jar file included in the WAR and AAR -->
     <target name="rmijar" description="Create jar with RMI classes" depends="compile">
         <jar destfile="${build.home}/oscars-rmi.jar">
@@ -137,7 +137,7 @@
                 includes="**/oscars/*.class, **/oscars/database/HibernateBean.class,
                           **/oscars/bss/*.class, **/oscars/bss/topology/*.class,
                           **/oscars/aaa/*.class, **/oscars/servlets/**/*.class,
-                          **/oscars/wsdlTypes/GetTopology*.class, 
+                          **/oscars/wsdlTypes/GetTopology*.class,
                           **/oscars/bss/events/OSCARSEvent*.class, *.properties"
 
                 excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager.class,
@@ -205,7 +205,7 @@
         <delete dir="${test.classes}"/>
         <delete dir="${build.home}/oscars-core"/>
         <delete dir="${build.home}/aaa-core"/>
-    	<delete dir="${build.home}/notify-core"/>
+        <delete dir="${build.home}/notify-core"/>
         <delete dir="${build.home}/oscars-war"/>
         <delete dir="${build.home}/oscars-aar"/>
         <delete dir="${build.home}/notify-aar"/>
@@ -228,26 +228,26 @@
         <replace summary="true" file="conf/axis-tomcat/oscars-services.xml" token="**path_to_rampConfig**" value="${conf.axistomcat}"/>
         <copy file="conf/axis-tomcat/notify-services.xml.template" tofile="conf/axis-tomcat/notify-services.xml"/>
         <replace summary="true" file="conf/axis-tomcat/notify-services.xml" token="**path_to_rampConfig**" value="${conf.axistomcat}"/>
-        <copy file="conf/axis-tomcat/axis2.xml.template" tofile="conf/axis-tomcat/axis2.xml"/> 
+        <copy file="conf/axis-tomcat/axis2.xml.template" tofile="conf/axis-tomcat/axis2.xml"/>
         <replace summary="true" file="conf/axis-tomcat/axis2.xml" token="**path_to_rampConfig**" value="${conf.axistomcat}"/>
         <!-- Put in the full path to rampConfig.xml in case OSCARS_HOME is set -->
         <replace summary="true" file="conf/axis-tomcat/rampConfig.xml.template" token="**path_to_repo**" value="${conf.axistomcat}"/>
-        
+
         <!-- for lack of a better place, need bss.cfg.xml for tools -->
         <property name="tool.classes" value="build/tools"/>
         <copy todir="${tool.classes}">
             <fileset dir="conf/db" includes="c3p0.properties, aaa.cfg.xml, bss.cfg.xml, notify.cfg.xml"/>
         </copy>
     </target>
-    
-    <target name="initConfDir" depends="initOscarsHomeConf,initCatalinaHomeConf,initPwdConf" 
+
+    <target name="initConfDir" depends="initOscarsHomeConf,initCatalinaHomeConf,initPwdConf"
             description="Finds the directory where configuration files should be copied" />
-            
+
     <target name="findConfigs">
         <condition property="use.oscars.home">
             <isset property="oscars.home.set"/>
         </condition>
-        
+
         <condition property="use.catalina.home">
             <and>
                 <not>
@@ -256,7 +256,7 @@
                 <isset property="catalina.home.set"/>
             </and>
         </condition>
-        
+
         <condition property="use.pwd.conf">
             <and>
                 <not>
@@ -268,27 +268,27 @@
             </and>
         </condition>
     </target>
-    
+
     <target name="initOscarsHomeConf" depends="findConfigs" if="use.oscars.home">
         <echo message="Using OSCARS_HOME" />
         <mkdir dir="${oscars.home}/conf"/>
-        
+
         <property name="conf.axistomcat" value="${oscars.home}/conf/axis-tomcat/"/>
         <mkdir dir="${conf.axistomcat}"/>
-        
+
         <property name="conf.mail_templates" value="${oscars.home}/conf/mail_templates/"/>
         <mkdir dir="${conf.mail_templates}"/>
-        
+
         <property name="conf.notify" value="${oscars.home}/conf/notify/"/>
         <mkdir dir="${conf.notify}"/>
-        
+
         <property name="conf.properties" value="${oscars.home}/conf/properties/"/>
         <mkdir dir="${conf.properties}"/>
-        
+
         <property name="conf.pss" value="${oscars.home}/conf/pss/"/>
         <mkdir dir="${conf.pss}"/>
     </target>
-    
+
     <target name="initCatalinaHomeConf" depends="findConfigs" if="use.catalina.home">
         <echo message="Using CATALINA_HOME" />
         <property name="conf.axistomcat" value="${axis2.repo}"/>
@@ -297,7 +297,7 @@
         <property name="conf.properties" value="${catalina.home}/shared/classes/server/"/>
         <property name="conf.pss" value="${catalina.home}/shared/classes/server/"/>
     </target>
-    
+
     <target name="initPwdConf" depends="findConfigs" if="use.pwd.conf">
         <echo message="Using PWD" />
         <property name="conf.axistomcat" value="conf/axis-tomcat/"/>
@@ -306,15 +306,15 @@
         <property name="conf.properties" value="conf/properties/"/>
         <property name="conf.pss" value="conf/pss/"/>
     </target>
-            
+
     <target name="axis2LocalCopy" depends="axis2LocalCopy.webapp,axis2LocalCopy.dists"/>
-    
+
     <target name="axis2LocalCopy.webapp" if="axis2.local.webapp">
         <copy todir="lib/axis2" >
             <fileset dir="${axis2.loc.webapp}" includes="*.jar"/>
         </copy>
     </target>
-    
+
     <target name="axis2LocalCopy.dists" unless="axis2.local.webapp">
         <copy todir="lib/axis2">
             <fileset dir="${axis2.loc.dists}" includes="*.jar"/>
@@ -360,6 +360,13 @@
             <remoteRepository refid="remote.repository.java"/>
         </artifact:dependencies>
         <copy file="${maven.repo}/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar" todir="${build.lib}"/>
+        <artifact:dependencies>
+            <dependency groupId="net.sf.jopt-simple" artifactId="jopt-simple" version="3.0.1" />
+            <localRepository refid="local.repository"/>
+            <remoteRepository refid="remote.repository.mvn"/>
+        </artifact:dependencies>
+        <copy file="${maven.repo}/net/sf/jopt-simple/jopt-simple/3.0.1/jopt-simple-3.0.1.jar" todir="${build.lib}"/>
+
     </target>
 
     <!-- Using Axis2, generates code in net.es.oscars.ws and
@@ -645,7 +652,7 @@
 
         <copy file="conf/logging/axis2.log4j.properties" tofile="${axis2.home}/WEB-INF/classes/log4j.properties"/>
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/client/security/"/>
-    	<copy file="${build.classes}/net/es/oscars/ConfigFinder.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/"/>
+        <copy file="${build.classes}/net/es/oscars/ConfigFinder.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/"/>
     </target>
 
     <target name="deploynotifyaar" description="copy OSCARSNotify.aar to axis2 services directory" depends="notify-aar,deploylibs,copydefaults,copydomain">
@@ -672,19 +679,19 @@
     <target name="copydomain" depends = "prepare" if="domain.exists">
         <!-- don't let newer  values of these files overwrite existing one, but later inform user that a new file exists -->
         <available property="OSCARS.jks.exists" file="${conf.axistomcat}/OSCARS.jks"  value="true" />
-        <uptodate property="OSCARS.jks.uptodate" 
-            targetfile="${conf.axistomcat}/OSCARS.jks" 
+        <uptodate property="OSCARS.jks.uptodate"
+            targetfile="${conf.axistomcat}/OSCARS.jks"
             srcfile="${domain.home}/server/OSCARS.jks"/>
          <available property="ssl-keystore.jks.exists" file="${conf.axistomcat}/ssl-keystore.jks"  value="true" />
-         <uptodate property="ssl-keystore.jks.uptodate" 
-             targetfile="${conf.axistomcat}/ssl-keystore.jks" 
+         <uptodate property="ssl-keystore.jks.uptodate"
+             targetfile="${conf.axistomcat}/ssl-keystore.jks"
              srcfile="conf/axis-tomcat/ssl-keystore.jks.template"/>
         <available property="rampConfig.xml.exists" file="${conf.axistomcat}/rampConfig.xml" value="true"/>
         <uptodate property="rampConfig.xml.uptodate"
             targetfile="conf/axis-tomcat/rampConfig.xml"
             srcfile="conf/axis-tomcat/rampConfig.xml.template" />
         <!-- let  new value of axis2.xml over write existing one, but edit the target in edit_axis2.xml -->
-        <uptodate property="axis2.xml.exists" 
+        <uptodate property="axis2.xml.exists"
             targetfile="${conf.axistomcat}/axis2.xml"
             srcfile="conf/axis-tomcat/axis2.xml.template" />
         <!-- Copy domain keys and properties and generic axis.xml files to conf.axistomcat location -->
@@ -720,18 +727,18 @@
         <available property="ssl-keystore.jks.exists" file="${conf.axistomcat}/ssl-keystore.jks" value="true"/>
         <available property="rampConfig.xml.exists" file="${conf.axistomcat}/rampConfig.xml" value="true" />
         <available property="OSCARS.jks.exists" file="${conf.axistomcat}/OSCARS.jks"  value="true" />
-        <uptodate property="OSCARS.jks.uptodate" 
-            targetfile="${conf.axistomcat}/OSCARS.jks" 
+        <uptodate property="OSCARS.jks.uptodate"
+            targetfile="${conf.axistomcat}/OSCARS.jks"
             srcfile="conf/axis-tomcat/OSCARS.jks.template"/>
         <available property="ssl-keystore.jks.exists" file="${conf.axistomcat}/ssl-keystore.jks"  value="true" />
-        <uptodate property="ssl-keystore.jks.uptodate" 
-             targetfile="${conf.axistomcat}/ssl-keystore.jks" 
+        <uptodate property="ssl-keystore.jks.uptodate"
+             targetfile="${conf.axistomcat}/ssl-keystore.jks"
              srcfile="conf/axis-tomcat/ssl-keystore.jks.template"/>
         <available property="oscars.properties.exists" file="${conf.properties}/oscars.properties" value="true"/>
         <available property="test.properties.exists" file="${conf.properties}/test.properties" value="true"/>
         <available property="idc-topicnamespace.xml.exists" file="${conf.notify}/idc-topicnamespace.xml" value="true"/>
         <available property="idc-topicset.xml.exists" file="${conf.notify}/idc-topicset.xml" value="true"/>
-        
+
         <copy file="conf/axis-tomcat/ssl-keystore.jks.template" tofile="conf/axis-tomcat/ssl-keystore.jks" />
         <copy file="conf/axis-tomcat/OSCARS.jks.template" tofile="conf/axis-tomcat/OSCARS.jks" />
         <copy file="conf/axis-tomcat/axis2.xml.template" tofile="conf/axis-tomcat/axis2.xml" />
@@ -742,7 +749,7 @@
                 <include name="axis2.xml" unless="axis2.xml.exists"/>
                 <include name="axis2-norampart.xml" unless="axis2.norampart.xml.exists"/>
                 <include name="ssl-keystore.jks" unless="ssl-keystore.jks.exists"/>
-            	<include name="rampConfig.xml" unless="rampConfig.xml.exists"/>
+                <include name="rampConfig.xml" unless="rampConfig.xml.exists"/>
                 <include name="OSCARS.jks" unless="OSCARS.jks.exists"/>
             </fileset>
         </copy>
@@ -762,7 +769,7 @@
     </target>
 
     <target name="editRampConfig" unless="rampConfig.xml.exists">
-        <copy file="conf/axis-tomcat/rampConfig.xml.template" tofile="conf/axis-tomcat/rampConfig.xml"/> 
+        <copy file="conf/axis-tomcat/rampConfig.xml.template" tofile="conf/axis-tomcat/rampConfig.xml"/>
         <input
             message="Please enter the service user name to be used when it acts as a client."
             addproperty="user.alias"
@@ -782,7 +789,7 @@
   **** You must add a KeyEntry for the service. ****
         </echo>
     </target>
-    
+
     <target name="new.keystore.warning1" unless="OSCARS.jks.uptodate">
         <echo level="warning">  ****  A new OSCARS.jks.template.file is available  ***
   **** You may want to merge it with the one in  ***
@@ -796,14 +803,14 @@
   **** You may need to add the CA for your target host. ****
         </echo>
     </target>
-    
+
     <target name="new.keystore.warning2" unless="ssl-keystore.jks.uptodate">
         <echo level="warning">  ****  A new ssl-keystore.jks.template.file is available  ***
   **** You may want to merge it with the one in  ***
   **** ${conf.axistomcat}  ****
         </echo>
     </target>
-    
+
     <target name="setupServer" description="populate the shared/classes directory"
                       depends="prepare,copydomain,copydefaults,existing.keystore.warning1,
         new.keystore.warning1,existing.keystore.warning2,new.keystore.warning2,setupTomcat">
@@ -811,13 +818,13 @@
         <copy todir="${conf.axistomcat}/modules/">
             <fileset dir="conf/axis-tomcat" includes="rampart*.mar"/>
         </copy>
-        
+
         <!-- copy mail-templates to ${catalina.out}/shared/classes/server currently hardcoded in EmailObserver -->
         <mkdir dir="${conf.mail_templates}"/>
         <copy todir="${conf.mail_templates}">
             <fileset dir="conf/mail_templates" includes="*.xml"/>
         </copy>
-        
+
         <!-- copy PSS template files -->
         <copy todir="${conf.pss}">
             <fileset dir="conf/pss/" includes="cisco*.xml, juniper*.xml "/>
@@ -825,7 +832,7 @@
         <chmod dir="${conf.pss}" perm="600" includes="*key"/>
         <chmod dir="${conf.properties}" perm="600" includes="oscars.properties"/>
     </target>
-    
+
     <target name="setupTomcat" if="${tomcat.local}">
         <!-- copy log4j.jar and commons-logging.jar to common/lib so that Tomcat will use log4j logging -->
         <copy todir="${tomcat.loc}">
@@ -835,7 +842,7 @@
         <!-- copy log4j.properties into Tomcat classpath -->
         <copy file="conf/logging/tomcat.log4j.properties" tofile="${catalina.home}/common/classes/log4j.properties"/>
     </target>
-    
+
     <!-- TestNG test section *********************************************** -->
     <property name="test.classes" value="build/test"/>
     <copy todir="${test.classes}">
