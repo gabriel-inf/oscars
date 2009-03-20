@@ -27,6 +27,10 @@ dojo.declare("oscars.StatusPoll", null, {
                 if ((status == "FINISHED") || (status == "FAILED") ||
                     (status == "CANCELLED")) {
                     oscarsState.statusPoll.stop();
+                    if (status == "FAILED") {
+                        var oscarsStatus = dojo.byId("oscarsStatus");
+                        oscarsStatus.className = "failure";
+                    }
                     return;
                 }
                 oscarsState.statusPoll.currentStatusTime = 0;
