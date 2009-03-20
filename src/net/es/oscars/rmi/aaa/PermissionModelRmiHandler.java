@@ -21,7 +21,7 @@ public class PermissionModelRmiHandler extends ModelRmiHandlerImpl  {
         this.log = Logger.getLogger(this.getClass());
     }
 
-    public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> list(HashMap<String, Object> parameters)  {
         this.log.debug("listPermissions.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -36,7 +36,7 @@ public class PermissionModelRmiHandler extends ModelRmiHandlerImpl  {
         return result;
     }
 
-    public HashMap<String, Object> find(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> find(HashMap<String, Object> parameters)  {
         this.log.debug("findPermission.start");
         Integer id = (Integer) parameters.get("id");
         Session aaa = core.getAaaSession();

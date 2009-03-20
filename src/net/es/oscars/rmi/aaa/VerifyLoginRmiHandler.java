@@ -41,7 +41,7 @@ public class VerifyLoginRmiHandler {
                     throw AAAEx;
                 }
             }
-        } catch (Exception ex) {
+        } catch (AAAException ex) {
             this.log.warn(ex);
             aaa.getTransaction().rollback();
             throw new RemoteException(ex.getMessage(),ex);
@@ -60,7 +60,7 @@ public class VerifyLoginRmiHandler {
         String username = null;
         try {
             username = um.verifyLogin(userName, password, sessionName);
-        } catch (Exception ex) {
+        } catch (AAAException ex) {
             this.log.warn(ex);
             aaa.getTransaction().rollback();
             throw new RemoteException(ex.getMessage(),ex);

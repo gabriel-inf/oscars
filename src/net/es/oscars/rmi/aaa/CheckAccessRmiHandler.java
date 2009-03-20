@@ -7,6 +7,7 @@ import org.apache.log4j.*;
 import org.hibernate.Session;
 
 import net.es.oscars.aaa.*;
+import net.es.oscars.aaa.AAAException;
 
 
 public class CheckAccessRmiHandler {
@@ -14,7 +15,7 @@ public class CheckAccessRmiHandler {
     private Logger log = Logger.getLogger(CheckAccessRmiHandler.class);
 
 
-    public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException {
+    public AuthValue checkAccess(String userName, String resourceName, String permissionName)  {
         this.log.debug("checkAccess.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -28,7 +29,7 @@ public class CheckAccessRmiHandler {
 
     public Boolean
     checkDomainAccess(String userName,String institutionName, String srcTopologyId,String destTopologyId)
-        throws RemoteException {
+        {
         this.log.debug("checkDomainAccess.start");
         Boolean result = false;
         Session aaa = core.getAaaSession();
@@ -59,7 +60,7 @@ public class CheckAccessRmiHandler {
     }
     
     
-    public String getInstitution(String userName) throws RemoteException {
+    public String getInstitution(String userName)  {
         this.log.debug("getInstitution.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -71,20 +72,15 @@ public class CheckAccessRmiHandler {
         return institution;
     }
     
-    public List<String> getDomainInstitutions(String topologyId) throws RemoteException {
+    public List<String> getDomainInstitutions(String topologyId) {
         this.log.debug("getDomainInstitutions.start");
         List<String> institutions = null;
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
-        try{
-            SiteDAO siteDAO = new SiteDAO(this.core.getAaaDbName());
-            institutions = siteDAO.getInstitutions(topologyId);
-            aaa.getTransaction().commit();
-        }catch(Exception e){
-            aaa.getTransaction().rollback();
-            throw new RemoteException(e.toString());
-        }
-        this.log.debug("getDomainInstitutions.end");
+        SiteDAO siteDAO = new SiteDAO(this.core.getAaaDbName());
+        institutions = siteDAO.getInstitutions(topologyId);
+        aaa.getTransaction().commit();
+         this.log.debug("getDomainInstitutions.end");
         return institutions;
     }
 
@@ -96,13 +92,13 @@ public class CheckAccessRmiHandler {
      * @return AuthMultiValue a hashmap of resource names and hashmaps of permission names and authValues
      * @throws RemoteException
      */
-    public AuthMultiValue checkMultiAccess(String username, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException {
+    public AuthMultiValue checkMultiAccess(String username, HashMap<String, ArrayList<String>> resourcePermissions) {
         this.log.debug("checkMultiAccess.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         AuthMultiValue result = new AuthMultiValue();
 
-        try {
+
             UserManager um = core.getUserManager();
             Iterator<String> resIt = resourcePermissions.keySet().iterator();
             while (resIt.hasNext()) {
@@ -115,18 +111,14 @@ public class CheckAccessRmiHandler {
                 result.put(resourceName, permMap);
             }
             aaa.getTransaction().commit();
-        } catch (Exception ex) {
-            this.log.error(ex);
-            aaa.getTransaction().rollback();
-            throw new RemoteException(ex.toString());
-        }
+
         this.log.debug("checkMultiAccess.end");
         return result;
     }
 
 
     public AuthValue checkModResAccess(String userName, String resourceName, String permissionName,
-            int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI) throws RemoteException {
+            int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI)  {
         this.log.debug("checkModResAccess.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();

@@ -25,7 +25,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
     public HashMap<String, Object> list(HashMap<String, Object> parameters)
             throws RemoteException {
 
-        this.log.info("listAttributes.start");
+        this.log.debug("listAttributes.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         List<Attribute> attributes;
@@ -51,7 +51,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         }
         aaa.getTransaction().commit();
         result.put("attributes", attributes);
-        this.log.info("listAttributes.end");
+        this.log.debug("listAttributes.end");
         return result;
     }
 
@@ -71,8 +71,8 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
         Attribute oldAttribute = dao.queryByParam("name", attribute.getName());
         if (oldAttribute != null) {
             aaa.getTransaction().rollback();
-            throw new RemoteException("already found attribute with name:" +
-                                      attribute.getName());
+            this.log.info ("attribute with name: " + attribute.getName() + " exists");
+            throw new RemoteException("attribute with name: " + attribute.getName() + " exists");
         }
         dao.create(attribute);
         aaa.getTransaction().commit();
@@ -174,7 +174,7 @@ public class AttributeModelRmiHandler extends ModelRmiHandlerImpl {
     }
 
     public HashMap<String, Object> find(HashMap<String, Object> parameters)
-            throws RemoteException {
+        {
 
         this.log.debug("findAttribute.start");
         Integer id = (Integer) parameters.get("id");

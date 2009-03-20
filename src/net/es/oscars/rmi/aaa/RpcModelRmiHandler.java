@@ -21,7 +21,7 @@ public class RpcModelRmiHandler extends ModelRmiHandlerImpl {
         this.log = Logger.getLogger(this.getClass());
     }
 
-    public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> list(HashMap<String, Object> parameters)  {
         this.log.debug("listRpcs.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -42,7 +42,7 @@ public class RpcModelRmiHandler extends ModelRmiHandlerImpl {
         return result;
     }
 
-    public HashMap<String, Object> find(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> find(HashMap<String, Object> parameters)  {
         this.log.debug("findRpc.start");
         Integer id = (Integer) parameters.get("id");
         Session aaa = core.getAaaSession();

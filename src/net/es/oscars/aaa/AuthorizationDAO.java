@@ -298,9 +298,6 @@ public class AuthorizationDAO
     public List<Authorization> listAuthByAttr(String attrName)
             throws AAAException {
 
-        /* currently  not called - designed for use by Web interface to manage
-           authorizations */
-
         List<Authorization> auths = null;
         AttributeDAO attrDAO = new AttributeDAO(this.dbname);
 

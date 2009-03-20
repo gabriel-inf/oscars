@@ -61,10 +61,10 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                 Hibernate.initialize(user.getInstitution().getUsers());
             }
             aaa.getTransaction().commit();
-        } catch (Exception ex) {
-            this.log.error(ex);
+        } catch (AAAException ex) {
+            this.log.info(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.toString(),ex);
+            throw new RemoteException(ex.getMessage(),ex);
         }
         result.put("users", users);
         this.log.debug("listUsers.end");
@@ -74,7 +74,7 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
     public HashMap<String, Object> add(HashMap<String, Object> parameters)
             throws RemoteException {
 
-        this.log.debug("addUser.start");
+        this.log.info("addUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         ArrayList<String> addRoles =
             (ArrayList<String>) parameters.get("addRoles");
@@ -91,20 +91,20 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         try {
             mgr.create(user, addRoles);
             aaa.getTransaction().commit();
-        } catch (Exception ex) {
-            this.log.error(ex);
+        } catch (AAAException ex) {
+            this.log.info("Caught AAAException " + ex.getMessage());
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.toString(),ex);
-        }
+            throw new RemoteException(ex.getMessage(), ex);
+         }
         this.log.info("added user: " + user.getLogin());
-        this.log.debug("addUser.end");
+        this.log.info("addUser.end");
         return result;
     }
 
     public HashMap<String, Object> modify(HashMap<String, Object> parameters)
             throws RemoteException {
 
-        this.log.debug("modifyUser.start");
+        this.log.info("modifyUser.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         ArrayList<String> newRoles =
             (ArrayList<String>) parameters.get("newRoles");
@@ -172,19 +172,19 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                 }
             }
             aaa.getTransaction().commit();
-        } catch (Exception ex) {
-            this.log.error(ex);
+        } catch (AAAException ex) {
+            this.log.info(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.toString(),ex);
+            throw new RemoteException(ex.getMessage(),ex);
         } finally {
 
         }
-        this.log.debug("modifyUser.end");
+        this.log.info("modifyUser.end");
         return result;
     }
 
     public HashMap<String, Object> delete(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("deleteUser.start");
+        this.log.info("deleteUser.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         String username = (String) parameters.get("username");
@@ -192,14 +192,14 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
         try {
             mgr.remove(username);
             aaa.getTransaction().commit();
-        } catch (Exception ex) {
-            this.log.error(ex);
+        } catch (AAAException ex) {
+            this.log.info(ex);
             aaa.getTransaction().rollback();
-            throw new RemoteException(ex.toString(),ex);
+            throw new RemoteException(ex.getMessage(),ex);
         }
         HashMap<String, Object> result = new HashMap<String, Object>();
         this.log.info("deleted user: "+ username);
-        this.log.debug("deleteUser.end");
+        this.log.info("deleteUser.end");
         return result;
     }
 
@@ -244,10 +244,10 @@ public class UserModelRmiHandler extends ModelRmiHandlerImpl {
                 throw new AAAException("User not found");
             }
             aaa.getTransaction().commit();
-        } catch (Exception ex) {
+        } catch (AAAException ex) {
             aaa.getTransaction().rollback();
-            this.log.error(ex);
-            throw new RemoteException(ex.toString(),ex);
+            this.log.info(ex);
+            throw new RemoteException(ex.getMessage(),ex);
         }
         this.log.debug("findUser.end");
         return result;

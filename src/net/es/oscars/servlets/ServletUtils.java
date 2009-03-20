@@ -169,7 +169,8 @@ public class ServletUtils {
             while ((nestEx  = nestEx.getCause()) != null) {
                 errorMsg = nestEx.getMessage();
                 if (!(nestEx instanceof AAAException) &&
-                        !(nestEx instanceof BSSException)) {
+                        !(nestEx instanceof BSSException) &&
+                        !(nestEx instanceof RemoteException)) {
                     errorMsg = "internal error in core. "  + errorMsg;
                 }
             }

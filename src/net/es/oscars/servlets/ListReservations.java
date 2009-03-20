@@ -191,8 +191,10 @@ public class ListReservations extends HttpServlet {
             Path path = null;
             Path interPath = null;
             try {
-                // no path info will be displayed if only a requested path
                 path = resv.getPath(PathType.LOCAL);
+                if (path == null) {
+                    path = resv.getPath(PathType.REQUESTED);
+                }
                 interPath = resv.getPath(PathType.INTERDOMAIN);
             } catch (BSSException ex) {
                 outputMap.put("error", ex.getMessage());
@@ -265,6 +267,7 @@ public class ListReservations extends HttpServlet {
                 }
                 // may not have interdomain path, or may be older reservation
                 // with incomplete info for interdomain path
+                //if (vlanTag.equals("") && (path !=  null)) {
                 if (vlanTag.equals("")) {
                     vlanTags = BssUtils.getVlanTags(path);
                     if (!vlanTags.isEmpty()) {

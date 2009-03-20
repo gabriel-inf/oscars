@@ -12,6 +12,7 @@ import net.es.oscars.rmi.*;
 import net.es.oscars.rmi.model.*;
 
 import org.apache.log4j.*;
+import org.hibernate.Session;
 
 public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
     protected Logger log;
@@ -28,6 +29,7 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
     private ModelRmiHandler institutionModelHandler;
 
     protected static AaaRmiServer staticObject = null;
+    private AAACore core = AAACore.getInstance();
 
 
 
@@ -78,46 +80,90 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
     }
 
     public Boolean validSession(String userName, String sessionName) throws RemoteException {
-        return this.verifyLoginHandler.validSession(userName, sessionName);
+        try {
+            return this.verifyLoginHandler.validSession(userName, sessionName);
+        } catch (Exception e) {
+            this.handleFailure(e);
+            return false;
+        }
     }
 
     public String getInstitution(String userName) throws RemoteException {
-        return this.checkAccessHandler.getInstitution(userName);
+        try {
+            return this.checkAccessHandler.getInstitution(userName);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        }
+        return null;
     }
     
     
     public List<String> getDomainInstitutions(String topologyId) throws RemoteException{
-        return this.checkAccessHandler.getDomainInstitutions(topologyId);
+        try{
+            return this.checkAccessHandler.getDomainInstitutions(topologyId);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        }
+        return null; 
     }
 
     public String verifyLogin(String userName, String password, String sessionName) throws RemoteException {
-        return this.verifyLoginHandler.verifyLogin(userName, password, sessionName);
+        try {
+            return this.verifyLoginHandler.verifyLogin(userName, password, sessionName);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        } 
+        return null;
     }
 
     public String verifyDN(String dn) throws RemoteException {
-        return this.verifyLoginHandler.verifyDN(dn);
+        try {
+            return this.verifyLoginHandler.verifyDN(dn);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        } 
+        return null;
     }
 
     public AuthValue checkAccess(String userName, String resourceName, String permissionName) throws RemoteException {
-        return this.checkAccessHandler.checkAccess(userName, resourceName, permissionName);
+        try {
+            return this.checkAccessHandler.checkAccess(userName, resourceName, permissionName);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        } 
+        return null;
     }
 
     public AuthMultiValue checkMultiAccess(String userName, HashMap<String, ArrayList<String>> resourcePermissions) throws RemoteException {
-        return this.checkAccessHandler.checkMultiAccess(userName, resourcePermissions);
+        try {
+            return this.checkAccessHandler.checkMultiAccess(userName, resourcePermissions);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        } 
+        return null;
     }
 
     public AuthValue
         checkModResAccess(String userName, String resourceName, String permissionName,
             int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI) throws RemoteException {
-        return this.checkAccessHandler.checkModResAccess(userName, resourceName, permissionName, reqBandwidth, reqDuration, specPathElems, specGRI);
+        try {
+            return this.checkAccessHandler.checkModResAccess(userName, resourceName, permissionName, reqBandwidth, reqDuration, specPathElems, specGRI);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        } 
+        return null;
     }
     
     public Boolean
         checkDomainAccess(String userName,String institutionName,String srcTopologyId,String destTopologyId)
             throws RemoteException{
-        return this.checkAccessHandler.checkDomainAccess(userName,institutionName,srcTopologyId,destTopologyId);
+        try {
+            return this.checkAccessHandler.checkDomainAccess(userName,institutionName,srcTopologyId,destTopologyId);
+        } catch ( Exception e) {
+            this.handleFailure(e);
+        } 
+        return null;
     }
-
 
     public HashMap<String, Object> manageAaaObjects(HashMap<String, Object> parameters) throws RemoteException {
         ModelObject objectType = (ModelObject) parameters.get("objectType");
@@ -145,7 +191,22 @@ public class AaaRmiServer extends BaseRmiServer implements AaaRmiInterface  {
                 throw new RemoteException("unknown objectType");
             }
         } catch (Exception ex) {
-            log.error(ex);
+            this.handleFailure(ex);
+        }
+        return null; 
+    }
+    
+    private void handleFailure( Exception ex)  throws RemoteException{
+        if (ex instanceof RemoteException) {
+            throw (RemoteException) ex;
+        } else {
+            this.log.error ("Exception: " + ex.toString(), ex);
+            Session aaa = core.getAaaSession();
+            try {
+                aaa.getTransaction().rollback();
+            } catch (Exception e) {
+                // ignore this
+            }
             throw new RemoteException(ex.getMessage(),ex);
         }
     }

@@ -19,7 +19,7 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
         this.log = Logger.getLogger(this.getClass());
     }
 
-    public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> list(HashMap<String, Object> parameters)  {
         this.log.debug("listInstitutions.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -51,7 +51,7 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
 
 
     public HashMap<String, Object> add(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("addInstitution.start");
+        this.log.info("addInstitution.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -62,9 +62,8 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
         Institution oldInstitution = institutionDAO.queryByParam("name", institutionName);
         if (oldInstitution != null) {
             aaa.getTransaction().rollback();
-
-            this.log.debug("addInstitution.end");
-            return result;
+            this.log.info("duplicate institution");
+            throw new RemoteException("institution already exists: " + institutionName);
         }
 
         Institution institution = new Institution();
@@ -73,14 +72,14 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
 
         aaa.getTransaction().commit();
 
-        this.log.debug("addInstitution.end");
+        this.log.info("addInstitution.end");
         return result;
     }
 
 
 
-    public HashMap<String, Object> modify(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("modifyInstitution.start");
+    public HashMap<String, Object> modify(HashMap<String, Object> parameters) throws RemoteException{
+        this.log.info("modifyInstitution.start");
         Session aaa = core.getAaaSession();
 
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -96,7 +95,6 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
         if (institution == null) {
             aaa.getTransaction().rollback();
             institution.setUsers(null);
-
             throw new RemoteException("Institution not found");
         }
 
@@ -105,14 +103,14 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
 
         aaa.getTransaction().commit();
 
-        this.log.debug("modifyInstitution.end");
+        this.log.info("modifyInstitution.end");
         return result;
     }
 
 
 
     public HashMap<String, Object> delete(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("deleteInstitution.start");
+        this.log.info("deleteInstitution.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -152,11 +150,11 @@ public class InstitutionModelRmiHandler extends ModelRmiHandlerImpl {
 
         aaa.getTransaction().commit();
 
-        this.log.debug("deleteInstitution.end");
+        this.log.info("deleteInstitution.end");
         return result;
     }
 
-    public HashMap<String, Object> find(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> find(HashMap<String, Object> parameters)  {
         this.log.debug("findInstitution.start");
         Integer id = (Integer) parameters.get("id");
         Session aaa = core.getAaaSession();

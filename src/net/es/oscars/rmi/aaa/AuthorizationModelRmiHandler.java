@@ -44,17 +44,17 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
             try {
                 authorizations = authorizationDAO.listAuthByAttr(attrName);
             } catch (AAAException ex) {
-                this.log.error("exception: " + ex.getMessage());
+                this.log.info("AAAException: " + ex.getMessage());
                 aaa.getTransaction().rollback();
-                throw new RemoteException(ex.getMessage());
+                throw new RemoteException(ex.getMessage(),ex);
             }
         } else if (listType.equals("byUser")) {
             try {
                 authorizations = authorizationDAO.listAuthByUser(userName);
             } catch (AAAException ex) {
-                this.log.error("exception: " + ex.getMessage());
+                this.log.info("AAAException: " + ex.getMessage());
                 aaa.getTransaction().rollback();
-                throw new RemoteException(ex.getMessage());
+                throw new RemoteException(ex.getMessage(),ex);
             }
         } else if (listType.equals("ordered")) {
             authorizations = authorizationDAO.orderedList();
@@ -68,13 +68,12 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
         }
         result.put("authorizations", authorizations);
 
-
         aaa.getTransaction().commit();
         this.log.debug("listAuthorizations.end");
         return result;
     }
     public HashMap<String, Object> add(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("addAuthorization.start");
+        this.log.info("addAuthorization.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -87,18 +86,18 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
         String constraintValue = (String) parameters.get("constraintValue");
         try {
             authDAO.create(attributeName, resourceName, permissionName, constraintName, constraintValue);
-        } catch ( Exception e) {
-            this.log.error("caught Exception: " + e.toString());
+        } catch (AAAException e) {
+            this.log.info("caught AAAException " + e.getMessage());
             aaa.getTransaction().rollback();
-            throw new RemoteException(e.toString());
+            throw new RemoteException(e.getMessage(),e);
         }
         aaa.getTransaction().commit();
-        this.log.debug("addAuthorization.end");
+        this.log.info("addAuthorization.end");
         return result;
     }
 
     public HashMap<String, Object> modify(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("modifyAuthorization.start");
+        this.log.info("modifyAuthorization.start");
         Session aaa = core.getAaaSession();
         HashMap<String, Object> result = new HashMap<String, Object>();
 
@@ -119,19 +118,19 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
         try {
             Authorization auth = authDAO.query(oldAttributeName, oldResourceName, oldPermissionName, oldConstraintName);
             authDAO.update(auth, attributeName, resourceName, permissionName, constraintName, constraintValue);
-        } catch ( Exception e) {
-            this.log.error("caught Exception: " + e.toString());
+        } catch ( AAAException e) {
+            this.log.info("caught AAAException: " + e.getMessage());
             aaa.getTransaction().rollback();
-            throw new RemoteException(e.toString());
-        }
+            throw new RemoteException(e.getMessage(),e);
+        } 
 
         aaa.getTransaction().commit();
-        this.log.debug("modifyAuthorization.end");
+        this.log.info("modifyAuthorization.end");
         return result;
     }
 
     public HashMap<String, Object> delete(HashMap<String, Object> parameters) throws RemoteException {
-        this.log.debug("deleteAuthorization.start");
+        this.log.info("deleteAuthorization.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -143,17 +142,17 @@ public class AuthorizationModelRmiHandler extends ModelRmiHandlerImpl {
         AuthorizationDAO authDAO = new AuthorizationDAO(core.getAaaDbName());
         try {
             authDAO.remove(attributeName, resourceName, permissionName, constraintName);
-        } catch ( Exception e) {
-            this.log.error("Caugth Exception: " + e.toString());
+        } catch ( AAAException e) {
+            this.log.info("Caught AAAException: " + e.getMessage());
             aaa.getTransaction().rollback();
-            throw new RemoteException(e.toString());
+            throw new RemoteException(e.getMessage(),e);
         }
         aaa.getTransaction().commit();
-        this.log.debug("deleteAuthorization.end");
+        this.log.info("deleteAuthorization.end");
         return result;
     }
 
-    public HashMap<String, Object> find(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> find(HashMap<String, Object> parameters) {
         this.log.debug("findAuthorizationById.start");
         Integer id = (Integer) parameters.get("id");
         Session aaa = core.getAaaSession();

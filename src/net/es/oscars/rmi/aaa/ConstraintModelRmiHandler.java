@@ -21,7 +21,7 @@ public class ConstraintModelRmiHandler extends ModelRmiHandlerImpl {
     }
 
 
-    public HashMap<String, Object> list(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> list(HashMap<String, Object> parameters)  {
         this.log.debug("listConstraints.start");
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
@@ -36,7 +36,7 @@ public class ConstraintModelRmiHandler extends ModelRmiHandlerImpl {
         return result;
     }
 
-    public HashMap<String, Object> find(HashMap<String, Object> parameters) throws RemoteException {
+    public HashMap<String, Object> find(HashMap<String, Object> parameters)  {
         this.log.debug("findConstraintById.start");
         Integer id = (Integer) parameters.get("id");
         Session aaa = core.getAaaSession();
