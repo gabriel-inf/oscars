@@ -66,12 +66,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.manageAaaObjects(parameters);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage());
+            this.handleException(e,methodName);
         }
         this.log.debug("manageAaaObjects.end");
         return result;
@@ -87,12 +83,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.validSession(userName, sessionName);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception:" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("validSession.end");
         return result;
@@ -108,12 +100,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.verifyLogin(userName, password, sessionName);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("verifyLogin.end for: " + userName);
         return result;
@@ -130,12 +118,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
 
         try {
             result = this.remote.verifyDN(dn);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("verifyDN.end for:" + dn);
         return result;
@@ -150,12 +134,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.getInstitution(userName);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("getInstitution.end");
         return result;
@@ -170,12 +150,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.getDomainInstitutions(topologyId);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("getDomainInstitutions.end");
         return result;
@@ -190,12 +166,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.checkAccess(userName, resourceName, permissionName);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("checkAccess.end");
         return result;
@@ -211,12 +183,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.checkMultiAccess(userName, resourcePermissions);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("checkMultiAccess.end");
         return result;
@@ -233,12 +201,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.checkModResAccess(userName, resourceName, permissionName, reqBandwidth, reqDuration, specPathElems, specGRI);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("checkModResAccess.end");
         return result;
@@ -252,12 +216,8 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
         this.verifyRmiConnection(methodName);
         try {
             result = this.remote.checkDomainAccess(userName, institutionName, srcTopologyId, destTopologyId);
-        } catch (RemoteException e) {
-            this.log.info("Remote exception from AAA RMI server: " + e.getMessage());
-            throw e;
         } catch (Exception e) {
-            this.log.error(methodName + ": Exception from AAA RMI server" + e.getMessage(), e);
-            throw new RemoteException(e.getMessage(), e);
+            this.handleException(e,methodName);
         }
         this.log.debug("checkDomainAccess.end");
         return result;
@@ -275,5 +235,15 @@ public class AaaRmiClient extends BaseRmiClient implements AaaRmiInterface {
     public void setRemote(AaaRmiInterface remote) {
         super.setRemote(remote);
         this.remote = remote;
+    }
+    
+    private void handleException(Exception e, String methodName) throws RemoteException {
+        if (e instanceof RemoteException) {
+            this.log.info(methodName + ": Remote Exception from AAA RMI server " + e.getMessage());
+            throw (RemoteException) e;
+        }
+        // shouldn't happen
+        this.log.error(methodName + ": Exception from AAA RMI server " + e.toString(), e);
+        throw new RemoteException (e.getMessage(),e);
     }
 }

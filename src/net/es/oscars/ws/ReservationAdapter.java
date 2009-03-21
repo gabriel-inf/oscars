@@ -70,7 +70,7 @@ public class ReservationAdapter {
             // send notification in all cases
             String errMsg =
                 this.generateErrorMsg(resv, e.getMessage());
-            this.log.error(errMsg);
+            this.log.info(errMsg);
             throw e;
         }
         this.log.info("create.finish: " + resv.toString("bss"));
@@ -126,9 +126,11 @@ public class ReservationAdapter {
      */
     public String cancel(CancelReservation request, String username,
             BssRmiInterface rmiClient) throws RemoteException {
-
+ 
         String gri = request.getCancelReservation().getGri();
+        this.log.debug("CancelReservation start: " + gri);
         String status = rmiClient.cancelReservation(gri, username);
+        this.log.debug("CancelReservation end");
         return "Reservation cancellation status: " + status;
     }
 
@@ -264,7 +266,7 @@ public class ReservationAdapter {
 
         reply = rmiClient.getNetworkTopology(soapParams, username);
 
-        this.log.debug("createPath.finish");
+        this.log.debug("getNetworkTopology.finish");
         return reply;
     }
 

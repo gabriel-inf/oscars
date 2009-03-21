@@ -59,7 +59,11 @@ public class UnsafeCreatePathRmiHandler {
              errMessage = e.getMessage();
          } catch (InterdomainException e) {
              errMessage = e.getMessage();
+         } catch (Exception e ) {
+             errMessage = e.toString();
+             this.log.error("errMessage is " + errMessage);
          } finally {
+             this.log.info("errMessage is " + errMessage);
              if (errMessage != null) {
                  bss.getTransaction().rollback();
                  if (resv != null){

@@ -137,17 +137,18 @@ public class PathSetupManager{
         }
         
         /* Create path */
+
+        /* If not in reserved state throw exception because nothing to do
+         * or going to be canceled
+         */
+        if(!StateEngine.RESERVED.equals(StateEngine.getStatus(resv)) || 
+                (StateEngine.getLocalStatus(resv) & StateEngine.NEXT_STATUS_CANCEL) != 0){
+            this.releaseResvLock(resv.getGlobalReservationId());
+            throw new PSSException ("Cannot setup a path for a reservation in state " + StateEngine.getStatus(resv) );
+        }
         try{
-           /* If not in reserved state just exit because nothing to do
-            * or going to be canceled
-            */
-            if(!StateEngine.RESERVED.equals(StateEngine.getStatus(resv)) || 
-                    (StateEngine.getLocalStatus(resv) & StateEngine.NEXT_STATUS_CANCEL) != 0){
-                  this.releaseResvLock(resv.getGlobalReservationId());
-                  return StateEngine.getStatus(resv);
-            }
             se.updateStatus(resv, StateEngine.INSETUP);
-            
+ 
             /* Get next domain */
             Domain nextDomain = resv.getPath(PathType.INTERDOMAIN).getNextDomain();
             if(nextDomain == null){
@@ -486,8 +487,7 @@ public class PathSetupManager{
         try{
             this.teardown(resv, StateEngine.FAILED);
         }catch(Exception e){
-            e.printStackTrace();
-            this.log.error("Path "+gri+" was not removed after failure.");
+            this.log.error("Path "+gri+" was not removed after failure.", e);
         }finally{
             eventProducer.addEvent(failedType, login, errorSrc, resv, errorCode, errorMsg);
         }

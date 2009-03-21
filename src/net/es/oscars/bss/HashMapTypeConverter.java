@@ -59,11 +59,15 @@ public class HashMapTypeConverter {
         }
 
         //set path
-        if(resv.getPath(PathType.INTERDOMAIN) == null && resv.getPath(PathType.LOCAL) == null){
-            map.putAll(pathToHashMap(resv.getPath(PathType.REQUESTED)));
-        }else{
-            map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL)));
-            map.putAll(pathToHashMap(resv.getPath(PathType.INTERDOMAIN)));
+        try {
+            if(resv.getPath(PathType.INTERDOMAIN) == null && resv.getPath(PathType.LOCAL) == null){
+                map.putAll(pathToHashMap(resv.getPath(PathType.REQUESTED)));
+            }else{
+                map.putAll(pathToHashMap(resv.getPath(PathType.LOCAL)));
+                map.putAll(pathToHashMap(resv.getPath(PathType.INTERDOMAIN)));
+            }
+        }catch (Exception e){
+            log.error ("caught Exception trying to get path " + e.getMessage() );
         }
         return map;
     }

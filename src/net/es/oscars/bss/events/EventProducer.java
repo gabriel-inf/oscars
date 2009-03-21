@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.HashMap;
 
 import org.apache.log4j.*;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.HibernateException;
 import org.quartz.*;
 
 import net.es.oscars.bss.BSSException;
@@ -143,15 +146,34 @@ public class EventProducer{
         if(gri == null){
             return;
         }
+        this.log.info("updateResvStatusMsg "+ gri);
+        Session bss = core.getBssSession();
+        Transaction t = null;
+        Boolean myTr  = false;
+        try {
+            t = bss.getTransaction();
+        } catch (HibernateException e) {
+            this.log.info("Caught Hibernate Exception " + e.getMessage());
+        }
+        if (t == null){
+            bss.beginTransaction();
+            myTr = true;
+        }
         ReservationDAO resvDAO = new ReservationDAO(this.core.getBssDbName());
         //Query the db so modify untainted reservation copy
         Reservation dbResv = null;
         try{
             dbResv = resvDAO.query(gri);
-        }catch(BSSException e){
+        }catch(Exception e){
+            if (myTr) {
+                bss.getTransaction().rollback();
+            }
             return;
         }
         dbResv.setStatusMessage(errorMessage);
         resvDAO.update(dbResv);
+        if (myTr) {
+            bss.getTransaction().commit();
+        }
     }
 }

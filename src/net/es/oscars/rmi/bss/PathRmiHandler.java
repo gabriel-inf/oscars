@@ -82,19 +82,21 @@ public class PathRmiHandler {
         String errMessage = null;
         /* Check reservation parameters to make sure it can be created */
         try {
-	        if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null) {
-	            errMessage = "Path setup mode is null";
-	        } else if (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) {
-	            errMessage = "Path setup mode is not signal-xml";
-	        } else if(currTime.compareTo(resv.getStartTime()) < 0){
-	            errMessage = "Path cannot be created. Reservation " +
-	            "start time not yet reached.";
-	        } else if(currTime.compareTo(resv.getEndTime()) > 0){
-	            errMessage = "Path cannot be created. Reservation " +
-	            "end time has been reached.";
-	        }
+            if (resv.getPath(PathType.LOCAL) == null) {
+                errMessage = "Reservation has no LOCAL path";
+            } else if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null) {
+                errMessage = "Path setup mode is null";
+            } else if (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) {
+                errMessage = "Path setup mode is not signal-xml";
+            } else if(currTime.compareTo(resv.getStartTime()) < 0){
+                errMessage = "Path cannot be created. Reservation " +
+                "start time not yet reached.";
+            } else if(currTime.compareTo(resv.getEndTime()) > 0){
+                errMessage = "Path cannot be created. Reservation " +
+                "end time has been reached.";
+            }
         } catch (BSSException ex) {
-        	 errMessage = ex.getMessage();
+            errMessage = ex.getMessage();
         } finally {
             if (errMessage != null) {
                 bss.getTransaction().rollback();
