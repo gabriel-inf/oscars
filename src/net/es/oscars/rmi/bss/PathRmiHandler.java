@@ -82,6 +82,7 @@ public class PathRmiHandler {
         String errMessage = null;
         /* Check reservation parameters to make sure it can be created */
         try {
+            StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
             if (resv.getPath(PathType.LOCAL) == null) {
                 errMessage = "Reservation has no LOCAL path";
             } else if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null) {
@@ -107,7 +108,6 @@ public class PathRmiHandler {
         
         /* Forward */
         try {
-            StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FWD_STARTED, userName,
                                    "core", resv);
             boolean replyPresent = forwarder.createPath(resv);
@@ -196,12 +196,12 @@ public class PathRmiHandler {
                 this.rm.getConstrainedResv(gri, loginConstraint, institution,
                         tokenValue);
             /* Check reservation parameters */
-            if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
-                    (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
-                errMessage = "No reservations match request";
-            } else if (!resv.getStatus().equals("ACTIVE")) {
+            if (!resv.getStatus().equals("ACTIVE")) {
                 errMessage = "Path cannot be refreshed. " +
                 "Reservation is not active. Please run createPath first.";
+            }else if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
+                    (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ){
+                errMessage = "No reservations match request";
             }
         } catch (BSSException ex) {
         	  errMessage = ex.getMessage();
@@ -288,12 +288,11 @@ public class PathRmiHandler {
                                "core", resv);
         Forwarder forwarder = new Forwarder();
         try {
+            StateEngine.canUpdateStatus(resv, StateEngine.INTEARDOWN);
             if (resv.getPath(PathType.LOCAL).getPathSetupMode() == null ||
                 (!resv.getPath(PathType.LOCAL).getPathSetupMode().equals("signal-xml")) ) {
                 throw new RemoteException("No reservations match request");
             }
-            String currentStatus = StateEngine.getStatus(resv);
-            StateEngine.canModifyStatus(currentStatus, StateEngine.INTEARDOWN);
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FWD_STARTED, userName,
                                    "core", resv);
             boolean replyPresent = forwarder.teardownPath(resv);
