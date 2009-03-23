@@ -67,7 +67,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
                 .uniqueResult();
 
         if (dom == null) {
-            this.log.error("Could not find domain for topology ident ["+topologyIdent+"]");
+            this.log.warn("Could not find domain for topology ident ["+topologyIdent+"]");
         }
 
         return dom;
