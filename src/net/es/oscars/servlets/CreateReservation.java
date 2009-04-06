@@ -127,7 +127,7 @@ public class CreateReservation extends HttpServlet {
         // if not blank, check box indicating production circuit was checked
         if (strParam != null && !strParam.trim().equals("")) {
             this.log.info("production reservation created");
-            description = "[PRODUCTION CIRCUIT] " + strParam.trim();
+            description = "[PRODUCTION CIRCUIT] " + description;
         } else {
             this.log.debug("non-production circuit");
         }
