@@ -109,17 +109,15 @@ public class TopologyManager {
            this.sf.getCurrentSession().getTransaction().rollback();
            this.log.error("updateDomains: " + e.getMessage());
            e.printStackTrace(pw);
-           this.log.debug("error: "+e.getMessage());
-           this.log.debug(sw.toString());
+           this.log.error("error: "+e.getMessage());
            this.log.error(sw.toString());
            System.exit(-1);
         } catch (Exception e) {
            this.sf.getCurrentSession().getTransaction().rollback();
            this.log.error("updateDomains exception: " + e.getMessage());
            e.printStackTrace(pw);
+           this.log.error("error: "+e.getMessage());
            this.log.error(sw.toString());
-           this.log.debug("error: "+e.getMessage());
-           this.log.debug(sw.toString());
            System.exit(-1);
         }
         this.sf.getCurrentSession().getTransaction().commit();
@@ -216,7 +214,7 @@ public class TopologyManager {
                 Node foundNode = savedDomain.getNodeByTopoId(newNode.getTopologyIdent());
                 NodeAddress newNodeAddr = newNode.getNodeAddress();
                 if (foundNode == null) {
-                    this.log.debug("Will add node: "+newNode.getFQTI());
+                    this.log.info("Will add node: "+newNode.getFQTI());
                     nodesToInsert.add(newNode);
                     if (newNodeAddr != null) {
                         newNodeAddr.setNode(newNode);
@@ -279,7 +277,7 @@ public class TopologyManager {
                         }
                     }
                     if (invalidate && savedNode.isValid()) {
-                        this.log.debug("Will invalidate node: "+savedNode.getFQTI());
+                        this.log.info("Will invalidate node: "+savedNode.getFQTI());
                         nodesToInvalidate.add(savedNode);
                     }
                 }
@@ -292,7 +290,7 @@ public class TopologyManager {
             try {
                 nodeDAO.create(node);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Adding nodes finished.");
@@ -302,7 +300,7 @@ public class TopologyManager {
             try {
                 nodeDAO.update(node);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Updating nodes finished.");
@@ -318,7 +316,7 @@ public class TopologyManager {
             try {
                 nodeAddrDAO.create(nodeAddr);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Adding node addresses finished.");
@@ -328,7 +326,7 @@ public class TopologyManager {
             try {
                 nodeAddrDAO.update(nodeAddr);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Updating node addresses finished.");
@@ -338,7 +336,7 @@ public class TopologyManager {
             try {
                 nodeAddrDAO.remove(nodeAddr);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Removing stale node addresses finished.");
@@ -376,7 +374,7 @@ public class TopologyManager {
                 Port newPort = (Port) newPortIt.next();
                 Port foundPort = savedNode.getPortByTopoId(newPort.getTopologyIdent());
                 if (foundPort == null) {
-                    this.log.debug("Will add port: "+newPort.getFQTI());
+                    this.log.info("Will add port: "+newPort.getFQTI());
                     portsToInsert.add(newPort);
                 } else {
                     this.log.debug("Will update port: "+newPort.getFQTI());
@@ -423,7 +421,7 @@ public class TopologyManager {
                         }
                     }
                     if (invalidate && savedPort.isValid()) {
-                        this.log.debug("Will invalidate port: "+savedPort.getFQTI());
+                        this.log.info("Will invalidate port: "+savedPort.getFQTI());
                         portsToInvalidate.add(savedPort);
                     }
                 }
@@ -437,7 +435,7 @@ public class TopologyManager {
             try {
                 portDAO.create(port);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Adding ports finished.");
@@ -447,7 +445,7 @@ public class TopologyManager {
             try {
                 portDAO.update(port);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Updating ports finished.");
@@ -491,7 +489,7 @@ public class TopologyManager {
                 Link newLink = (Link) newLinkIt.next();
                 Link foundLink = savedPort.getLinkByTopoId(newLink.getTopologyIdent());
                 if (foundLink == null) {
-                    this.log.debug("Will add link: "+newLink.getFQTI());
+                    this.log.info("Will add link: "+newLink.getFQTI());
                     newLink.setRemoteLink(null);
                     linksToInsert.add(newLink);
                 } else {
@@ -504,8 +502,6 @@ public class TopologyManager {
                     foundLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
                     foundLink.setValid(newLink.isValid()); // true!
                     foundLink.setRemoteLink(null);
-
-                    this.log.debug("Valid link: "+foundLink.getFQTI());
                     this.validLinks.put(foundLink.getFQTI(), foundLink);
 
                     linksToUpdate.add(foundLink);
@@ -539,7 +535,6 @@ public class TopologyManager {
                                     if (linkId.equals(savedLink.getTopologyIdent())) {
                                         savedLink.setValid(true);
                                         invalidate = false;
-                                        this.log.debug("Valid link: "+savedLink.getFQTI());
                                         this.validLinks.put(savedLink.getFQTI(), savedLink);
                                     }
                                 }
@@ -547,7 +542,7 @@ public class TopologyManager {
                         }
                     }
                     if (invalidate && savedLink.isValid()) {
-                        this.log.debug("Will invalidate link: "+savedLink.getFQTI());
+                        this.log.info("Will invalidate link: "+savedLink.getFQTI());
                         linksToInvalidate.add(savedLink);
                     }
                 }
@@ -562,7 +557,7 @@ public class TopologyManager {
                 linkDAO.create(link);
                 this.validLinks.put(link.getFQTI(), link);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Adding links finished.");
@@ -573,7 +568,7 @@ public class TopologyManager {
                 this.validLinks.put(link.getFQTI(), link);
                 linkDAO.update(link);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Updating links finished.");
@@ -637,7 +632,7 @@ public class TopologyManager {
                 Ipaddr newIpaddr = (Ipaddr) newIpaddrIt.next();
                 Ipaddr foundIpaddr = savedLink.getIpaddrByIP(newIpaddr.getIP());
                 if (foundIpaddr == null) {
-                    this.log.debug("Will add ipaddr: "+newIpaddr.getIP());
+                    this.log.info("Will add ipaddr: "+newIpaddr.getIP()+" for link: "+savedLink.getFQTI());
                     newIpaddr.setLink(savedLink);
                     newIpaddr.setValid(true);
                     ipaddrsToInsert.add(newIpaddr);
@@ -662,7 +657,7 @@ public class TopologyManager {
                 Ipaddr foundIpaddr = newLink.getIpaddrByIP(savedIpaddr.getIP());
 
                 if (foundIpaddr == null) {
-                    this.log.debug("Will invalidate ipaddr: "+savedIpaddr.getIP());
+                    this.log.info("Will invalidate ipaddr: "+savedIpaddr.getIP());
                     ipaddrsToInvalidate.add(savedIpaddr);
                 }
             }
@@ -675,7 +670,7 @@ public class TopologyManager {
             try {
                 ipaddrDAO.create(ipaddr);
             } catch (Exception ex) {
-                this.log.debug("Error: "+ex.getMessage());
+                this.log.error("Error: "+ex.getMessage());
             }
         }
         this.log.debug("Adding ipaddrs finished.");
@@ -729,7 +724,7 @@ public class TopologyManager {
         Link remLink = remoteLink;
         Port remPort = remoteLink.getPort();
 
-        this.log.debug("Deep-creating link: ["+linkFqti+"]");
+        this.log.info("Deep-creating link: ["+linkFqti+"]");
         Hashtable<String, String> results = URNParser.parseTopoIdent(linkFqti);
         if (results== null || results.get("type") == null || !results.get("type").equals("link")) {
             this.log.error("FQTI is not a link!:" + linkFqti);
@@ -847,19 +842,19 @@ public class TopologyManager {
             }
         }
         if (!haveDomain) {
-            this.log.debug("Created domain: ["+domain.getFQTI()+"]");
+            this.log.info("Created domain: ["+domain.getFQTI()+"]");
         }
         if (!haveNode) {
-            this.log.debug("Created node: ["+node.getFQTI()+"]");
+            this.log.info("Created node: ["+node.getFQTI()+"]");
         }
         if (!havePort) {
-            this.log.debug("Created port: ["+port.getFQTI()+"]");
+            this.log.info("Created port: ["+port.getFQTI()+"]");
         }
         if (!haveLink) {
-            this.log.debug("Created link: ["+link.getFQTI()+"]");
+            this.log.info("Created link: ["+link.getFQTI()+"]");
         }
         if (!haveL2swcap) {
-            this.log.debug("Created l2swcap link: ["+link.getFQTI()+"]");
+            this.log.info("Created l2swcap link: ["+link.getFQTI()+"]");
         }
         this.log.debug("Finished with link: ["+linkFqti+"]");
         return link;
@@ -988,7 +983,7 @@ public class TopologyManager {
         // remove all invalid ipaddrs that are not part of any reservation
         // (ipaddrs associated with pending and active reservations are
         // guaranteed to be valid because of path recalculation)
-        this.log.info("removing invalid ipaddrs that are no longer in use");
+        this.log.debug("removing invalid ipaddrs that are no longer in use");
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         List<Ipaddr> ipaddrs = ipaddrDAO.list();
         PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
@@ -1014,7 +1009,7 @@ public class TopologyManager {
                 }
             }
         }
-        this.log.info("finished removing invalid ipaddrs");
+        this.log.debug("finished removing invalid ipaddrs");
 
         // remove invalid links that now have no ipaddrs
         PortDAO portDAO = new PortDAO(this.dbname);
@@ -1026,10 +1021,11 @@ public class TopologyManager {
             if (!link.isValid() && link.getIpaddrs().isEmpty()) {
                 parent.removeLink(link);
                 linkDAO.remove(link);
+                this.log.info("completely removed link: "+link.getFQTI());
                 portDAO.update(parent);
             }
         }
-        this.log.info("finished removing invalid links");
+        this.log.debug("finished removing invalid links");
 
         // remove invalid ports that now have no ipaddrs
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
@@ -1039,23 +1035,25 @@ public class TopologyManager {
             Node parent = port.getNode();
 
             if (!port.isValid() && port.getLinks().isEmpty()) {
+                this.log.info("completely removed port: "+port.getFQTI());
                 parent.removePort(port);
                 portDAO.remove(port);
                 nodeDAO.update(parent);
             }
         }
-        this.log.info("finished removing invalid ports");
+        this.log.debug("finished removing invalid ports");
 
         // remove invalid nodes that now have no ports
         List<Node> nodes = nodeDAO.list();
 
         for (Node node : nodes) {
             if (!node.isValid() && node.getPorts().isEmpty()) {
+                this.log.info("completely removed node: "+node.getFQTI());
                 nodeDAO.remove(node);
             }
         }
-        this.log.info("finished removing invalid nodes");
-        this.log.info("clean.finish");
+        this.log.debug("finished removing invalid nodes");
+        this.log.debug("clean.finish");
     }
 
     /**
