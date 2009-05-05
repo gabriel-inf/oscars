@@ -54,6 +54,7 @@ public class TopologyManager {
     private LinkDAO linkDAO;
     private IpaddrDAO ipaddrDAO;
     private L2SwitchingCapabilityDataDAO l2swcapDAO;
+    private HashMap<String, Link> validLinks;
 
 
     public TopologyManager(String dbname) {
@@ -73,6 +74,7 @@ public class TopologyManager {
         this.linkDAO = new LinkDAO(this.dbname);
         this.ipaddrDAO = new IpaddrDAO(this.dbname);
         this.l2swcapDAO = new L2SwitchingCapabilityDataDAO(this.dbname);
+        this.validLinks = new HashMap<String, Link>();
 
     }
 
@@ -250,7 +252,6 @@ public class TopologyManager {
                 }
             }
         }
-        this.log.debug("Checking for invalidation...");
         // Check for invalidation
         if (savedDomain.getNodes() == null) {
             // nothing to invalidate.
@@ -277,14 +278,13 @@ public class TopologyManager {
                             }
                         }
                     }
-                    if (invalidate) {
+                    if (invalidate && savedNode.isValid()) {
                         this.log.debug("Will invalidate node: "+savedNode.getFQTI());
                         nodesToInvalidate.add(savedNode);
                     }
                 }
             }
         }
-        this.log.debug("Checking for invalidation finished.");
 
         this.log.debug("Adding nodes...");
         for (Node node : nodesToInsert) {
@@ -422,7 +422,7 @@ public class TopologyManager {
                             }
                         }
                     }
-                    if (invalidate) {
+                    if (invalidate && savedPort.isValid()) {
                         this.log.debug("Will invalidate port: "+savedPort.getFQTI());
                         portsToInvalidate.add(savedPort);
                     }
@@ -503,8 +503,10 @@ public class TopologyManager {
                     foundLink.setAlias(newLink.getAlias());
                     foundLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
                     foundLink.setValid(newLink.isValid()); // true!
-
                     foundLink.setRemoteLink(null);
+
+                    this.log.debug("Valid link: "+foundLink.getFQTI());
+                    this.validLinks.put(foundLink.getFQTI(), foundLink);
 
                     linksToUpdate.add(foundLink);
                 }
@@ -537,12 +539,14 @@ public class TopologyManager {
                                     if (linkId.equals(savedLink.getTopologyIdent())) {
                                         savedLink.setValid(true);
                                         invalidate = false;
+                                        this.log.debug("Valid link: "+savedLink.getFQTI());
+                                        this.validLinks.put(savedLink.getFQTI(), savedLink);
                                     }
                                 }
                             }
                         }
                     }
-                    if (invalidate) {
+                    if (invalidate && savedLink.isValid()) {
                         this.log.debug("Will invalidate link: "+savedLink.getFQTI());
                         linksToInvalidate.add(savedLink);
                     }
@@ -556,6 +560,7 @@ public class TopologyManager {
             savedPort.addLink(link);
             try {
                 linkDAO.create(link);
+                this.validLinks.put(link.getFQTI(), link);
             } catch (Exception ex) {
                 this.log.debug("Error: "+ex.getMessage());
             }
@@ -565,6 +570,7 @@ public class TopologyManager {
         this.log.debug("Updating links...");
         for (Link link : linksToUpdate) {
             try {
+                this.validLinks.put(link.getFQTI(), link);
                 linkDAO.update(link);
             } catch (Exception ex) {
                 this.log.debug("Error: "+ex.getMessage());
@@ -595,26 +601,20 @@ public class TopologyManager {
 
         for (String thisFqti : remoteLinkFQTIMap.keySet()) {
             String remFqti = remoteLinkFQTIMap.get(thisFqti);
-            Link thisLink = null;
-            Link remoteLink = null;
-            try {
-                thisLink = TopologyUtil.getLink(thisFqti, this.dbname);
-            } catch (BSSException ex) {
-                thisLink = null;
-                this.log.error("Error: "+ex.getMessage());
-                break;
+
+            Link thisLink = this.validLinks.get(thisFqti);
+            Link remoteLink = this.validLinks.get(remFqti);
+            if (thisLink == null) {
+                this.log.error("oops, tried to merge a nonexistent link");
+                continue;
             }
-            try {
-                remoteLink = TopologyUtil.getLink(remFqti, this.dbname);
-                remoteLink = this.insertFQTILink(remFqti, thisLink);
-            } catch (BSSException ex) {
-                this.log.error(ex);
+
+            if (remoteLink == null) {
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
             }
-            if (thisLink != null) {
-                thisLink.setRemoteLink(remoteLink);
-                linkDAO.update(thisLink);
-            }
+
+            thisLink.setRemoteLink(remoteLink);
+            linkDAO.update(thisLink);
         }
         this.log.debug("mergeRemoteLinks.end");
     }
