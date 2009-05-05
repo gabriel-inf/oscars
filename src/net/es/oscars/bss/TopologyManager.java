@@ -814,6 +814,11 @@ public class TopologyManager {
             link.setTopologyIdent(linkId);
             link.setRemoteLink(remoteLink);
             port.addLink(link);
+            link.setCapacity(port.getCapacity());
+            link.setMinimumReservableCapacity(port.getMinimumReservableCapacity());
+            link.setMaximumReservableCapacity(port.getMaximumReservableCapacity());
+            link.setUnreservedCapacity(port.getUnreservedCapacity());
+            link.setGranularity(port.getGranularity());
             linkDAO.create(link);
         } else {
             this.log.debug("found link "+linkId+" : "+link.getId());
