@@ -656,7 +656,7 @@ public class TopologyManager {
                 Ipaddr savedIpaddr = (Ipaddr) savedIpaddrIt.next();
                 Ipaddr foundIpaddr = newLink.getIpaddrByIP(savedIpaddr.getIP());
 
-                if (foundIpaddr == null) {
+                if (foundIpaddr == null && savedIpaddr.isValid()) {
                     this.log.info("Will invalidate ipaddr: "+savedIpaddr.getIP());
                     ipaddrsToInvalidate.add(savedIpaddr);
                 }
