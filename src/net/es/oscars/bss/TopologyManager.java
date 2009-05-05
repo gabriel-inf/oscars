@@ -106,21 +106,20 @@ public class TopologyManager {
 //           this.clean();
         } catch (BSSException e) {
            this.sf.getCurrentSession().getTransaction().rollback();
-           this.log.error("updateDomains: " + e.getMessage());
+           this.log.error("updateTopology: " + e.getMessage());
            e.printStackTrace(pw);
            this.log.error("error: "+e.getMessage());
            this.log.error(sw.toString());
            System.exit(-1);
         } catch (Exception e) {
            this.sf.getCurrentSession().getTransaction().rollback();
-           this.log.error("updateDomains exception: " + e.getMessage());
+           this.log.error("updateTopology exception: " + e.getMessage());
            e.printStackTrace(pw);
            this.log.error("error: "+e.getMessage());
            this.log.error(sw.toString());
            System.exit(-1);
         }
         this.sf.getCurrentSession().getTransaction().commit();
-        this.log.info("updateDom.finish");
     }
 
     private void mergeTopology(Topology newTopology, Hashtable<String, String> remoteLinkFQTIMap) throws BSSException {
