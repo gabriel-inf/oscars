@@ -83,7 +83,6 @@ public class TopologyManager {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
-        this.log.info("updateDomains.start");
         this.sf.getCurrentSession().beginTransaction();
         try {
             // step 1
@@ -92,16 +91,16 @@ public class TopologyManager {
             this.log.info("finished merging with current topology");
 
             // step 2
-           this.log.info("recalculating pending paths");
+           // this.log.info("recalculating pending paths");
            // TODO: currently broken, must fix!
 //           this.recalculatePaths("PENDING");
-           this.log.info("recalculated pending paths");
+           // this.log.info("recalculated pending paths");
 
            // step 3
-           this.log.info("recalculating active paths");
+           // this.log.info("recalculating active paths");
            // TODO: currently broken, must fix!
 //           this.recalculatePaths("ACTIVE");
-           this.log.info("recalculated active paths");
+           // this.log.info("recalculated active paths");
 
            // step 4
 //           this.clean();
@@ -224,6 +223,10 @@ public class TopologyManager {
                 } else {
                     NodeAddress foundNodeAddr = foundNode.getNodeAddress();
                     this.log.debug("Will update node: "+newNode.getFQTI());
+                    if (!foundNode.isValid()) {
+                        this.log.info("Setting node to valid again: "+foundNode.getFQTI());
+                    }
+
                     foundNode.setValid(newNode.isValid());
                     nodesToUpdate.add(foundNode);
 
@@ -377,7 +380,10 @@ public class TopologyManager {
                     this.log.info("Will add port: "+newPort.getFQTI());
                     portsToInsert.add(newPort);
                 } else {
-                    this.log.debug("Will update port: "+newPort.getFQTI());
+                    this.log.debug("Will update port: "+foundPort.getFQTI());
+                    if (!foundPort.isValid()) {
+                        this.log.info("Setting port to valid again: "+foundPort.getFQTI());
+                    }
                     foundPort.setValid(newPort.isValid()); // true!
                     foundPort.setAlias(newPort.getAlias());
                     foundPort.setCapacity(newPort.getCapacity());
@@ -494,6 +500,9 @@ public class TopologyManager {
                     linksToInsert.add(newLink);
                 } else {
                     this.log.debug("Will update link: "+newLink.getFQTI());
+                    if (!foundLink.isValid()) {
+                        this.log.info("Setting link to valid again: "+foundLink.getFQTI());
+                    }
                     foundLink.setCapacity(newLink.getCapacity());
                     foundLink.setGranularity(newLink.getGranularity());
                     foundLink.setMaximumReservableCapacity(newLink.getMaximumReservableCapacity());
@@ -502,6 +511,7 @@ public class TopologyManager {
                     foundLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
                     foundLink.setValid(newLink.isValid()); // true!
                     foundLink.setRemoteLink(null);
+
                     this.validLinks.put(foundLink.getFQTI(), foundLink);
 
                     linksToUpdate.add(foundLink);
