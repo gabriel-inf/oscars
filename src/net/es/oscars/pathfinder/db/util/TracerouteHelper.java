@@ -56,6 +56,7 @@ public class TracerouteHelper {
     private Link findClosestLocalLinkTo(String ipaddress, net.es.oscars.bss.topology.Node startFromHere) throws PathfinderException {
         Link link = null;
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        NodeAddressDAO naDAO = new NodeAddressDAO(this.dbname);
 
         String defaultRouter = this.props.getProperty("jnxSource");
         // run the traceroute from our network core to the host
@@ -66,13 +67,25 @@ public class TracerouteHelper {
             hops = this.traceroute(defaultRouter, startFromHere.getNodeAddress().getAddress());
         }
 
+        Node node = null;
         for (String hop : hops) {
             this.log.info("hop: " + hop);
             Link tmpLink = null;
+
             Ipaddr ipaddr = ipaddrDAO.getValidIpaddr(hop);
-            if (ipaddr != null) {
+            NodeAddress nodeAddr = naDAO.getNodeAddress(hop);
+
+            if (nodeAddr != null) {
+                if (nodeAddr.getNode().isValid() ||
+                        nodeAddr.getNode().getDomain().isLocal() ) {
+                    this.log.info("addr: " + hop+" invalid or non-local node:"+nodeAddr.getNode().getFQTI());
+                } else if (nodeAddr.getNode().getDomain().isLocal()) {
+                    this.log.info("addr: " + hop+" valid local node:"+nodeAddr.getNode().getFQTI());
+                    node = nodeAddr.getNode();
+                }
+            } else if (ipaddr != null) {
                 tmpLink = ipaddr.getLink();
-                this.log.info("tmpLink: " + tmpLink.getFQTI());
+                this.log.info("addr: " + hop+" node:"+tmpLink.getFQTI());
                 if (!tmpLink.isValid()) {
                     throw new PathfinderException("L3 path goes through an invalid link!");
                 }
@@ -84,16 +97,20 @@ public class TracerouteHelper {
             }
         }
 
-        if (link == null) {
+        if (link == null && node == null) {
             throw new PathfinderException("No local links found on L3 path!");
         }
 
-        Node n = link.getPort().getNode();
+        if (node == null) {
+            node = link.getPort().getNode();
+        }
+
+
         JnxShowRoute sr = new JnxShowRoute();
         DomainDAO domDAO = new DomainDAO(this.dbname);
         try {
-            String portId = sr.showRoute(n.getTopologyIdent(), "inet", ipaddress);
-            String tmpLinkId = n.getFQTI()+":port="+portId+":link=*";
+            String portId = sr.showRoute(node.getTopologyIdent(), "inet", ipaddress);
+            String tmpLinkId = node.getFQTI()+":port="+portId+":link=*";
             this.log.info("L3 route to: "+ipaddress+" is: "+tmpLinkId);
             Link result = domDAO.getFullyQualifiedLink(tmpLinkId);
             return result;

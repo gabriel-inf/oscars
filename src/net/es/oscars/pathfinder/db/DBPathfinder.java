@@ -138,6 +138,13 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
         if (!gotValidExplicitPath) {
             TracerouteHelper trcHelper = new TracerouteHelper(this.dbname);
             TracerouteResult trcResult = trcHelper.findEdgeLinks(requestedPath);
+            if (trcResult == null) {
+                throw new PathfinderException("Could not perform traceroute");
+            } else if (trcResult.srcLink == null) {
+                throw new PathfinderException("Could not determine source link");
+            } else if (trcResult.dstLink == null) {
+                throw new PathfinderException("Could not determine destination link");
+            }
 
             src = trcResult.srcLink.getFQTI();
             dst = trcResult.dstLink.getFQTI();
