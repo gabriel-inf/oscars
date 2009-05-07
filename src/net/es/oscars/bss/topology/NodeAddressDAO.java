@@ -16,7 +16,7 @@ public class NodeAddressDAO extends GenericHibernateDAO<NodeAddress, Integer> {
     }
 
     public NodeAddress getNodeAddress(String ip) {
-        String sql = "select * from nodeaddresses nodeaddr " +
+        String sql = "select * from nodeAddresses nodeaddr " +
                      "where nodeaddr.address = ?";
         NodeAddress addr = (NodeAddress) this.getSession().createSQLQuery(sql)
                                         .addEntity(NodeAddress.class)
