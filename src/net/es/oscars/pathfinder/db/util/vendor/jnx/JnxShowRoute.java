@@ -72,6 +72,9 @@ public class JnxShowRoute {
             throw new PSSException("Cannot find outgoing port with show route");
         }
         this.log.debug("showRoute.finish");
+        // just return the port name, not the subifce
+        String[] portParts = portIdent.split("\\.");
+        portIdent = portParts[0];
         return portIdent;
     }
 
