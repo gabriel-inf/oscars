@@ -76,8 +76,8 @@ public class TracerouteHelper {
             NodeAddress nodeAddr = naDAO.getNodeAddress(hop);
 
             if (nodeAddr != null) {
-                if (nodeAddr.getNode().isValid() ||
-                        nodeAddr.getNode().getDomain().isLocal() ) {
+                if (!nodeAddr.getNode().isValid() ||
+                    !nodeAddr.getNode().getDomain().isLocal() ) {
                     this.log.info("addr: " + hop+" invalid or non-local node:"+nodeAddr.getNode().getFQTI());
                 } else if (nodeAddr.getNode().getDomain().isLocal()) {
                     this.log.info("addr: " + hop+" valid local node:"+nodeAddr.getNode().getFQTI());
