@@ -37,8 +37,6 @@ public class TracerouteHelper {
 
     public TracerouteResult findEdgeLinks(Path requestedPath) throws PathfinderException {
 
-
-
         TracerouteResult result = new TracerouteResult();
         String srcHost = requestedPath.getLayer3Data().getSrcHost();
         String dstHost = requestedPath.getLayer3Data().getDestHost();
@@ -64,7 +62,7 @@ public class TracerouteHelper {
         if (startFromHere == null) {
             hops = this.traceroute(defaultRouter, ipaddress);
         } else {
-            hops = this.traceroute(defaultRouter, startFromHere.getNodeAddress().getAddress());
+            hops = this.traceroute(startFromHere.getNodeAddress().getAddress(), ipaddress);
         }
 
         Node node = null;
