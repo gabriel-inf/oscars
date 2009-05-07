@@ -12,9 +12,11 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.db.*;
+import net.es.oscars.pathfinder.db.util.vendor.jnx.JnxShowRoute;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.pss.PSSException;
 
 /**
  * TraceroutePathfinder performs traceroutes to find a layer 3 path from
@@ -34,12 +36,16 @@ public class TracerouteHelper {
     }
 
     public TracerouteResult findEdgeLinks(Path requestedPath) throws PathfinderException {
-        TracerouteResult result = new TracerouteResult();
 
+
+
+        TracerouteResult result = new TracerouteResult();
         String srcHost = requestedPath.getLayer3Data().getSrcHost();
         String dstHost = requestedPath.getLayer3Data().getDestHost();
-        Link srcLink = this.findClosestLocalLinkTo(srcHost);
-        Link dstLink = this.findClosestLocalLinkTo(dstHost);
+
+
+        Link srcLink = this.findClosestLocalLinkTo(srcHost, null);
+        Link dstLink = this.findClosestLocalLinkTo(dstHost, srcLink.getPort().getNode());
 
         result.srcLink = srcLink;
         result.dstLink = dstLink;
@@ -47,13 +53,18 @@ public class TracerouteHelper {
 
     }
 
-    private Link findClosestLocalLinkTo(String ipaddress) throws PathfinderException {
+    private Link findClosestLocalLinkTo(String ipaddress, net.es.oscars.bss.topology.Node startFromHere) throws PathfinderException {
         Link link = null;
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
         String defaultRouter = this.props.getProperty("jnxSource");
         // run the traceroute from our network core to the host
-        List<String> hops = this.traceroute(defaultRouter, ipaddress);
+        List<String> hops;
+        if (startFromHere == null) {
+            hops = this.traceroute(defaultRouter, ipaddress);
+        } else {
+            hops = this.traceroute(defaultRouter, startFromHere.getNodeAddress().getAddress());
+        }
 
         for (String hop : hops) {
             this.log.info("hop: " + hop);
@@ -77,7 +88,19 @@ public class TracerouteHelper {
             throw new PathfinderException("No local links found on L3 path!");
         }
 
-        return link;
+        Node n = link.getPort().getNode();
+        JnxShowRoute sr = new JnxShowRoute();
+        DomainDAO domDAO = new DomainDAO(this.dbname);
+        try {
+            String portId = sr.showRoute(n.getTopologyIdent(), "inet", ipaddress);
+            String tmpLinkId = n.getFQTI()+":port="+portId+":link=*";
+            this.log.info("L3 route to: "+ipaddress+" is: "+tmpLinkId);
+            Link result = domDAO.getFullyQualifiedLink(tmpLinkId);
+            return result;
+        } catch (PSSException ex) {
+            throw new PathfinderException(ex.getMessage());
+        }
+
     }
 
     /**
