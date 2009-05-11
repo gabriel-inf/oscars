@@ -150,6 +150,7 @@ oscars.ReservationDetails.forcedStatus = function () {
 oscars.ReservationDetails.cloneReservation = function () {
     var layer2Reservation = true;  // default is layer 2
     var i;
+    var tableNode;
 
     oscars.ReservationCreate.resetFields();
     // copy fields from reservation details form to reservation creation form
@@ -164,8 +165,16 @@ oscars.ReservationDetails.cloneReservation = function () {
     // see if path widget on create reservation page is displayed before
     // cloning path
     var pathSectionNode = dojo.byId("authorizedPathDisplay");
+    node = dojo.byId("srcVlanReplace");
+    if (oscars.Utils.isBlank(node.innerHTML)) {
+        layer2Reservation = false;
+    }
     if (pathSectionNode.style.display != "none") {
-        var tableNode = dojo.byId("pathReplace");
+        if (layer2Reservation) {
+            tableNode = dojo.byId("pathReplace");
+        } else {
+            tableNode = dojo.byId("path3Replace");
+        }
         var tbodyNode = tableNode.firstChild;
         // failed reservation might not have path
         if (tbodyNode) {
@@ -179,10 +188,6 @@ oscars.ReservationDetails.cloneReservation = function () {
             var textareaWidget = dijit.byId("explicitPath");
             textareaWidget.setValue(pathStr);
         }
-    }
-    node = dojo.byId("srcVlanReplace");
-    if (oscars.Utils.isBlank(node.innerHTML)) {
-        layer2Reservation = false;
     }
     if (layer2Reservation) {
         var srcVlan = node.innerHTML;
