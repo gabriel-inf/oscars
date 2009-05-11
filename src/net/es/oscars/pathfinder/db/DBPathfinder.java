@@ -103,6 +103,19 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
             throw new PathfinderException(ex.getMessage());
         }
 
+        for (int i = 0; i < path.getPathElems().size(); i++) {
+            PathElem pe = path.getPathElems().get(i);
+            for (PathElem rpe : localSegment) {
+                if (pe.getLink().getFQTI().equals(rpe.getLink().getFQTI())) {
+                    try {
+                       this.log.debug("Copying path parameters for "+pe.getUrn());
+                       path.getPathElems().set(i, PathElem.copyPathElem(rpe));
+                   } catch (BSSException ex) {
+                       throw new PathfinderException(ex.getMessage());
+                   }
+                }
+            }
+        }
         for (PathElem pe : path.getPathElems()) {
             this.log.debug("L2 local hop:"+pe.getUrn());
         }
