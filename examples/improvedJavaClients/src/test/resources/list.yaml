@@ -1,0 +1,47 @@
+---
+
+output:
+    ListConsoleOutputter:
+    ListDotOutputter:
+        nodesNearTop:       ['bnl-mr2', 'bnl-mr3', 'fnal-mr2', 'fnal-mr3']
+        graphFilename:      output/list.dot
+    ListMaintDbOutputter:
+        maintDbFilename:    output/production.rt
+
+filters:
+# how many to return max
+    numResults: 50
+
+# by-status:
+# ACTIVE, PENDING, etc.
+    by-status:  [ 'ACTIVE' ]
+
+
+# less-used filters:
+
+# by-descr:
+# substring of description
+    by-descr:    ''
+
+# by-level:
+# default is all, may use 'PRODUCTION'
+    by-level:   PRODUCTION
+
+# by-src|dst:
+# resvs that have a certain source / destination
+    by-src:     ''
+    by-dst:     ''
+
+# by-link:
+# blank or array of linkIds: 'urn:ogf:network:domainId:nodeId:portId:linkId'
+    by-link:      []
+
+# between:
+# a pair of two linkIds, look for resvs that go between those (in either direction)
+    between:
+        endpoint-a: ''
+        endpoint-z: ''
+
+# by-vlan
+# a list of vlan ids
+    by-vlan:      []

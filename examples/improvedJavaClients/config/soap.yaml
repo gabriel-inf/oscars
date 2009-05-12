@@ -1,0 +1,12 @@
+---
+
+soap:
+    default:
+        wsdlUrl:            'https://oscars.es.net/axis2/services/OSCARS?wsdl'
+        repoDir:            repo
+        rampConfigFname:    'repo/rampConfig.xml'
+
+    other:
+        wsdlUrl:            'https://oscars-devint.es.net:9090/axis2/services/OSCARS?wsdl'
+        repoDir:            repo
+        rampConfigFname:    'repo/rampConfig.xml'
