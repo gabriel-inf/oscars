@@ -39,6 +39,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         
+        		
         /* Get reservation */
         try{
             resv =
@@ -160,13 +161,40 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         } catch (PSSException e) {
             throw new BSSException(e);
         }
+        
+        int times = 0;
+        int seconds = 0;
+        boolean allowed = false;
+        while (!allowed && times < 10) {
+        	
+	        try {
+	        	StateEngine.canUpdateStatus(resv, StateEngine.CANCELLED);
+	        	allowed = true;
+	        } catch (BSSException ex) {
+	        	seconds += 5;
+	        	log.info("Waiting 5 seconds before trying to cancel again...");
+	        	try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					log.error(e);
+				}
+	        }
+	        times++;
+        }
+        if (!allowed) {
+        	log.error("Waited "+seconds+" seconds and was unable to cancel; try again later");
+            pm.releaseResvLock(resv.getGlobalReservationId());
+            throw new BSSException("Could not cancel a reservation with status "+  status+" after "+seconds+" sec");
+        }
+        /*
         if(!(StateEngine.RESERVED.equals(status) || 
                 StateEngine.ACTIVE.equals(status)) ||
                 StateEngine.ACCEPTED.equals(status)){
             pm.releaseResvLock(resv.getGlobalReservationId());
             throw new BSSException("Cannot cancel a reservation with status "+ 
                                     status);
-        }
+        */
         if((localStatus & StateEngine.NEXT_STATUS_CANCEL) == StateEngine.NEXT_STATUS_CANCEL){
             //no-op
             this.log.debug("Already in cancel so skipping");
