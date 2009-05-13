@@ -39,7 +39,7 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
         
-        		
+                
         /* Get reservation */
         try{
             resv =
@@ -155,37 +155,43 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
         boolean replyPresent = false;
         PathSetupManager pm = this.core.getPathSetupManager();
         
-        //Acquire lock so don't conflict with path create or teardown jobs
-        try {
-            pm.acquireResvLock(resv.getGlobalReservationId());
-        } catch (PSSException e) {
-            throw new BSSException(e);
-        }
-        
+        String gri = resv.getGlobalReservationId();
         int times = 0;
         int seconds = 0;
         boolean allowed = false;
-        while (!allowed && times < 10) {
-        	
-	        try {
-	        	StateEngine.canUpdateStatus(resv, StateEngine.CANCELLED);
-	        	allowed = true;
-	        } catch (BSSException ex) {
-	        	seconds += 5;
-	        	log.info("Waiting 5 seconds before trying to cancel again...");
-	        	try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					log.error(e);
-				}
-	        }
-	        times++;
+        
+        while (!allowed && times < 18) {
+            if(StateEngine.RESERVED.equals(status) || 
+                    StateEngine.ACTIVE.equals(status) ||
+                    StateEngine.ACCEPTED.equals(status) ){
+                //Acquire lock so don't conflict with path create or teardown jobs
+                try {
+                    pm.acquireResvLock(gri);
+                    log.info("cancel: got lock for "+gri);
+                    allowed = true;
+                } catch (PSSException e) {
+                    allowed = false;
+                }
+            } 
+            log.info("cancel: status for "+gri+" is: "+status);
+            if (!allowed) {
+                pm.releaseResvLock(gri);
+                seconds += 10;
+                log.info("Waiting 10 seconds before trying to cancel "+gri+" again...");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    log.error(e);
+                }
+                status = StateEngine.getStatus(resv);
+            }
+            times++;
         }
         if (!allowed) {
-        	log.error("Waited "+seconds+" seconds and was unable to cancel; try again later");
+            log.error("Waited "+seconds+" seconds and was unable to cancel "+gri+"; try again later");
             pm.releaseResvLock(resv.getGlobalReservationId());
-            throw new BSSException("Could not cancel a reservation with status "+  status+" after "+seconds+" sec");
+            throw new BSSException("Could not cancel "+gri+" with status "+  status+" after "+seconds+" sec");
         }
         /*
         if(!(StateEngine.RESERVED.equals(status) || 

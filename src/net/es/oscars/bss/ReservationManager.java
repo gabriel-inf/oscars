@@ -395,9 +395,7 @@ public class ReservationManager {
         // other resource scheduling jobs
         if (StateEngine.CANCELLED.equals(status) ||
             StateEngine.FINISHED.equals(status) ||
-            StateEngine.FAILED.equals(status) ||
-            StateEngine.INSETUP.equals(status)||
-            StateEngine.INTEARDOWN.equals(status)) {
+            StateEngine.FAILED.equals(status)) {
             throw new BSSException("Can't cancel a reservation in the state "
                                    + status);
         }
