@@ -30,7 +30,7 @@ import java.util.*;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
-import net.es.oscars.bss.*;
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.bss.topology.Link;
@@ -41,7 +41,6 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Topology;
 import net.es.oscars.bss.topology.URNParser;
-import net.es.oscars.wsdlTypes.Layer2Info;
 import net.es.oscars.wsdlTypes.PathInfo;
 import net.es.oscars.wsdlTypes.ResDetails;
 
@@ -327,10 +326,10 @@ public class GraphVizExporter {
            resvNodes.add(gri);
            Path path = null;
            try {
-        	   path = resv.getPath(PathType.LOCAL);
-           } catch (BSSException ex) {
-        	   // FIXME: do some error handling
-        	   return;
+               path = resv.getPath(PathType.LOCAL);
+           } catch (Exception ex) {
+               // FIXME: do some error handling
+               return;
            }
            List<PathElem> pathElems = path.getPathElems();
            PathElem nextPe = null;
@@ -670,86 +669,83 @@ public class GraphVizExporter {
 
            int bandwidth = resv.getBandwidth();
            PathInfo pathInfo = resList[i].getPathInfo();
-           Layer2Info layer2Info = pathInfo.getLayer2Info();
-           if (layer2Info != null) {
-               CtrlPlanePathContent path = pathInfo.getPath();
-               CtrlPlaneHopContent[] hops = path.getHop();
+           CtrlPlanePathContent path = pathInfo.getPath();
+           CtrlPlaneHopContent[] hops = path.getHop();
 
-               boolean reverseHops = false;
-               if (topNodes != null) {
-                   String topoId = hops[hops.length - 1].getLink().getId();
-                   Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
-                   String nodeId = parsed.get("nodeId");
-                   for (String topNode : topNodes) {
-                       if (nodeId.matches(topNode)) {
-                           reverseHops = true;
-                       }
+           boolean reverseHops = false;
+           if (topNodes != null) {
+               String topoId = hops[hops.length - 1].getLink().getId();
+               Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
+               String nodeId = parsed.get("nodeId");
+               for (String topNode : topNodes) {
+                   if (nodeId.matches(topNode)) {
+                       reverseHops = true;
                    }
                }
+           }
 
-               if (reverseHops) {
-                   int temp;
-                   int low = 0 ;
-                   int high = hops.length - 1 ;
-                   while (low < high) {
-                       CtrlPlaneHopContent tmpHop = hops[low];
-                      hops[low] = hops[high];
-                      hops[high] = tmpHop;
-                      low++;
-                      high--;
-                   }
+           if (reverseHops) {
+               int temp;
+               int low = 0 ;
+               int high = hops.length - 1 ;
+               while (low < high) {
+                   CtrlPlaneHopContent tmpHop = hops[low];
+                  hops[low] = hops[high];
+                  hops[high] = tmpHop;
+                  low++;
+                  high--;
                }
+           }
 
 
-               ArrayList<String> theseHops = new ArrayList<String>();
+           ArrayList<String> theseHops = new ArrayList<String>();
 
-               for (int j = 0; j < hops.length; j++) {
+           for (int j = 0; j < hops.length; j++) {
 
-                   CtrlPlaneHopContent hop = hops[j];
-                   String topoId = hop.getLink().getId();
-                   if (topoId == null || topoId.equals("")) {
-                       System.err.println(gri+" empty topoid");
-                       continue;
-                   }
+               CtrlPlaneHopContent hop = hops[j];
+               String topoId = hop.getLink().getId();
+               if (topoId == null || topoId.equals("")) {
+                   System.err.println(gri+" empty topoid");
+                   continue;
+               }
 //                       System.out.println(topoId);
 
-                   Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
-                   if (parsed == null || parsed.get("type") == null || !parsed.get("type").equals("link")) {
-                       System.err.println(gri+" could not parse: "+topoId);
-                       continue;
-                   }
-                   String domainId = parsed.get("domainId");
-                   String nodeId   = parsed.get("nodeId");
-                   String portId   = parsed.get("portId");
-                   String linkId   = parsed.get("linkId");
-                   portId = portId.replaceAll("TenGigabitEthernet", "Te");
-                   linkId = linkId.replaceAll("TenGigabitEthernet", "Te");
-
-                   if (linkId.equals("*")) {
-                       portId = portId+":"+linkId;
-                   } else {
-                       portId = linkId;
-                   }
-
-                   if (nodePorts.get(nodeId) != null) {
-                       portLinks = (Hashtable<String, ArrayList<String>>) nodePorts.get(nodeId);
-                   } else {
-                       portLinks = new Hashtable<String, ArrayList<String>>();
-                       nodePorts.put(nodeId, portLinks);
-                   }
-
-                   if (portLinks.containsKey(portId)) {
-                       links = portLinks.get(portId);
-                   } else {
-                       links = new ArrayList<String>();
-                       portLinks.put(portId, links);
-                   }
-//                       output += "\""+nodeId+":"+portId+"\";\n";
-                   theseHops.add("\""+nodeId+":"+portId+"\"");
-
+               Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
+               if (parsed == null || parsed.get("type") == null || !parsed.get("type").equals("link")) {
+                   System.err.println(gri+" could not parse: "+topoId);
+                   continue;
                }
-               coloredHops.add(theseHops);
+               String domainId = parsed.get("domainId");
+               String nodeId   = parsed.get("nodeId");
+               String portId   = parsed.get("portId");
+               String linkId   = parsed.get("linkId");
+               portId = portId.replaceAll("TenGigabitEthernet", "Te");
+               linkId = linkId.replaceAll("TenGigabitEthernet", "Te");
+
+               if (linkId.equals("*")) {
+                   portId = portId+":"+linkId;
+               } else {
+                   portId = linkId;
+               }
+
+               if (nodePorts.get(nodeId) != null) {
+                   portLinks = (Hashtable<String, ArrayList<String>>) nodePorts.get(nodeId);
+               } else {
+                   portLinks = new Hashtable<String, ArrayList<String>>();
+                   nodePorts.put(nodeId, portLinks);
+               }
+
+               if (portLinks.containsKey(portId)) {
+                   links = portLinks.get(portId);
+               } else {
+                   links = new ArrayList<String>();
+                   portLinks.put(portId, links);
+               }
+//                       output += "\""+nodeId+":"+portId+"\";\n";
+               theseHops.add("\""+nodeId+":"+portId+"\"");
+
            }
+           coloredHops.add(theseHops);
        } // end for loop
 
        output += "{\n";
