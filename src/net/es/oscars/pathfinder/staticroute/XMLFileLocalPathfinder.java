@@ -59,6 +59,11 @@ public class XMLFileLocalPathfinder extends Pathfinder implements LocalPCE {
         Path interPath = resv.getPath(PathType.INTERDOMAIN);
         Path localPath = new Path();
         List<PathElem> localHops = this.extractLocalSegment(interPath);
+        if(localHops.size() < 2){
+            throw new PathfinderException("There may be a typo in a URN " +
+                    "because the local path only contains " + 
+                    localHops.size() + " valid hops.");
+        }
         boolean firstHop = true;
         for(int i = 0; i < (localHops.size() - 1); i++){
             
