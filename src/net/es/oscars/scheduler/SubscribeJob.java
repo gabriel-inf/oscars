@@ -311,6 +311,7 @@ public class SubscribeJob implements Job{
         }catch(Exception e){
             //if fails, try creating a new subscription
             dataMap.remove("renew");
+            this.serviceMgr.putServiceMapData("NB", neighborID, null);
             this.log.warn("Error sending Renew message to " +
                     subscribeURL + ": " + e.getMessage());
             this.subscribe(dataMap, neighbor);

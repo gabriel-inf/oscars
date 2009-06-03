@@ -112,6 +112,22 @@
                            org/w3/www/_2005/_08/addressing/EndpointReferenceType.class" />
         </jar>
     </target>
+	
+	<!-- Create jar of db, rmi and property classes -->
+	<target name="commonjar" description="Create jar with RMI classes" depends="compile">
+	        <jar destfile="${build.home}/oscars-common.jar">
+	             <fileset dir="${build.classes}"
+	                 includes="**/oscars/*.class,**/oscars/database/*.class,**/oscars/rmi/*.class" />
+	        </jar>
+	</target>
+	
+	<!-- Create aaa client jar -->
+	<target name="aaaclientjar" description="Create jar with AAA RMI classes" depends="compile">
+        <jar destfile="${build.home}/oscars-aaa-client.jar">
+            <fileset dir="${build.classes}"
+                includes="**/oscars/rmi/aaa/*.class,**/oscars/rmi/aaa/**/*.class,**/oscars/rmi/model/*.class,**/oscars/aaa/*.class" />
+        </jar>
+    </target>
 
     <!-- Compile the WAR web application file to be deployed inside an servlet container -->
     <target name="oscars-war" description="Build war file for deploy" depends="compile, installnewdojo, copydocs, rmijar">
