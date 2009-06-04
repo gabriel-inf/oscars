@@ -103,7 +103,7 @@ public class EmailObserver implements Observer {
         //replace elements
         String msg = this.applyTemplate(template, event);
         
-        this.log.info("parse.start");
+        this.log.debug("parse.start");
         //split body and subject
         Pattern typePat = Pattern.compile("<contentType>(.+)</contentType>");
         Pattern subjPat = Pattern.compile("<subject>(.+)</subject>");
@@ -159,7 +159,7 @@ public class EmailObserver implements Observer {
         
         //NOTE: There are more efficient ways to parse and replace fields
         //but this seems to work for now.
-        this.log.info("applyTemplate.start");
+        this.log.debug("applyTemplate.start");
         msg = this.replaceTemplateField("##event##", event.toString(), msg);
         msg = this.replaceTemplateField("##eventType##", event.getType(), msg);
         msg = this.replaceTemplateField("##eventTimestamp##", eventTime, msg);
@@ -199,8 +199,10 @@ public class EmailObserver implements Observer {
                                             resv.get("source"), msg);
             msg = this.replaceTemplateField("##destination##", 
                                             resv.get("destination"), msg);
-            msg = this.replaceTemplateField("##vlanTag##", 
-                                            resv.get("vlanTag"), msg);
+            msg = this.replaceTemplateField("##srcVtag##", 
+                                            resv.get("srcVtag"), msg);
+            msg = this.replaceTemplateField("##destVtag##", 
+                                            resv.get("destVtag"), msg);
             msg = this.replaceTemplateField("##tagSrcPort##", 
                                             resv.get("tagSrcPort"), msg);
             msg = this.replaceTemplateField("##tagDestPort##", 
@@ -220,6 +222,11 @@ public class EmailObserver implements Observer {
                                             resv.get("interdomainPath"), msg);
             msg = this.replaceTemplateField("##intradomainPath##",
                                             resv.get("intradomainPath"), msg);
+            msg = this.replaceTemplateField("##interdomainDetailPath##",
+                    detailPath(resv.get("interdomainPath"), resv.get("interdomainHopInfo")), msg);
+            msg = this.replaceTemplateField("##intradomainDetailPath##",
+                    detailPath(resv.get("intradomainPath"), resv.get("intradomainHopInfo")), msg);
+            
         }else{
             //need to clear out template objects so aren't in sent messages
             msg = this.replaceTemplateField("##reservation##", "", msg);
@@ -236,6 +243,10 @@ public class EmailObserver implements Observer {
             msg = this.replaceTemplateField("##nextDomain##", "", msg);
             msg = this.replaceTemplateField("##source##", "", msg);
             msg = this.replaceTemplateField("##destination##", "", msg);
+            msg = this.replaceTemplateField("##srcVtag##", "", msg);
+            msg = this.replaceTemplateField("##destVtag##", "", msg);
+            msg = this.replaceTemplateField("##tagSrcPort##", "", msg);
+            msg = this.replaceTemplateField("##tagDestPort##", "", msg);
             msg = this.replaceTemplateField("##srcPort##", "", msg);
             msg = this.replaceTemplateField("##destPort##", "", msg);
             msg = this.replaceTemplateField("##protocol##", "", msg);
@@ -244,14 +255,33 @@ public class EmailObserver implements Observer {
             msg = this.replaceTemplateField("##lspClass##", "", msg);
             msg = this.replaceTemplateField("##interdomainPath##", "", msg);
             msg = this.replaceTemplateField("##intradomainPath##", "", msg);
+            msg = this.replaceTemplateField("##interdomainDetailPath##", "", msg);
+            msg = this.replaceTemplateField("##intradomainDetailPath##", "", msg);
         }
         
         this.log.debug(msg);
-        this.log.info("applyTemplate.end");
+        this.log.debug("applyTemplate.end");
         
         return msg;
     }
     
+    private String[] detailPath(String[] hops, String[] hopInfo) {
+        String[] detailPath = new String[hops.length];
+        for(int i = 0; i < hops.length; i++){
+            detailPath[i] = hops[i];
+            //the following should never be true
+            if(hopInfo.length <= i){
+                continue;
+            }
+            String[] infoVals = hopInfo[i].split(";");
+            if(infoVals.length >= 5 && "ethernet".equals(infoVals[2])){
+                detailPath[i] += ", VLAN=" + 
+                    ("0".equals(infoVals[4])? "UNTAGGED" : infoVals[4]);
+            }
+        }
+        return detailPath;
+    }
+
     /**
      * Convenience method for replacing a single value in a template
      *
@@ -341,11 +371,14 @@ public class EmailObserver implements Observer {
         if(resv.get("destination") != null){
             resvTemplate += "destination: ##destination##\n";
         }
-        if(resv.get("vlanTag") != null){
-            resvTemplate += "VLAN tag: ##vlanTag##\n";
+        if(resv.get("srcVtag") != null){
+            resvTemplate += "source VLAN tag: ##srcVtag##\n";
         }
         if(resv.get("tagSrcPort") != null){
             resvTemplate += "source tagged: ##tagSrcPort##\n";
+        }
+        if(resv.get("destVtag") != null){
+            resvTemplate += "destination VLAN tag: ##destVtag##\n";
         }
         if(resv.get("tagDestPort") != null){
             resvTemplate += "destination tagged: ##tagDestPort##\n";
@@ -369,10 +402,10 @@ public class EmailObserver implements Observer {
             resvTemplate += "LSP class: ##lspClass##\n";
         }
         if(resv.get("intradomainPath") != null){
-            resvTemplate += "intradomain hops: \n\n ##intradomainPath##\n";
+            resvTemplate += "intradomain hops: \n\n ##intradomainDetailPath##\n";
         }
         if(resv.get("interdomainPath") != null){
-            resvTemplate += "interdomain hops: \n\n ##interdomainPath##\n";
+            resvTemplate += "interdomain hops: \n\n ##interdomainDetailPath##\n";
         }
         
         return template.replaceAll(field, resvTemplate);

@@ -220,25 +220,32 @@ public class HashMapTypeConverter {
             return map;
         }
 
+        PathElemParam descr = null;
+        try {
+            descr = elem.getPathElemParam(PathElemParamSwcap.L2SC, 
+                        PathElemParamType.L2SC_VLAN_RANGE);
+        } catch (BSSException e1) {
+            return map;
+        }
+        if(descr == null || descr.getValue() == null){
+            return map;
+        }
+        
         String linkId = elem.getUrn();
-        // FIXME:  this was originally ingress, egress, or NULL, linkDescr
-        // meant instead?
-        // String descr = elem.getDescription();
-        String descr = null;
         String tagField = "";
         if(linkId.equals(src)){
             tagField = "tagSrcPort";
             try{
-                int vtag = Integer.parseInt(descr);
+                int vtag = Integer.parseInt(descr.getValue());
                 map.put(tagField, genHashVal(vtag > 0 ? "true" : "false"));
-                map.put("srcVtag", genHashVal(descr));
+                map.put("srcVtag", genHashVal(Math.abs(vtag)+""));
             }catch(Exception e){}
         }else if(linkId.equals(dest)){
             tagField = "tagDestPort";
             try{
-                int vtag = Integer.parseInt(descr);
+                int vtag = Integer.parseInt(descr.getValue());
                 map.put(tagField, genHashVal(vtag > 0 ? "true" : "false"));
-                map.put("destVtag", genHashVal(descr));
+                map.put("destVtag", genHashVal(Math.abs(vtag)+""));
             }catch(Exception e){}
         }
 
