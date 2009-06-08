@@ -23,6 +23,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private OSCARSCore core;
     private Properties props;
     private long DELAY = 30;
+    private int TIMEOUT = 30000;
 
     final private int INSERVICE_WAIT_ATTEMPTS= 24;
 
@@ -93,7 +94,15 @@ public class VlsrPSSJob extends ChainingJob implements Job {
             try{
                 this.DELAY = Long.parseLong(delayStr);
             }catch(Exception e){
-                this.log.error("pss.dragon.delay propert must be a number.");
+                this.log.error("pss.dragon.delay property must be a number.");
+            }
+        }
+        String timeoutStr = this.props.getProperty("timeout");
+        if(timeoutStr != null){
+            try{
+                this.TIMEOUT = Integer.parseInt(timeoutStr);
+            }catch(Exception e){
+                this.log.error("pss.dragon.timeout property must be a number.");
             }
         }
     }
@@ -108,6 +117,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         this.log.info("vlsr.create.start");
         DragonCSA csa = new DragonCSA();
         csa.setLogger(this.getClass().getName());
+        csa.setTimeout(this.TIMEOUT);
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
         String promptPattern = this.props.getProperty("promptPattern");
@@ -461,6 +471,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
 
         DragonCSA csa = new DragonCSA();
         csa.setLogger(this.getClass().getName());
+        csa.setTimeout(this.TIMEOUT);
         DragonLSP lsp = null;
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
@@ -574,6 +585,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         this.log.info("vlsr.teardown.start");
         DragonCSA csa = new DragonCSA();
         csa.setLogger(this.getClass().getName());
+        csa.setTimeout(this.TIMEOUT);
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
         String sshPortForwardStr = this.props.getProperty("ssh.portForward");
