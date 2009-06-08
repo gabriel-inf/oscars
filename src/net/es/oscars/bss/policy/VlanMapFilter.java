@@ -626,21 +626,27 @@ public class VlanMapFilter implements PolicyFilter{
                 String[] rangeEnds = rangeList[i].split("-");
                 if (rangeEnds.length == 1){
                     int tag = Integer.parseInt(rangeEnds[0].trim());
-                    if(tag < 4096){
+                    if(tag <= 4094){
                         mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
+                    }else{
+                        throw new BSSException("VLAN range must be less than 4094");
                     }
                 } else if(rangeEnds.length == 2 && "".equals(rangeEnds[0])){
                     int tag = Integer.parseInt(rangeEnds[1].trim());
-                    if(tag < 4096){
+                    if(tag <= 4094){
                         mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
+                    }else{
+                        throw new BSSException("VLAN range must be less than 4094");
                     }
                 } else if(rangeEnds.length == 2){
                     int startTag = Integer.parseInt(rangeEnds[0].trim());
                     int endTag = Integer.parseInt(rangeEnds[1].trim());
-                    if (startTag < 4096 && endTag < 4096){
+                    if (startTag <= 4094 && endTag <= 4094){
                         for(int j = startTag; j <= endTag; j++){
                             mask[j/8] |= (1 << (7 - (j % 8)));
                         }
+                    }else{
+                        throw new BSSException("VLAN range must be less than 4094");
                     }
                 }else {
                     throw new BSSException("Invalid VLAN range specified");
