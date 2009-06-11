@@ -46,9 +46,9 @@ Installation:
     cd html/lib/
     gunzip dojo-release-1.3.1.tar.gz
     tar -xvf dojo-release-1.3.1.tar
-5. Copy the contents of html/stats to a subdirectory under apache. For example:
+6. Copy the contents of html/stats to a subdirectory under apache. For example:
     cp -r html/stats /var/www/html/stats 
-6. Copy the contents of cgi-bin to a subdirectory under apache. For example:
+7. Copy the contents of cgi-bin to a subdirectory under apache. For example:
     cp -r cgi-bin/* /var/www/cgi-bin 
-7. You should now be able to visit the page using your browser. For example:
+8. You should now be able to visit the page using your browser. For example:
     Open browser to http://yourdomain.net/stats
