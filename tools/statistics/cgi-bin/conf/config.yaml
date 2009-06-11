@@ -1,26 +1,10 @@
-localdomain: dcn.internet2.edu
-db_user: oscars
-db_pass: iluvi2!
-edge_ports:
-    - label: "BOST->NoX"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=BOST:port=S26879:link=10.100.80.193"
-    - label: "KANS->GPN"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=KANS:port=S27391:link=10.100.80.185"
-    - label: "CHIC->CIC"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=CHIC:port=S26111:link=10.100.80.165"
-    - label: "CHIC->MERIT"
-      urn: "urn:ogf:network:domain=dcn.internet2.edu:node=CHIC:port=S27903:link=10.100.80.229"
-    - label: "CHIC->Starlight"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=CHIC:port=S28415:link=10.100.100.33"
-    - label: "CHIC->phoebus.chic.dcn.internet2.edu"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=CHIC:port=S28159:link=10.100.100.25"
-    - label: "HOUS->phoebus.hous.dcn.internet2.edu"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=HOUS:port=S26623:link=10.100.100.5"
-    - label: "LOSA->phoebus.losa.dcn.internet2.edu"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=LOSA:port=S27135:link=10.100.100.9"
-    - label: "SALT->phoebus.salt.net.internet2.edu"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=SALT:port=S26879:link=10.100.80.217"
-    - label: "SEAT->PNWGP"
-      urn : "urn:ogf:network:domain=dcn.internet2.edu:node=SEAT:port=S28159:link=10.100.90.145"
-exclude_links:
-     CHIC->anna.internet2.edu : 1
+localdomain: mydomain.net
+db_user: MYUSER
+db_pass: MYPASS
+#edge_ports:
+#    - label: "MyNode->host1"
+#      urn : "urn:ogf:network:domain=mydomain.net:node=MyNode:port=1:link=*"
+#    - label: "MyNode->host2"
+#      urn : "urn:ogf:network:domain=mydomain.net:node=MyNode:port=2:link=*"
+#exclude_links:
+#     MyNode1->MyNode2 : 1

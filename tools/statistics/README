@@ -30,9 +30,19 @@ Installation:
 -------------
 1. Create the required mysql table with teh following command
     mysql -u YOUR_USERNAME -p bss < sql/createTables.sql
-2. Set you MySQL username and password in "cgi-bin/conf/config.yaml". 
-   Change the "db_user" and db_pass" to a MySQL username and password 
-   respectively. The username should have read access to the "bss" table.
+2. Edit "cgi-bin/conf/config.yaml" with the following:
+    - Set your local domain by changing the "localdomain" property to the 
+      domain id used in your XML topology description.
+    - Set your MySQL username and password by chaging the "db_user" 
+      and db_pass" properties to a MySQL username and password with
+      read permission on the bss database.
+    - You may optionally indicate names for edge links using the "edge_links" 
+      property. Edge links are those with remote sides descriped as *:*:*:*.
+      Set "label" to a better name "i.e. MyNode->MyHost" and "urn" to the URN
+      of the edge link. Edge links will not be displayed unless specified here.
+    - You may optionally exclude URNs using the "exclude_links" property. Set the
+      name of the link followed by 1. NOTE: The name is not the URN, it is the
+      short name displayed by the UI (i.e. MyNode1->MyNode2).
 3. Change the MySQL username and password in "utils/runReport.pl" by 
    replacing MYUSER and MYPASS in the following lines:
     my $DB_USER = "MYUSER";
