@@ -1,0 +1,54 @@
+================================================
+Dynamic Circuit Statistics v 1.0 - June 11, 2009
+================================================
+
+-------------
+Description:
+-------------
+This program provides a set of CGI scripts and web pages that report usage
+statistics on networks running OSCARS. Various data is provided and can be
+analyzed as a function of time, user or network link. Data is presented in
+table and bar chart form. 
+
+-------------
+Requirements:
+-------------
+- OSCARS
+- MySQL
+- Apache Web Server
+- PERL
+- The following PERL modules:
+    - CGI
+    - Date::Parse
+    - DateTime
+    - DBI
+    - JSON
+    - YAML
+    
+-------------
+Installation:
+-------------
+1. Create the required mysql table with teh following command
+    mysql -u YOUR_USERNAME -p bss < sql/createTables.sql
+2. Set you MySQL username and password in "cgi-bin/conf/config.yaml". 
+   Change the "db_user" and db_pass" to a MySQL username and password 
+   respectively. The username should have read access to the "bss" table.
+3. Change the MySQL username and password in "utils/runReport.pl" by 
+   replacing MYUSER and MYPASS in the following lines:
+    my $DB_USER = "MYUSER";
+    my $DB_PASS = "MYPASS";
+   This account must have read and write permissions on the "bss table". 
+   It may be the same as in step 2 if the account has write permissions. 
+4. Add run "utils/runReport.pl" to the crontab by running "crontab -e". This script will periodically
+   compile the stats displayed on the graph. To have it compile these stats every 30 minutes tadd the following to crontab:
+        0,30 * * * * perl $OSCARS_HOME/tools/statistics/utils/runReport.pl
+5. Decompress the dojo library under "html/lib/dojo-release-1.3.1.tar.gz":
+    cd html/lib/
+    gunzip dojo-release-1.3.1.tar.gz
+    tar -xvf dojo-release-1.3.1.tar
+5. Copy the contents of html/stats to a subdirectory under apache. For example:
+    cp -r html/stats /var/www/html/stats 
+6. Copy the contents of cgi-bin to a subdirectory under apache. For example:
+    cp -r cgi-bin/* /var/www/cgi-bin 
+7. You should now be able to visit the page using your browser. For example:
+    Open browser to http://yourdomain.net/stats
