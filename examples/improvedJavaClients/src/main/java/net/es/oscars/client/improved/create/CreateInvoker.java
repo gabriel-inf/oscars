@@ -11,6 +11,7 @@ import java.util.List;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import net.es.oscars.client.improved.ConsoleArgs;
+import net.es.oscars.wsdlTypes.CreateReply;
 import net.es.oscars.wsdlTypes.ResCreateContent;
 
 public class CreateInvoker {
@@ -48,7 +49,10 @@ public class CreateInvoker {
         List<CreateRequestParams> requests = cl.getResvRequests();
         for (CreateRequestParams params : requests) {
         	ResCreateContent createReq = cl.formRequest(params);
-        	cl.performRequest(createReq);
+        	CreateReply resp = cl.performRequest(createReq);
+        	System.out.println("response:");
+        	System.out.println("gri: "+resp.getGlobalReservationId());
+            System.out.println("status: "+resp.getStatus());
         }
 
     }

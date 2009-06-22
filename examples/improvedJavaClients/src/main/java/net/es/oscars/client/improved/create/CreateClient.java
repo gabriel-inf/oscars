@@ -78,6 +78,7 @@ public class CreateClient extends ImprovedClient {
             }
             pathInfo.setPathType("REQUESTED");
         }
+        request.setPathInfo(pathInfo);
 
         
         return request;
@@ -164,6 +165,7 @@ public class CreateClient extends ImprovedClient {
             params.setDst(dst);
             params.setSrcVlan(srcVlan);
             params.setDstVlan(dstVlan);
+            params.setDescription(description);
             params.setPath(path);
             params.setPathSetupMode(pathSetupMode);
             params.setStartTime(times.get("start"));
