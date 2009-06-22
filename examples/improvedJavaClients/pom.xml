@@ -71,6 +71,15 @@
             <scope>system</scope>
             <systemPath>${basedir}/lib/perfsonar.jar</systemPath>
         </dependency>
+        
+        <!-- commons -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <!-- rampart -->
         <dependency>
             <groupId>org.apache.rampart</groupId>
             <artifactId>rampart-core</artifactId>
@@ -86,9 +95,16 @@
             <artifactId>rampart-trust</artifactId>
             <version>SNAPSHOT</version>
         </dependency>
+        <!-- axis2 -->
         <dependency>
             <groupId>org.apache.axis2</groupId>
             <artifactId>axis2-kernel</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <!-- axis2 -->
+        <dependency>
+            <groupId>org.apache.axis2</groupId>
+            <artifactId>axis2-adb-codegen</artifactId>
             <version>1.4.1</version>
         </dependency>
 
