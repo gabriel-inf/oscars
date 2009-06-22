@@ -5,12 +5,18 @@ import static java.util.Arrays.asList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import com.ibm.wsdl.util.StringUtils;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
+import net.es.oscars.client.improved.ConfigHelper;
 import net.es.oscars.client.improved.ConsoleArgs;
 import net.es.oscars.wsdlTypes.ListReply;
 import net.es.oscars.wsdlTypes.ResDetails;
@@ -28,14 +34,15 @@ public class ListInvoker {
         OptionParser parser = new OptionParser() {
             {
                 acceptsAll( asList( "h", "?" ), "show help then exit" );
-                accepts( "help", "show extended help then exit" );
                 accepts( "i", "interactive mode" );
-                accepts( "scfg", "soap config filename (config/soap.yaml)" ).withRequiredArg().ofType(String.class);
-                accepts( "scgfid", "soap config identifier (\"default\")" ).withRequiredArg().ofType(String.class);
-                accepts( "lcfg", "list config filename (config/list.yaml)" ).withRequiredArg().ofType(String.class);
-                accepts( "num", "how many to return" ).withRequiredArg().ofType(Integer.class);
-                accepts( "st", "comma-separated statuses to match" ).withRequiredArg().ofType(String.class);
-                accepts( "vl", "comma-separated VLANs to match" ).withRequiredArg().ofType(String.class);
+                accepts( "v", "verbose" );
+                accepts( "help", "show extended help then exit" );
+                accepts( "p", "soap config filename (config/soap.yaml)" ).withRequiredArg().ofType(String.class);
+                accepts( "d", "identifier for soap config (\"default\")" ).withRequiredArg().ofType(String.class);
+                accepts( "c", "config filename (config/list.yaml)" ).withRequiredArg().ofType(String.class);
+                accepts( "n", "number of results to return" ).withRequiredArg().ofType(String.class);
+                accepts( "s", "comma-separated statuses to match" ).withRequiredArg().ofType(String.class);
+                accepts( "t", "comma-separated VLAN tags to match" ).withRequiredArg().ofType(String.class);
             }
         };
 
@@ -51,19 +58,34 @@ public class ListInvoker {
             System.exit(0);
         }
 
-        if (options.has("scfg")) {
-            soapConfigFile = (String) options.valueOf("scfg");
+        if (options.has("p")) {
+            soapConfigFile = (String) options.valueOf("p");
         }
-        if (options.has("scfgid")) {
-            soapConfigId = (String) options.valueOf("scfgid");
+        if (options.has("d")) {
+            soapConfigId = (String) options.valueOf("d");
         }
-        if (options.has("lcfg")) {
-            configFile = (String) options.valueOf("lcfg");
+        if (options.has("c")) {
+            configFile = (String) options.valueOf("c");
         }
 
+        HashMap<String, String> cliArgs = new HashMap<String, String>();
+        if (options.has("n")) {
+            cliArgs.put("numResults", (String) options.valueOf("n"));
+        }
+        if (options.has("s")) {
+            cliArgs.put("statuses", (String) options.valueOf("s"));
+        }
+        if (options.has("t")) {
+            cliArgs.put("vlans", (String) options.valueOf("t"));
+        }
+
+        ConfigHelper cfg = ConfigHelper.getInstance();
+        Map config = cfg.getConfiguration(configFile);
+
+
+        HashMap<String, String> userChoices = new HashMap<String, String>();
         if (options.has("i")) {
-            HashMap<String, String> interactiveOpts;
-            interactiveOpts = getUserInput();
+            userChoices = getUserInput(config, cliArgs);
         }
 
 
@@ -83,14 +105,55 @@ public class ListInvoker {
         }
     }
 
-    private static HashMap<String, String> getUserInput() {
+    @SuppressWarnings("unchecked")
+    private static HashMap<String, String> getUserInput(Map config, HashMap<String, String> cliArgs) {
+        Map filters = (Map) config.get("filters");
+
+        ArrayList<String> cfgStatuses = (ArrayList<String>) filters.get("by-status");
+        ArrayList<String> cfgVlans = (ArrayList<String>) filters.get("by-vlan");
+        Integer cfgNumResults = (Integer) filters.get("numResults");
+
+        String cfgStatusesStr = org.apache.commons.lang.StringUtils.join(cfgStatuses.toArray(), ", ");
+        String cfgVlansStr = org.apache.commons.lang.StringUtils.join(cfgVlans.toArray(), ", ");
+
+        String tmpVlanStr = cfgVlansStr;
+        if (cliArgs.get("vlans") != null && !cliArgs.get("vlans").trim().equals("")) {
+            tmpVlanStr = cliArgs.get("vlans").trim();
+        }
+
+        String tmpStatusStr = cfgStatusesStr;
+        if (cliArgs.get("statuses") != null && !cliArgs.get("statuses").trim().equals("")) {
+            tmpStatusStr = cliArgs.get("statuses").trim();
+        }
+
+        String tmpNumResultsStr = cfgNumResults.toString();
+        if (cliArgs.get("numResults") != null && !cliArgs.get("numResults").trim().equals("")) {
+            tmpNumResultsStr = cliArgs.get("numResults").trim();
+        }
+
+        boolean syntaxOK = false;
         HashMap<String, String> userChoices = new HashMap<String, String>();
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            String numStr = ConsoleArgs.getArg(br, "How many to return? ");
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
+
+        while (!syntaxOK) {
+            try {
+                String strUsrNumResults = ConsoleArgs.getArg(br, "How many to return? ("+tmpNumResultsStr+") ");
+                try {
+                    Integer.parseInt(strUsrNumResults);
+                } catch (NumberFormatException ex) {
+                    System.out.println("Invalid number format");
+                    continue;
+                }
+                String strUsrStatuses = ConsoleArgs.getArg(br, "Statuses to return? ("+tmpStatusStr+") ");
+                String strUsrVlans 	  = ConsoleArgs.getArg(br, "VLAN tags to look for? ("+tmpVlanStr+") ");
+                userChoices.put("numResults", strUsrNumResults);
+                userChoices.put("statuses", strUsrStatuses);
+                userChoices.put("vlans", strUsrVlans);
+                syntaxOK = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
 
         return userChoices;
