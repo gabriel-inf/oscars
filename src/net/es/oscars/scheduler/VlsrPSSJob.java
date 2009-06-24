@@ -763,11 +763,18 @@ public class VlsrPSSJob extends ChainingJob implements Job {
      */
     private DragonLocalID linkToLocalId(Link link, int vtag, boolean hasNarb, boolean isIngress)
         throws PSSException{
+        String nodeTopoId = link.getPort().getNode().getTopologyIdent();
         String portTopoId = link.getPort().getTopologyIdent();
         boolean tagged = (vtag > 0);
         String type = null;
         int number = 0;
-
+        
+        /* Check if there is a port name mapping */
+        String portIdMapping = this.props.getProperty("port."+nodeTopoId+"."+portTopoId);
+        if(portIdMapping != null){
+            portTopoId = portIdMapping;
+        }
+        
         /* Get Type */
         if(!hasNarb && isIngress){
             this.log.info("lsp-id local-id");
