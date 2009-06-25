@@ -29,7 +29,7 @@ public class LSRegisterJob  implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         String jobName = context.getJobDetail().getFullName();
-        this.log.info("LSRegisterJob.start name:"+jobName);
+        this.log.debug("LSRegisterJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
         ServiceManager serviceMgr = this.core.getServiceManager();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
@@ -85,7 +85,7 @@ public class LSRegisterJob  implements Job{
             //Schedule next job
             long nextJobTime = System.currentTimeMillis() + RENEW_TIME*1000;
             serviceMgr.scheduleServiceJob(LSRegisterJob.class, dataMap, new Date(nextJobTime));
-            this.log.info("LSRegisterJob.end name:"+jobName);
+            this.log.debug("LSRegisterJob.end name:"+jobName);
         }
     }
 

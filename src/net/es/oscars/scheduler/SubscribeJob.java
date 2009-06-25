@@ -50,7 +50,7 @@ public class SubscribeJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         String jobName = context.getJobDetail().getFullName();
-        this.log.info("SubscribeJob.start name:"+jobName);
+        this.log.debug("SubscribeJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
         this.serviceMgr = this.core.getServiceManager();
         this.client = new Client();
@@ -79,7 +79,7 @@ public class SubscribeJob implements Job{
         }finally{
             this.client.cleanUp();
         }
-        this.log.info("SubscribeJob.end name:"+jobName);
+        this.log.debug("SubscribeJob.end name:"+jobName);
     }
     
     /**

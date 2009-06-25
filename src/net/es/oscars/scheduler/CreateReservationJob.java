@@ -266,6 +266,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         String triggerName = "createResvTimeoutTrig-" + resv.hashCode();
         String jobName = "createResvTimeoutJob-" + resv.hashCode();
         long time = System.currentTimeMillis() + timeout*1000;
+        triggerName += time;
         Date date = new Date(time);
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null,
                                                   date, null, 0, 0L);

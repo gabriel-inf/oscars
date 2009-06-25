@@ -14,7 +14,7 @@ public class FireEventJob implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         String jobName = context.getJobDetail().getFullName();
-        this.log.info("FireEventJob.start name:"+jobName);
+        this.log.debug("FireEventJob.start name:"+jobName);
 
         this.core = OSCARSCore.getInstance();
 
@@ -29,6 +29,6 @@ public class FireEventJob implements Job{
         bss.getTransaction().commit();
 
 
-        this.log.info("FireEventJob.end name:"+jobName);
+        this.log.debug("FireEventJob.end name:"+jobName);
     }
 }
