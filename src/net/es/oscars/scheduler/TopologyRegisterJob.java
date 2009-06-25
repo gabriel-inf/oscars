@@ -111,6 +111,10 @@ public class TopologyRegisterJob implements Job{
                     lsUpdateJob.updateDB();
                 }
             }
+            
+            if(registered){
+                this.log.info("Topology update complete.");
+            }
             bss.getTransaction().commit();
         }catch(Exception e){
             e.printStackTrace();

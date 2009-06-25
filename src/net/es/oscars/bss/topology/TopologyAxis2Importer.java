@@ -175,7 +175,7 @@ public class TopologyAxis2Importer {
             dbPort.setMaximumReservableCapacity(Long.parseLong(maxResCapacity));
         }else{
             dbPort.setMaximumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("port with topology ID " + xmlPortId +
+            this.log.debug("port with topology ID " + xmlPortId +
                     " does not contain setMaximumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -184,7 +184,7 @@ public class TopologyAxis2Importer {
             dbPort.setMinimumReservableCapacity(Long.parseLong(minResCapacity));
         }else{
             dbPort.setMinimumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("port with topology ID " + xmlPortId +
+            this.log.debug("port with topology ID " + xmlPortId +
                     " does not contain MinimumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -193,7 +193,7 @@ public class TopologyAxis2Importer {
             dbPort.setUnreservedCapacity(Long.parseLong(unresCapacity));
         }else{
             dbPort.setUnreservedCapacity(Long.parseLong(capacity));
-            this.log.warn("port with topology ID " + xmlPortId +
+            this.log.debug("port with topology ID " + xmlPortId +
                     " does not contain UnreservedCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -255,7 +255,7 @@ public class TopologyAxis2Importer {
             dbLink.setMaximumReservableCapacity(Long.parseLong(maxResCapacity));
         }else{
             dbLink.setMaximumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("link with topology ID " + xmlLinkId +
+            this.log.debug("link with topology ID " + xmlLinkId +
                     " does not contain MaximumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -264,7 +264,7 @@ public class TopologyAxis2Importer {
             dbLink.setMinimumReservableCapacity(Long.parseLong(minResCapacity));
         }else{
             dbLink.setMinimumReservableCapacity(Long.parseLong(capacity));
-            this.log.warn("link with topology ID " + xmlLinkId +
+            this.log.debug("link with topology ID " + xmlLinkId +
                     " does not contain MinimumReservableCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -273,7 +273,7 @@ public class TopologyAxis2Importer {
             dbLink.setUnreservedCapacity(Long.parseLong(unresCapacity));
         }else{
             dbLink.setUnreservedCapacity(Long.parseLong(capacity));
-            this.log.warn("link with topology ID " + xmlLinkId +
+            this.log.debug("link with topology ID " + xmlLinkId +
                     " does not contain UnreservedCapacity. "+
                     "Capacity value set to " + capacity);
         }
@@ -431,7 +431,7 @@ public class TopologyAxis2Importer {
                 linkDAO.update(link);
             }
         }else{
-            this.log.warn("invalid remote link id " + linkId +
+            this.log.debug("invalid remote link id " + linkId +
             ". Continuing with NULL link id.");
         }
 
