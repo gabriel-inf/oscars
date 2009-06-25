@@ -1,11 +1,45 @@
 #!/bin/bash
-# Script to upgrade from DCN release 0.4 to 0.5
+# Script to upgrade from DCN release 0.4/0.5.0 to 0.5.1
 # if you do not have a DCN installation run do_build.sh
 # Changes private password to keystore password
 # Updates bss and aaa database tables (no changes to notify tables)
 # Asks if youw ant to auto-update your local topology
 
+# Upgrade 0.5.0 -> 0.5.1
+#Check OSCARS_HOME for 0.5.1
+if [ -n "$OSCARS_HOME" ] && [ "$OSCARS_HOME" != `pwd` ] && [ ! -d ./conf-0-5-1.default ]; then
+    `mv ./conf ./conf-0-5-1.default`;
+    if [ $? != 0 ]; then
+        echo "Unable to move default properties from ./conf' to ./conf-0-5-1.default";
+        exit;
+    fi
+    `cp -r $OSCARS_HOME/conf ./conf`;
+    if [ $? != 0 ]; then
+        echo "Unable to copy properties from '$OSCARS_HOME/conf' to ./conf";
+        rm -rf ./conf-0-5-1.default
+        exit;
+    fi
+    
+    CUR_DIR=`pwd`;
+    echo "-- Your configuration files and keystores have been copied to this directory.";
+    echo "";
+    echo "##############################################################################";
+    echo "IMPORTANT: YOU MUST CHANGE \$OSCARS_HOME to $CUR_DIR BEFORE RUNNING DO_INSTALL.SH"
+    echo "";
+    echo "Upgrade completed successfully. Change \$OSCARS_HOME and run do_install.sh";
+    echo "##############################################################################";
+    exit 0;
+elif [ -n "$OSCARS_HOME" ] && [ "$OSCARS_HOME" != `pwd` ]; then
+    echo "-- Your configuration files and keystores were copied by a previous upgrade";
+    echo "-- If you think this is a mistake then run 'rm -rf ./conf-0-5-1.default' and try this script again";
+    exit 0;
+elif [ -n "$OSCARS_HOME" ]; then
+    echo "-- We are in \$OSCARS_HOME so nothing to do.";
+    exit 0;
+fi
 
+
+# Upgrade 0.4.0 -> 0.5.1
 #Check current directory
 echo "  ";
 echo "--- Checking prerequisites...";
