@@ -167,6 +167,21 @@
         <!-- clear out temporary directory
         <delete dir="${build.home}/oscars-war/" /> -->
     </target>
+    
+    <target name="oscars-servlet-jar" description="Compile servlets into jar" depends="compile, rmijar">
+        <jar destfile="${build.home}/oscars-servlets.jar">
+            <fileset dir="${build.classes}"
+                includes="**/oscars/*.class, **/oscars/database/HibernateBean.class,
+                          **/oscars/bss/*.class, **/oscars/bss/topology/*.class,
+                          **/oscars/aaa/*.class, **/oscars/servlets/**/*.class,
+                          **/oscars/wsdlTypes/GetTopology*.class,
+                          **/oscars/bss/events/OSCARSEvent*.class, *.properties"
+
+                excludes="**/oscars/aaa/*DAO.class, **/oscars/aaa/*Manager.class,
+                          **/oscars/bss/*DAO.class, **/oscars/bss/*Manager.class,
+                          **/oscars/bss/topology/*DAO.class, **/oscars/bss/topology/*Manager.class"/>
+        </jar>
+    </target>
 
     <!-- Compile the AAR Axis2 web service. This is deployed in a container-specific directory.
          For Tomcat, this is webapps/axis2/WEB-INF/services -->
