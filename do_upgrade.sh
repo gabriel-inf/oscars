@@ -8,6 +8,9 @@
 # Upgrade 0.5.0 -> 0.5.1
 #Check OSCARS_HOME for 0.5.1
 if [ -n "$OSCARS_HOME" ] && [ "$OSCARS_HOME" != `pwd` ] && [ ! -d ./conf-0-5-1.default ]; then
+    #stop oscars
+    $OSCARS_HOME/oscars.sh stop ;
+    
     `mv ./conf ./conf-0-5-1.default`;
     if [ $? != 0 ]; then
         echo "Unable to move default properties from ./conf' to ./conf-0-5-1.default";
