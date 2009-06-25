@@ -1,0 +1,31 @@
+================================================
+LogRotate4OSCARS v 1.0 - June 25, 2009
+================================================
+
+-------------
+Description:
+-------------
+The scripts in this directory use the UNIX logrotate utility 
+to manage the OSCARS logs. They compress and delete the logs
+over time. You will need to edit the configuration and edit
+crontab to use these scripts.
+
+-------------
+Requirements:
+-------------
+- OSCARS
+- logrotate
+
+-------------
+Installation:
+-------------
+1. Open logrotate4oscars.conf. Change the paths to match your installation. 
+   If $OSCARS_HOME is set to "/usr/local/oscars" and $CATALINA_HOME is set to 
+   /usr/local/tomcat" then no changes are required.
+   
+2. Copy logrotate4oscars.conf to /usr/local/etc:
+    sudo cp logrotate4oscars.conf /usr/local/etc
+    
+3. Run 'crontab -e' as root and add the following (NOTE: change /usr/local/oscars 
+   to the location of OSCARS on your filesystem):
+    0 0 * * * /usr/local/oscars/tools/logrotate/logrotate4oscars
