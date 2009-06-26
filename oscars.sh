@@ -71,4 +71,9 @@ sleep 2
 ./notifybroker-core.sh -d $*
 ./oscars-core.sh -d $*
 
+#Check for policy script
+if [ -f ./policy-core.sh ]; then
+    ./policy-core.sh -d $*
+fi
+
 exit 0
