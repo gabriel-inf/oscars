@@ -107,7 +107,8 @@ public class PolicyClient extends Axis2PolicyClient{
         boolean localFound = false;
         
         //Try to convert login to X.509
-        login = BssUtils.lookupX509Subj(login);
+        String x509Subj = BssUtils.lookupX509Subj(login);
+        login = (x509Subj != null ? x509Subj : login);
         
         //TODO: will break if domain appears in path multiple times
         //find ordered list of domains before local domains
