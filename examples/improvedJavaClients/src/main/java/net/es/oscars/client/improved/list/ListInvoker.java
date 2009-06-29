@@ -82,7 +82,6 @@ public class ListInvoker {
         ConfigHelper cfg = ConfigHelper.getInstance();
         Map config = cfg.getConfiguration(configFile);
 
-
         HashMap<String, String> userChoices = new HashMap<String, String>();
         if (options.has("i")) {
             userChoices = getUserInput(config, cliArgs);
@@ -97,8 +96,16 @@ public class ListInvoker {
         cl.configureSoap(soapConfigId);
         cl.setConfigFile(configFile);
         cl.configure();
+        if (!userChoices.isEmpty()) {
+            cl.setUserChoices(userChoices);
+        }
 
         ListReply listResp = cl.performRequest(cl.formRequest());
+        ResDetails[] resDetails = listResp.getResDetails();
+        if (resDetails == null) {
+            System.out.println("No matching reservations");
+            return;
+        }
         ResDetails[] resvs = cl.filterResvs(listResp.getResDetails());
         for (ListOutputterInterface outputter : outputters) {
             outputter.output(resvs);
@@ -137,18 +144,22 @@ public class ListInvoker {
 
         while (!syntaxOK) {
             try {
-                String strUsrNumResults = ConsoleArgs.getArg(br, "How many to return? ("+tmpNumResultsStr+") ");
+                String strUsrNumResults = ConsoleArgs.getArg(br, "How many to return?", tmpNumResultsStr);
                 try {
                     Integer.parseInt(strUsrNumResults);
                 } catch (NumberFormatException ex) {
                     System.out.println("Invalid number format");
                     continue;
                 }
-                String strUsrStatuses = ConsoleArgs.getArg(br, "Statuses to return? ("+tmpStatusStr+") ");
-                String strUsrVlans 	  = ConsoleArgs.getArg(br, "VLAN tags to look for? ("+tmpVlanStr+") ");
+                String strUsrStatuses = ConsoleArgs.getArg(br, "Statuses (comma-separated) to return?", tmpStatusStr);
+                String strUsrVlans 	  = ConsoleArgs.getArg(br, "VLAN tags (comma-separated) to look for?", tmpVlanStr);
+                String topoIds = ConsoleArgs.getArg(br, "Input a link topoId to only get reservations affecting that", null);
+                String description = ConsoleArgs.getArg(br, "Portion of the reservation description", null);
                 userChoices.put("numResults", strUsrNumResults);
                 userChoices.put("statuses", strUsrStatuses);
                 userChoices.put("vlans", strUsrVlans);
+                userChoices.put("linkIds", topoIds);
+                userChoices.put("description", description);
                 syntaxOK = true;
             } catch (IOException e) {
                 e.printStackTrace();

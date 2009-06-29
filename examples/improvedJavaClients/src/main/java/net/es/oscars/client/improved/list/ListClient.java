@@ -59,8 +59,48 @@ public class ListClient extends ImprovedClient {
             betweenA = (String) between.get("betweenA");
             betweenZ = (String) between.get("betweenZ");
         }
+    }
 
-
+    @SuppressWarnings("unchecked")
+    public void setUserChoices(Map<String, String> userChoices) {
+        if (userChoices.containsKey("vlans")) {
+            String[] vlans = userChoices.get("vlans").trim().split(",");
+            for (int i=0; i < vlans.length; i++) {
+                String v = vlans[i].trim();
+                if (!v.equals("")) {
+                    vlanIds.add(v);
+                }
+            }
+        }
+        if (userChoices.containsKey("statuses")) {
+            String[] statusArr = userChoices.get("statuses").trim().split(",");
+            for (int i=0; i < statusArr.length; i++) {
+                String s = statusArr[i].trim();
+                if (!s.equals("")) {
+                    statuses.add(s);
+                }
+            }
+        }
+        if (userChoices.containsKey("linkIds")) {
+            String[] links = userChoices.get("linkIds").trim().split(",");
+            for (int i=0; i < links.length; i++) {
+                String l = links[i].trim();
+                if (!l.equals("")) {
+                    linkIds.add(l);
+                }
+            }
+        }
+        if (userChoices.containsKey("numResults")) {
+            try {
+                numResults = Integer.parseInt(userChoices.get("numResults"));
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid number format");
+                System.exit(1);
+            }
+        }
+        if (userChoices.containsKey("description")) {
+            description = userChoices.get("description");
+        }
     }
 
 
