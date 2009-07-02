@@ -19,6 +19,13 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpe
 import edu.internet2.perfsonar.PSException;
 import edu.internet2.perfsonar.dcn.DCNLookupClient;
 
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axis2.databinding.ADBException;
+import org.apache.axis2.databinding.utils.writer.MTOMAwareXMLSerializer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
 import net.es.oscars.bss.topology.URNParser;
 import net.es.oscars.client.GraphVizExporter;
 import net.es.oscars.client.Client;
@@ -27,6 +34,7 @@ import net.es.oscars.ws.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.Layer2Info;
 import net.es.oscars.wsdlTypes.Layer3Info;
 import net.es.oscars.wsdlTypes.ListRequest;
+import net.es.oscars.wsdlTypes.ListRequestSequence_type0;
 import net.es.oscars.wsdlTypes.ListReply;
 import net.es.oscars.wsdlTypes.MplsInfo;
 import net.es.oscars.wsdlTypes.PathInfo;
@@ -47,7 +55,10 @@ public class ListReservationCLI {
     private String dotfile = null;
     private String[] topNodes = null;
     private String maintdbfile = null;
+    private boolean output_raw = false;
     private int numResults = 10;
+    private long endTime = java.lang.Long.MIN_VALUE;
+    private long startTime = java.lang.Long.MIN_VALUE;
 
     public ListRequest readArgs(String[] args){
         DCNLookupClient lookupClient = null;
@@ -83,6 +94,8 @@ public class ListReservationCLI {
                         System.out.println("Error: status parameter not specified");
                         System.exit(1);
                     }
+                }else if(args[i].equals("-raw")){
+                    this.output_raw = true;
                 }else if(args[i].equals("-vlan")){
                     if (args.length >= i && args[i+1] != null) {
                         this.vlan = args[i+1].trim();
@@ -95,6 +108,25 @@ public class ListReservationCLI {
                         this.description = args[i+1].trim();
                     } else {
                         System.out.println("Error: description parameter not specified");
+                        System.exit(1);
+                    }
+                }else if(args[i].equals("-startTime") || args[i].equals("-endTime")) {
+                    if (args.length >= i && args[i+1] != null) {
+                        long ts = java.lang.Long.MIN_VALUE;
+                        try {
+                            ts = Long.parseLong(args[i+1].trim());
+                        } catch (NumberFormatException nfe) {
+                            System.out.println("Error: specified timestamp is invalid: " + nfe.getMessage());
+                            System.exit(1);
+                        }
+
+                        if(args[i].equals("-startTime")) {
+                                this.startTime = ts;
+                        } else {
+                                this.endTime = ts;
+                        }
+                    } else {
+                        System.out.println("Error: need to specify a timestamp when using -startTime and -endTime");
                         System.exit(1);
                     }
                 }else if(args[i].equals("-endpoint")){
@@ -207,6 +239,12 @@ public class ListReservationCLI {
             System.exit(0);
         }
 
+        if ((this.startTime == java.lang.Long.MIN_VALUE && this.endTime != java.lang.Long.MIN_VALUE) ||
+            (this.startTime != java.lang.Long.MIN_VALUE && this.endTime == java.lang.Long.MIN_VALUE)) {
+            System.out.println("Error: if either both -startTime and -endTime need to be specified, or neither can be specified");
+            System.exit(1);
+        }
+
         ListRequest listReq = new ListRequest();
 
         String[] statuses;
@@ -249,7 +287,16 @@ public class ListReservationCLI {
             }
         }
 
-        listReq.setResRequested(this.numResults);
+        if (this.startTime != java.lang.Long.MIN_VALUE && this.endTime != java.lang.Long.MIN_VALUE) {
+            ListRequestSequence_type0 resTime = new ListRequestSequence_type0();
+            resTime.setStartTime(this.startTime);
+            resTime.setEndTime(this.endTime);
+            listReq.setListRequestSequence_type0(resTime);
+        }
+
+        if (this.numResults > 0) {
+            listReq.setResRequested(this.numResults);
+        }
 
         return listReq;
     }
@@ -416,6 +463,7 @@ public class ListReservationCLI {
          System.out.println("\t-help\t displays this message.");
          System.out.println("\t-url\t required. the url of the IDC.");
          System.out.println("\t-repo\t required. the location of the repo directory");
+         System.out.println("\t-raw\t output the raw message returned from the server");
          System.out.println("\t[-status \"STATUS\"]\t retrieve reservations with status matching the argument. Use commas to separate values. \n\t\tExample: -status \"ACTIVE,PENDING\"");
          System.out.println("\t[-desc \"DESCRIPTION\"]\t . retrieve reservations with description matching the argument. \n\t\tExample: -desc \"PRODUCTION\"");
          System.out.println("\t[-endpoint \"ENDPOINT\"]\t . retrieve reservations starting, ending, or passing over ENDPOINT(s). Use commas to separate values. \n\t\tExample: -endpoint \"lambdastation.unl.edu,lambdastation.caltech.edu\"");
@@ -504,21 +552,28 @@ public class ListReservationCLI {
             response = oscarsClient.listReservations(listReq);
             int numResults = response.getTotalResults();
             if (numResults == 0) {
-                System.out.println("Empty results");
+                System.out.println("");
                 return;
             }
-            ResDetails[] details = response.getResDetails();
-            ResDetails[] filteredDetails = cli.filterResults(details);
+            if (cli.output_raw) {
+                OMElement omListReply = response.getOMElement(net.es.oscars.wsdlTypes.ListReservationsResponse.MY_QNAME, OMAbstractFactory.getOMFactory());
+                XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(System.out);
+                MTOMAwareXMLSerializer mtom = new MTOMAwareXMLSerializer(writer);
+                response.serialize(net.es.oscars.wsdlTypes.ListReservationsResponse.MY_QNAME, OMAbstractFactory.getOMFactory(), mtom);
+                mtom.flush();
+            } else {
+                ResDetails[] details = response.getResDetails();
+                ResDetails[] filteredDetails = cli.filterResults(details);
 
-            System.out.println("Results: "+filteredDetails.length);
+                System.out.println("Results: "+filteredDetails.length);
 
-            for(int i = 0; filteredDetails != null && i < filteredDetails.length; i++){
-                cli.printResDetails(filteredDetails[i]);
+                for(int i = 0; filteredDetails != null && i < filteredDetails.length; i++){
+                    cli.printResDetails(filteredDetails[i]);
+                }
+
+                cli.createDOT(filteredDetails);
+                cli.createMaintDB(filteredDetails);
             }
-            cli.createDOT(filteredDetails);
-            cli.createMaintDB(filteredDetails);
-
-
 
  //           System.out.println(numResults + " reservations match request.");
         } catch (AxisFault e) {
