@@ -682,7 +682,8 @@ public class ReservationManager {
     public List<Reservation> list(int numRequested, int resOffset,
             String login, String institution,
             List<String> statuses, String description, List<String> linkIds,
-            List<String> vlanTags,  Long startTime, Long endTime)
+            List<String> vlanTags,  Long startTime, Long endTime,
+            String sortBy)
                 throws BSSException {
 
         List<Reservation> reservations = null;
@@ -696,7 +697,8 @@ public class ReservationManager {
         }
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.list(numRequested, resOffset, loginIds, statuses,
-                                description, vlanTags, startTime, endTime);
+                                description, vlanTags, startTime, endTime, 
+                                sortBy);
         if (linkIds != null && !linkIds.isEmpty()) {
             Map<String, Pattern> patterns = new HashMap<String,Pattern>();
             for (String id: linkIds) {

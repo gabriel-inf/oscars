@@ -13,6 +13,7 @@ public class RmiListResRequest implements Serializable {
 
     private int numRequested;      // number of reservations to return
     private int resOffset;         // offset into reservations list
+    private String sortBy;         //sort results by this field: field asc|desc
     private Long startTime;        // reservation must end after this time
     private Long endTime;          // reservation must start before this time
     private String login;          // constrain to reservations from this user
@@ -52,6 +53,20 @@ public class RmiListResRequest implements Serializable {
      */
     public void setResOffset(int resOffset) {
         this.resOffset = resOffset;
+    }
+    
+    /**
+     * @return the field by which the list is sorted
+     */
+    public String getSortBy() {
+        return this.sortBy;
+    }
+
+    /**
+     * @param the field to sort the list by
+     */
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
     }
 
     /**

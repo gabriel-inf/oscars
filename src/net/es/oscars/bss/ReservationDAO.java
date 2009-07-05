@@ -21,7 +21,13 @@ public class ReservationDAO
     private Logger log;
     private String dbname;
     private List<Reservation> reservations;
-
+    
+    private final static String DEFAULT_LIST_SORT = "startTime desc";
+    private final static String[] VALID_SORT_FIELDS = {
+        "id", "startTime", "endTime", "createdTime", "bandwidth", "login", 
+        "payloadSender", "status", "description", "globalReservationId"
+    };
+    
     public ReservationDAO(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.setDatabase(dbname);
@@ -77,7 +83,7 @@ public class ReservationDAO
     @SuppressWarnings("unchecked")
     public List<Reservation> list(int numRequested, int resOffset,
             List<String> logins, List<String> statuses, String description,
-            List<String> vlanTags, Long startTime, Long endTime)
+            List<String> vlanTags, Long startTime, Long endTime, String sortBy)
                 throws BSSException {
 
         this.log.debug("list.start");
@@ -116,8 +122,7 @@ public class ReservationDAO
         if (!criteria.isEmpty()) {
             hsql += " where " +BssUtils.join(criteria, " and ", "(", ")");
         }
-        hsql += " order by r.startTime desc";
-
+        hsql += " order by r." + this.checkSortBy(sortBy);
 
         this.log.debug("HSQL is: ["+hsql+"]");
 
@@ -402,5 +407,45 @@ public class ReservationDAO
             }
         }
         return false;
+    }
+    
+    /**
+     * Verifies that the sortBY field of a list request is valud. If not then
+     * uses a default value.
+     * 
+     * @param sortBy the sortBy value to verify
+     * @return the input value if valid, otherwise a default value
+     */
+    private String checkSortBy(String sortBy){
+        if(sortBy == null){
+            return DEFAULT_LIST_SORT;
+        }
+        sortBy = sortBy.trim();
+        
+        //check parts: should be form 'field asc|desc'
+        String[] sortByParts = sortBy.split(" ");
+        if(sortByParts.length == 0 || sortByParts.length > 2){
+            return DEFAULT_LIST_SORT;
+        }
+        
+        //check if valid field
+        boolean isValidField = false;
+        for(String validFieldName : VALID_SORT_FIELDS){
+            if(validFieldName.equals(sortByParts[0])){
+                isValidField = true;
+                break;
+            }
+        }
+        if(!isValidField){
+            return DEFAULT_LIST_SORT;
+        }
+        
+        //check for asc/desc
+        if(sortByParts.length == 2 && 
+                !("asc".equals(sortByParts[1]) || "desc".equals(sortByParts[1]))){
+            return DEFAULT_LIST_SORT;
+        }
+        
+        return sortBy;
     }
 }

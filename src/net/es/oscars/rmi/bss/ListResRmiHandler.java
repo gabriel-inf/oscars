@@ -55,6 +55,7 @@ public class ListResRmiHandler {
         ReservationManager rm = core.getReservationManager();
         int numRowsReq = request.getNumRequested();
         int resOffset = request.getResOffset();
+        String sortBy = request.getSortBy();
         String description = request.getDescription();
         String loginConstraint = request.getLogin();
         Long startTimeSeconds = request.getStartTime();
@@ -91,7 +92,7 @@ public class ListResRmiHandler {
             reservations =
                 rm.list(numRowsReq, resOffset, loginConstraint, institution,
                         statuses, description, links, vlans,
-                        startTimeSeconds, endTimeSeconds);
+                        startTimeSeconds, endTimeSeconds, sortBy);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {
