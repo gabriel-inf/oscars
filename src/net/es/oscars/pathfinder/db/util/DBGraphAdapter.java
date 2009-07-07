@@ -61,14 +61,21 @@ public class DBGraphAdapter {
                 Path path = null;
                 // FIXME: better error handling
                 try {
-                	path = resv.getPath(PathType.LOCAL);
+                    path = resv.getPath(PathType.LOCAL);
                 } catch (BSSException ex) {
-                	this.log.error(ex);
-                	return null;
+                    this.log.error(ex);
+                    return null;
                 }
                 List<PathElem> pathElems = path.getPathElems();
                 for (PathElem pathElem: pathElems) {
                     Link link = pathElem.getLink();
+                    if (link == null) {
+                        link = domainDAO.getFullyQualifiedLink(pathElem.getUrn());
+                    }
+                    if (link == null) {
+                        this.log.debug("Could not resolve link for urn:"+pathElem.getUrn());
+                        return null;
+                    }
                     Port port = link.getPort();
                     if (portRsvBw.containsKey(port)) {
                         Long newbw = bw + portRsvBw.get(port);
