@@ -182,8 +182,7 @@
 
 <target name="jar" description="Create jar with example classes" depends="compile">
     <jar destfile="../../build/OSCARS-client-examples.jar">
-         <fileset dir="${build}/classes" includes="*.class" excludes="InitiateTopologyPullClient.class"/>
-         <fileset dir="../../conf/server" includes="perfSONAR-LSQuery.xml" />
+         <fileset dir="${build}/classes" includes="*.class"/>
     </jar>
 </target>
 
