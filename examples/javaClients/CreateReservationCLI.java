@@ -108,10 +108,12 @@ public class CreateReservationCLI {
 	        		}
 	        	}else if(args[i].equals("-path")){
 	        		CtrlPlanePathContent path = new CtrlPlanePathContent();
+              path.setId("unimplemented");
 	        		String[] hops = args[i+1].split(",");
 	        		for(String hop: hops){
 	        			CtrlPlaneHopContent newHop = new CtrlPlaneHopContent();
 	        			newHop.setLinkIdRef(hop);
+	        			newHop.setId(hop);
 	        			path.addHop(newHop);
 	        		}
 	        		pathInfo.setPath(path);
