@@ -84,6 +84,7 @@ public class ListMaintDbOutputter implements ListOutputterInterface {
                 hopOutput += prefix+"path-+-0-+-"+i+"-+-hop-+-"+outHop+"\n";
                 i++;
             }
+            Integer bw = resv.getBandwidth()*1000000;
 
             output += prefix +"carrier-+-"+carrier+"\n";
             output += prefix +"id-+-"+gri+"\n";
@@ -96,6 +97,15 @@ public class ListMaintDbOutputter implements ListOutputterInterface {
             output += prefix +"endTime-+-"+endTime+"\n";
             output += prefix +"source-+-"+src+"\n";
             output += prefix +"destination-+-"+dst+"\n";
+            output += prefix +"bandwidth-+-"+bw+"\n";
+            if (resv.getPathInfo().getLayer2Info() != null) {
+                output += prefix +"type-+-L2\n";
+                String vlan = resv.getPathInfo().getLayer2Info().getSrcVtag().getString();
+                output += prefix +"vlan-+-"+vlan+"\n";
+            } else {
+                output += prefix +"type-+-L3\n";
+                output += prefix +"vlan-+-N0\n";
+            }
             output += hopOutput;
         }
 
