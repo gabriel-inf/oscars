@@ -1,0 +1,9 @@
+---
+
+output:
+    ListConsoleOutputter:
+    ListDotOutputter:
+        nodesNearTop:       ['bnl-mr2', 'bnl-mr3', 'fnal-mr2', 'fnal-mr3']
+        graphFilename:      output/list.dot
+    ListMaintDbOutputter:
+        maintDbFilename:    output/production.rt
