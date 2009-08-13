@@ -97,13 +97,18 @@ public class CreateResRmiHandler {
             // use this so we can find NullExceptions
             errMessage = "caught Exception: " + e.toString();
         } finally {
-            if (errMessage != null) {
-                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "localhost", resv, "", errMessage);
+            if (errMessage == null) {
+                bss.getTransaction().commit();
+            }else{
+                try{
+                    eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "localhost", resv, "", errMessage);
+                }catch(Exception e){}
+                bss.getTransaction().commit();
                 this.log.debug("createReservation failed: " + errMessage);
                 throw new RemoteException(errMessage);
             }
         }
-        bss.getTransaction().commit();
+       
         this.log.debug("create.end - success, gri: "+gri);
         return gri;
     }

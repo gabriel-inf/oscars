@@ -21,13 +21,15 @@ public class FireEventJob implements Job{
         // need this to get info for Reservation objects
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        ObserverSource observable = this.core.getObserverMgr().getSource();
-        Object event = (Object) dataMap.get("event");
-
-        observable.eventOccured(event);
-        bss.getTransaction().commit();
-
+        try{
+            JobDataMap dataMap = context.getJobDetail().getJobDataMap();
+            ObserverSource observable = this.core.getObserverMgr().getSource();
+            Object event = (Object) dataMap.get("event");
+            observable.eventOccured(event);
+            bss.getTransaction().commit();
+        }catch(Exception e){
+            bss.getTransaction().rollback();
+        }
 
         this.log.debug("FireEventJob.end name:"+jobName);
     }

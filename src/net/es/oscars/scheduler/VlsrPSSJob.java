@@ -38,13 +38,12 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         String task = (String) dataMap.get("task");
         String bssDbName = core.getBssDbName();
         org.hibernate.Session bss = core.getBssSession();
-        bss.beginTransaction();
-        ReservationDAO resvDAO = new ReservationDAO(bssDbName);
         Reservation resv = null;
         String failedEvent = null;
-
         String login = null;
+        bss.beginTransaction();
         try {
+            ReservationDAO resvDAO = new ReservationDAO(bssDbName);
             resv = resvDAO.query(gri);
             login = resv.getLogin();
             if(task.equals("create")){

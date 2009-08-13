@@ -85,35 +85,37 @@ public class ListResRmiHandler {
             result.setInternalPathAuthorized(false);
         }
         Session bss = core.getBssSession();
-        bss.beginTransaction();
         String errMessage = null;
         List<Reservation> reservations = null;
+        bss.beginTransaction();
         try {
             reservations =
                 rm.list(numRowsReq, resOffset, loginConstraint, institution,
                         statuses, description, links, vlans,
                         startTimeSeconds, endTimeSeconds, sortBy);
+            this.log.debug("initialize start");
+            for (Reservation reservation: reservations) {
+                BssRmiUtils.initialize(reservation);
+            }
+            this.log.debug("initialize end");
+            result.setReservations(reservations);
+            DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
+            result.setLocalDomain(domainDAO.getLocalDomain().getTopologyIdent());
+            bss.getTransaction().commit();
         } catch (BSSException e) {
+            bss.getTransaction().rollback();
+            // use this so we can find NullExceptions
             errMessage = e.getMessage();
+            this.log.error("list failed: " + errMessage);
+            throw new RemoteException(errMessage);
         } catch (Exception e) {
+            bss.getTransaction().rollback();
             // use this so we can find NullExceptions
             errMessage = "Caught Exception " + e.toString();
-        } finally {
-            if (errMessage != null) {
-                bss.getTransaction().rollback();
-                this.log.error("list failed: " + errMessage);
-                throw new RemoteException(errMessage);
-            }
+            this.log.error("list failed: " + errMessage);
+            throw new RemoteException(errMessage);
         }
-        this.log.debug("initialize start");
-        for (Reservation reservation: reservations) {
-            BssRmiUtils.initialize(reservation);
-        }
-        this.log.debug("initialize end");
-        result.setReservations(reservations);
-        DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
-        result.setLocalDomain(domainDAO.getLocalDomain().getTopologyIdent());
-        bss.getTransaction().commit();
+        
         this.log.debug("listReservations.end");
         return result;
     }

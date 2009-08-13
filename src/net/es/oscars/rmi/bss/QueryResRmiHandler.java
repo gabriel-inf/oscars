@@ -17,7 +17,6 @@ import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.DomainDAO;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
@@ -84,31 +83,28 @@ public class QueryResRmiHandler {
         // AAA section end
 
         // BSS section start
-        Session bss = core.getBssSession();
-        bss.beginTransaction();
         RemoteException remEx = null;
         String errMessage = null;
+        Session bss = core.getBssSession();
+        bss.beginTransaction();
         try {
             reservation = rm.query(gri, loginConstraint, institution);
             BssRmiUtils.initialize(reservation);
             result.setReservation(reservation);
+            DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
+            result.setLocalDomain(domainDAO.getLocalDomain().getTopologyIdent());
+            bss.getTransaction().commit();
         } catch (BSSException e) {
-            errMessage = e.getMessage();
-            remEx= new RemoteException(errMessage,e);
-            this.log.debug(methodName + " failed: " + errMessage);
-        } catch (Exception e) {
-            errMessage = "caught Exception " + e.toString();
-            remEx= new RemoteException(errMessage,e);
-            this.log.error(methodName + " failed " + errMessage,e);
-        } 
-        if (errMessage != null) {
             bss.getTransaction().rollback();
-            throw  remEx;
-        }
-        DomainDAO domainDAO = new DomainDAO(core.getBssDbName());
-        result.setLocalDomain(domainDAO.getLocalDomain().getTopologyIdent());
-        bss.getTransaction().commit();
-        // BSS section end
+            errMessage = e.getMessage();
+            this.log.debug(methodName + " failed: " + errMessage);
+            throw new RemoteException(errMessage,e);
+        } catch (Exception e) {
+            bss.getTransaction().rollback();
+            errMessage = "caught Exception " + e.toString();
+            this.log.error(methodName + " failed " + errMessage,e);
+            throw new RemoteException(errMessage,e);
+        } 
         this.log.debug("query.end");
         return result;
     }

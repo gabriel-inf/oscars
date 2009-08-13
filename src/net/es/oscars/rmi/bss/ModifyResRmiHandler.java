@@ -6,26 +6,17 @@ package net.es.oscars.rmi.bss;
  * @author Evangelos Chaniotakis, David Robertson
  */
 
-import java.io.*;
-import java.util.*;
+
 import java.rmi.RemoteException;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.log4j.*;
 import org.hibernate.*;
-
 import net.es.oscars.aaa.*;
-import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.PropHandler;
-import net.es.oscars.database.*;
-import net.es.oscars.interdomain.*;
 import net.es.oscars.rmi.RmiUtils;
 import net.es.oscars.rmi.aaa.AaaRmiInterface;
-import net.es.oscars.ws.*;
+
 
 public class ModifyResRmiHandler {
     private OSCARSCore core;
@@ -71,8 +62,8 @@ public class ModifyResRmiHandler {
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
         Session bss = core.getBssSession();
-        bss.beginTransaction();
         Reservation persistentResv = null;
+        bss.beginTransaction();
         try {
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_RECEIVED, userName,
                                    "core", resv);
@@ -80,16 +71,21 @@ public class ModifyResRmiHandler {
                 rm.submitModify(resv, loginConstraint, userName, institution);
             eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_ACCEPTED, userName,
                                    "core", resv);
+            BssRmiUtils.initialize(persistentResv);
+            bss.getTransaction().commit();
         } catch (Exception e) {
-            String errMessage = "caught Exception " + e.toString();
-            this.log.debug("Modify  failed: " + errMessage);
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, loginConstraint,
-                "RMI", resv, "", errMessage);
-            bss.getTransaction().rollback();
+            try{
+                String errMessage = "caught Exception " + e.toString();
+                this.log.debug("Modify  failed: " + errMessage);
+                eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, loginConstraint,
+                        "RMI", resv, "", errMessage);
+            }catch(Exception E){
+                //do nothing, just pass to finally so Hibernate closed
+            }finally{
+                bss.getTransaction().rollback();
+            }
             throw new RemoteException(e.getMessage());
         }
-        BssRmiUtils.initialize(persistentResv);
-        bss.getTransaction().commit();
         this.log.debug("modify.end - success");
         return persistentResv;
     }

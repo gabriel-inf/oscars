@@ -117,9 +117,8 @@ public class TopologyRegisterJob implements Job{
             }
             bss.getTransaction().commit();
         }catch(Exception e){
-            e.printStackTrace();
-            this.log.error(e);
             bss.getTransaction().rollback();
+            this.log.error(e);
         }
         
         //Schedule next job

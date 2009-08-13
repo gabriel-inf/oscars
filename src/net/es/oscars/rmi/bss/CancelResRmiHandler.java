@@ -83,13 +83,21 @@ public class CancelResRmiHandler {
             errMessage = "caught Exception " + e.toString();
             remEx= new RemoteException(errMessage,e);
             this.log.error(methodName + " failed: " +errMessage,e);
-        } 
-        if (errMessage != null) {
-            if (reservation != null){
-                eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "oscars-core", reservation, "", errMessage);
+        }finally{
+            if (errMessage == null) {
+                bss.getTransaction().commit();
+            }else{
+                try{
+                    if (reservation != null){
+                        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "oscars-core", reservation, "", errMessage);
+                    }
+                }catch(Exception e){
+                    //nothing to do except execute the finally
+                }finally{
+                    bss.getTransaction().rollback();
+                }
+                throw  remEx;
             }
-            bss.getTransaction().rollback();
-            throw  remEx;
         }
         this.log.debug("cancel.end");
         // asynchronous nature of call makes this the only thing to return;
