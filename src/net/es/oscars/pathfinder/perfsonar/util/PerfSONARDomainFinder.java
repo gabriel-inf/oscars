@@ -23,7 +23,7 @@ import edu.internet2.perfsonar.*;
  * @author Aaron Brown (aaron@internet2.edu)
  */
 public class PerfSONARDomainFinder extends TSLookupClient implements DomainFinder {
-    private static final boolean FORCE_OPAQUE = true;
+    private static final boolean FORCE_OPAQUE = false;
     private static final String KNOWN_TOPOLOGY_TYPE = "http://ogf.org/schema/network/topology/ctrlPlane/20080828/";
 
     /**
