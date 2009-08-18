@@ -15,6 +15,8 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
 
 import java.util.*;
@@ -197,13 +199,60 @@ public class OSCARSDatabase implements TEDB {
                 CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
                 port.addLink(link);
                 link.setId(linkXML.getAttributeValue("id"));
-                this.log.debug("link:"+link.getId());
 
                 Element remLinkXML = linkXML.getChild("remoteLinkId", ns);
                 if (remLinkXML != null) {
                   String remLinkId = remLinkXML.getValue();
                   link.setRemoteLinkId(remLinkId);
                 }
+
+
+                Element teMetricXML = linkXML.getChild("trafficEngineeringMetric", ns);
+                if (teMetricXML != null) {
+                    link.setTrafficEngineeringMetric(teMetricXML.getValue());
+                } else {
+                    link.setTrafficEngineeringMetric("0");
+                }
+
+                Element swCapDescXML = linkXML.getChild("SwitchingCapabilityDescriptors", ns);
+                Integer ifceMtu = 0;
+                String capability = "";
+                String vlanRangeAv = "";
+                String encType = "";
+                String swCapType = "";
+                if (swCapDescXML != null) {
+                    Element swCapTypeXML    = swCapDescXML.getChild("switchingcapType", ns);
+                    Element encTypeXML      = swCapDescXML.getChild("encodingType", ns);
+                    Element swCapabSpcXML   = swCapDescXML.getChild("switchingCapabilitySpecificInfo", ns);
+                    if (encType != null) encType = encTypeXML.getValue();
+
+                    if (swCapType != null) swCapType = swCapTypeXML.getValue();
+
+                    if (swCapabSpcXML != null) {
+                        Element capabXML = swCapabSpcXML.getChild("capability", ns);
+                        Element ifceMtuXML = swCapabSpcXML.getChild("interfaceMTU", ns);
+                        Element vlanAvXML = swCapabSpcXML.getChild("vlanRangeAvailability", ns);
+                        if (ifceMtuXML != null) ifceMtu = Integer.valueOf(ifceMtuXML.getValue());
+                        if (capabXML != null)   capability = capabXML.getValue();
+                        if (vlanAvXML != null)  vlanRangeAv = vlanAvXML.getValue();
+                    }
+                }
+
+
+                CtrlPlaneSwitchingCapabilitySpecificInfo swCapSpc = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+                swCapSpc.setInterfaceMTU(ifceMtu);
+                swCapSpc.setCapability(capability);
+                swCapSpc.setVlanRangeAvailability(vlanRangeAv);
+
+                CtrlPlaneSwcapContent swCapDesc = new CtrlPlaneSwcapContent();
+                swCapDesc.setEncodingType(encType);
+                swCapDesc.setSwitchingcapType(swCapType);
+                swCapDesc.setSwitchingCapabilitySpecificInfo(swCapSpc);
+
+
+                link.setSwitchingCapabilityDescriptors(swCapDesc);
+
+
 
               }
             }
