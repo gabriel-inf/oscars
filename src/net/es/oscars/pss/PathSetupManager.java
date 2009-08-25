@@ -371,7 +371,13 @@ public class PathSetupManager{
             throw new BSSException(e);
         }
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        Reservation resv = dao.query(gri);
+        Reservation resv = null;
+        try{
+            resv = dao.query(gri);
+        }catch(BSSException e){
+            this.releaseResvLock(gri);
+            throw e;
+        }
         ReservationManager rm = this.core.getReservationManager();
         int newLocalStatus = upstream ? StateEngine.UP_CONFIRMED : StateEngine.DOWN_CONFIRMED;
         String op = "setup";
@@ -397,7 +403,13 @@ public class PathSetupManager{
             return;
         }
         
-        Domain neighborDomain = rm.endPointDomain(resv, upstream);
+        Domain neighborDomain = null;
+        try{
+            neighborDomain = rm.endPointDomain(resv, upstream);
+        }catch(BSSException e){
+            this.releaseResvLock(gri);
+            throw e;
+        }
         if(neighborDomain == null || neighborDomain.isLocal()){
             this.log.debug("Could not identify " + targetNeighbor + 
                            " domain in path.");
