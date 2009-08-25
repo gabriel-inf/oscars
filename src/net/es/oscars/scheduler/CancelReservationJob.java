@@ -208,10 +208,16 @@ public class CancelReservationJob  extends ChainingJob  implements Job {
             return;
         }
         
-        this.se.updateLocalStatus(resv, StateEngine.NEXT_STATUS_CANCEL);
-        /* Now that local status is set may release lock because create and 
+        try{
+            this.se.updateLocalStatus(resv, StateEngine.NEXT_STATUS_CANCEL);
+        }catch(BSSException e){
+            pm.releaseResvLock(resv.getGlobalReservationId());
+            throw e;
+        }finally{
+            /* Now that local status is set may release lock because create and 
            teardown check local status */
-        pm.releaseResvLock(resv.getGlobalReservationId());
+            pm.releaseResvLock(resv.getGlobalReservationId());
+        }
         
         eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_STARTED, login, "JOB", resv);
         InterdomainException interException = null;
