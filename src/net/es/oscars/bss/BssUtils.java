@@ -294,7 +294,7 @@ public class BssUtils {
             AaaRmiInterface rmiClient = RmiUtils.getAaaRmiClient("forwardClient", log);
             HashMap<String, Object> results = rmiClient.manageAaaObjects(request);
             User user = (User) results.get("user");
-            if(user.getCertSubject() != null){
+            if(user.getCertSubject() != null && (!"".equals(user.getCertSubject()))){
                 result = user.getCertSubject();
             }
             log.info("result=" + result);
