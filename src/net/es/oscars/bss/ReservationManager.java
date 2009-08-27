@@ -83,7 +83,7 @@ public class ReservationManager {
         //send check policy request
         PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
         if(policyClient.isActivated()){
-            policyClient.checkPolicy(login, PolicyClient.CREATE_ACTION_URN, resv);
+            policyClient.checkPolicy(login, PolicyClient.CREATE_ACTION_URN, resv, PolicyClient.SUBMIT_LEVEL);
         }
         
         String gri = resv.getGlobalReservationId();
@@ -162,7 +162,7 @@ public class ReservationManager {
         //send check policy request
         PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
         if(policyClient.isActivated()){
-            policyClient.checkPolicy(resv.getLogin(), PolicyClient.CREATE_ACTION_URN, resv);
+            policyClient.checkPolicy(resv.getLogin(), PolicyClient.CREATE_ACTION_URN, resv, PolicyClient.PATH_COMP_LEVEL);
         }
         
         //chose resources now put INCREATE
@@ -541,7 +541,7 @@ public class ReservationManager {
         //send check policy request to verify modify is ok
         PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
         if(policyClient.isActivated()){
-            policyClient.checkPolicy(login, PolicyClient.MODIFY_ACTION_URN, persistentResv, resv);
+            policyClient.checkPolicy(login, PolicyClient.MODIFY_ACTION_URN, persistentResv, resv, PolicyClient.PATH_COMP_LEVEL);
         }
 
         //Schedule job

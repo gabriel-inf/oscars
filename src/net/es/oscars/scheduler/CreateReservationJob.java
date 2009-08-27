@@ -214,7 +214,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         //send check policy request to verify confirmed path is ok
         PolicyClient policyClient = this.core.getPolicyManager().getPolicyClient();
         if(policyClient.isActivated()){
-            policyClient.checkPolicy(login, PolicyClient.CREATE_ACTION_URN, resv);
+            policyClient.checkPolicy(login, PolicyClient.CREATE_ACTION_URN, resv, PolicyClient.INTER_LEVEL);
         }
         rm.store(resv);
         this.se.updateLocalStatus(resv, StateEngine.CONFIRMED);

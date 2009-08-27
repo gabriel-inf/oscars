@@ -25,7 +25,6 @@ import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.URNParser;
-import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.policy.axis2.Axis2PolicyClient;
 import net.es.oscars.policy.client.CheckPolicyRequest;
 import net.es.oscars.policy.client.CheckPolicyResponse;
@@ -39,9 +38,13 @@ public class PolicyClient extends Axis2PolicyClient{
     private boolean activated;
     private String policyServiceUrl;
     private String localDomain;
+    private int level;
     
     final public static String CREATE_ACTION_URN = "urn:dcn:oscars:action:createReservation";
     final public static String MODIFY_ACTION_URN = "urn:dcn:oscars:action:modifyReservation";
+    final public static int PATH_COMP_LEVEL = 1;
+    final public static int INTER_LEVEL = 2;
+    final public static int SUBMIT_LEVEL = 3;
     
     public PolicyClient(Properties props) throws BSSException{
         //init configuration map and logger
@@ -63,6 +66,16 @@ public class PolicyClient extends Axis2PolicyClient{
                     "in oscars.properties.");
         }
         this.log.debug("policy.service.url=" + this.policyServiceUrl);
+        
+        this.level = 1;
+        String strLevel = props.getProperty("level");
+        if(strLevel != null){
+            try{
+                this.level = Integer.parseInt(strLevel);
+            }catch(Exception e){
+                this.log.warn("policy.level is not a number. defaulting to 1");
+            }
+        }
         
         try {
             new URL(this.policyServiceUrl);
@@ -96,12 +109,17 @@ public class PolicyClient extends Axis2PolicyClient{
         this.activated = true;
     }
     
-    public void checkPolicy(String login, String action, Reservation resv) throws BSSException{
-        this.checkPolicy(login, action, resv, null);
+    public void checkPolicy(String login, String action, Reservation resv, int level) throws BSSException{
+        this.checkPolicy(login, action, resv, null, level);
     }
     
-    public void checkPolicy(String login, String action, Reservation resv, Reservation modifyResv) throws BSSException{
+    public void checkPolicy(String login, String action, Reservation resv, Reservation modifyResv, int level) throws BSSException{
         this.log.debug("checkPolicy.start");
+        //return if admin settings dictate check is not needed
+        if(this.level < level){
+            return;
+        }
+        
         CheckPolicyRequest<OMElement> request = this.createRequest();
         ArrayList<String> domainPath = new ArrayList<String>();
         boolean localFound = false;
