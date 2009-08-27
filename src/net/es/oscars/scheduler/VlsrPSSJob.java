@@ -24,9 +24,9 @@ public class VlsrPSSJob extends ChainingJob implements Job {
     private Properties props;
     private long DELAY = 30;
     private int TIMEOUT = 30000;
-
-    final private int INSERVICE_WAIT_ATTEMPTS= 24;
-
+    private int INSERVICE_CHECKS= 24;
+    private int INSERVICE_CHECK_DELAY= 5000;
+    
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.init();
         this.log.info("VlsrPSSJob.start name:"+context.getJobDetail().getFullName());
@@ -104,6 +104,23 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 this.log.error("pss.dragon.timeout property must be a number.");
             }
         }
+        String inservChecks = this.props.getProperty("inservice_checks");
+        if(inservChecks != null){
+            try{
+                this.INSERVICE_CHECKS = Integer.parseInt(inservChecks);
+            }catch(Exception e){
+                this.log.error("pss.dragon.inservice_checks property must be a number.");
+            }
+        }
+        
+        String inservCheckDelay = this.props.getProperty("inservice_check_delay");
+        if(inservCheckDelay != null){
+            try{
+                this.INSERVICE_CHECK_DELAY = Integer.parseInt(inservCheckDelay)*1000;
+            }catch(Exception e){
+                this.log.error("pss.dragon.inservice_check_delay property must be a number.");
+            }
+        }
     }
 
     /**
@@ -140,7 +157,6 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
         ArrayList<String> ero = null;
         ArrayList<String> subnetEro = null;
-        Layer2Data layer2Data = path.getLayer2Data();
         Link ingressLink = path.getPathElems().get(0).getLink();
         Link egressLink= this.getEgressLink(path);
         int ingressLinkDescr = -1;
@@ -406,7 +422,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
         }
 
         /* Check lsp every few seconds */
-        for(int i = 1; i <= INSERVICE_WAIT_ATTEMPTS; i++){
+        for(int i = 1; i <= INSERVICE_CHECKS; i++){
             String status = null;
             lsp = csa.getLSPByName(gri);
 
@@ -426,7 +442,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
                 this.log.info(gri + " is IN SERVICE");
                 break;
             }else if(!(status.equals(DragonLSP.STATUS_COMMIT) ||
-                       status.equals(DragonLSP.STATUS_LISTENING)) || i == INSERVICE_WAIT_ATTEMPTS){
+                       status.equals(DragonLSP.STATUS_LISTENING)) || i == INSERVICE_CHECKS){
                 this.log.error("Path setup failed. Status=" + lsp.getStatus());
                 if(csa.teardownLSP(gri)){
                     this.log.info("Deleted " + gri + " LSP after error");
@@ -445,7 +461,7 @@ public class VlsrPSSJob extends ChainingJob implements Job {
 
             /* Sleep for 5 seconds */
             try{
-                Thread.sleep(5000);
+                Thread.sleep(INSERVICE_CHECK_DELAY);
             }catch(Exception e){
                 throw new PSSException("Could not sleep to wait for circuit");
             }
