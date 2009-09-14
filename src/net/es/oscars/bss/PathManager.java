@@ -326,7 +326,7 @@ public class PathManager {
         List<PathElem> pathElems = path.getPathElems();
         StringBuilder sb = new StringBuilder();
         for (PathElem pathElem: pathElems) {
-            String topologyIdent = pathElem.getLink().getFQTI();
+            String topologyIdent = pathElem.getUrn();
             sb.append(topologyIdent);
             String localIdent = URNParser.abbreviate(topologyIdent);
             sb.append(localIdent);
