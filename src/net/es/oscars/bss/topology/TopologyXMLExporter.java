@@ -152,7 +152,7 @@ public class TopologyXMLExporter {
 
         String domTopoIdent = domDB.getFQTI();
 
-        this.log.info("Creating XML for domain:[" + domTopoIdent + "]");
+        this.log.debug("Creating XML for domain:[" + domTopoIdent + "]");
 
         Element domXML = null;
 
@@ -168,7 +168,7 @@ public class TopologyXMLExporter {
                 Node nodeDB = (Node) nodeIt.next();
                 String nodeId = nodeDB.getFQTI();
                 if (!nodeDB.isValid()) {
-                    this.log.info("Node "+nodeId+" not valid");
+                    this.log.debug("Node "+nodeId+" not valid");
                 } else {
                     this.exportNode(nodeDB, domXML);
                 }
@@ -208,7 +208,7 @@ public class TopologyXMLExporter {
 
                 String portId = portDB.getFQTI();
                 if (!portDB.isValid()) {
-                    this.log.info("Port "+portId+" not valid");
+                    this.log.debug("Port "+portId+" not valid");
                 } else {
                     this.exportPort(portDB, nodeXML);
                 }
@@ -261,7 +261,7 @@ public class TopologyXMLExporter {
                 Link linkDB = (Link) linkIt.next();
                 String linkId = linkDB.getFQTI();
                 if (!linkDB.isValid()) {
-                    this.log.info("Link "+linkId+" not valid");
+                    this.log.debug("Link "+linkId+" not valid");
                 } else {
                     this.exportLink(linkDB, portXML);
                 }
@@ -290,6 +290,10 @@ public class TopologyXMLExporter {
 
         String teMetric = linkDB.getTrafficEngineeringMetric();
         Element teMetricXML = new Element("trafficEngineeringMetric", ns);
+        if (teMetric == null) {
+            teMetric = "0";
+            log.info("TEmetric null for link: "+linkDB.getFQTI());
+        }
         teMetricXML.addContent(teMetric);
         linkXML.addContent(teMetricXML);
 
