@@ -22,9 +22,9 @@ domains which it will traverse, or it may be a fully specified path.
  </p>
 <p> Currently OSCARS implements the following pathfinding solutions:</p>
 <ul>
-<li>Overlay Pathfinder</li>
+<li>static</li>
+<li>perfsonar</li>
 <li>TERCE pathfinding</li>
-<li>Traceroute-based pathfinding</li>
 <li>Topology database database graph pathfinding</li>
 </ul>
 <p>The OSCARS administrator can choose which method of pathfinding 
@@ -34,22 +34,19 @@ own pathfinder implementation by creating a new class that implements
 the Pathfinder java interface.</p>
 
 <h2>Details</h2>
-<h3>Overlay Pathfinder</h3>
-<p>This pathfinding method is the most trivial one, and relies on the user
-providing the complete ERO. It will simply map the user-provided path 
-elements in the reservation request to local database pathElem entries.</p>
+<h3>Static Pathfinder</h3>
+<p>This pathfinding method is the most trivial one, for interdomain paths it chooses from routes
+in the MySql interdomainroute table. For local paths, it will parse an xml file describing topology 
+specified by the oscars.properties file <i>pathfinder.staticxml.file</i>.</p>
 <h3>TERCE Pathfinder</h3>
 <p>This pathfinder will use the TERCE pathfinding web service to
 find a path from the ingress to the egress. See the TERCE documentation
 for more details.</p>
-<h3>Traceroute Pathfinder</h3>
-<p>Traceroute pathfinding will use IP traceroute from the ingress to the 
-egress to do pathfinding. It is most useful when the policy for path 
-creation between any two points in the network coincides with the
-IP routing policy.</p>
+<h3>perfsonar Pathfinder</h3>
+<p>Perfsonar will caluclate a path based on information from the Topology Server.</p>
 <h3>Topology database graph Pathfinder</h3>
 <p>This method will try to find the least-cost path from the ingress to
-the egress. It is still under development, and relies on the domain
+the egress. It is used at ESNet, and relies on the domain
 administrator having assigned a cost to the various links in the 
 topology database.</p>
 
@@ -58,10 +55,10 @@ topology database.</p>
 OSCARS server through oscars.properties. The relevant property is 
 pathfinder.pathMethod. Valid values are:</p>
 <ul>
-<li><b>terce</b> to use TERCE</li>
-<li><b>traceroute</b> for traceroute</li>
-<li><b>overlay</b> for the overlay pathfinder</li>
-<li><b>dbgraph</b> for the database-generated graph  pathfinder</li>
+<li><b>static</b> to use static pathfinder</li>
+<li><b>terce</b> to use TERCE web interface</li>
+<li><b>perfsonar</b> for the perfsonor pathfinder</li>
+<li><b>dbgraph</b> for the database-generated graph pathfinder</li>
 </ul>
 
 <h2>Development</h2>

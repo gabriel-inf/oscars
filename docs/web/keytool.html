@@ -49,15 +49,18 @@ In IE the following is reputed to work.<br>
 <i>View certificate -&gt; certificate details -&gt;</i> <i>copy to file</i>
 <br>
 <br>
-For Firefox you may need the following extension.<br>
+For Firefox try.<br>
 <br>
+<i>preferences -&gt; advanced -&gt; Encryption -&gt; View Certificates -&gt; select
+-&gt; export  </i> <br>
+<br>
+or you may need the  extension.- 
 https://addons.mozilla.org/en-US/firefox/addon/1964<br>
 <br>
 Once this is installed there will be a "certificate Manager" entry in
-the tools menu.
+the tools menu.<br>
 <br>
-<br>
-<span style="font-style: italic;">tools -&gt; websites -&gt; select
+<span style="font-style: italic;">tools -&gt; CertificateManager -&gt; Servers -&gt; select
 certificate -&gt; view -&gt; export</span><br>
 <br>
 <h3>Input a site or CA certifcate as a trustedCertEntry</h3>
@@ -77,11 +80,11 @@ or <br>
  style="font-style: italic;">'OSCARS.jks'</span> -file <span
  style="font-style: italic;">'CAcert.pem'</span> -trustcacerts -alias <span
  style="font-style: italic;">'CA'</span></pre>
-<h4>Addin existing keyEntries to your OSCARS.jks keystore.<br>
+<h4>Adding existing keyEntries to your OSCARS.jks keystore.<br>
 </h4>
 <span style="font-weight: bold;">tools/utils/copyKey:<br>
-</span>Used to copy a keyEntry from one keystore to another. Useful
-when upgrading from DCN release 0.3 to 0.4 or when importing a keyEntry
+</span>Used to copy a keyEntry from one keystore to another. May be useful
+when upgrading to a new release or when importing a keyEntry
 from an externally obtained pkcs12 file.<br>
 <br>
 <code>copyKey.sh -a &lt;alias of keyEntry&gt; <br>

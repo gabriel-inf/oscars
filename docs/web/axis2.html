@@ -19,7 +19,8 @@
 </h2>
 <h3>How to install or upgrade Axis2 + rampart.mar</h3>
 <span style="color: rgb(204, 0, 0);">Note: this procedure is now done
-by the do_build.sh script.</span> <br>
+by the do_build.sh script. We are currently using a post 1.4 SNAPSHOT due to a security
+bug in the 1.4 release. So do not follow these instructions until a 1.5 release is available.</span> <br>
 <br>
 <h3><span style="font-weight: bold; font-style: italic;">To Build</span></h3>
 <h3><span style="font-weight: bold; font-style: italic;"></span></h3>
@@ -32,7 +33,7 @@ install axis2 you must include the rampart.mar.<br>
  href="http://ws.apache.org/axis2">http://ws.apache.org/axis2</a> and
 the
 rampart module from <a
- href="http://ws.apache.org/axis2/modules/rampart/1_3/security-module.html">http://ws.apache.org/axis2/modules/rampart/1_3/security-module.html</a>.&nbsp;
+ href="http://ws.apache.org/axis2/modules/index.html">http://ws.apache.org/axis2/modules/index.html</a>.&nbsp;
   </li>
   <br>
   <li>Extract the zip files into a common directory<br>
@@ -42,10 +43,10 @@ rampart module from <a
 which
 axis was unzipped.</li>
   <br>
-  <li>Run ant in the rampart-1.3 directory. This will copy the
+  <li>Run ant in the rampart-1.4 directory. This will copy the
 rampart jars to axis2 lib. </li>
   <br>
-  <li>In the axis2-1.3/webapp directory, edit the create.war target
+  <li>In the axis2-1.4/webapp directory, edit the create.war target
 in build.xml to remove the lines:
     <pre>     &lt;exclude name="axis2-adb-codegen*.jar"&gt;<br>     &lt;exclude name="axis2-codegen*.jar"/&gt;<br>     &lt;exclude name="jibx-bind*.jar"/&gt;</pre>
   </li>

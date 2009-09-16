@@ -582,7 +582,7 @@
         <mkdir dir="web/docs"/>
         <copy todir="web/docs">
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
-            <fileset dir="conf/schema" includes="OSCARS.*, nmtopo-ctlp.xsd"/>
+            <fileset dir="conf/schema" includes="OSCARS*, nmtopo-ctlp.xsd"/>
         </copy>
         <copy file="do_build.sh" tofile="web/docs/do_build.sh.txt"/>
         <copy todir="web/docs">

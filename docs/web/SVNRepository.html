@@ -75,9 +75,6 @@ configuration files and keystores, general properties files. </li>
   <li><code style="font-weight: bold;">docs/</code> - all documentation
 that get deployed with the OSCARS war<br>
   </li>
-  <li><code style="font-weight: bold;">dojoWeb/</code> - javaScript,
-html, images, and style sheets used
-by the dojo servlet version of the WBUI </li>
   <li><code style="font-weight: bold;">examples/</code> - client web
 service programs as examples of how to use
 the web service interface </li>
@@ -86,10 +83,12 @@ files that OSCARS needs that we
 distribute. More jar files are copied into this directory during the
 build process: targets - axis2LocalCopy, tomcatLocalCopy, jarRemoteCopy
   </li>
+  <li><code style="font-weight: bold;">logs/</code> - a directory to hold the
+  log files of the rmi servers: core, aaa and notifyBroker</li>
   <li><code style="font-weight: bold;">maven-repository/</code> - an
 empty directory used by the build procees
 to fetch the mysql-connector-java jar. </li>
-  <li><code style="font-weight: bold;">schemas/</code> - a temporary
+  <li><code style="font-weight: bold;">resources/</code> - a temporary
 directory to hold experimental schemas<br>
   </li>
   <li><code style="font-weight: bold;">sql/</code> - SQL commands to
@@ -102,8 +101,7 @@ for the OSCARS server </li>
 helpful programs for managing the data
 bases. Also the scheduler process source is here. </li>
   <li><code style="font-weight: bold;">web/</code> - javaScript, html,
-images, and style sheets used by the
-original version of the WBUI</li>
+images, and style sheets used by the WBUI</li>
 </ul>
 <h3>Domain Specific Repository</h3>
 There is a separate domain specific repository that holds domain
@@ -112,18 +110,9 @@ specific configuration files and security tokens. For ESnet it is at <a
 It
 is only accessible to ESNet developers. Other sites running an OSCARS
 server need to create their own domain repository. The OSCARS build
-targets: prepare and setupServer, assume that the directory specified
-by
-the DOMAIN_HOME environment variable will contain the following
-files.
-<ul>
-  <li><span style="font-weight: bold;">${DOMAIN_HOME}/server </span>:
-sec-server.jks, sec-server.properties, sec-client.jks,
-sec-client.properties, oscars.key, pss.key,oscars,properties,
-test.properties</li>
-  <li><span style="font-weight: bold;">${DOMAIN_HOME}/client:</span>
-axis2.xml, ssl-keystore.jks</li>
-</ul>
+target setupServer depends on copydomain which will copy the following files
+from {DOMAIN_HOME}/server if $DOMAIN_HOME is set: 
+OSCARS.jks, oscars.key, pss_key, oscars.properties, test.properties
 <p>
 See&nbsp;<a href="msgSecurity.html">Message Security</a> for an
 explanation of these files.<br>

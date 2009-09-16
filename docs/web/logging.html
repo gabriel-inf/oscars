@@ -47,7 +47,7 @@ target copies it to ${catalina.home}/common/classes. .</div>
 ${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/commons-logging.properties
 to select no logging, simple logging or log4j. Uses the file
 ${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/log4j.properties.
-The deployaar ant target copies conf/server/axis2.log4j.properties
+The deployaar ant target copies conf/logging/axis2.log4j.properties
 file to ${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties<br>
 </div>
 <br>
@@ -62,16 +62,17 @@ to ${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties.<br>
 <h3>OSCARS war logging</h3>
 <div style="margin-left: 40px;">Uses the file that is included in
 OSCARS.war at WEB-INF/classes/log4j.properties. It is copied there 
-from the source in conf/server/log4j.properties by the prepare and wbui targets.
+from the source in conf/logging/oscars-war.log4j.properties by the oscars-war target.
 The wbui target adds log4j.jar to the OSCARS/WEB-INF/lib
 directory to ensure that the war will get its log4j.properties 
 from OSCARS/WEB-INF/classes.<br>
 </div>
-<h3>Scheduler logging</h3>
-<div style="margin-left: 40px;">The scheduler is started by the
-tools/scheduler.sh script which sets the location of the logging
-configuration file to
-./log4j.sched.properties.
+<h3>rmi core logging</h3>
+<div style="margin-left: 40px;">The ant targets for aaa-core, oscars-core and notifybroker-core copy
+the respective 
+conf/logging/{oscars-aar,oscars-caore,notifybroker-core}.log4j.properties to the jar files as
+log4j.properties. Once they are started from ${OSCARS_HOME} by the oscars.sh script their log files
+will be placed in ./logs/{oscars-aar, oscars, oscars-nb, hibernate, wire}.log
 <br>
 </div>
 <br>

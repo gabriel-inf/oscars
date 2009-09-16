@@ -18,7 +18,7 @@ User Manual</a>
 <h1 style="text-align: center;"><a class="mozTocH1"
  name="mozTocId258292"></a>API User Manual</h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
-version 0.4 September<br>
+version 0.5 September 2009<br>
 </span>
 </div>
 <br>
@@ -39,12 +39,9 @@ Reservation</a></li>
       <li><a href="#mozTocId885893">6. Forward</a></li>
       <li><a href="#mozTocId303252">7. Get Network
 Topology</a></li>
-      <li><a href="#mozTocId383110">8. Initiate
-Topology
-Pull</a></li>
-      <li><a href="#mozTocId261951">9. Create Path</a></li>
-      <li><a href="#mozTocId768207">10. Refresh Path</a></li>
-      <li><a href="#mozTocId254167">11. Teardown Path</a></li>
+      <li><a href="#mozTocId261951">8. Create Path</a></li>
+      <li><a href="#mozTocId768207">9. Refresh Path</a></li>
+      <li><a href="#mozTocId254167">10. Teardown Path</a></li>
     </ul>
   </li>
 </ul>
@@ -281,13 +278,13 @@ name of
 the owner of the reservation</li>
   <li><span style="font-weight: bold;">status</span> (string) -
     <ul>
+      <li>SUBMITTED - reservation request has been submitted and a reply sent to the requester</li>
       <li>ACCEPTED - reservation request has been accepted and the
 reservation is scheduled to be processed</li>
-      <li>PENDING/RESERVED&nbsp;
+       <li>INCREATE - reservation creation is in process </li>
+      <li>PENDING
 - reservation processing is complete and resources have been reserved,
-but
-the scheduled start
-time
+but the scheduled start time
 has not arrived yet (may have required inter-domain operations)<br>
       </li>
       <li>INSETUP - the circuits are being provisioned - (may require
@@ -378,6 +375,9 @@ reservations starting before this time</li>
   <li><span style="font-weight: bold;">linkId</span> (string, 0 or
 more)
 - reservations must contain these hops<br>
+  </li>
+  <li><b>vlanTag</b>(vlanTag, 0 or more) 
+  - reservations must contain these vlanTags<br>
   </li>
   <li><span style="font-weight: bold;">resRequested</span> (int, 0 or
 1) - number of reservations to return. If not set, all reservations
@@ -576,44 +576,7 @@ will call GetNetworkTopologyClient.java. As usual edit
 getNetworkTopology.sh to
 set the URLs for your server host.<br>
 <br>
-<h2><a class="mozTocH2" name="mozTocId383110"></a>8. <a
- name="InitiateTopologyPull"></a>Initiate
-Topology
-Pull</h2>
-Tells an IDC to update its topology. Causes the IDC to pull the
-complete topologies for all the domains in its domain tables, and to
-update the topology tables with the results. For a description of the
-topology tables see the <a href="tss.html">Topology section</a> in the
-developers manual.<br>
-<br>
-Request message parameters:<br>
-<ul>
-  <li><span style="font-weight: bold;">topologyType</span>
-(string) - currently
-ignored and set to "all" in the getNetworkTopology calls.<br>
-  </li>
-</ul>
-Request message parameters:<br>
-<ul>
-  <li><span style="font-weight: bold;">resultMsg</span> (string) -
-SUCCESS if the all the domains have been updated. Otherwise it will
-contain all the topology exception messages.<br>
-  </li>
-</ul>
-Possible fault messages:<br>
-<ul>
-  <li>OSCARSSkeleton:initiateTopologyPull: permission denied -
-need&nbsp; modify permission on domains.</li>
-  <li>No local domain has been specified - this is an internal error in
-the domains database<br>
-  </li>
-</ul>
-<code style="font-weight: bold;">examples/javaClients/initiateTopologyPull.sh</code>
-will call InitiateTopologyPullClient.java. As usual edit
-initiateTopologyPull.sh to
-set the URLs for your server host.<br>
-<br>
-<h2><a class="mozTocH2" name="mozTocId261951"></a>9. Create Path</h2>
+<h2><a class="mozTocH2" name="mozTocId261951"></a>8. Create Path</h2>
 Causes all the IDCs on the path to provision the path for a previously
 scheduled reservation whose start time has been reached. The
 reservation must have been created with a pathSetupMode of
@@ -649,7 +612,7 @@ occurs if status is not PENDING</li>
   <li>Path cannot be created. Reservation end time has been reached.</li>
 </ul>
 <br>
-<h2><a class="mozTocH2" name="mozTocId768207"></a>10. <a
+<h2><a class="mozTocH2" name="mozTocId768207"></a>9. <a
  name="RefreshPath"></a>Refresh Path</h2>
 Checks to see if the path of a scheduled reservation is still valid.
 Checks local path <br>
@@ -689,7 +652,8 @@ Reason: <br>
   </li>
 </ul>
 <br>
-<h2><a class="mozTocH2" name="mozTocId254167"></a>11. <a
+<h2><a class="mozTocH2" name="mozTocId254167"></a>10
+. <a
  name="TeardownPath"></a>Teardown Path</h2>
 Will teardown an ACTIVE reservation. Removes local path <br>
 first and then forwards request. If there is a failure in the local path<br>

@@ -89,7 +89,7 @@ container</li>
         <li><a href="axis2.html">Apache Axis2 1.4.1 </a>Web
 service container</li>
         <li><a href="axis2.html">Apache
-Rampart 1.4/SNAPSHOT </a>- for Web service message security</li>
+Rampart 1.4/SNAPSHOT as of Oct 3, 2008</a>- for Web service message security</li>
       </ul>
 The persistent data for
 reservations, topology and user information is stored in <a
@@ -120,7 +120,7 @@ OSCARS.war, OSCARS.aar and OSCARSNotify.aar, and builds the tools/utils
 directory.<br>
         </li>
         <li><span style="font-weight: bold;">do_upgrade.sh</span> which
-will upgrade a DCN release 0.3 to 0.4. It will update the</li>
+will upgrade a DCN release 0.4 to 0.5. It will update the</li>
         <li>version of axis2 to 1.4.1, update OSCARS security
 configuration and keystores and update the mysql data bases.<br>
         </li>
@@ -345,21 +345,26 @@ message
 and forwarded messages.<br>
       <br>
 You can add a user KeyEntry to the keystore in several ways. If you are
-running a standalone server, use<span style="font-weight: bold;"> <a
- href="msgSecurity.html#idcCommands">tools/utils/idc-certadd</a></span>
+running a standalone server, use <a
+ href="msgSecurity.html#idcCommands">tools/utils/idc-certadd</a>
 and chose option 1. This
 will create a keyEntry with the alias you give and a self-signed
 certificate. If you are going to be connected to the Internet2 or ESnet
 IDC's you will need a certificate that is signed by a trusted CA. Use
-icd-certadd and chose option 2 which will add a keyEntry and also
+<i>icd-certadd</i> and chose option 2 which will add a keyEntry and also
 generate a certificate signing request that can be sent to a trusted CA.<br>
-      <br>
+If you already have a certificate and key in a pkcs12 file, use <a
+ href="msgSecurity.html#idcCommands">tools/utils/copyKey</a>to 
+import it as a keyEntry.<br>
+<code>tools/utils/copyKey.sh -alias yourName -inpkcs12 yourPkcs12file -outjks examples/javaClients/repo/OSCARS.jks
+</code>
+      <p>
       <h2>Setting
 up Client Keystores</h2>
       <span style="font-weight: bold;"><br>
       </span>If you wish to use the command line clients in
 examples/javaClients you<br>
-will&nbsp; need to setup the keystore there.<br>
+will need to setup the keystore there.<br>
       <br>
       <div style="margin-left: 40px;"><code>cd examples/javaClients</code><br>
       <code>ant </code><br>
@@ -372,7 +377,8 @@ examples/javaClients/repo. If you answered y to the question<br>
 rampConfig.xml in the repo subdirectory in axis2.xml to be able to
 customize the user key (as opposed to using the default ? (y,n)<br>
       <br>
-      </span>you will need to add a keyEntry to repo/OSCARS.jks. If you
+      </span>you will need to add a keyEntry to repo/OSCARS.jks using one of the tools
+      in <i>tools/utils/</i> If you
 answered no, the clients will use the same keystore that the server
 uses.<br>
       <br>
@@ -388,7 +394,7 @@ major tasks in the build process<br>
 tomcat libraries from the Tomcat deployed area, $CATALINA_HOME, into
 the distribution's lib directory, and the msql-connector jars from a
 maven
-repository.&nbsp; It also copies some configuration files from the conf
+repository. It also copies some configuration files from the conf
 directory to the build area, from whence they will be put in the aar
 and
 war files.<br>
@@ -406,18 +412,22 @@ src/org/ogf/schema/network/topology/ctrlplane/_20070626<br>
  style="font-style: italic;">wsdl2java<br>
       </span>compiles all the server classes into build/WEB-INF/classes.<br>
       <br>
-      <span style="font-style: italic;"></span> <span
- style="font-style: italic;">aar</span> ceates the
-build/OSCARS.aar file from the classes in build/WEB-INF/classes
-(excluding
-the servlet classes),&nbsp; the jars in the lib directory and the wsdl,
-xsd and services.xml files in conf/server.<br>
+      <span style="font-style: italic;">build-all</span> 
+      </span>build all the OSCARS artifacts:oscars-core,aaa-core,notifybroker-core,
+      oscars-aar,oscars-war,notify-aar<br>
       <br>
-      <span style="font-style: italic;">deployaar</span>&nbsp; copies
-OSCARS.aar to $CATALINA_HOME/webapps/WEB_INF/services, the
+      <span style="font-style: italic;">deployall</span> copies
+OSCARS.aar and Notify.aar. to $CATALINA_HOME/webapps/WEB_INF/services, and OSCARS.war
+to $CATALINA_HOME/webapps. It also copies
 log4j.properties file to $CATALINA_HOME/webapps/WEB_INF/classes where
 axis2 can find it, and a couple of jar files that need to be in
 $CATALINA_HOME/shared/lib.<br>
+If Tomcat is running at the
+time of the deploy and is configured to dynamically deploy services,
+the new OSCARS.war will immediately be deployed. If Tomcat is not running, you
+may need to delete the old deployed directory
+$CATALINA_HOME/webapps/OSCARS before the new war will be started.
+New versions of the aars require Tomcat to be restarted. <br>
       <span style="font-style: italic;"></span><br>
       <span style="font-style: italic;">wbui</span> generates the
 JavaDocs
@@ -427,17 +437,6 @@ included in the OSCARS.war. It then builds the war from the classes in
 build/WEB-INF/classes (excluding the web services classes), the lib
 jars and the docs.<br>
       <br>
-      <span style="font-style: italic;">deploywbui</span>&nbsp; depends
-on <span style="font-style: italic;">wbui, compile,</span> and <span
- style="font-style: italic;">copydocs</span><br>
-It just copies
-the
-OSCARS.war file to $CATALINA_HOME/webapps. If Tomcat is running at the
-time of the deploy and is configured to dynamically deploy services,
-the new war will immediately be deployed. If Tomcat is not running, you
-may need to delete the old deployed directory
-$CATALINA_HOME/webapps/OSCARS before the new war will be started.<br>
-      <br>
       <span style="font-style: italic;">setupServer</span> copies a
 number of
 files to the $CATALINA_HOME/shared area where they are used by axis2
@@ -446,6 +445,8 @@ put in $CATALINA_HOME/common/classes for use by Tomcat. <span
  style="font-style: italic;">setupServer</span> only needs to be run
 once per installation unless you change any of the copied
 configuration files.<br>
+      Use the script <span style="font-style: italic;">oscars.sh</span> to
+      run the rmi servers: oscars-core, aaa-core and notifybroker-core.<br>
       </td>
     </tr>
     <tr>

@@ -29,12 +29,12 @@ described in <a href="authorizationPolicy.html">Authorization Policy</a>.<br>
 page.<br>
 Logs in with oscars login name e.g. mrthompson@lbl.gov and password<br>
 If the name is found in the users table and the password is correct, he
-receives two cookies, one named userName that contains a hash that
-indexes this user in the user table and one named tabName which is used
+receives two cookies, one that contains a hash that
+indexes this user in the user table and one  which is used
 to determine what tabs will be displayed on the next web page the user
 sees.
 <br>
-<pre>    servlets.UserSession<br><br>            String checkSession(PrintWriter out, HttpServletRequest request) - <br>	 	if there is userName cookie in the request, returns the userName from the cookie.<br>		Otherwise returns an xml error message.<br><br>             void setCookie(String cookieName, String cookieValue, HttpServletResponse response)<br>		includes the cookie in the servlet repsonse.<br><br>             String getCookie(String cookieName, HttpServletRequest request)<br>         	called by servlets.UserSession.checkSession and servlets.Utils.tabSection<br>         	If there is a cookie named "userName", uses the value of the cookie to determine user's login name<br>         	Otherwise returns null. <br></pre>
+<pre>    servlets.UserSession<br><br>            String checkSession(PrintWriter out, HttpServletRequest request) - <br>	 	if there is userName cookie in the request, returns the userName from the cookie.<br>		Otherwise returns an xml error message.<br><br>             void setCookie(String cookieName, String cookieValue, HttpServletResponse response)<br>		includes the cookie in the servlet repsonse.<br><br>             String getCookie(String cookieName, HttpServletRequest request)<br>         	called by servlets.UserSession.checkSession and servlets.Utils.tabSection<br>         	If there is a userName cookie, uses the value of the cookie to determine user's login name<br>         	Otherwise returns null. <br></pre>
 <br>
 <b>API</b><br>
 All messages are digitally signed by an X.509 priviate key and the
@@ -60,15 +60,55 @@ Once the message has been validated the corresponding method:
 create,cancel,list,query in OSCARSSkeleton is called. Each method
 starts out with a checkUser call which first calls setOperationContext <br>
 </p>
-<pre>   <br>     oscars.OSCARSSkeleton<br><br>     	private void  setOperationContext() - called by checkUser<br>          extracts the users DN and issuers DN from the message context  which are then <br>          stored in private variables within the OSCARSSkeleton.<br><br>     	String checkUser() <br>          Calls set OperationContext and checks that a certificate was found. This should only  fail if<br>          the axis2/rampart configuration is wrong.<br>          Then calls userManager.loginFromDN to check if the DN is entered in the user table and to get the <br>          login name which is used for subsequent authorization.<br> </pre>
+<pre>   <br>     oscars.OSCARSSkeleton<br><br>     	private void  setOperationContext() - called by checkUser<br>          extracts the users DN and issuers DN from the message context  which are then <br>          stored in private variables within the OSCARSSkeleton.<br><br>     	String checkUser() <br>          Calls setOperationContext and checks that a certificate was found. This should only  fail if<br>          the axis2/rampart configuration is wrong.<br>          Then calls userManager.loginFromDN to check if the DN is entered in the user table and to get the <br>          login name which is used for subsequent authorization.<br> </pre>
 <h2>Internal interfaces:</h2>
 <pre>aaa/UserManager<br>       String LoginFromDN(String DN)   <br>		called from OSCARSSkeleton.checkUser<br>       		uses UserDAO to lookup DN and return login name<br><br>       String verifyLogin(String userName, String password)<br>		called from servlets.AuthenticateUser.doGet<br>       		uses UserDAO to see if user is already authenticated<br>       		if not, looks up login Name and enrypted password and <br>		compares to input password<br><br>       AuthValue checkAccess(String userName, String resourceName,<br>                                    String permissionName)<br>                called by<br>                      servlets(AuthenticateUser,CancelReservations,QueryReservations,ListReservations,<br>				UserAdd,userAddForm,UserModify,UserQuery,UserRemove)<br>                      OSCARSSkeleton.listReservations,queryReservations,cancelReservation,<br>				createPath,refreshPath,teardownPath,<br>                            	getNetworkTopology,initiateTopologyPull)<br>                 verifies that this user has the specified permission to the specified resource<br>                 gets userid, resourceid and permissionid from the appropropriate tables<br>                 queries authorization table based the the userid, resourceid and permissionid tuple.<br><br>	AuthValue checkModResAccess(String userName, String resourceName, String permissionName,<br>		           int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI)<br>		called by<br>                     servlets(CreateReservationForm,createReservation,createReservationform)<br>			    OSCARSSkelton.createReservation<br><br>       	also contains the methods to create, query, list and delete users.<br>     <br>     </pre>
 <h2>Internal Data Structures</h2>
-<pre>       	UserManger<br>       	   	private LogWrapper log;<br>     		private String salt;<br>    		Session session;  From HibernateUtil.getSessionFactory("aaa").getCurrentSession();<br>    		<br>     	aaa.User<br>    	    contains all the items in the <span
- style="font-weight: bold;">user table</span>  with get and set methods<br>    	    adapted from a Middlegen class automatically generated <br>    	    <br>               	private Integer id;   	         /** identifier field */<br>    		private String login;            /** persistent field */<br>    		private String certificate;      /** nullable persistent field */<br>    		private String certSubject;      /** nullable persistent field */<br>    		private String lastName;         /** persistent field */<br>    		private String firstName;        /** persistent field */<br>    		private String emailPrimary;     /** persistent field */<br>    		private String phonePrimary;     /** persistent field */<br>    		private String password;         /** nullable persistent field */<br>    		private String description;      /** nullable persistent field */<br>    		private String emailSecondary;   /** nullable persistent field */<br>    		private String phoneSecondary;   /** nullable persistent field */<br>     		private String status;           /** nullable persistent field */<br>    		private String activationKey;    /** nullable persistent field */<br>    		private Long lastActiveTime;     /** nullable persistent field */<br>    		private Long registerTime;       /** nullable persistent field */<br>    		private Institution institution; /** persistent field */<br>    	    <br>     aaa.Authorization<br>        adapted from a Middlegen class automatically generated <br>        contains the items from the <span
- style="font-weight: bold;">authorizations table</span> with get and set methods<br>    		private Integer id; 		/** identifier field */<br>    		private int attrId;  		/** persistent field */<br>    		private int resourceId;  	/** persistent field */<br>    		private int permissionId; 	/** persistent field */<br>    		private String constraintName; 	/** nullable persistent field */<br>    		private Integer constraintValue;/** nullable persistent field */   		<br><br>     aaa.Resource<br>        adapted from a Middlegen class automatically generated <br>        contains the items from the <span
- style="font-weight: bold;">resources table</span> with get and set methods<br>		private Integer id;		/** identifier field */<br>		private String name;		/** persistant field */<br>		private String description; <br> <br>    <br>     aaa.Permissions<br>        adapted from a Middlegen class automatically generated <br>        contains the items from the <span
- style="font-weight: bold;">permissions table</span> with get and set methods<br>		private Integer id;		/** identifier field */<br>		private String name;		/** persistant field */<br>		private String description;     /** nullable persistent field *<br>     </pre>
+<pre><b>UserManger</b>
+            private LogWrapper log;
+            private String salt;
+            Session session;  
+            From HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+<br>
+<b>aaa.User</b> contains all the items in the <span style="font-weight: bold;">user table</span>  with get and set methods
+    Integer id;              /** identifier field */
+    String login;            /** persistent field */
+    String certIssuer;       /** nullable persistent field, issuer of user's X509 certificate*/
+    String certSubject;      /** nullable persistent field, subject of user's X509 certificate*/
+    String lastName;         /** persistent field */
+    String firstName;        /** persistent field */
+    String emailPrimary;     /** persistent field */
+    String phonePrimary;     /** persistent field */
+    String password;         /** nullable persistent field */
+    String description;      /** nullable persistent field */
+    String emailSecondary;   /** nullable persistent field */
+    String phoneSecondary;   /** nullable persistent field */
+    String status;           /** nullable persistent field, not currently used */
+    String activationKey;    /** nullable persistent field, not currently used */
+    Long loginTime;          /** nullable persistent field */
+    String cookieHash;       /** nullable persistent field */
+    Institution institution; /** persistent field */
+<br>
+<b>aaa.Authorization</b>  contains the items from the <span style="font-weight: bold;">authorizations table</span> with get and set methods
+    Integer id;             /** identifier field */
+    Attribute attribute;    /** persistent field */
+    Resource resource;      /** persistent field */
+    Permission permission;  /** persistent field */
+    Constraint constraint;  /** nullable persistent field */
+    String constraintValue; /** nullable persistent field */
+<br>
+ <b>aaa.Resource</b>  contains the items from the <span style="font-weight: bold;">resources table</span> with get and set methods
+    Integer id;             /** identifier field */
+    String name;            /** persistant field */
+    String description;     /** persistant field */
+<br> 
+<b>aaa.Permissions</b>  contains the items from the <span
+ style="font-weight: bold;">permissions table</span> with get and set methods
+    Integer id;             /** identifier field */
+    String name;            /** persistant field */
+    String description;     /** nullable persistent field */</pre>
+<br>
+<br>
 <!--#include virtual="footer.html" -->
 </body>
 </html>

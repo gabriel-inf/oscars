@@ -18,7 +18,7 @@ User Manual</a>
 <h1 style="text-align: center;">User Manual - Part 1: WBUI<br>
 </h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
-version 0.4 September 2008<br>
+version 0.5 September 2009<br>
 </span>
 </div>
 <br>
@@ -202,8 +202,8 @@ src/dst will use the L3 circuit.</li>
 </ul>
 <h4><a class="mozTocH3" name="mozTocId938748"></a><a class="mozTocH3"
  name="layer2"></a><span style="font-weight: bold;"><a
- name="Layer2parameters"></a>Layer 2 parameters</span></h4>
-<h3><a class="mozTocH3" name="mozTocId860271"></a></h3>
+ name="Layer2parameters"></a>Layer 2 parameters</span>
+</h4>
 <ul>
   <li><span style="font-weight: bold;">VLAN tag</span> - A VLAN
 tag
@@ -245,13 +245,14 @@ user who created the reservation</li>
 one or more of <br>
   </li>
   <ul>
+    <li>SUBMITTED- reservation request has been submitted and a reply
+    has been sent to the requester</li>
     <li>ACCEPTED - reservation request has been accepted and the
 reservation is scheduled to be processed</li>
-    <li>PENDING/RESERVED&nbsp;
+    <li>INCREATE - reservation creation is in process </li>
+    <li>PENDING
 - reservation processing is complete and resources have been reserved,
-but
-the scheduled start
-time
+but the scheduled start time
 has not arrived yet (may have required inter-domain operations)<br>
     </li>
     <li>INSETUP - the circuits are being provisioned - (may require

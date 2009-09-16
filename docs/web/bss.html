@@ -85,47 +85,85 @@ The reseverations table are describe&nbsp; below.<br>
 When a reservation is made an entry is created for it in the <span
  style="font-weight: bold;">reservations table</span> containing the
 following information:<br>
-<pre>	Integer id 			/** identifier field */  <br>	Long startTime 			/** persistant field, secs since 12am, Jan 1, 1970 UTC. */<br>	Long endTime 			/** persistant field, secs since 12am, Jan 1, 1970 UTC */  <br>	Long createdTime 		/** persistant field, secs since 12am, Jan 1, 1970 UTC */<br>	Long bandwidth 			/** persistant field */<br>	String login			/** persistant field: login name of the owner of the reservation */ <br> 	String status 			/** persistant field */<br>	String description	    	/** nullable persistent field */<br>	String globalReservationId     	/** nullable persistent field */  <br> 	Integer pathId 			/** persistant field: index to paths table */<br>	Integer token			/** nullable persistent field: index to tokens table */ </pre>
-<br>
-The <span style="font-weight: bold;">paths table </span>contains:<br>
-<pre> 	Integer id  		/** identifier field */ <br>	Boolean explicit 	/** persistant field: was path specified by user */ <br>	String pathSetupMode  	/** nullable persistent field: by timer or message signal */ <br> 	Integer nextDomainId 	/** nullable persistent field */  <br>	Integer pathElemId  	/** persistant field: index to first path element */ <br>	Integer layer2DataId 	/** nullable persistent field: index to layer2Data table */ <br>	Integer layer3DataId 	/** nullable persistent field: index to layer3Data table  */ <br>	Integer mplsDataId  	/** nullable persistent field: index to mpls table  */<br></pre>
+<pre>
+	Integer id                 /** identifier field */
+	Long startTime             /** persistant field, secs since 12am, Jan 1, 1970 UTC. */
+	Long endTime               /** persistant field, secs since 12am, Jan 1, 1970 UTC */
+	Long createdTime           /** persistant field, secs since 12am, Jan 1, 1970 UTC */
+	Long bandwidth             /** persistant field */
+	String login               /** persistant field: login name of the owner of the reservation */
+	String payLoadSender       /** persistant field: login name of the originator of the request */
+	String status              /** persistant field */
+	String localStatus         /** persistant field */
+	String description         /** nullable persistent field */
+	String statusMessage       /** nullable persistent field */
+	String globalReservationId /** nullable persistent field */
+	Token token                /** nullable persistent field, may be used to authorize actions on reservation */<
+	Map&lt;String,Path&gt; pathMap   /** persistant field: multiple paths for the reservation */</pre>
+The <span style="font-weight: bold;">paths table </span>contains<br>
+<pre>
+	Integer id                 /** identifier field */
+	String pathSetupMode       /** nullable persistent field: by timer or message signal */
+	String pathType            /** REQUESTED, LOCAL, INTERDOMAIN */
+	Integer priority           /** nullable persistent field */
+	Domain nextDomain          /** nullable persistent field */
+	String direction           /** nullable persistent field: FORWARD, REVERSE, BIDIRECTIONAL */
+	String grouping            /** nullable persistent field */
+	List&lt;PathElems&gt; pathElemId /** persistant field: index to first path element */
+	Set&lt;Layer2Data&gt; layer2DataSet  /** nullable persistent field: index to layer2Data table */
+	Set&lt;Layer2Data&gt; layer3DataIdSet /** nullable persistent field: index to layer3Data table */
+	Set&lt;MPLSData&gt; mplsDataSet  /** nullable persistent field: index to mpls table  */</pre>
 Explicit is true if the complete path was input; pathSetupMode
 specifies if the path will be instantiated automatically by the
-scheduler or by a signal from the user; if nextDomainId is not
-null it is an index into the domain table that identifies the next
-domain on the path, otherwise this is the terminal domain; PathElemId
-is the index of the first
-hop on the path; either layer2DataId or layer3DataId is set and is an
-index into the appropriate layerData table; if mpls is not null it is
-an index into mpls data for this path.
+scheduler or by a signal from the user; if nextDomain is not
+null it is the next
+domain on the path, otherwise this is the terminal domain; PathElems
+is the list of all the
+hop on the path; either layer2Data or layer3Data is set and is the set
+of all the layer2 or layer2 elements for this path; if mpls is not null it is
+ the set of mpls data elements for this path.
 <p>The <span style="font-weight: bold;">pathElems table</span>
 contains the following information for each hop
 on the path:
 </p>
-<pre>	Integer id  		/** identifier field */ <br>	String description 	/** nullable persistent field */ <br>	Integer linkId  	/** persistant field */ <br>	String linkDescr 	/** nullable persistent field */ <br>	Integer nextId  	/** nullable persistent field */ <br></pre>
+<pre>
+        Integer id          /** identifier field */
+        Integer seqNum      /** persistant field ; sequence number of hop in path*/
+        String urn          /** nullable persistent field: topologyId of element*/
+        String userName     /** nullable persistent field */
+        Link link           /** persistant field */
+        Set&lt;PathElemParam&gt; pathElemParams /** all the PathElemParams for this element */
+</pre>
 The <span style="font-weight: bold;">layer2Data table </span>contains
-the endpoints for a layer 2 reservation.<br>
-<pre> 	Integer id           	/** identifier field */  <br>	String srcEndpoint  	/** persistant field: URN topology id */ <br>	String destEndpoint 	/** persistant field: URN topology id */<br></pre>
+the endpoints for a layer 2 reservation.
+<pre>
+	Integer id             /** identifier field */
+	String srcEndpoint     /** persistant field: URN topology id */
+	String destEndpoint    /** persistant field: URN topology id */</pre>
 and <span style="font-weight: bold;">layer3Data table</span> contains
-the endpoints for a layer 3 reservation.<br>
-<pre> 	Integer id           	/** identifier field */  <br>	String srcHost    	/** persistant field: dotted ip address */ <br>	String destHost   	/** persistant field: dotted ip address */ <br>	Integer srcIpPort  	/** nullable persistent field */  <br>	Integer destIpPort 	/** nullable persistent field */ <br>	String protocol   	/** nullable persistent field */ 	<br>	String dscp 		/** nullable persistent field */ </pre>
-Where linkId is an index into the links table and nextId
-is a index to the next
-pathElem if any.<br>
-<br>
-<pre><span style="font-weight: bold;">MplsData table</span><br
- style="font-weight: bold;"><br>	Integer id      	/** identifier field */<br>	Long burstLimit		/** persistent field */ <br>	String lspClass		/** persistent field */ </pre>
-Contains the burstLimit and lspClass associated with a Path.<br>
-<br>
+the endpoints for a layer 3 reservation.
+<pre>
+	Integer id             /** identifier field */
+	String srcHost         /** persistant field: dotted ip address */
+	String destHost        /** persistant field: dotted ip address */
+	Integer srcIpPort      /** nullable persistent field */
+	Integer destIpPort     /** nullable persistent field */
+	String protocol        /** nullable persistent field */ 
+	String dscp            /** nullable persistent field */ </pre>
+<span style="font-weight: bold;">MplsData table</span> contains the burstLimit 
+and lspClass associated with a Path.
+<pre>
+ 	Integer id            /** identifier field */
+ 	Long burstLimit       /** persistent field */
+ 	String lspClass       /** persistent field */ </pre>
 The <span style="font-weight: bold;">tokens table</span> contains an
-opaque identifier associated with each reservation.<br>
+opaque identifier associated with each reservation that may be used to authorize actions on the reservation.<br>
 <pre>	Integer id            	/** identifier field */  <br>	Integer reservationId 	/** persistant field */ <br>	String value         	/** persistant field */ </pre>
 <span style="font-weight: bold;">idSequence table&nbsp; </span>a
 sequence of integers<br>
 <pre>	Integer id            	/** identifier field */ </pre>
 Used to assign the numeric part of the next GRI. Ensures that
 reservation ids will never be reused.<br>
-&nbsp;
 <br>
 <br>
 <!--#include virtual="footer.html" -->

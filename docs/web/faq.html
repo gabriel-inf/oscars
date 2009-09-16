@@ -140,9 +140,10 @@ persistence across Tomcat restarts --&gt;<br>
   <li><b><a name="CodeChanges"></a>I ran ant deployall to compile and
 deploy a new version of the
 code, but my changes aren't showing! What's wrong?</b><br>
-Remember to shut down Tomcat and kill -2 the scheduler process before
+Remember to shut down Tomcat and kill all the core processes before
 deploying, then
-start them again. </li>
+start them again. The oscars.sh script should do this for you, but it depends 
+on finding the PIDs for the various processes and sometimes fails to kill everything. </li>
   <li><b><a name="BackupDatabases"></a>I want to back up OSCARS. How do
 I do this?</b><br>
 First, stop Tomcat and the scheduler process. Then, back up the bss and

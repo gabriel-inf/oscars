@@ -26,7 +26,7 @@ directories, which requires a running server, is not covered.
 tests to run correctly, Hibernate must be installed, and the
 testaaa.cfg.xml and testbss.cfg.xml Hibernate configuration files must
 be in
-the classpath. Those files are located under conf/server, and for the
+the classpath. Those files are located under conf/db, and for the
 tests are copied into build/WEB-INF/classes.
 </p>
 <p>The Hibernate configuration files for the tests are set to create
@@ -90,7 +90,7 @@ override
 whether circuits can be set up according to the oscars.properties
 allowLSP property; no routers are configured.
 </p>
-<p>An example test.properties is in conf/examples/server. You will need
+<p>An example test.properties is in conf/properties. You will need
 to set those
 properties if you are starting from scratch. A filled-in version of
 this
@@ -104,10 +104,7 @@ ${domain.home}/domain/trunk/server.
 </div>
 <h3>Test logging</h3>
 <div style="margin-left: 40px;">
-<p>Uses build/classes/log4j.properties. This
-file is included in the distribution in conf/server/log4j.properties,
-and
-is copied to the build directory during compilation. Log messages
+<p>Uses ./test/log4j.test.properties used from the distribution in test/log4j.test.properties. Log messages
 are written to ${catalina.home}/logs/oscars-test.log.</p>
 </div>
 </body>
