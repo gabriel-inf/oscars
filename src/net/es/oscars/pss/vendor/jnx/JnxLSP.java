@@ -146,28 +146,39 @@ public class JnxLSP {
             hm.put("policer_burst-size-limit", burst_size.toString());
             hm.put("lsp_class-of-service", "4");
         }
+        Node ingressNode =  lspData.getIngressLink().getPort().getNode();
+        Node egressNode =  lspData.getIngressLink().getPort().getNode();
+        boolean sameNode = false;
+        if (ingressNode.equals(egressNode)) {
+            sameNode = true;
+        }
 
         JnxConnection conn = new JnxConnection();
         if (isL2) {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
             hm.put("community", "65000:" + lspData.getVlanTag());
+
             String lspFwdTo = null;
             String lspRevTo = null;
             if (direction.equals("forward")) {
-                // get IP associated with physical interface before egress
-                ipaddr =
-                    lspData.getLastXfaceElem().getLink().getValidIpaddr();
-                if (ipaddr != null) {
-                    lspFwdTo = ipaddr.getIP();
+                if (sameNode) {
+                    hm.put("interface_a", lspData.getIngressLink().getPort().getTopologyIdent());
+                    hm.put("interface_b", lspData.getEgressLink().getPort().getTopologyIdent());
                 } else {
-                    throw new PSSException("Egress port has no IP in DB!");
+                    // get IP associated with physical interface before egress
+                    ipaddr = lspData.getLastXfaceElem().getLink().getValidIpaddr();
+                    if (ipaddr != null) {
+                        lspFwdTo = ipaddr.getIP();
+                    } else {
+                        throw new PSSException("Egress port has no IP in DB!");
+                    }
+                    hm.put("lsp_from", lspData.getIngressRtrLoopback());
+                    hm.put("lsp_to", lspFwdTo);
+                    hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
+                    hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
+                    hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
                 }
-                hm.put("lsp_from", lspData.getIngressRtrLoopback());
-                hm.put("lsp_to", lspFwdTo);
-                hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
-                hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
-                hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
                 try {
                     conn.setupLogin(lspData.getIngressLink(), hm);
                 } catch (IOException e) {

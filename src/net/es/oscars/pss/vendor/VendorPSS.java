@@ -79,6 +79,13 @@ public class VendorPSS implements PSS {
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
         String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
+        boolean sameNode = false;
+        if (ingressNodeId.equals(egressNodeId)) {
+            sameNode = true;
+            this.log.info("Ingress and egress on same node: "+ingressNodeId);
+            this.log.info("Will only do one job, no status.");
+        }
+
 
         this.log.info("Getting forward router type");
         String sysDescr = this.getRouterType(lspData.getIngressLink());
@@ -94,7 +101,7 @@ public class VendorPSS implements PSS {
         }
 
         try {
-            if (path.isLayer2()) {
+            if (path.isLayer2() && !sameNode) {
                 doReverse = true;
                 sysDescr = this.getRouterType(lspData.getEgressLink());
                 if (sysDescr.contains("Juniper")) {
