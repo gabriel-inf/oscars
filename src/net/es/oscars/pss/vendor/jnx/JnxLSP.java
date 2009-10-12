@@ -393,7 +393,10 @@ public class JnxLSP {
                 this.log.info("not setting up connection");
             }
             String fname = null;
-            if (hm.get("vlan_id") != null) {
+            if (hm.get("interface_a") != null) {
+                fname = configFinder.find(ConfigFinder.PSS_DIR,
+                        this.props.getProperty("setupL2ConnTemplate"));
+            } else if (hm.get("vlan_id") != null) {
                 fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("setupL2Template"));
             } else {
@@ -431,7 +434,10 @@ public class JnxLSP {
                 conn.createSSHConnection(hm);
             }
             String fname = null;
-            if (hm.get("vlan_id") != null) {
+            if (hm.get("interface_a") != null) {
+                fname = configFinder.find(ConfigFinder.PSS_DIR,
+                        this.props.getProperty("teardownL2ConnTemplate"));
+            } else if (hm.get("vlan_id") != null) {
                 fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("teardownL2Template"));
             } else {

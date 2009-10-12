@@ -76,15 +76,7 @@ public class VendorPSS implements PSS {
             throw new PSSException(ex.getMessage());
         }
         lspData.setPathVars(path.getPathElems());
-        String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
-        String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
-        boolean sameNode = false;
-        if (ingressNodeId.equals(egressNodeId)) {
-            sameNode = true;
-            this.log.info("Ingress and egress on same node: "+ingressNodeId);
-            this.log.info("Will only do one job, no status.");
-        }
 
 
         this.log.info("Getting forward router type");
@@ -98,6 +90,18 @@ public class VendorPSS implements PSS {
             forwardRouterType = "cisco";
         } else {
             throw new PSSException("Unsupported router type " + sysDescr);
+        }
+        String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
+        String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+
+        boolean sameNode = false;
+        if (ingressNodeId.equals(egressNodeId)) {
+            sameNode = true;
+            this.log.info("Ingress and egress on same node: "+ingressNodeId);
+            this.log.info("Will only do one job, no status.");
+            if (!forwardRouterType.equals("jnx")) {
+                throw new PSSException("Unsupported router type for same node:" + sysDescr);
+            }
         }
 
         try {
@@ -125,6 +129,7 @@ public class VendorPSS implements PSS {
             this.log.debug("Reservation status was: "+status);
             status = stateEngine.updateStatus(resv, StateEngine.INSETUP);
             this.log.debug("Reservation status now is: "+status);
+
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
         }
@@ -163,6 +168,13 @@ public class VendorPSS implements PSS {
 
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
+        }
+        try {
+            if (sameNode) {
+                status = stateEngine.updateStatus(resv, StateEngine.ACTIVE);
+            }
+        } catch (BSSException ex) {
+            this.log.error("State engine error", ex);
         }
 
         status = StateEngine.getStatus(resv);
@@ -242,32 +254,42 @@ public class VendorPSS implements PSS {
             throw new PSSException(ex.getMessage());
         }
         lspData.setPathVars(path.getPathElems());
-        String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
-        String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
 
         this.log.info("Getting forward router type");
         String sysDescr = this.getRouterType(lspData.getIngressLink());
 
         if (sysDescr.contains("Juniper")) {
-            this.log.info("Creating Juniper-style forward path");
+            this.log.info("Tearing down Juniper-style forward path");
             forwardRouterType = "jnx";
         } else if (sysDescr.contains("Cisco")) {
-            this.log.info("Creating Cisco-style forward path");
+            this.log.info("Tearing down Cisco-style forward path");
             forwardRouterType = "cisco";
         } else {
             throw new PSSException("Unsupported router type " + sysDescr);
         }
 
+        String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
+        String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+        boolean sameNode = false;
+        if (ingressNodeId.equals(egressNodeId)) {
+            sameNode = true;
+            this.log.info("Ingress and egress on same node: "+ingressNodeId);
+            this.log.info("Will only do one job, no status check.");
+            if (!forwardRouterType.equals("jnx")) {
+                throw new PSSException("Unsupported router type for same node:" + sysDescr);
+            }
+        }
+
         try {
-            if (path.isLayer2()) {
+            if (path.isLayer2() && !sameNode) {
                 doReverse = true;
                 sysDescr = this.getRouterType(lspData.getEgressLink());
                 if (sysDescr.contains("Juniper")) {
-                    this.log.info("Creating Juniper-style reverse path");
+                    this.log.info("Tearing down Juniper-style reverse path");
                     reverseRouterType = "jnx";
                 } else if (sysDescr.contains("Cisco")) {
-                    this.log.info("Creating Cisco-style reverse path");
+                    this.log.info("Tearing down Cisco-style reverse path");
                     reverseRouterType = "cisco";
                 } else {
                     throw new PSSException("Unsupported router type " + sysDescr);
@@ -317,6 +339,14 @@ public class VendorPSS implements PSS {
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
                 sched.addJob(rvsJobDetail, false);
             }
+            try {
+                if (sameNode) {
+                    status = stateEngine.updateStatus(resv, newStatus);
+                }
+            } catch (BSSException ex) {
+                this.log.error("State engine error", ex);
+            }
+
 
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
