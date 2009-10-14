@@ -305,6 +305,12 @@ public class JnxLSP {
         } catch (BSSException ex) {
             throw new PSSException(ex.getMessage());
         }
+        Node ingressNode =  lspData.getIngressLink().getPort().getNode();
+        Node egressNode =  lspData.getIngressLink().getPort().getNode();
+        boolean sameNode = false;
+        if (ingressNode.equals(egressNode)) {
+            sameNode = true;
+        }
 
         if (isL2) {
             if (lspData.getIngressLink() == null) {
@@ -327,9 +333,14 @@ public class JnxLSP {
             hm.put("resv-id", circuitName);
             hm.put("vlan_id", lspData.getVlanTag());
             if (direction.equals("forward")) {
-                hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
-                hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
-                hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
+                if (sameNode) {
+                    hm.put("interface_a", lspData.getIngressLink().getPort().getTopologyIdent());
+                    hm.put("interface_b", lspData.getEgressLink().getPort().getTopologyIdent());
+                } else {
+                    hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
+                    hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
+                    hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
+                }
                 try {
                     conn.setupLogin(lspData.getIngressLink(), hm);
                 } catch (IOException e) {
