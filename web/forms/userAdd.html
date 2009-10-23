@@ -63,7 +63,7 @@
     <td class="required">
       <input type="text" name="firstName" id="newFirstName"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="\w[\w \-]*" required="true"
              promptMessage="Enter the first name"
              invalidMessage="You must enter the first name" />
     </td>
@@ -73,7 +73,7 @@
     <td class="required">
       <input type="text" name="lastName" id="newLastName"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="\w[\w \-]*" required="true"
              promptMessage="Enter the last name"
              invalidMessage="You must enter the last name" />
     </td>
