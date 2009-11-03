@@ -171,6 +171,7 @@ public class VendorPSS implements PSS {
         }
         try {
             if (sameNode) {
+                stateEngine.updateLocalStatus(resv, StateEngine.CONFIRMED, true);
                 status = stateEngine.updateStatus(resv, StateEngine.ACTIVE);
             }
         } catch (BSSException ex) {
@@ -341,6 +342,7 @@ public class VendorPSS implements PSS {
             }
             try {
                 if (sameNode) {
+                    stateEngine.updateLocalStatus(resv, StateEngine.DOWN_CONFIRMED, true);
                     status = stateEngine.updateStatus(resv, newStatus);
                 }
             } catch (BSSException ex) {
