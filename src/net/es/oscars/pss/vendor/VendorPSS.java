@@ -341,8 +341,7 @@ public class VendorPSS implements PSS {
             }
             try {
                 if (sameNode) {
-                    stateEngine.updateLocalStatus(resv, StateEngine.DOWN_CONFIRMED, true);
-                    status = stateEngine.updateStatus(resv, newStatus);
+                    this.core.getPathSetupManager().updateTeardownStatus(StateEngine.CONFIRMED, resv);
                 }
             } catch (BSSException ex) {
                 this.log.error("State engine error", ex);
