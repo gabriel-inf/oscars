@@ -147,7 +147,7 @@ public class JnxLSP {
             hm.put("lsp_class-of-service", "4");
         }
         Node ingressNode =  lspData.getIngressLink().getPort().getNode();
-        Node egressNode =  lspData.getIngressLink().getPort().getNode();
+        Node egressNode =  lspData.getEgressLink().getPort().getNode();
         boolean sameNode = false;
         if (ingressNode.equals(egressNode)) {
             sameNode = true;
