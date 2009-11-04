@@ -306,7 +306,7 @@ public class JnxLSP {
             throw new PSSException(ex.getMessage());
         }
         Node ingressNode =  lspData.getIngressLink().getPort().getNode();
-        Node egressNode =  lspData.getIngressLink().getPort().getNode();
+        Node egressNode =  lspData.getEgressLink().getPort().getNode();
         boolean sameNode = false;
         if (ingressNode.equals(egressNode)) {
             sameNode = true;
