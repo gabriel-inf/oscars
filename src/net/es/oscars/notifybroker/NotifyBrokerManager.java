@@ -97,7 +97,7 @@ public class NotifyBrokerManager{
     public void schedProcessNotify(String publisherUrl, String publisherRegId, 
             List<String> topics, List<Element> msg, HashMap<String, List<String>> pepMap){ 
         this.log.debug("schedProcessNotify.start");
-        String jobKey = msg.hashCode() + System.currentTimeMillis() + "";
+        String jobKey = UUID.randomUUID().toString();
         NotifyBrokerCore core = NotifyBrokerCore.getInstance();
         Scheduler sched = core.getScheduler();
         String triggerName = "processNotifyTrig-" + jobKey;
@@ -216,7 +216,7 @@ public class NotifyBrokerManager{
         this.log.debug("schedSendNotify.start");
         NotifyBrokerCore core = NotifyBrokerCore.getInstance();
         Scheduler sched = core.getScheduler();
-        String jobKey = subscription.hashCode() + "" + System.currentTimeMillis();
+        String jobKey =  UUID.randomUUID().toString();
         String triggerName = "sendNotifyTrig-" + jobKey;
         String jobName = "sendNotify-" + jobKey;
         SimpleTrigger trigger = new SimpleTrigger(triggerName, null, 
