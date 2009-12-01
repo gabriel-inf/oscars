@@ -18,6 +18,7 @@ import net.es.oscars.pss.*;
 import net.es.oscars.pss.vendor.*;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 
 /**
@@ -503,10 +504,18 @@ public class JnxLSP {
                 layer3Inputs.put(circuitId, statusInput);
             }
         }
+        // the router variable passed in contains the id for the router, not
+        // the address. The address needs to be looked up.
+        DomainDAO domDAO  = new DomainDAO(OSCARSCore.getInstance().getBssDbName());
+        NodeDAO   nodeDAO = new NodeDAO(OSCARSCore.getInstance().getBssDbName());
+
+        Node node = nodeDAO.fromTopologyIdent(router, domDAO.getLocalDomain());
+        String router_address = node.getNodeAddress().getAddress();
+
         try {
             HashMap<String, String> hm = new HashMap<String, String>();
             JnxConnection conn = new JnxConnection();
-            conn.setupLogin(router, hm);
+            conn.setupLogin(router_address, hm);
             conn.createSSHConnection(hm);
             if (!layer2Inputs.isEmpty()) {
                 String fname = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR,
@@ -541,15 +550,43 @@ public class JnxLSP {
      * @param description string with reservation description
      * @return circuitName string with circuit name
      */
-    public String getCircuitName(String gri, String description) {
-        String circuitStr = "oscars_" + gri;
+    public static String getCircuitName(String gri, String description) {
+        String header = "oscars_";
+
+        String circuitStr = gri;
+
+        // the maximum length is 32 characters so we need to make sure that the "oscars_" portion fits on
+        if ((header + circuitStr).length() > 32) {
+            int split_offset = circuitStr.lastIndexOf('-');
+
+            if (split_offset == -1) {
+		// it's not of the form domain-####, so remove from the
+		// beginning of the string until we have a proper length string
+		// so we can prepend the header.
+                int offset = header.length() + circuitStr.length() - 32;
+                circuitStr = circuitStr.substring(offset, circuitStr.length());
+            } else {
+                // here we likely have something of the form "domain-#"
+                String domainSegment = circuitStr.substring(0,split_offset-1); 
+                String tailSegment   = circuitStr.substring(split_offset, circuitStr.length());
+    
+		// hack off the end of the domain section so that we have a
+		// proper length string once we prepend the header.
+                domainSegment = domainSegment.substring(0, 32 - header.length() - tailSegment.length());
+
+                circuitStr = domainSegment+tailSegment;
+            }
+        }
+
+        circuitStr = header + circuitStr;
+
         // "." is illegal character in resv-id parameter
-        String circuitName = circuitStr.replaceAll("\\.", "_");
+        circuitStr = circuitStr.replaceAll("\\.", "_");
         // capitalize circuit names for production circuits
         if (description.contains("PRODUCTION")) {
-            circuitName = circuitName.toUpperCase();
+            circuitStr = circuitStr.toUpperCase();
         }
-        return circuitName;
+        return circuitStr;
     }
 
     /**
