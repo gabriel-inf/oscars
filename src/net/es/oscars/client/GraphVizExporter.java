@@ -641,15 +641,22 @@ public class GraphVizExporter {
    public String exportReservations(ResDetails[] resList, String[] topNodes) throws IOException {
 
        String color;
-       Hashtable<String, Hashtable<String, ArrayList<String>>> nodePorts = new Hashtable<String, Hashtable<String, ArrayList<String>>>();
-       Hashtable<String, ArrayList<String>> portLinks;
-       ArrayList<String> links;
        ArrayList<ArrayList<String>> coloredHops = new ArrayList<ArrayList<String>>();
        String[] gris = new String[500];
 
        String output = "\n\n\ndigraph reservations {\n";
+       output += "remincross=true;\n";
+       output += "mclimit=50;\n";
+       output += "ranksep=2.5;\n";
+
+       /*
        String sources = "";
        String dests = "";
+       */
+       HashMap<String, HashMap<String, ArrayList<String>>> locationClusters = new HashMap<String, HashMap<String, ArrayList<String>>>();
+       HashMap<String, ArrayList<String>> locCluster;
+       ArrayList<String> nodeCluster;
+       Hashtable<String, Integer> portBWs = new Hashtable<String, Integer>();
 
        for (int i = 0; i < resList.length; i++) {
            ResDetails resv = resList[i];
@@ -663,8 +670,8 @@ public class GraphVizExporter {
            resvDescription = resvDescription.replaceAll("\\[PRODUCTION CIRCUIT\\]", "");
 
 
-           sources += "\""+gri+"-start\" [label=\""+gri+"\\n"+resvDescription+"\"];\n";
-           dests += "\""+gri+"-end\" [label=\""+gri+"\\n"+resvDescription+"\"];\n";
+           String start = "\""+gri+"-start\" [label=\""+gri+"\\n"+resvDescription+"\\n"+resv.getBandwidth()+"Mbps\"];\n";
+           String end = "\""+gri+"-end\" [label=\""+gri+"\\n"+resvDescription+"\\n"+resv.getBandwidth()+"Mbps\"];\n";
 
 
            int bandwidth = resv.getBandwidth();
@@ -685,7 +692,6 @@ public class GraphVizExporter {
            }
 
            if (reverseHops) {
-               int temp;
                int low = 0 ;
                int high = hops.length - 1 ;
                while (low < high) {
@@ -728,100 +734,148 @@ public class GraphVizExporter {
                    portId = linkId;
                }
 
-               if (nodePorts.get(nodeId) != null) {
-                   portLinks = (Hashtable<String, ArrayList<String>>) nodePorts.get(nodeId);
-               } else {
-                   portLinks = new Hashtable<String, ArrayList<String>>();
-                   nodePorts.put(nodeId, portLinks);
+               String[] nodeparts = nodeId.split("-");
+               String location = nodeparts[0];
+               locCluster = locationClusters.get(location);
+               if (locCluster == null) {
+                   locCluster = new HashMap<String, ArrayList<String>>();
+                   locationClusters.put(location, locCluster);
                }
 
-               if (portLinks.containsKey(portId)) {
-                   links = portLinks.get(portId);
-               } else {
-                   links = new ArrayList<String>();
-                   portLinks.put(portId, links);
+               if (j == 0) {
+                   nodeCluster = locCluster.get("reqs-start");
+                   if (nodeCluster == null) {
+                       nodeCluster = new ArrayList<String>();
+                       locCluster.put("reqs-start", nodeCluster);
+                   }
+                   nodeCluster.add(start);
+               } else if (j == hops.length -1) {
+                   nodeCluster = locCluster.get("reqs-end");
+                   if (nodeCluster == null) {
+                       nodeCluster = new ArrayList<String>();
+                       locCluster.put("reqs-end", nodeCluster);
+                   }
+                   nodeCluster.add(end);
                }
+
+               nodeCluster = locCluster.get(nodeId);
+               if (nodeCluster == null) {
+                   nodeCluster = new ArrayList<String>();
+                   locCluster.put(nodeId, nodeCluster);
+               }
+               if (!nodeCluster.contains(portId)) {
+                   nodeCluster.add(portId);
+               }
+
+
+               String portVertexId = nodeId+":"+portId;
+               if (portBWs.get(portVertexId) == null) {
+                   portBWs.put(portVertexId, bandwidth);
+               } else {
+                   portBWs.put(portVertexId, portBWs.get(portVertexId) + bandwidth);
+               }
+
 //                       output += "\""+nodeId+":"+portId+"\";\n";
-               theseHops.add("\""+nodeId+":"+portId+"\"");
+               theseHops.add("\""+portVertexId+"\"");
 
            }
            coloredHops.add(theseHops);
-       } // end for loop
-
-       output += "{\n";
-       output += "rank=source;\nnode [shape=record];\n";
-       output += sources;
-       output += "}\n";
-
-       output += "{\n";
-       output += "rank=sink;\nnode [shape=record];\n";
-       output += dests;
-       output += "}\n";
+       }
 
        // place ports of the same node in their own node [shape=record];\n cluster
-       Iterator nodeIt = nodePorts.keySet().iterator();
-       while (nodeIt.hasNext()) {
-           String nodeId = (String) nodeIt.next();
-           portLinks = nodePorts.get(nodeId);
-//               output += "\""+nodeId+"\" [shape=record,label=\"" + nodeId + " | { ";
+       Iterator locIt = locationClusters.keySet().iterator();
+       while (locIt.hasNext()) {
+           String location = (String) locIt.next();
+           locCluster = locationClusters.get(location);
+           Iterator<String> nodeIt = locCluster.keySet().iterator();
+           output += "subgraph \"cluster_"+location+"\" {\n";
+           output += "  node [shape=record];\n";
+           output += "  style=\"invis\";\n";
+           ArrayList<String> reqStarts = new ArrayList<String>();
+           ArrayList<String> reqEnds = new ArrayList<String>();
+           while (nodeIt.hasNext()) {
+               String nodeId = nodeIt.next();
+               nodeCluster = locCluster.get(nodeId);
+    //               output += "\""+nodeId+"\" [shape=record,label=\"" + nodeId + " | { ";
+               if (nodeId.equals("reqs-start")) {
+               } else if (nodeId.equals("reqs-end")) {
+               } else {
+                   output += "  subgraph \"cluster_"+location+"_"+nodeId+"\" {\n";
+                   output += "    label=\""+nodeId+"\";\n";
+                   output += "    fontsize=20;\n";
+                   output += "    node [style=filled, fillcolor=white, shape=ellipse];\n";
+                   output += "    style=\"filled, rounded\";\n";
+                   output += "    fillcolor=\"#E0E0E0s\";\n";
+               }
 
-           Iterator portIt = portLinks.keySet().iterator();
-           output += "subgraph \"cluster_"+nodeId+"\" {\n";
-           output += " label=\""+nodeId+"\";\n";
-           output += " fontsize=20;\n";
-           output += " node [style=filled, fillcolor=white];\n";
-           output += " style=filled;\nfillcolor=\"#E0E0E0s\";\n";
-           while (portIt.hasNext()) {
-
-               String portId = (String) portIt.next();
-               output += "\""+nodeId+":"+portId+"\" [label=\""+portId+"\"];\n";
-//                   output += "<"+portId+"> "+portId;
-               if (portIt.hasNext()) {
-//                       output += " | ";
+               for (String portId : nodeCluster) {
+                   if (nodeId.equals("reqs-start")) {
+                       reqStarts.add(portId);
+                   } else if (nodeId.equals("reqs-end")) {
+                       reqEnds.add(portId);
+                   } else {
+                       String portVertexId = nodeId+":"+portId;
+                       int bandwidth = portBWs.get(portVertexId);
+                       output += "   \""+portVertexId+"\" [label=\""+portId+"\\n"+bandwidth+"Mbps\"];\n";
+    //                   output += "<"+portId+"> "+portId;
+                   }
+               }
+               if (nodeId.equals("reqs-start")) {
+               } else if (nodeId.equals("reqs-end")) {
+               } else {
+                   output += "  }\n";
                }
            }
+
+           if (!reqStarts.isEmpty()) {
+               int i = 0;
+               int j = 0;
+               boolean openSubgraph = false;
+               for (String portId : reqStarts) {
+                   if (!openSubgraph) {
+                       //output += "  subgraph \"cluster_"+location+"_reqstarts_"+j+"\" {\n";
+                       //output += "    node [shape=record];\n";
+                       //output += "    style=\"invis\";\n";
+                       openSubgraph = true;
+                   }
+                   output += "   "+portId;
+                   i++;
+                   if (i == reqStarts.size()) {
+                       // output += "   }\n";
+                       openSubgraph = false;
+                       j++;
+                   }
+               }
+           }
+           if (!reqEnds.isEmpty()) {
+               int i = 0;
+               int j = 0;
+               boolean openSubgraph = false;
+               for (String portId : reqEnds) {
+                   if (!openSubgraph) {
+                       //output += "  subgraph \"cluster_"+location+"_reqends_"+j+"\" {\n";
+                       //output += "    node [shape=record];\n";
+                       //output += "    style=\"invis\";\n";
+                       openSubgraph = true;
+                   }
+                   output += "   "+portId;
+                   i++;
+                   if (i == reqEnds.size()) {
+                       //output += "   }\n";
+                       openSubgraph = false;
+                       j++;
+                   }
+               }
+           }
+
            output += "}\n";
 //s                output += "} \"];\n";
        }
 
-       // make labels for inter-node hops
-       int i = 0;
-       Hashtable<String, Integer> edgeBWs = new Hashtable<String, Integer>();
-       for (ArrayList<String> theHops : coloredHops) {
-           ResDetails resv = resList[i];
-           String gri = resv.getGlobalReservationId();
-           int bandwidth = resv.getBandwidth();
-           i++;
-           for (int j = 0; j < theHops.size() - 1; j++) {
-               String hop = theHops.get(j);
 
-               String nextHop = theHops.get(j+1);
-               String edge = hop+":"+nextHop;
-               String revEdge = nextHop+":"+hop;
-               if (j == 0 || j % 2 > 0 ) {
-                   int edgeBW = 0;
-                   if (edgeBWs.containsKey(edge)) {
-                       edgeBW = edgeBWs.get(edge);
-                   }
-                   edgeBW += bandwidth;
-                   edgeBWs.put(edge, edgeBW);
-
-                   edgeBW = 0;
-                   if (edgeBWs.containsKey(revEdge)) {
-                       edgeBW = edgeBWs.get(revEdge);
-                   }
-                   edgeBW += bandwidth;
-                   edgeBWs.put(revEdge, edgeBW);
-
-//                       output += hop+" -> "+nextHop+" [color="+color+",dir=both, style=bold];\n";
-//                   } else {
-//                       output += hop+" -> "+nextHop+" [color="+color+",dir=both,style=bold];\n";
-               }
-           }
-       }
 
        // output edges
-       i = 0;
+       int i = 0;
        for (ArrayList<String> theHops : coloredHops) {
            ResDetails resv = resList[i];
            String gri = resv.getGlobalReservationId();
@@ -841,34 +895,16 @@ public class GraphVizExporter {
            for (int j = 0; j < theHops.size() - 1; j++) {
                String hop = theHops.get(j);
                String nextHop = theHops.get(j+1);
-               String edge = hop+":"+nextHop;
-               String reverseEdge = nextHop+":"+hop;
-               int edgeBW = 0;
-               String label="";
-               if (edgeBWs.containsKey(edge)) {
-                   edgeBW = edgeBWs.get(edge);
-                   label = "total:\\n"+edgeBW+" Mbps";
-
-                   edgeBWs.remove(edge);
-                   edgeBWs.remove(reverseEdge);
-               } else if (edgeBWs.containsKey(reverseEdge)) {
-                   edgeBW = edgeBWs.get(reverseEdge);
-                   label = "total:\\n"+edgeBW+" Mbps";
-                   edgeBWs.remove(edge);
-                   edgeBWs.remove(reverseEdge);
-               }
-
                if (j == 0) {
-                   label = bandwidth+" Mbps";
-                   output += "\""+gri+"-start\" -> "+hop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\"];\n";
+                   output += "\""+gri+"-start\" -> "+hop+" [color="+color+",dir=both, style="+lineweight+", weight=0.02];\n";
                }
                if (j % 2 > 0 ) {
-                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\"];\n";
+                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, style="+lineweight+", weight=0.02];\n";
                } else {
-                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, group="+color+"];\n";
+                   output += hop+" -> "+nextHop+" [color="+color+",dir=both];\n";
                }
                if (j == theHops.size() -2) {
-                   output += nextHop +" -> \""+gri+"-end\" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+"];\n";
+                   output += nextHop +" -> \""+gri+"-end\" [color="+color+",dir=both, style="+lineweight+", weight=0.02];\n";
                }
            }
        }
