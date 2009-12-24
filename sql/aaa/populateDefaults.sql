@@ -6,7 +6,7 @@
 CREATE DATABASE IF NOT EXISTS aaa;
 USE aaa;
 
--- create empty users table 
+-- create empty users table
 -- use the tools/utils/idc-useradd script to add a first administrative user
 -- after that use the WBUI
 
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
--- populate institutions table     
+-- populate institutions table
 
 CREATE TABLE IF NOT EXISTS institutions (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS institutions (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX instName ON institutions(name(15));
+CREATE UNIQUE INDEX instName ON institutions(name(36));
 INSERT INTO institutions VALUES(1, "Energy Sciences Network");
 INSERT INTO institutions VALUES(2, "Internet2");
 
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS sites (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX row ON sites(domainTopologyId(7),institution); 
+CREATE UNIQUE INDEX row ON sites(domainTopologyId(10),institution);
 
 -- populate resources table
 
@@ -84,7 +84,7 @@ INSERT INTO resources VALUES(NULL, "Subscriptions",
 INSERT INTO resources VALUES(NULL, "Publishers",
                         "Information about the relationship between a Publisher and a NotificationBroker",
                         NULL);
-                        
+
 -- populate attributes table
 
 CREATE TABLE IF NOT EXISTS attributes (
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX attrName ON attributes(name(15));
+CREATE UNIQUE INDEX attrName ON attributes(name(30));
 -- ordinary OSCARS user
 INSERT INTO attributes VALUES(NULL, "OSCARS-user", "role" , "make reservations");
 
@@ -107,7 +107,7 @@ INSERT INTO attributes VALUES(NULL, "OSCARS-engineer", "role", "manage all reser
 INSERT INTO attributes VALUES(NULL, "OSCARS-administrator", "role", "manage all users");
 
 -- attribute for an IDC in an adjacent network domain. It's attributes implement
--- an SLA between domains.  Currently set to all permissions on reservations and 
+-- an SLA between domains.  Currently set to all permissions on reservations and
 -- query permissions for domains, no permissions on users
 INSERT INTO attributes VALUES(NULL, "OSCARS-service", "role", "make reservations and view topology");
 
@@ -120,12 +120,12 @@ INSERT INTO attributes VALUES(NULL, "OSCARS-site-administrator", "role", "manage
 -- Publisher - for use by IDCs and other services that want to publish notifications
 INSERT INTO attributes VALUES(NULL, "OSCARS-publisher", "role",
                         "publish events to external services");
-                        
+
 -- OSCARS-may-specify-path - an attribute that can be given to any user in addition to
 --    a normal OSCARS-user role that allows specification of path elements on create reservation
 INSERT INTO attributes VALUES (NULL, "OSCARS-may-specify-path", "privilege",
  						"an add-on attribute to allow specification of path elements");
- 						                        
+
 
 CREATE TABLE IF NOT EXISTS userAttributes (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -133,9 +133,9 @@ CREATE TABLE IF NOT EXISTS userAttributes (
     attributeId         INT NOT NULL,    -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX userAttr ON userAttributes(userId,attributeId);    
+CREATE UNIQUE INDEX userAttr ON userAttributes(userId,attributeId);
  -- populate userAttributes table by selecting attributes in tool/utils/idc-adduser
-       
+
 -- populate permissions table
 
 CREATE TABLE IF NOT EXISTS permissions (
@@ -157,7 +157,7 @@ INSERT INTO permissions VALUES(NULL, "create",
             "create a user or reservation", NULL);
 INSERT INTO permissions VALUES(NULL, "signal",
             "signal a previously placed reservation", NULL);
-            
+
 -- Create constraints table for use of the AAA web interface
 CREATE TABLE IF NOT EXISTS constraints (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS constraints (
     description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX constraintName ON constraints(name(15)); 
+CREATE UNIQUE INDEX constraintName ON constraints(name(30));
 
 INSERT INTO constraints VALUES (NULL, "none", "", "");
 INSERT INTO constraints VALUES (NULL, "all-users", "boolean","allows access to reservations or details of all users");
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS rpcs (
    constraintId			INT NOT NULL,
    PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX const ON rpcs(resourceId,permissionId,constraintId); 
+CREATE UNIQUE INDEX const ON rpcs(resourceId,permissionId,constraintId);
 
 -- none constraint
 INSERT INTO rpcs VALUES (NULL,
@@ -313,8 +313,8 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="signal"),
 	(select id from constraints where name="my-site"));
-	
--- max-bandwidth	
+
+-- max-bandwidth
  INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="create"),
@@ -331,7 +331,7 @@ INSERT INTO rpcs VALUES (NULL,
 INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
 	(select id from permissions where name="modify"),
-	(select id from constraints where name="max-duration"));	
+	(select id from constraints where name="max-duration"));
 -- specify-path-elements
 INSERT INTO rpcs VALUES (NULL,
 	(select id from resources where name="reservations"),
@@ -348,7 +348,7 @@ INSERT INTO rpcs VALUES (NULL,
 	(select id from constraints where name="specify-gri"));
 
 -- populate authorizations table
-        
+
 CREATE TABLE IF NOT EXISTS authorizations (
     id                  INT NOT NULL AUTO_INCREMENT,
     context             TEXT,
@@ -397,7 +397,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL);   
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="reservations"),
@@ -407,13 +407,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="none"),NULL); 
-     
+     (select id from constraints where name="none"),NULL);
+
 -- authorizations for OSCARS-engineer
 -- query and modify own profile
 -- list,query,modify, create and signal all reservations
@@ -449,17 +449,17 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="specify-path-elements"), "true");  
+     (select id from constraints where name="specify-path-elements"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="specify-path-elements"), "true");  
+     (select id from constraints where name="specify-path-elements"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
-     (select id from constraints where name="all-users"), "true"); 
+     (select id from constraints where name="all-users"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="domains"),
@@ -474,13 +474,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
-     
+
 --  Authorizations for OSCARS-administrator
 -- list, query, create and modify all user information
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
@@ -503,13 +503,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="all-users"), "true");
- 
+
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="AAA"),
      (select id from permissions where name="list"),
-     (select id from constraints where name="none"),NULL); 
-        
+     (select id from constraints where name="none"),NULL);
+
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="AAA"),
@@ -527,8 +527,8 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="Publishers"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="all-users"), "true");
-     
--- authorizations for an IDC forwarding a request to an adjacent domain 
+
+-- authorizations for an IDC forwarding a request to an adjacent domain
 -- note that all the reservations fowarded by a IDC are owned by the IDC
 -- Query, modify, list, signal reservations that it owns
 -- Create reservations specifying GRI and path elements
@@ -542,18 +542,18 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 -- list is only used in debugging interdomain interactions
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="list"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="specify-path-elements"), "true"); 
+     (select id from constraints where name="specify-path-elements"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
@@ -563,7 +563,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="specify-path-elements"), "true");  
+     (select id from constraints where name="specify-path-elements"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
@@ -583,7 +583,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="Subscriptions"),
@@ -593,13 +593,13 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="Publishers"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="Publishers"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
-     
+
 -- NOC operators
 -- List and query all reservations
 -- List all users
@@ -613,7 +613,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="query"),
-     (select id from constraints where name="all-users"), "true"); 
+     (select id from constraints where name="all-users"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="users"),
@@ -628,18 +628,18 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="none"),NULL);      
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="none"),NULL); 
+     (select id from constraints where name="none"),NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
-     
+
     -- Site Administrator
     -- list and query his own profile
     -- List, query, modify, create and signal any reservation
@@ -663,12 +663,12 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="my-site"),"true"); 
+     (select id from constraints where name="my-site"),"true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="list"),
-     (select id from constraints where name="my-site"),"true"); 
+     (select id from constraints where name="my-site"),"true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-site-administrator"),
      (select id from resources where name="reservations"),
@@ -691,7 +691,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from constraints where name="none"),NULL);
 
     -- Publisher
-    -- Publish notifications    
+    -- Publish notifications
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-publisher"),
      (select id from resources where name="Publishers"),
@@ -702,15 +702,15 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="Publishers"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
-     
+
  -- OSCARS-may-specify-path
  INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-may-specify-path"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="specify-path-elements"), "true");  
+     (select id from constraints where name="specify-path-elements"), "true");
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-may-specify-path"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
-     (select id from constraints where name="specify-path-elements"), "true");  
+     (select id from constraints where name="specify-path-elements"), "true");

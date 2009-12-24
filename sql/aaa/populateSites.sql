@@ -12,17 +12,17 @@ CREATE TABLE IF NOT EXISTS sites (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX row ON sites(domainTopologyId(7),institution); 
+CREATE UNIQUE INDEX row ON sites(domainTopologyId(10),institution);
 
-INSERT IGNORE INTO sites VALUES ( NULL,"es.net", 
+INSERT IGNORE INTO sites VALUES ( NULL,"es.net",
      (select id from institutions where name="Energy Sciences Network"));
-INSERT IGNORE INTO sites VALUES ( NULL,"dev.es.net", 
+INSERT IGNORE INTO sites VALUES ( NULL,"dev.es.net",
      (select id from institutions where name="Energy Sciences Network"));
 INSERT IGNORE INTO sites VALUES (NULL, "dcn.internet2.edu",
       (select id from institutions where name="Internet2"));
 INSERT IGNORE INTO sites VALUES (NULL, "bnl.gov",
       (select id from institutions where name="Brookhaven National Laboratory"));
 INSERT IGNORE INTO sites VALUES (NULL, "fnal.gov",
-      (select id from institutions where name="Fermilab")); 
+      (select id from institutions where name="Fermilab"));
 INSERT IGNORE INTO sites VALUES (NULL, "geant2.net",
-      (select id from institutions where name="DANTE")); 
+      (select id from institutions where name="DANTE"));

@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS institutions (
     name                TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX instName ON institutions(name(9));
+CREATE UNIQUE INDEX instName ON institutions(name(40));
 
 -- Table to look up an institution associated with a domain (for site admin
 -- privileges)
@@ -47,21 +47,21 @@ CREATE TABLE IF NOT EXISTS sites (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-CREATE UNIQUE INDEX row ON sites(domainTopologyId(7),institution); 
+CREATE UNIQUE INDEX row ON sites(domainTopologyId(10),institution);
 
-INSERT IGNORE INTO sites VALUES ( NULL,"es.net", 
+INSERT IGNORE INTO sites VALUES ( NULL,"es.net",
      (select id from institutions where name="Energy Sciences Network"));
-INSERT IGNORE INTO sites VALUES ( NULL,"dev.es.net", 
+INSERT IGNORE INTO sites VALUES ( NULL,"dev.es.net",
      (select id from institutions where name="Energy Sciences Network"));
 INSERT IGNORE INTO sites VALUES (NULL, "dcn.internet2.edu",
       (select id from institutions where name="Internet2"));
 INSERT IGNORE INTO sites VALUES (NULL, "bnl.gov",
       (select id from institutions where name="Brookhaven National Laboratory"));
 INSERT IGNORE INTO sites VALUES (NULL, "fnal.gov",
-      (select id from institutions where name="Fermilab")); 
+      (select id from institutions where name="Fermilab"));
 INSERT IGNORE INTO sites VALUES (NULL, "geant2.net",
-      (select id from institutions where name="DANTE")); 
-      
+      (select id from institutions where name="DANTE"));
+
 CREATE TABLE IF NOT EXISTS resources (
     id                  INT NOT NULL AUTO_INCREMENT,
     name                TEXT NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS constraints (
     description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX constraintName ON constraints(name(9)); 
+CREATE UNIQUE INDEX constraintName ON constraints(name(30));
 
 -- Create resource, permission, constraint (RPC) table which contains a list of the meaningful RPC tuples
 CREATE TABLE IF NOT EXISTS rpcs (
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS rpcs (
    constraintId			INT NOT NULL,
    PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX const ON rpcs(resourceId,permissionId,constraintId); 
+CREATE UNIQUE INDEX const ON rpcs(resourceId,permissionId,constraintId);
 
 CREATE TABLE IF NOT EXISTS authorizations (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
-CREATE UNIQUE INDEX attrName ON attributes(name(9));
+CREATE UNIQUE INDEX attrName ON attributes(name(30));
 
 -- cross reference table
 CREATE TABLE IF NOT EXISTS userAttributes (
