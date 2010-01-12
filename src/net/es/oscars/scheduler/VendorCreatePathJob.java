@@ -148,7 +148,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                         if (dir.equals("forward")) {
                             this.log.debug("setting forward status check params");
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
-                            params.put("ingressVlan", lspData.getVlanTag());
+                            params.put("ingressVlan", lspData.getIngressVlanTag());
                             // depends on which finished first
                             if (direction.equals("forward")) {
                                 params.put("ingressVendor", ingressRouterType);
@@ -159,7 +159,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                         } else if (dir.equals("reverse")) {
                             this.log.debug("setting reverse status check params");
                             params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
-                            params.put("egressVlan", lspData.getVlanTag());
+                            params.put("egressVlan", lspData.getEgressVlanTag());
                             if (direction.equals("forward")) {
                                 params.put("egressVendor", egressRouterType);
                             } else {

@@ -133,7 +133,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
                         }
                         if (dir.equals("forward")) {
                             params.put("ingressNodeId", lspData.getIngressLink().getPort().getNode().getTopologyIdent());
-                            params.put("ingressVlan", lspData.getVlanTag());
+                            params.put("ingressVlan", lspData.getIngressVlanTag());
                             // depends on which finished first
                             if (direction.equals("forward")) {
                                 params.put("ingressVendor", ingressRouterType);
@@ -143,7 +143,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
                             }
                         } else if (dir.equals("reverse")) {
                             params.put("egressNodeId", lspData.getEgressLink().getPort().getNode().getTopologyIdent());
-                            params.put("egressVlan", lspData.getVlanTag());
+                            params.put("egressVlan", lspData.getEgressVlanTag());
                             if (direction.equals("forward")) {
                                 params.put("egressVendor", egressRouterType);
                             } else {

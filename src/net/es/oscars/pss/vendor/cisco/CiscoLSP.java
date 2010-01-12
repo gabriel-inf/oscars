@@ -95,7 +95,7 @@ public class CiscoLSP {
 
         // Fill in parameters for setting up LSP circuit.
         HashMap<String, String> hm = new HashMap<String, String>();
-        this.fillCommonParams(resv, lspData.getVlanTag(), hm);
+        this.fillCommonParams(resv, lspData.getIngressVlanTag(), hm);
 
         hm.put("bandwidth", Long.toString(resv.getBandwidth()));
         hm.put("lsp_setup-priority",
@@ -179,7 +179,7 @@ public class CiscoLSP {
         String routerName = lspData.getIngressLink().getPort().getNode().getNodeAddress().getAddress();
 
         hm.put("resv-id", circuitName);
-        hm.put("vlan-id", lspData.getVlanTag());
+        hm.put("vlan-id", lspData.getIngressVlanTag());
         hm.put("router", routerName);
 
         return resv.getStatus();
@@ -214,7 +214,7 @@ public class CiscoLSP {
         // Set up parameters for tearing down an LSP circuit.
         HashMap<String, String> hm = new HashMap<String, String>();
         hm.put("direction", direction);
-        this.fillCommonParams(resv, lspData.getVlanTag(), hm);
+        this.fillCommonParams(resv, lspData.getIngressVlanTag(), hm);
         Link ingressLink = lspData.getIngressLink();
         if (direction.equals("forward")) {
             // router to send configuration command to

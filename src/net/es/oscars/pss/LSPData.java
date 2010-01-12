@@ -20,7 +20,8 @@ public class LSPData {
     private PathElem lastXfacePathElem;
     private Link ingressLink;
     private Link egressLink;
-    private String vlanTag;
+    private String ingressVlanTag;
+    private String egressVlanTag;
     private String ingressRtrLoopback;
     private String egressRtrLoopback;
 
@@ -36,7 +37,6 @@ public class LSPData {
     public Link getIngressLink() { return this.ingressLink; }
     public Link getEgressLink() { return this.egressLink; }
 
-    public String getVlanTag() { return this.vlanTag; }
 
     public String getIngressRtrLoopback() { return this.ingressRtrLoopback; }
     public String getEgressRtrLoopback() { return this.egressRtrLoopback; }
@@ -71,15 +71,21 @@ public class LSPData {
 
         // assume just one VLAN for now
         try {
-            PathElemParam pep =
-                this.ingressPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+            PathElemParam pep;
+            pep = this.ingressPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                                         PathElemParamType.L2SC_SUGGESTED_VLAN);
-            this.vlanTag = pep.getValue();
+            this.ingressVlanTag = pep.getValue();
+            pep = this.egressPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                    PathElemParamType.L2SC_SUGGESTED_VLAN);
+            this.egressVlanTag = pep.getValue();
         } catch (BSSException ex) {
             throw new PSSException(ex.getMessage());
         }
-        if (this.vlanTag == null) {
-            throw new PSSException("VLAN tag is null!");
+        if (this.ingressVlanTag == null) {
+            throw new PSSException("Ingress VLAN tag is null!");
+        }
+        if (this.egressVlanTag == null) {
+            throw new PSSException("Egress VLAN tag is null!");
         }
         if (!getLoopbacks) {
             return;
@@ -177,5 +183,21 @@ public class LSPData {
             return restrictedHops;
         }
         return hops;
+    }
+
+    public void setIngressVlanTag(String ingressVlanTag) {
+        this.ingressVlanTag = ingressVlanTag;
+    }
+
+    public String getIngressVlanTag() {
+        return ingressVlanTag;
+    }
+
+    public void setEgressVlanTag(String egressVlanTag) {
+        this.egressVlanTag = egressVlanTag;
+    }
+
+    public String getEgressVlanTag() {
+        return egressVlanTag;
     }
 }

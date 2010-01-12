@@ -132,8 +132,7 @@ public class JnxLSP {
 
         // Create map for filling in template.
         HashMap<String, String> hm = new HashMap<String, String>();
-        String circuitName = this.getCircuitName(resv.getGlobalReservationId(),
-                                                resv.getDescription());
+        String circuitName = getCircuitName(resv.getGlobalReservationId(), resv.getDescription());
         hm.put("bandwidth", Long.toString(resv.getBandwidth()));
         if (mplsData != null) {
             if (mplsData.getLspClass() != null) {
@@ -157,16 +156,23 @@ public class JnxLSP {
         JnxConnection conn = new JnxConnection();
         if (isL2) {
             hm.put("resv-id", circuitName);
-            hm.put("vlan_id", lspData.getVlanTag());
-            hm.put("community", "65000:" + lspData.getVlanTag());
+            String virtualCircuitId = lspData.getIngressVlanTag()+lspData.getEgressVlanTag();
+            hm.put("virtual-circuit-id", virtualCircuitId);
+            
+
+            
+            hm.put("community", "65000:" + lspData.getIngressVlanTag());
 
             String lspFwdTo = null;
             String lspRevTo = null;
             if (direction.equals("forward")) {
+                hm.put("local-vlan-id", lspData.getIngressVlanTag());
+                hm.put("remote-vlan-id", lspData.getEgressVlanTag());
                 if (sameNode) {
                     hm.put("interface_a", lspData.getIngressLink().getPort().getTopologyIdent());
                     hm.put("interface_b", lspData.getEgressLink().getPort().getTopologyIdent());
                 } else {
+                    
                     // get IP associated with physical interface before egress
                     ipaddr = lspData.getLastXfaceElem().getLink().getValidIpaddr();
                     if (ipaddr != null) {
@@ -196,6 +202,8 @@ public class JnxLSP {
                 } else {
                     throw new PSSException("Egress port has no IP in DB!");
                 }
+                hm.put("local-vlan-id", lspData.getEgressVlanTag());
+                hm.put("remote-vlan-id", lspData.getIngressVlanTag());
                 hm.put("lsp_from", lspData.getEgressRtrLoopback());
                 hm.put("lsp_to", lspRevTo);
                 hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
@@ -332,8 +340,9 @@ public class JnxLSP {
         JnxConnection conn = new JnxConnection();
         if (isL2) {
             hm.put("resv-id", circuitName);
-            hm.put("vlan_id", lspData.getVlanTag());
             if (direction.equals("forward")) {
+                hm.put("local-vlan-id", lspData.getIngressVlanTag());
+                hm.put("remote-vlan-id", lspData.getEgressVlanTag());
                 if (sameNode) {
                     hm.put("interface_a", lspData.getIngressLink().getPort().getTopologyIdent());
                     hm.put("interface_b", lspData.getEgressLink().getPort().getTopologyIdent());
@@ -348,6 +357,8 @@ public class JnxLSP {
                     throw new PSSException(e.getMessage());
                 }
             } else {
+                hm.put("local-vlan-id", lspData.getEgressVlanTag());
+                hm.put("remote-vlan-id", lspData.getIngressVlanTag());
                 hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
                 hm.put("interface", lspData.getEgressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getEgressLink().getPort().getTopologyIdent());
