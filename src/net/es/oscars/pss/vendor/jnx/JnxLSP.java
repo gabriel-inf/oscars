@@ -419,7 +419,7 @@ public class JnxLSP {
             if (hm.get("interface_a") != null) {
                 fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("setupL2ConnTemplate"));
-            } else if (hm.get("vlan_id") != null) {
+            } else if (hm.get("local-vlan-id") != null) {
                 fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("setupL2Template"));
             } else {
@@ -460,7 +460,7 @@ public class JnxLSP {
             if (hm.get("interface_a") != null) {
                 fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("teardownL2ConnTemplate"));
-            } else if (hm.get("vlan_id") != null) {
+            } else if (hm.get("local-vlan-id") != null) {
                 fname = configFinder.find(ConfigFinder.PSS_DIR,
                         this.props.getProperty("teardownL2Template"));
             } else {

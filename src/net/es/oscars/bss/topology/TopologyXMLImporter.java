@@ -407,6 +407,8 @@ public class TopologyXMLImporter {
         L2SwitchingCapabilityData l2Cap = new L2SwitchingCapabilityData();
         l2Cap.setInterfaceMTU(ifceMTU);
         l2Cap.setVlanRangeAvailability(vlanAv);
+        // need to NOT hardcode this
+        l2Cap.setVlanTranslation(true);
         l2Cap.setLink(linkDB);
         linkDB.setL2SwitchingCapabilityData(l2Cap);
     }
