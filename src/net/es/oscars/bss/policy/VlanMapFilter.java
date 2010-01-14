@@ -21,15 +21,12 @@ public class VlanMapFilter implements PolicyFilter{
     private Logger log;
     private OSCARSCore core;
     private String scope;
-    private String mplsMode;
 
     public static final String DOMAIN_SCOPE = "domain";
     public static final String NODE_SCOPE = "node";
     public static final String PORT_SCOPE = "port";
     public static final String LINK_SCOPE = "link";
     
-    public static final String MPLS_MODE_ON = "on";
-    public static final String MPLS_MODE_OFF = "off";
 
     /** Default constructor */
     public VlanMapFilter(){
@@ -44,15 +41,6 @@ public class VlanMapFilter implements PolicyFilter{
             this.scope = this.scope.toLowerCase();
         }
         this.log.debug("scope: "+this.scope);
-
-        
-        this.mplsMode = props.getProperty("mplsMode");
-        if (this.mplsMode == null) {
-            this.mplsMode = MPLS_MODE_OFF;
-        } else {
-            this.mplsMode = this.mplsMode.toLowerCase();
-        }
-        this.log.debug("mpls mode: "+this.mplsMode);
 
     }
 
