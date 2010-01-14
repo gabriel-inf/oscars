@@ -21,11 +21,15 @@ public class VlanMapFilter implements PolicyFilter{
     private Logger log;
     private OSCARSCore core;
     private String scope;
+    private String mplsMode;
 
     public static final String DOMAIN_SCOPE = "domain";
     public static final String NODE_SCOPE = "node";
     public static final String PORT_SCOPE = "port";
     public static final String LINK_SCOPE = "link";
+    
+    public static final String MPLS_MODE_ON = "on";
+    public static final String MPLS_MODE_OFF = "off";
 
     /** Default constructor */
     public VlanMapFilter(){
@@ -39,6 +43,17 @@ public class VlanMapFilter implements PolicyFilter{
         } else {
             this.scope = this.scope.toLowerCase();
         }
+        this.log.debug("scope: "+this.scope);
+
+        
+        this.mplsMode = props.getProperty("mplsMode");
+        if (this.mplsMode == null) {
+            this.mplsMode = MPLS_MODE_OFF;
+        } else {
+            this.mplsMode = this.mplsMode.toLowerCase();
+        }
+        this.log.debug("mpls mode: "+this.mplsMode);
+
     }
 
     /**
@@ -707,5 +722,35 @@ public class VlanMapFilter implements PolicyFilter{
 
         return range;
     }
-
+   
+    /**
+     * subtract one mask from another
+     * 
+     * @param vlanMask
+     * @param maskToSubtract
+     * @return a new byte[] 
+     */
+    
+    public static byte[] subtractMask(byte[] vlanMask, byte[] maskToSubtract) {
+        byte[] newMask = new byte[vlanMask.length];
+        newMask = vlanMask.clone();
+        for (int i=0; i < vlanMask.length; i++) {
+            int newByte = 0;
+            // for each bit in the byte:
+            for (int j = 0; j < 8; j++) {
+                // if this bit is UNSET in the mask to subtract
+                if ( (maskToSubtract[i] & (int)Math.pow(2, (7-j))) == 0 &&
+                // and if this bit is SET in the original mask
+                   (vlanMask[i] & (int)Math.pow(2, (7-j))) > 0) {
+                // then SET this bit in the new byte
+                    newByte += (int)Math.pow(2, (7-j));
+                }
+            }
+            // at the end of the above, the only bits set in the
+            // new byte are the ones that were NOT set in the 
+            // byte from the mask to subract.
+            vlanMask[i] =(byte) newByte;
+        }
+        return newMask;
+    }
 }
