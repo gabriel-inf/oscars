@@ -88,28 +88,42 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         // first: if previous egress was not null that means
         // we're not the first domain. so we probably have received 
         // a suggested VLAN. 
-        String sugVlan = "";
+        Integer singleVlan = null;
+        byte[] suggested = null;
         if (prevEgrPE != null) {
+            String sugVlan = "";
             PathElemParam pep = prevEgrPE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
             if(pep != null){
                 sugVlan = pep.getValue().trim();
             }
             if (sugVlan != null && !sugVlan.equals("")) {
-                byte[] suggested = VlanMapFilter.rangeStringToMask(sugVlan);
-                Integer singleVlan = decideVlan(localCommonVlans, suggested);
-                if (singleVlan == null) {
-                } else {
-                    Integer ingVlan = decideVlan(availIngVlans, suggested);
-                    if (ingVlan == null) {
-                    } else {
-                    }
-                }
-                
+                suggested = VlanMapFilter.rangeStringToMask(sugVlan);
             } else {
-                log.warn("Suggested VLAN parameter set by previous domain, but was null or empty");
+                log.warn("Null/empty suggested VLAN for edge: "+prevEgrPE.getUrn());
             }
-            
-            
+        } else {
+            log.debug("No previous domain, so no suggested VLANs");
+        }
+        
+        singleVlan = decideVlan(localCommonVlans, suggested);
+        
+        
+        if (singleVlan == null) {
+            this.finalizeVlan(singleVlan, ingPE, prevEgrPE);
+            this.finalizeVlan(singleVlan, egrPE, nextIngPE);
+        } else {
+            Integer ingVlan = decideVlan(availIngVlans, suggested);
+            if (ingVlan == null) {
+                throw new BSSException("Could not decide an VLAN for ingress edge!");
+            } else {
+                this.finalizeVlan(ingVlan, ingPE, prevEgrPE);
+            }
+            Integer egrVlan = decideVlan(availEgrVlans, suggested);
+            if (egrVlan == null) {
+                throw new BSSException("Could not decide a VLAN for egress edge!");
+            } else {
+                this.finalizeVlan(egrVlan, egrPE, nextIngPE);
+            }
         }
     }
     
@@ -118,11 +132,22 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     }
     
     private Integer decideVlan(byte[] availVlans, byte[] suggestedVlans) {
+        String sugStr = VlanMapFilter.maskToRangeString(suggestedVlans);
+        String avStr = VlanMapFilter.maskToRangeString(availVlans);
+                
+        log.debug("decideVlan.start avail: ["+avStr+"] sugg: ["+sugStr+"]");
         byte[] tmpVlans = availVlans.clone();
-        for (int i = 0; i < suggestedVlans.length; i++) {
-            tmpVlans[i] &= suggestedVlans[i];
+        if (suggestedVlans != null) {
+            for (int i = 0; i < suggestedVlans.length; i++) {
+                tmpVlans[i] &= suggestedVlans[i];
+            }
+        }
+        
+        for (int i = 0; i < tmpVlans.length; i++) {
             if (tmpVlans[i] > 0) {
-                return (8*i + (int) tmpVlans[i]);
+                Integer vlanId = (8*i + (int) tmpVlans[i]);
+                log.debug("decideVlan: decided :"+vlanId);
+                return vlanId;
             }
         }
         return null;
@@ -254,6 +279,8 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         if (reqVlanString.equals("")){
             return availVlans;
         }
+        
+        
         
         // disallow untagged interfaces
         // TODO: make this configurable 
