@@ -177,6 +177,8 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                     PathElem destination = new PathElem();
                     destination.setLink(null);
                     destination.setUrn(this.findEndpoints(requestedPath).get("dest"));
+                    interdomainPath.addPathElem(destination);
+                    
 
                     interdomainPath.setNextDomain(nextDomainIngress.getLink().getPort().getNode().getDomain());
                 }
@@ -187,7 +189,10 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
         paths.add(interdomainPath);            // If no explicit path for layer 2, we must fill this in
 
         for (PathElem pe : interdomainPath.getPathElems()) {
-            this.log.debug("Interdomain hop:"+pe.getUrn());
+            this.log.debug("Interdomain pep:"+pe.getUrn());
+            for (PathElemParam pep : pe.getPathElemParams()) {
+                this.log.debug(" pep param: swcap"+pep.getSwcap()+" type: "+pep.getType()+" value: "+pep.getValue());
+            }
         }
 
         return paths;
