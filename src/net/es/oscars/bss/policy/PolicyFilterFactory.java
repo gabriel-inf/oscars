@@ -18,6 +18,11 @@ public class PolicyFilterFactory {
             return new VlanMapFilter();
         }
         
+        if (filter.equals("eomplsVlanMap")) {
+            return new EoMplsVlanMapFilter();
+        }
+              		
+        
         throw new BSSException("Unrecognized policy filter specified '" + 
                                filter + "'");
     }
