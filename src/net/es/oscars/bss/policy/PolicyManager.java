@@ -27,9 +27,10 @@ public class PolicyManager {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("policy", true);
         this.vlanFilter = props.getProperty("vlanFilter");
-        if(this.vlanFilter == null){
+        if (this.vlanFilter == null){
             this.vlanFilter = "vlanMap";
         }
+        this.log.debug("VLAN filter: "+this.vlanFilter);
         try {
             this.policyClient = new PolicyClient(props);
         } catch (BSSException e) {
