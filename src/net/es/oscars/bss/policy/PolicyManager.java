@@ -25,8 +25,8 @@ public class PolicyManager {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
         PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("policy", true);
-        this.vlanFilter = props.getProperty("vlanFilter");
+        Properties props = propHandler.getPropertyGroup("policy.vlanFilter", true);
+        this.vlanFilter = props.getProperty("class");
         if (this.vlanFilter == null){
             this.vlanFilter = "vlanMap";
         }

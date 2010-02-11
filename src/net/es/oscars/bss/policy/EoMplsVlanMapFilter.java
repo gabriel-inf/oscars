@@ -18,7 +18,6 @@ import net.es.oscars.PropHandler;
  */
 public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     private Logger log;
-    private OSCARSCore core;
     private String scope;
     
     public static final String NODE_SCOPE = "node";
@@ -27,7 +26,6 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     /** Default constructor */
     public EoMplsVlanMapFilter(){
         this.log = Logger.getLogger(this.getClass());
-        this.core = OSCARSCore.getInstance();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("policy.vlanFilter", true);
         this.scope = props.getProperty("scope");
