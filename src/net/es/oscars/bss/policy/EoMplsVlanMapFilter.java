@@ -48,27 +48,36 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
      */
     public void applyFilter(Reservation newReservation,
             List<Reservation> activeReservations) throws BSSException {
-        Path localPath = newReservation.getPath(PathType.LOCAL);
-        Path interPath = newReservation.getPath(PathType.INTERDOMAIN);
-        List<PathElem> localPathElems = localPath.getPathElems();
-        List<PathElem> interPathElems = interPath.getPathElems();
+        log.debug("applyFilter.start");
         
-        PathElem ingPE = localPathElems.get(0);
-        PathElem egrPE = localPathElems.get(localPathElems.size() - 1);
-        
-        PathElem prevEgrPE = this.getPrevExternalL2scHop(interPathElems);
-        PathElem nextIngPE = this.getNextExternalL2scHop(interPathElems);
-        
-        byte[] availIngVlans = combineTopoAndReq(ingPE);
-        availIngVlans = combineAvailAndReserved(availIngVlans, ingPE, activeReservations);
-        availIngVlans = combineRemote(availIngVlans, ingPE, prevEgrPE);
-        
-        byte[] availEgrVlans = combineTopoAndReq(egrPE);
-        availEgrVlans = combineAvailAndReserved(availEgrVlans, egrPE, activeReservations);
-        availEgrVlans = combineRemote(availEgrVlans, egrPE, nextIngPE);
-        
-        
-        this.decideAndSetVlans(prevEgrPE, ingPE, egrPE, nextIngPE, availIngVlans, availEgrVlans);
+        Path localPath;
+        try {
+            localPath = newReservation.getPath(PathType.LOCAL);
+            Path interPath = newReservation.getPath(PathType.INTERDOMAIN);
+            List<PathElem> localPathElems = localPath.getPathElems();
+            List<PathElem> interPathElems = interPath.getPathElems();
+            
+            PathElem ingPE = localPathElems.get(0);
+            PathElem egrPE = localPathElems.get(localPathElems.size() - 1);
+            
+            PathElem prevEgrPE = this.getPrevExternalL2scHop(interPathElems);
+            PathElem nextIngPE = this.getNextExternalL2scHop(interPathElems);
+            
+            byte[] availIngVlans = combineTopoAndReq(ingPE);
+            availIngVlans = combineAvailAndReserved(availIngVlans, ingPE, activeReservations);
+            availIngVlans = combineRemote(availIngVlans, ingPE, prevEgrPE);
+            
+            byte[] availEgrVlans = combineTopoAndReq(egrPE);
+            availEgrVlans = combineAvailAndReserved(availEgrVlans, egrPE, activeReservations);
+            availEgrVlans = combineRemote(availEgrVlans, egrPE, nextIngPE);
+            
+            
+            this.decideAndSetVlans(prevEgrPE, ingPE, egrPE, nextIngPE, availIngVlans, availEgrVlans);
+        } catch (BSSException e) {
+            this.log.error(e);
+            throw e;
+        }
+        log.debug("applyFilter.end");
     }
     
     
