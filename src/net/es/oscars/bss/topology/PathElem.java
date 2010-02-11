@@ -7,6 +7,7 @@ import org.hibernate.Hibernate;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.database.HibernateBean;
@@ -15,6 +16,7 @@ import net.es.oscars.database.HibernateBean;
  * PathElem is the Hibernate bean for the bss.pathElems table.
  */
 public class PathElem extends HibernateBean implements Serializable {
+    private static Logger log = Logger.getLogger(PathElem.class);
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -203,12 +205,14 @@ public class PathElem extends HibernateBean implements Serializable {
      */
     public static void copyPathElemParams(PathElem dest, PathElem src, String swcap) throws BSSException{
         Iterator<PathElemParam> paramIterator = src.getPathElemParams().iterator();
+        log.debug("Copying PEP for PathElem: "+src.getId()+" swcap: "+swcap);
         while(paramIterator.hasNext()){
             PathElemParam param = (PathElemParam) paramIterator.next();
             //swcap == null means copy all
             if(swcap != null && !swcap.equals(param.getSwcap())){
                 continue;
             }
+            log.debug("copying PEP swcap: "+param.getSwcap()+" type:"+param.getType()+" val: "+param.getValue());
             PathElemParam paramCopy = dest.getPathElemParam(param.getSwcap(), param.getType());
             if(paramCopy == null){
                 paramCopy = new PathElemParam();
