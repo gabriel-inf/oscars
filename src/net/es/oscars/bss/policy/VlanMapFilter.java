@@ -676,8 +676,12 @@ public class VlanMapFilter implements PolicyFilter{
      * @return a range string representing the given bit mask
      */
     public static String maskToRangeString(byte[] mask){
+        
         int start = -2;//far away from 0
         String range = "";
+        if (mask == null) {
+            return range;
+        }
         // a check to see whether the mask is all 1s
         boolean allowsAny = true;
 
