@@ -73,10 +73,10 @@ public class LSPData {
         try {
             PathElemParam pep;
             pep = this.ingressPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                                        PathElemParamType.L2SC_SUGGESTED_VLAN);
+                                        PathElemParamType.L2SC_VLAN_RANGE);
             this.ingressVlanTag = pep.getValue();
             pep = this.egressPathElem.getPathElemParam(PathElemParamSwcap.L2SC,
-                    PathElemParamType.L2SC_SUGGESTED_VLAN);
+                    PathElemParamType.L2SC_VLAN_RANGE);
             this.egressVlanTag = pep.getValue();
         } catch (BSSException ex) {
             throw new PSSException(ex.getMessage());

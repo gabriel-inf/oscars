@@ -114,18 +114,22 @@ public class JnxLSP {
             isL2 = path.isLayer2();
             isL3 = path.isLayer3();
         } catch (BSSException ex) {
+            this.log.error(ex);
             throw new PSSException(ex.getMessage());
         }
 
         if (isL2) {
+            this.log.debug("path is L2");
             if (lspData.getIngressLink() == null) {
                 throw new PSSException("createPath called before getting path endpoints");
             }
             // get VLAN tag and loopbacks
             lspData.setLayer2PathInfo(true);
         } else if (isL3) {
+            this.log.debug("path is L3");
             lspData.setLayer3PathInfo("Juniper");
         } else {
+            this.log.error("path is neither L2 or L3!");
             // won't ever get here
             throw new PSSException("no layer 2 or layer 3 data provided");
         }
@@ -150,11 +154,14 @@ public class JnxLSP {
         Node egressNode =  lspData.getEgressLink().getPort().getNode();
         boolean sameNode = false;
         if (ingressNode.equals(egressNode)) {
+            this.log.debug("path stays inside the same node");
             sameNode = true;
         }
+        
 
         JnxConnection conn = new JnxConnection();
         if (isL2) {
+            this.log.debug("starting up L2");
             hm.put("resv-id", circuitName);
             String virtualCircuitId = lspData.getIngressVlanTag()+lspData.getEgressVlanTag();
             hm.put("virtual-circuit-id", virtualCircuitId);
@@ -166,6 +173,7 @@ public class JnxLSP {
             String lspFwdTo = null;
             String lspRevTo = null;
             if (direction.equals("forward")) {
+                this.log.debug("forward direction");
                 hm.put("local-vlan-id", lspData.getIngressVlanTag());
                 hm.put("remote-vlan-id", lspData.getEgressVlanTag());
                 if (sameNode) {
@@ -189,9 +197,11 @@ public class JnxLSP {
                 try {
                     conn.setupLogin(lspData.getIngressLink(), hm);
                 } catch (IOException e) {
+                    this.log.error(e);
                     throw new PSSException(e.getMessage());
                 }
             } else {
+                this.log.debug("reverse direction");
                 // get IP associated with first in-facing physical interface
                 PathElem ingressPathElem = lspData.getIngressPathElem();
                 int nextSeqNumber = ingressPathElem.getSeqNumber() + 1;
