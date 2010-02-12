@@ -61,11 +61,11 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             PathElem prevEgrPE = this.getPrevExternalL2scHop(interPathElems);
             PathElem nextIngPE = this.getNextExternalL2scHop(interPathElems);
             
-            byte[] availIngVlans = combineTopoAndReq(ingPE);
+            VlanRange availIngVlans = combineTopoAndReq(ingPE);
             availIngVlans = combineAvailAndReserved(availIngVlans, ingPE, activeReservations);
             availIngVlans = combineRemote(availIngVlans, ingPE, prevEgrPE);
             
-            byte[] availEgrVlans = combineTopoAndReq(egrPE);
+            VlanRange availEgrVlans = combineTopoAndReq(egrPE);
             availEgrVlans = combineAvailAndReserved(availEgrVlans, egrPE, activeReservations);
             availEgrVlans = combineRemote(availEgrVlans, egrPE, nextIngPE);
             
@@ -81,31 +81,27 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     
     
     private void decideAndSetVlans(PathElem prevEgrPE, PathElem ingPE, PathElem egrPE, PathElem nextIngPE, 
-                            byte[] availIngVlans, byte[] availEgrVlans) throws BSSException {
+            VlanRange availIngVlans, VlanRange availEgrVlans) throws BSSException {
         // find the common subset of vlans between our ingress
         // and egress. just AND the two masks
-        byte[] localCommonVlans = availIngVlans.clone();
-        for (int i = 0; i < availIngVlans.length; i++) {
-            localCommonVlans[i] &= availEgrVlans[i];
-        }
+        VlanRange localCommonVlans = VlanRange.and(availIngVlans, availEgrVlans);
         
-        String localCommonVlanStr = VlanMapFilter.maskToRangeString(localCommonVlans);
+        String localCommonVlanStr = localCommonVlans.toString();
         log.debug("Common VLANs for ingress and egress are: ["+localCommonVlanStr+"]");
         
         // first: if previous egress was not null that means
         // we're not the first domain. so we probably have received 
         // a suggested VLAN. 
         Integer singleVlan = null;
-        byte[] suggested = null;
+        VlanRange suggested = null;
         if (prevEgrPE != null) {
-            String sugVlan = "";
+            String sugVlanString = "";
             PathElemParam pep = prevEgrPE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
             if(pep != null){
-                sugVlan = pep.getValue().trim();
+                sugVlanString = pep.getValue().trim();
             }
-            if (sugVlan != null && !sugVlan.equals("")) {
-                suggested = VlanMapFilter.rangeStringToMask(sugVlan);
-            } else {
+            suggested = new VlanRange(sugVlanString);
+            if (suggested.isEmpty()) {
                 log.warn("Null/empty suggested VLAN for edge: "+prevEgrPE.getUrn());
             }
         } else {
@@ -159,31 +155,26 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         }
     }
     
-    private Integer decideVlan(byte[] availVlans, byte[] suggestedVlans) {
-        String sugStr = VlanMapFilter.maskToRangeString(suggestedVlans);
-        String avStr = VlanMapFilter.maskToRangeString(availVlans);
+    private Integer decideVlan(VlanRange availVlans, VlanRange suggestedVlans) {
                 
-        log.debug("decideVlan.start avail: ["+avStr+"] sugg: ["+sugStr+"]");
-        byte[] tmpVlans = availVlans.clone();
-        if (suggestedVlans != null) {
-            for (int i = 0; i < suggestedVlans.length; i++) {
-                tmpVlans[i] &= suggestedVlans[i];
-            }
+        log.debug("decideVlan.start avail: ["+availVlans+"] sugg: ["+suggestedVlans+"]");
+        
+        if (!suggestedVlans.isEmpty()) {
+            availVlans = VlanRange.and(availVlans, suggestedVlans);
         }
         
-        for (int i = 0; i < tmpVlans.length; i++) {
-            if (tmpVlans[i] > 0) {
-                Integer vlanId = (8*i + (int) tmpVlans[i]);
-                log.debug("decideVlan: decided :"+vlanId);
-                return vlanId;
-            }
+        int first = availVlans.getFirst();
+        if (first == -1) {
+            log.error("Could not decide on a VLAN");
+            return null;
+        } else {
+            return first;
         }
-        return null;
     }
     
     
-    private byte[] combineRemote(byte[] availVlans, PathElem edgePE, PathElem remotePE) throws BSSException {
-        String inVlanString = VlanMapFilter.maskToRangeString(availVlans);
+    private VlanRange combineRemote(VlanRange availVlans, PathElem edgePE, PathElem remotePE) throws BSSException {
+        String inVlanString = availVlans.toString();
         if (remotePE == null) {
             log.debug("No remote PE for edge: "+edgePE.getUrn());
             return availVlans;
@@ -194,12 +185,11 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             return availVlans;
         }
         String remoteVlanString = remotePEP.getValue();
-        byte[] remoteVlans = VlanMapFilter.rangeStringToMask(remoteVlanString);
-        for(int j = 0; j < availVlans.length; j++){
-            availVlans[j] &= remoteVlans[j];
-        }
-        String vlanString = VlanMapFilter.maskToRangeString(availVlans);
-        if("".equals(vlanString)){
+        VlanRange remoteVlans = new VlanRange(remoteVlanString);
+        availVlans = VlanRange.and(availVlans, remoteVlans);
+        
+        
+        if(availVlans.isEmpty()){
             throw new BSSException("No usable VLANs at edge "+edgePE.getUrn()+" . Remote edge: " +
                                    remotePE.getUrn()+" only accepts: ["+remoteVlanString+"] and we needed ["+inVlanString+"]");
         }
@@ -211,7 +201,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     
     
     
-    private byte[] combineAvailAndReserved(byte[] availVlans, PathElem edgePE, List<Reservation> resvs) throws BSSException {
+    private VlanRange combineAvailAndReserved(VlanRange availVlans, PathElem edgePE, List<Reservation> resvs) throws BSSException {
         for (Reservation resv : resvs) {
             Path localPath = resv.getPath(PathType.LOCAL);
             List<PathElem> localPathElems = localPath.getPathElems();
@@ -237,8 +227,8 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
                 }
             }
             String vlanString = this.getVlanForOverlappingPE(pe);
-            byte[] resvMask = VlanMapFilter.rangeStringToMask(vlanString);
-            availVlans = VlanMapFilter.subtractMask(availVlans, resvMask);
+            VlanRange resvVlans = new VlanRange(vlanString);
+            availVlans = VlanRange.subtract(availVlans, resvVlans);
         }
         
         return availVlans;
@@ -274,8 +264,13 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         return vlanString;
     }
     
-    private byte[] combineTopoAndReq(PathElem edgePE) throws BSSException {
-        byte[] availVlans = new byte[512];
+    
+    
+    
+    private VlanRange combineTopoAndReq(PathElem edgePE) throws BSSException {
+        
+        
+        VlanRange availVlans = new VlanRange();
         
         Link edgeLink = edgePE.getLink();
         if (edgeLink == null) {
@@ -291,10 +286,10 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         }
         
         log.debug(edgePE.getUrn()+" topology VLANs: ["+edgeVlanAvail+"]");
-        byte[] edgeTopoVlans = VlanMapFilter.rangeStringToMask(edgeVlanAvail);
+        VlanRange edgeTopoVlans = new VlanRange(edgeVlanAvail);
         
         // the available VLANs are initially the ones configured on the topology
-        availVlans = edgeTopoVlans.clone();
+        availVlans = edgeTopoVlans;
         
         // this is what the user has requested at that edge
         PathElemParam reqVlanRangeParam = edgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
@@ -303,30 +298,26 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             reqVlanString = reqVlanRangeParam.getValue().trim();
         }
         log.debug(edgePE.getUrn()+" requested VLANs: ["+reqVlanString+"]");
+        VlanRange reqVlans = new VlanRange(reqVlanString);
+        
         // if nothing requested, everything on the topology is available
-        if (reqVlanString.equals("")){
+        if (reqVlans.isEmpty()){
             return availVlans;
         }
         
-        
-        
         // disallow untagged interfaces
         // TODO: make this configurable 
-        if (reqVlanString.equals("0")) {
+        if (reqVlans.getMap()[0]) {
             throw new BSSException("untagged not allowed: "+edgeLink.getFQTI());
         }
         
-        // AND the topology and requested VLANs
-        byte[] reqVlans = VlanMapFilter.rangeStringToMask(reqVlanString);
-        for(int j = 0; j < 512; j++){
-            availVlans[j] = edgeTopoVlans[j];
-            edgeTopoVlans[j] &= reqVlans[j];
-        }
         
-        // log and return; throw exception if none are available
-        String availStr = VlanMapFilter.maskToRangeString(availVlans);
-        this.log.debug(edgePE.getUrn() + " : available VLANs by req and topo: [" + availStr+"]");
-        if("".equals(availStr)){
+        
+        // AND the topology and requested VLANs
+        availVlans = VlanRange.and(edgeTopoVlans, reqVlans);
+        
+        this.log.debug(edgePE.getUrn() + " : available VLANs by req and topo: [" + availVlans+"]");
+        if(availVlans.isEmpty()){
             throw new BSSException("None of VLAN(s): [" + reqVlanString + "] are available at edge: " + edgePE.getUrn());
         }
         return availVlans;

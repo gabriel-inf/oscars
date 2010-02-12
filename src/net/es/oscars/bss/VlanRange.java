@@ -41,6 +41,9 @@ public class VlanRange {
     }
     public VlanRange(String range) throws BSSException {
         init();
+        if (range == null) {
+            return;
+        }
         String[] rangeList = range.trim().split(",");
         try {
             for(int i = 0; i < rangeList.length; i++){
@@ -79,6 +82,12 @@ public class VlanRange {
         return true;
     }
     
+    public int getFirst() {
+        for (int i = 0; i < 4096; i++) {
+            if (map[i]) return i;
+        }
+        return -1;
+    }
     public String toString() {
         String range = "";
         int start = 0;
