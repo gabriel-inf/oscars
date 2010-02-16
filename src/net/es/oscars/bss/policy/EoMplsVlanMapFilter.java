@@ -64,10 +64,12 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             VlanRange availIngVlans = combineTopoAndReq(ingPE);
             availIngVlans = combineAvailAndReserved(availIngVlans, ingPE, activeReservations);
             availIngVlans = combineRemote(availIngVlans, ingPE, prevEgrPE);
+            log.debug("Available ingress VLANs: "+ availIngVlans);
             
             VlanRange availEgrVlans = combineTopoAndReq(egrPE);
             availEgrVlans = combineAvailAndReserved(availEgrVlans, egrPE, activeReservations);
             availEgrVlans = combineRemote(availEgrVlans, egrPE, nextIngPE);
+            log.debug("Available egress VLANs: "+ availEgrVlans);
             
             
             this.decideAndSetVlans(prevEgrPE, ingPE, egrPE, nextIngPE, availIngVlans, availEgrVlans);
@@ -82,6 +84,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     
     private void decideAndSetVlans(PathElem prevEgrPE, PathElem ingPE, PathElem egrPE, PathElem nextIngPE, 
             VlanRange availIngVlans, VlanRange availEgrVlans) throws BSSException {
+        log.debug("decideAndSetVlans.start");
         // find the common subset of vlans between our ingress
         // and egress. just AND the two masks
         VlanRange localCommonVlans = VlanRange.and(availIngVlans, availEgrVlans);
@@ -93,7 +96,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         // we're not the first domain. so we probably have received 
         // a suggested VLAN. 
         Integer singleVlan = null;
-        VlanRange suggested = null;
+        VlanRange suggested = new VlanRange();
         if (prevEgrPE != null) {
             String sugVlanString = "";
             PathElemParam pep = prevEgrPE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
@@ -102,7 +105,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             }
             suggested = new VlanRange(sugVlanString);
             if (suggested.isEmpty()) {
-                log.warn("Null/empty suggested VLAN for edge: "+prevEgrPE.getUrn());
+                log.warn("Null/empty suggested VLAN for previous domain egress: "+prevEgrPE.getUrn());
             }
         } else {
             log.debug("No previous domain, so no suggested VLANs");
@@ -111,7 +114,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         singleVlan = decideVlan(localCommonVlans, suggested);
         
         
-        if (singleVlan == null) {
+        if (singleVlan != null) {
             this.finalizeVlan(singleVlan, ingPE, prevEgrPE);
             this.finalizeVlan(singleVlan, egrPE, nextIngPE);
         } else {
@@ -128,6 +131,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
                 this.finalizeVlan(egrVlan, egrPE, nextIngPE);
             }
         }
+        log.debug("decideAndSetVlans.end");
     }
     
     private void finalizeVlan(Integer vlanId, PathElem edgePE, PathElem remoteEdgePE) throws BSSException {
@@ -176,12 +180,12 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     private VlanRange combineRemote(VlanRange availVlans, PathElem edgePE, PathElem remotePE) throws BSSException {
         String inVlanString = availVlans.toString();
         if (remotePE == null) {
-            log.debug("No remote PE for edge: "+edgePE.getUrn());
+            log.debug("No remote PE for edge: "+edgePE.getUrn()+" , result "+availVlans.toString());
             return availVlans;
         }
         PathElemParam remotePEP = remotePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         if (remotePEP == null) {
-            log.debug("No VLAN availability info for remote edge: "+remotePE.getUrn()+", assuming 'any'");
+            log.debug("No VLAN availability info for remote edge: "+remotePE.getUrn()+" , assuming 'any', result: "+availVlans.toString());
             return availVlans;
         }
         String remoteVlanString = remotePEP.getValue();
