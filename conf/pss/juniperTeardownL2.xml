@@ -37,7 +37,7 @@
                     <neighbor>
                         <name><user-var>egress-rtr-loopback</user-var></name>
                         <interface delete="delete">
-                            <name><user-var>port</user-var><txt>.</txt><user-var>remote-vlan-id</user-var></name>
+                            <name><user-var>port</user-var><txt>.</txt><user-var>local-vlan-id</user-var></name>
                         </interface>
                     </neighbor>
                 </l2circuit>
