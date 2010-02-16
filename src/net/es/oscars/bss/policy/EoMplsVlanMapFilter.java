@@ -110,25 +110,26 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             log.debug("No previous domain, so no suggested VLANs");
         }
         
-        singleVlan = decideVlan(localCommonVlans, suggested);
-        
-        
-        if (singleVlan != null) {
+        if (!localCommonVlans.isEmpty()) {
+            log.debug("A common single VLAN exists, deciding..");
+            singleVlan = decideVlan(localCommonVlans, suggested);
+            log.debug("Common single VLAN is: "+singleVlan);
             this.finalizeVlan(singleVlan, ingPE, prevEgrPE);
             this.finalizeVlan(singleVlan, egrPE, nextIngPE);
         } else {
+            log.debug("No common VLANs for edges, deciding ingress...");
             Integer ingVlan = decideVlan(availIngVlans, suggested);
             if (ingVlan == null) {
                 throw new BSSException("Could not decide an VLAN for ingress edge!");
-            } else {
-                this.finalizeVlan(ingVlan, ingPE, prevEgrPE);
             }
+            log.debug("Decided inggress VLAN: "+ingVlan+" , deciding egress...");
             Integer egrVlan = decideVlan(availEgrVlans, suggested);
             if (egrVlan == null) {
                 throw new BSSException("Could not decide a VLAN for egress edge!");
-            } else {
-                this.finalizeVlan(egrVlan, egrPE, nextIngPE);
             }
+            log.debug("Decided egress VLAN: "+egrVlan+ " , finalizing VLANs..");
+            this.finalizeVlan(ingVlan, ingPE, prevEgrPE);
+            this.finalizeVlan(egrVlan, egrPE, nextIngPE);
         }
         log.debug("decideAndSetVlans.end");
     }
@@ -161,16 +162,17 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     private Integer decideVlan(VlanRange availVlans, VlanRange suggestedVlans) {
                 
         log.debug("decideVlan.start avail: ["+availVlans+"] sugg: ["+suggestedVlans+"]");
-        
+        VlanRange tmp = VlanRange.copy(availVlans);
         if (!suggestedVlans.isEmpty()) {
-            availVlans = VlanRange.and(availVlans, suggestedVlans);
+            tmp = VlanRange.and(tmp, suggestedVlans);
         }
         
-        int first = availVlans.getFirst();
+        int first = tmp.getFirst();
         if (first == -1) {
             log.error("Could not decide on a VLAN");
             return null;
         } else {
+            log.debug("Decided vlan: "+first);
             return first;
         }
     }

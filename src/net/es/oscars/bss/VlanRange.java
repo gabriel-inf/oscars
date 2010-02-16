@@ -43,10 +43,16 @@ public class VlanRange {
     }
     public VlanRange(String range) throws BSSException {
         init();
+        
         if (range == null) {
             return;
         }
-        String[] rangeList = range.trim().split(",");
+        range = range.trim();
+        if (range.equals("")) {
+            return;
+        }
+        
+        String[] rangeList = range.split(",");
         try {
             for(int i = 0; i < rangeList.length; i++){
                 if (rangeList[i].trim().equals("")) {
@@ -168,6 +174,13 @@ public class VlanRange {
         return result;
     }
     
+    public static VlanRange copy(VlanRange a) {
+        VlanRange result = new VlanRange();
+        for (int i = 0; i < MAX_VLAN; i++) {
+            result.getMap()[i] = a.getMap()[i];
+        }
+        return result;
+    }
     
 
 }
