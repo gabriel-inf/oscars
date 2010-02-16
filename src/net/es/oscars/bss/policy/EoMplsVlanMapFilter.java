@@ -89,8 +89,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
         // and egress. just AND the two masks
         VlanRange localCommonVlans = VlanRange.and(availIngVlans, availEgrVlans);
         
-        String localCommonVlanStr = localCommonVlans.toString();
-        log.debug("Common VLANs for ingress and egress are: ["+localCommonVlanStr+"]");
+        log.debug("Common VLANs for ingress and egress are: ["+localCommonVlans.toString()+"]");
         
         // first: if previous egress was not null that means
         // we're not the first domain. so we probably have received 

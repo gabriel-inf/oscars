@@ -3,6 +3,8 @@ package net.es.oscars.bss;
 import java.util.ArrayList;
 
 public class VlanRange {
+    public static final Integer MAX_VLAN = 4096;
+    
     private boolean[] map;
 
     public boolean[] getMap() {
@@ -12,16 +14,16 @@ public class VlanRange {
     public void setMap(boolean[] map) {
         this.map = map;
     }
-
     /*
     public static void main(String[] args) {
         try {
-            VlanRange one = new VlanRange("    2- 100,101 -103,200 - 410,  400-530, 900-1002,,,  ");
+            VlanRange one = new VlanRange("300-600");
             VlanRange other = new VlanRange("500");
+            System.out.println("ONE: "+one+ " OTHER: "+other);
             VlanRange tmp = VlanRange.and(one, other);
-            System.out.println(tmp);
+            System.out.println("AND: "+tmp);
             tmp = VlanRange.subtract(one, other);
-            System.out.println(tmp);
+            System.out.println("SUBTRACT: "+tmp);
         } catch (BSSException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -30,8 +32,8 @@ public class VlanRange {
     */
     
     private void init() {
-        map = new boolean[4096];
-        for (int i = 0; i < 4096; i++) {
+        map = new boolean[MAX_VLAN];
+        for (int i = 0; i < MAX_VLAN; i++) {
             map[i] = false;
         }
     }
@@ -76,14 +78,14 @@ public class VlanRange {
     }
     
     public boolean isEmpty() {
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < MAX_VLAN; i++) {
             if (map[i]) return false;
         }
         return true;
     }
     
     public int getFirst() {
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < MAX_VLAN; i++) {
             if (map[i]) return i;
         }
         return -1;
@@ -91,19 +93,24 @@ public class VlanRange {
     public String toString() {
         String range = "";
         int start = 0;
-        while (map[start] == false && start < 4096) {
-            start++;
+        
+        for (int i = 0; i < MAX_VLAN; i++) {
+            if (map[i]) {
+                start = i;
+                break;
+            }
         }
-        if (start == 4096) {
+        
+        if (start == 4095) {
             return range;
         }
         
         ArrayList<int[]> intervals = new ArrayList<int[]>();
         int[] interval = new int[2];
         interval[0] = start;
-        interval[1] = 4095;
+        interval[1] = MAX_VLAN - 1;
         boolean prev = true;
-        for (int i = start+1; i < 4096; i++) {
+        for (int i = start+1; i < MAX_VLAN; i++) {
             if (prev != map[i]) {
                 if (prev) {
                     interval[1] = i - 1;
@@ -138,7 +145,7 @@ public class VlanRange {
      */
     public static VlanRange and(VlanRange a, VlanRange b) {
         VlanRange result = new VlanRange();
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < MAX_VLAN; i++) {
             if (a.getMap()[i] && b.getMap()[i]) {
                 result.getMap()[i] = true;
             }
@@ -153,7 +160,7 @@ public class VlanRange {
      */
     public static VlanRange subtract(VlanRange a, VlanRange b) {
         VlanRange result = new VlanRange();
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < MAX_VLAN; i++) {
             if (a.getMap()[i] && !b.getMap()[i]) {
                 result.getMap()[i] = true;
             }
