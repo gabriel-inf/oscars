@@ -135,6 +135,11 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     }
     
     private void finalizeVlan(Integer vlanId, PathElem edgePE, PathElem remoteEdgePE) throws BSSException {
+        log.debug("finalizeVlan.start");
+        
+        if (edgePE == null) {
+            throw new BSSException("Internal error: Local edge path element is null!");
+        } 
         PathElemParam pep;
         pep = edgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         if (pep != null) {
@@ -146,16 +151,17 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             pep.setValue(vlanId.toString());
             edgePE.getPathElemParams().add(pep);
         }
-        
-        pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
-        if (pep != null) {
-            pep.setValue(vlanId.toString());
-        } else {
-            pep = new PathElemParam();
-            pep.setSwcap(PathElemParamSwcap.L2SC);
-            pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            pep.setValue(vlanId.toString());
-            remoteEdgePE.getPathElemParams().add(pep);
+        if (remoteEdgePE != null) {
+            pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            if (pep != null) {
+                pep.setValue(vlanId.toString());
+            } else {
+                pep = new PathElemParam();
+                pep.setSwcap(PathElemParamSwcap.L2SC);
+                pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
+                pep.setValue(vlanId.toString());
+                remoteEdgePE.getPathElemParams().add(pep);
+            }
         }
     }
     
