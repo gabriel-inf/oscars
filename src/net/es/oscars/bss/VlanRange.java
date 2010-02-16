@@ -101,7 +101,7 @@ public class VlanRange {
             }
         }
         
-        if (start == 4095) {
+        if (start == (MAX_VLAN - 1)) {
             return range;
         }
         
