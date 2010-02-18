@@ -72,7 +72,7 @@ public class CancelResRmiHandler {
         RemoteException remEx = null;
         try {
             reservation =
-                rm.getConstrainedResv(gri, loginConstraint, institution, null);
+                rm.getConstrainedResv(gri, loginConstraint, institution, null, true);
             rm.submitCancel(reservation, loginConstraint, userName,
                                      institution);
         } catch (BSSException e) {

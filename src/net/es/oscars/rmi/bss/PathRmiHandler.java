@@ -70,7 +70,7 @@ public class PathRmiHandler {
         bss.beginTransaction();
         try {
             resv = this.rm.getConstrainedResv(gri, loginConstraint,
-                                              institution, tokenValue);
+                                              institution, tokenValue, false);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, userName, 
@@ -194,7 +194,7 @@ public class PathRmiHandler {
         try {
             resv = 
                 this.rm.getConstrainedResv(gri, loginConstraint, institution,
-                        tokenValue);
+                        tokenValue, false);
             /* Check reservation parameters */
             if (!resv.getStatus().equals("ACTIVE")) {
                 errMessage = "Path cannot be refreshed. " +
@@ -277,7 +277,7 @@ public class PathRmiHandler {
         try {
             resv =
                 this.rm.getConstrainedResv(gri, loginConstraint, institution,
-                                           tokenValue);
+                                           tokenValue, false);
         } catch (BSSException e) {
             errMessage = "No reservation found matching request";
             eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, userName,

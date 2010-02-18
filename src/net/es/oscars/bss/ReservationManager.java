@@ -491,7 +491,7 @@ public class ReservationManager {
             throws BSSException {
 
         this.log.info("query.start: " + gri + " login: " + login + " institution: " + institution);
-        Reservation resv = getConstrainedResv(gri, login, institution,  null);
+        Reservation resv = getConstrainedResv(gri, login, institution,  null, false);
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
     }
@@ -517,7 +517,7 @@ public class ReservationManager {
                       " institution: " +  institution );
         String gri = resv.getGlobalReservationId();
         Reservation persistentResv =
-            this.getConstrainedResv(gri, loginConstraint, institution, null);
+            this.getConstrainedResv(gri, loginConstraint, institution, null, true);
         // need to set this before validation
         // leave it the same, do not set to current user
         resv.setLogin(persistentResv.getLogin());
@@ -956,7 +956,7 @@ public class ReservationManager {
    public Reservation getConstrainedResv(String gri,
                String loginConstraint,
                String institutionConstraint,
-               String tokenValue)  throws BSSException {
+               String tokenValue, boolean isCancelOfModify)  throws BSSException {
 
        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
        Reservation resv = null;
@@ -969,7 +969,7 @@ public class ReservationManager {
        /* loginConstraint must be set whenever institutionConstraint is set to avoid
         * a race condition in getting and setting the path links during createReservation
         */
-       if ((loginConstraint == null) && ( institutionConstraint != null)){
+       if (isCancelOfModify == false && loginConstraint == null && institutionConstraint != null){
            this.log.error("loginConstraint must be set when institutionConstraint is set");
            throw new BSSException("invalid arguments to queryReservation: loginConstraint must be set when institutionConstraint is set");
        }
