@@ -92,7 +92,7 @@ public class ListResRmiHandler {
             reservations =
                 rm.list(numRowsReq, resOffset, loginConstraint, institution,
                         statuses, description, links, vlans,
-                        startTimeSeconds, endTimeSeconds, sortBy);
+                        startTimeSeconds, endTimeSeconds, sortBy, userName);
             this.log.debug("initialize start");
             for (Reservation reservation: reservations) {
                 BssRmiUtils.initialize(reservation);

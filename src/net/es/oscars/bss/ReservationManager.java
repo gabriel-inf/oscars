@@ -683,7 +683,7 @@ public class ReservationManager {
             String login, String institution,
             List<String> statuses, String description, List<String> linkIds,
             List<String> vlanTags,  Long startTime, Long endTime,
-            String sortBy)
+            String sortBy, String userName)
                 throws BSSException {
 
         List<Reservation> reservations = null;
@@ -736,7 +736,9 @@ public class ReservationManager {
             this.log.debug("Checking " + reservations.size() + " reservations for site");
 
             for (Reservation resv : reservations) {
-                if (checkInstitution( resv, institution)) {
+		if (userName != null && userName.equals(resv.getLogin())) {
+                    authResv.add(resv);
+		} else if (checkInstitution( resv, institution)) {
                     authResv.add(resv);
                 }
             }
