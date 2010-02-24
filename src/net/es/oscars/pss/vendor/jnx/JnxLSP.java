@@ -657,7 +657,7 @@ public class JnxLSP {
             new HashMap<String,VendorStatusResult>();
         Map<String,JnxStatusResult> currentVlans =
             new HashMap<String,JnxStatusResult>();
-        Pattern pattern = Pattern.compile(".*\\(vc (\\d{3,4})\\)$");
+        Pattern pattern = Pattern.compile(".*\\(vc (\\d{1,4})\\)$");
         for (Iterator i = connectionList.iterator(); i.hasNext();) {
             Element conn = (Element) i.next();
             List connectionChildren = conn.getChildren();
