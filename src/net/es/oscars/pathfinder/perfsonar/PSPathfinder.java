@@ -76,37 +76,30 @@ public class PSPathfinder extends Pathfinder implements LocalPCE, InterdomainPCE
             String[] TSs = null;
             ArrayList<String> gLSList = new ArrayList<String>();
             ArrayList<String> hLSList = new ArrayList<String>();
-            String[] sections = { "topology", "lookup" };
-
-            for ( String section : sections) {
-                this.log.debug("Handling section: "+section);
-                Properties props = propHandler.getPropertyGroup(section, true);
-                
-                //Set home and global lookup service
-                try {
-                    PSLookupClient.configLS(props, gLSList, hLSList);
-                } catch (LookupException e) {
-                    this.log.error(e.getMessage());
-                }
-
-                if (TSs == null) {
-                    int i = 1;
-                    ArrayList<String> TSList = new ArrayList<String>();
-                    while(props.getProperty("topology." + i) != null){
-                        TSList.add(props.getProperty("topology." + i));
-                        i++;
-                    }
-                    if(!TSList.isEmpty()){
-                        TSs = TSList.toArray(new String[TSList.size()]);
-                    }
-                }
+            
+            //get lookup properties
+            Properties props = propHandler.getPropertyGroup("lookup", true);
+            try {
+                PSLookupClient.configLS(props, gLSList, hLSList);
+            } catch (LookupException e) {
+                this.log.error(e.getMessage());
             }
             
+            //get topology properties
+            int i = 1;
+            ArrayList<String> TSList = new ArrayList<String>();
+            while(props.getProperty("topology." + i) != null){
+                TSList.add(props.getProperty("topology." + i));
+                i++;
+            }
+            if(!TSList.isEmpty()){
+                TSs = TSList.toArray(new String[TSList.size()]);
+            }
             if(!gLSList.isEmpty()){
                 gLSs = gLSList.toArray(new String[gLSList.size()]);
-            }
-            if(!hLSList.isEmpty()){
-                hLSs = gLSList.toArray(new String[hLSList.size()]);
+            }else if(!hLSList.isEmpty()){
+                //only set these if no hLSes specified
+                hLSs = hLSList.toArray(new String[hLSList.size()]);
             }
             
             try {
