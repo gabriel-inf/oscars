@@ -1,5 +1,5 @@
 /**
- * Type converter between Axis2 classes and Hibernate beans.
+ * Type converter between Axis2 classes and Hibernate beans
  *
  * @author David Robertson, Mary Thompson, Jason Lee
  */
@@ -118,13 +118,13 @@ public class WSDLTypeConverter {
      * @return CreateReply instance
      */
     public static ModifyResReply reservationToModifyReply(Reservation resv) throws BSSException {
-        log.debug("reservationToModReply.start");
+        //log.debug("reservationToModReply.start");
 
         ModifyResReply reply = new ModifyResReply();
         ResDetails details =
             WSDLTypeConverter.reservationToDetails(resv, false, null);
         reply.setReservation(details);
-        log.debug("reservationToModReply.end");
+        //log.debug("reservationToModReply.end");
         return reply;
     }
 
@@ -163,9 +163,9 @@ public class WSDLTypeConverter {
                              String localDomain)
             throws BSSException{
 
-        log.debug("reservationToDetails.start");
+        //log.debug("reservationToDetails.start");
         if (resv == null) {
-            log.debug("reservationToDetails.end (null)");
+            //log.debug("reservationToDetails.end (null)");
             return null;
         }
 
@@ -184,7 +184,7 @@ public class WSDLTypeConverter {
             WSDLTypeConverter.getPathInfo(resv, null, internalPathAuthorized,
                                           localDomain);
         reply.setPathInfo(pathInfo);
-        log.debug("reservationToDetails.end");
+        //log.debug("reservationToDetails.end");
         return reply;
     }
 
@@ -240,7 +240,7 @@ public class WSDLTypeConverter {
                                        String localDomain)
             throws BSSException {
 
-        log.debug("getPathInfo.start");
+        //log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
         Path path = null;
         if (pathType != null) {
@@ -267,7 +267,7 @@ public class WSDLTypeConverter {
             // allowed to be null
             MplsInfo mplsInfo = pathToMplsInfo(path);
             pathInfo.setMplsInfo(mplsInfo);
-            log.debug("getPathInfo.end");
+            //log.debug("getPathInfo.end");
             return pathInfo;
         } else {
             throw new BSSException("path: " + pathType + " does not exist");
@@ -295,7 +295,7 @@ public class WSDLTypeConverter {
                         boolean internalPathAuthorized, String localDomain)
             throws BSSException {
 
-        log.debug("pathToCtrlPlane.start");
+        //log.debug("pathToCtrlPlane.start");
         Path path = resv.getPath(pathType);
         List<PathElem> pathElems = path.getPathElems();
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
@@ -346,7 +346,7 @@ public class WSDLTypeConverter {
                                                      isLocalHop);
         } 
         ctrlPlanePath.setId("unimplemented");
-        log.debug("pathToCtrlPlane.end");
+        //log.debug("pathToCtrlPlane.end");
         return ctrlPlanePath;
     }
 
@@ -363,7 +363,7 @@ public class WSDLTypeConverter {
                    List<Boolean> isLocalHop)
             throws BSSException {
 
-        log.debug("convertHop.start");
+        //log.debug("convertHop.start");
         CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
         CtrlPlaneLinkContent cpLink = new CtrlPlaneLinkContent();
         CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
@@ -447,7 +447,7 @@ public class WSDLTypeConverter {
         cpLink.setId(urn);
         cpLink.setSwitchingCapabilityDescriptors(swcap);
         hop.setLink(cpLink);
-        log.debug("convertHop.end");
+        //log.debug("convertHop.end");
         return hop;
     }
 
@@ -515,7 +515,7 @@ public class WSDLTypeConverter {
      * for layer 2 information.
      */
     public static Layer2Info pathToLayer2Info(Path path) {
-        log.debug("pathToLayer2Info.start");
+        //log.debug("pathToLayer2Info.start");
         // database type
         Layer2Data layer2Data = path.getLayer2Data();
         if (layer2Data == null) {
@@ -552,7 +552,7 @@ public class WSDLTypeConverter {
                 }
             } catch (BSSException e) {}
         }
-        log.debug("pathToLayer2Info.end");
+        //log.debug("pathToLayer2Info.end");
         return layer2Info;
     }
 
@@ -561,7 +561,7 @@ public class WSDLTypeConverter {
      * for layer 3 information.
      */
     public static Layer3Info pathToLayer3Info(Path path) {
-        log.debug("pathToLayer3Info.start");
+        //log.debug("pathToLayer3Info.start");
 
         // database type
         Layer3Data layer3Data = path.getLayer3Data();
@@ -582,7 +582,7 @@ public class WSDLTypeConverter {
         if (layer3Data.getDestIpPort() != null) {
             layer3Info.setDestIpPort(layer3Data.getDestIpPort());
         }
-        log.debug("pathToLayer3Info.end");
+        //log.debug("pathToLayer3Info.end");
 
         return layer3Info;
     }
@@ -592,7 +592,7 @@ public class WSDLTypeConverter {
      * for MPLS information.
      */
     public static MplsInfo pathToMplsInfo(Path path) {
-        log.debug("pathToMplsInfo.start");
+        //log.debug("pathToMplsInfo.start");
 
         // database type
         MPLSData mplsData = path.getMplsData();
@@ -604,7 +604,7 @@ public class WSDLTypeConverter {
         int burstLimit = mplsData.getBurstLimit().intValue();
         mplsInfo.setBurstLimit(burstLimit);
         mplsInfo.setLspClass(mplsData.getLspClass());
-        log.debug("pathToMplsInfo.end");
+        //log.debug("pathToMplsInfo.end");
         return mplsInfo;
     }
 
@@ -789,7 +789,7 @@ public class WSDLTypeConverter {
      */
     public static Path convertPath(PathInfo pathInfo) throws BSSException {
 
-        log.debug("convertPath.start");
+        //log.debug("convertPath.start");
         Path path = new Path();
         path.setPathType(PathType.REQUESTED);
         path.setPathSetupMode(pathInfo.getPathSetupMode());
@@ -822,7 +822,7 @@ public class WSDLTypeConverter {
                 pathElems.add(dstpe);
             }
             path.setPathElems(pathElems);
-            log.debug("convertPath.end");
+            //log.debug("convertPath.end");
             return path;
         }
         
@@ -853,7 +853,7 @@ public class WSDLTypeConverter {
             pathElems.add(pathElem);
         }
         path.setPathElems(pathElems);
-        log.debug("convertPath.end");
+        //log.debug("convertPath.end");
         return path;
     }
 
@@ -1053,7 +1053,7 @@ public class WSDLTypeConverter {
             return urn;
         }
 
-        /* we have to tcheck errors ourselves because xsd:choice
+        /* we have to check errors ourselves because xsd:choice
           elements are clunky in Axis2 */
         if(urn == null){
             log.debug("Empty hop");
