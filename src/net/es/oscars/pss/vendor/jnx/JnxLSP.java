@@ -157,7 +157,7 @@ public class JnxLSP {
             this.log.debug("path stays inside the same node");
             sameNode = true;
         }
-        
+
 
         JnxConnection conn = new JnxConnection();
         if (isL2) {
@@ -165,9 +165,9 @@ public class JnxLSP {
             hm.put("resv-id", circuitName);
             String virtualCircuitId = lspData.getIngressVlanTag()+lspData.getEgressVlanTag();
             hm.put("virtual-circuit-id", virtualCircuitId);
-            
 
-            
+
+
             hm.put("community", "65000:" + lspData.getIngressVlanTag());
 
             String lspFwdTo = null;
@@ -180,7 +180,7 @@ public class JnxLSP {
                     hm.put("interface_a", lspData.getIngressLink().getPort().getTopologyIdent());
                     hm.put("interface_b", lspData.getEgressLink().getPort().getTopologyIdent());
                 } else {
-                    
+
                     // get IP associated with physical interface before egress
                     ipaddr = lspData.getLastXfaceElem().getLink().getValidIpaddr();
                     if (ipaddr != null) {
@@ -513,6 +513,7 @@ public class JnxLSP {
         Map<String,VendorStatusResult> circuitStatuses =
             new HashMap<String,VendorStatusResult>();
 
+
         this.log.info("statusLSP.start");
         if (!this.allowLSP) {
             return null;
@@ -581,18 +582,18 @@ public class JnxLSP {
             int split_offset = circuitStr.lastIndexOf('-');
 
             if (split_offset == -1) {
-		// it's not of the form domain-####, so remove from the
-		// beginning of the string until we have a proper length string
-		// so we can prepend the header.
+        // it's not of the form domain-####, so remove from the
+        // beginning of the string until we have a proper length string
+        // so we can prepend the header.
                 int offset = header.length() + circuitStr.length() - 32;
                 circuitStr = circuitStr.substring(offset, circuitStr.length());
             } else {
                 // here we likely have something of the form "domain-#"
-                String domainSegment = circuitStr.substring(0,split_offset-1); 
+                String domainSegment = circuitStr.substring(0,split_offset-1);
                 String tailSegment   = circuitStr.substring(split_offset, circuitStr.length());
-    
-		// hack off the end of the domain section so that we have a
-		// proper length string once we prepend the header.
+
+        // hack off the end of the domain section so that we have a
+        // proper length string once we prepend the header.
                 domainSegment = domainSegment.substring(0, 32 - header.length() - tailSegment.length());
 
                 circuitStr = domainSegment+tailSegment;
@@ -657,7 +658,11 @@ public class JnxLSP {
             new HashMap<String,VendorStatusResult>();
         Map<String,JnxStatusResult> currentVlans =
             new HashMap<String,JnxStatusResult>();
-        Pattern pattern = Pattern.compile(".*\\(vc (\\d{1,4})\\)$");
+
+        // connection-ids look like: <connection-id>xe-0/1/0.1111(vc 11112222)</connection-id>
+        // 1111 is the local vlan, 2222 is the remote vlan
+        // in this pattern we will look for the LOCAL vlan
+        Pattern pattern = Pattern.compile(".*\\.(\\d{1,4})\\(vc.*$");
         for (Iterator i = connectionList.iterator(); i.hasNext();) {
             Element conn = (Element) i.next();
             List connectionChildren = conn.getChildren();
