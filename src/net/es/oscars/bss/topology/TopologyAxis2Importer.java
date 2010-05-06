@@ -446,6 +446,6 @@ public class TopologyAxis2Importer {
      */
     public String convertToLocalId(String id){
         String[] componentList = id.split(":");
-        return componentList[componentList.length-1].replaceAll(".+\\=", "");
+        return componentList[componentList.length-1].replaceAll(".+\\=", "").trim();
     }
 }
