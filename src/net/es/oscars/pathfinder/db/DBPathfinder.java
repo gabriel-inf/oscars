@@ -170,6 +170,11 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
             this.log.error(ex.getMessage());
             throw new PathfinderException(ex.getMessage());
         }
+
+        for (PathElem pe : path.getPathElems()) {
+            this.log.debug("L3 local hop:"+pe.getUrn());
+        }
+
         paths.add(path);
 
         return paths;
@@ -277,19 +282,17 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
 
         this.log.debug("findPathBetween.start");
         DomainDAO domDAO = new DomainDAO(this.dbname);
-        if (layer.equals("L2")) {
-            Link srcLink = domDAO.getFullyQualifiedLink(src);
-            Link dstLink = domDAO.getFullyQualifiedLink(dst);
-            if (srcLink == null) {
-                throw new PathfinderException("Could not locate link in DB for string: "+src);
-            } else if (dstLink == null) {
-                throw new PathfinderException("Could not locate link in DB for string: "+dst);
-            }
+        Link srcLink = domDAO.getFullyQualifiedLink(src);
+        Link dstLink = domDAO.getFullyQualifiedLink(dst);
+        if (srcLink == null) {
+            throw new PathfinderException("Could not locate link in DB for string: "+src);
+        } else if (dstLink == null) {
+            throw new PathfinderException("Could not locate link in DB for string: "+dst);
+        }
 
-            Path directPath = this.directPath(srcLink, dstLink);
-            if (directPath != null) {
-                return directPath;
-            }
+        Path directPath = this.directPath(srcLink, dstLink);
+        if (directPath != null) {
+            return directPath;
         }
 
         Path path = new Path();
