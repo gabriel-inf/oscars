@@ -1,6 +1,9 @@
 package net.es.oscars.pss;
 
 import java.util.*;
+
+import org.apache.log4j.Logger;
+
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.PCEUtils;
@@ -24,10 +27,12 @@ public class LSPData {
     private String egressVlanTag;
     private String ingressRtrLoopback;
     private String egressRtrLoopback;
+    private Logger log;
 
     /** Constructor. */
     public LSPData(String dbname) {
         this.dbname = dbname;
+        this.log = Logger.getLogger(this.getClass());
     }
 
     public PathElem getIngressPathElem() { return this.ingressPathElem; }
@@ -119,14 +124,16 @@ public class LSPData {
     public void setLayer3PathInfo(String sysDescr)
             throws PSSException {
 
+        log.debug("setLayer3PathInfo.start");
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = null;
         ipaddr = ipaddrDAO.queryByParam("linkId", this.ingressLink.getId());
+        log.debug("ingress link IP address: "+ipaddr.getIP());
         PCEUtils utils = new PCEUtils(this.dbname);
         try {
-            this.ingressRtrLoopback = utils.getLoopback(ipaddr.getIP(),
-                                                             sysDescr);
+            this.ingressRtrLoopback = utils.getLoopback(ipaddr.getIP(), sysDescr);
         } catch (PathfinderException e) {
+            log.error(e);
             throw new PSSException(e.getMessage());
         }
         if (this.ingressRtrLoopback == null) {
@@ -138,6 +145,7 @@ public class LSPData {
         if (this.egressRtrLoopback == null) {
             throw new PSSException("no egress loopback in path");
         }
+        log.debug("setLayer3PathInfo.end");
     }
 
     /**

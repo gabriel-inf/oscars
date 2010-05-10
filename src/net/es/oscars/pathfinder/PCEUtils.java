@@ -38,6 +38,7 @@ public class PCEUtils {
      */
     public String getLoopback(String ip, String description)
             throws PathfinderException {
+        this.log.debug("getting loopback for ip: "+ip+" system description: "+description);
 
         String loopbackIP = null;
 

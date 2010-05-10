@@ -150,6 +150,8 @@ public class JnxLSP {
             hm.put("policer_burst-size-limit", burst_size.toString());
             hm.put("lsp_class-of-service", "4");
         }
+        this.log.debug("deciding if same node");
+
         Node ingressNode =  lspData.getIngressLink().getPort().getNode();
         Node egressNode =  lspData.getEgressLink().getPort().getNode();
         boolean sameNode = false;
