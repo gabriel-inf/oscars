@@ -173,6 +173,8 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
 
         for (PathElem pe : path.getPathElems()) {
             this.log.debug("L3 local hop:"+pe.getUrn());
+            Link link = domDAO.getFullyQualifiedLink(pe.getUrn());
+            pe.setLink(link);
         }
 
         paths.add(path);
