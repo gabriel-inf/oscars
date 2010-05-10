@@ -57,6 +57,7 @@ public class LSPData {
             throws PSSException {
 
         this.ingressPathElem = pathElems.get(0);
+
         // check probably unnecessary
         if (pathElems.size() > 2) {
             this.lastXfacePathElem = pathElems.get(pathElems.size()-2);
@@ -125,17 +126,8 @@ public class LSPData {
             throws PSSException {
 
         log.debug("setLayer3PathInfo.start");
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        Ipaddr ipaddr = null;
-        ipaddr = ipaddrDAO.queryByParam("linkId", this.ingressLink.getId());
-        log.debug("ingress link IP address: "+ipaddr.getIP());
-        PCEUtils utils = new PCEUtils(this.dbname);
-        try {
-            this.ingressRtrLoopback = utils.getLoopback(ipaddr.getIP(), sysDescr);
-        } catch (PathfinderException e) {
-            log.error(e);
-            throw new PSSException(e.getMessage());
-        }
+
+        this.ingressRtrLoopback = this.ingressLink.getPort().getNode().getNodeAddress().getAddress();
         if (this.ingressRtrLoopback == null) {
             throw new PSSException("no ingress loopback in path");
         }
