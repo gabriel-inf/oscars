@@ -59,7 +59,7 @@ public class JnxTraceroute {
         String jnxKey = ConfigFinder.getInstance().find(ConfigFinder.PSS_DIR, "oscars.key");
 
         // prepare traceroute command
-        cmd = "ssh -x -a -i " + jnxKey + " -l " +
+        cmd = "ssh -x -o StrictHostKeyChecking=no -a -i " + jnxKey + " -l " +
                    this.props.getProperty("jnxUser") + " " + src +
                    " traceroute " + dst +
                    " wait " + this.props.getProperty("timeout") +
