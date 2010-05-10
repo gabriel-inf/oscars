@@ -158,6 +158,7 @@ public class JnxLSP {
             sameNode = true;
         }
 
+        this.log.debug("finished with MPLS params");
 
         JnxConnection conn = new JnxConnection();
         if (isL2) {
@@ -165,9 +166,6 @@ public class JnxLSP {
             hm.put("resv-id", circuitName);
             String virtualCircuitId = lspData.getIngressVlanTag()+lspData.getEgressVlanTag();
             hm.put("virtual-circuit-id", virtualCircuitId);
-
-
-
             hm.put("community", "65000:" + lspData.getIngressVlanTag());
 
             String lspFwdTo = null;
@@ -226,8 +224,12 @@ public class JnxLSP {
                 }
             }
         } else if (isL3) {
+            this.log.debug("starting up L3");
+
             hm.put("resv-id", circuitName);
             hm.put("lsp_from", lspData.getIngressRtrLoopback());
+
+            this.log.debug("lsp_from: "+ lspData.getIngressRtrLoopback());
             String lspTo = null;
             // get IP associated with physical interface before egress
             ipaddr =
@@ -237,6 +239,9 @@ public class JnxLSP {
             } else {
                 throw new PSSException("Egress port has no IP in DB!");
             }
+
+            this.log.debug("lspTo: "+ lspTo);
+
             hm.put("lsp_to", lspTo);
             hm.put("source-address", layer3Data.getSrcHost());
             hm.put("destination-address", layer3Data.getDestHost());
@@ -262,7 +267,7 @@ public class JnxLSP {
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
             try {
-                conn.setupLogin(lspData.getIngressLink(), hm);
+                conn.setupLogin(lspData.getIngressRtrLoopback(), hm);
             } catch (IOException e) {
                 throw new PSSException(e.getMessage());
             }
