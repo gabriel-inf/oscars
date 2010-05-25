@@ -25,12 +25,15 @@ public class PolicyManager {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
         PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("policy.vlanFilter", true);
-        this.vlanFilter = props.getProperty("class");
+        Properties props = propHandler.getPropertyGroup("policy", true);
+
+        Properties vfprops = propHandler.getPropertyGroup("policy.vlanFilter", true);
+        this.vlanFilter = vfprops.getProperty("class");
         if (this.vlanFilter == null){
             this.vlanFilter = "vlanMap";
         }
         this.log.debug("VLAN filter: "+this.vlanFilter);
+
         try {
             this.policyClient = new PolicyClient(props);
         } catch (BSSException e) {
@@ -49,15 +52,15 @@ public class PolicyManager {
     public void checkOversubscribed(List<Reservation> activeReservations,
                Reservation newReservation) throws BSSException {
         this.log.info("checkOversubscribed.start");
-        
+
         BandwidthFilter bwf = new BandwidthFilter();
         bwf.applyFilter(newReservation, activeReservations);
-        
+
         if(newReservation.getPath(PathType.LOCAL).isLayer2()){
             PolicyFilter vlf = PolicyFilterFactory.create(this.vlanFilter);
             vlf.applyFilter(newReservation, activeReservations);
         }
-        
+
         this.log.info("checkOversubscribed.end");
     }
 
