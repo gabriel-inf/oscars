@@ -7,11 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.ibm.wsdl.util.StringUtils;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;

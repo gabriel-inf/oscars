@@ -15,9 +15,8 @@ import org.testng.annotations.Test;
 public class ListTest {
 
     public void testClient() {
+        System.out.println("make sure you have a good repo directory before enabling tests");
 
-    	if (true) return;
-    	
         List<ListOutputterInterface> outputters =
                 ListOutputterFactory.getConfiguredOutputters();
 

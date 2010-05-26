@@ -1,6 +1,5 @@
 package net.es.oscars.client.improved.create;
 import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.apache.axis2.AxisFault;
 
 import net.es.oscars.ws.AAAFaultMessage;
-import net.es.oscars.ws.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 
 public class CreateClient extends ImprovedClient {
@@ -24,16 +22,16 @@ public class CreateClient extends ImprovedClient {
     public static final String DEFAULT_CONFIG_FILE = "create.yaml";
     private List<CreateRequestParams> resvRequests;
 
-    
 
-	public ResCreateContent formRequest(CreateRequestParams params) {
-    	
-    	ResCreateContent request = new ResCreateContent();
+
+    public ResCreateContent formRequest(CreateRequestParams params) {
+
+        ResCreateContent request = new ResCreateContent();
 
         if (params.getGri() != null && !params.getGri().equals("")) {
             request.setGlobalReservationId(params.getGri());
           }
-         
+
         PathInfo pathInfo = new PathInfo();
         pathInfo.setPathSetupMode(params.getPathSetupMode());
 
@@ -54,7 +52,7 @@ public class CreateClient extends ImprovedClient {
             layer2Info.setSrcVtag(srcVtag);
             layer2Info.setDestVtag(dstVtag);
             pathInfo.setLayer2Info(layer2Info);
-            
+
         } else if (params.getLayer().equals("3")) {
             Layer3Info layer3Info = new Layer3Info();
             layer3Info.setSrcHost(params.getSrc());
@@ -80,10 +78,10 @@ public class CreateClient extends ImprovedClient {
         }
         request.setPathInfo(pathInfo);
 
-        
+
         return request;
     }
-    
+
 
     public CreateReply performRequest(ResCreateContent createReq) {
         CreateReply response = null;
@@ -104,10 +102,12 @@ public class CreateClient extends ImprovedClient {
         } catch (Exception e) {
             e.printStackTrace();
             die("Error: "+e.getMessage());
+        } finally {
+            oscarsClient.cleanUp();
         }
         return response;
     }
-    
+
 
     @SuppressWarnings("unchecked")
     public void configure() {
@@ -135,29 +135,29 @@ public class CreateClient extends ImprovedClient {
             String end_time = (String) request.get("end-time");
             ArrayList<String> path = (ArrayList<String>) request.get("path");
             String pathSetupMode = (String) request.get("path-setup-mode");
-            
+
             if (!layer.equals("2") && !layer.equals("3")) {
                 die("Layer must be 2 or 3");
             }
             if (src == null || src.equals("")) {
                 die("Source must be specified");
             }
-            
+
             if (dst == null || dst.equals("")) {
                 die("Destination must be specified");
             }
-            
+
             if (bandwidth == null) {
                 die("bandwidth must be specified");
             }
-            
+
             if (description == null || description.equals("")) {
                 die("description must be specified");
             }
-            
+
             HashMap<String, Long> times = this.parseTimes(start_time, end_time);
-            
-            
+
+
             params.setGri(gri);
             params.setLayer(layer);
             params.setBandwidth(bandwidth);
@@ -173,12 +173,12 @@ public class CreateClient extends ImprovedClient {
             resvRequests.add(params);
         }
     }
-     
+
     private void die(String msg) {
         System.err.println("msg");
         System.exit(1);
     }
-    
+
     private HashMap<String, Long> parseTimes(String start_time, String end_time) {
         HashMap<String, Long> result = new HashMap<String, Long>();
         Long startTime = 0L;
@@ -199,7 +199,7 @@ public class CreateClient extends ImprovedClient {
             String[] hm = end_time.substring(1).split("\\:");
             if (hm.length != 2) {
                 die("Error parsing end date format");
-            } 
+            }
             try {
                 Integer seconds = Integer.valueOf(hm[0])*3600;
                 seconds += Integer.valueOf(hm[1])*60;
@@ -217,8 +217,8 @@ public class CreateClient extends ImprovedClient {
                 die("Error parsing emd date: "+ex.getMessage());
             }
         }
-        
-        
+
+
         result.put("start", startTime);
         result.put("end", endTime);
         return result;

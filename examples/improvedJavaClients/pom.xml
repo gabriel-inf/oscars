@@ -3,6 +3,10 @@
     <groupId>net.es.oscars</groupId>
     <artifactId>improvedJavaClients</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <properties>
+       <axis2.version>1.5.1</axis2.version>
+       <rampart.version>1.5</rampart.version>
+    </properties>
 
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
@@ -71,7 +75,7 @@
             <scope>system</scope>
             <systemPath>${basedir}/lib/perfsonar.jar</systemPath>
         </dependency>
-        
+
         <!-- commons -->
         <dependency>
             <groupId>commons-lang</groupId>
@@ -79,33 +83,75 @@
             <version>2.4</version>
         </dependency>
 
-        <!-- rampart -->
         <dependency>
             <groupId>org.apache.rampart</groupId>
             <artifactId>rampart-core</artifactId>
-            <version>SNAPSHOT</version>
+            <version>${rampart.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>opensaml</groupId>
+                    <artifactId>opensaml</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.rampart</groupId>
             <artifactId>rampart-policy</artifactId>
-            <version>SNAPSHOT</version>
+            <version>${rampart.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>opensaml</groupId>
+                    <artifactId>opensaml</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.rampart</groupId>
             <artifactId>rampart-trust</artifactId>
-            <version>SNAPSHOT</version>
+            <version>${rampart.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>opensaml</groupId>
+                    <artifactId>opensaml</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <!-- axis2 -->
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-kernel</artifactId>
-            <version>1.4.1</version>
-        </dependency>
-        <!-- axis2 -->
         <dependency>
             <groupId>org.apache.axis2</groupId>
             <artifactId>axis2-adb-codegen</artifactId>
-            <version>1.4.1</version>
+            <version>${axis2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.axis2</groupId>
+            <artifactId>axis2-transport-tcp</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.axis2</groupId>
+            <artifactId>axis2-transport-local</artifactId>
+            <version>${axis2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.axis2</groupId>
+            <artifactId>axis2-transport-http</artifactId>
+            <version>${axis2.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15</artifactId>
+            <version>1.44</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.santuario</groupId>
+            <artifactId>xmlsec</artifactId>
+            <version>1.4.3</version>
         </dependency>
 
     </dependencies>
@@ -116,7 +162,7 @@
             <plugin>
                 <groupId>org.dstovall</groupId>
                 <artifactId>onejar-maven-plugin</artifactId>
-                <version>1.4.1</version>
+                <version>1.4.2</version>
                 <executions>
                     <execution>
                         <configuration>

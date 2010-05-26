@@ -14,7 +14,7 @@ filters:
 
 # by-status:
 # ACTIVE, PENDING, etc.
-    by-status:  [ 'ACTIVE' ]
+    by-status:  [ 'ACTIVE', 'FINISHED' ]
 
 
 # less-used filters:

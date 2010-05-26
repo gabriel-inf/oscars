@@ -10,3 +10,8 @@ soap:
         wsdlUrl:            'https://oscars-devint.es.net:9090/axis2/services/OSCARS?wsdl'
         repoDir:            repo
         rampConfigFname:    'repo/rampConfig.xml'
+
+    virt:
+        wsdlUrl:            'https://dyn1-214.es.net:8443/axis2/services/OSCARS?wsdl'
+        repoDir:            repo
+        rampConfigFname:    'repo/rampConfig.xml'

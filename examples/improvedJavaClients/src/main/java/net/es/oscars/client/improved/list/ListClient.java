@@ -173,12 +173,18 @@ public class ListClient extends ImprovedClient {
             System.err.println("Error: "+e.getMessage());
             e.printStackTrace();
             System.exit(1);
+        } finally {
+            oscarsClient.cleanUp();
         }
         return response;
 
     }
 
     public ResDetails[] filterResvs(ResDetails[] resvs) {
+        if (resvs == null) {
+            ResDetails[] results = new ResDetails[0];
+            return results;
+        }
         ResDetails[] temp = new ResDetails[resvs.length];
 
         for (int i = 0; i < resvs.length; i++) {

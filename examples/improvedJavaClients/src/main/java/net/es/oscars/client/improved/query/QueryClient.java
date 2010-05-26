@@ -31,6 +31,8 @@ public class QueryClient extends ImprovedClient {
             System.err.println("Error: "+e.getMessage());
             e.printStackTrace();
             System.exit(1);
+        } finally {
+            oscarsClient.cleanUp();
         }
 
         return response;

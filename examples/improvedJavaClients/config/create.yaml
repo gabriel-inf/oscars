@@ -51,14 +51,14 @@ create:
 
 # add other requests here, maintain indentation as above
 
-      - gri:            ''
-        layer:          '2'
-        source:         'urn:ogf:network:domain=es.net:node=star-sdn1:port=xe-9/1/0:link=*'
-        destination:    'urn:ogf:network:domain=es.net:node=lbl-mr2:port=xe-8/2/0:link=*'
-        srcvlan:        'any'
-        dstvlan:        'any'
-        bandwidth:      50
-        description:    'another reservation'
-        path-setup:     'timer-automatic'
-        start-time:     'now'
-        end-time:       '+00:10'
+#      - gri:            ''
+#        layer:          '2'
+#        source:         'urn:ogf:network:domain=es.net:node=star-sdn1:port=xe-9/1/0:link=*'
+#        destination:    'urn:ogf:network:domain=es.net:node=lbl-mr2:port=xe-8/2/0:link=*'
+#        srcvlan:        'any'
+#        dstvlan:        'any'
+#        bandwidth:      50
+#        description:    'another reservation'
+#        path-setup:     'timer-automatic'
+#        start-time:     'now'
+#        end-time:       '+00:10'
