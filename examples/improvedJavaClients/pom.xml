@@ -7,6 +7,28 @@
        <axis2.version>1.5.1</axis2.version>
        <rampart.version>1.5</rampart.version>
     </properties>
+    <repositories>
+        <repository>
+            <!-- removed because it breaks POMs -->
+            <id>java.net</id>
+            <url>https://maven-repository.dev.java.net/nonav/repository</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>shibboleth-release</id>
+            <url>http://shibboleth.internet2.edu/downloads/maven2/</url>
+            <name>Internet2 Releases</name>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
@@ -15,9 +37,9 @@
             <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
         </pluginRepository>
     </pluginRepositories>
+
     <dependencies>
         <!-- testing -->
-
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -25,7 +47,6 @@
             <scope>test</scope>
             <classifier>jdk15</classifier>
         </dependency>
-
 
         <!-- configuration -->
         <dependency>
