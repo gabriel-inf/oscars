@@ -93,15 +93,15 @@ public class PathTimeoutJob implements org.quartz.Job {
                    another domain whose clock is slightly earlier than the 
                    local clock */
                 if(targStatus.equals(status) && op.equals("setup")){
-                    pm.updateCreateStatus(newLocalStatus, resv);
+                    this.updateStatus(true, newLocalStatus, resv, pm);
                 }else if(targStatus.equals(status) && op.equals("teardown")){
-                    pm.updateTeardownStatus(newLocalStatus, resv);
+                    this.updateStatus(false, newLocalStatus, resv, pm);
                 }else if(retries >= 1){
                     retries--;
                     pm.scheduleUpdateAttempt(retryWait, gri, login, targStatus,
                                         newLocalStatus, op, upstream, retries);
                 }else{
-                    throw new BSSException("Unable to update path after numerous attempts.");
+                    this.log.warn("Unable to update status to after numerous attempts.");
                 }
             }else if(dataMap.containsKey("statusCheck")){
                 /* timeout a reservation if its not updated by 
@@ -144,6 +144,18 @@ public class PathTimeoutJob implements org.quartz.Job {
             }
         }
         this.log.debug("PathTimeoutJob.end name:"+jobName);
+    }
+    
+    private void updateStatus(boolean isCreateOp, int newLocalStatus, Reservation resv, PathSetupManager pm ){
+        try{
+            if(isCreateOp){
+                pm.updateCreateStatus(newLocalStatus, resv);
+            }else{
+                pm.updateTeardownStatus(newLocalStatus, resv);
+            }
+        } catch(Exception e){
+            this.log.warn("Unable to update reservation status. Caused by:" + e.getMessage());
+        }
     }
     
     /**
