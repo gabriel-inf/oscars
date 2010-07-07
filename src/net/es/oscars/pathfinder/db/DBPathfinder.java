@@ -136,6 +136,8 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
         // if we have received an explicit path, use that:
         if (requestedPath.getPathElems() != null &&
             !requestedPath.getPathElems().isEmpty()) {
+
+            this.log.debug("explicit path was provided");
             List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
             if (localSegment != null && !localSegment.isEmpty()) {
                 if (localSegment.size() == 1) {
@@ -149,6 +151,8 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
         }
 
         if (!gotValidExplicitPath) {
+            this.log.debug("no explicit path was provided, must calculate");
+
             TracerouteHelper trcHelper = new TracerouteHelper(this.dbname);
             TracerouteResult trcResult = trcHelper.findEdgeLinks(requestedPath);
             if (trcResult == null) {

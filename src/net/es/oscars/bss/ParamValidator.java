@@ -47,9 +47,9 @@ public class ParamValidator {
                 sb.append(this.checkL2Endpoint(layer2Data, true));
             }
             if (requestedPath.isLayer3()) {
-                this.log.debug("Validating Layer 2 reservation");
-                sb.append(this.checkSrcHost(layer3Data));
-                sb.append(this.checkDestHost(layer3Data));
+                this.log.debug("Validating Layer 3 reservation");
+                sb.append(this.checkL3Endpoint(layer3Data, false, requestedPath));
+                sb.append(this.checkL3Endpoint(layer3Data, true, requestedPath));
                 sb.append(this.checkDscp(layer3Data));
                 sb.append(this.checkProtocol(layer3Data));
                 sb.append(this.checkSrcIpPort(layer3Data));
@@ -240,6 +240,16 @@ public class ParamValidator {
             endpoint = layer2Data.getSrcEndpoint();
         }
 
+        if (endpoint == null || endpoint.trim().equals("")) {
+            return "Empty L2 endpoint";
+        }
+        endpoint = endpoint.trim();
+
+        String[] parts = endpoint.split("\\s+");
+        if (parts.length != 1) {
+            return "Only one endpoint allowed for layer 2";
+        }
+
         /* If URN do no further checking */
         if((endpoint.matches("^urn:ogf:network:.*"))){
             return "";
@@ -270,36 +280,81 @@ public class ParamValidator {
     }
 
     /**
-     * @param layer3Data A Layer3Data instance (layer 3 specific)
+     * @param endpoint A Layer3Data source or destination host specification
      */
-    private String checkSrcHost(Layer3Data layer3Data) {
+    private String checkL3Endpoint(Layer3Data layer3Data, boolean isDest, Path requestedPath) {
+        String endpoint = "";
 
-        // Check to make sure host exists
-        InetAddress srcAddress = null;
-        try {
-            srcAddress = InetAddress.getByName( layer3Data.getSrcHost() );
-        } catch (UnknownHostException ex) {
-            return "Source host " + layer3Data.getSrcHost() + " does not exist";
+        if (isDest) {
+            endpoint = layer3Data.getDestHost();
+        } else {
+            endpoint = layer3Data.getSrcHost();
         }
-        layer3Data.setSrcHost(srcAddress.getHostAddress());
+
+        if (endpoint == null || endpoint.trim().equals("")) {
+            return("empty endpoint");
+        }
+        // remove non-significant whitespace
+        endpoint = endpoint.trim();
+        // replace any commas with whitespace
+        endpoint = endpoint.replace(",", " ");
+        // break it down into whitespace-separated parts
+        String[] hosts = endpoint.split("\\s+");
+
+        // if we have more than one host spec we MUST have been provided an explicit path
+        if (hosts.length > 1 ) {
+            if (requestedPath.getPathElems().size() < 2) {
+                return "no explicit path provided for multi-endpoint L3 request";
+            }
+        }
+
+        String validatedEndpoint = "";
+        for (String host : hosts) {
+            String validatedAddress = "";
+            String validatedMask = "32";
+
+            String strAddress = host;
+
+            // first check if it's a CIDR style address
+            if (host.contains("/")) {
+                // check CIDR notation
+                String[] parts = host.split("\\/");
+                if (parts.length != 2) {
+                    return "Invalid CIDR address: "+host;
+                }
+                strAddress = parts[0];
+                String strMask = parts[1];
+                try {
+                    Integer mask = Integer.valueOf(strMask);
+                    if (mask < 8 | mask > 32) {
+                        return "mask must be between 8 and 32";
+                    } else {
+                        validatedMask = mask.toString();
+                    }
+                } catch (NumberFormatException e) {
+                    return "Invalid mask format for CIDR address: "+host;
+                }
+            }
+
+            InetAddress address = null;
+            try {
+                // check for validity
+                address = InetAddress.getByName(strAddress);
+            } catch (UnknownHostException ex) {
+                return "Host " + strAddress + " does not exist";
+            }
+            validatedAddress = address.getHostAddress();
+            validatedEndpoint += validatedAddress+"/"+validatedMask+"\n";
+        }
+        if (isDest) {
+            layer3Data.setDestHost(endpoint);
+        } else {
+            layer3Data.setSrcHost(endpoint);
+        }
+
         return "";
     }
 
-    /**
-     * @param layer3Data A Layer3Data instance (layer 3 specific)
-     */
-    private String checkDestHost(Layer3Data layer3Data) {
-
-        InetAddress destAddress = null;
-        try {
-            destAddress = InetAddress.getByName(layer3Data.getDestHost() );
-        } catch (UnknownHostException ex) {
-            return "Destination host " + layer3Data.getDestHost() +
-                   " does not exist";
-        }
-        layer3Data.setDestHost(destAddress.getHostAddress());
-        return "";
-    }
 
     /**
      * @param layer3Data A Layer3Data instance (layer 3 specific)
