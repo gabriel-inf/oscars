@@ -1,32 +1,32 @@
-package net.es.oscars.pss.eompls;
+package net.es.oscars.pss.common;
 
-public abstract class EoMPLSBasicHandler {
+public class PSSHandlerConfigBean {
     /**
      * log the generated configuration or not
      */
-    protected boolean logConfig           = true;
+    private boolean logConfig           = true;
 
     /**
      * stub mode: if true, no configuration will be sent to the routers
      * and all requests will be successful
      */
-    protected boolean stubMode            = true;
+    private boolean stubMode            = true;
 
     /**
      * failure behavior: if set, the teardown config will be sent to the routers
      * if not set (i.e. for debugging purposes), the config will remain
      */
-    protected boolean teardownOnFailure   = true;
+    private boolean teardownOnFailure   = true;
 
     /**
      * setup behavior: if true, generate a status check job afterwards
      */
-    protected boolean checkStatusAfterSetup       = true;
+    private boolean checkStatusAfterSetup       = true;
 
     /**
      * teardown behavior: if true, generate a status check job afterwards
      */
-    protected boolean checkStatusAfterTeardown    = true;
+    private boolean checkStatusAfterTeardown    = true;
 
 
     public boolean isLogConfig() {

@@ -17,7 +17,7 @@ public class PathUtils {
     }
     public static void checkPath(Path localPath) throws PSSException {
         List<PathElem> pathElems = localPath.getPathElems();
-        if (pathElems.size() < 4) {
+        if (pathElems.size() < 2) {
             throw new PSSException("Local path too short");
         }
         PathElem ingressPathElem = pathElems.get(0);
@@ -46,7 +46,13 @@ public class PathUtils {
 
 
         return edgeAddresses;
+    }
 
+    public static boolean sameNode(Path localPath) {
+        List<PathElem> pathElems = localPath.getPathElems();
+        Node ingressNode    = pathElems.get(0).getLink().getPort().getNode();
+        Node egressNode     = pathElems.get(pathElems.size()-1).getLink().getPort().getNode();
+        return (ingressNode.equals(egressNode));
     }
 
 

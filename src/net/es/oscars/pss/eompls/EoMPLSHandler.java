@@ -2,27 +2,15 @@ package net.es.oscars.pss.eompls;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Path;
+import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.common.PSSHandlerConfigBean;
 
 public interface EoMPLSHandler {
-    public void setup(Reservation resv, Path localPath, EoMPLSDirection direction);
-    public void teardown(Reservation resv, Path localPath, EoMPLSDirection direction);
-    public void status(Reservation resv, Path localPath, EoMPLSDirection direction);
+    public void setup(Reservation resv, Path localPath, PSSDirection direction);
+    public void teardown(Reservation resv, Path localPath, PSSDirection direction);
+    public void status(Reservation resv, Path localPath, PSSDirection direction);
 
-    public boolean isLogConfig();
-    public void setLogConfig(boolean logConfig);
+    public void setConfig(PSSHandlerConfigBean config);
+    public PSSHandlerConfigBean getConfig();
 
-    public boolean isStubMode();
-    public void setStubMode(boolean stubMode);
-
-    public boolean isTeardownOnFailure();
-
-    public void setTeardownOnFailure(boolean teardownOnFailure);
-
-    public boolean isCheckStatusAfterSetup();
-
-    public void setCheckStatusAfterSetup(boolean checkStatusAfterSetup);
-
-    public boolean isCheckStatusAfterTeardown();
-
-    public void setCheckStatusAfterTeardown(boolean checkStatusAfterTeardown);
 }
