@@ -8,32 +8,32 @@ import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.SNMP;
 
 
-public class SNMPRouterTypeFinder {
+public class SNMPRouterVendorFinder {
     private Logger log;
 
-    private static SNMPRouterTypeFinder instance = null;
+    private static SNMPRouterVendorFinder instance = null;
 
     private HashMap<String, Integer> cacheLastUpdated = new HashMap<String, Integer>();
-    private HashMap<String, RouterType> routerTypeCache = new HashMap<String, RouterType>();
+    private HashMap<String, RouterVendor> routerVendorCache = new HashMap<String, RouterVendor>();
     private int secondsToCache = 3600;
 
 
 
     private boolean stubMode = true;
-    private RouterType stubType = RouterType.JUNIPER;
+    private RouterVendor stubVendor = RouterVendor.JUNIPER;
 
 
 
-    public RouterType getType(String hostname) throws PSSException {
+    public RouterVendor getVendor(String hostname) throws PSSException {
         if (stubMode) {
-            return stubType;
+            return stubVendor;
         }
 
-        RouterType result = null;
+        RouterVendor result = null;
         Long seconds = System.currentTimeMillis() / 1000;
         Integer now = seconds.intValue();
         boolean mustUpdate = true;
-        if (routerTypeCache.containsKey(hostname)) {
+        if (routerVendorCache.containsKey(hostname)) {
             if (cacheLastUpdated.containsKey(hostname)) {
                 Integer lastUpdated = cacheLastUpdated.get(hostname);
                 if (lastUpdated > now - secondsToCache) {
@@ -43,11 +43,11 @@ public class SNMPRouterTypeFinder {
         }
 
         if (mustUpdate) {
-            result = this.getRouterType(hostname);
-            routerTypeCache.put(hostname, result);
+            result = this.getRouterVendor(hostname);
+            routerVendorCache.put(hostname, result);
             cacheLastUpdated.put(hostname, now);
         } else {
-            result = routerTypeCache.get(hostname);
+            result = routerVendorCache.get(hostname);
         }
 
 
@@ -62,7 +62,7 @@ public class SNMPRouterTypeFinder {
      * @param sysDescr string with router type, if successful
      * @throws PSSException
      */
-    private RouterType getRouterType(String hostname) throws PSSException {
+    private RouterVendor getRouterVendor(String hostname) throws PSSException {
         String sysDescr = null;
 
         String errorMsg = "";
@@ -97,9 +97,9 @@ public class SNMPRouterTypeFinder {
         this.log.info("Got sysdescr: ["+sysDescr+"]");
         sysDescr = sysDescr.toLowerCase();
         if (sysDescr.contains("juniper")) {
-            return RouterType.JUNIPER;
+            return RouterVendor.JUNIPER;
         } else if (sysDescr.contains("cisco")) {
-            return RouterType.CISCO;
+            return RouterVendor.CISCO;
         } else {
             throw new PSSException("Could not determine router type - sysdescr was: ["+sysDescr+"]");
         }
@@ -110,7 +110,7 @@ public class SNMPRouterTypeFinder {
     /**
      * private constructor
      */
-    private SNMPRouterTypeFinder() {
+    private SNMPRouterVendorFinder() {
         this.log = Logger.getLogger(this.getClass());
     }
 
@@ -118,21 +118,21 @@ public class SNMPRouterTypeFinder {
      * singleton
      * @return the instance
      */
-    public static SNMPRouterTypeFinder getInstance() {
+    public static SNMPRouterVendorFinder getInstance() {
         if (instance == null) {
-            instance = new SNMPRouterTypeFinder();
+            instance = new SNMPRouterVendorFinder();
         }
         return instance;
     }
 
 
-    public void setStubType(RouterType stubType) {
-        this.stubType = stubType;
+    public void setStubVendor(RouterVendor stubType) {
+        this.stubVendor = stubVendor;
     }
 
 
-    public RouterType getStubType() {
-        return stubType;
+    public RouterVendor getStubVendor() {
+        return stubVendor;
     }
 
 

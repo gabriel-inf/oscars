@@ -1,6 +1,6 @@
 package net.es.oscars.pss.common;
 
-public enum RouterType {
+public enum RouterVendor {
     JUNIPER,
     CISCO,
 }
