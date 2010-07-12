@@ -9,9 +9,11 @@ import net.es.oscars.pss.eompls.EoMPLSHandler;
 public class EoMPLS_Junos implements EoMPLSHandler {
     private PSSHandlerConfigBean config;
 
-    public void setup(Reservation resv, Path localPath,
-            PSSDirection direction) {
-        // TODO Auto-generated method stub
+    public void setup(Reservation resv, Path localPath, PSSDirection direction) {
+
+        if (direction.equals(PSSDirection.BIDIRECTIONAL)) {
+        } else {
+        }
     }
 
     public void status(Reservation resv, Path localPath,
