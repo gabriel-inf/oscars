@@ -75,7 +75,7 @@
                 <to>${lsp.to}</to>                                          <#-- address of the inwards-facing interface at the egress router -->
                 <metric>65535</metric>
                 <bandwidth>
-                    <per-traffic-class-bandwidth>${bandwidth}</per-traffic-class-bandwidth>
+                    <per-traffic-class-bandwidth>${bandwidth?string.computer}</per-traffic-class-bandwidth>
                 </bandwidth>
                 <setup-priority>4</setup-priority>
                 <reservation-priority>4</reservation-priority>
@@ -104,8 +104,8 @@
             <neighbor>
                 <name>${l2circuit.egress}</name>                                <#-- egress loopback -->
                 <interface>
-                    <name>${ifce.name}.{$ifce.vlan}</name>
-                    <psn-tunnel-endpoint>{$lsp.to}</psn-tunnel-endpoint>
+                    <name>${ifce.name}.${ifce.vlan}</name>
+                    <psn-tunnel-endpoint>${lsp.to}</psn-tunnel-endpoint>
                     <virtual-circuit-id>${l2circuit.vcid}</virtual-circuit-id>
                     <description>${l2circuit.description}</description>
                     <community>${community.name}</community>
@@ -120,8 +120,8 @@
         <policer>
             <name>${policer.name}</name>
             <if-exceeding>
-                <bandwidth-limit>${policer.bandwidth_limit}</bandwidth-limit>
-                <burst-size-limit>${policer.burst_size_limit}</burst-size-limit>
+                <bandwidth-limit>${policer.bandwidth_limit?string.computer}</bandwidth-limit>
+                <burst-size-limit>${policer.burst_size_limit?string.computer}</burst-size-limit>
             </if-exceeding>
             <then>
                 <forwarding-class>scavenger-service</forwarding-class>
@@ -153,7 +153,7 @@
                         <name>${filters.policing.term}</name>
                         <then>
                             <policer>${policer.name}</policer>
-                            <count>${filters.policing.counter}</count>
+                            <count>${filters.policing.count}</count>
                             <forwarding-class>expedited-forwarding</forwarding-class>
                             <accept/>
                         </then>
