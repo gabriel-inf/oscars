@@ -14,6 +14,15 @@ public class SDNNameGenerator {
         }
 
     }
+    
+    public static String getInterfaceDescription(String gri, Long bandwidth, String description) {
+        String base = oscarsName(gri, description);
+        return base + ":"+bandwidth+":oscars-l2circuit:show:circuit-intercloud";
+    }
+
+    public static String getL2CircuitDescription(String gri, String description) {
+        return oscarsName(gri, description);
+    }
 
     public static String getLSPName(String gri, String description) {
         return oscarsName(gri, description);

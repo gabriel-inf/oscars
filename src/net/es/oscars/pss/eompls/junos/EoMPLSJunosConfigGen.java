@@ -1,0 +1,265 @@
+package net.es.oscars.pss.eompls.junos;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.topology.Ipaddr;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathElemParam;
+import net.es.oscars.bss.topology.PathElemParamSwcap;
+import net.es.oscars.bss.topology.PathElemParamType;
+import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.common.PathUtils;
+import net.es.oscars.pss.common.TemplateConfigGen;
+import net.es.oscars.pss.eompls.EoMPLSUtils;
+import net.es.oscars.pss.impl.SDNNameGenerator;
+
+public class EoMPLSJunosConfigGen extends TemplateConfigGen {
+    private Logger log;
+    private static EoMPLSJunosConfigGen instance;
+
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public String generateL2Setup(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+        String templateFileName = "eompls-junos-setup.txt";
+
+        // these are the leaf values
+
+        String ifceName, ifceDescription;
+        String ifceVlan, remoteVlan;
+
+        String policyName, policyTerm;
+
+        String communityName, communityMembers;
+
+        String lspName, lspFrom, lspTo;
+        Long lspBandwidth;
+
+        String pathName;
+        ArrayList<String> pathHops;
+
+        String l2circuitEgress, l2circuitVCID, l2circuitDescription;
+
+        String policerName;
+        Long policerBurstSizeLimit, policerBandwidthLimit;
+
+        String statsFilterName, statsFilterTerm, statsFilterCount;
+
+        String policingFilterName, policingFilterTerm, policingFilterCount;
+
+
+
+        
+        
+        /* *********************** */
+        /* BEGIN POPULATING VALUES */
+        /* *********************** */
+        
+        String gri = resv.getGlobalReservationId();
+        String description = resv.getDescription();
+
+        // 
+        lspBandwidth = resv.getBandwidth();
+        policerBandwidthLimit = lspBandwidth;
+        policerBurstSizeLimit = lspBandwidth / 10;
+        
+        List<PathElem> resvPathElems = localPath.getPathElems();
+        if (resvPathElems.size() < 4) {
+            throw new PSSException("Local path too short");
+        }
+        
+        ArrayList<PathElem> pathElems = new ArrayList<PathElem>();
+        if (direction.equals(PSSDirection.A_TO_Z)) {
+            pathElems.addAll(resvPathElems);
+        } else if (direction.equals(PSSDirection.Z_TO_A)) {
+            pathElems = PathUtils.reversePath(resvPathElems);
+        } else {
+            throw new PSSException("Invalid direction!");
+        }
+        
+
+        // need at least 4 path elements for EoMPLS:
+        // A: ingress
+        // B: internal facing link at ingress router
+        // Y: internal facing link at egress router
+        // Z: egress
+        PathElem aPathElem      = pathElems.get(0);
+        PathElem bPathElem      = pathElems.get(1);
+        PathElem yPathElem      = pathElems.get(pathElems.size()-2);
+        PathElem zPathElem      = pathElems.get(pathElems.size()-1);
+        
+        if (aPathElem.getLink() == null) {
+            throw new PSSException("null link for: hop 1");
+        } else if (bPathElem.getLink() == null) {
+            throw new PSSException("null link for: hop 2");
+        } else if (yPathElem.getLink() == null) {
+            throw new PSSException("null link for: hop N-1");
+        } else if (zPathElem.getLink() == null) {
+            throw new PSSException("null link for: hop N");
+        }
+        
+        String yIP;
+        Ipaddr ipaddr = yPathElem.getLink().getValidIpaddr();
+        if (ipaddr != null) {
+            yIP = ipaddr.getIP();
+        } else {
+            throw new PSSException("Invalid IP for: "+yPathElem.getLink().getFQTI());
+        }
+
+        String aLoopback            = aPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
+        String zLoopback            = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
+        PathElemParam aVlanPEP;
+        PathElemParam zVlanPEP;
+        try {
+            aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+            zVlanPEP = zPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+        } catch (BSSException e) {
+            this.log.error(e);
+            throw new PSSException(e.getMessage());
+        }
+        if (aVlanPEP == null) {
+            throw new PSSException("No VLAN set for: "+aPathElem.getLink().getFQTI());
+        } else if (zVlanPEP == null) {
+            throw new PSSException("No VLAN set for: "+zPathElem.getLink().getFQTI());
+        }
+        pathHops = EoMPLSUtils.makeHops(pathElems, direction);
+        ifceName            = aPathElem.getLink().getPort().getTopologyIdent();
+        ifceVlan            = aVlanPEP.getValue();
+        remoteVlan          = zVlanPEP.getValue();
+        l2circuitEgress     = zLoopback;
+        lspFrom             = aLoopback;
+        lspTo               = yIP;
+        
+
+        // FIXME: this is WRONG; these should NOT depend on vlans
+        communityMembers    = "65000:"+aVlanPEP.getValue();
+        l2circuitVCID       = aVlanPEP.getValue()+zVlanPEP.getValue();
+        // end FIXME
+
+        // names etc
+        policingFilterName      = SDNNameGenerator.getFilterName(gri, description, "policing");
+        policingFilterTerm      = policingFilterName;
+        policingFilterCount     = policingFilterName;
+        statsFilterName         = SDNNameGenerator.getFilterName(gri, description, "stats");
+        statsFilterTerm         = statsFilterName;
+        statsFilterCount        = statsFilterName;
+        communityName           = SDNNameGenerator.getCommunityName(gri, description);
+        policyName              = SDNNameGenerator.getPolicyName(gri, description);
+        policyTerm              = policyName;
+        policerName             = SDNNameGenerator.getPolicerName(gri, description);
+        pathName                = SDNNameGenerator.getPathName(gri, description);
+        lspName                 = SDNNameGenerator.getLSPName(gri, description);
+        l2circuitDescription    = SDNNameGenerator.getL2CircuitDescription(gri, description);
+        ifceDescription         = SDNNameGenerator.getInterfaceDescription(gri, lspBandwidth, description);
+
+
+        /* ********************** */
+        /* DONE POPULATING VALUES */
+        /* ********************** */
+
+        
+        
+
+        // create and populate the model
+        // this needs to match with the template
+        Map root = new HashMap();
+        Map lsp = new HashMap();
+        Map path = new HashMap();
+        Map ifce = new HashMap();
+        Map filters = new HashMap();
+        Map stats = new HashMap();
+        Map policing = new HashMap();
+        Map community = new HashMap();
+        Map policy = new HashMap();
+        Map l2circuit = new HashMap();
+        Map policer = new HashMap();
+
+        root.put("lsp", lsp);
+        root.put("path", path);
+        root.put("ifce", ifce);
+        root.put("filters", filters);
+        root.put("policy", policy);
+        root.put("policer", policer);
+        root.put("l2circuit", l2circuit);
+        root.put("community", community);
+        root.put("remotevlan", remoteVlan);
+
+        filters.put("stats", stats);
+        filters.put("policing", policing);
+
+        stats.put("name", statsFilterName);
+        stats.put("term", statsFilterTerm);
+        stats.put("count", statsFilterCount);
+        policing.put("name", policingFilterName);
+        policing.put("term", policingFilterTerm);
+        policing.put("count", policingFilterCount);
+
+
+        ifce.put("name", ifceName);
+        ifce.put("vlan", ifceVlan);
+        ifce.put("description", ifceDescription);
+
+        lsp.put("name", lspName);
+        lsp.put("from", lspFrom);
+        lsp.put("to", lspTo);
+        lsp.put("bandwidth", lspBandwidth);
+
+        l2circuit.put("egress", l2circuitEgress);
+        l2circuit.put("vcid", l2circuitVCID);
+        l2circuit.put("description", l2circuitDescription);
+
+        policer.put("name", policerName);
+        policer.put("burst_size_limit", policerBurstSizeLimit);
+        policer.put("bandwidth_limit", policerBandwidthLimit);
+
+
+        community.put("name", communityName);
+        community.put("members", communityMembers);
+
+        policy.put("name", policyName);
+        policy.put("term", policyTerm);
+
+        path.put("hops", pathHops);
+        path.put("name", pathName);
+
+        return this.getConfig(root, templateFileName);
+    }
+
+    public String generateL2Teardown(Reservation resv, Path localPath, PSSDirection direction) {
+        String config = "";
+
+
+        return config;
+    }
+
+    public String generateL2Status(Reservation resv, Path localPath, PSSDirection direction) {
+        String config = "";
+
+
+        return config;
+    }
+
+    
+    
+
+    public static EoMPLSJunosConfigGen getInstance() {
+        if (instance == null) {
+            instance = new EoMPLSJunosConfigGen();
+        }
+        return instance;
+    }
+
+    private EoMPLSJunosConfigGen() {
+        this.log = Logger.getLogger(this.getClass());
+    }
+
+
+}

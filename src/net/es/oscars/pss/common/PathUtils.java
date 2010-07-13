@@ -1,5 +1,6 @@
 package net.es.oscars.pss.common;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,5 +56,15 @@ public class PathUtils {
         return (ingressNode.equals(egressNode));
     }
 
+    public static ArrayList<PathElem> reversePath(List<PathElem> pathElems) {
+        ArrayList<PathElem> revPathElems = new ArrayList<PathElem>();
+        revPathElems.addAll(pathElems);
+        
+        for (int i = 0; i < pathElems.size(); i++) {
+            PathElem pe = pathElems.get(i);
+            revPathElems.set(pathElems.size() - 1 -i, pe);
+        }
+        return revPathElems;
+    }
 
 }

@@ -75,7 +75,7 @@
                 <to>${lsp.to}</to>                                          <#-- address of the inwards-facing interface at the egress router -->
                 <metric>65535</metric>
                 <bandwidth>
-                    <per-traffic-class-bandwidth>${bandwidth?string.computer}</per-traffic-class-bandwidth>
+                    <per-traffic-class-bandwidth>${lsp.bandwidth?string.computer}</per-traffic-class-bandwidth>
                 </bandwidth>
                 <setup-priority>4</setup-priority>
                 <reservation-priority>4</reservation-priority>
