@@ -91,15 +91,14 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         // B: internal facing link at ingress router
         // Y: internal facing link at egress router
         // Z: egress
+        //
+        // but for setup we only care about A, Y, and Z
         PathElem aPathElem      = pathElems.get(0);
-        PathElem bPathElem      = pathElems.get(1);
         PathElem yPathElem      = pathElems.get(pathElems.size()-2);
         PathElem zPathElem      = pathElems.get(pathElems.size()-1);
         
         if (aPathElem.getLink() == null) {
             throw new PSSException("null link for: hop 1");
-        } else if (bPathElem.getLink() == null) {
-            throw new PSSException("null link for: hop 2");
         } else if (yPathElem.getLink() == null) {
             throw new PSSException("null link for: hop N-1");
         } else if (zPathElem.getLink() == null) {
@@ -114,8 +113,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             throw new PSSException("Invalid IP for: "+yPathElem.getLink().getFQTI());
         }
 
-        String aLoopback            = aPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
-        String zLoopback            = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
         PathElemParam aVlanPEP;
         PathElemParam zVlanPEP;
         try {
@@ -130,7 +127,11 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         } else if (zVlanPEP == null) {
             throw new PSSException("No VLAN set for: "+zPathElem.getLink().getFQTI());
         }
-        pathHops = EoMPLSUtils.makeHops(pathElems, direction);
+        
+        String aLoopback    = aPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
+        String zLoopback    = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
+
+        pathHops            = EoMPLSUtils.makeHops(pathElems, direction);
         ifceName            = aPathElem.getLink().getPort().getTopologyIdent();
         ifceVlan            = aVlanPEP.getValue();
         remoteVlan          = zVlanPEP.getValue();
@@ -211,6 +212,9 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         lsp.put("from", lspFrom);
         lsp.put("to", lspTo);
         lsp.put("bandwidth", lspBandwidth);
+        
+        path.put("hops", pathHops);
+        path.put("name", pathName);
 
         l2circuit.put("egress", l2circuitEgress);
         l2circuit.put("vcid", l2circuitVCID);
@@ -227,24 +231,154 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         policy.put("name", policyName);
         policy.put("term", policyTerm);
 
-        path.put("hops", pathHops);
-        path.put("name", pathName);
 
         return this.getConfig(root, templateFileName);
     }
 
-    public String generateL2Teardown(Reservation resv, Path localPath, PSSDirection direction) {
-        String config = "";
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public String generateL2Teardown(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+        String templateFileName = "eompls-junos-teardown.txt";
+        String ifceName;
+        String ifceVlan;
 
+        String policyName;
 
-        return config;
+        String communityName;
+
+        String lspName;
+        String pathName;
+
+        String l2circuitEgress;
+
+        String policerName;
+
+        String statsFilterName;
+
+        String policingFilterName;
+        
+        /* *********************** */
+        /* BEGIN POPULATING VALUES */
+        /* *********************** */
+        
+        String gri = resv.getGlobalReservationId();
+        String description = resv.getDescription();
+
+        List<PathElem> resvPathElems = localPath.getPathElems();
+        if (resvPathElems.size() < 4) {
+            throw new PSSException("Local path too short");
+        }
+        
+        ArrayList<PathElem> pathElems = new ArrayList<PathElem>();
+        if (direction.equals(PSSDirection.A_TO_Z)) {
+            pathElems.addAll(resvPathElems);
+        } else if (direction.equals(PSSDirection.Z_TO_A)) {
+            pathElems = PathUtils.reversePath(resvPathElems);
+        } else {
+            throw new PSSException("Invalid direction!");
+        }
+        
+
+        // need at least 4 path elements for EoMPLS:
+        // A: ingress
+        // B: internal facing link at ingress router
+        // Y: internal facing link at egress router
+        // Z: egress
+        
+        // for teardown we only need info from A and Z
+        PathElem aPathElem      = pathElems.get(0);
+       PathElem zPathElem      = pathElems.get(pathElems.size()-1);
+        
+        if (aPathElem.getLink() == null) {
+            throw new PSSException("null link for: hop 1");
+        } else if (zPathElem.getLink() == null) {
+            throw new PSSException("null link for: hop N");
+        }
+        
+        PathElemParam aVlanPEP;
+        try {
+            aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+        } catch (BSSException e) {
+            this.log.error(e);
+            throw new PSSException(e.getMessage());
+        }
+        if (aVlanPEP == null) {
+            throw new PSSException("No VLAN set for: "+aPathElem.getLink().getFQTI());
+        }
+        
+
+        String zLoopback    = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
+        ifceName            = aPathElem.getLink().getPort().getTopologyIdent();
+        ifceVlan            = aVlanPEP.getValue();
+        l2circuitEgress     = zLoopback;
+        
+        
+        // names etc
+        policingFilterName      = SDNNameGenerator.getFilterName(gri, description, "policing");
+        statsFilterName         = SDNNameGenerator.getFilterName(gri, description, "stats");
+        communityName           = SDNNameGenerator.getCommunityName(gri, description);
+        policyName              = SDNNameGenerator.getPolicyName(gri, description);
+        policerName             = SDNNameGenerator.getPolicerName(gri, description);
+        pathName                = SDNNameGenerator.getPathName(gri, description);
+        lspName                 = SDNNameGenerator.getLSPName(gri, description);
+        
+        
+
+        /* ********************** */
+        /* DONE POPULATING VALUES */
+        /* ********************** */        
+        
+        
+        
+        // create and populate the model
+        // this needs to match with the template
+        Map root = new HashMap();
+        Map lsp = new HashMap();
+        Map path = new HashMap();
+        Map ifce = new HashMap();
+        Map filters = new HashMap();
+        Map stats = new HashMap();
+        Map policing = new HashMap();
+        Map community = new HashMap();
+        Map policy = new HashMap();
+        Map l2circuit = new HashMap();
+        Map policer = new HashMap();
+
+        root.put("lsp", lsp);
+        root.put("path", path);
+        root.put("ifce", ifce);
+        root.put("filters", filters);
+        root.put("policy", policy);
+        root.put("policer", policer);
+        root.put("l2circuit", l2circuit);
+        root.put("community", community);
+
+        filters.put("stats", stats);
+        filters.put("policing", policing);
+
+        stats.put("name", statsFilterName);
+        policing.put("name", policingFilterName);
+
+        ifce.put("name", ifceName);
+        ifce.put("vlan", ifceVlan);
+
+        lsp.put("name", lspName);
+        path.put("name", pathName);
+
+        l2circuit.put("egress", l2circuitEgress);
+
+        policer.put("name", policerName);
+        
+        community.put("name", communityName);
+
+        policy.put("name", policyName);
+        return this.getConfig(root, templateFileName);
+
     }
 
-    public String generateL2Status(Reservation resv, Path localPath, PSSDirection direction) {
-        String config = "";
-
-
-        return config;
+    public String generateL2Status(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+        String templateFileName = "eompls-junos-status.txt";
+        HashMap<String, Object> root = new HashMap<String, Object>();
+        return this.getConfig(root, templateFileName);
     }
 
     

@@ -14,7 +14,7 @@ public class EoMPLSUtils {
         Node curNode = pathElems.get(0).getLink().getPort().getNode();
         for (PathElem pe : pathElems) {
             Node tmpNode = pe.getLink().getPort().getNode();
-            if (tmpNode != curNode) {
+            if (!tmpNode.equalsTopoId(curNode)) {
                 curNode = tmpNode;
                 pathHops.add(pe.getLink().getValidIpaddr().getIP());
             }

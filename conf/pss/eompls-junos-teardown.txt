@@ -8,7 +8,7 @@
         <interface>
             <name>${ifce.name}</name>
                 <unit delete="delete">
-                    <name>${vlan.local}</name>
+                    <name>${ifce.vlan}</name>
                 </unit>
         </interface>
     </interfaces>
@@ -31,14 +31,14 @@
                 <name>${lsp.name}</name>
             </label-switched-path>
             <path delete="delete">
-                <name>${lsp.path.name}</name>
+                <name>${path.name}</name>
             </path>
         </mpls>
         <l2circuit>
             <neighbor>
                 <name>${l2circuit.egress}</name>
                 <interface delete="delete">
-                    <name>${interface.name}.{$vlan.local}</name>
+                    <name>${ifce.name}.${ifce.vlan}</name>
                 </interface>
             </neighbor>
         </l2circuit>
