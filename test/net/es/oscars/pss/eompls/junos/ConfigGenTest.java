@@ -1,7 +1,6 @@
 package net.es.oscars.pss.eompls.junos;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
@@ -250,7 +249,6 @@ public class ConfigGenTest {
         
         return localPath;
     }
-    
     protected Reservation makeL2() throws BSSException {
         
         Reservation resv = new Reservation();
@@ -266,36 +264,37 @@ public class ConfigGenTest {
     }
     
     @Test
-    public void basicL2Setup() throws BSSException, PSSException {
+    public void testL2Setup() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
         
         th.setTemplateDir("conf/pss");
         String out;
         out = th.generateL2Setup(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
-        System.out.println(out);
+        // System.out.println(out);
         out = th.generateL2Setup(resv, resv.getPath(PathType.LOCAL), PSSDirection.Z_TO_A);
-        System.out.println(out);
+        // System.out.println(out);
     }
-    public void basicL2Teardown() throws BSSException, PSSException {
+    @Test
+    public void testL2Teardown() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
         
         th.setTemplateDir("conf/pss");
         String out;
         out = th.generateL2Teardown(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
-        System.out.println(out);
+        // System.out.println(out);
         out = th.generateL2Teardown(resv, resv.getPath(PathType.LOCAL), PSSDirection.Z_TO_A);
-        System.out.println(out);
+        // System.out.println(out);
     }
-
-    public void basicL2Status() throws BSSException, PSSException {
+    @Test
+    public void testL2Status() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
         th.setTemplateDir("conf/pss");
         String out;
         out = th.generateL2Status(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
-        System.out.println(out);
+        // System.out.println(out);
     }
 
 }

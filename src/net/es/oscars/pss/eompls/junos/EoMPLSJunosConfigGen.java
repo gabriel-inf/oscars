@@ -35,29 +35,17 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
 
         String ifceName, ifceDescription;
         String ifceVlan, remoteVlan;
-
         String policyName, policyTerm;
-
         String communityName, communityMembers;
-
         String lspName, lspFrom, lspTo;
         Long lspBandwidth;
-
         String pathName;
         ArrayList<String> pathHops;
-
         String l2circuitEgress, l2circuitVCID, l2circuitDescription;
-
         String policerName;
         Long policerBurstSizeLimit, policerBandwidthLimit;
-
         String statsFilterName, statsFilterTerm, statsFilterCount;
-
         String policingFilterName, policingFilterTerm, policingFilterCount;
-
-
-
-        
         
         /* *********************** */
         /* BEGIN POPULATING VALUES */
@@ -238,22 +226,15 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public String generateL2Teardown(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
         String templateFileName = "eompls-junos-teardown.txt";
-        String ifceName;
-        String ifceVlan;
 
+        String ifceName, ifceVlan;
         String policyName;
-
         String communityName;
-
         String lspName;
         String pathName;
-
         String l2circuitEgress;
-
         String policerName;
-
         String statsFilterName;
-
         String policingFilterName;
         
         /* *********************** */

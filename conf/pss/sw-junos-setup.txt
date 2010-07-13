@@ -52,7 +52,7 @@
     <protocols>
         <connections>
             <interface-switch>
-                <name>${switch.name}</name>
+                <name>${iswitch.name}</name>
                 <interface>
                     <name>${ifce_a.name}.${ifce_a.vlan}</name>
                 </interface>
@@ -71,8 +71,8 @@
         <policer>
             <name>${policer.name}</name>
             <if-exceeding>
-                <bandwidth-limit>${policer.bandwidth_limit}</bandwidth-limit>
-                <burst-size-limit>${policer.burst_size_limit}</burst-size-limit>
+                <bandwidth-limit>${policer.bandwidth_limit?string.computer}</bandwidth-limit>
+                <burst-size-limit>${policer.burst_size_limit?string.computer}</burst-size-limit>
             </if-exceeding>
             <then>
                 <forwarding-class>scavenger-service</forwarding-class>
