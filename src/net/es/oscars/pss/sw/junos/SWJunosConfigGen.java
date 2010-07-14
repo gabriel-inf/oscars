@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Path;
@@ -20,7 +18,6 @@ import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.TemplateConfigGen;
 
 public class SWJunosConfigGen extends TemplateConfigGen {
-    private Logger log;
     private static SWJunosConfigGen instance;
     private ConfigNameGenerator nameGenerator;
 
@@ -81,7 +78,6 @@ public class SWJunosConfigGen extends TemplateConfigGen {
             aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             zVlanPEP = zPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         } catch (BSSException e) {
-            this.log.error(e);
             throw new PSSException(e.getMessage());
         }
         if (aVlanPEP == null) {
@@ -204,7 +200,6 @@ public class SWJunosConfigGen extends TemplateConfigGen {
             aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             zVlanPEP = zPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         } catch (BSSException e) {
-            this.log.error(e);
             throw new PSSException(e.getMessage());
         }
         if (aVlanPEP == null) {
@@ -275,7 +270,6 @@ public class SWJunosConfigGen extends TemplateConfigGen {
     }
 
     private SWJunosConfigGen() {
-        this.log = Logger.getLogger(this.getClass());
     }
 
 

@@ -23,7 +23,6 @@ import net.es.oscars.pss.common.TemplateConfigGen;
 import net.es.oscars.pss.eompls.EoMPLSUtils;
 
 public class EoMPLSJunosConfigGen extends TemplateConfigGen {
-    private Logger log;
     private static EoMPLSJunosConfigGen instance;
     private ConfigNameGenerator nameGenerator;
 
@@ -105,7 +104,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             zVlanPEP = zPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         } catch (BSSException e) {
-            this.log.error(e);
             throw new PSSException(e.getMessage());
         }
         if (aVlanPEP == null) {
@@ -274,7 +272,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         try {
             aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         } catch (BSSException e) {
-            this.log.error(e);
             throw new PSSException(e.getMessage());
         }
         if (aVlanPEP == null) {
@@ -368,7 +365,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
     }
 
     private EoMPLSJunosConfigGen() {
-        this.log = Logger.getLogger(this.getClass());
     }
 
 

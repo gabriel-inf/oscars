@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Ipaddr;
 import net.es.oscars.bss.topology.Layer3Data;
@@ -20,7 +18,6 @@ import net.es.oscars.pss.common.TemplateConfigGen;
 import net.es.oscars.pss.eompls.EoMPLSUtils;
 
 public class Layer3JunosConfigGen extends TemplateConfigGen {
-    private Logger log;
     private static Layer3JunosConfigGen instance;
     private ConfigNameGenerator nameGenerator;
 
@@ -340,7 +337,6 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
     }
 
     private Layer3JunosConfigGen() {
-        this.log = Logger.getLogger(this.getClass());
     }
 
 
