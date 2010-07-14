@@ -16,6 +16,7 @@ public class SDNNameGenerator {
         }
     }
     public static String getInetFilterMarker(Reservation resv) {
+        // FIXME
         return "oscarsmarker";
     }
     public static String getRoutingInstanceName(Reservation resv) {

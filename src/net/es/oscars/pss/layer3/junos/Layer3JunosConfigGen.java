@@ -114,9 +114,16 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
         Layer3Data layer3Data = localPath.getLayer3Data();
         String srcHostSpec = layer3Data.getSrcHost();
         String dstHostSpec = layer3Data.getDestHost();
-        srcPrefixes = srcHostSpec.split("\\s+");
-        dstPrefixes = dstHostSpec.split("\\s+");
- 
+        
+        if (direction.equals(PSSDirection.A_TO_Z)) {
+            srcPrefixes = srcHostSpec.split("\\s+");
+            dstPrefixes = dstHostSpec.split("\\s+");
+        } else if (direction.equals(PSSDirection.Z_TO_A)) {
+            srcPrefixes = dstHostSpec.split("\\s+");
+            dstPrefixes = srcHostSpec.split("\\s+");
+        } else {
+            throw new PSSException("Invalid direction");
+        }
         inetDscp        = layer3Data.getDscp();
         inetProtocol    = layer3Data.getProtocol();
         if (layer3Data.getSrcIpPort() != null) {
@@ -236,10 +243,89 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public String generateL3Teardown(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
         String templateFileName = "layer3-junos-teardown.txt";
-        Map root = new HashMap();
 
-        return "";
-        // return this.getConfig(root, templateFileName);
+        // these are the leaf values
+        String lspName, pathName;
+        String srcPrefixListName, dstPrefixListName;
+        String policingFilterName;
+        String policerName;
+        String routingInstanceName;
+        String[] inetFilterNames;
+
+        
+        /* *********************** */
+        /* BEGIN POPULATING VALUES */
+        /* *********************** */
+        
+        pathName                = SDNNameGenerator.getPathName(resv);
+        lspName                 = SDNNameGenerator.getLSPName(resv);
+        // names etc
+        srcPrefixListName       = SDNNameGenerator.getPrefixListName(resv, true);
+        dstPrefixListName       = SDNNameGenerator.getPrefixListName(resv, false);
+        inetFilterNames         = SDNNameGenerator.getLayer3Filters();
+        policerName             = SDNNameGenerator.getPolicerName(resv);
+
+        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
+        
+        routingInstanceName     = SDNNameGenerator.getRoutingInstanceName(resv);
+
+        /* ********************** */
+        /* DONE POPULATING VALUES */
+        /* ********************** */
+
+        
+        
+        // create and populate the model
+        // this needs to match with the template
+        Map root = new HashMap();
+        Map lsp = new HashMap();
+        Map path = new HashMap();
+        Map ifce = new HashMap();
+        Map filters = new HashMap();
+        Map policing = new HashMap();
+        Map policer = new HashMap();
+        Map prefixes = new HashMap();
+        Map routinginstance = new HashMap();
+        Map inet= new HashMap();
+        Map srcPrefixList = new HashMap();
+        Map dstPrefixList = new HashMap();
+        ArrayList inetFilters = new ArrayList();
+
+        root.put("lsp", lsp);
+        root.put("path", path);
+        root.put("inet", inet);
+        root.put("ifce", ifce);
+        root.put("filters", filters);
+        root.put("policer", policer);
+        root.put("prefixes", prefixes);
+        root.put("routinginstance", routinginstance);
+        
+        routinginstance.put("name", routingInstanceName);
+        
+        filters.put("inet", inetFilters);
+        filters.put("policing", policing);
+
+        policing.put("name", policingFilterName);
+
+        for (String inetFilterName : inetFilterNames) {
+            String filterName = inetFilterName;
+            String filterTerm = SDNNameGenerator.getFilterName(resv, "inet");
+            
+            HashMap inetFilter = new HashMap();
+            inetFilter.put("name", filterName);
+            inetFilter.put("term", filterTerm);
+            inetFilters.add(inetFilter);
+        }
+        
+        
+        lsp.put("name", lspName);
+        path.put("name", pathName);
+        policer.put("name", policerName);
+        srcPrefixList.put("name", srcPrefixListName);
+        dstPrefixList.put("name", dstPrefixListName);
+        prefixes.put("src", srcPrefixList);
+        prefixes.put("dst", dstPrefixList);
+        return this.getConfig(root, templateFileName);
 
     }
 
