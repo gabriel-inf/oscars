@@ -21,6 +21,7 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.impl.SDNNameGenerator;
 
 import org.testng.annotations.*;
 
@@ -267,8 +268,9 @@ public class ConfigGenTest {
     public void testL2Setup() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
-        
         th.setTemplateDir("conf/pss");
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         String out;
         out = th.generateL2Setup(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
         // System.out.println(out);
@@ -281,6 +283,8 @@ public class ConfigGenTest {
         EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
         
         th.setTemplateDir("conf/pss");
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         String out;
         out = th.generateL2Teardown(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
         // System.out.println(out);
@@ -292,6 +296,8 @@ public class ConfigGenTest {
         Reservation resv = this.makeL2();
         EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
         th.setTemplateDir("conf/pss");
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         String out;
         out = th.generateL2Status(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
         // System.out.println(out);

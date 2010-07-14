@@ -1,10 +1,16 @@
 package net.es.oscars.pss.impl;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.pss.common.ConfigNameGenerator;
 
-public class SDNNameGenerator {
-
-    public static String getFilterName(Reservation resv, String type) {
+/**
+ * creates ESNet SDN-style names
+ * @author haniotak
+ *
+ */
+public class SDNNameGenerator implements ConfigNameGenerator {
+    
+    public String getFilterName(Reservation resv, String type) {
 
         String base = oscarsName(resv);
         if (type.equals("stats")) {
@@ -15,21 +21,21 @@ public class SDNNameGenerator {
             return base;
         }
     }
-    public static String getInetFilterMarker(Reservation resv) {
+    public String getInetFilterMarker(Reservation resv) {
         // FIXME
         return "oscarsmarker";
     }
-    public static String getRoutingInstanceName(Reservation resv) {
+    public String getRoutingInstanceName(Reservation resv) {
         String base = oscarsName(resv);
         return base;
     }
     
-    public static String getRoutingInstanceRibName(Reservation resv) {
+    public String getRoutingInstanceRibName(Reservation resv) {
         String base = oscarsName(resv);
         return base+".inet.0";
     }
     
-    public static String[] getLayer3Filters() {
+    public String[] getLayer3Filters() {
         String[] filters = { 
                 "internal-interface-inbound-inet.0-filter", 
                 "external-interface-inbound-inet.0-filter", 
@@ -38,12 +44,12 @@ public class SDNNameGenerator {
         return filters;
     }
     
-    public static String getFilterTerm(Reservation resv, String type) {
+    public String getFilterTerm(Reservation resv, String type) {
         String base = oscarsName(resv);
         return base;
     }
     
-    public static String getPrefixListName(Reservation resv, boolean src) {
+    public String getPrefixListName(Reservation resv, boolean src) {
         String base = oscarsName(resv);
         if (src) {
              return base+"_src";
@@ -52,38 +58,38 @@ public class SDNNameGenerator {
         }
     }
     
-    public static String getInterfaceDescription(Reservation resv) {
+    public String getInterfaceDescription(Reservation resv) {
         String base = oscarsName(resv);
         Long bandwidth = resv.getBandwidth();
         return base + ":"+bandwidth+":oscars-l2circuit:show:circuit-intercloud";
     }
 
-    public static String getL2CircuitDescription(Reservation resv) {
+    public String getL2CircuitDescription(Reservation resv) {
         return oscarsName(resv);
     }
 
-    public static String getLSPName(Reservation resv) {
+    public String getLSPName(Reservation resv) {
         return oscarsName(resv);
     }
 
-    public static String getPathName(Reservation resv) {
+    public String getPathName(Reservation resv) {
         return oscarsName(resv);
     }
 
-    public static String getPolicerName(Reservation resv) {
+    public String getPolicerName(Reservation resv) {
         return oscarsName(resv);
     }
 
-    public static String getPolicyName(Reservation resv) {
+    public String getPolicyName(Reservation resv) {
         return oscarsName(resv);
     }
 
-    public static String getCommunityName(Reservation resv) {
+    public String getCommunityName(Reservation resv) {
         return oscarsName(resv);
     }
 
 
-    private static String oscarsName(Reservation resv) {
+    private String oscarsName(Reservation resv) {
         String header = "oscars_";
         String gri = resv.getGlobalReservationId();
         String description = resv.getDescription();
@@ -123,4 +129,15 @@ public class SDNNameGenerator {
         }
         return circuitStr;
     }
+    
+    private static SDNNameGenerator instance;
+    private SDNNameGenerator() {
+    }
+    public static SDNNameGenerator getInstance() {
+        if (instance == null) {
+            instance = new SDNNameGenerator();
+        }
+        return instance;
+    }
+    
 }

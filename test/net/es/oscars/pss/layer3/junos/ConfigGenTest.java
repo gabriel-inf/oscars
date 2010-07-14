@@ -22,6 +22,7 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.impl.SDNNameGenerator;
 
 import org.testng.annotations.*;
 
@@ -266,6 +267,10 @@ public class ConfigGenTest {
         Layer3JunosConfigGen th = Layer3JunosConfigGen.getInstance();
         
         th.setTemplateDir("conf/pss");
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
+
+        
         String out;
         out = th.generateL3Setup(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
         System.out.println(out);
@@ -278,6 +283,8 @@ public class ConfigGenTest {
         Layer3JunosConfigGen th = Layer3JunosConfigGen.getInstance();
         
         th.setTemplateDir("conf/pss");
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         String out;
         out = th.generateL3Teardown(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
         // System.out.println(out);
@@ -289,6 +296,8 @@ public class ConfigGenTest {
         Reservation resv = this.makeL3();
         Layer3JunosConfigGen th = Layer3JunosConfigGen.getInstance();
         th.setTemplateDir("conf/pss");
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         String out;
         out = th.generateL3Status(resv, resv.getPath(PathType.LOCAL), PSSDirection.A_TO_Z);
         // System.out.println(out);

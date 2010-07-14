@@ -20,6 +20,7 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.impl.SDNNameGenerator;
 
 import org.testng.annotations.*;
 
@@ -143,6 +144,8 @@ public class ConfigGenTest {
     public void testL2Setup() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         SWJunosConfigGen th = SWJunosConfigGen.getInstance();
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         
         th.setTemplateDir("conf/pss");
         String out;
@@ -153,7 +156,9 @@ public class ConfigGenTest {
     public void testL2Teardown() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         SWJunosConfigGen th = SWJunosConfigGen.getInstance();
-        
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
+
         th.setTemplateDir("conf/pss");
         String out;
         out = th.generateL2Teardown(resv, resv.getPath(PathType.LOCAL), PSSDirection.BIDIRECTIONAL);
@@ -164,6 +169,8 @@ public class ConfigGenTest {
     public void testL2Status() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
         SWJunosConfigGen th = SWJunosConfigGen.getInstance();
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        th.setNameGenerator(ng);
         th.setTemplateDir("conf/pss");
         String out;
         out = th.generateL2Status(resv, resv.getPath(PathType.LOCAL), PSSDirection.BIDIRECTIONAL);

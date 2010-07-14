@@ -16,15 +16,16 @@ import net.es.oscars.bss.topology.PathElemParam;
 import net.es.oscars.bss.topology.PathElemParamSwcap;
 import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.ConfigNameGenerator;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.TemplateConfigGen;
 import net.es.oscars.pss.eompls.EoMPLSUtils;
-import net.es.oscars.pss.impl.SDNNameGenerator;
 
 public class EoMPLSJunosConfigGen extends TemplateConfigGen {
     private Logger log;
     private static EoMPLSJunosConfigGen instance;
+    private ConfigNameGenerator nameGenerator;
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -131,20 +132,20 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         // end FIXME
 
         // names etc
-        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
+        policingFilterName      = nameGenerator.getFilterName(resv, "policing");
         policingFilterTerm      = policingFilterName;
         policingFilterCount     = policingFilterName;
-        statsFilterName         = SDNNameGenerator.getFilterName(resv, "stats");
+        statsFilterName         = nameGenerator.getFilterName(resv, "stats");
         statsFilterTerm         = statsFilterName;
         statsFilterCount        = statsFilterName;
-        communityName           = SDNNameGenerator.getCommunityName(resv);
-        policyName              = SDNNameGenerator.getPolicyName(resv);
+        communityName           = nameGenerator.getCommunityName(resv);
+        policyName              = nameGenerator.getPolicyName(resv);
         policyTerm              = policyName;
-        policerName             = SDNNameGenerator.getPolicerName(resv);
-        pathName                = SDNNameGenerator.getPathName(resv);
-        lspName                 = SDNNameGenerator.getLSPName(resv);
-        l2circuitDescription    = SDNNameGenerator.getL2CircuitDescription(resv);
-        ifceDescription         = SDNNameGenerator.getInterfaceDescription(resv);
+        policerName             = nameGenerator.getPolicerName(resv);
+        pathName                = nameGenerator.getPathName(resv);
+        lspName                 = nameGenerator.getLSPName(resv);
+        l2circuitDescription    = nameGenerator.getL2CircuitDescription(resv);
+        ifceDescription         = nameGenerator.getInterfaceDescription(resv);
 
 
         /* ********************** */
@@ -288,13 +289,13 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         
         
         // names etc
-        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
-        statsFilterName         = SDNNameGenerator.getFilterName(resv, "stats");
-        communityName           = SDNNameGenerator.getCommunityName(resv);
-        policyName              = SDNNameGenerator.getPolicyName(resv);
-        policerName             = SDNNameGenerator.getPolicerName(resv);
-        pathName                = SDNNameGenerator.getPathName(resv);
-        lspName                 = SDNNameGenerator.getLSPName(resv);
+        policingFilterName      = nameGenerator.getFilterName(resv, "policing");
+        statsFilterName         = nameGenerator.getFilterName(resv, "stats");
+        communityName           = nameGenerator.getCommunityName(resv);
+        policyName              = nameGenerator.getPolicyName(resv);
+        policerName             = nameGenerator.getPolicerName(resv);
+        pathName                = nameGenerator.getPathName(resv);
+        lspName                 = nameGenerator.getLSPName(resv);
         
         
 
@@ -370,5 +371,13 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         this.log = Logger.getLogger(this.getClass());
     }
 
+
+    public ConfigNameGenerator getNameGenerator() {
+        return nameGenerator;
+    }
+
+    public void setNameGenerator(ConfigNameGenerator nameGenerator) {
+        this.nameGenerator = nameGenerator;
+    }
 
 }

@@ -15,13 +15,14 @@ import net.es.oscars.bss.topology.PathElemParam;
 import net.es.oscars.bss.topology.PathElemParamSwcap;
 import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.ConfigNameGenerator;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.TemplateConfigGen;
-import net.es.oscars.pss.impl.SDNNameGenerator;
 
 public class SWJunosConfigGen extends TemplateConfigGen {
     private Logger log;
     private static SWJunosConfigGen instance;
+    private ConfigNameGenerator nameGenerator;
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -95,12 +96,12 @@ public class SWJunosConfigGen extends TemplateConfigGen {
         aIfceVlan               = aVlanPEP.getValue();
         zIfceVlan               = zVlanPEP.getValue();
         // names etc
-        filterName              = SDNNameGenerator.getFilterName(resv, "combo");
+        filterName              = nameGenerator.getFilterName(resv, "combo");
         filterTerm              = filterName;
         filterCount             = filterName;
-        policerName             = SDNNameGenerator.getPolicerName(resv);
-        aIfceDescription        = SDNNameGenerator.getInterfaceDescription(resv);
-        zIfceDescription        = SDNNameGenerator.getInterfaceDescription(resv);
+        policerName             = nameGenerator.getPolicerName(resv);
+        aIfceDescription        = nameGenerator.getInterfaceDescription(resv);
+        zIfceDescription        = nameGenerator.getInterfaceDescription(resv);
         
         // FIXME 
         iswitchName             = filterName;
@@ -218,8 +219,8 @@ public class SWJunosConfigGen extends TemplateConfigGen {
         aIfceVlan               = aVlanPEP.getValue();
         zIfceVlan               = zVlanPEP.getValue();
         // names etc
-        filterName              = SDNNameGenerator.getFilterName(resv, "combo");
-        policerName             = SDNNameGenerator.getPolicerName(resv);
+        filterName              = nameGenerator.getFilterName(resv, "combo");
+        policerName             = nameGenerator.getPolicerName(resv);
         
         // FIXME 
         iswitchName             = filterName;
@@ -278,4 +279,12 @@ public class SWJunosConfigGen extends TemplateConfigGen {
     }
 
 
+
+    public ConfigNameGenerator getNameGenerator() {
+        return nameGenerator;
+    }
+
+    public void setNameGenerator(ConfigNameGenerator nameGenerator) {
+        this.nameGenerator = nameGenerator;
+    }
 }

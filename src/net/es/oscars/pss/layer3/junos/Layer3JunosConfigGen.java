@@ -7,25 +7,22 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Ipaddr;
 import net.es.oscars.bss.topology.Layer3Data;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathElem;
-import net.es.oscars.bss.topology.PathElemParam;
-import net.es.oscars.bss.topology.PathElemParamSwcap;
-import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.ConfigNameGenerator;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.TemplateConfigGen;
 import net.es.oscars.pss.eompls.EoMPLSUtils;
-import net.es.oscars.pss.impl.SDNNameGenerator;
 
 public class Layer3JunosConfigGen extends TemplateConfigGen {
     private Logger log;
     private static Layer3JunosConfigGen instance;
+    private ConfigNameGenerator nameGenerator;
 
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -105,7 +102,6 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
         }
 
         String aLoopback    = aPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
-        String zLoopback    = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
 
         pathHops            = EoMPLSUtils.makeHops(pathElems, direction);
         lspFrom             = aLoopback;
@@ -138,20 +134,20 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
         }
 
  
-        pathName                = SDNNameGenerator.getPathName(resv);
-        lspName                 = SDNNameGenerator.getLSPName(resv);
+        pathName                = nameGenerator.getPathName(resv);
+        lspName                 = nameGenerator.getLSPName(resv);
         // names etc
-        srcPrefixListName       = SDNNameGenerator.getPrefixListName(resv, true);
-        dstPrefixListName       = SDNNameGenerator.getPrefixListName(resv, false);
-        inetFilterNames         = SDNNameGenerator.getLayer3Filters();
-        policerName             = SDNNameGenerator.getPolicerName(resv);
+        srcPrefixListName       = nameGenerator.getPrefixListName(resv, true);
+        dstPrefixListName       = nameGenerator.getPrefixListName(resv, false);
+        inetFilterNames         = nameGenerator.getLayer3Filters();
+        policerName             = nameGenerator.getPolicerName(resv);
 
-        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
+        policingFilterName      = nameGenerator.getFilterName(resv, "policing");
         policingFilterTerm      = policingFilterName;
         policingFilterCount     = policingFilterName;
         
-        routingInstanceName     = SDNNameGenerator.getRoutingInstanceName(resv);
-        routingInstanceRibName  = SDNNameGenerator.getRoutingInstanceRibName(resv);
+        routingInstanceName     = nameGenerator.getRoutingInstanceName(resv);
+        routingInstanceRibName  = nameGenerator.getRoutingInstanceRibName(resv);
 
         /* ********************** */
         /* DONE POPULATING VALUES */
@@ -197,9 +193,9 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
 
         for (String inetFilterName : inetFilterNames) {
             String filterName = inetFilterName;
-            String filterTerm = SDNNameGenerator.getFilterName(resv, "inet");
+            String filterTerm = nameGenerator.getFilterName(resv, "inet");
             String filterCount = filterTerm;
-            String filterMarker = SDNNameGenerator.getInetFilterMarker(resv);
+            String filterMarker = nameGenerator.getInetFilterMarker(resv);
             
             HashMap inetFilter = new HashMap();
             inetFilter.put("name", filterName);
@@ -257,17 +253,17 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
         /* BEGIN POPULATING VALUES */
         /* *********************** */
         
-        pathName                = SDNNameGenerator.getPathName(resv);
-        lspName                 = SDNNameGenerator.getLSPName(resv);
+        pathName                = nameGenerator.getPathName(resv);
+        lspName                 = nameGenerator.getLSPName(resv);
         // names etc
-        srcPrefixListName       = SDNNameGenerator.getPrefixListName(resv, true);
-        dstPrefixListName       = SDNNameGenerator.getPrefixListName(resv, false);
-        inetFilterNames         = SDNNameGenerator.getLayer3Filters();
-        policerName             = SDNNameGenerator.getPolicerName(resv);
+        srcPrefixListName       = nameGenerator.getPrefixListName(resv, true);
+        dstPrefixListName       = nameGenerator.getPrefixListName(resv, false);
+        inetFilterNames         = nameGenerator.getLayer3Filters();
+        policerName             = nameGenerator.getPolicerName(resv);
 
-        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
+        policingFilterName      = nameGenerator.getFilterName(resv, "policing");
         
-        routingInstanceName     = SDNNameGenerator.getRoutingInstanceName(resv);
+        routingInstanceName     = nameGenerator.getRoutingInstanceName(resv);
 
         /* ********************** */
         /* DONE POPULATING VALUES */
@@ -309,7 +305,7 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
 
         for (String inetFilterName : inetFilterNames) {
             String filterName = inetFilterName;
-            String filterTerm = SDNNameGenerator.getFilterName(resv, "inet");
+            String filterTerm = nameGenerator.getFilterName(resv, "inet");
             
             HashMap inetFilter = new HashMap();
             inetFilter.put("name", filterName);
@@ -348,4 +344,11 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
     }
 
 
+    public ConfigNameGenerator getNameGenerator() {
+        return nameGenerator;
+    }
+
+    public void setNameGenerator(ConfigNameGenerator nameGenerator) {
+        this.nameGenerator = nameGenerator;
+    }
 }
