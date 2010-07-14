@@ -14,7 +14,7 @@
                 <to>${lsp.to}</to>                                      <#-- address of the inwards-facing interface at the egress router -->
                 <metric>65535</metric>
                 <bandwidth>
-                    <per-traffic-class-bandwidth>${bandwidth}</per-traffic-class-bandwidth>
+                    <per-traffic-class-bandwidth>${lsp.bandwidth?string.computer}</per-traffic-class-bandwidth>
                 </bandwidth>
                 <setup-priority>4</setup-priority>
                 <reservation-priority>4</reservation-priority>
@@ -36,8 +36,6 @@
             </path>
         </mpls>
     </protocols>
-
-
 <#-- the source and destination prefix lists -->
     <policy-options>
         <prefix-list>
@@ -58,18 +56,13 @@
 </#list>
         </prefix-list>
     </policy-options>
-
-
-
     <firewall>
-
-
 <#-- define a policer -->
         <policer>
             <name>${policer.name}</name>
             <if-exceeding>
-                <bandwidth-limit>${bandwidth}</bandwidth-limit>
-                <burst-size-limit>${policer.burst_size_limit}</burst-size-limit>
+                <bandwidth-limit>${policer.bandwidth_limit?string.computer}</bandwidth-limit>
+                <burst-size-limit>${policer.burst_size_limit?string.computer}</burst-size-limit>
             </if-exceeding>
             <then>
                 <forwarding-class>scavenger-service</forwarding-class>
@@ -79,9 +72,7 @@
 
         <family>
             <inet>
-
-<#-- inet filters - possibly multiple ones -->
-
+<#-- multiple inet filters -->
 <#list filters.inet as filter>
                 <filter>
                     <name>${filter.name}</name>
@@ -90,17 +81,17 @@
                         <from>
                             <source-prefix-list>${prefixes.src.name}</source-prefix-list>
                             <destination-prefix-list>${prefixes.dst.name}</destination-prefix-list>
-<#if dscp??>
-                            <dscp optional="yes">${dscp}</dscp>
+<#if inet.dscp??>
+                            <dscp optional="yes">${inet.dscp}</dscp>
 </#if>
-<#if protocol??>
-                            <protocol optional="yes">${protocol}</protocol>
+<#if inet.protocol??>
+                            <protocol optional="yes">${inet.protocol}</protocol>
 </#if>
-<#if srcport??>
-                            <source-port optional="yes">${srcport}</source-port>
+<#if inet.srcport??>
+                            <source-port optional="yes">${inet.srcport}</source-port>
 </#if>
-<#if dstport??>
-                            <destination-port optional="yes">${dstport}</destination-port>
+<#if inet.dstport??>
+                            <destination-port optional="yes">${inet.dstport}</destination-port>
 </#if>
                         </from>
                         <then>

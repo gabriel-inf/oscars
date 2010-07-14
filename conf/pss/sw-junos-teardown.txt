@@ -21,7 +21,7 @@
     <protocols>
         <connections>
             <interface-switch delete="delete">
-                <name>${switch.name}</name>
+                <name>${iswitch.name}</name>
             </interface-switch>
         </connections>
     </protocols>

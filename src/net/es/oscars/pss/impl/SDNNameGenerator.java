@@ -1,10 +1,12 @@
 package net.es.oscars.pss.impl;
 
+import net.es.oscars.bss.Reservation;
+
 public class SDNNameGenerator {
 
-    public static String getFilterName(String gri, String description, String type) {
+    public static String getFilterName(Reservation resv, String type) {
 
-        String base = oscarsName(gri, description);
+        String base = oscarsName(resv);
         if (type.equals("stats")) {
             return base+"_stats";
         } else if (type.equals("policing")) {
@@ -12,41 +14,78 @@ public class SDNNameGenerator {
         } else {
             return base;
         }
-
+    }
+    public static String getInetFilterMarker(Reservation resv) {
+        return "oscarsmarker";
+    }
+    public static String getRoutingInstanceName(Reservation resv) {
+        String base = oscarsName(resv);
+        return base;
     }
     
-    public static String getInterfaceDescription(String gri, Long bandwidth, String description) {
-        String base = oscarsName(gri, description);
+    public static String getRoutingInstanceRibName(Reservation resv) {
+        String base = oscarsName(resv);
+        return base+".inet.0";
+    }
+    
+    public static String[] getLayer3Filters() {
+        String[] filters = { 
+                "internal-interface-inbound-inet.0-filter", 
+                "external-interface-inbound-inet.0-filter", 
+                "test-interface-inbound-inet.0-filter" };
+
+        return filters;
+    }
+    
+    public static String getFilterTerm(Reservation resv, String type) {
+        String base = oscarsName(resv);
+        return base;
+    }
+    
+    public static String getPrefixListName(Reservation resv, boolean src) {
+        String base = oscarsName(resv);
+        if (src) {
+             return base+"_src";
+        } else {
+            return base+"_dst";
+        }
+    }
+    
+    public static String getInterfaceDescription(Reservation resv) {
+        String base = oscarsName(resv);
+        Long bandwidth = resv.getBandwidth();
         return base + ":"+bandwidth+":oscars-l2circuit:show:circuit-intercloud";
     }
 
-    public static String getL2CircuitDescription(String gri, String description) {
-        return oscarsName(gri, description);
+    public static String getL2CircuitDescription(Reservation resv) {
+        return oscarsName(resv);
     }
 
-    public static String getLSPName(String gri, String description) {
-        return oscarsName(gri, description);
+    public static String getLSPName(Reservation resv) {
+        return oscarsName(resv);
     }
 
-    public static String getPathName(String gri, String description) {
-        return oscarsName(gri, description);
+    public static String getPathName(Reservation resv) {
+        return oscarsName(resv);
     }
 
-    public static String getPolicerName(String gri, String description) {
-        return oscarsName(gri, description);
+    public static String getPolicerName(Reservation resv) {
+        return oscarsName(resv);
     }
 
-    public static String getPolicyName(String gri, String description) {
-        return oscarsName(gri, description);
+    public static String getPolicyName(Reservation resv) {
+        return oscarsName(resv);
     }
 
-    public static String getCommunityName(String gri, String description) {
-        return oscarsName(gri, description);
+    public static String getCommunityName(Reservation resv) {
+        return oscarsName(resv);
     }
 
 
-    private static String oscarsName(String gri, String description) {
+    private static String oscarsName(Reservation resv) {
         String header = "oscars_";
+        String gri = resv.getGlobalReservationId();
+        String description = resv.getDescription();
 
         String circuitStr = gri;
 

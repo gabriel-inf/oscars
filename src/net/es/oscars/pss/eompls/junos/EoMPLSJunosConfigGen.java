@@ -50,9 +50,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         /* *********************** */
         /* BEGIN POPULATING VALUES */
         /* *********************** */
-        
-        String gri = resv.getGlobalReservationId();
-        String description = resv.getDescription();
 
         // 
         lspBandwidth = resv.getBandwidth();
@@ -134,20 +131,20 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         // end FIXME
 
         // names etc
-        policingFilterName      = SDNNameGenerator.getFilterName(gri, description, "policing");
+        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
         policingFilterTerm      = policingFilterName;
         policingFilterCount     = policingFilterName;
-        statsFilterName         = SDNNameGenerator.getFilterName(gri, description, "stats");
+        statsFilterName         = SDNNameGenerator.getFilterName(resv, "stats");
         statsFilterTerm         = statsFilterName;
         statsFilterCount        = statsFilterName;
-        communityName           = SDNNameGenerator.getCommunityName(gri, description);
-        policyName              = SDNNameGenerator.getPolicyName(gri, description);
+        communityName           = SDNNameGenerator.getCommunityName(resv);
+        policyName              = SDNNameGenerator.getPolicyName(resv);
         policyTerm              = policyName;
-        policerName             = SDNNameGenerator.getPolicerName(gri, description);
-        pathName                = SDNNameGenerator.getPathName(gri, description);
-        lspName                 = SDNNameGenerator.getLSPName(gri, description);
-        l2circuitDescription    = SDNNameGenerator.getL2CircuitDescription(gri, description);
-        ifceDescription         = SDNNameGenerator.getInterfaceDescription(gri, lspBandwidth, description);
+        policerName             = SDNNameGenerator.getPolicerName(resv);
+        pathName                = SDNNameGenerator.getPathName(resv);
+        lspName                 = SDNNameGenerator.getLSPName(resv);
+        l2circuitDescription    = SDNNameGenerator.getL2CircuitDescription(resv);
+        ifceDescription         = SDNNameGenerator.getInterfaceDescription(resv);
 
 
         /* ********************** */
@@ -240,9 +237,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         /* *********************** */
         /* BEGIN POPULATING VALUES */
         /* *********************** */
-        
-        String gri = resv.getGlobalReservationId();
-        String description = resv.getDescription();
 
         List<PathElem> resvPathElems = localPath.getPathElems();
         if (resvPathElems.size() < 4) {
@@ -294,13 +288,13 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         
         
         // names etc
-        policingFilterName      = SDNNameGenerator.getFilterName(gri, description, "policing");
-        statsFilterName         = SDNNameGenerator.getFilterName(gri, description, "stats");
-        communityName           = SDNNameGenerator.getCommunityName(gri, description);
-        policyName              = SDNNameGenerator.getPolicyName(gri, description);
-        policerName             = SDNNameGenerator.getPolicerName(gri, description);
-        pathName                = SDNNameGenerator.getPathName(gri, description);
-        lspName                 = SDNNameGenerator.getLSPName(gri, description);
+        policingFilterName      = SDNNameGenerator.getFilterName(resv, "policing");
+        statsFilterName         = SDNNameGenerator.getFilterName(resv, "stats");
+        communityName           = SDNNameGenerator.getCommunityName(resv);
+        policyName              = SDNNameGenerator.getPolicyName(resv);
+        policerName             = SDNNameGenerator.getPolicerName(resv);
+        pathName                = SDNNameGenerator.getPathName(resv);
+        lspName                 = SDNNameGenerator.getLSPName(resv);
         
         
 

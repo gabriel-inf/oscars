@@ -23,7 +23,7 @@ import net.es.oscars.pss.common.PSSDirection;
 
 import org.testng.annotations.*;
 
-@Test(groups={ "pss.eompls" })
+@Test(groups={ "pss.sw" })
 public class ConfigGenTest {
     private String aUrn = "urn:ogf:network:domain=foo:node=alpha:port=xe-0/0/0:link=*";
     private String zUrn = "urn:ogf:network:domain=foo:node=alpha:port=xe-9/0/0:link=*";
