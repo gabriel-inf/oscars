@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Ipaddr;

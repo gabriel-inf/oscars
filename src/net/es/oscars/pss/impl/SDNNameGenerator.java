@@ -22,8 +22,7 @@ public class SDNNameGenerator implements ConfigNameGenerator {
         }
     }
     public String getInetFilterMarker(Reservation resv) {
-        // FIXME
-        return "oscarsmarker";
+        return "oscars-filters-start";
     }
     public String getRoutingInstanceName(Reservation resv) {
         String base = oscarsName(resv);
@@ -95,6 +94,8 @@ public class SDNNameGenerator implements ConfigNameGenerator {
         String description = resv.getDescription();
 
         String circuitStr = gri;
+        
+        // gri should look like domain.name.com-1234
 
         // the maximum length is 32 characters so we need to make sure that the "oscars_" portion fits on
         if ((header + circuitStr).length() > 32) {
@@ -121,8 +122,11 @@ public class SDNNameGenerator implements ConfigNameGenerator {
 
         circuitStr = header + circuitStr;
 
-        // "." is illegal character in resv-id parameter
+        // replace dots with _ 
         circuitStr = circuitStr.replaceAll("\\.", "_");
+        // don't allow junk characters - safety 
+        circuitStr = circuitStr.replaceAll("[^a-zA-Z0-9\\-\\_]+", "");
+        
         // capitalize circuit names for production circuits
         if (description.contains("PRODUCTION")) {
             circuitStr = circuitStr.toUpperCase();
