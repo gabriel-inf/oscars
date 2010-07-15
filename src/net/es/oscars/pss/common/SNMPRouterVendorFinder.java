@@ -7,7 +7,12 @@ import org.apache.log4j.Logger;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.SNMP;
 
-
+/**
+ * discovers what vendor a router is using SNMP
+ * maintains a cache as well
+ * @author haniotak
+ *
+ */
 public class SNMPRouterVendorFinder {
     private Logger log;
 
@@ -16,8 +21,6 @@ public class SNMPRouterVendorFinder {
     private HashMap<String, Integer> cacheLastUpdated = new HashMap<String, Integer>();
     private HashMap<String, RouterVendor> routerVendorCache = new HashMap<String, RouterVendor>();
     private int secondsToCache = 3600;
-
-
 
     private boolean stubMode = true;
     private RouterVendor stubVendor = RouterVendor.JUNIPER;
@@ -127,7 +130,7 @@ public class SNMPRouterVendorFinder {
 
 
     public void setStubVendor(RouterVendor stubType) {
-        this.stubVendor = stubVendor;
+        this.stubVendor = stubType;
     }
 
 

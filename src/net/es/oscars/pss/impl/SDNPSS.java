@@ -11,14 +11,16 @@ import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSS;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PSSHandlerConfigBean;
 import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.RouterVendor;
 import net.es.oscars.pss.common.SNMPRouterVendorFinder;
 import net.es.oscars.pss.common.PathUtils.EdgeType;
-import net.es.oscars.pss.eompls.EoMPLSHandler;
 import net.es.oscars.pss.eompls.EoMPLSHandlerFactory;
+import net.es.oscars.pss.layer3.Layer3HandlerFactory;
+import net.es.oscars.pss.sw.SWHandlerFactory;
 
 public class SDNPSS implements PSS {
     private static SDNPSS instance = null;
@@ -115,23 +117,25 @@ public class SDNPSS implements PSS {
         Map<EdgeType, String> edges = PathUtils.getEdgeNodeAddresses(localPath);
 
         // check if ingress and egress are on the same device
+        // if so, use switching
         if (PathUtils.sameNode(localPath)) {
-            // if yes we only need to configure one device
             String address = edges.get(PathUtils.EdgeType.INGRESS);
             RouterVendor vendor = rv.getVendor(address);
-            EoMPLSHandler handler = EoMPLSHandlerFactory.getHandler(vendor);
+            PSSHandler handler = SWHandlerFactory.getHandler(vendor);
             handler.setConfig(config);
             handler.setup(resv, localPath, PSSDirection.BIDIRECTIONAL);
+
+        // if not, use EoMPLS
         } else {
             String ingressAddress = edges.get(PathUtils.EdgeType.INGRESS);
             RouterVendor iVendor = rv.getVendor(ingressAddress);
-            EoMPLSHandler fwdHandler = EoMPLSHandlerFactory.getHandler(iVendor);
+            PSSHandler fwdHandler = EoMPLSHandlerFactory.getHandler(iVendor);
             fwdHandler.setConfig(config);
             fwdHandler.setup(resv, localPath, PSSDirection.A_TO_Z);
 
             String egressAddress = edges.get(PathUtils.EdgeType.EGRESS);
             RouterVendor eVendor = rv.getVendor(egressAddress);
-            EoMPLSHandler revHandler = EoMPLSHandlerFactory.getHandler(eVendor);
+            PSSHandler revHandler = EoMPLSHandlerFactory.getHandler(eVendor);
             revHandler.setConfig(config);
             revHandler.setup(resv, localPath, PSSDirection.Z_TO_A);
         }
@@ -146,23 +150,26 @@ public class SDNPSS implements PSS {
         Map<EdgeType, String> edges = PathUtils.getEdgeNodeAddresses(localPath);
 
         // check if ingress and egress are on the same device
+        // if so, use switching
         if (PathUtils.sameNode(localPath)) {
             // if yes we only need to configure one device
             String address = edges.get(PathUtils.EdgeType.INGRESS);
             RouterVendor vendor = rv.getVendor(address);
-            EoMPLSHandler handler = EoMPLSHandlerFactory.getHandler(vendor);
+            PSSHandler handler = SWHandlerFactory.getHandler(vendor);
             handler.setConfig(config);
             handler.teardown(resv, localPath, PSSDirection.BIDIRECTIONAL);
+            
+        // if not, use EoMPLS
         } else {
             String ingressAddress = edges.get(PathUtils.EdgeType.INGRESS);
             RouterVendor iVendor = rv.getVendor(ingressAddress);
-            EoMPLSHandler fwdHandler = EoMPLSHandlerFactory.getHandler(iVendor);
+            PSSHandler fwdHandler = EoMPLSHandlerFactory.getHandler(iVendor);
             fwdHandler.setConfig(config);
             fwdHandler.teardown(resv, localPath, PSSDirection.A_TO_Z);
 
             String egressAddress = edges.get(PathUtils.EdgeType.EGRESS);
             RouterVendor eVendor = rv.getVendor(egressAddress);
-            EoMPLSHandler revHandler = EoMPLSHandlerFactory.getHandler(eVendor);
+            PSSHandler revHandler = EoMPLSHandlerFactory.getHandler(eVendor);
             revHandler.setConfig(config);
             revHandler.teardown(resv, localPath, PSSDirection.Z_TO_A);
         }
@@ -170,15 +177,52 @@ public class SDNPSS implements PSS {
         return "";
     }
 
+    public String createL3(Reservation resv, Path localPath) throws PSSException {
+        SNMPRouterVendorFinder rv = SNMPRouterVendorFinder.getInstance();
 
-    // TODO
-    public String createL3(Reservation resv, Path localPath) {
+        Map<EdgeType, String> edges = PathUtils.getEdgeNodeAddresses(localPath);
+
+        // check if ingress and egress are on the same device
+        if (PathUtils.sameNode(localPath)) {
+            throw new PSSException("Layer3 not supported on same device");
+        } else {
+            String ingressAddress = edges.get(PathUtils.EdgeType.INGRESS);
+            RouterVendor iVendor = rv.getVendor(ingressAddress);
+            PSSHandler fwdHandler = Layer3HandlerFactory.getHandler(iVendor);
+            fwdHandler.setConfig(config);
+            fwdHandler.teardown(resv, localPath, PSSDirection.A_TO_Z);
+
+            String egressAddress = edges.get(PathUtils.EdgeType.EGRESS);
+            RouterVendor eVendor = rv.getVendor(egressAddress);
+            PSSHandler revHandler = Layer3HandlerFactory.getHandler(eVendor);
+            revHandler.setConfig(config);
+            revHandler.teardown(resv, localPath, PSSDirection.Z_TO_A);
+        }
 
         return "";
     }
 
-    // TODO
-    public String teardownL3(Reservation resv, Path localPath) {
+    public String teardownL3(Reservation resv, Path localPath) throws PSSException {
+        SNMPRouterVendorFinder rv = SNMPRouterVendorFinder.getInstance();
+
+        Map<EdgeType, String> edges = PathUtils.getEdgeNodeAddresses(localPath);
+
+        // check if ingress and egress are on the same device
+        if (PathUtils.sameNode(localPath)) {
+            throw new PSSException("Layer3 not supported on same device");
+        } else {
+            String ingressAddress = edges.get(PathUtils.EdgeType.INGRESS);
+            RouterVendor iVendor = rv.getVendor(ingressAddress);
+            PSSHandler fwdHandler = Layer3HandlerFactory.getHandler(iVendor);
+            fwdHandler.setConfig(config);
+            fwdHandler.teardown(resv, localPath, PSSDirection.A_TO_Z);
+
+            String egressAddress = edges.get(PathUtils.EdgeType.EGRESS);
+            RouterVendor eVendor = rv.getVendor(egressAddress);
+            PSSHandler revHandler = Layer3HandlerFactory.getHandler(eVendor);
+            revHandler.setConfig(config);
+            revHandler.teardown(resv, localPath, PSSDirection.Z_TO_A);
+        }
 
         return "";
     }

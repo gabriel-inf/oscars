@@ -1,4 +1,4 @@
-package net.es.oscars.pss.eompls.ios;
+package net.es.oscars.pss.sw.junos;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Path;
@@ -6,7 +6,7 @@ import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PSSHandlerConfigBean;
 
-public class EoMPLS_IOS implements PSSHandler {
+public class SW_Junos implements PSSHandler {
     private PSSHandlerConfigBean config;
 
     public void setup(Reservation resv, Path localPath,

@@ -11,7 +11,12 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
+/**
+ * a base class for Freemarker-based template config generators
+ * 
+ * @author haniotak
+ *
+ */
 public class TemplateConfigGen {
     private String templateDir = "";
 
