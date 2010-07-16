@@ -20,11 +20,9 @@ import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.RouterVendor;
 import net.es.oscars.pss.common.SNMPRouterVendorFinder;
 import net.es.oscars.pss.common.PathUtils.EdgeType;
-import net.es.oscars.pss.eompls.EoMPLSHandlerFactory;
+
 import net.es.oscars.pss.eompls.junos.EoMPLSJunosConfigGen;
-import net.es.oscars.pss.layer3.Layer3HandlerFactory;
 import net.es.oscars.pss.layer3.junos.Layer3JunosConfigGen;
-import net.es.oscars.pss.sw.SWHandlerFactory;
 import net.es.oscars.pss.sw.junos.SWJunosConfigGen;
 
 public class SDNPSS implements PSS {
