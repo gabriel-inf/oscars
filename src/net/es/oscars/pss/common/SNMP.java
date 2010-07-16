@@ -39,7 +39,7 @@ public class SNMP {
     private Snmp snmp;
     private CommunityTarget target;
     private Logger log;
-    private SnmpConfig config;
+    private SNMPConfig config;
 
     public SNMP() throws PSSException {
         this.log = Logger.getLogger(this.getClass());
@@ -70,8 +70,8 @@ public class SNMP {
         // Create snmp object
     }
 
-    private SnmpConfig loadConfig() throws PSSException {
-        SnmpConfig config = new SnmpConfig();
+    private SNMPConfig loadConfig() throws PSSException {
+        SNMPConfig config = new SNMPConfig();
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("snmp", true);
         if (props == null) {

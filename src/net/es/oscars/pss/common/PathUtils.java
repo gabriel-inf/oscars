@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 
 public class PathUtils {
@@ -65,6 +68,23 @@ public class PathUtils {
             revPathElems.set(pathElems.size() - 1 -i, pe);
         }
         return revPathElems;
+    }
+    
+    public static Node getNodeToConfigure(Reservation resv, PSSDirection direction) throws PSSException {
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e.getMessage());
+        }
+        PathElem pe;
+        if (direction.equals(PSSDirection.A_TO_Z) || direction.equals(PSSDirection.BIDIRECTIONAL)) {
+             pe = localPath.getPathElems().get(0);
+        } else {
+            pe = localPath.getPathElems().get(localPath.getPathElems().size() - 1);
+        }
+        Node node = pe.getLink().getPort().getNode();
+        return node;
     }
 
 }

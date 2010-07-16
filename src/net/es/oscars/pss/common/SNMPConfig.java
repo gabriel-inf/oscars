@@ -1,6 +1,6 @@
 package net.es.oscars.pss.common;
 
-public class SnmpConfig {
+public class SNMPConfig {
     private Integer snmpVersion;
     private Integer port;
     private Integer retries;

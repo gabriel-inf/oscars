@@ -13,6 +13,7 @@ import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathElemParam;
 import net.es.oscars.bss.topology.PathElemParamSwcap;
 import net.es.oscars.bss.topology.PathElemParamType;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.ConfigNameGenerator;
 import net.es.oscars.pss.common.PSSDirection;
@@ -26,9 +27,15 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public String generateL2Setup(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL2Setup(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "eompls-junos-setup.txt";
 
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e);
+        }
         // these are the leaf values
 
         String ifceName, ifceDescription;
@@ -218,9 +225,14 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public String generateL2Teardown(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL2Teardown(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "eompls-junos-teardown.txt";
-
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e);
+        }
         String ifceName, ifceVlan;
         String policyName;
         String communityName;
@@ -346,8 +358,14 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
 
     }
 
-    public String generateL2Status(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL2Status(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "eompls-junos-status.txt";
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e);
+        }
         HashMap<String, Object> root = new HashMap<String, Object>();
         return this.getConfig(root, templateFileName);
     }

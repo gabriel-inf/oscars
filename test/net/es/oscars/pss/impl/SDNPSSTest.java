@@ -1,13 +1,18 @@
-package net.es.oscars.pss.eompls.junos;
+package net.es.oscars.pss.impl;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.testng.annotations.Test;
+
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.Ipaddr;
 import net.es.oscars.bss.topology.L2SwitchingCapabilityData;
 import net.es.oscars.bss.topology.Layer2Data;
+import net.es.oscars.bss.topology.Layer3Data;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.NodeAddress;
@@ -20,19 +25,19 @@ import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
-import net.es.oscars.pss.common.PSSDirection;
-import net.es.oscars.pss.impl.SDNNameGenerator;
+import net.es.oscars.pss.common.PSSHandlerConfigBean;
 
-import org.testng.annotations.*;
-
-@Test(groups={ "pss.eompls" })
-public class ConfigGenTest {
+@Test(groups={ "pss.sdn" })
+public class SDNPSSTest {
     private String aUrn = "urn:ogf:network:domain=foo:node=alpha:port=xe-0/0/0:link=*";
     private String bUrn = "urn:ogf:network:domain=foo:node=alpha:port=xe-1/0/0:link=xe-1/0/0.500";
     private String fUrn = "urn:ogf:network:domain=foo:node=kappa:port=xe-4/0/0:link=xe-4/0/0.500";
     private String gUrn = "urn:ogf:network:domain=foo:node=kappa:port=xe-5/0/0:link=xe-5/0/0.700";
     private String yUrn = "urn:ogf:network:domain=foo:node=zeta:port=xe-8/0/0:link=xe-8/0/0.700";
     private String zUrn = "urn:ogf:network:domain=foo:node=zeta:port=xe-9/0/0:link=*";
+
+    String srcHost = "192.168.1.0/24 192.168.12.0/24";
+    String dstHost = "192.168.98.0/24 192.168.99.0/24";
     
     private Link aLink;
     private Link bLink;
@@ -179,6 +184,71 @@ public class ConfigGenTest {
         
     }
     
+    protected Path makeL3Path() throws BSSException {
+        this.makeDomain();
+        
+        Path localPath = new Path();
+        localPath.setPathType(PathType.LOCAL);
+        localPath.setDirection(PathDirection.BIDIRECTIONAL);
+        Layer3Data layer3Data = new Layer3Data();
+        localPath.setLayer3Data(layer3Data);
+        layer3Data.setSrcHost(srcHost);
+        layer3Data.setDestHost(dstHost);
+        layer3Data.setDscp(null);
+        layer3Data.setSrcIpPort(80);
+        layer3Data.setDestIpPort(null);
+        layer3Data.setProtocol(null);
+
+        HashSet<PathElemParam> aPeps = new HashSet<PathElemParam>();
+        HashSet<PathElemParam> bPeps = new HashSet<PathElemParam>();
+        HashSet<PathElemParam> fPeps = new HashSet<PathElemParam>();
+        HashSet<PathElemParam> gPeps = new HashSet<PathElemParam>();
+        HashSet<PathElemParam> yPeps = new HashSet<PathElemParam>();
+        HashSet<PathElemParam> zPeps = new HashSet<PathElemParam>();
+        
+        PathElem a = new PathElem();
+        a.setUrn(aUrn);
+        a.setLink(aLink);
+        a.setPathElemParams(aPeps);
+        
+        PathElem b = new PathElem();
+        b.setUrn(bUrn);
+        b.setLink(bLink);
+        b.setPathElemParams(bPeps);
+
+        PathElem f = new PathElem();
+        f.setUrn(fUrn);
+        f.setLink(fLink);
+        f.setPathElemParams(fPeps);
+        
+        PathElem g = new PathElem();
+        g.setUrn(gUrn);
+        g.setLink(gLink);
+        g.setPathElemParams(gPeps);
+        
+        PathElem y = new PathElem();
+        y.setUrn(yUrn);
+        y.setLink(yLink);
+        y.setPathElemParams(yPeps);
+
+        PathElem z = new PathElem();
+        z.setUrn(zUrn);
+        z.setLink(zLink);
+        z.setPathElemParams(zPeps);
+        
+        ArrayList<PathElem> pathElems = new ArrayList<PathElem>();
+        pathElems.add(a);
+        pathElems.add(b);
+        pathElems.add(f);
+        pathElems.add(g);
+        pathElems.add(y);
+        pathElems.add(z);
+        
+        localPath.setPathElems(pathElems);
+        
+        return localPath;
+    }
+    
     protected Path makeL2Path() throws BSSException {
         this.makeDomain();
         Path localPath = new Path();
@@ -250,6 +320,22 @@ public class ConfigGenTest {
         
         return localPath;
     }
+    protected Reservation makeL3() throws BSSException {
+        
+        Reservation resv = new Reservation();
+        Path localPath = this.makeL3Path();
+        resv.setPath(localPath);
+        // 1Mbps = 1 000 000 
+        resv.setBandwidth(1000000L);
+        resv.setDescription("description");
+        resv.setLogin("username");
+        resv.setGlobalReservationId("foo.net-123");
+        resv.setStatus(StateEngine.RESERVED);
+        resv.setLocalStatus(StateEngine.CONFIRMED);
+        
+        return resv;
+    }
+    
     protected Reservation makeL2() throws BSSException {
         
         Reservation resv = new Reservation();
@@ -260,6 +346,8 @@ public class ConfigGenTest {
         resv.setDescription("description");
         resv.setLogin("username");
         resv.setGlobalReservationId("foo.net-123");
+        resv.setStatus(StateEngine.RESERVED);
+        resv.setLocalStatus(StateEngine.CONFIRMED);
         
         return resv;
     }
@@ -267,40 +355,19 @@ public class ConfigGenTest {
     @Test
     public void testL2Setup() throws BSSException, PSSException {
         Reservation resv = this.makeL2();
-        EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
-        th.setTemplateDir("conf/pss");
-        SDNNameGenerator ng = SDNNameGenerator.getInstance();
-        th.setNameGenerator(ng);
-        String out;
-        out = th.generateL2Setup(resv, PSSDirection.A_TO_Z);
-        // System.out.println(out);
-        out = th.generateL2Setup(resv, PSSDirection.Z_TO_A);
-        // System.out.println(out);
-    }
-    @Test
-    public void testL2Teardown() throws BSSException, PSSException {
-        Reservation resv = this.makeL2();
-        EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
+        PSSHandlerConfigBean config = new PSSHandlerConfigBean();
+        config.setCheckStatusAfterSetup(false);
+        config.setCheckStatusAfterTeardown(false);
+        config.setLogConfig(false);
+        config.setStubMode(true);
+        config.setTeardownOnFailure(false);
+        config.setTemplateDir("conf/pss");
         
-        th.setTemplateDir("conf/pss");
-        SDNNameGenerator ng = SDNNameGenerator.getInstance();
-        th.setNameGenerator(ng);
-        String out;
-        out = th.generateL2Teardown(resv, PSSDirection.A_TO_Z);
-        // System.out.println(out);
-        out = th.generateL2Teardown(resv, PSSDirection.Z_TO_A);
-        // System.out.println(out);
-    }
-    @Test
-    public void testL2Status() throws BSSException, PSSException {
-        Reservation resv = this.makeL2();
-        EoMPLSJunosConfigGen th = EoMPLSJunosConfigGen.getInstance();
-        th.setTemplateDir("conf/pss");
-        SDNNameGenerator ng = SDNNameGenerator.getInstance();
-        th.setNameGenerator(ng);
-        String out;
-        out = th.generateL2Status(resv, PSSDirection.A_TO_Z);
-        // System.out.println(out);
+        SDNPSS pss = SDNPSS.getInstance(config);
+        
+
+        pss.createPath(resv);
+        
     }
 
 }
