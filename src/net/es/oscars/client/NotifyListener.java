@@ -1,12 +1,25 @@
 package net.es.oscars.client;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import javax.net.*;
-import javax.net.ssl.*;
-import org.jdom.*;
-import org.jdom.input.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
+import org.jdom.input.SAXBuilder;
+
 
 /**
  * A lightweight HTTP/HTTPS listener that accepts Notify messages and passes
@@ -56,6 +69,7 @@ public class NotifyListener extends Thread{
      * method and should instead call start() which will create a new thread 
      * in which listening will occur.
      */
+    @SuppressWarnings("unchecked")
     public void listen() throws IOException, JDOMException{
         Socket clientSock = this.socket.accept();
         HashMap<String,String> request = new HashMap<String,String>();
@@ -110,12 +124,12 @@ public class NotifyListener extends Thread{
             return;
         }
         Element soapBody = soapEnv.getChild("Body", NotifyListener.SOAP_NS);
-        if(soapEnv == null){
+        if (soapBody == null){
             this.handler.handleError("PARSING", new Exception("No SOAP Body"));
             return;
         }
         Element notify = soapBody.getChild("Notify", NotifyListener.WSN_NS);
-        if(notify == null){
+        if (notify == null){
             this.handler.handleError("PARSING", new Exception("No Notify element"));
             return;
         }
