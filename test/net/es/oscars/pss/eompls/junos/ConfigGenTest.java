@@ -21,7 +21,7 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSDirection;
-import net.es.oscars.pss.impl.SDNNameGenerator;
+import net.es.oscars.pss.impl.sdn.SDNNameGenerator;
 
 import org.testng.annotations.*;
 

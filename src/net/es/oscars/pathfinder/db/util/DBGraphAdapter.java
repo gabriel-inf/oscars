@@ -1,39 +1,36 @@
 package net.es.oscars.pathfinder.db.util;
 
-import java.util.*;
 
-import net.es.oscars.bss.*;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.database.Initializer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.bss.topology.DomainDAO;
+import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Node;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathType;
+import net.es.oscars.bss.topology.Port;
 
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
-import org.jgrapht.*;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 
 public class DBGraphAdapter {
-    private SessionFactory sf;
     private String dbname;
-    private String localDomain;
     private Logger log;
 
 
     public DBGraphAdapter(String dbname) {
         this.dbname = dbname;
         this.log = Logger.getLogger(this.getClass());
-        /*
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add(this.dbname);
-
-        Initializer initializer = new Initializer();
-        initializer.initDatabase(dbnames);
-        this.sf = HibernateUtil.getSessionFactory(this.dbname);
-        */
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        this.localDomain = domainDAO.getLocalDomain().getTopologyIdent();
     }
 
     public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>
@@ -46,7 +43,6 @@ public class DBGraphAdapter {
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
-        // this.sf.getCurrentSession().beginTransaction();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
         ArrayList<Reservation> reservations = new ArrayList<Reservation>(resvDAO.overlappingReservations(startTime, endTime));
@@ -98,7 +94,7 @@ public class DBGraphAdapter {
         DefaultWeightedEdge edge;
         List<Domain> domains = domainDAO.list();
         for (Domain dom : domains) {
-            Iterator nodeIt = dom.getNodes().iterator();
+            Iterator<?> nodeIt = dom.getNodes().iterator();
             while (nodeIt.hasNext()) {
                 Node node = (Node) nodeIt.next();
                 if (!node.isValid()) {
@@ -116,7 +112,7 @@ public class DBGraphAdapter {
                     nodeMult = 20d;
                 }
                 g.addVertex(nodeFQTI);
-                Iterator portIt = node.getPorts().iterator();
+                Iterator<?> portIt = node.getPorts().iterator();
                 while (portIt.hasNext()) {
                     Port port = (Port) portIt.next();
                     if (!port.isValid()) {
@@ -155,7 +151,7 @@ public class DBGraphAdapter {
                     if (edge != null) {
                         g.setEdgeWeight(edge, portEdgeCost);
                     }
-                    Iterator linkIt = port.getLinks().iterator();
+                    Iterator<?> linkIt = port.getLinks().iterator();
                     while (linkIt.hasNext()) {
                         Link link = (Link) linkIt.next();
                         if (!link.isValid()) {

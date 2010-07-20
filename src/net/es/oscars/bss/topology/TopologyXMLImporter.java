@@ -1,26 +1,18 @@
 package net.es.oscars.bss.topology;
 
-import net.es.oscars.*;
-import net.es.oscars.bss.*;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.database.*;
-import net.es.oscars.wsdlTypes.*;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Properties;
 
-import org.apache.log4j.*;
+import net.es.oscars.PropHandler;
+import net.es.oscars.bss.TopologyManager;
 
-import org.hibernate.*;
+import org.apache.log4j.Logger;
 
-import org.hibernate.cfg.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.Namespace;
 
-import org.jdom.*;
-
-import org.jdom.input.SAXBuilder;
-
-import java.io.*;
-
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -87,7 +79,7 @@ public class TopologyXMLImporter {
         this.topology = new Topology();
         this.remoteLinkMap = new Hashtable<String, String>();
 
-        Iterator domainIt = topoXML.getChildren("domain", ns).iterator();
+        Iterator<?> domainIt = topoXML.getChildren("domain", ns).iterator();
         String localDomainId = this.topoManager.getLocalDomain();
         while (domainIt.hasNext()) {
             Element domXML = (Element) domainIt.next();
@@ -120,9 +112,9 @@ public class TopologyXMLImporter {
 
             }
 
-            Iterator newNodeIt = domDB.getNodes().iterator();
+            Iterator<?> newNodeIt = domDB.getNodes().iterator();
             while (newNodeIt.hasNext()) {
-                Node newNode = (Node) newNodeIt.next();
+                // Node newNode = (Node) newNodeIt.next();
             }
 
 
@@ -141,13 +133,12 @@ public class TopologyXMLImporter {
      * @param domDB the parent Domain object under which the Node objects
      * will be created.
      */
-    @SuppressWarnings("unchecked")
     protected void parseNodes(Element domXML, Domain domDB) {
         this.log.debug("parsing nodes");
 
         String nodeTopoIdent = "";
 
-        Iterator nodeXMLIterator = domXML.getChildren("node", this.ns).iterator();
+        Iterator<?> nodeXMLIterator = domXML.getChildren("node", this.ns).iterator();
 
         // now go through all of domXML's children elements
         while (nodeXMLIterator.hasNext()) {
@@ -219,11 +210,10 @@ public class TopologyXMLImporter {
      * @param nodeDB the parent Node object under which the Port objects
      * will be created.
      */
-    @SuppressWarnings("unchecked")
     protected void parsePorts(Element nodeXML, Node nodeDB) {
         Namespace ns = this.ns;
 
-        Iterator portXMLIterator = nodeXML.getChildren("port", ns).iterator();
+        Iterator<?> portXMLIterator = nodeXML.getChildren("port", ns).iterator();
 
         while (portXMLIterator.hasNext()) {
 
@@ -240,7 +230,13 @@ public class TopologyXMLImporter {
             portDB.setTopologyIdent(portTopoIdent);
 
             String strCapacity = portXML.getChild("capacity", ns).getValue();
-            String strMaxRCapacity = portXML.getChild("maximumReservableCapacity", ns).getValue();
+            String strMaxRCapacity;
+            if (portXML.getChild("maximumReservableCapacity", ns) != null) {
+                strMaxRCapacity = portXML.getChild("maximumReservableCapacity", ns).getValue();
+            } else {
+                strMaxRCapacity = strCapacity;
+            }
+            
             String strMinRCapacity = portXML.getChild("minimumReservableCapacity", ns).getValue();
             String strGranularity = portXML.getChild("granularity", ns).getValue();
 
@@ -279,7 +275,7 @@ public class TopologyXMLImporter {
 
         String linkTopoIdent = "";
 
-        Iterator linkXMLIterator = portXML.getChildren("link", ns).iterator();
+        Iterator<?> linkXMLIterator = portXML.getChildren("link", ns).iterator();
 
         while (linkXMLIterator.hasNext()) {
             Element linkXML = (Element) linkXMLIterator.next();
@@ -379,15 +375,15 @@ public class TopologyXMLImporter {
             return;
         }
 
-        Element swcapTypeXML = linkSwCapXML.getChild("switchingcapType", ns);
-        Element encTypeXML = linkSwCapXML.getChild("encodingType", ns);
+        // Element swcapTypeXML = linkSwCapXML.getChild("switchingcapType", ns);
+        // Element encTypeXML = linkSwCapXML.getChild("encodingType", ns);
         Element swCapSpcXML = linkSwCapXML.getChild("switchingCapabilitySpecificInfo", ns);
 
         if (swCapSpcXML == null) {
             return;
         }
 
-        Element capXML = swCapSpcXML.getChild("capability", ns);
+        // Element capXML = swCapSpcXML.getChild("capability", ns);
         Element ifceMTUXML = swCapSpcXML.getChild("interfaceMTU", ns);
         Element vlanAvXML = swCapSpcXML.getChild("vlanRangeAvailability", ns);
 
@@ -428,7 +424,7 @@ public class TopologyXMLImporter {
         }
 
         if (linkDB.getIpaddrs() != null) {
-            Iterator addrIt = linkDB.getIpaddrs().iterator();
+            Iterator<?> addrIt = linkDB.getIpaddrs().iterator();
 
             while (addrIt.hasNext()) {
                 Ipaddr thisAddr = (Ipaddr) addrIt.next();
@@ -462,12 +458,11 @@ public class TopologyXMLImporter {
      * @param linkXML the JDOM "link" element
      * @param linkDB the source Link object
      */
-    @SuppressWarnings("unchecked")
     protected void parseRemoteLink(Element linkXML, Link linkDB) {
-        Domain remoteDomainDB = null;
-        Node remoteNodeDB = null;
-        Port remotePortDB = null;
-        Link remoteLinkDB = null;
+        // Domain remoteDomainDB = null;
+        // Node remoteNodeDB = null;
+        // Port remotePortDB = null;
+        // Link remoteLinkDB = null;
         Element xmlObj = null;
 
         String remoteDomainId = "";

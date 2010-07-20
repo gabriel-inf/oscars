@@ -26,6 +26,7 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSHandlerConfigBean;
+import net.es.oscars.pss.impl.sdn.SDNPSS;
 
 @Test(groups={ "pss.sdn" })
 public class SDNPSSTest {
@@ -367,7 +368,15 @@ public class SDNPSSTest {
         
 
         pss.createPath(resv);
-        
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            System.out.println(".");
+        }
     }
 
 }

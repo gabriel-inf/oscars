@@ -1,13 +1,16 @@
 package net.es.oscars.pathfinder.db.util.vendor.jnx;
 
-import java.io.*;
-import java.rmi.RemoteException;
-import java.util.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
-import org.jdom.*;
-import org.jdom.xpath.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import net.es.oscars.ConfigFinder;
 import net.es.oscars.PropHandler;
@@ -15,7 +18,6 @@ import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.vendor.jnx.JnxConnection;
 import net.es.oscars.pss.vendor.jnx.JnxReplyHandler;
 import net.es.oscars.pss.vendor.jnx.TemplateHandler;
-import net.es.oscars.bss.topology.*;
 
 /**
  * JnxShowRoute finds outgoing interface from a Juniper node to a destination.
@@ -90,12 +92,12 @@ public class JnxShowRoute {
             throws IOException, JDOMException {
 
         this.log.debug("parseResponse.start");
-        List entryList = JnxReplyHandler.getElements(doc, "rt-entry");
+        List<?> entryList = JnxReplyHandler.getElements(doc, "rt-entry");
         boolean activeXface = false;
-        for (Iterator i = entryList.iterator(); i.hasNext();) {
+        for (Iterator<?> i = entryList.iterator(); i.hasNext();) {
             Element entry = (Element) i.next();
-            List entryChildren = entry.getChildren();
-            for (Iterator j = entryChildren.iterator(); j.hasNext();) {
+            List<?> entryChildren = entry.getChildren();
+            for (Iterator<?> j = entryChildren.iterator(); j.hasNext();) {
                 Element e = (Element) j.next();
                 if (e.getName().equals("active-tag")) {
                     if (e.getText().equals("*")) {
@@ -105,8 +107,8 @@ public class JnxShowRoute {
                     if (!activeXface) {
                         continue;
                     }
-                    List children = e.getChildren();
-                    for (Iterator k = children.iterator(); k.hasNext();) {
+                    List<?> children = e.getChildren();
+                    for (Iterator<?> k = children.iterator(); k.hasNext();) {
                         Element childElem = (Element) k.next();
                         if (childElem.getName().equals("via")) {
                             this.log.debug("parseResponse.found " +

@@ -1,21 +1,23 @@
 package net.es.oscars.pathfinder.db.util;
 
-import java.util.*;
+import java.util.List;
+import java.util.Properties;
 import java.io.IOException;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.pathfinder.*;
-import net.es.oscars.pathfinder.db.*;
+import net.es.oscars.bss.topology.DomainDAO;
+import net.es.oscars.bss.topology.Ipaddr;
+import net.es.oscars.bss.topology.IpaddrDAO;
+import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Node;
+import net.es.oscars.bss.topology.NodeAddress;
+import net.es.oscars.bss.topology.NodeAddressDAO;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.pathfinder.PathfinderException;
 import net.es.oscars.pathfinder.db.util.vendor.jnx.JnxShowRoute;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Reservation;
 import net.es.oscars.pss.PSSException;
 
 /**
