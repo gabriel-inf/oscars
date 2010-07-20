@@ -39,6 +39,8 @@ public class EoMPLS_Junos implements PSSHandler {
             String jobName = "setup-"+nodeId+"-"+gri;
             JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_NODECONFIG_"+nodeId, PathSetupJob.class);
             log.debug("Adding job "+jobName);
+            // FIXME
+            System.out.println("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("resv", resv);

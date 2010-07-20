@@ -21,6 +21,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
     private Class<T> persistentClass;
     private String dbName;
 
+    @SuppressWarnings("unchecked")
     public GenericHibernateDAO() {
         this.persistentClass = (Class<T>) ((ParameterizedType) getClass()
                                 .getGenericSuperclass())
@@ -49,7 +50,6 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         return entity;
     }
 
-  @SuppressWarnings("unchecked")
     public List<T> list() { return findByCriteria(); }
 
   @SuppressWarnings("unchecked")
@@ -63,12 +63,10 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         return crit.list();
     }
 
-  @SuppressWarnings("unchecked")
     public void create(T entity) {
         getSession().saveOrUpdate(entity);
     }
 
-  @SuppressWarnings("unchecked")
     public void update(T entity) {
         getSession().saveOrUpdate(entity);
     }

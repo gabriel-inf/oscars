@@ -1,4 +1,4 @@
-package net.es.oscars.pss.impl;
+package net.es.oscars.pss.impl.sdn;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -115,6 +115,7 @@ public class SDNPSS implements PSS {
             this.log.error(e);
             throw new PSSException(e.getMessage());
         }
+        
         return "";
     }
 
@@ -195,7 +196,7 @@ public class SDNPSS implements PSS {
             PSSHandler fwdHandler = this.getHandler(localPath, service, PathUtils.EdgeType.INGRESS);
             fwdHandler.setup(resv, localPath, PSSDirection.A_TO_Z);
             PSSHandler revHandler = this.getHandler(localPath, service, PathUtils.EdgeType.EGRESS);
-            revHandler.setup(resv, localPath, PSSDirection.A_TO_Z);
+            revHandler.setup(resv, localPath, PSSDirection.Z_TO_A);
             if (config.isCheckStatusAfterSetup()) {
                 fwdHandler.status(resv, localPath, PSSDirection.A_TO_Z);
                 revHandler.status(resv, localPath, PSSDirection.Z_TO_A);

@@ -1,13 +1,18 @@
 package net.es.oscars.database;
 
 import java.lang.management.ManagementFactory;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.hibernate.*;
-import org.hibernate.cfg.*;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.jmx.StatisticsService;
 
 import net.es.oscars.PropHandler;
@@ -34,28 +39,25 @@ public class HibernateUtil {
     public static void initSessionFactories(List<String> dbnames) {
         try {
             PropHandler propHandler = new PropHandler("oscars.properties");
-            if (propHandler == null) {
-                throw new ExceptionInInitializerError("Could not find properties file");
-            }
             Properties props = propHandler.getPropertyGroup("hibernate", false);
             Configuration cfg = new Configuration();
             cfg.setProperties(props);
             String monitorProp = props.getProperty("hibernate.monitor");
-            	
+                
             for (String dbname: dbnames) {
                 if (sessionFactories.get(dbname) == null) {
                     SessionFactory sessionFactory = cfg.configure(dbname + ".cfg.xml").buildSessionFactory();
                     putSessionFactory(dbname, sessionFactory);
                     if("1".equals(monitorProp)){
-	                    MBeanServer mbeanServer =
-	                        ManagementFactory.getPlatformMBeanServer();
-	                    final ObjectName objectName = new ObjectName(
-	                                  "Hibernate:name=statistics,Type="+dbname+System.currentTimeMillis());
-	                    final StatisticsService mBean =
-	                                           new StatisticsService();
-	                    mBean.setStatisticsEnabled(true);
-	                    mBean.setSessionFactory(sessionFactory);
-	                    mbeanServer.registerMBean(mBean, objectName);
+                        MBeanServer mbeanServer =
+                            ManagementFactory.getPlatformMBeanServer();
+                        final ObjectName objectName = new ObjectName(
+                                      "Hibernate:name=statistics,Type="+dbname+System.currentTimeMillis());
+                        final StatisticsService mBean =
+                                               new StatisticsService();
+                        mBean.setStatisticsEnabled(true);
+                        mBean.setSessionFactory(sessionFactory);
+                        mbeanServer.registerMBean(mBean, objectName);
                     }
                 }
             }

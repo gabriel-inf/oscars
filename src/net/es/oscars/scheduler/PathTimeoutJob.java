@@ -3,11 +3,18 @@ package net.es.oscars.scheduler;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
-import org.quartz.*;
-import net.es.oscars.bss.*;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.OSCARSCore;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
+import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.pss.*;
+import net.es.oscars.pss.PathSetupManager;
 import net.es.oscars.PropHandler;
 
 public class PathTimeoutJob implements org.quartz.Job {

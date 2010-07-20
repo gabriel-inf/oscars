@@ -1,24 +1,43 @@
 package net.es.oscars.pss;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
-import org.quartz.*;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.*;
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.OSCARSCore;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.ReservationDAO;
+import net.es.oscars.bss.ReservationLogger;
+import net.es.oscars.bss.ReservationManager;
+import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.interdomain.*;
-import net.es.oscars.scheduler.*;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathType;
+import net.es.oscars.interdomain.Forwarder;
+import net.es.oscars.interdomain.InterdomainException;
+
+import net.es.oscars.scheduler.CancelReservationJob;
+import net.es.oscars.scheduler.PathTimeoutJob;
 
 
 /**
  * PathSetupManager handles all direct interaction with the PSS module.
  * It contains the factory to create the PSS and makes the necessary method
  * calls.
+ * 
+ * it handles interdomain workflow & status updating
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
@@ -36,15 +55,27 @@ public class PathSetupManager{
     private long TEARDOWN_CONFIRM_TIMEOUT = 600;//10min
     private int WAIT_FOR_LOCAL_SETUP_ATTEMPTS = 12;
     private long WAIT_FOR_LOCAL_SETUP_ATTEMPT_TIME = 10;//10 seconds
-    
+    private static PathSetupManager instance;
+    // singleton
+    public static PathSetupManager getInstance(String dbname){
+        if (instance == null) {
+            instance = new PathSetupManager(dbname);
+        }
+        return instance;
+    }
     /** Constructor. */
-    public PathSetupManager(String dbname) {
+    private PathSetupManager(String dbname) {
+        this.log = Logger.getLogger(this.getClass());
+        
         PropHandler propHandler = new PropHandler("oscars.properties");
-        PSSFactory pssFactory = new PSSFactory();
         this.core = OSCARSCore.getInstance();
         this.props = propHandler.getPropertyGroup("pss", true);
-        this.pss = pssFactory.createPSS(this.props.getProperty("method"), dbname);
-        this.log = Logger.getLogger(this.getClass());
+        try {
+            this.pss = PSSFactory.createPSS(this.props.getProperty("method"));
+        } catch (PSSException e) {
+            log.error(e);
+            System.exit(1);
+        }
         this.rsvLogger = new ReservationLogger(this.log);
         this.dbname = dbname;      
         this.resvLocks = new HashMap<String, Semaphore>();

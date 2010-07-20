@@ -2,17 +2,14 @@ package net.es.oscars.database;
 
 import java.util.List;
 
-import org.apache.log4j.*;
+// import org.apache.log4j.Logger;
 
 /**
  * Initializer handles Hibernate initialization.
  */
 public class Initializer {
-    private Logger log;
+    // private Logger log = Logger.getLogger(Initializer.class);
 
-    public Initializer() {
-        this.log = Logger.getLogger(this.getClass());
-    }
 
     /**
      * Initializes Hibernate.

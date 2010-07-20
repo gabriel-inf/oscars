@@ -214,7 +214,7 @@ public class OSCARSCore {
      */
     public void initPathSetupManager() {
         this.log.debug("initPathSetupManager.start");
-        this.pathSetupManager = new PathSetupManager(this.bssDbName);
+        this.pathSetupManager = PathSetupManager.getInstance(this.bssDbName);
         this.log.debug("initPathSetupManager.end");
     }
 

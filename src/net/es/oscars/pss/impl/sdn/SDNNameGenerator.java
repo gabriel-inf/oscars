@@ -1,4 +1,4 @@
-package net.es.oscars.pss.impl;
+package net.es.oscars.pss.impl.sdn;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.pss.common.ConfigNameGenerator;

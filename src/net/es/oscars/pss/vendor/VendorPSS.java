@@ -30,7 +30,7 @@ public class VendorPSS implements PSS {
     private static String staticAllowLSP;
     private OSCARSCore core;
 
-    public VendorPSS(String dbname) {
+    public VendorPSS() {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties commonProps = propHandler.getPropertyGroup("pss", true);
@@ -40,8 +40,8 @@ public class VendorPSS implements PSS {
             this.allowLSP =
                 commonProps.getProperty("allowLSP").equals("1") ? true : false;
         }
-        this.dbname = dbname;
         this.core = OSCARSCore.getInstance();
+        this.dbname = core.getBssDbName();
     }
 
     /**

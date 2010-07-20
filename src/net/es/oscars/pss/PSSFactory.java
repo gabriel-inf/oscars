@@ -1,6 +1,7 @@
 package net.es.oscars.pss;
 
 import net.es.oscars.pss.dragon.VlsrPSS;
+import net.es.oscars.pss.impl.sdn.SDNPSS;
 import net.es.oscars.pss.stub.StubPSS;
 import net.es.oscars.pss.vendor.VendorPSS;
 
@@ -12,6 +13,7 @@ import net.es.oscars.pss.vendor.VendorPSS;
  * @author Andrew Lake (alake@internet2.edu), David Robertson (dwrobertson@lbl.gov)
  */
 public class PSSFactory{
+    private static PSS pss;
     /**
      * Creates a new PSS instance of the given type.
      *
@@ -19,20 +21,26 @@ public class PSSFactory{
      * @param dbname database to access
      * @return a new instance of a PSS. null if pss is not recognized.
      */
-    public PSS createPSS(String pssType, String dbname) {
-
-        // check for null in case config file doesn't not have pss.method
-        if (pssType == null) {
-            ;
-        } else if (pssType.equals("dragon")) {
-            return new VlsrPSS();
-        } else if (pssType.equals("vendor")) {
-            // this class chooses between configuring Cisco's or Juniper's
-            return new VendorPSS(dbname);
-        } else if (pssType.equals("stub")) {
-            return new StubPSS();
+    public static PSS createPSS(String pssType) throws PSSException {
+        
+        if (pss == null) {
+            // check for null in case config file doesn't not have pss.method
+            if (pssType == null) {
+                ;
+            } else if (pssType.equals("sdn")) {
+                pss = SDNPSS.getInstance();
+            } else if (pssType.equals("dragon")) {
+                pss = new VlsrPSS();
+            } else if (pssType.equals("vendor")) {
+                // this class chooses between configuring Cisco's or Juniper's
+                pss = new VendorPSS();
+            } else if (pssType.equals("stub")) {
+                pss = new StubPSS();
+            }
+            
         }
-        return null;
+        
+        return pss;
     }
 }
 
