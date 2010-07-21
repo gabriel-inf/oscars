@@ -29,7 +29,7 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
     public List<Path> findInterdomainPath(Reservation resv) throws PathfinderException {
         ArrayList<Path> paths = new ArrayList<Path>();
 
-        Path requestedPath = null;
+        Path requestedPath;
         Path interdomainPath = new Path();
 
         // Get path information:
@@ -47,11 +47,14 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
         
         PathElem localIngressPE = null;
         PathElem localEgressPE = null; 
-        
         List<PathElem> localSegment = this.extractLocalSegment(requestedPath);
-        if (localSegment != null && localSegment.size() >= 2) {
-            localIngressPE = localSegment.get(0);
-            localEgressPE = localSegment.get(localSegment.size() -1);
+        if (localSegment != null) {
+            if (localSegment.size() >= 1) {
+                localIngressPE = localSegment.get(0);
+            } 
+            if (localSegment.size() >= 2) {
+                localEgressPE = localSegment.get(localSegment.size() -1);
+            }
         }
         
 
@@ -59,6 +62,10 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
 
         // Case 1: We HAVE received a set of hops in the requested path
         if (this.isPathSpecified(requestedPath)) {
+            log.debug("an explicit path was requested");
+            for (PathElem pe : requestedPath.getPathElems()) {
+                log.debug("hop: "+pe.getUrn());
+            }
             Link localEgressLink = null;
             // if we have a set of hops, our ingress must always be specified
             Link localIngressLink = this.firstLocalLink(requestedPath);
@@ -85,6 +92,8 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 this.log.debug("Next domain ingress will be: "+localEgressLink.getRemoteLink().getFQTI());
             }
 
+            
+            
             boolean addedLocalPes = false;
 
             this.log.debug("Reconciling requested path");
@@ -106,6 +115,16 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
                 } else {
                     // just do this once, after that ignore all local hops
                     if (!addedLocalPes) {
+                        if (localIngressPE == null) {
+                            localIngressPE = new PathElem();
+                            localIngressPE.setLink(localIngressLink);
+                            localIngressPE.setUrn(localIngressLink.getFQTI());
+                        }
+                        if (localEgressPE == null) {
+                            localEgressPE = new PathElem();
+                            localEgressPE.setLink(localEgressLink);
+                            localEgressPE.setUrn(localEgressLink.getFQTI());
+                        }
                         PathElem newIngressPE = null;
                         PathElem newEgressPE = null;
                         try {
@@ -133,7 +152,7 @@ public class GenericInterdomainPathfinder extends Pathfinder implements Interdom
             }
 
         // Case 2: No path hops were specified and we only have the endpoints to work from
-        // This will be the usual case when a user requestss reservation
+        // This will be the usual case when a user requests reservation
         } else {
             // Note: no need to check other case because an exception will be thrown
             if (this.pathOriginatesLocally(requestedPath)) {
