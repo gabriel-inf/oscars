@@ -1,12 +1,19 @@
 package net.es.oscars.notifybroker;
 
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.xpath.*;
+import org.jdom.xpath.XPath;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -27,7 +34,7 @@ import net.es.oscars.notifybroker.db.SubscriptionFilterDAO;
 import net.es.oscars.notifybroker.jdom.ProducerReference;
 import net.es.oscars.notifybroker.jobs.ProcessNotifyJob;
 import net.es.oscars.notifybroker.jobs.SendNotifyJob;
-import net.es.oscars.rmi.notifybroker.xface.*;
+import net.es.oscars.rmi.notifybroker.xface.RmiSubscribeResponse;
 
 /**
  * Core class for managing publishers subscriptions and notifications. Class
@@ -162,8 +169,8 @@ public class NotifyBrokerManager{
         for(Subscription authSubscription : authSubscriptions){ 
             //apply subscriber specified XPATH filters
             this.log.debug("Applying filters for " + authSubscription.getReferenceId());
-            Set filters = authSubscription.getFilters();
-            Iterator i = filters.iterator();
+            Set<?> filters = authSubscription.getFilters();
+            Iterator<?> i = filters.iterator();
             String matches = null;
             while(i.hasNext() && matches == null){
                 SubscriptionFilter filter = (SubscriptionFilter) i.next();
