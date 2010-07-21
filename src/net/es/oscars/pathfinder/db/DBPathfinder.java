@@ -307,7 +307,8 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
         
         // A2) if we're still here, the first-hop-after MUST belong to a known domain
         try {
-            Domain fhalDomain = TopologyUtil.getDomain(firstHopAfterLocal, dbname);
+            String domainFQTI = URNParser.parseTopoIdent(firstHopAfterLocal).get("domainFQID");
+            Domain fhalDomain = TopologyUtil.getDomain(domainFQTI, dbname);
             // in this case go find the best egress based on the last local link and that domain
             return this.decideEgress(lastLocal, fhalDomain, resv);
         } catch (BSSException e) {
@@ -335,6 +336,7 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
     // TODO: improve this somehow
     private Link decideEgress(Link local, Domain neighbor, Reservation resv) throws PathfinderException {
         String localURN = local.getFQTI();
+        log.debug("deciding egress between: "+localURN+" and "+neighbor.getFQTI());
         
         ArrayList<Link> possibleEgresses = new ArrayList<Link>();
         

@@ -79,10 +79,9 @@ public class URNParser {
 
         String compactForm = null;
         String realCompactForm = null;
-        String fqti = null;
         String addressType = "";
         
-        if (matched == null) {
+        if (matched.equals("")) {
             try {
                 InetAddress[] addrs = InetAddress.getAllByName(topoIdent);
                  System.out.print("[Success]:");
@@ -100,10 +99,8 @@ public class URNParser {
                  result.put("type", addressType);
                  matched = "address";
              } catch(UnknownHostException e) {
-                 if (matched == null) {
-                    result.put("type", "unknown");
-                    return result;
-                 }
+                result.put("type", "unknown");
+                return result;
              }
         } else if (matched.equals("domain")) {
             String domainFqti = "urn:ogf:network:domain="+domainId;
@@ -149,7 +146,6 @@ public class URNParser {
             String nodeFqti = domainFqti+":node="+nodeId;
             String portFqti = nodeFqti+":port="+portId;
             String linkFqti = portFqti+":link="+linkId;
-            fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId+":link="+linkId;
             compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId+":"+linkId;
             realCompactForm = domainId+":"+nodeId+":"+portId+":"+linkId;
             result.put("realcompact", realCompactForm);
