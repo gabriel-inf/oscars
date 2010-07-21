@@ -85,7 +85,7 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
             String src = localSegment.get(i).getLink().getFQTI();
             String dst = localSegment.get(i+1).getLink().getFQTI();
             this.log.debug("Finding path between: ["+src+"] ["+dst+"] ");
-            Path partialPath = findPathBetween(src, dst, resv, "L2");
+            Path partialPath = findPathBetween(src, dst, resv);
             if (partialPath == null) {
                 throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
             } else {
@@ -167,7 +167,7 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
             dst = trcResult.dstLink.getFQTI();
         }
 
-        Path path = this.findPathBetween(src, dst, resv, "L3");
+        Path path = this.findPathBetween(src, dst, resv);
         try {
             path.setPathType(PathType.LOCAL);
         } catch (BSSException ex) {
@@ -254,36 +254,131 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
         return null;
     }
 
+    /**
+     * picks the egress to the next domain
+     */
     protected Link findEgressTo(String src, String dst, Reservation resv) throws PathfinderException {
-        Link result = super.findEgressTo(src, dst, resv);
-        if (result != null) {
-            this.log.debug("Egress to next domain: "+result.getFQTI());
-            return result;
+        
+        Path reqPath = null;
+        try {
+            reqPath = resv.getPath(PathType.REQUESTED);
+        } catch (BSSException e) {
+            log.error(e);
+            throw new PathfinderException(e.getMessage());
+        }
+        
+        // the last local link defined on the requested path
+        Link lastLocal = this.lastLocalLink(reqPath);
+
+        if (lastLocal == null) {
+            // no local segment - find it from src
+            lastLocal = getFirstLocalHopFromSrc(src);
+            if (lastLocal == null) {
+                throw new PathfinderException("Could not determine local hop for src: "+src);
+            }
         }
 
-        Path pathToOther = this.findPathBetween(src, dst, resv, "L2");
-        result = this.lastLocalLink(pathToOther);
+        
+        // A) we have a local segment AND a hop defined immediately after it OR a dst
+        // THEN either of these should belong to the next domain
+        String firstHopAfterLocal = null;
+        try {
+            firstHopAfterLocal = this.firstHopAfterLocal(reqPath);
+        } catch (PathfinderException e) {
+            // no first hop after local found - that's OK, let's try by dst
+            firstHopAfterLocal = dst;
+        }
+        
+        // if we're lucky the first hop after local is in our DB 
+        Link fhalLink = null;
+        try {
+            // and if it ALSO has a remote link to a local link we're set
+            fhalLink = TopologyUtil.getLink(firstHopAfterLocal, dbname);
+            if (fhalLink.getRemoteLink() != null) {
+                if (fhalLink.getRemoteLink().getPort().getNode().getDomain().isLocal()) {
+                    return fhalLink.getRemoteLink();
+                }
+            }
+        } catch (BSSException e) {
+            // could not find in database, that's OK, we'll try by domain
+        }
+            
+        
+        
+        // A2) if we're still here, the first-hop-after MUST belong to a known domain
+        try {
+            Domain fhalDomain = TopologyUtil.getDomain(firstHopAfterLocal, dbname);
+            // in this case go find the best egress based on the last local link and that domain
+            return this.decideEgress(lastLocal, fhalDomain, resv);
+        } catch (BSSException e) {
+            // could not find in database, that's a problem
+            throw new PathfinderException("could not find next domain for hop:"+firstHopAfterLocal);
+        }
 
+    }
+    
 
-        this.log.debug("Egress to next domain: "+result.getFQTI());
-
-        return result;
+    
+    private Link getFirstLocalHopFromSrc(String src) {
+        DomainDAO domDAO = new DomainDAO(dbname);
+        Link link = domDAO.getFullyQualifiedLink(src);
+        return link;
+    }
+    
+        
+        
+        
+    @SuppressWarnings("unchecked")
+    /** 
+     * decides the best egress link, based on least hops from a local link
+     */
+    // TODO: improve this somehow
+    private Link decideEgress(Link local, Domain neighbor, Reservation resv) throws PathfinderException {
+        String localURN = local.getFQTI();
+        
+        ArrayList<Link> possibleEgresses = new ArrayList<Link>();
+        
+        
+        for (Node node : (Set<Node>) neighbor.getNodes()) {
+            for (Port port : (Set<Port>) node.getPorts()) {
+                for (Link link : (Set<Link>) port.getLinks()) {
+                    if (link.getRemoteLink() != null) {
+                        if (link.getRemoteLink().getPort().getNode().getDomain().isLocal()) {
+                            possibleEgresses.add(link.getRemoteLink());
+                        }
+                    }
+                }
+            }
+        }
+        
+        Path bestPath = null;
+        Link bestEgress = null;
+        for (Link candidate : possibleEgresses) {
+            String egressURN = candidate.getFQTI();
+            Path path = this.findPathBetween(localURN, egressURN, resv);
+            if (bestPath == null) {
+                bestPath = path;
+                bestEgress = candidate;
+            } else if (bestPath.getPathElems().size() > path.getPathElems().size()) {
+                bestPath = path;
+                bestEgress = candidate;
+            }
+        }
+        return bestEgress;
     }
 
-
-
-    public Path findPathBetween(String src, String dst, Reservation reservation, String layer)
+    public Path findPathBetween(String src, String dst, Reservation reservation)
             throws PathfinderException{
         Long bandwidth = reservation.getBandwidth();
         Long startTime = reservation.getStartTime();
         Long endTime = reservation.getEndTime();
-        return this.findPathBetween(src, dst, bandwidth, startTime, endTime, reservation, layer);
+        return this.findPathBetween(src, dst, bandwidth, startTime, endTime, reservation);
     }
 
 
     public Path findPathBetween(String src, String dst, Long bandwidth,
                                 Long startTime, Long endTime,
-                                Reservation reservation, String layer)
+                                Reservation reservation)
             throws PathfinderException {
 
         this.log.debug("findPathBetween.start");
@@ -308,10 +403,10 @@ public class DBPathfinder extends GenericInterdomainPathfinder implements LocalP
         src = URNParser.parseTopoIdent(src).get("fqti");
         dst = URNParser.parseTopoIdent(dst).get("fqti");
 
-        DijkstraShortestPath sp;
-        Iterator peIt;
+        DijkstraShortestPath<String, DefaultWeightedEdge> sp;
+        Iterator<DefaultWeightedEdge> peIt;
         try {
-            sp = new DijkstraShortestPath(graph, src, dst);
+            sp = new DijkstraShortestPath<String, DefaultWeightedEdge>(graph, src, dst);
         } catch (Exception ex) {
             throw new PathfinderException(ex.getMessage());
         }

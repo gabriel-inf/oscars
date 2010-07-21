@@ -1,12 +1,20 @@
 package net.es.oscars.pathfinder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
 
-import org.apache.log4j.*;
 
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.lookup.*;
+import net.es.oscars.bss.topology.DomainDAO;
+import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.URNParser;
+import net.es.oscars.lookup.LookupException;
+import net.es.oscars.lookup.LookupFactory;
+import net.es.oscars.lookup.PSLookupClient;
 
 /**
  * This class is intended to be subclassed by the other xxxPathfinder classes
@@ -16,12 +24,10 @@ import net.es.oscars.lookup.*;
  *
  */
 public class Pathfinder {
-    private Logger log = Logger.getLogger(Pathfinder.class);
     protected String dbname;
     private DomainDAO domDAO;
 
     public Pathfinder(String dbname) {
-        this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
         domDAO = new DomainDAO(dbname);
 
@@ -107,11 +113,17 @@ public class Pathfinder {
 
     protected Link firstLocalLink(Path requestedPath) throws PathfinderException {
         List<PathElem> localPathElems = this.extractLocalSegment(requestedPath);
+        if (localPathElems == null) {
+            return null;
+        }
         return localPathElems.get(0).getLink();
     }
 
     protected Link lastLocalLink(Path requestedPath) throws PathfinderException {
         List<PathElem> localPathElems = this.extractLocalSegment(requestedPath);
+        if (localPathElems == null) {
+            return null;
+        }
         return localPathElems.get(localPathElems.size()-1).getLink();
     }
 
@@ -209,8 +221,6 @@ public class Pathfinder {
 
 
     protected HashMap<String, String> findEndpoints(Path path) throws PathfinderException {
-        Layer2Data layer2Data = path.getLayer2Data();
-        Layer3Data layer3Data = path.getLayer3Data();
         String srcEndpoint = null;
         String destEndpoint= null;
         HashMap<String, String> result = new HashMap<String, String>();
