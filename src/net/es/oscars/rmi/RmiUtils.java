@@ -2,11 +2,12 @@ package net.es.oscars.rmi;
 
 import java.rmi.RemoteException;
 
-import net.es.oscars.rmi.aaa.*;
-import net.es.oscars.rmi.bss.*;
-import net.es.oscars.rmi.notifybroker.*;
+import net.es.oscars.rmi.aaa.AaaRmiClient;
+import net.es.oscars.rmi.aaa.AaaRmiInterface;
+import net.es.oscars.rmi.bss.BssRmiClient;
+import net.es.oscars.rmi.bss.BssRmiInterface;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 public class RmiUtils {
 

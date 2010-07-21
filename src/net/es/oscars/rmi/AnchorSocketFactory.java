@@ -1,8 +1,11 @@
 package net.es.oscars.rmi;
 
-import java.rmi.server.*;
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.rmi.server.RMISocketFactory;
 
 /**
  * RMISocketFactory implementation that causes the RMI registry and server
@@ -14,6 +17,7 @@ import java.net.*;
  *
  */
 public class AnchorSocketFactory extends RMISocketFactory implements Serializable {
+    private static final long serialVersionUID = 1L;
     private InetAddress ipInterface = null;
     public AnchorSocketFactory() {}
 
