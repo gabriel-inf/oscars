@@ -13,13 +13,13 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSS;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSAction;
+import net.es.oscars.pss.common.PSSEdgeType;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PSSHandlerConfigBean;
 import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.RouterVendor;
 import net.es.oscars.pss.common.SNMPRouterVendorFinder;
-import net.es.oscars.pss.common.PathUtils.EdgeType;
 
 import net.es.oscars.pss.eompls.junos.EoMPLSJunosConfigGen;
 import net.es.oscars.pss.layer3.junos.Layer3JunosConfigGen;
@@ -157,10 +157,18 @@ public class SDNPSS implements PSS {
         }
     }
     
-    
-    private PSSHandler getHandler(Path localPath, SDNService service, PathUtils.EdgeType edgeType) throws PSSException {
+    /** 
+     * gets 
+     * 
+     * @param localPath
+     * @param service
+     * @param edgeType
+     * @return
+     * @throws PSSException
+     */
+    private PSSHandler getHandler(Path localPath, SDNService service, PSSEdgeType edgeType) throws PSSException {
         SNMPRouterVendorFinder rv = SNMPRouterVendorFinder.getInstance();
-        Map<EdgeType, String> edges = PathUtils.getEdgeNodeAddresses(localPath);
+        Map<PSSEdgeType, String> edges = PathUtils.getEdgeNodeAddresses(localPath);
         String address = edges.get(edgeType);
         RouterVendor vendor = rv.getVendor(address);
         PSSHandler handler = SDNHandlerFactory.getHandler(vendor, service);
@@ -178,7 +186,7 @@ public class SDNPSS implements PSS {
         if (PathUtils.sameNode(localPath)) {
             // for layer2 we need to switch
             if (layer.equals(Layer.LAYER2)) {
-                PSSHandler handler = this.getHandler(localPath, SDNService.SWITCHED, PathUtils.EdgeType.INGRESS);
+                PSSHandler handler = this.getHandler(localPath, SDNService.SWITCHED, PSSEdgeType.A);
                 handler.setup(resv, localPath, PSSDirection.BIDIRECTIONAL);
             } else {
             // for layer3 it is an error
@@ -193,9 +201,9 @@ public class SDNPSS implements PSS {
             } else {
                 service = SDNService.LAYER3;
             }
-            PSSHandler fwdHandler = this.getHandler(localPath, service, PathUtils.EdgeType.INGRESS);
+            PSSHandler fwdHandler = this.getHandler(localPath, service, PSSEdgeType.A);
             fwdHandler.setup(resv, localPath, PSSDirection.A_TO_Z);
-            PSSHandler revHandler = this.getHandler(localPath, service, PathUtils.EdgeType.EGRESS);
+            PSSHandler revHandler = this.getHandler(localPath, service, PSSEdgeType.Z);
             revHandler.setup(resv, localPath, PSSDirection.Z_TO_A);
             if (config.isCheckStatusAfterSetup()) {
                 fwdHandler.status(resv, localPath, PSSDirection.A_TO_Z);
@@ -214,7 +222,7 @@ public class SDNPSS implements PSS {
         if (PathUtils.sameNode(localPath)) {
             // for layer2 we need to switch
             if (layer.equals(Layer.LAYER2)) {
-                PSSHandler handler = this.getHandler(localPath, SDNService.SWITCHED, PathUtils.EdgeType.INGRESS);
+                PSSHandler handler = this.getHandler(localPath, SDNService.SWITCHED, PSSEdgeType.A);
                 handler.teardown(resv, localPath, PSSDirection.BIDIRECTIONAL);
             } else {
             // for layer3 it is an error
@@ -229,9 +237,9 @@ public class SDNPSS implements PSS {
             } else {
                 service = SDNService.LAYER3;
             }
-            PSSHandler fwdHandler = this.getHandler(localPath, service, PathUtils.EdgeType.INGRESS);
+            PSSHandler fwdHandler = this.getHandler(localPath, service, PSSEdgeType.A);
             fwdHandler.teardown(resv, localPath, PSSDirection.A_TO_Z);
-            PSSHandler revHandler = this.getHandler(localPath, service, PathUtils.EdgeType.EGRESS);
+            PSSHandler revHandler = this.getHandler(localPath, service, PSSEdgeType.Z);
             revHandler.teardown(resv, localPath, PSSDirection.A_TO_Z);
             if (config.isCheckStatusAfterTeardown()) {
                 fwdHandler.status(resv, localPath, PSSDirection.A_TO_Z);

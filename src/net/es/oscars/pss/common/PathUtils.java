@@ -15,10 +15,6 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 
 public class PathUtils {
-    public enum EdgeType {
-        INGRESS,
-        EGRESS
-    }
     public static void checkPath(Path localPath) throws PSSException {
         List<PathElem> pathElems = localPath.getPathElems();
         if (pathElems.size() < 2) {
@@ -37,16 +33,16 @@ public class PathUtils {
 
     }
 
-    public static Map<EdgeType, String> getEdgeNodeAddresses(Path localPath) {
-        HashMap<EdgeType, String> edgeAddresses = new HashMap<EdgeType, String>();
+    public static Map<PSSEdgeType, String> getEdgeNodeAddresses(Path localPath) {
+        HashMap<PSSEdgeType, String> edgeAddresses = new HashMap<PSSEdgeType, String>();
 
         List<PathElem> pathElems = localPath.getPathElems();
         Node ingressNode    = pathElems.get(0).getLink().getPort().getNode();
         Node egressNode     = pathElems.get(pathElems.size()-1).getLink().getPort().getNode();
         String ingressAddress = ingressNode.getNodeAddress().getAddress();
         String egressAddress = egressNode.getNodeAddress().getAddress();
-        edgeAddresses.put(EdgeType.INGRESS, ingressAddress);
-        edgeAddresses.put(EdgeType.EGRESS, egressAddress);
+        edgeAddresses.put(PSSEdgeType.A, ingressAddress);
+        edgeAddresses.put(PSSEdgeType.Z, egressAddress);
 
 
         return edgeAddresses;
