@@ -293,7 +293,7 @@ public class TopologyAxis2Importer {
         linkDAO.update(dbLink);
         
         //Add IP address if needed
-        Pattern linkIpPattern = Pattern.compile("\\#(\\d+\\.\\d+\\.\\d+\\.\\d+)$");
+        Pattern linkIpPattern = Pattern.compile(".*\\#(\\d+\\.\\d+\\.\\d+\\.\\d+)");
         Matcher m = linkIpPattern.matcher(xmlLinkId);
         if(m.matches()){
             this.prepareIPforDB(m.group(1), dbLink);
