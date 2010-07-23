@@ -1,6 +1,9 @@
 package net.es.oscars.bss.topology;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import net.es.oscars.bss.BSSException;
 
 import org.apache.log4j.Logger;
@@ -288,7 +291,14 @@ public class TopologyAxis2Importer {
         dbLink.setPort(parent);
 
         linkDAO.update(dbLink);
-
+        
+        //Add IP address if needed
+        Pattern linkIpPattern = Pattern.compile("\\#(\\d+\\.\\d+\\.\\d+\\.\\d+)$");
+        Matcher m = linkIpPattern.matcher(xmlLinkId);
+        if(m.matches()){
+            this.prepareIPforDB(m.group(1), dbLink);
+        }
+        
         /* Set switching capability info */
         CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
         if(swcap != null){
@@ -297,6 +307,7 @@ public class TopologyAxis2Importer {
 
         return dbLink;
     }
+   
 
     /**
      * Updates the remoteLinkId field of a link entry in the database.
@@ -321,7 +332,21 @@ public class TopologyAxis2Importer {
 
         return;
     }
-
+    
+    private void prepareIPforDB(String linkIp, Link parent){
+        IpaddrDAO ipAddrDAO = new IpaddrDAO(this.dbname);
+        Ipaddr dbIpAddr = ipAddrDAO.getLinkIpAddr(linkIp, parent);
+        
+        if(dbIpAddr == null){
+            dbIpAddr = new Ipaddr();
+            dbIpAddr.setIP(linkIp);
+            dbIpAddr.setLink(parent);
+        }
+        dbIpAddr.setValid(true);
+        
+        ipAddrDAO.update(dbIpAddr);
+    }
+    
     /**
      * Updates the l2SwitchingCapabilityData table in the database
      *

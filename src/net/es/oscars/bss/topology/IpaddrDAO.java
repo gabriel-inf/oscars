@@ -25,4 +25,16 @@ public class IpaddrDAO extends GenericHibernateDAO<Ipaddr,Integer> {
                                         .uniqueResult();
         return ipaddr;
     }
+    
+    public Ipaddr getLinkIpAddr(String ip, Link link){
+        String sql = "select * from ipaddrs "+
+            "where linkId = ? AND ip = ?";
+        
+         return (Ipaddr) this.getSession().createSQLQuery(sql)
+                                         .addEntity(Ipaddr.class)
+                                         .setInteger(0, link.getId())
+                                         .setString(1, ip)
+                                         .setMaxResults(1)
+                                         .uniqueResult();
+    }
 }
