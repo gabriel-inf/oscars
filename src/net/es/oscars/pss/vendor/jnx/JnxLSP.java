@@ -186,7 +186,7 @@ public class JnxLSP {
                     if (ipaddr != null) {
                         lspFwdTo = ipaddr.getIP();
                     } else {
-                        throw new PSSException("Egress port has no IP in DB!");
+                        throw new PSSException("Last port before egress has no IP in DB ("+lspData.getLastXfaceElem().getLink().getFQTI()+")");
                     }
                     hm.put("lsp_from", lspData.getIngressRtrLoopback());
                     hm.put("lsp_to", lspFwdTo);
@@ -210,7 +210,7 @@ public class JnxLSP {
                 if (ipaddr != null) {
                     lspRevTo = ipaddr.getIP();
                 } else {
-                    throw new PSSException("Egress port has no IP in DB!");
+                    throw new PSSException("First internal port after ingress has no IP in DB ("+path.getPathElems().get(nextSeqNumber).getLink().getFQTI()+")");
                 }
                 hm.put("local-vlan-id", lspData.getEgressVlanTag());
                 hm.put("remote-vlan-id", lspData.getIngressVlanTag());
