@@ -25,6 +25,7 @@ import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.PSSConfigProvider;
 import net.es.oscars.pss.common.PSSHandlerConfigBean;
 import net.es.oscars.pss.impl.sdn.SDNPSS;
 
@@ -363,8 +364,9 @@ public class SDNPSSTest {
         config.setStubMode(true);
         config.setTeardownOnFailure(false);
         config.setTemplateDir("conf/pss");
-        
-        SDNPSS pss = SDNPSS.getInstance(config);
+        PSSConfigProvider pc = PSSConfigProvider.getInstance();
+        pc.setHandlerConfig(config);
+        SDNPSS pss = SDNPSS.getInstance();
         
 
         pss.createPath(resv);

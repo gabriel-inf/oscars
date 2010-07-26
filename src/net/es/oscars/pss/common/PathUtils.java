@@ -15,6 +15,23 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 
 public class PathUtils {
+    
+    public static Path getLocalPath(Reservation resv) throws PSSException {
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e.getMessage());
+        }
+        if (localPath == null) {
+            throw new PSSException("No local path set");
+        }
+        PathUtils.checkPath(localPath);
+        return localPath;
+
+    }
+
+    
     public static void checkPath(Path localPath) throws PSSException {
         List<PathElem> pathElems = localPath.getPathElems();
         if (pathElems.size() < 2) {
