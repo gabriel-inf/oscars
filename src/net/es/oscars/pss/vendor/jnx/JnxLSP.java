@@ -194,11 +194,13 @@ public class JnxLSP {
                     hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
                     hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
                 }
-                try {
-                    conn.setupLogin(lspData.getIngressLink(), hm);
-                } catch (IOException e) {
-                    this.log.error(e);
-                    throw new PSSException(e.getMessage());
+                if (allowLSP) {
+                    try {
+                        conn.setupLogin(lspData.getIngressLink(), hm);
+                    } catch (IOException e) {
+                        this.log.error(e);
+                        throw new PSSException(e.getMessage());
+                    }
                 }
             } else {
                 this.log.debug("reverse direction");
@@ -219,10 +221,12 @@ public class JnxLSP {
                 hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
                 hm.put("interface", lspData.getEgressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getEgressLink().getPort().getTopologyIdent());
-                try {
-                    conn.setupLogin(lspData.getEgressLink(), hm);
-                } catch (IOException e) {
-                    throw new PSSException(e.getMessage());
+                if (allowLSP) {
+                    try {
+                        conn.setupLogin(lspData.getEgressLink(), hm);
+                    } catch (IOException e) {
+                        throw new PSSException(e.getMessage());
+                    }
                 }
             }
         } else if (isL3) {
@@ -268,10 +272,12 @@ public class JnxLSP {
             hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
-            try {
-                conn.setupLogin(lspData.getIngressRtrLoopback(), hm);
-            } catch (IOException e) {
-                throw new PSSException(e.getMessage());
+            if (allowLSP) {
+                try {
+                    conn.setupLogin(lspData.getIngressRtrLoopback(), hm);
+                } catch (IOException e) {
+                    throw new PSSException(e.getMessage());
+                }
             }
             hm.put("firewall_filter_marker", this.props.getProperty("firewall_filter_marker"));
         }
@@ -368,10 +374,12 @@ public class JnxLSP {
                     hm.put("interface", lspData.getIngressLink().getPort().getTopologyIdent());
                     hm.put("port", lspData.getIngressLink().getPort().getTopologyIdent());
                 }
-                try {
-                    conn.setupLogin(lspData.getIngressLink(), hm);
-                } catch (IOException e) {
-                    throw new PSSException(e.getMessage());
+                if (allowLSP) {
+                    try {
+                        conn.setupLogin(lspData.getIngressLink(), hm);
+                    } catch (IOException e) {
+                        throw new PSSException(e.getMessage());
+                    }
                 }
             } else {
                 hm.put("local-vlan-id", lspData.getEgressVlanTag());
@@ -379,10 +387,12 @@ public class JnxLSP {
                 hm.put("egress-rtr-loopback", lspData.getIngressRtrLoopback());
                 hm.put("interface", lspData.getEgressLink().getPort().getTopologyIdent());
                 hm.put("port", lspData.getEgressLink().getPort().getTopologyIdent());
-                try {
-                    conn.setupLogin(lspData.getEgressLink(), hm);
-                } catch (IOException e) {
-                    throw new PSSException(e.getMessage());
+                if (allowLSP) {
+                    try {
+                        conn.setupLogin(lspData.getEgressLink(), hm);
+                    } catch (IOException e) {
+                        throw new PSSException(e.getMessage());
+                    }
                 }
             }
         } else if (isL3) {
@@ -390,10 +400,12 @@ public class JnxLSP {
             hm.put("tester_interface_filter", this.props.getProperty("tester_interface_filter"));
             hm.put("internal_interface_filter", this.props.getProperty("internal_interface_filter"));
             hm.put("external_interface_filter", this.props.getProperty("external_interface_filter"));
-            try {
-                conn.setupLogin(lspData.getIngressLink(), hm);
-            } catch (IOException e) {
-                throw new PSSException(e.getMessage());
+            if (allowLSP) {
+                try {
+                    conn.setupLogin(lspData.getIngressLink(), hm);
+                } catch (IOException e) {
+                    throw new PSSException(e.getMessage());
+                }
             }
         }
 
