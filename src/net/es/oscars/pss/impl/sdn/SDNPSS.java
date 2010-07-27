@@ -162,9 +162,9 @@ public class SDNPSS implements PSS {
             if (layer.equals(PSSLayer.LAYER2)) {
                 PSSHandler handler = this.getHandler(localPath, SDNService.SWITCHED, PSSEdgeType.A);
                 if (action.equals(PSSAction.SETUP)) {
-                    q.scheduleAction(resv, localPath, PSSDirection.BIDIRECTIONAL, action, handler);
+                    q.scheduleAction(resv, PSSDirection.BIDIRECTIONAL, action, handler);
                 } else if (action.equals(PSSAction.TEARDOWN)) { 
-                    q.scheduleAction(resv, localPath, PSSDirection.BIDIRECTIONAL, action, handler);
+                    q.scheduleAction(resv, PSSDirection.BIDIRECTIONAL, action, handler);
                 } else {
                     throw new PSSException("Invalid action "+action);
                 }
@@ -184,11 +184,11 @@ public class SDNPSS implements PSS {
             PSSHandler fwdHandler = this.getHandler(localPath, service, PSSEdgeType.A);
             PSSHandler revHandler = this.getHandler(localPath, service, PSSEdgeType.Z);
             if (action.equals(PSSAction.SETUP)) { 
-                q.scheduleAction(resv, localPath, PSSDirection.A_TO_Z, action, fwdHandler);
-                q.scheduleAction(resv, localPath, PSSDirection.Z_TO_A, action, revHandler);
+                q.scheduleAction(resv, PSSDirection.A_TO_Z, action, fwdHandler);
+                q.scheduleAction(resv, PSSDirection.Z_TO_A, action, revHandler);
             } else if (action.equals(PSSAction.TEARDOWN)) {
-                q.scheduleAction(resv, localPath, PSSDirection.A_TO_Z, action, fwdHandler);
-                q.scheduleAction(resv, localPath, PSSDirection.Z_TO_A, action, revHandler);
+                q.scheduleAction(resv, PSSDirection.A_TO_Z, action, fwdHandler);
+                q.scheduleAction(resv, PSSDirection.Z_TO_A, action, revHandler);
                 
             } else {
                 throw new PSSException("Invalid action: "+action);
