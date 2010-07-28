@@ -179,7 +179,7 @@ public class SDNQueuer implements PSSQueuer {
         
         try {
             scheduler.addJob(jobDetail, false);
-            PSSActionWatcher.getInstance().watch(resv.getGlobalReservationId(), action, directions);
+            PSSActionWatcher.getInstance().watch(resv, action, directions);
         } catch (SchedulerException e) {
             log.error(e);
             throw new PSSException(e.getMessage());

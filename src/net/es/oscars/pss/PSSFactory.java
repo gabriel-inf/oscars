@@ -1,6 +1,8 @@
 package net.es.oscars.pss;
 
+import net.es.oscars.pss.common.PSSFailureHandler;
 import net.es.oscars.pss.dragon.VlsrPSS;
+import net.es.oscars.pss.impl.sdn.SDNFailureHandler;
 import net.es.oscars.pss.impl.sdn.SDNPSS;
 import net.es.oscars.pss.stub.StubPSS;
 import net.es.oscars.pss.vendor.VendorPSS;
@@ -42,5 +44,14 @@ public class PSSFactory{
         
         return pss;
     }
+    
+    public static PSSFailureHandler createFailureHandler(String pssType) {
+        if (pssType.equals("sdn")) {
+            return (SDNFailureHandler.getInstance());
+        }
+        return null;
+        
+    }
+    
 }
 

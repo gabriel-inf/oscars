@@ -143,5 +143,10 @@ public class SDNNameGenerator implements ConfigNameGenerator {
         }
         return instance;
     }
+
+    public Integer getOscarsCommunity(Reservation resv) {
+        // return OSCARS
+        return 672277;
+    }
     
 }

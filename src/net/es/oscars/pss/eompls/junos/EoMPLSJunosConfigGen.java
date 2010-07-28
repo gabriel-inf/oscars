@@ -1,6 +1,7 @@
 package net.es.oscars.pss.eompls.junos;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         Long policerBurstSizeLimit, policerBandwidthLimit;
         String statsFilterName, statsFilterTerm, statsFilterCount;
         String policingFilterName, policingFilterTerm, policingFilterCount;
+        Integer oscarsCommunity;
+        
         
         /* *********************** */
         /* BEGIN POPULATING VALUES */
@@ -128,11 +131,13 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         lspFrom             = aLoopback;
         lspTo               = yIP;
         
+        
 
-        // FIXME: this is WRONG; these should NOT depend on vlans
-        communityMembers    = "65000:"+aVlanPEP.getValue();
-        l2circuitVCID       = aVlanPEP.getValue()+zVlanPEP.getValue();
-        // end FIXME
+        oscarsCommunity         = nameGenerator.getOscarsCommunity(resv);
+
+        Long now = new Date().getTime();
+        communityMembers    = "65000:"+oscarsCommunity+":"+now;
+        l2circuitVCID       = now.toString();
 
         // names etc
         policingFilterName      = nameGenerator.getFilterName(resv, "policing");
@@ -149,8 +154,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         lspName                 = nameGenerator.getLSPName(resv);
         l2circuitDescription    = nameGenerator.getL2CircuitDescription(resv);
         ifceDescription         = nameGenerator.getInterfaceDescription(resv);
-
-
+        
         /* ********************** */
         /* DONE POPULATING VALUES */
         /* ********************** */

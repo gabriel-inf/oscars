@@ -1,56 +1,86 @@
 package net.es.oscars.pss.common;
 
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.log4j.Logger;
 import org.quartz.CronTrigger;
-import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SimpleTrigger;
 
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.pss.PSSException;
 
 public class PSSActionWatcher {
     private boolean watching = false;
     private Scheduler scheduler;
     private PSSQueuer queuer;
+    private Logger log = Logger.getLogger(PSSActionWatcher.class);
 
-    private ConcurrentHashMap<String, PSSActionDirections> watchList = new ConcurrentHashMap<String, PSSActionDirections>();
+    private ConcurrentHashMap<Reservation, PSSActionDirections> watchList = new ConcurrentHashMap<Reservation, PSSActionDirections>();
     
-    public synchronized void watch(String gri, PSSAction action, List<PSSDirection> directions) throws PSSException {
-        if (this.watchList.containsKey(gri)) {
-            System.out.println("was already watching "+gri);
+    public synchronized void watch(Reservation resv, PSSAction action, List<PSSDirection> directions) throws PSSException {
+        String dirStr= "";
+        for (PSSDirection dir : directions) {
+            dirStr = dirStr+dir+" ";
+        }
+        String gri = resv.getGlobalReservationId();
+        String subject = gri+" "+action+" "+dirStr;
+        log.debug("starting to watch "+subject);
+
+        if (watchList.containsKey(resv)) {
+            PSSActionDirections prv = watchList.get(resv);
+            PSSAction prvAction = prv.getAction();
+            String prvDirStr= "";
+            List<PSSDirection> prvDirections = prv.getDirections();
+            for (PSSDirection dir : prvDirections) {
+                prvDirStr = prvDirStr+dir+" ";
+            }
+            String prvSubject = gri+" "+prvAction+" "+prvDirStr;
+            
+            if (!prvAction.equals(action) || 
+                !(directions.containsAll(prvDirections) && prvDirections.containsAll(directions))) {
+                throw new PSSException("can't watch "+subject+" - was already watching "+prvSubject);
+            }
+                
         }
         PSSActionDirections ad = new PSSActionDirections();
         ad.setAction(action);
         ad.setDirections(directions);
-        watchList.put(gri, ad);
+        watchList.put(resv, ad);
         if (!watching) {
+            log.debug("was not previously watching");
             watching = true;
             this.startWatchJob();
         }
     }
-    public synchronized void unwatch(String gri) {
-        this.watchList.remove(gri);
+    
+    public synchronized void unwatch(Reservation resv) {
+        String gri = resv.getGlobalReservationId();
+        log.debug("unwatching "+gri);
+        this.watchList.remove(resv);
     }
     
-    /** 
-     * 
-     */
+    public synchronized void stopIfUnneeded() {
+        if (this.watchList.isEmpty()) {
+            log.debug("stopping because watchlist is empty");
+            try {
+                scheduler.unscheduleJob("PSSActionWatcher", "PSS");
+            } catch (SchedulerException e) {
+                log.error(e);
+            }
+        }
+        
+    }
+    
     private void startWatchJob() throws PSSException{
-        System.out.println("Starting up watch");
+        System.out.println("Starting up a watch job");
         // start a thread that will watch the watchList from here on every second
         String jobName = "PSSActionWatcher";
         JobDetail jobDetail = new JobDetail(jobName, "PSSActionWatcher", PSSActionWatchJob.class);
-
-        System.out.println("Adding job "+jobName);
         jobDetail.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
         jobDetail.setJobDataMap(jobDataMap);
@@ -85,7 +115,7 @@ public class PSSActionWatcher {
     }
     
     
-    public ConcurrentHashMap<String, PSSActionDirections> getWatchList() {
+    public ConcurrentHashMap<Reservation, PSSActionDirections> getWatchList() {
         return watchList;
     }
 

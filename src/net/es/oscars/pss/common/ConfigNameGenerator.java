@@ -20,6 +20,8 @@ public interface ConfigNameGenerator {
     
     public String getInterfaceDescription(Reservation resv);
 
+    public Integer getOscarsCommunity(Reservation resv);
+
     public String getL2CircuitDescription(Reservation resv);
 
     public String getLSPName(Reservation resv);
