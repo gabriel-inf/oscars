@@ -29,7 +29,7 @@ interface Tunnel${vlan}
 interface ${ifce.name}.${vlan}
  description ${ifce.description}
  encapsulation dot1Q ${vlan}
- xconnect ${path.egressLoopback} ${vlan} encapsulation mpls pw-class ${pseudowire.name}
+ xconnect ${path.egressLoopback} ${{l2circuit.vcid} encapsulation mpls pw-class ${pseudowire.name}
  service-policy input ${policy.name}
 !
 
