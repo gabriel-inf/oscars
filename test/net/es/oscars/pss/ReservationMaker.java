@@ -1,9 +1,10 @@
-package net.es.oscars.pss.impl;
+package net.es.oscars.pss;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-
-import org.testng.annotations.Test;
+import java.util.List;
+import java.util.Random;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
@@ -24,13 +25,9 @@ import net.es.oscars.bss.topology.PathElemParamSwcap;
 import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.bss.topology.Port;
-import net.es.oscars.pss.PSSException;
-import net.es.oscars.pss.common.PSSConfigProvider;
-import net.es.oscars.pss.common.PSSHandlerConfigBean;
-import net.es.oscars.pss.impl.sdn.SDNPSS;
+import net.es.oscars.bss.topology.Topology;
 
-@Test(groups={ "pss.sdn" })
-public class SDNPSSTest {
+public class ReservationMaker {
     private String aUrn = "urn:ogf:network:domain=foo:node=alpha:port=xe-0/0/0:link=*";
     private String bUrn = "urn:ogf:network:domain=foo:node=alpha:port=xe-1/0/0:link=xe-1/0/0.500";
     private String fUrn = "urn:ogf:network:domain=foo:node=kappa:port=xe-4/0/0:link=xe-4/0/0.500";
@@ -354,31 +351,6 @@ public class SDNPSSTest {
         return resv;
     }
     
-    @Test
-    public void testL2Setup() throws BSSException, PSSException {
-        Reservation resv = this.makeL2();
-        PSSHandlerConfigBean config = new PSSHandlerConfigBean();
-        config.setCheckStatusAfterSetup(false);
-        config.setCheckStatusAfterTeardown(false);
-        config.setLogConfig(false);
-        config.setStubMode(true);
-        config.setTeardownOnFailure(false);
-        config.setTemplateDir("conf/pss");
-        PSSConfigProvider pc = PSSConfigProvider.getInstance();
-        pc.setHandlerConfig(config);
-        SDNPSS pss = SDNPSS.getInstance();
-        
-
-        pss.createPath(resv);
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            System.out.println(".");
-        }
-    }
-
+    
+    
 }
