@@ -47,7 +47,7 @@ public class ReservationMaker {
     
     private Domain dom;
     
-    private void makeDomain() {
+    public void makeDomain() {
         // topology
         dom = new Domain();
         dom.setLocal(true);
@@ -183,7 +183,7 @@ public class ReservationMaker {
         
     }
     
-    protected Path makeL3Path() throws BSSException {
+    public Path makeL3Path() throws BSSException {
         this.makeDomain();
         
         Path localPath = new Path();
@@ -248,7 +248,7 @@ public class ReservationMaker {
         return localPath;
     }
     
-    protected Path makeL2Path() throws BSSException {
+    public Path makeL2Path() throws BSSException {
         this.makeDomain();
         Path localPath = new Path();
         localPath.setPathType(PathType.LOCAL);
@@ -319,7 +319,7 @@ public class ReservationMaker {
         
         return localPath;
     }
-    protected Reservation makeL3() throws BSSException {
+    public Reservation makeL3() throws BSSException {
         
         Reservation resv = new Reservation();
         Path localPath = this.makeL3Path();
@@ -335,7 +335,7 @@ public class ReservationMaker {
         return resv;
     }
     
-    protected Reservation makeL2() throws BSSException {
+    public Reservation makeL2() throws BSSException {
         
         Reservation resv = new Reservation();
         Path localPath = this.makeL2Path();

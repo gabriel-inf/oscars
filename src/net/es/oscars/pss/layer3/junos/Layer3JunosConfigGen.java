@@ -331,7 +331,7 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
 
     }
 
-    public String generateL3Status(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL3Status(Reservation resv, PSSDirection direction) throws PSSException {
         return "";
     }
 

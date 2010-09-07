@@ -149,7 +149,7 @@ public class ConfigGenTest {
         
         th.setTemplateDir("conf/pss");
         String out;
-        out = th.generateL2Setup(resv, resv.getPath(PathType.LOCAL), PSSDirection.BIDIRECTIONAL);
+        out = th.generateL2Setup(resv,PSSDirection.BIDIRECTIONAL);
         System.out.println(out);
     }
     @Test
@@ -161,7 +161,7 @@ public class ConfigGenTest {
 
         th.setTemplateDir("conf/pss");
         String out;
-        out = th.generateL2Teardown(resv, resv.getPath(PathType.LOCAL), PSSDirection.BIDIRECTIONAL);
+        out = th.generateL2Teardown(resv, PSSDirection.BIDIRECTIONAL);
         System.out.println(out);
     }
 
