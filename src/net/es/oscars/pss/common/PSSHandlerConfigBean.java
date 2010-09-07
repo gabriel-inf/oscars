@@ -36,10 +36,10 @@ public class PSSHandlerConfigBean {
     private String templateDir = "";
 
 
-    public static PSSHandlerConfigBean loadConfig() throws PSSException {
+    public static PSSHandlerConfigBean loadConfig(String propertyFile, String propertyGroup) throws PSSException {
         PSSHandlerConfigBean config = new PSSHandlerConfigBean();
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("pss", true);
+        PropHandler propHandler = new PropHandler(propertyFile);
+        Properties props = propHandler.getPropertyGroup(propertyGroup, true);
         if (props == null) {
             throw new PSSException("No PSS config");
         }
