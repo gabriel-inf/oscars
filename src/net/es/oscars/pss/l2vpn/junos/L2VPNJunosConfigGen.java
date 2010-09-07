@@ -1,4 +1,4 @@
-package net.es.oscars.pss.eompls.junos;
+package net.es.oscars.pss.l2vpn.junos;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,18 +22,14 @@ import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.TemplateConfigGen;
 import net.es.oscars.pss.eompls.EoMPLSUtils;
 
-public class EoMPLSJunosConfigGen extends TemplateConfigGen {
-    private static EoMPLSJunosConfigGen instance;
-    private ConfigNameGenerator nameGenerator = null;
+public class L2VPNJunosConfigGen extends TemplateConfigGen {
+    private static L2VPNJunosConfigGen instance;
+    private ConfigNameGenerator nameGenerator;
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public String generateL2Setup(Reservation resv, PSSDirection direction) throws PSSException {
-        if (nameGenerator == null) {
-            throw new PSSException("no name generator set");
-        }
-
-        String templateFileName = "eompls-junos-setup.txt";
+        String templateFileName = "l2vpn-junos-setup.txt";
 
         Path localPath;
         try {
@@ -381,14 +377,14 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
     
     
 
-    public static EoMPLSJunosConfigGen getInstance() {
+    public static L2VPNJunosConfigGen getInstance() {
         if (instance == null) {
-            instance = new EoMPLSJunosConfigGen();
+            instance = new L2VPNJunosConfigGen();
         }
         return instance;
     }
 
-    private EoMPLSJunosConfigGen() {
+    private L2VPNJunosConfigGen() {
     }
 
 

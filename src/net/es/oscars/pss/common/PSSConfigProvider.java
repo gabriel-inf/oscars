@@ -6,7 +6,7 @@ public class PSSConfigProvider {
         
     }
     private PSSHandlerConfigBean handlerConfig;
-    private SSLConfigBean sslConfig;
+    private PSSConnectorConfigBean connectorConfig;
     
     public static PSSConfigProvider getInstance() {
         if (instance == null) {
@@ -24,12 +24,13 @@ public class PSSConfigProvider {
         return handlerConfig;
     }
 
-    public void setSslConfig(SSLConfigBean sslConfig) {
-        this.sslConfig = sslConfig;
+    public PSSConnectorConfigBean getConnectorConfig() {
+        return connectorConfig;
     }
 
-    public SSLConfigBean getSslConfig() {
-        return sslConfig;
+    public void setConnectorConfig(PSSConnectorConfigBean connectorConfig) {
+        this.connectorConfig = connectorConfig;
     }
-    
+
+
 }
