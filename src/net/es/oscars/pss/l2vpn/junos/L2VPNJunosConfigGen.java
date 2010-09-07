@@ -26,6 +26,8 @@ public class L2VPNJunosConfigGen extends TemplateConfigGen {
     private static L2VPNJunosConfigGen instance;
     private ConfigNameGenerator nameGenerator;
 
+    
+    // FIXME not complete yet!!!
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public String generateL2Setup(Reservation resv, PSSDirection direction) throws PSSException {
@@ -364,12 +366,6 @@ public class L2VPNJunosConfigGen extends TemplateConfigGen {
 
     public String generateL2Status(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "eompls-junos-status.txt";
-        Path localPath;
-        try {
-            localPath = resv.getPath(PathType.LOCAL);
-        } catch (BSSException e) {
-            throw new PSSException(e);
-        }
         HashMap<String, Object> root = new HashMap<String, Object>();
         return this.getConfig(root, templateFileName);
     }

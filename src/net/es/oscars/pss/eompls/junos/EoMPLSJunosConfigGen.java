@@ -368,12 +368,6 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
 
     public String generateL2Status(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "eompls-junos-status.txt";
-        Path localPath;
-        try {
-            localPath = resv.getPath(PathType.LOCAL);
-        } catch (BSSException e) {
-            throw new PSSException(e);
-        }
         HashMap<String, Object> root = new HashMap<String, Object>();
         return this.getConfig(root, templateFileName);
     }

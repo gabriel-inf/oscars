@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Ipaddr;
 import net.es.oscars.bss.topology.Layer3Data;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.ConfigNameGenerator;
 import net.es.oscars.pss.common.PSSDirection;
@@ -23,8 +25,14 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
 
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public String generateL3Setup(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL3Setup(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "layer3-junos-setup.txt";
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e);
+        }
 
         // these are the leaf values
         String lspName, lspFrom, lspTo;
@@ -234,8 +242,9 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public String generateL3Teardown(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL3Teardown(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "layer3-junos-teardown.txt";
+
 
         // these are the leaf values
         String lspName, pathName;

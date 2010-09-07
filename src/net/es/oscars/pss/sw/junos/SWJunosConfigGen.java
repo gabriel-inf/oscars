@@ -12,6 +12,7 @@ import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathElemParam;
 import net.es.oscars.bss.topology.PathElemParamSwcap;
 import net.es.oscars.bss.topology.PathElemParamType;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.ConfigNameGenerator;
 import net.es.oscars.pss.common.PSSDirection;
@@ -23,9 +24,15 @@ public class SWJunosConfigGen extends TemplateConfigGen {
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public String generateL2Setup(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL2Setup(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "sw-junos-setup.txt";
-
+        
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e);
+        }
         // these are the leaf values
 
         String aIfceName, aIfceDescription, aIfceVlan;
@@ -149,8 +156,16 @@ public class SWJunosConfigGen extends TemplateConfigGen {
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public String generateL2Teardown(Reservation resv, Path localPath, PSSDirection direction) throws PSSException {
+    public String generateL2Teardown(Reservation resv, PSSDirection direction) throws PSSException {
         String templateFileName = "sw-junos-teardown.txt";
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            throw new PSSException(e);
+        }
+
+        
         // these are the leaf values
 
         String aIfceName, aIfceVlan;
@@ -254,7 +269,7 @@ public class SWJunosConfigGen extends TemplateConfigGen {
     }
 
     public String generateL2Status(Reservation resv, Path localPath, PSSDirection direction) {
-        // TODO
+        // FIXME
         String config = "";
         return config;
     }
