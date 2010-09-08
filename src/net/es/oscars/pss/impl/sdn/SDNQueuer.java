@@ -3,11 +3,11 @@ package net.es.oscars.pss.impl.sdn;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.testng.log4testng.Logger;
 
 import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
@@ -53,6 +53,7 @@ public class SDNQueuer implements PSSQueuer {
         Integer now = nowL.intValue();
         boolean ok = true;
         String error = "";
+        log.info("starting "+action+" for "+gri);
         for (PSSDirection direction : directions) {
             PSSActionStatus setupActionStatus   = ah.getDirectionActionStatus(gri, direction, PSSAction.SETUP);
             PSSActionStatus tdActionStatus      = ah.getDirectionActionStatus(gri, direction, PSSAction.TEARDOWN);

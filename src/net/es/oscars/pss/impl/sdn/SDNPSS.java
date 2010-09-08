@@ -13,9 +13,12 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSS;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSAction;
+import net.es.oscars.pss.common.PSSConfigProvider;
+import net.es.oscars.pss.common.PSSConnectorConfigBean;
 import net.es.oscars.pss.common.PSSEdgeType;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.common.PSSHandlerConfigBean;
 import net.es.oscars.pss.common.PSSLayer;
 import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.RouterVendor;
@@ -53,6 +56,7 @@ public class SDNPSS implements PSS {
     }
     
     public String createPath(Reservation resv) throws PSSException {
+        log.debug("debug");
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
         } catch (BSSException ex) {
@@ -96,10 +100,12 @@ public class SDNPSS implements PSS {
         int maxTries = 12;
         int sleep = 10;
         int currentTries = 0;
-        while (currentTries < maxTries) {
+        boolean ok = false;
+        while (currentTries < maxTries && !ok) {
             try {
                 currentTries++;
                 q.startAction(gri, directions, action);
+                ok = true;
             } catch (PSSException e) {
                 if (currentTries == maxTries) {
                     log.error(e);
@@ -223,6 +229,14 @@ public class SDNPSS implements PSS {
         l3.setNameGenerator(ng);
         eo.setNameGenerator(ng);
         sw.setNameGenerator(ng);
+        
+        
+        PSSConfigProvider cp = PSSConfigProvider.getInstance();
+        PSSHandlerConfigBean hc = PSSHandlerConfigBean.loadConfig("oscars.properties", "pss");
+        PSSConnectorConfigBean cc = PSSConnectorConfigBean.loadConfig("oscars.properties", "pss");
+        cp.setConnectorConfig(cc);
+        cp.setHandlerConfig(hc);
+        
     }
 
 

@@ -17,11 +17,20 @@ public class SDNPSSTest {
 
     
     @Test
-    public void testL2Setup() throws BSSException, PSSException {
+    public void testL2Setup() throws BSSException {
         
         
         ReservationMaker rm = new ReservationMaker();
         Reservation resv = rm.makeL2();
+        
+        
+        SDNPSS pss = null;;
+        try {
+            pss = SDNPSS.getInstance();
+        } catch (PSSException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
         
         
         PSSHandlerConfigBean hc = new PSSHandlerConfigBean();
@@ -36,19 +45,22 @@ public class SDNPSSTest {
         PSSConnectorConfigBean cc = new PSSConnectorConfigBean();
         pc.setConnectorConfig(cc);
         
-        SDNPSS pss = SDNPSS.getInstance();
+        try {
+            pss.createPath(resv);
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(".");
+            }
+        } catch (PSSException ex) {
+            ex.printStackTrace();
+        }
         
 
-        pss.createPath(resv);
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            System.out.println(".");
-        }
+
     }
 
 }
