@@ -20,7 +20,7 @@ public class ContactNodeJob extends ChainingJob  implements Job{
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         String jobName = context.getJobDetail().getFullName();
-        this.log.debug("EoMPLS_JunosPathSetupJob.start name: "+jobName);
+        this.log.debug("ContactNodeJob.start name: "+jobName);
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 
         

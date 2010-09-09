@@ -26,6 +26,7 @@ import net.es.oscars.pss.common.RouterVendor;
 import net.es.oscars.pss.common.SNMPRouterVendorFinder;
 
 import net.es.oscars.pss.eompls.junos.EoMPLSJunosConfigGen;
+import net.es.oscars.pss.l2vpn.junos.L2VPNJunosConfigGen;
 import net.es.oscars.pss.layer3.junos.Layer3JunosConfigGen;
 import net.es.oscars.pss.sw.junos.SWJunosConfigGen;
 
@@ -226,10 +227,12 @@ public class SDNPSS implements PSS {
         SDNNameGenerator ng = SDNNameGenerator.getInstance();
         Layer3JunosConfigGen l3 = Layer3JunosConfigGen.getInstance();
         EoMPLSJunosConfigGen eo = EoMPLSJunosConfigGen.getInstance();
+        L2VPNJunosConfigGen l2 = L2VPNJunosConfigGen.getInstance();
         SWJunosConfigGen sw = SWJunosConfigGen.getInstance();
         l3.setNameGenerator(ng);
         eo.setNameGenerator(ng);
         sw.setNameGenerator(ng);
+        l2.setNameGenerator(ng);
         
         SDNQueuer q = SDNQueuer.getInstance();
         q.setScheduler(OSCARSCore.getInstance().getScheduleManager().getScheduler());
