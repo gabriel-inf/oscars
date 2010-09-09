@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.topology.Path;
@@ -56,7 +57,6 @@ public class SDNPSS implements PSS {
     }
     
     public String createPath(Reservation resv) throws PSSException {
-        log.debug("debug");
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
         } catch (BSSException ex) {
@@ -222,6 +222,7 @@ public class SDNPSS implements PSS {
     private SDNPSS() throws PSSException {
         this.log = Logger.getLogger(this.getClass());
         
+        log.debug("setting up SDN PSS");
         SDNNameGenerator ng = SDNNameGenerator.getInstance();
         Layer3JunosConfigGen l3 = Layer3JunosConfigGen.getInstance();
         EoMPLSJunosConfigGen eo = EoMPLSJunosConfigGen.getInstance();
@@ -230,12 +231,25 @@ public class SDNPSS implements PSS {
         eo.setNameGenerator(ng);
         sw.setNameGenerator(ng);
         
+        SDNQueuer q = SDNQueuer.getInstance();
+        q.setScheduler(OSCARSCore.getInstance().getScheduleManager().getScheduler());
+
+        
+        
         
         PSSConfigProvider cp = PSSConfigProvider.getInstance();
-        PSSHandlerConfigBean hc = PSSHandlerConfigBean.loadConfig("oscars.properties", "pss");
-        PSSConnectorConfigBean cc = PSSConnectorConfigBean.loadConfig("oscars.properties", "pss");
-        cp.setConnectorConfig(cc);
-        cp.setHandlerConfig(hc);
+        if (cp.getConnectorConfig() == null) {
+            log.info("loading connector config from oscars.properties");
+            PSSConnectorConfigBean cc = PSSConnectorConfigBean.loadConfig("oscars.properties", "pss");
+            cp.setConnectorConfig(cc);
+        }
+        if (cp.getHandlerConfig() == null) {
+            log.info("loading handler config from oscars.properties");
+            PSSHandlerConfigBean hc = PSSHandlerConfigBean.loadConfig("oscars.properties", "pss");
+            cp.setHandlerConfig(hc);
+        }
+        log.debug("SDN PSS setup complete");
+
         
     }
 

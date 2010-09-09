@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Ipaddr;
@@ -25,10 +27,13 @@ import net.es.oscars.pss.eompls.EoMPLSUtils;
 public class EoMPLSJunosConfigGen extends TemplateConfigGen {
     private static EoMPLSJunosConfigGen instance;
     private ConfigNameGenerator nameGenerator = null;
+    private Logger log = Logger.getLogger(EoMPLSJunosConfigGen.class);
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public String generateL2Setup(Reservation resv, PSSDirection direction) throws PSSException {
+        log.info("generating setup for gri: "+resv.getGlobalReservationId()+" "+direction);
+
         if (nameGenerator == null) {
             throw new PSSException("no name generator set");
         }
@@ -39,6 +44,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         try {
             localPath = resv.getPath(PathType.LOCAL);
         } catch (BSSException e) {
+            log.error(e);
             throw new PSSException(e);
         }
         // these are the leaf values
@@ -81,7 +87,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         } else {
             throw new PSSException("Invalid direction!");
         }
-        
+
 
         // need at least 4 path elements for EoMPLS:
         // A: ingress
@@ -135,7 +141,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         lspFrom             = aLoopback;
         lspTo               = yIP;
         
-        
+
 
         oscarsCommunity         = nameGenerator.getOscarsCommunity(resv);
 
@@ -228,6 +234,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         policy.put("name", policyName);
         policy.put("term", policyTerm);
 
+        log.info("generated setup for gri: "+resv.getGlobalReservationId()+" "+direction);
 
         return this.getConfig(root, templateFileName);
     }

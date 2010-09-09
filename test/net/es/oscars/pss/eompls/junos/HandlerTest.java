@@ -40,7 +40,7 @@ public class HandlerTest {
         hc.setStubMode(true);
         hc.setTeardownOnFailure(false);        
         
-        EoMPLS_Junos handler = new EoMPLS_Junos();
+        EoMPLS_Junos handler = EoMPLS_Junos.getInstance();
         handler.setup(resv, PSSDirection.A_TO_Z);
         
     }

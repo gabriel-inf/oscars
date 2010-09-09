@@ -22,30 +22,25 @@ public class SDNPSSTest {
         
         ReservationMaker rm = new ReservationMaker();
         Reservation resv = rm.makeL2();
-        
-        
-        SDNPSS pss = null;;
-        try {
-            pss = SDNPSS.getInstance();
-        } catch (PSSException ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
-        
-        
+
         PSSHandlerConfigBean hc = new PSSHandlerConfigBean();
+        hc.setTemplateDir("conf/pss");
         hc.setCheckStatusAfterSetup(false);
         hc.setCheckStatusAfterTeardown(false);
         hc.setLogConfig(true);
         hc.setStubMode(true);
-        hc.setTeardownOnFailure(false);
-        hc.setTemplateDir("conf/pss");
+        hc.setTeardownOnFailure(false);     
+        
+        
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         pc.setHandlerConfig(hc);
         PSSConnectorConfigBean cc = new PSSConnectorConfigBean();
         pc.setConnectorConfig(cc);
         
+        
+        SDNPSS pss = null;;
         try {
+            pss = SDNPSS.getInstance();
             pss.createPath(resv);
             while (true) {
                 try {

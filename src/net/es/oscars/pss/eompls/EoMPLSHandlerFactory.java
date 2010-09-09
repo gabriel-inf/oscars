@@ -11,7 +11,7 @@ public class EoMPLSHandlerFactory {
         if (rv.equals(RouterVendor.CISCO)) {
             return new EoMPLS_IOS();
         } else if (rv.equals(RouterVendor.JUNIPER)) {
-            return new EoMPLS_Junos();
+            return EoMPLS_Junos.getInstance();
         } else {
             throw new PSSException("Unknown router vendor: "+rv);
         }
