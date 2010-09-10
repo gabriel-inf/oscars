@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.Ipaddr;
 import net.es.oscars.bss.topology.Path;
@@ -75,6 +77,18 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         policerBurstSizeLimit = lspBandwidth / 10;
         
         List<PathElem> resvPathElems = localPath.getPathElems();
+        log.info("path length: "+resvPathElems.size());
+        for (PathElem pe : resvPathElems) {
+            try {
+                String fqti = pe.getLink().getFQTI();
+                log.debug(fqti);
+            } catch (org.hibernate.LazyInitializationException ex) {
+                OSCARSCore core = OSCARSCore.getInstance();
+                core.getBssDbName();
+                core.getBssSession();
+            }
+        }
+        
         if (resvPathElems.size() < 4) {
             log.error("Local path too short");
             throw new PSSException("Local path too short");
@@ -102,6 +116,17 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         PathElem yPathElem      = pathElems.get(pathElems.size()-2);
         PathElem zPathElem      = pathElems.get(pathElems.size()-1);
         
+        if (aPathElem == null) {
+            log.error("null pathelem for: hop 1");
+            throw new PSSException("null pathelem for: hop 1");
+        } else if (yPathElem == null) {
+            log.error("null pathelem for: hop N-1");
+            throw new PSSException("null pathelem for: hop N-1");
+        } else if (zPathElem == null) {
+            log.error("null pathelem for: hop N");
+            throw new PSSException("null pathelem for: hop N");
+        }
+
         if (aPathElem.getLink() == null) {
             log.error("null link for: hop 1");
             throw new PSSException("null link for: hop 1");
@@ -117,6 +142,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         Ipaddr ipaddr = yPathElem.getLink().getValidIpaddr();
         if (ipaddr != null) {
             yIP = ipaddr.getIP();
+            log.info("found IP: "+yIP+" for "+yPathElem.getLink().getFQTI());
         } else {
             log.error("Invalid IP for: "+yPathElem.getLink().getFQTI());
             throw new PSSException("Invalid IP for: "+yPathElem.getLink().getFQTI());
