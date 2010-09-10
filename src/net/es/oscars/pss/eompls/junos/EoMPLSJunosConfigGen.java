@@ -76,6 +76,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         
         List<PathElem> resvPathElems = localPath.getPathElems();
         if (resvPathElems.size() < 4) {
+            log.error("Local path too short");
             throw new PSSException("Local path too short");
         }
         
@@ -85,6 +86,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         } else if (direction.equals(PSSDirection.Z_TO_A)) {
             pathElems = PathUtils.reversePath(resvPathElems);
         } else {
+            log.error("Invalid direction "+direction);
             throw new PSSException("Invalid direction!");
         }
 
@@ -101,10 +103,13 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         PathElem zPathElem      = pathElems.get(pathElems.size()-1);
         
         if (aPathElem.getLink() == null) {
+            log.error("null link for: hop 1");
             throw new PSSException("null link for: hop 1");
         } else if (yPathElem.getLink() == null) {
+            log.error("null link for: hop N-1");
             throw new PSSException("null link for: hop N-1");
         } else if (zPathElem.getLink() == null) {
+            log.error("null link for: hop N");
             throw new PSSException("null link for: hop N");
         }
         
@@ -113,6 +118,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         if (ipaddr != null) {
             yIP = ipaddr.getIP();
         } else {
+            log.error("Invalid IP for: "+yPathElem.getLink().getFQTI());
             throw new PSSException("Invalid IP for: "+yPathElem.getLink().getFQTI());
         }
 
@@ -122,11 +128,14 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             zVlanPEP = zPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
         } catch (BSSException e) {
+            log.error(e);
             throw new PSSException(e.getMessage());
         }
         if (aVlanPEP == null) {
+            log.error("No VLAN set for: "+aPathElem.getLink().getFQTI());
             throw new PSSException("No VLAN set for: "+aPathElem.getLink().getFQTI());
         } else if (zVlanPEP == null) {
+            log.error("No VLAN set for: "+zPathElem.getLink().getFQTI());
             throw new PSSException("No VLAN set for: "+zPathElem.getLink().getFQTI());
         }
         
