@@ -26,18 +26,15 @@ public class PSSActionWatchJob implements Job {
     
     // change these thru JobDataMap
     private Integer staleTimeout = 300;
-    private Boolean notify = false;
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
         PSSActionWatcher aw = PSSActionWatcher.getInstance();
         ConcurrentHashMap<Reservation, PSSActionDirections> watchList = aw.getWatchList();
         PSSActionStatusHolder ah = PSSActionStatusHolder.getInstance();
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
+        
         if (dataMap.get("staleTimeout") != null) {
             staleTimeout = (Integer) dataMap.get("staleTimeout");
-        }
-        if (dataMap.get("notify") != null) {
-            notify = (Boolean) dataMap.get("notify");
         }
         for (Reservation resv: watchList.keySet()) {
             PSSActionDirections ads = watchList.get(resv);
@@ -186,21 +183,19 @@ public class PSSActionWatchJob implements Job {
         log.error(errorMessage);
         StateEngine stateEngine = OSCARSCore.getInstance().getStateEngine();
         
-        if (notify) {
-            EventProducer eventProducer = new EventProducer();
-            try {
-                stateEngine.updateStatus(resv, StateEngine.FAILED);
-                if (action.equals(PSSAction.SETUP)) {
-                    eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errorMessage);
-                } else if (action.equals(PSSAction.TEARDOWN)) {
-                    eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errorMessage);
-                } else {
-                    log.error("invalid action: "+action);
-                    return;
-                }
-            } catch (BSSException e) {
-                log.error(e);
+        EventProducer eventProducer = new EventProducer();
+        try {
+            stateEngine.updateStatus(resv, StateEngine.FAILED);
+            if (action.equals(PSSAction.SETUP)) {
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "JOB", resv, "", errorMessage);
+            } else if (action.equals(PSSAction.TEARDOWN)) {
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_FAILED, "", "JOB", resv, "", errorMessage);
+            } else {
+                log.error("invalid action: "+action);
+                return;
             }
+        } catch (BSSException e) {
+            log.error(e);
         }
         
 
@@ -234,24 +229,23 @@ public class PSSActionWatchJob implements Job {
         String gri = resv.getGlobalReservationId();
         log.debug("SUCCESS: "+gri+" "+action+" "+dirStr);
 
-        if (notify) {
-            PathSetupManager pe = OSCARSCore.getInstance().getPathSetupManager();
-            try {
-                if (action.equals(PSSAction.SETUP)) {
-                    log.info(gri+" setup confirmed, calling PathSetupManager");
-                    pe.updateCreateStatus(StateEngine.CONFIRMED, resv);
-                } else if (action.equals(PSSAction.TEARDOWN)) {
-                    log.info(gri+" teardown confirmed, calling PathSetupManager");
-                    pe.updateTeardownStatus(StateEngine.CONFIRMED, resv);
-                } else {
-                    log.error("invalid action: "+action);
-                    return;
-                }
-            } catch (BSSException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+        PathSetupManager pe = OSCARSCore.getInstance().getPathSetupManager();
+        try {
+            if (action.equals(PSSAction.SETUP)) {
+                log.info(gri+" setup confirmed, calling PathSetupManager");
+                pe.updateCreateStatus(StateEngine.CONFIRMED, resv);
+            } else if (action.equals(PSSAction.TEARDOWN)) {
+                log.info(gri+" teardown confirmed, calling PathSetupManager");
+                pe.updateTeardownStatus(StateEngine.CONFIRMED, resv);
+            } else {
+                log.error("invalid action: "+action);
+                return;
             }
+        } catch (BSSException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+        
         PSSActionWatcher aw = PSSActionWatcher.getInstance();
         aw.unwatch(resv);
         

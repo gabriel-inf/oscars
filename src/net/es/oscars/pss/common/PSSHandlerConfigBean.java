@@ -2,10 +2,14 @@ package net.es.oscars.pss.common;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 import net.es.oscars.PropHandler;
 import net.es.oscars.pss.PSSException;
 
 public class PSSHandlerConfigBean {
+    private static Logger log = Logger.getLogger(PSSHandlerConfigBean.class);
+
     /**
      * log the generated configuration or not
      */
@@ -61,7 +65,6 @@ public class PSSHandlerConfigBean {
         logConfigProp                   = logConfigProp.trim().toLowerCase();
         stubModeProp                    = stubModeProp.trim().toLowerCase();
         teardownOnFailureProp           = teardownOnFailureProp.trim().toLowerCase();
-        templateDir                     = teardownOnFailureProp.trim();
 
         if (checkStatusAfterSetupProp.equals("true") || 
             checkStatusAfterSetupProp.equals("1")) {
@@ -94,6 +97,14 @@ public class PSSHandlerConfigBean {
         }
 
         config.setTemplateDir(templateDir);
+        log.debug("templateDir: "+config.getTemplateDir());
+        log.debug("checkStatusAfterSetup: "+config.isCheckStatusAfterSetup());
+        log.debug("checkStatusAfterTeardown: "+config.isCheckStatusAfterTeardown());
+        log.debug("teardownOnFailure: "+config.isTeardownOnFailure());
+        log.debug("logConfig: "+config.isLogConfig());
+        log.debug("stubMode: "+config.isStubMode());
+        
+        
         return config;
     }
     
