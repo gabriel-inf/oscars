@@ -172,6 +172,7 @@ public class PSSActionWatchJob implements Job {
         PSSActionWatcher aw = PSSActionWatcher.getInstance();
         String gri = resv.getGlobalReservationId();
         
+        
         String dirStr = "";
         for (PSSDirection direction : directions) {
             dirStr =  dirStr + direction+ " ";
@@ -183,10 +184,10 @@ public class PSSActionWatchJob implements Job {
         }
         
         log.error(errorMessage);
+        StateEngine stateEngine = OSCARSCore.getInstance().getStateEngine();
         
         if (notify) {
             EventProducer eventProducer = new EventProducer();
-            StateEngine stateEngine = OSCARSCore.getInstance().getStateEngine();
             try {
                 stateEngine.updateStatus(resv, StateEngine.FAILED);
                 if (action.equals(PSSAction.SETUP)) {
@@ -206,8 +207,20 @@ public class PSSActionWatchJob implements Job {
         aw.unwatch(resv);
         PSSFailureHandler fh = PSSFailureManager.getInstance().getFailureHandler();
         if (fh != null) {
-            fh.handleFailure(resv, action);
+            try {
+                log.error("starting recovery from failure for "+gri+" "+action+" "+dirStr);
+                fh.handleFailure(resv, action);
+            } catch (PSSException ex) {
+                log.error("Serious error recovering from failure for "+gri+" "+action+" "+dirStr);
+                log.error(ex);
+            }
+            
         } else {
+            try {
+                stateEngine.updateStatus(resv, StateEngine.FAILED);
+            } catch (BSSException e) {
+                log.error(e);
+            }
             log.info("No PSS failure handler");
         }
     }
@@ -219,14 +232,16 @@ public class PSSActionWatchJob implements Job {
         }
 
         String gri = resv.getGlobalReservationId();
-        log.info("SUCCESS: "+gri+" "+action+" "+dirStr);
+        log.debug("SUCCESS: "+gri+" "+action+" "+dirStr);
 
         if (notify) {
             PathSetupManager pe = OSCARSCore.getInstance().getPathSetupManager();
             try {
                 if (action.equals(PSSAction.SETUP)) {
+                    log.info(gri+" setup confirmed, calling PathSetupManager");
                     pe.updateCreateStatus(StateEngine.CONFIRMED, resv);
                 } else if (action.equals(PSSAction.TEARDOWN)) {
+                    log.info(gri+" teardown confirmed, calling PathSetupManager");
                     pe.updateTeardownStatus(StateEngine.CONFIRMED, resv);
                 } else {
                     log.error("invalid action: "+action);

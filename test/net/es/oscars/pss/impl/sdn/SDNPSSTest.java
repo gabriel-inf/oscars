@@ -29,7 +29,7 @@ public class SDNPSSTest {
         hc.setCheckStatusAfterTeardown(false);
         hc.setLogConfig(true);
         hc.setStubMode(true);
-        hc.setTeardownOnFailure(false);     
+        hc.setTeardownOnFailure(true);     
         
         
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
@@ -42,9 +42,11 @@ public class SDNPSSTest {
         try {
             pss = SDNPSS.getInstance();
             pss.createPath(resv);
-            while (true) {
+            int i = 0;
+            while (i < 10){
                 try {
                     Thread.sleep(1000);
+                    i++;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -53,9 +55,6 @@ public class SDNPSSTest {
         } catch (PSSException ex) {
             ex.printStackTrace();
         }
-        
-
-
     }
 
 }

@@ -13,6 +13,7 @@ import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSS;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.PSSFailureManager;
 import net.es.oscars.pss.common.PSSAction;
 import net.es.oscars.pss.common.PSSConfigProvider;
 import net.es.oscars.pss.common.PSSConnectorConfigBean;
@@ -237,8 +238,8 @@ public class SDNPSS implements PSS {
         SDNQueuer q = SDNQueuer.getInstance();
         q.setScheduler(OSCARSCore.getInstance().getScheduleManager().getScheduler());
 
-        
-        
+        PSSFailureManager.getInstance().setFailureHandler(SDNFailureHandler.getInstance());
+       
         
         PSSConfigProvider cp = PSSConfigProvider.getInstance();
         if (cp.getConnectorConfig() == null) {

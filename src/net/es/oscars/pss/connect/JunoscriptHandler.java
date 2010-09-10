@@ -55,6 +55,13 @@ public class JunoscriptHandler {
 
         if (hc.isStubMode()) {
             log.debug("stub mode, no command sent");
+            /*
+            Random r = new Random();
+            if (r.nextFloat() < 0.5) {
+                log.debug("simulating failure in stub mode");
+                throw new PSSException("simulated failure");
+            }
+            */
         } else {
             JunoscriptConnector conn = new JunoscriptConnector(cc, address);
             SAXBuilder sb = new SAXBuilder();
