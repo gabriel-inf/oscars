@@ -228,6 +228,8 @@ public class PSSActionWatchJob implements Job {
 
         String gri = resv.getGlobalReservationId();
         log.debug("SUCCESS: "+gri+" "+action+" "+dirStr);
+        PSSActionWatcher aw = PSSActionWatcher.getInstance();
+        aw.unwatch(resv);
 
         PathSetupManager pe = OSCARSCore.getInstance().getPathSetupManager();
         try {
@@ -246,8 +248,6 @@ public class PSSActionWatchJob implements Job {
             e.printStackTrace();
         }
         
-        PSSActionWatcher aw = PSSActionWatcher.getInstance();
-        aw.unwatch(resv);
         
     }
     
