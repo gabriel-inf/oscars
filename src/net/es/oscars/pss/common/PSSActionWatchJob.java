@@ -11,9 +11,6 @@ import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.events.EventProducer;
 import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.bss.topology.Path;
-import net.es.oscars.bss.topology.PathElem;
-import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.PSSFailureManager;
 import net.es.oscars.pss.PathSetupManager;
@@ -31,7 +28,6 @@ public class PSSActionWatchJob implements Job {
     
     // change these thru JobDataMap
     private Integer staleTimeout = 300;
-    private boolean persist = false;
     private Session bss = null;
     
     
@@ -42,40 +38,15 @@ public class PSSActionWatchJob implements Job {
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         
         
-        
-        Reservation testResv = watchList.keySet().iterator().next();
-        
-        if (testResv != null) {
-            Path localPath;
-            try {
-                localPath = testResv.getPath(PathType.LOCAL);
-                List<PathElem> pes = localPath.getPathElems();
-                for (PathElem pe : pes) {
-                    try {
-                        String fqti = pe.getLink().getFQTI();
-                        log.debug(fqti);
-                    } catch (org.hibernate.LazyInitializationException ex) {
-                        persist = true;
-                    }
-                }
-            } catch (BSSException e) {
-                log.info(e);
-            }
-        }
-        
         String bssDbName = "";
         ReservationDAO resvDAO = null;
-
-        if (persist) {
-            
-            OSCARSCore core = OSCARSCore.getInstance();
-            bssDbName = core.getBssDbName();
-            core.getBssDbName();
-            core.getBssSession();
-            bss = core.getBssSession();
-            resvDAO = new ReservationDAO(bssDbName);
-            bss.beginTransaction();
-        }
+        OSCARSCore core = OSCARSCore.getInstance();
+        bssDbName = core.getBssDbName();
+        core.getBssDbName();
+        core.getBssSession();
+        bss = core.getBssSession();
+        resvDAO = new ReservationDAO(bssDbName);
+        bss.beginTransaction();
      
         
         if (dataMap.get("staleTimeout") != null) {
@@ -85,12 +56,10 @@ public class PSSActionWatchJob implements Job {
         
         for (Reservation resv: watchList.keySet()) {
             PSSActionDirections ads = watchList.get(resv);
-            if (persist) {
-                try {
-                    resv = resvDAO.query(resv.getGlobalReservationId());
-                } catch (BSSException e) {
-                    log.error(e);
-                }
+            try {
+                resv = resvDAO.query(resv.getGlobalReservationId());
+            } catch (BSSException e) {
+                log.error(e);
             }
             String gri = resv.getGlobalReservationId();
             PSSAction action = ads.getAction();
@@ -273,11 +242,9 @@ public class PSSActionWatchJob implements Job {
             }
             log.info("No PSS failure handler");
             
-            if (persist) {
-                log.debug("committing FAILED status to DB for: "+gri);
-                StateEngine se = OSCARSCore.getInstance().getStateEngine();
-                se.safeHibernateCommit(resv, bss);
-            }
+            log.debug("committing FAILED status to DB for: "+gri);
+            StateEngine se = OSCARSCore.getInstance().getStateEngine();
+            se.safeHibernateCommit(resv, bss);
 
         }
     }
@@ -312,11 +279,9 @@ public class PSSActionWatchJob implements Job {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        if (persist) {
-            log.debug("committing new status to DB for: "+gri+" : "+statusForLog);
-            StateEngine se = OSCARSCore.getInstance().getStateEngine();
-            se.safeHibernateCommit(resv, bss);
-        }
+        log.debug("committing new status to DB for: "+gri+" : "+statusForLog);
+        StateEngine se = OSCARSCore.getInstance().getStateEngine();
+        se.safeHibernateCommit(resv, bss);
 
         
     }
