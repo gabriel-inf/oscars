@@ -89,7 +89,25 @@ public class PSSActionWatcher {
     
     
     private static PSSActionWatcher instance;
+    
     private PSSActionWatcher() {
+
+    }
+    public static PSSActionWatcher getInstance() {
+        if (instance == null) {
+            instance = new PSSActionWatcher();
+        }
+
+        return instance;
+    }
+    
+    
+    public ConcurrentHashMap<Reservation, PSSActionDirections> getWatchList() {
+        return watchList;
+    }
+
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
         // start a thread that will watch the watchList from here on every second
         String jobName = "PSSActionWatcher";
         JobDetail watcherJob = new JobDetail(jobName, "PSSActionWatcher", PSSActionWatchJob.class);
@@ -109,22 +127,6 @@ public class PSSActionWatcher {
         } catch (SchedulerException e) {
             log.error(e);
         }
-    }
-    public static PSSActionWatcher getInstance() {
-        if (instance == null) {
-            instance = new PSSActionWatcher();
-        }
-
-        return instance;
-    }
-    
-    
-    public ConcurrentHashMap<Reservation, PSSActionDirections> getWatchList() {
-        return watchList;
-    }
-
-    public void setScheduler(Scheduler scheduler) {
-        this.scheduler = scheduler;
     }
 
     public Scheduler getScheduler() {
