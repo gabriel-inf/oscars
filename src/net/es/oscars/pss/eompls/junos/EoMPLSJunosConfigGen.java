@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.OSCARSCore;

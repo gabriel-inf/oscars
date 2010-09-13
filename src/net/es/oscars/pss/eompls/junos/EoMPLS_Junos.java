@@ -44,7 +44,7 @@ public class EoMPLS_Junos implements PSSHandler {
         log.info("teardown.start");
         
         EoMPLSJunosConfigGen cg = EoMPLSJunosConfigGen.getInstance();
-        String command = cg.generateL2Setup(resv, direction);
+        String command = cg.generateL2Teardown(resv, direction);
         JunoscriptHandler.command(resv, direction, command, log);
         
         
