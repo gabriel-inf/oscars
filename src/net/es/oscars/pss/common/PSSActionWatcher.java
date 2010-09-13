@@ -18,7 +18,7 @@ public class PSSActionWatcher {
     private boolean watching = false;
     private Scheduler scheduler;
     private PSSQueuer queuer;
-    private Logger log = Logger.getLogger(PSSActionWatcher.class);
+    private static Logger log = Logger.getLogger(PSSActionWatcher.class);
 
     private ConcurrentHashMap<Reservation, PSSActionDirections> watchList = new ConcurrentHashMap<Reservation, PSSActionDirections>();
     
@@ -69,7 +69,7 @@ public class PSSActionWatcher {
             log.debug("stopping because watchlist is empty");
             try {
                 watching = false;
-                scheduler.unscheduleJob("PSSActionWatcher", "PSS");
+                scheduler.pauseJob("PSSActionWatcher", "PSS");
             } catch (SchedulerException e) {
                 log.error(e);
             }
@@ -79,26 +79,10 @@ public class PSSActionWatcher {
     
     private void startWatchJob() throws PSSException{
         System.out.println("Starting up a watch job");
-        // start a thread that will watch the watchList from here on every second
-        String jobName = "PSSActionWatcher";
-        JobDetail jobDetail = new JobDetail(jobName, "PSSActionWatcher", PSSActionWatchJob.class);
-        jobDetail.setDurability(true);
-        JobDataMap jobDataMap = new JobDataMap();
-        jobDetail.setJobDataMap(jobDataMap);
-        
-        CronTrigger trigger = null;
         try {
-            trigger = new CronTrigger("PSSActionWatcher", "PSS", "0/1 * * * * ?");
-        } catch (ParseException ex) {
-            throw new PSSException(ex.getMessage());
-        }
-        // SimpleTrigger trigger = new SimpleTrigger("PSSActionWatcherTrigger", "PSS", new Date());
-
-        try {
-            scheduler.scheduleJob(jobDetail, trigger);
+            scheduler.resumeJob("PSSActionWatcher", "PSS");
         } catch (SchedulerException e) {
-            e.printStackTrace();
-            throw new PSSException(e.getMessage());
+            log.error(e);
         }
     }
     
@@ -106,12 +90,31 @@ public class PSSActionWatcher {
     
     private static PSSActionWatcher instance;
     private PSSActionWatcher() {
+        // start a thread that will watch the watchList from here on every second
+        String jobName = "PSSActionWatcher";
+        JobDetail watcherJob = new JobDetail(jobName, "PSSActionWatcher", PSSActionWatchJob.class);
+        watcherJob.setDurability(true);
+        JobDataMap jobDataMap = new JobDataMap();
+        watcherJob.setJobDataMap(jobDataMap);
         
+        CronTrigger watcherTrigger = null;
+        try {
+            watcherTrigger = new CronTrigger("PSSActionWatcher", "PSS", "0/1 * * * * ?");
+        } catch (ParseException ex) {
+            log.error(ex);
+        }
+        try {
+            scheduler.scheduleJob(watcherJob, watcherTrigger);
+            scheduler.pauseJob("PSSActionWatcher", "PSS");
+        } catch (SchedulerException e) {
+            log.error(e);
+        }
     }
     public static PSSActionWatcher getInstance() {
         if (instance == null) {
             instance = new PSSActionWatcher();
         }
+
         return instance;
     }
     
