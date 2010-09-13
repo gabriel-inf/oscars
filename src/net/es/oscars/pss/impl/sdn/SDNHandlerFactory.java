@@ -13,9 +13,9 @@ public class SDNHandlerFactory {
         if (service.equals(SDNService.EOMPLS)) {
             return EoMPLSHandlerFactory.getHandler(rv);
         } else if (service.equals(SDNService.SWITCHED)) {
-            return L2VPNHandlerFactory.getHandler(rv);
-        } else if (service.equals(SDNService.L2VPN)) {
             return SWHandlerFactory.getHandler(rv);
+        } else if (service.equals(SDNService.L2VPN)) {
+            return L2VPNHandlerFactory.getHandler(rv);
         } else if (service.equals(SDNService.LAYER3)) {
             return Layer3HandlerFactory.getHandler(rv);
         } else {
