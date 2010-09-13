@@ -17,6 +17,7 @@ import net.es.oscars.pss.common.PSSAction;
 import net.es.oscars.pss.common.PSSActionStatus;
 import net.es.oscars.pss.common.PSSActionStatusHolder;
 import net.es.oscars.pss.common.PSSActionWatcher;
+import net.es.oscars.pss.common.PSSContactNodeJob;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSQueuer;
@@ -166,7 +167,7 @@ public class SDNQueuer implements PSSQueuer {
         String nodeId = node.getTopologyIdent();
         
         String jobName = "contact-"+nodeId+"-"+gri;
-        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_NODECONFIG_"+nodeId, ContactNodeJob.class);
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_NODECONFIG_"+nodeId, PSSContactNodeJob.class);
         log.debug("Adding job "+jobName);
 
         System.out.println("Adding job "+jobName);

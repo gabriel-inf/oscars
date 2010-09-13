@@ -1,4 +1,4 @@
-package net.es.oscars.pss.impl.sdn;
+package net.es.oscars.pss.common;
 
 import java.util.List;
 
@@ -11,9 +11,6 @@ import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
-import net.es.oscars.pss.common.PSSAction;
-import net.es.oscars.pss.common.PSSDirection;
-import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.impl.sdn.SDNQueuer;
 import net.es.oscars.scheduler.ChainingJob;
 
@@ -24,7 +21,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-public class ContactNodeJob extends ChainingJob  implements Job{
+public class PSSContactNodeJob extends ChainingJob  implements Job{
     private Logger log;
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
