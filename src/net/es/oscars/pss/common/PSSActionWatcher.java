@@ -19,6 +19,7 @@ public class PSSActionWatcher {
     private Scheduler scheduler;
     private PSSQueuer queuer;
     private static Logger log = Logger.getLogger(PSSActionWatcher.class);
+    private String jobName = "PSSActionWatcher";
 
     private ConcurrentHashMap<Reservation, PSSActionDirections> watchList = new ConcurrentHashMap<Reservation, PSSActionDirections>();
     
@@ -69,7 +70,7 @@ public class PSSActionWatcher {
             log.debug("stopping because watchlist is empty");
             try {
                 watching = false;
-                scheduler.pauseJob("PSSActionWatcher", "PSS");
+                scheduler.pauseJob(jobName, "PSS");
             } catch (SchedulerException e) {
                 log.error(e);
             }
@@ -80,7 +81,7 @@ public class PSSActionWatcher {
     private void startWatchJob() throws PSSException{
         System.out.println("Starting up a watch job");
         try {
-            scheduler.resumeJob("PSSActionWatcher", "PSS");
+            scheduler.resumeJob(jobName, "PSS");
         } catch (SchedulerException e) {
             log.error(e);
         }
@@ -109,21 +110,20 @@ public class PSSActionWatcher {
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
         // start a thread that will watch the watchList from here on every second
-        String jobName = "PSSActionWatcher";
-        JobDetail watcherJob = new JobDetail(jobName, "PSSActionWatcher", PSSActionWatchJob.class);
+        JobDetail watcherJob = new JobDetail(jobName, "PSS", PSSActionWatchJob.class);
         watcherJob.setDurability(true);
         JobDataMap jobDataMap = new JobDataMap();
         watcherJob.setJobDataMap(jobDataMap);
         
         CronTrigger watcherTrigger = null;
         try {
-            watcherTrigger = new CronTrigger("PSSActionWatcher", "PSS", "0/1 * * * * ?");
+            watcherTrigger = new CronTrigger("PSSActionWatcherTrigger", "PSS", "0/1 * * * * ?");
         } catch (ParseException ex) {
             log.error(ex);
         }
         try {
             scheduler.scheduleJob(watcherJob, watcherTrigger);
-            scheduler.pauseJob("PSSActionWatcher", "PSS");
+            scheduler.pauseJob(jobName, "PSS");
         } catch (SchedulerException e) {
             log.error(e);
         }
