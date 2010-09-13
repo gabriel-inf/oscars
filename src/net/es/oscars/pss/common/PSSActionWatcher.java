@@ -68,6 +68,7 @@ public class PSSActionWatcher {
         if (this.watchList.isEmpty()) {
             log.debug("stopping because watchlist is empty");
             try {
+                watching = false;
                 scheduler.unscheduleJob("PSSActionWatcher", "PSS");
             } catch (SchedulerException e) {
                 log.error(e);
