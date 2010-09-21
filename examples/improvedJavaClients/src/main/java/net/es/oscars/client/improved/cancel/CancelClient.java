@@ -30,7 +30,10 @@ public class CancelClient extends ImprovedClient {
             System.err.println("Error: "+e.getMessage());
             e.printStackTrace();
             System.exit(1);
+        } finally {
+            oscarsClient.cleanUp();
         }
+        oscarsClient.cleanUp();
 
         return response;
     }
