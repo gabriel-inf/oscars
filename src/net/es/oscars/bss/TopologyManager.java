@@ -2,16 +2,33 @@ package net.es.oscars.bss;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.log4j.*;
-import org.hibernate.*;
+import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
 
-import net.es.oscars.bss.events.EventProducer;
-import net.es.oscars.bss.events.OSCARSEvent;
-import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.topology.DomainDAO;
+import net.es.oscars.bss.topology.IpaddrDAO;
+import net.es.oscars.bss.topology.L2SwitchingCapabilityData;
+import net.es.oscars.bss.topology.L2SwitchingCapabilityDataDAO;
+import net.es.oscars.bss.topology.LinkDAO;
+import net.es.oscars.bss.topology.NodeAddressDAO;
+import net.es.oscars.bss.topology.NodeDAO;
+import net.es.oscars.bss.topology.PortDAO;
+import net.es.oscars.bss.topology.Topology;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.bss.topology.Node;
+import net.es.oscars.bss.topology.Port;
+import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Ipaddr;
+import net.es.oscars.bss.topology.NodeAddress;
+import net.es.oscars.bss.topology.URNParser;
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.wsdlTypes.PathInfo;
 
 /**
  * This class contains methods to update the topology database, given
@@ -43,7 +60,6 @@ public class TopologyManager {
     private Logger log;
     private SessionFactory sf;
     private String dbname;
-    private PathManager pathMgr;
     private String localDomain;
 
 
@@ -186,6 +202,7 @@ public class TopologyManager {
         this.log.debug("mergeTopology.end");
     }
 
+    @SuppressWarnings("unchecked")
     private void mergeNodes(Domain savedDomain, Domain newDomain, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
 
         this.log.debug("mergeNodes start");
@@ -199,14 +216,14 @@ public class TopologyManager {
         ArrayList<NodeAddress> nodeAddrsToUpdate = new ArrayList<NodeAddress>();
         ArrayList<NodeAddress> nodeAddrsToDelete = new ArrayList<NodeAddress>();
 
-        Iterator savedNodeIt;
-        Iterator newNodeIt;
+        Iterator<Node> savedNodeIt;
+        Iterator<Node> newNodeIt;
 
         // Check for adding and updating
         if (newDomain.getNodes() == null) {
             // no adding or updating.
         } else {
-            newNodeIt = newDomain.getNodes().iterator();
+            newNodeIt = (Iterator<Node>) newDomain.getNodes().iterator();
             while (newNodeIt.hasNext()) {
                 Node newNode = (Node) newNodeIt.next();
                 Node foundNode = savedDomain.getNodeByTopoId(newNode.getTopologyIdent());
@@ -258,7 +275,7 @@ public class TopologyManager {
         } else {
             savedNodeIt = savedDomain.getNodes().iterator();
             while (savedNodeIt.hasNext()) {
-                boolean found = false;
+                // boolean found = false;
                 Node savedNode = (Node) savedNodeIt.next();
                 Node foundNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
                 // not in new topology structure
@@ -269,8 +286,8 @@ public class TopologyManager {
                         Hashtable<String, String> results = validLinkInfo.get(fqti);
                         String domainId = results.get("domainId");
                         String nodeId = results.get("nodeId");
-                        String portId = results.get("portId");
-                        String linkId = results.get("linkId");
+                        // String portId = results.get("portId");
+                        // String linkId = results.get("linkId");
                         if (domainId.equals(savedDomain.getTopologyIdent())) {
                             if (nodeId.equals(savedNode.getTopologyIdent())) {
                                 savedNode.setValid(true);
@@ -357,6 +374,7 @@ public class TopologyManager {
         return;
     }
 
+    @SuppressWarnings("unchecked")
     private void mergePorts(Node savedNode, Node newNode, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
         this.log.debug("mergePorts start");
 
@@ -364,14 +382,14 @@ public class TopologyManager {
         ArrayList<Port> portsToUpdate = new ArrayList<Port>();
         ArrayList<Port> portsToInvalidate = new ArrayList<Port>();
 
-        Iterator savedPortIt;
-        Iterator newPortIt;
+        Iterator<Port> savedPortIt;
+        Iterator<Port> newPortIt;
 
         // Check for adding and updating
         if (newNode.getPorts() == null) {
             // no adding or updating.
         } else {
-            newPortIt = newNode.getPorts().iterator();
+            newPortIt = (Iterator<Port>) newNode.getPorts().iterator();
             while (newPortIt.hasNext()) {
                 Port newPort = (Port) newPortIt.next();
                 Port foundPort = savedNode.getPortByTopoId(newPort.getTopologyIdent());
@@ -403,7 +421,7 @@ public class TopologyManager {
         } else {
             savedPortIt = savedNode.getPorts().iterator();
             while (savedPortIt.hasNext()) {
-                boolean found = false;
+                // boolean found = false;
                 Port savedPort = (Port) savedPortIt.next();
                 Port foundPort = newNode.getPortByTopoId(savedPort.getTopologyIdent());
                 if (foundPort == null) {
@@ -415,7 +433,7 @@ public class TopologyManager {
                         String domainId = results.get("domainId");
                         String nodeId = results.get("nodeId");
                         String portId = results.get("portId");
-                        String linkId = results.get("linkId");
+                        // String linkId = results.get("linkId");
                         if (domainId.equals(savedNode.getDomain().getTopologyIdent())) {
                             if (nodeId.equals(savedNode.getTopologyIdent())) {
                                 if (portId.equals(savedPort.getTopologyIdent())) {
@@ -475,6 +493,7 @@ public class TopologyManager {
 
 
 
+    @SuppressWarnings("unchecked")
     private void mergeLinks(Port savedPort, Port newPort, Hashtable<String, Hashtable<String, String>> validLinkInfo) {
         this.log.debug("mergeLinks.start");
 
@@ -482,14 +501,14 @@ public class TopologyManager {
         ArrayList<Link> linksToUpdate = new ArrayList<Link>();
         ArrayList<Link> linksToInvalidate = new ArrayList<Link>();
 
-        Iterator savedLinkIt;
-        Iterator newLinkIt;
+        Iterator<Link> savedLinkIt;
+        Iterator<Link> newLinkIt;
 
         // Check for adding and updating
         if (newPort.getLinks() == null) {
             // no adding or updating.
         } else {
-            newLinkIt = newPort.getLinks().iterator();
+            newLinkIt = (Iterator<Link>) newPort.getLinks().iterator();
             while (newLinkIt.hasNext()) {
                 Link newLink = (Link) newLinkIt.next();
                 Link foundLink = savedPort.getLinkByTopoId(newLink.getTopologyIdent());
@@ -525,7 +544,7 @@ public class TopologyManager {
         } else {
             savedLinkIt = savedPort.getLinks().iterator();
             while (savedLinkIt.hasNext()) {
-                boolean found = false;
+                // boolean found = false;
                 Link savedLink = (Link) savedLinkIt.next();
                 Link foundLink = newPort.getLinkByTopoId(savedLink.getTopologyIdent());
                 if (foundLink == null) {
@@ -599,6 +618,8 @@ public class TopologyManager {
         }
         this.log.debug("mergeLinks.end");
     }
+    
+
 
     private void mergeRemoteLinks(Hashtable<String, String> remoteLinkFQTIMap) {
         this.log.debug("mergeRemoteLinks.start");
@@ -612,17 +633,27 @@ public class TopologyManager {
                 this.log.error("oops, tried to merge a nonexistent link");
                 continue;
             }
-
+            
+            if (thisLink.getRemoteLink() != null) {
+                String prvRemoteFQTI = thisLink.getRemoteLink().getFQTI();
+                this.log.debug("unlinking: "+thisFqti+" from "+prvRemoteFQTI);
+                thisLink.getRemoteLink().setRemoteLink(null);
+                linkDAO.update(thisLink.getRemoteLink());
+            }
+            
+            
             if (remoteLink == null) {
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
             }
-
+            
             thisLink.setRemoteLink(remoteLink);
+
             linkDAO.update(thisLink);
         }
         this.log.debug("mergeRemoteLinks.end");
     }
 
+    @SuppressWarnings("unchecked")
     private void mergeLinkIpaddrs(Link savedLink, Link newLink) {
         this.log.debug("mergeLinkIpaddrs.start");
 
@@ -630,13 +661,13 @@ public class TopologyManager {
         ArrayList<Ipaddr> ipaddrsToUpdate = new ArrayList<Ipaddr>();
         ArrayList<Ipaddr> ipaddrsToInvalidate = new ArrayList<Ipaddr>();
 
-        Iterator savedIpaddrIt;
-        Iterator newIpaddrIt;
+        Iterator<Ipaddr> savedIpaddrIt;
+        Iterator<Ipaddr> newIpaddrIt;
 
         if (newLink.getIpaddrs() == null) {
             // no adding or updating.
         } else {
-            newIpaddrIt = newLink.getIpaddrs().iterator();
+            newIpaddrIt = (Iterator<Ipaddr>) newLink.getIpaddrs().iterator();
             while (newIpaddrIt.hasNext()) {
                 Ipaddr newIpaddr = (Ipaddr) newIpaddrIt.next();
                 Ipaddr foundIpaddr = savedLink.getIpaddrByIP(newIpaddr.getIP());
@@ -659,9 +690,9 @@ public class TopologyManager {
         if (savedLink.getIpaddrs() == null) {
             // nothing to invalidate.
         } else {
-            savedIpaddrIt = savedLink.getIpaddrs().iterator();
+            savedIpaddrIt = (Iterator<Ipaddr>) savedLink.getIpaddrs().iterator();
             while (savedIpaddrIt.hasNext()) {
-                boolean found = false;
+                // boolean found = false;
                 Ipaddr savedIpaddr = (Ipaddr) savedIpaddrIt.next();
                 Ipaddr foundIpaddr = newLink.getIpaddrByIP(savedIpaddr.getIP());
 
@@ -704,7 +735,7 @@ public class TopologyManager {
 
     private void mergeLinkSwcaps(Link savedLink, Link newLink) {
         this.log.debug("mergeLinkSwcap.start");
-        String action = null;
+        // String action = null;
 
         L2SwitchingCapabilityData savedSwCap = savedLink.getL2SwitchingCapabilityData();
         L2SwitchingCapabilityData newSwCap = newLink.getL2SwitchingCapabilityData();
@@ -869,30 +900,33 @@ public class TopologyManager {
         return link;
     }
 
+    @SuppressWarnings("unchecked")
     private void invalidateNode(Node nodeDB) {
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
         nodeDB.setValid(false);
         nodeDAO.update(nodeDB);
 
-        Iterator portIt = nodeDB.getPorts().iterator();
+        Iterator<Port> portIt = nodeDB.getPorts().iterator();
         while (portIt.hasNext()) {
-            Port portDB = (Port) portIt.next();
+            Port portDB = portIt.next();
             this.invalidatePort(portDB);
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void invalidatePort(Port portDB) {
         PortDAO portDAO = new PortDAO(this.dbname);
         portDB.setValid(false);
 
-        Iterator linkIt = portDB.getLinks().iterator();
+        Iterator<Link> linkIt = portDB.getLinks().iterator();
         while (linkIt.hasNext()) {
-            Link linkDB = (Link) linkIt.next();
+            Link linkDB = linkIt.next();
             this.invalidateLink(linkDB);
         }
         portDAO.update(portDB);
     }
 
+    @SuppressWarnings("unchecked")
     private void invalidateLink(Link linkDB) {
         LinkDAO linkDAO = new LinkDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
@@ -906,7 +940,7 @@ public class TopologyManager {
         linkDAO.update(linkDB);
     }
 
-    /**
+    /*
      * Recalculates the paths for reservations with the given status.
      * If the new path violates policy by oversubscription or other means, the
      * reservation is marked invalid, and the old path remains associated with
@@ -916,7 +950,10 @@ public class TopologyManager {
      * @param status string with status of reservations to check
      *
      * @throws BSSException
-     */
+     * 
+     * 
+     * haniotak: Commented out uncalled code
+
     private void recalculatePaths(String status) throws BSSException {
         String ingressNodeIP = null;
         String egressNodeIP = null;
@@ -980,12 +1017,18 @@ public class TopologyManager {
             }
         }
     }
+    */
 
-    /**
+    /*
      * Removes invalidated topology information, except for ipaddrs and their
      * parents associated with non-pending and non-active paths.
      * Removes paths that are no longer associated with any reservation.
-     */
+     *
+     *
+     * 
+     * haniotak: Commented out uncalled code
+     * 
+
     private void clean() {
         this.log.info("clean.start");
 
@@ -1073,7 +1116,11 @@ public class TopologyManager {
      * @param savedPath saved path information
      * @param checkPath unsaved path to check for duplicate
      * @return boolean indicating whether paths are the same
-     */
+     * 
+     * 
+     * haniotak: Commented out uncalled code
+
+    
     private boolean isDuplicate(Path savedPath, Path checkPath) {
         this.log.info("isDuplicate.start");
 
