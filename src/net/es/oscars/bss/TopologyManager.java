@@ -634,7 +634,8 @@ public class TopologyManager {
                 continue;
             }
             
-            if (thisLink.getRemoteLink() != null) {
+            if (thisLink.getRemoteLink() != null &&
+                !thisLink.getRemoteLink().equals(remoteLink)) {
                 String prvRemoteFQTI = thisLink.getRemoteLink().getFQTI();
                 this.log.debug("unlinking: "+thisFqti+" from "+prvRemoteFQTI);
                 thisLink.getRemoteLink().setRemoteLink(null);
@@ -644,6 +645,12 @@ public class TopologyManager {
             
             if (remoteLink == null) {
                 remoteLink = this.insertFQTILink(remFqti, thisLink);
+            } else if (remoteLink.getRemoteLink() != null && 
+                       !remoteLink.getRemoteLink().equals(thisLink)) {
+                String prvRemoteFQTI = remoteLink.getRemoteLink().getFQTI();
+                this.log.debug("unlinking: "+remFqti+" from "+prvRemoteFQTI);
+                remoteLink.getRemoteLink().setRemoteLink(null);
+                linkDAO.update(remoteLink.getRemoteLink());
             }
             
             thisLink.setRemoteLink(remoteLink);
