@@ -318,15 +318,25 @@ public class TopologyAxis2Importer {
     private void updateRemoteLink(CtrlPlaneLinkContent link, Port parent){
         LinkDAO linkDAO = new LinkDAO(this.dbname);
         String linkId = this.convertToLocalId(link.getId());
-        String remoteLinkId =link.getRemoteLinkId();
+        String remoteLinkId = link.getRemoteLinkId();
         Link dbLink = linkDAO.fromTopologyIdent(linkId, parent);
-        Link dbRemoteLink = null;
-
-        if(remoteLinkId != null){
-            dbRemoteLink = this.urnToLink(remoteLinkId, dbLink);
+        Link oldDbRemoteLink = dbLink.getRemoteLink();
+        
+        Link newDbRemoteLink = this.urnToLink(remoteLinkId, dbLink);
+        if(oldDbRemoteLink == null || newDbRemoteLink.getId() != oldDbRemoteLink.getId()){
+            if(oldDbRemoteLink != null){
+                oldDbRemoteLink.setRemoteLink(null);
+                linkDAO.update(oldDbRemoteLink);
+            }
+            if(newDbRemoteLink.getRemoteLink() != null && newDbRemoteLink.getRemoteLink().getId() != dbLink.getId()){
+                newDbRemoteLink.getRemoteLink().setRemoteLink(null);
+                linkDAO.update(newDbRemoteLink.getRemoteLink());
+                newDbRemoteLink.setRemoteLink(dbLink);
+                linkDAO.update(newDbRemoteLink);
+            }
         }
 
-        dbLink.setRemoteLink(dbRemoteLink);
+        dbLink.setRemoteLink(newDbRemoteLink);
 
         linkDAO.update(dbLink);
 
