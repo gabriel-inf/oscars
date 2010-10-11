@@ -399,7 +399,7 @@ public class TopologyAxis2Importer {
      */
     private Link urnToLink(String linkId, Link remoteLink){
         /* Check if edge link */
-        if(linkId.equals("urn:ogf:network:domain=*:node=*:port=*:link=*")){
+        if(linkId == null || linkId.equals("urn:ogf:network:domain=*:node=*:port=*:link=*")){
             return null;
         }
         linkId = linkId.replace("domain=","");
