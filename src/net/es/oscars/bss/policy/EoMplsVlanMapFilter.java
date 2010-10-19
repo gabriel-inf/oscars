@@ -1,11 +1,22 @@
 package net.es.oscars.bss.policy;
 
-import java.util.*;
+
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import net.es.oscars.bss.*;
-import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.VlanRange;
+import net.es.oscars.bss.topology.L2SwitchingCapabilityData;
+import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.PathElem;
+import net.es.oscars.bss.topology.PathElemParam;
+import net.es.oscars.bss.topology.PathElemParamSwcap;
+import net.es.oscars.bss.topology.PathElemParamType;
+import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.PropHandler;
 
 /**
@@ -219,27 +230,32 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             PathElem ingPE = localPathElems.get(0);
             PathElem egrPE = localPathElems.get(localPathElems.size() - 1);
             PathElem pe = null;
-            
-            if (scope.equals(PORT_SCOPE)) {
-                if (ingPE.getLink().equals(edgePE.getLink().getPort())) {
-                    pe = ingPE;
-                } else if (egrPE.getLink().equals(edgePE.getLink().getPort())) {
-                    pe = egrPE;
-                } else {
-                    continue;
-                }
-            } else if (scope.equals(NODE_SCOPE)) {
-                if (ingPE.getLink().equals(edgePE.getLink().getPort().getNode())) {
-                    pe = ingPE;
-                } else if (egrPE.getLink().equals(edgePE.getLink().getPort().getNode())) {
-                    pe = egrPE;
-                } else {
-                    continue;
-                }
+            if (ingPE == null || ingPE.getLink() == null || ingPE.getLink().getPort() == null) {
+            	// avoid NPE
+            } else if (egrPE == null || egrPE.getLink() == null || egrPE.getLink().getPort() == null) {
+            	// avoid NPE
+            } else {
+	            if (scope.equals(PORT_SCOPE)) {
+	                if (ingPE.getLink().getPort().equals(edgePE.getLink().getPort())) {
+	                    pe = ingPE;
+	                } else if (egrPE.getLink().getPort().equals(edgePE.getLink().getPort())) {
+	                    pe = egrPE;
+	                } else {
+	                    continue;
+	                }
+	            } else if (scope.equals(NODE_SCOPE)) {
+	                if (ingPE.getLink().getPort().getNode().equals(edgePE.getLink().getPort().getNode())) {
+	                    pe = ingPE;
+	                } else if (egrPE.getLink().getPort().getNode().equals(edgePE.getLink().getPort().getNode())) {
+	                    pe = egrPE;
+	                } else {
+	                    continue;
+	                }
+	            }
+	            String vlanString = this.getVlanForOverlappingPE(pe);
+	            VlanRange resvVlans = new VlanRange(vlanString);
+	            availVlans = VlanRange.subtract(availVlans, resvVlans);
             }
-            String vlanString = this.getVlanForOverlappingPE(pe);
-            VlanRange resvVlans = new VlanRange(vlanString);
-            availVlans = VlanRange.subtract(availVlans, resvVlans);
         }
         
         return availVlans;
