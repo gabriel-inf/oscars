@@ -14,6 +14,13 @@
                 <description>${ifce_a.description}</description>
                 <encapsulation>vlan-ccc</encapsulation>
                 <vlan-id>${ifce_a.vlan}</vlan-id>
+<#-- only add this when necessary -->
+<#if ifce_a.vlan != ifce_z.vlan >
+                <input-vlan-map>
+                    <swap/>
+                    <vlan-id>${ifce_z.vlan}</vlan-id>
+                </input-vlan-map>
+</#if>
                 <family>
                     <ccc>
 <#-- use a filter to capture stats & police -->
@@ -33,7 +40,14 @@
                 <name>${ifce_z.vlan}</name>
                 <description>${ifce_z.description}</description>
                 <encapsulation>vlan-ccc</encapsulation>
+<#-- only add this when necessary -->
+<#if ifce_a.vlan != ifce_z.vlan >
                 <vlan-id>${ifce_z.vlan}</vlan-id>
+                <input-vlan-map>
+                    <swap/>
+                    <vlan-id>${ifce_a.vlan}</vlan-id>
+                </input-vlan-map>
+</#if>
                 <family>
                     <ccc>
 <#-- use a filter to capture stats & police -->
