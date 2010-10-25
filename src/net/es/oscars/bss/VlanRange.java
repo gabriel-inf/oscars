@@ -51,6 +51,9 @@ public class VlanRange {
         if (range.equals("")) {
             return;
         }
+        if (range.equals("any")) {
+            range = "2-4095";
+        }
         
         String[] rangeList = range.split(",");
         try {
