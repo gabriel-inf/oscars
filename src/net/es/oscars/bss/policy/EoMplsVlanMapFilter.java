@@ -225,39 +225,44 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     
     private VlanRange combineAvailAndReserved(VlanRange availVlans, PathElem edgePE, List<Reservation> resvs) throws BSSException {
         for (Reservation resv : resvs) {
+            String gri = resv.getGlobalReservationId();
             Path localPath = resv.getPath(PathType.LOCAL);
             List<PathElem> localPathElems = localPath.getPathElems();
             PathElem ingPE = localPathElems.get(0);
             PathElem egrPE = localPathElems.get(localPathElems.size() - 1);
             PathElem pe = null;
             if (ingPE == null || ingPE.getLink() == null || ingPE.getLink().getPort() == null) {
-            	// avoid NPE
+                // avoid NPE
+                log.debug("incomplete ingress info for "+gri+" "+ingPE.getUrn());
             } else if (egrPE == null || egrPE.getLink() == null || egrPE.getLink().getPort() == null) {
-            	// avoid NPE
+                // avoid NPE
+                log.debug("incomplete egress info for "+gri+" "+ingPE.getUrn());
             } else {
-	            if (scope.equals(PORT_SCOPE)) {
-	                if (ingPE.getLink().getPort().equals(edgePE.getLink().getPort())) {
-	                    pe = ingPE;
-	                } else if (egrPE.getLink().getPort().equals(edgePE.getLink().getPort())) {
-	                    pe = egrPE;
-	                } else {
-	                    continue;
-	                }
-	            } else if (scope.equals(NODE_SCOPE)) {
-	                if (ingPE.getLink().getPort().getNode().equals(edgePE.getLink().getPort().getNode())) {
-	                    pe = ingPE;
-	                } else if (egrPE.getLink().getPort().getNode().equals(edgePE.getLink().getPort().getNode())) {
-	                    pe = egrPE;
-	                } else {
-	                    continue;
-	                }
-	            }
-	            String vlanString = this.getVlanForOverlappingPE(pe);
-	            VlanRange resvVlans = new VlanRange(vlanString);
-	            availVlans = VlanRange.subtract(availVlans, resvVlans);
+                if (scope.equals(PORT_SCOPE)) {
+                    if (ingPE.getLink().getPort().equals(edgePE.getLink().getPort())) {
+                        pe = ingPE;
+                    } else if (egrPE.getLink().getPort().equals(edgePE.getLink().getPort())) {
+                        pe = egrPE;
+                    } else {
+                        continue;
+                    }
+                } else if (scope.equals(NODE_SCOPE)) {
+                    if (ingPE.getLink().getPort().getNode().equals(edgePE.getLink().getPort().getNode())) {
+                        pe = ingPE;
+                    } else if (egrPE.getLink().getPort().getNode().equals(edgePE.getLink().getPort().getNode())) {
+                        pe = egrPE;
+                    } else {
+                        continue;
+                    }
+                }
+                String vlanString = this.getVlanForOverlappingPE(pe);
+                VlanRange resvVlans = new VlanRange(vlanString);
+                log.debug("vlan range: ["+resvVlans+"] reserved by "+gri+" at "+pe.getUrn());
+                availVlans = VlanRange.subtract(availVlans, resvVlans);
             }
         }
         
+        log.debug("usable vlans when all resvs removed: "+availVlans);
         return availVlans;
     }
     

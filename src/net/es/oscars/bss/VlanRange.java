@@ -14,22 +14,6 @@ public class VlanRange {
     public void setMap(boolean[] map) {
         this.map = map;
     }
-    /*
-    public static void main(String[] args) {
-        try {
-            VlanRange one = new VlanRange("300-600");
-            VlanRange other = new VlanRange("500");
-            System.out.println("ONE: "+one+ " OTHER: "+other);
-            VlanRange tmp = VlanRange.and(one, other);
-            System.out.println("AND: "+tmp);
-            tmp = VlanRange.subtract(one, other);
-            System.out.println("SUBTRACT: "+tmp);
-        } catch (BSSException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-    */
     
     private void init() {
         map = new boolean[MAX_VLAN];
