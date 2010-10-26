@@ -68,6 +68,8 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             
             PathElem ingPE = localPathElems.get(0);
             PathElem egrPE = localPathElems.get(localPathElems.size() - 1);
+            PathElem interIngPE = interPathElems.get(0);
+            PathElem interEgrPE = interPathElems.get(interPathElems.size() - 1);
             
             PathElem prevEgrPE = this.getPrevExternalL2scHop(interPathElems);
             PathElem nextIngPE = this.getNextExternalL2scHop(interPathElems);
@@ -83,7 +85,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             log.debug("Available egress VLANs: "+ availEgrVlans);
             
             
-            this.decideAndSetVlans(prevEgrPE, ingPE, egrPE, nextIngPE, availIngVlans, availEgrVlans);
+            this.decideAndSetVlans(prevEgrPE, ingPE, egrPE, interIngPE, interEgrPE, nextIngPE, availIngVlans, availEgrVlans);
         } catch (BSSException e) {
             this.log.error(e);
             throw e;
@@ -93,7 +95,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     
     
     
-    private void decideAndSetVlans(PathElem prevEgrPE, PathElem ingPE, PathElem egrPE, PathElem nextIngPE, 
+    private void decideAndSetVlans(PathElem prevEgrPE, PathElem ingPE, PathElem egrPE, PathElem interIngPE, PathElem interEgrPE, PathElem nextIngPE, 
             VlanRange availIngVlans, VlanRange availEgrVlans) throws BSSException {
         log.debug("decideAndSetVlans.start");
         // find the common subset of vlans between our ingress
@@ -127,6 +129,8 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             log.debug("Common single VLAN is: "+singleVlan);
             this.finalizeVlan(singleVlan, ingPE, prevEgrPE);
             this.finalizeVlan(singleVlan, egrPE, nextIngPE);
+            this.finalizeVlan(singleVlan, interIngPE, prevEgrPE);
+            this.finalizeVlan(singleVlan, interEgrPE, nextIngPE);
         } else {
             log.debug("No common VLANs for edges, deciding ingress...");
             Integer ingVlan = decideVlan(availIngVlans, suggested);
@@ -141,6 +145,9 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             log.debug("Decided egress VLAN: "+egrVlan+ " , finalizing VLANs..");
             this.finalizeVlan(ingVlan, ingPE, prevEgrPE);
             this.finalizeVlan(egrVlan, egrPE, nextIngPE);
+            //set interdomain links
+            this.finalizeVlan(ingVlan, interIngPE, prevEgrPE);
+            this.finalizeVlan(egrVlan, interEgrPE, nextIngPE);
         }
         log.debug("decideAndSetVlans.end");
     }
