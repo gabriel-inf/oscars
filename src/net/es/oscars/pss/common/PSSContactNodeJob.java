@@ -64,15 +64,22 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
         
         try {
             SDNQueuer q = SDNQueuer.getInstance();
+            OSCARSCore core = OSCARSCore.getInstance();
+            core.getBssDbName();
+            core.getBssSession();
+            String bssDbName = core.getBssDbName();
+            StateEngine se = null;
+            Session bss = null;
+
+            bss = core.getBssSession();
+            se = core.getStateEngine();
+            bss.beginTransaction();
+            ReservationDAO resvDAO = new ReservationDAO(bssDbName);
             
             String gri = resv.getGlobalReservationId();
-            log.debug("gri: "+gri);
+            log.debug("gri; "+gri);
             
             Path localPath = resv.getPath(PathType.LOCAL);
-            if (localPath == null) {
-                log.error("No local path!");
-                return;
-            }
             
             List<PathElem> resvPathElems = localPath.getPathElems();
             for (PathElem pe : resvPathElems) {
@@ -80,17 +87,8 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
                 log.debug(fqti);
             }
     
-            StateEngine se = null;
-            Session bss = null;
             
-            OSCARSCore core = OSCARSCore.getInstance();
-            core.getBssDbName();
-            core.getBssSession();
-            String bssDbName = core.getBssDbName();
-            bss = core.getBssSession();
-            se = core.getStateEngine();
-            bss.beginTransaction();
-            ReservationDAO resvDAO = new ReservationDAO(bssDbName);
+
             try {
                 resv = resvDAO.query(gri);
             } catch (BSSException e) {
