@@ -11,11 +11,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.jaxen.JaxenException;
+import org.jaxen.SimpleNamespaceContext;
+import org.jaxen.XPath;
+import org.jaxen.jdom.JDOMXPath;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.OSCARSCore;
@@ -566,15 +569,10 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         
         // XML parsing bit
         // NOTE WELL: if response format changes, this won't work
-        Element root = statusDoc.getRootElement();
-        // this is element "rpc-reply"
-        Element rpcReply = (Element) root.getChildren().get(0);
-        // firstchild should be "l2circuit-connection-information"
-        // XPath doesn't have way to name the default namespace,
-        // so we get it from firstChild
-        Element firstChild = (Element) rpcReply.getChildren().get(0);
-        String uri = firstChild.getNamespaceURI();
-        Namespace ns = Namespace.getNamespace("ns", uri);
+        
+        HashMap<String, String> nsmap = new HashMap<String, String>();
+        nsmap.put( "routing", "http://xml.juniper.net/junos/9.3I0/junos-routing");
+        
         
         /* ok now go find if we the status doc has the connections set
         * this is a sample xpath :
@@ -585,46 +583,49 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         String ifceStatus = "";
         boolean isVCup = false;
         boolean isVCConfigured = false;
-        try {
-            String xpathExpr = "//ns:l2circuit-neighbor[neighbor-address=\""+zLoopback+"\"]/connection[local-interface/interface-name=\""+ingIfceId+"\"]";
-            XPath xpath = XPath.newInstance(xpathExpr);
-            log.debug("xpath is: "+xpathExpr);
-            xpath.addNamespace(ns);
-            Element conn = (Element) xpath.selectSingleNode(firstChild);
-            if (conn == null) {
-                
-            } else {
-                isVCConfigured = true;
-
-                List connectionChildren = conn.getChildren();
-                for (Iterator j = connectionChildren.iterator(); j.hasNext();) {
-                    Element e = (Element) j.next();
+        String xpathExpr = "//routing:l2circuit-neighbor[neighbor-address='"+zLoopback+"']/connection[local-interface/interface-name='"+ingIfceId+"']";
+        log.debug("xpath is: "+xpathExpr);
         
-                    if (e.getName().equals("connection-status")) {
-                        connectionStatus = e.getText();
-                        log.debug("conn status : "+connectionStatus);
-                    } else if (e.getName().equals("local-interface")) {
-                        List localInterfaces = e.getChildren();
-                        for (Iterator k = localInterfaces.iterator(); k.hasNext();) {
-                            Element ifceElem = (Element) k.next();
-                            if (ifceElem.getName().equals("interface-status")) {
-                                ifceStatus = ifceElem.getText();
-                                log.debug("ifce status : "+ifceStatus);
-                            } else if (ifceElem.getName().equals("interface-description")) {
-                                String ifceDescription = ifceElem.getText();
-                                log.debug("ifce description: "+ifceDescription);
-                            }
-                        }
-                    }
-                }
-                if (connectionStatus != null && connectionStatus.toLowerCase().trim().equals("up")) {
-                    isVCup = true;
-                }
-            } 
-        } catch (JDOMException e1) {
+        XPath xpath;
+        Element conn = null;
+        try {
+            xpath = new JDOMXPath(xpathExpr);
+            xpath.setNamespaceContext(new SimpleNamespaceContext(nsmap));
+            conn = (Element) xpath.selectSingleNode(statusDoc);
+        } catch (JaxenException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
+        if (conn == null) {
+            log.info("could not locate connection XML node, will retry");
+        } else {
+            isVCConfigured = true;
+
+            List connectionChildren = conn.getChildren();
+            for (Iterator j = connectionChildren.iterator(); j.hasNext();) {
+                Element e = (Element) j.next();
+    
+                if (e.getName().equals("connection-status")) {
+                    connectionStatus = e.getText();
+                    log.debug("conn status : "+connectionStatus);
+                } else if (e.getName().equals("local-interface")) {
+                    List localInterfaces = e.getChildren();
+                    for (Iterator k = localInterfaces.iterator(); k.hasNext();) {
+                        Element ifceElem = (Element) k.next();
+                        if (ifceElem.getName().equals("interface-status")) {
+                            ifceStatus = ifceElem.getText();
+                            log.debug("ifce status : "+ifceStatus);
+                        } else if (ifceElem.getName().equals("interface-description")) {
+                            String ifceDescription = ifceElem.getText();
+                            log.debug("ifce description: "+ifceDescription);
+                        }
+                    }
+                }
+            }
+            if (connectionStatus != null && connectionStatus.toLowerCase().trim().equals("up")) {
+                isVCup = true;
+            }
+        } 
         if (isVCup) {
             log.debug(gri+": "+direction+" : VC is up"); 
         } else {
