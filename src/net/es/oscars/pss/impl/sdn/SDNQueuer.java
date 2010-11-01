@@ -25,6 +25,7 @@ import net.es.oscars.pss.common.PSSStatus;
 import net.es.oscars.pss.common.PathUtils;
 
 public class SDNQueuer implements PSSQueuer {
+    // 10 mins stuck = stale
     public final static Integer staleAfter = 600;
     private Logger log = Logger.getLogger(SDNQueuer.class);
     private Scheduler scheduler = null;

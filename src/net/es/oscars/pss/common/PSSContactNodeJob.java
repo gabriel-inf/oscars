@@ -86,6 +86,7 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
                     handler.teardown(resv, direction);
                     q.completeAction(gri, direction, action, true, "");
                 } else {
+                    log.error("invalid action: "+action);
                     // oops, never happen
                 }
                 

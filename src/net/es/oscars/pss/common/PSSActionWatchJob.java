@@ -42,12 +42,11 @@ public class PSSActionWatchJob implements Job {
         ReservationDAO resvDAO = null;
         OSCARSCore core = OSCARSCore.getInstance();
         bssDbName = core.getBssDbName();
-        core.getBssDbName();
-        core.getBssSession();
         bss = core.getBssSession();
         resvDAO = new ReservationDAO(bssDbName);
-        bss.beginTransaction();
-     
+        if (bss != null) {
+            bss.beginTransaction();
+        }
         
         if (dataMap.get("staleTimeout") != null) {
             staleTimeout = (Integer) dataMap.get("staleTimeout");
@@ -276,8 +275,7 @@ public class PSSActionWatchJob implements Job {
                 return;
             }
         } catch (BSSException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error(e);
         }
         log.debug("committing new status to DB for: "+gri+" : "+statusForLog);
         StateEngine se = OSCARSCore.getInstance().getStateEngine();

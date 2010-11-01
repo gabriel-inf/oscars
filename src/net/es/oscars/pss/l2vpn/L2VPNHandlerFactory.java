@@ -8,7 +8,7 @@ import net.es.oscars.pss.l2vpn.junos.L2VPN_Junos;
 public class L2VPNHandlerFactory {
     public static PSSHandler getHandler(RouterVendor rv) throws PSSException {
 if (rv.equals(RouterVendor.JUNIPER)) {
-            return new L2VPN_Junos();
+            return L2VPN_Junos.getInstance();
         } else {
             throw new PSSException("Unsupported router vendor: "+rv);
         }
