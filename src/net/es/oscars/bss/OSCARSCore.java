@@ -5,6 +5,7 @@ import java.rmi.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 import net.es.oscars.pss.*;
 import net.es.oscars.tss.*;
@@ -297,7 +298,12 @@ public class OSCARSCore {
      * @return Grabs the current AAA DB session for the current thread
      */
     public Session getBssSession() {
-        Session bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
+        SessionFactory sf = HibernateUtil.getSessionFactory(this.bssDbName);
+        if (sf == null) {
+            log.error("cannot open BSS session");
+            return null;
+        }
+        Session bss = sf.getCurrentSession();
         if (bss == null || !bss.isOpen()) {
             this.log.debug("opening BSS session");
             bss = HibernateUtil.getSessionFactory(this.bssDbName).openSession();
