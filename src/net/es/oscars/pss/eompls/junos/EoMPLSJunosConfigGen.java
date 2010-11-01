@@ -193,9 +193,18 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         }
         Pattern pattern =  Pattern.compile(".*(\\d).(\\d).(\\d).*");
         Matcher matcher =  pattern.matcher(portTopoId);
-        String x = matcher.group(1);
-        String y = matcher.group(2);
-        String z = matcher.group(3);
+        String x = null;
+        String y = null;
+        String z = null;
+        
+        while (matcher.find()){
+            x = matcher.group(1);
+            y = matcher.group(2);
+            z = matcher.group(3); 
+        }
+        if (x == null || y == null || z == null) {
+            throw new PSSException("could not decide a l2circuit vcid!");
+        }
         l2circuitVCID = x+y+z+vlanIdForVC;
         
         
