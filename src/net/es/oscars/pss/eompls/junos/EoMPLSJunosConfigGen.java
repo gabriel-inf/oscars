@@ -537,7 +537,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             throw new PSSException("Invalid direction!");
         }
         PathElem aPathElem      = pathElems.get(0);
-        PathElem yPathElem      = pathElems.get(pathElems.size()-2);
+        PathElem zPathElem      = pathElems.get(pathElems.size()-1);
 
         PathElemParam aVlanPEP;
         try {
@@ -550,15 +550,9 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             log.error("No VLAN set for: "+aPathElem.getLink().getFQTI());
             throw new PSSException("No VLAN set for: "+aPathElem.getLink().getFQTI());
         }
-        String yIP;
-        Ipaddr ipaddr = yPathElem.getLink().getValidIpaddr();
-        if (ipaddr != null) {
-            yIP = ipaddr.getIP();
-            log.info("found IP: "+yIP+" for "+yPathElem.getLink().getFQTI());
-        } else {
-            log.error("Invalid IP for: "+yPathElem.getLink().getFQTI());
-            throw new PSSException("Invalid IP for: "+yPathElem.getLink().getFQTI());
-        }
+        
+        String zLoopback    = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
+
 
         
         
@@ -592,7 +586,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         boolean isVCup = false;
         boolean isVCConfigured = false;
         try {
-            String xpathExpr = "//ns:l2circuit-neighbor[neighbor-address=\""+yIP+"\"]/connection[local-interface/interface-name=\""+ingIfceId+"\"]";
+            String xpathExpr = "//ns:l2circuit-neighbor[neighbor-address=\""+zLoopback+"\"]/connection[local-interface/interface-name=\""+ingIfceId+"\"]";
             XPath xpath = XPath.newInstance(xpathExpr);
             log.debug("xpath is: "+xpathExpr);
             xpath.addNamespace(ns);
@@ -632,15 +626,15 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             e1.printStackTrace();
         }
         if (isVCup) {
-            log.debug(gri+": VC is up at "+yIP); 
+            log.debug(gri+": "+direction+" : VC is up"); 
         } else {
-            log.debug(gri+": VC is down at "+yIP); 
+            log.debug(gri+": "+direction+" : VC is down"); 
         }
             
         if (isVCConfigured) {
-            log.debug(gri+": VC is configured at "+yIP); 
+            log.debug(gri+": "+direction+" : VC is configured"); 
         } else {
-            log.debug(gri+": VC is not configured at "+yIP); 
+            log.debug(gri+": "+direction+" : VC is not configured"); 
             
         }
         
