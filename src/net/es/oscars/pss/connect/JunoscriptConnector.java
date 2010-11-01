@@ -6,9 +6,11 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Properties;
 
@@ -35,8 +37,10 @@ import net.es.oscars.pss.common.PSSConnectorConfigBean;
 public class JunoscriptConnector {
     private Logger log = Logger.getLogger(JunoscriptConnector.class);
     
-    private InputStream in   = null;
-    private OutputStream out = null;
+    
+    private BufferedReader fromServer = null;
+    private OutputStream toServer = null;
+
     private Session session = null;
     private Channel channel = null;
     private String router = null;
@@ -58,11 +62,11 @@ public class JunoscriptConnector {
         if (this.session != null) {
             this.session.disconnect();
         }
-        if (this.in != null) {
-            this.in.close();
+        if (this.fromServer != null) {
+            this.fromServer.close();
         } 
-        if (this.out != null) {
-            this.out.close();
+        if (this.toServer != null) {
+            this.toServer.close();
         }
     }
 
@@ -97,9 +101,12 @@ public class JunoscriptConnector {
             this.session.connect();
 
             this.channel = this.session.openChannel("exec");
-            this.in = this.channel.getInputStream();
-            this.out = this.channel.getOutputStream();
+            
+            this.toServer = channel.getOutputStream();
             ((ChannelExec) this.channel).setCommand("junoscript");
+            
+            this.fromServer = new BufferedReader(new InputStreamReader(channel.getInputStream()));
+            
             this.channel.connect();
             this.log.info("connect.finish");
         } catch (JSchException ex) {
@@ -134,23 +141,31 @@ public class JunoscriptConnector {
         
         this.log.debug("sending command...");
         // send command
-        outputter.output(doc, this.out);
+        outputter.output(doc, this.toServer);
         
         this.log.info("waiting for response...");
         
-        ByteArrayOutputStream buff  = new ByteArrayOutputStream();
+        
+        
+        this.fromServer.toString();
+        
         Document response = null;
         SAXBuilder b = new SAXBuilder();
-        doc = b.build(this.in);
-        if (doc == null) {
+        if (this.fromServer == null) {
+            throw new PSSException("Cannot get output stream from router");
+        }
+        response = b.build(this.fromServer);
+        if (response == null) {
             throw new PSSException("Router "+router+" did not return a response");
         }
-        outputter.output(response, buff);
         
         // for logging purposes only
         if (config.isLogResponse()) {
+            ByteArrayOutputStream buff  = new ByteArrayOutputStream();
+            outputter.output(response, buff);
             this.log.info("\nRESPONSE:\n\n"+buff.toString());
         }
+        
         this.log.info("response received");
         this.log.info("sendCommand.end for "+router);
         this.shutdown();

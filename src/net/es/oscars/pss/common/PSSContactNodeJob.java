@@ -26,54 +26,76 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
+        this.log.debug("ContactNodeJob.start");
+        
+        if (context == null) {
+            log.error("No context!");
+            return;
+        } else if (context.getJobDetail() == null) {
+            log.error("No job detail!");
+            return;
+        } else if (context.getJobDetail().getJobDataMap() == null) {
+            log.error("No job data map!");
+            return;
+        }
+        
         String jobName = context.getJobDetail().getFullName();
-        this.log.debug("ContactNodeJob.start name: "+jobName);
+        this.log.debug("ContactNodeJob jobName: "+jobName);
+        
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 
-        
-        
         Reservation resv        = (Reservation) dataMap.get("resv");
         PSSDirection direction  = (PSSDirection) dataMap.get("direction");
         PSSAction action        = (PSSAction) dataMap.get("action");
         PSSHandler handler      = (PSSHandler) dataMap.get("handler");
+        if (resv == null) {
+            log.error("No resv!");
+            return;
+        } else if (direction == null) {
+            log.error("No direction!");
+            return;
+        } else if (action == null) {
+            log.error("No action!");
+            return;
+        } else if (handler == null) {
+            log.error("No handler!");
+            return;
+        }
         
-        
-        boolean persist = true;
         try {
             SDNQueuer q = SDNQueuer.getInstance();
             
             String gri = resv.getGlobalReservationId();
+            log.debug("gri: "+gri);
             
             Path localPath = resv.getPath(PathType.LOCAL);
+            if (localPath == null) {
+                log.error("No local path!");
+                return;
+            }
             
             List<PathElem> resvPathElems = localPath.getPathElems();
             for (PathElem pe : resvPathElems) {
-                try {
-                    String fqti = pe.getLink().getFQTI();
-                    log.debug(fqti);
-                } catch (org.hibernate.LazyInitializationException ex) {
-                    persist = true;
-                }
+                String fqti = pe.getLink().getFQTI();
+                log.debug(fqti);
             }
     
             StateEngine se = null;
             Session bss = null;
             
-            if (persist) {
-                OSCARSCore core = OSCARSCore.getInstance();
-                core.getBssDbName();
-                core.getBssSession();
-                String bssDbName = core.getBssDbName();
-                bss = core.getBssSession();
-                se = core.getStateEngine();
-                bss.beginTransaction();
-                ReservationDAO resvDAO = new ReservationDAO(bssDbName);
-                try {
-                    resv = resvDAO.query(gri);
-                } catch (BSSException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+            OSCARSCore core = OSCARSCore.getInstance();
+            core.getBssDbName();
+            core.getBssSession();
+            String bssDbName = core.getBssDbName();
+            bss = core.getBssSession();
+            se = core.getStateEngine();
+            bss.beginTransaction();
+            ReservationDAO resvDAO = new ReservationDAO(bssDbName);
+            try {
+                resv = resvDAO.query(gri);
+            } catch (BSSException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             
             
@@ -105,11 +127,11 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
                     log.error(ex);
                 }
             }
-            if (persist) {
-                se.safeHibernateCommit(resv, bss);
-            }
+            se.safeHibernateCommit(resv, bss);
         } catch (Exception ex) {
-            log.error(ex);
+            
+            log.error("error: ", ex);
+            
         } finally {
             //this delays the queue a domain-specific amount
             try { 
