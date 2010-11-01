@@ -40,10 +40,15 @@ public class EoMPLS_Junos implements PSSHandler {
         
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterSetup();
+
+        Integer maxTries = pc.getHandlerConfig().getCheckStatusMaxTries();
+        Integer initialDelay = pc.getHandlerConfig().getCheckStatusInitialDelay();
+        Integer delayBetween = pc.getHandlerConfig().getCheckStatusDelayBetween();
+        
         if (checkStatus) {
             try { 
-                log.debug("waiting 10 sec before first status check");
-                Thread.sleep(10000);
+                log.debug("waiting "+initialDelay+" sec before first status check");
+                Thread.sleep(initialDelay * 1000);
                 log.debug("starting status check");
             } catch (InterruptedException e) {
                 // nothing
@@ -57,13 +62,14 @@ public class EoMPLS_Junos implements PSSHandler {
                 tries++;
                 Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
                 setupSuccess = cg.checkStatus(statusDoc, PSSAction.SETUP, direction, resv);
-                if (tries > 3) {
+                if (tries >= maxTries) {
                     doneChecking = true;
                 } else if (setupSuccess) {
                     doneChecking = true;
                 } else {
                     try { 
-                        Thread.sleep(30000);
+                        log.debug("waiting "+delayBetween+" sec before next status check");
+                        Thread.sleep(delayBetween*1000);
                     } catch (InterruptedException e) {
                         // nothing
                     }
@@ -85,10 +91,14 @@ public class EoMPLS_Junos implements PSSHandler {
         JunoscriptHandler.command(resv, direction, command, log);
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterTeardown();
+        Integer maxTries = pc.getHandlerConfig().getCheckStatusMaxTries();
+        Integer initialDelay = pc.getHandlerConfig().getCheckStatusInitialDelay();
+        Integer delayBetween = pc.getHandlerConfig().getCheckStatusDelayBetween();
+        
         if (checkStatus) {
             try { 
-                log.debug("waiting 10 sec before first status check");
-                Thread.sleep(10000);
+                log.debug("waiting "+initialDelay+" sec before first status check");
+                Thread.sleep(initialDelay * 1000);
                 log.debug("starting status check");
             } catch (InterruptedException e) {
                 // nothing
@@ -101,13 +111,14 @@ public class EoMPLS_Junos implements PSSHandler {
                 tries++;
                 Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
                 teardownSuccess = cg.checkStatus(statusDoc, PSSAction.TEARDOWN, direction, resv);
-                if (tries > 3) {
+                if (tries >= maxTries) {
                     doneChecking = true;
                 } else if (teardownSuccess) {
                     doneChecking = true;
                 } else{
                     try { 
-                        Thread.sleep(30000);
+                        log.debug("waiting "+delayBetween+" sec before next status check");
+                        Thread.sleep(delayBetween*1000);
                     } catch (InterruptedException e) {
                         // nothing
                     }

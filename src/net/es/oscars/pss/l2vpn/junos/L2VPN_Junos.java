@@ -45,8 +45,20 @@ public class L2VPN_Junos implements PSSHandler {
         
 
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterSetup();
+        Integer maxTries = pc.getHandlerConfig().getCheckStatusMaxTries();
+        Integer initialDelay = pc.getHandlerConfig().getCheckStatusInitialDelay();
+        Integer delayBetween = pc.getHandlerConfig().getCheckStatusDelayBetween();
+        
         if (checkStatus) {
+            try { 
+                log.debug("waiting "+initialDelay+" sec before first status check");
+                Thread.sleep(initialDelay * 1000);
+                log.debug("starting status check");
+            } catch (InterruptedException e) {
+                // nothing
+            }
             String statusCmd = cg.generateL2Status(resv, direction);
+
             boolean doneChecking = false;
             int tries = 0;
             boolean setupSuccess = false;
@@ -54,10 +66,17 @@ public class L2VPN_Junos implements PSSHandler {
                 tries++;
                 Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
                 setupSuccess = this.checkStatus(statusDoc, PSSAction.SETUP, direction, resv);
-                if (tries > 3) {
+                if (tries >= maxTries) {
                     doneChecking = true;
                 } else if (setupSuccess) {
                     doneChecking = true;
+                } else {
+                    try { 
+                        log.debug("waiting "+delayBetween+" sec before next status check");
+                        Thread.sleep(delayBetween*1000);
+                    } catch (InterruptedException e) {
+                        // nothing
+                    }
                 }
             }
             if (!setupSuccess) {
@@ -82,7 +101,19 @@ public class L2VPN_Junos implements PSSHandler {
         JunoscriptHandler.command(resv, direction, command, log);
 
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterTeardown();
+        Integer maxTries = pc.getHandlerConfig().getCheckStatusMaxTries();
+        Integer initialDelay = pc.getHandlerConfig().getCheckStatusInitialDelay();
+        Integer delayBetween = pc.getHandlerConfig().getCheckStatusDelayBetween();
+
         if (checkStatus) {
+            try { 
+                log.debug("waiting "+initialDelay+" sec before first status check");
+                Thread.sleep(initialDelay * 1000);
+                log.debug("starting status check");
+            } catch (InterruptedException e) {
+                // nothing
+            }
+
             String statusCmd = cg.generateL2Status(resv, direction);
             boolean doneChecking = false;
             int tries = 0;
@@ -91,10 +122,17 @@ public class L2VPN_Junos implements PSSHandler {
                 tries++;
                 Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
                 teardownSuccess = this.checkStatus(statusDoc, PSSAction.TEARDOWN, direction, resv);
-                if (tries > 3) {
+                if (tries >= maxTries) {
                     doneChecking = true;
                 } else if (teardownSuccess) {
                     doneChecking = true;
+                } else {
+                    try { 
+                        log.debug("waiting "+delayBetween+" sec before next status check");
+                        Thread.sleep(delayBetween*1000);
+                    } catch (InterruptedException e) {
+                        // nothing
+                    }
                 }
             }
             if (!teardownSuccess) {
