@@ -558,7 +558,9 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         boolean isVCup = false;
         boolean isVCConfigured = false;
         try {
-            XPath xpath = XPath.newInstance("//ns:l2circuit-neighbor[neighbor-address=\""+yIP+"\"]/connection[local-interface/interface-name=\""+ingIfceId+"\"]");
+            String xpathExpr = "//ns:l2circuit-neighbor[neighbor-address=\""+yIP+"\"]/connection[local-interface/interface-name=\""+ingIfceId+"\"]";
+            XPath xpath = XPath.newInstance(xpathExpr);
+            log.debug("xpath is: "+xpathExpr);
             xpath.addNamespace(ns);
             Element conn = (Element) xpath.selectSingleNode(statusDoc);
             if (conn == null) {

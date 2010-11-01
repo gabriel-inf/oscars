@@ -38,7 +38,7 @@ public class SDNFailureHandler implements PSSFailureHandler {
 
                 
             } else if (action.equals(PSSAction.TEARDOWN)) {
-                
+                log.info("Action was teardown; must remove config manually");
             }
         } else {
             log.info("no action after failure will be taken");

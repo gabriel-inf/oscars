@@ -41,6 +41,12 @@ public class EoMPLS_Junos implements PSSHandler {
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterSetup();
         if (checkStatus) {
+            try { 
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                // nothing
+            }
+
             String statusCmd = cg.generateL2Status(resv, direction);
             boolean doneChecking = false;
             int tries = 0;
@@ -53,6 +59,12 @@ public class EoMPLS_Junos implements PSSHandler {
                     doneChecking = true;
                 } else if (setupSuccess) {
                     doneChecking = true;
+                } else {
+                    try { 
+                        Thread.sleep(30000);
+                    } catch (InterruptedException e) {
+                        // nothing
+                    }
                 }
             }
             if (!setupSuccess) {
