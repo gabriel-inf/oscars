@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -71,7 +72,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         Long policerBurstSizeLimit, policerBandwidthLimit;
         String statsFilterName, statsFilterTerm, statsFilterCount;
         String policingFilterName, policingFilterTerm, policingFilterCount;
-        Integer oscarsCommunity;
+        String oscarsCommunity;
         
         
         /* *********************** */
@@ -185,11 +186,20 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         
 
 
-        oscarsCommunity         = nameGenerator.getOscarsCommunity(resv);
+        
 
-        Long now = new Date().getTime();
-        communityMembers    = "65000:"+oscarsCommunity+":"+now;
-        l2circuitVCID       = now.toString();
+        Random rand = new Random();
+        Integer randInt = 30000 + rand.nextInt(35500);
+        
+        
+        if (nameGenerator.getOscarsCommunity(resv) > 65535) {
+            oscarsCommunity  = nameGenerator.getOscarsCommunity(resv)+"L";
+        } else {
+            oscarsCommunity  = nameGenerator.getOscarsCommunity(resv).toString();
+        }
+        
+        communityMembers    = "65000:"+oscarsCommunity+":"+randInt;
+        l2circuitVCID       = randInt.toString();
 
         // names etc
         policingFilterName      = nameGenerator.getFilterName(resv, "policing");

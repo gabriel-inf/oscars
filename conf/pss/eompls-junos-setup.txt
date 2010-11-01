@@ -40,7 +40,7 @@
             <term>
                 <name>${policy.term}</name>
                 <from>
-                    <community>${community.members}</community>
+                    <community>${community.name}</community>
                 </from>
                 <then>
                     <install-nexthop>
@@ -124,7 +124,7 @@
                 <burst-size-limit>${policer.burst_size_limit?string.computer}</burst-size-limit>
             </if-exceeding>
             <then>
-                <forwarding-class>scavenger-service</forwarding-class>
+                <forwarding-class>scavenger</forwarding-class>
             </then>
         </policer>
 
