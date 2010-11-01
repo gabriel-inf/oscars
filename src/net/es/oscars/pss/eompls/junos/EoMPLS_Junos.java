@@ -42,7 +42,9 @@ public class EoMPLS_Junos implements PSSHandler {
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterSetup();
         if (checkStatus) {
             try { 
-                Thread.sleep(5000);
+                log.debug("waiting 10 sec before first status check");
+                Thread.sleep(10000);
+                log.debug("starting status check");
             } catch (InterruptedException e) {
                 // nothing
             }
@@ -84,6 +86,13 @@ public class EoMPLS_Junos implements PSSHandler {
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterTeardown();
         if (checkStatus) {
+            try { 
+                log.debug("waiting 10 sec before first status check");
+                Thread.sleep(10000);
+                log.debug("starting status check");
+            } catch (InterruptedException e) {
+                // nothing
+            }
             String statusCmd = cg.generateL2Status(resv, direction);
             boolean doneChecking = false;
             int tries = 0;
@@ -96,6 +105,12 @@ public class EoMPLS_Junos implements PSSHandler {
                     doneChecking = true;
                 } else if (teardownSuccess) {
                     doneChecking = true;
+                } else{
+                    try { 
+                        Thread.sleep(30000);
+                    } catch (InterruptedException e) {
+                        // nothing
+                    }
                 }
             }
             if (!teardownSuccess) {

@@ -570,20 +570,30 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         // XML parsing bit
         // NOTE WELL: if response format changes, this won't work
         
+        Element root = statusDoc.getRootElement();
+        // this is element "rpc-reply"
+        Element rpcReply = (Element) root.getChildren().get(0);
+        // firstChild will be "l2circuit-connection-information"
+        // we should get the namespace from that element because it changes
+        // with each JunOS release.. 
+        Element firstChild = (Element) rpcReply.getChildren().get(0);
+        String uri = firstChild.getNamespaceURI();
+        
         HashMap<String, String> nsmap = new HashMap<String, String>();
-        nsmap.put( "routing", "http://xml.juniper.net/junos/9.3I0/junos-routing");
+        nsmap.put( "ns", uri);
         
         
         /* ok now go find if we the status doc has the connections set
         * this is a sample xpath :
-        *  //l2circuit-neighbor[neighbor-address="134.55.200.116"]/connection[local-interface/interface-name="xe-0/1/0.3501"]
+        *  //ns:l2circuit-neighbor[ns:neighbor-address="134.55.200.116"]/ns:connection[ns:local-interface/ns:interface-name="xe-0/1/0.3501"]
         */
         
         String connectionStatus = "";
         String ifceStatus = "";
         boolean isVCup = false;
         boolean isVCConfigured = false;
-        String xpathExpr = "//routing:l2circuit-neighbor[neighbor-address='"+zLoopback+"']/connection[local-interface/interface-name='"+ingIfceId+"']";
+
+        String xpathExpr = "//ns:l2circuit-neighbor[ns:neighbor-address='"+zLoopback+"']/ns:connection[ns:local-interface/ns:interface-name='"+ingIfceId+"']";
         log.debug("xpath is: "+xpathExpr);
         
         XPath xpath;
