@@ -65,19 +65,27 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
         try {
             SDNQueuer q = SDNQueuer.getInstance();
             OSCARSCore core = OSCARSCore.getInstance();
-            core.getBssDbName();
-            core.getBssSession();
             String bssDbName = core.getBssDbName();
-            StateEngine se = null;
-            Session bss = null;
 
-            bss = core.getBssSession();
-            se = core.getStateEngine();
-            bss.beginTransaction();
-            ReservationDAO resvDAO = new ReservationDAO(bssDbName);
+            Session bss = core.getBssSession();
+            StateEngine se = core.getStateEngine();
             
+            if (bss == null) {
+                log.error("No BSS session! Exiting.");
+                return;
+            }
+            
+            bss.beginTransaction();
+            
+            ReservationDAO resvDAO = new ReservationDAO(bssDbName);
             String gri = resv.getGlobalReservationId();
             log.debug("gri; "+gri);
+            try {
+                resv = resvDAO.query(gri);
+            } catch (BSSException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             
             Path localPath = resv.getPath(PathType.LOCAL);
             
@@ -89,13 +97,7 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
     
             
 
-            try {
-                resv = resvDAO.query(gri);
-            } catch (BSSException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
+
             
             try {
                 
