@@ -1,0 +1,11 @@
+<junoscript version="1.0" release="7.3">
+<rpc>
+  <get-configuration>
+    <configuration>
+      <protocols>
+        <connections/>
+      </protocols>
+    </configuration>
+  </get-configuration>
+</rpc>
+</junoscript>
