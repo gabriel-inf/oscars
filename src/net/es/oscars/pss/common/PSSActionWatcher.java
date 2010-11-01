@@ -117,7 +117,7 @@ public class PSSActionWatcher {
         
         CronTrigger watcherTrigger = null;
         try {
-            watcherTrigger = new CronTrigger("PSSActionWatcherTrigger", "PSS", "0/1 * * * * ?");
+            watcherTrigger = new CronTrigger("PSSActionWatcherTrigger", "PSS", "0/5 * * * * ?");
         } catch (ParseException ex) {
             log.error(ex);
         }

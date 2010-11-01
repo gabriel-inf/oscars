@@ -76,7 +76,7 @@ public class PSSActionWatchJob implements Job {
                 }
                 String errMsg = as.getMessage();
                 PSSStatus status = as.getStatus();
-                log.debug("examining: "+gri+" "+direction+" "+status);
+                log.debug("examining: "+gri+" "+direction+" " +action+" "+status);
                 
                 if (direction.equals(PSSDirection.BIDIRECTIONAL)) {
                     if (status.equals(PSSStatus.FAILURE)) {
