@@ -268,10 +268,10 @@ public class SWJunosConfigGen extends TemplateConfigGen {
         return this.getConfig(root, templateFileName);
     }
 
-    public String generateL2Status(Reservation resv, PSSDirection direction) {
-        // FIXME
-        String config = "";
-        return config;
+    public String generateL2Status(Reservation resv, PSSDirection direction) throws PSSException {
+        String templateFileName = "sw-junos-status.txt";
+        Map root = new HashMap();
+        return this.getConfig(root, templateFileName);
     }
 
     

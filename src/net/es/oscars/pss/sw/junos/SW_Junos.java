@@ -39,7 +39,7 @@ public class SW_Junos implements PSSHandler {
         String command = cg.generateL2Setup(resv, direction);
 
         JunoscriptHandler.command(resv, direction, command, log);
-        
+        String gri = resv.getGlobalReservationId();
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterSetup();
         if (checkStatus) {
@@ -49,6 +49,7 @@ public class SW_Junos implements PSSHandler {
             boolean setupSuccess = false;
             while (!doneChecking) {
                 tries++;
+                log.info("checking setup status for "+gri+" "+direction+" tries: "+tries);
                 Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
                 setupSuccess = this.checkStatus(statusDoc, PSSAction.SETUP, direction, resv);
                 if (tries > 3) {
@@ -70,6 +71,7 @@ public class SW_Junos implements PSSHandler {
         
         SWJunosConfigGen cg = SWJunosConfigGen.getInstance();
         String command = cg.generateL2Teardown(resv, direction);
+        String gri = resv.getGlobalReservationId();
 
         JunoscriptHandler.command(resv, direction, command, log);
         
@@ -82,6 +84,7 @@ public class SW_Junos implements PSSHandler {
             boolean teardownSuccess = false;
             while (!doneChecking) {
                 tries++;
+                log.info("checking teardown status for "+gri+" "+direction+" tries: "+tries);
                 Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
                 teardownSuccess = this.checkStatus(statusDoc, PSSAction.TEARDOWN, direction, resv);
                 if (tries > 3) {
