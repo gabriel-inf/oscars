@@ -590,7 +590,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             XPath xpath = XPath.newInstance(xpathExpr);
             log.debug("xpath is: "+xpathExpr);
             xpath.addNamespace(ns);
-            Element conn = (Element) xpath.selectSingleNode(statusDoc);
+            Element conn = (Element) xpath.selectSingleNode(firstChild);
             if (conn == null) {
                 
             } else {
