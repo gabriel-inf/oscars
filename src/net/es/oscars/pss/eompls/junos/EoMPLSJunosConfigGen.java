@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -173,6 +175,30 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
             throw new PSSException("No VLAN set for: "+zPathElem.getLink().getFQTI());
         }
         
+        
+        
+        
+        // decide VC id
+        // if port at A is xe-1/3/0 and vlan is 2259
+        // vcid is 1302259
+        // we only use the port at A.
+        String portTopoId = "";
+        String vlanIdForVC = "";
+        if (direction.equals(PSSDirection.A_TO_Z)) {
+             portTopoId = aPathElem.getLink().getPort().getTopologyIdent();
+             vlanIdForVC = aVlanPEP.getValue();
+        } else if (direction.equals(PSSDirection.Z_TO_A)) {
+            portTopoId = zPathElem.getLink().getPort().getTopologyIdent();
+            vlanIdForVC = zVlanPEP.getValue();
+        }
+        Pattern pattern =  Pattern.compile(".*(\\d).(\\d).(\\d).*");
+        Matcher matcher =  pattern.matcher(portTopoId);
+        String x = matcher.group(1);
+        String y = matcher.group(2);
+        String z = matcher.group(3);
+        l2circuitVCID = x+y+z+vlanIdForVC;
+        
+        
         String aLoopback    = aPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
         String zLoopback    = zPathElem.getLink().getPort().getNode().getNodeAddress().getAddress();
 
@@ -188,10 +214,9 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
 
         
 
+        // community is 30000 - 65500
         Random rand = new Random();
         Integer randInt = 30000 + rand.nextInt(35500);
-        
-        
         if (nameGenerator.getOscarsCommunity(resv) > 65535) {
             oscarsCommunity  = nameGenerator.getOscarsCommunity(resv)+"L";
         } else {
@@ -199,7 +224,7 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         }
         
         communityMembers    = "65000:"+oscarsCommunity+":"+randInt;
-        l2circuitVCID       = randInt.toString();
+        
 
         // names etc
         policingFilterName      = nameGenerator.getFilterName(resv, "policing");
