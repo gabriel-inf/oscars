@@ -2,8 +2,6 @@ package net.es.oscars.pss.impl.sdn;
 
 import org.apache.log4j.Logger;
 
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.OSCARSCore;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.StateEngine;
 import net.es.oscars.pss.PSSException;
@@ -16,8 +14,10 @@ public class SDNFailureHandler implements PSSFailureHandler {
 
     public void handleFailure(Reservation resv, PSSAction action) throws PSSException {
         String gri = resv.getGlobalReservationId();
-        StateEngine stateEngine = OSCARSCore.getInstance().getStateEngine();
 
+        /* comments below are wrong, if FAILED it can't be changed to INSETUP
+         
+        StateEngine stateEngine = OSCARSCore.getInstance().getStateEngine();
         if (action.equals(PSSAction.SETUP)) {
             // to conform to the state diagram we need to change the status 
             //.to INSETUP before we start tearing the reservation down 
@@ -28,6 +28,7 @@ public class SDNFailureHandler implements PSSFailureHandler {
                 throw new PSSException(e.getMessage());
             }
         }
+        */
 
         PSSConfigProvider pc = PSSConfigProvider.getInstance();
         if (pc.getHandlerConfig().isTeardownOnFailure()) {

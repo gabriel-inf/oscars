@@ -38,7 +38,7 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
         PSSHandler handler      = (PSSHandler) dataMap.get("handler");
         
         
-        boolean persist = false;
+        boolean persist = true;
         try {
             SDNQueuer q = SDNQueuer.getInstance();
             
@@ -80,11 +80,17 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
             try {
                 
                 if (action.equals(PSSAction.SETUP)) {
+                    log.debug("starting "+gri+" : "+direction+" : "+action);
                     handler.setup(resv, direction);
+                    log.debug("completing "+gri+" : "+direction+" : "+action);
                     q.completeAction(gri, direction, action, true, "");
+                    log.debug("completed "+gri+" : "+direction+" : "+action);
                 } else if (action.equals(PSSAction.TEARDOWN)) {
+                    log.debug("starting "+gri+" : "+direction+" : "+action);
                     handler.teardown(resv, direction);
+                    log.debug("completing "+gri+" : "+direction+" : "+action);
                     q.completeAction(gri, direction, action, true, "");
+                    log.debug("completed "+gri+" : "+direction+" : "+action);
                 } else {
                     log.error("invalid action: "+action);
                     // oops, never happen
@@ -92,7 +98,9 @@ public class PSSContactNodeJob extends ChainingJob  implements Job{
                 
             } catch (PSSException e) {
                 try {
+                    log.debug("error at: "+gri+" : "+direction+" : "+action);
                     q.completeAction(gri, direction, action, false, e.getMessage());
+                    log.debug("handled error at: "+gri+" : "+direction+" : "+action);
                 } catch (PSSException ex) {
                     log.error(ex);
                 }

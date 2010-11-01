@@ -70,10 +70,14 @@ public class SDNPSS implements PSS {
     }
 
     public String teardownPath(Reservation resv, String newStatus) throws PSSException {
-        try {
-            StateEngine.canUpdateStatus(resv, StateEngine.INTEARDOWN);
-        } catch (BSSException ex) {
-            throw new PSSException(ex);
+        if (!newStatus.equals(StateEngine.FAILED)) {
+            try {
+                StateEngine.canUpdateStatus(resv, StateEngine.INTEARDOWN);
+            } catch (BSSException ex) {
+                throw new PSSException(ex);
+            }
+        } else {
+           // teardown because of failure
         }
         this.startAction(resv, PSSAction.TEARDOWN); 
         
