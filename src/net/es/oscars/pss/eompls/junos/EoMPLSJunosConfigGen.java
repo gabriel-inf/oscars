@@ -3,10 +3,16 @@ package net.es.oscars.pss.eompls.junos;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
+import org.jdom.xpath.XPath;
 
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.OSCARSCore;
@@ -20,6 +26,8 @@ import net.es.oscars.bss.topology.PathElemParamType;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.ConfigNameGenerator;
+import net.es.oscars.pss.common.PSSAction;
+import net.es.oscars.pss.common.PSSConfigProvider;
 import net.es.oscars.pss.common.PSSDirection;
 import net.es.oscars.pss.common.PathUtils;
 import net.es.oscars.pss.common.TemplateConfigGen;
@@ -435,4 +443,179 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         this.nameGenerator = nameGenerator;
     }
 
+    /**
+     * @return true if the status is what it is supposed to be (i.e up for setup, down for teardown)
+     */
+    public boolean checkStatus(Document statusDoc, PSSAction action, PSSDirection direction, Reservation resv) throws PSSException {
+        boolean result = false;
+        String gri = resv.getGlobalReservationId();
+        PSSConfigProvider pc = PSSConfigProvider.getInstance();
+        if (pc.getHandlerConfig().isStubMode()) {
+            log.debug("stub mode; status is success");
+            return true;
+        }
+        
+        
+        // collect needed info from reservation: ifce name, unit, remote router IP
+        Path localPath;
+        try {
+            localPath = resv.getPath(PathType.LOCAL);
+        } catch (BSSException e) {
+            log.error(e);
+            
+            throw new PSSException(e);
+        }
+        List<PathElem> resvPathElems = localPath.getPathElems();
+        log.info("path length: "+resvPathElems.size());
+        for (PathElem pe : resvPathElems) {
+            try {
+                String fqti = pe.getLink().getFQTI();
+                log.debug(fqti);
+            } catch (org.hibernate.LazyInitializationException ex) {
+                OSCARSCore core = OSCARSCore.getInstance();
+                core.getBssDbName();
+                core.getBssSession();
+            }
+        }
+        
+        if (resvPathElems.size() < 4) {
+            log.error("Local path too short");
+            throw new PSSException("Local path too short");
+        }
+        
+        ArrayList<PathElem> pathElems = new ArrayList<PathElem>();
+        if (direction.equals(PSSDirection.A_TO_Z)) {
+            pathElems.addAll(resvPathElems);
+        } else if (direction.equals(PSSDirection.Z_TO_A)) {
+            pathElems = PathUtils.reversePath(resvPathElems);
+        } else {
+            log.error("Invalid direction "+direction);
+            throw new PSSException("Invalid direction!");
+        }
+        PathElem aPathElem      = pathElems.get(0);
+        PathElem yPathElem      = pathElems.get(pathElems.size()-2);
+
+        PathElemParam aVlanPEP;
+        try {
+            aVlanPEP = aPathElem.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+        } catch (BSSException e) {
+            log.error(e);
+            throw new PSSException(e.getMessage());
+        }
+        if (aVlanPEP == null) {
+            log.error("No VLAN set for: "+aPathElem.getLink().getFQTI());
+            throw new PSSException("No VLAN set for: "+aPathElem.getLink().getFQTI());
+        }
+        String yIP;
+        Ipaddr ipaddr = yPathElem.getLink().getValidIpaddr();
+        if (ipaddr != null) {
+            yIP = ipaddr.getIP();
+            log.info("found IP: "+yIP+" for "+yPathElem.getLink().getFQTI());
+        } else {
+            log.error("Invalid IP for: "+yPathElem.getLink().getFQTI());
+            throw new PSSException("Invalid IP for: "+yPathElem.getLink().getFQTI());
+        }
+
+        
+        
+
+        String ingIfceName              = aPathElem.getLink().getPort().getTopologyIdent();
+        String ingIfceUnit              = aVlanPEP.getValue();
+        String ingIfceId                = ingIfceName+"."+ingIfceUnit;
+        
+
+
+        
+        // XML parsing bit
+        // NOTE WELL: if response format changes, this won't work
+        Element root = statusDoc.getRootElement();
+        // this is element "rpc-reply"
+        Element rpcReply = (Element) root.getChildren().get(0);
+        // firstchild should be "l2circuit-connection-information"
+        // XPath doesn't have way to name the default namespace,
+        // so we get it from firstChild
+        Element firstChild = (Element) rpcReply.getChildren().get(0);
+        String uri = firstChild.getNamespaceURI();
+        Namespace ns = Namespace.getNamespace("ns", uri);
+        
+        /* ok now go find if we the status doc has the connections set
+        * this is a sample xpath :
+        *  //l2circuit-neighbor[neighbor-address="134.55.200.116"]/connection[local-interface/interface-name="xe-0/1/0.3501"]
+        */
+        
+        String connectionStatus = "";
+        String ifceStatus = "";
+        boolean isVCup = false;
+        boolean isVCConfigured = false;
+        try {
+            XPath xpath = XPath.newInstance("//ns:l2circuit-neighbor[neighbor-address=\""+yIP+"\"]/connection[local-interface/interface-name=\""+ingIfceId+"\"]");
+            xpath.addNamespace(ns);
+            Element conn = (Element) xpath.selectSingleNode(statusDoc);
+            if (conn == null) {
+                
+            } else {
+                isVCConfigured = true;
+
+                List connectionChildren = conn.getChildren();
+                for (Iterator j = connectionChildren.iterator(); j.hasNext();) {
+                    Element e = (Element) j.next();
+        
+                    if (e.getName().equals("connection-status")) {
+                        connectionStatus = e.getText();
+                        log.debug("conn status : "+connectionStatus);
+                    } else if (e.getName().equals("local-interface")) {
+                        List localInterfaces = e.getChildren();
+                        for (Iterator k = localInterfaces.iterator(); k.hasNext();) {
+                            Element ifceElem = (Element) k.next();
+                            if (ifceElem.getName().equals("interface-status")) {
+                                ifceStatus = ifceElem.getText();
+                                log.debug("ifce status : "+ifceStatus);
+                            } else if (ifceElem.getName().equals("interface-description")) {
+                                String ifceDescription = ifceElem.getText();
+                                log.debug("ifce description: "+ifceDescription);
+                            }
+                        }
+                    }
+                }
+                if (connectionStatus != null && connectionStatus.toLowerCase().trim().equals("up")) {
+                    isVCup = true;
+                }
+            } 
+        } catch (JDOMException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        if (isVCup) {
+            log.debug(gri+": VC is up at "+yIP); 
+        } else {
+            log.debug(gri+": VC is down at "+yIP); 
+        }
+            
+        if (isVCConfigured) {
+            log.debug(gri+": VC is configured at "+yIP); 
+        } else {
+            log.debug(gri+": VC is not configured at "+yIP); 
+            
+        }
+        
+        
+        if (action.equals(PSSAction.SETUP)) {
+            if (isVCup) {
+                result = true;
+            } else if (isVCConfigured) {
+                result = false;
+            }
+        } else if (action.equals(PSSAction.TEARDOWN)) {
+            if (isVCup) {
+                result = false;
+            } else if (isVCConfigured) {
+                result = false;
+            } else {
+                result = true;
+            }
+        }
+        
+       
+        return result;
+    }
 }

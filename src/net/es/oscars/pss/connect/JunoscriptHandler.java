@@ -19,10 +19,12 @@ import net.es.oscars.pss.common.PathUtils;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.apache.log4j.Logger;
 
 public class JunoscriptHandler {
-    public static void command(Reservation resv, PSSDirection direction, String command, Logger log) 
+    public static Document command(Reservation resv, PSSDirection direction, String command, Logger log) 
             throws PSSException {
         
         Path localPath = null;
@@ -62,18 +64,25 @@ public class JunoscriptHandler {
                 throw new PSSException("simulated failure");
             }
             */
+            return new Document();
         } else {
             JunoscriptConnector conn = new JunoscriptConnector(cc, address);
             SAXBuilder sb = new SAXBuilder();
             Document doc = null;
             try {
                 doc = sb.build(new StringReader(command));
-                conn.sendCommand(doc);
+                Document result = conn.sendCommand(doc);
+                XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+                String resultStr = out.outputString(result);
+                log.info("result  from sending command to: "+address+": \n\n"+resultStr);
+                
+                return result;
             } catch (JDOMException e) {
-                throw new PSSException("Can't send command: "+e.getMessage());
+                throw new PSSException("Can't send command to: "+address+": "+e.getMessage());
             } catch (IOException e) {
-                throw new PSSException("Can't send command: "+e.getMessage());
+                throw new PSSException("Can't send command to: "+address+": "+e.getMessage());
             }
         }
     }
+
 }

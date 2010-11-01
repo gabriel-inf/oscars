@@ -268,7 +268,7 @@ public class SWJunosConfigGen extends TemplateConfigGen {
         return this.getConfig(root, templateFileName);
     }
 
-    public String generateL2Status(Reservation resv, Path localPath, PSSDirection direction) {
+    public String generateL2Status(Reservation resv, PSSDirection direction) {
         // FIXME
         String config = "";
         return config;

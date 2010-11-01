@@ -365,7 +365,7 @@ public class L2VPNJunosConfigGen extends TemplateConfigGen {
     }
 
     public String generateL2Status(Reservation resv, PSSDirection direction) throws PSSException {
-        String templateFileName = "eompls-junos-status.txt";
+        String templateFileName = "l2vpn-junos-status.txt";
         HashMap<String, Object> root = new HashMap<String, Object>();
         return this.getConfig(root, templateFileName);
     }

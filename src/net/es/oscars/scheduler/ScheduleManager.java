@@ -158,6 +158,10 @@ public class ScheduleManager {
     public void queueExpiredAndPending() {
         core = OSCARSCore.getInstance();
         Session session = core.getBssSession();
+        if (session == null) {
+            log.info("no bss session; cannot queue expired and pending");
+            return;
+        }
         try {
             session.beginTransaction();
             PSSScheduler sched = new PSSScheduler(core.getBssDbName());

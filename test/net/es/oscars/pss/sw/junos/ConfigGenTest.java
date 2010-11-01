@@ -173,7 +173,7 @@ public class ConfigGenTest {
         th.setNameGenerator(ng);
         th.setTemplateDir("conf/pss");
         String out;
-        out = th.generateL2Status(resv, resv.getPath(PathType.LOCAL), PSSDirection.BIDIRECTIONAL);
+        out = th.generateL2Status(resv, PSSDirection.BIDIRECTIONAL);
         System.out.println(out);
     }
 

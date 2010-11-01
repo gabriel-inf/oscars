@@ -2,9 +2,11 @@ package net.es.oscars.pss.eompls.junos;
 
 
 import org.apache.log4j.Logger;
+import org.jdom.Document;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.PSSAction;
 import net.es.oscars.pss.common.PSSConfigProvider;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
@@ -36,6 +38,27 @@ public class EoMPLS_Junos implements PSSHandler {
         String command = cg.generateL2Setup(resv, direction);
         JunoscriptHandler.command(resv, direction, command, log);
         
+        PSSConfigProvider pc = PSSConfigProvider.getInstance();
+        boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterSetup();
+        if (checkStatus) {
+            String statusCmd = cg.generateL2Status(resv, direction);
+            boolean doneChecking = false;
+            int tries = 0;
+            boolean setupSuccess = false;
+            while (!doneChecking) {
+                tries++;
+                Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
+                setupSuccess = cg.checkStatus(statusDoc, PSSAction.SETUP, direction, resv);
+                if (tries > 3) {
+                    doneChecking = true;
+                } else if (setupSuccess) {
+                    doneChecking = true;
+                }
+            }
+            if (!setupSuccess) {
+                throw new PSSException("could not set up");
+            }
+        }
         log.info("setup.finish");
 
     }
@@ -46,9 +69,30 @@ public class EoMPLS_Junos implements PSSHandler {
         EoMPLSJunosConfigGen cg = EoMPLSJunosConfigGen.getInstance();
         String command = cg.generateL2Teardown(resv, direction);
         JunoscriptHandler.command(resv, direction, command, log);
-        
+        PSSConfigProvider pc = PSSConfigProvider.getInstance();
+        boolean checkStatus = pc.getHandlerConfig().isCheckStatusAfterTeardown();
+        if (checkStatus) {
+            String statusCmd = cg.generateL2Status(resv, direction);
+            boolean doneChecking = false;
+            int tries = 0;
+            boolean teardownSuccess = false;
+            while (!doneChecking) {
+                tries++;
+                Document statusDoc = JunoscriptHandler.command(resv, direction, statusCmd, log);
+                teardownSuccess = cg.checkStatus(statusDoc, PSSAction.TEARDOWN, direction, resv);
+                if (tries > 3) {
+                    doneChecking = true;
+                } else if (teardownSuccess) {
+                    doneChecking = true;
+                }
+            }
+            if (!teardownSuccess) {
+                throw new PSSException("could not tear down");
+            }
+        }        
         
         log.info("teardown.finish");
     }
-
+    
+    
 }
