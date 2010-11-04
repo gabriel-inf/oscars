@@ -114,7 +114,7 @@ public class TopologyXMLImporter {
 
             Iterator<?> newNodeIt = domDB.getNodes().iterator();
             while (newNodeIt.hasNext()) {
-                // Node newNode = (Node) newNodeIt.next();
+                 Node newNode = (Node) newNodeIt.next();
             }
 
 
