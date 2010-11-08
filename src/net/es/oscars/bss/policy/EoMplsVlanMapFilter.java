@@ -173,6 +173,19 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             pep.setValue(vlanId.toString());
             edgePE.getPathElemParams().add(pep);
         }
+        
+        pep = edgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+        if (pep != null) {
+            pep.setValue(vlanId.toString());
+        } else {
+            pep = new PathElemParam();
+            pep.setSwcap(PathElemParamSwcap.L2SC);
+            pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+            pep.setValue(vlanId.toString());
+            edgePE.getPathElemParams().add(pep);
+        }
+
+        
         if (remoteEdgePE != null) {
             pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             if (pep != null) {
@@ -184,7 +197,19 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
                 pep.setValue(vlanId.toString());
                 remoteEdgePE.getPathElemParams().add(pep);
             }
+            pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+            if (pep != null) {
+                pep.setValue(vlanId.toString());
+            } else {
+                pep = new PathElemParam();
+                pep.setSwcap(PathElemParamSwcap.L2SC);
+                pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+                pep.setValue(vlanId.toString());
+                remoteEdgePE.getPathElemParams().add(pep);
+            }
         }
+
+    
     }
     
     private Integer decideVlan(VlanRange availVlans, VlanRange suggestedVlans) {
