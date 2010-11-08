@@ -1,0 +1,13 @@
+configure terminal
+
+interface Vlan${vlan}
+  no shutdown
+  mtu 9174
+  description ${description}
+exit
+
+interface ${port}
+  switchport trunk allowed vlan add {$vlan}
+exit
+
+exit

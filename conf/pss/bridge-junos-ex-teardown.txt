@@ -1,0 +1,6 @@
+configure
+delete vlans vlan${vlan} 
+delete interface ${ifce} unit 0 family ethernet-switching vlan members vlan${vlan}
+delete interface ae3 unit 0 family ethernet-switching vlan members vlan${vlan}
+commit and-quit sync comment "IDC removed VLAN ${vlan} from ${port}, ae3"
+

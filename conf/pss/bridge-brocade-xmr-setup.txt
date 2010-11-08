@@ -1,0 +1,7 @@
+configure terminal
+vlan ${vlan} name vlan${vlan}
+  tagged ethernet 1/2 ethernet 2/2 ethernet 2/4 ethernet 3/2 ethernet 3/4 ethernet 4/2 ethernet 4/4 ethernet 5/2 ethernet 6/2 ethernet ${port}
+  no spanning-tree
+  rstp
+exit
+exit
