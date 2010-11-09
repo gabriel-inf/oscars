@@ -216,8 +216,9 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
                 
         log.debug("decideVlan.start avail: ["+availVlans+"] sugg: ["+suggestedVlans+"]");
         VlanRange tmp = VlanRange.copy(availVlans);
-        if (!suggestedVlans.isEmpty()) {
-            tmp = VlanRange.and(tmp, suggestedVlans);
+        VlanRange suggTmp = VlanRange.and(tmp, suggestedVlans);
+        if (!suggTmp.isEmpty()) {
+            tmp = suggTmp;
         }
         
         int first = tmp.getFirst();
