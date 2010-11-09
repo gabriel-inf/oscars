@@ -2,6 +2,7 @@ package net.es.oscars.pss;
 
 import net.es.oscars.pss.common.PSSFailureHandler;
 import net.es.oscars.pss.dragon.VlsrPSS;
+import net.es.oscars.pss.impl.bridge.BridgePSS;
 import net.es.oscars.pss.impl.sdn.SDNFailureHandler;
 import net.es.oscars.pss.impl.sdn.SDNPSS;
 import net.es.oscars.pss.stub.StubPSS;
@@ -31,6 +32,8 @@ public class PSSFactory{
                 ;
             } else if (pssType.equals("sdn")) {
                 pss = SDNPSS.getInstance();
+            } else if (pssType.equals("bridge")) {
+                pss = BridgePSS.getInstance();
             } else if (pssType.equals("dragon")) {
                 pss = new VlsrPSS();
             } else if (pssType.equals("vendor")) {
