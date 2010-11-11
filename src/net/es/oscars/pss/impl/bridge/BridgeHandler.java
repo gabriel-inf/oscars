@@ -137,6 +137,9 @@ public class BridgeHandler implements PSSHandler {
                 login = RancidConnector.LOGIN.CLOGIN;
             }
             log.debug("sending config to "+nodeId);
+            if (hc.isLogConfig()) {
+                log.info("config for "+nodeId+": \n\n"+command);
+            }
             conn.sendCommand(command, nodeId, login);
         }
         log.info("finished setup for: "+resv.getGlobalReservationId());
@@ -241,6 +244,10 @@ public class BridgeHandler implements PSSHandler {
                 login = RancidConnector.LOGIN.CLOGIN;
             }
             log.debug("sending config to "+nodeId);
+            if (hc.isLogConfig()) {
+                log.info("config for "+nodeId+": \n\n"+command);
+            }
+
             conn.sendCommand(command, nodeId, login);
         }
         log.info("finished teardown for: "+resv.getGlobalReservationId());

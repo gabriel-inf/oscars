@@ -80,12 +80,7 @@ public class BridgePSS implements PSS {
         String gri = resv.getGlobalReservationId();
         BridgeQueuer q = BridgeQueuer.getInstance();
         ArrayList<PSSDirection> directions = new ArrayList<PSSDirection>();
-        if (PathUtils.sameNode(localPath)) {
-            directions.add(PSSDirection.BIDIRECTIONAL);
-        } else {
-            directions.add(PSSDirection.A_TO_Z);
-            directions.add(PSSDirection.Z_TO_A);
-        }
+        directions.add(PSSDirection.BIDIRECTIONAL);
         // TODO: make these configurable
         int maxTries = 12;
         int sleep = 10;
