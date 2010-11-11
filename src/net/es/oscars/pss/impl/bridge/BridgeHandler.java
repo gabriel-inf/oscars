@@ -140,7 +140,11 @@ public class BridgeHandler implements PSSHandler {
             if (hc.isLogConfig()) {
                 log.info("config for "+nodeId+": \n\n"+command);
             }
-            conn.sendCommand(command, nodeId, login);
+            if (hc.isStubMode()) {
+                log.info("not sending config because we are in stub mode");
+            } else {
+                conn.sendCommand(command, nodeId, login);
+            }
         }
         log.info("finished setup for: "+resv.getGlobalReservationId());
 
@@ -247,8 +251,12 @@ public class BridgeHandler implements PSSHandler {
             if (hc.isLogConfig()) {
                 log.info("config for "+nodeId+": \n\n"+command);
             }
-
-            conn.sendCommand(command, nodeId, login);
+            
+            if (hc.isStubMode()) {
+                log.info("not sending config because we are in stub mode");
+            } else {
+                conn.sendCommand(command, nodeId, login);
+            }
         }
         log.info("finished teardown for: "+resv.getGlobalReservationId());
     }
