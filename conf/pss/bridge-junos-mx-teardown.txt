@@ -1,27 +1,7 @@
 configure
+delete interface ${portA} unit ${vlan} 
+delete interface ${portZ} unit ${vlan} 
+delete protocols l2circuit local-switching interface ${portA}.${vlan} 
 
-edit interfaces ${ifceA}
-set unit ${vlan} vlan-id ${vlan}
-set unit ${vlan} description ${description}
-set unit ${vlan} encapsulation vlan-bridge 
-top
-
-edit interfaces ${ifceZ}
-set unit ${vlan} vlan-id ${vlan}
-set unit ${vlan} description ${description}      
-set unit ${vlan} encapsulation vlan-bridge 
-top
-
-
-edit bridge-domains
-
-edit vlan-${vlan}
-set vlan-id ${vlan}
-set description ${description}
-set interface ${ifceA}.${vlan}
-set interface ${ifceZ}.${vlan}
-top
-
-
-commit and-quit sync comment "IDC bridged VLAN ${vlan} at ${ifceA}, ${ifceZ}"
+commit and-quit sync comment "IDC local-switched: ${portA}.${vlan} ,  ${portZ}.${vlan}"
 

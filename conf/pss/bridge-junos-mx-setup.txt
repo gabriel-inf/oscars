@@ -1,5 +1,9 @@
 configure
-set vlans vlan${vlan} desc "vlanDESC" vlan-id ${vlan}
-set interface ${ifce} unit 0 family ethernet-switching vlan members vlan${vlan}
-set interface ae3 unit 0 family ethernet-switching vlan members vlan${vlan}
-commit and-quit sync comment "IDC added VLAN ${vlan} to ${port}, ae3"
+set interface ${portA} unit ${vlan} encapsulation vlan-ccc
+set interface ${portA} unit ${vlan} vlan-id ${vlan}
+set interface ${portZ} unit ${vlan} encapsulation vlan-ccc
+set interface ${portZ} unit ${vlan} vlan-id ${vlan}
+set protocols l2circuit local-switching interface ${portA}.${vlan} end-interface interface ${portZ}.${vlan}
+set protocols l2circuit local-switching interface ${portA}.${vlan} ignore-mtu-mismatch
+commit and-quit sync comment "IDC local-switched: ${portA}.${vlan} ,  ${portZ}.${vlan}"
+

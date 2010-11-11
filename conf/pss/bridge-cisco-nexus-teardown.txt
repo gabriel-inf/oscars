@@ -1,11 +1,16 @@
 configure terminal
 
-interface ${port}
-  switchport
-  switchport trunk
-  switchport trunk allowed vlan remove {$vlan}
+interface ${portA}
+  switchport trunk allowed vlan remove ${vlan}
 exit
+
+interface ${portZ}
+  switchport trunk allowed vlan remove ${vlan}
+exit
+
+
 no interface Vlan${vlan}
+
 
 exit
 

@@ -1,10 +1,9 @@
 exit all
 
-<#-- FIXME: lag-1 is SC10-specific -->
 configure service vpls ${vlan} customer 1 create 
-sap lag-1:${vlan} create 
+sap ${portA}:${vlan} create 
 exit
-sap ${port}:${vlan} create 
+sap ${portZ}:${vlan} create 
 exit
 no shutdown
 stp no shutdown

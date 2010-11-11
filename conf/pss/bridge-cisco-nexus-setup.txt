@@ -6,8 +6,12 @@ interface Vlan${vlan}
   description ${description}
 exit
 
-interface ${port}
-  switchport trunk allowed vlan add {$vlan}
+interface ${portA}
+  switchport trunk allowed vlan add ${vlan}
+exit
+
+interface ${portZ}
+  switchport trunk allowed vlan add ${vlan}
 exit
 
 exit
