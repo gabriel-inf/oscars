@@ -13,6 +13,11 @@ import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSConnectorConfigBean;
 
 public class RancidConnector {
+    public enum LOGIN {
+        CLOGIN,
+        ALULOGIN,
+        JLOGIN,
+    }
     private Logger log = Logger.getLogger(RancidConnector.class);
     private PSSConnectorConfigBean config = null;
     public RancidConnector(PSSConnectorConfigBean config) {
@@ -26,14 +31,26 @@ public class RancidConnector {
      * @param router the router to send the command to
      * @throws PSSException
      */
-    public String sendCommand(String command, String router) throws PSSException {
+    public String sendCommand(String command, String router, LOGIN login) throws PSSException {
         log.info("sendCommand.start "+router);
         if (config == null) {
             throw new PSSException("Null config");
         }
+        String loginExec = "";
+        if (login == null) {
+            throw new PSSException("Null login parameter");
+        } else if (login.equals(LOGIN.ALULOGIN)) {
+            loginExec = "alulogin";
+        } else if (login.equals(LOGIN.CLOGIN)) {
+            loginExec = "clogin";
+        } else if (login.equals(LOGIN.JLOGIN)) {
+            loginExec = "jlogin";
+        } 
+        
         if (config.isLogRequest()) {
             this.log.info("\nCOMMAND:\n\n"+command);
         }
+        
         String response = "";
         try {
             // a temp file 
@@ -44,9 +61,11 @@ public class RancidConnector {
             outputStream.write(command);
             outputStream.close();
             
-            this.log.info("clogin -x " + path + " " + router);
+
             
-            String cmd[] = { "clogin", "-x", path, router };
+            this.log.info(loginExec+" -x " + path + " " + router);
+            
+            String cmd[] = { loginExec, "-x", path, router };
             BufferedReader cmdOutput;
             cmdOutput = this.runCommand(cmd);
             String outputLine = null;

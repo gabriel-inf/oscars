@@ -1,7 +1,6 @@
 package net.es.oscars.pss.impl.bridge;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -13,18 +12,10 @@ import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSS;
 import net.es.oscars.pss.PSSException;
-import net.es.oscars.pss.PSSFailureManager;
 import net.es.oscars.pss.common.PSSAction;
-import net.es.oscars.pss.common.PSSConfigProvider;
-import net.es.oscars.pss.common.PSSConnectorConfigBean;
-import net.es.oscars.pss.common.PSSEdgeType;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
-import net.es.oscars.pss.common.PSSHandlerConfigBean;
-import net.es.oscars.pss.common.PSSLayer;
 import net.es.oscars.pss.common.PathUtils;
-import net.es.oscars.pss.common.RouterVendor;
-import net.es.oscars.pss.common.SNMPRouterVendorFinder;
 
 
 public class BridgePSS implements PSS {
@@ -136,13 +127,12 @@ public class BridgePSS implements PSS {
      * @throws PSSException
      */
     public void startAction(Reservation resv, PSSAction action) throws PSSException {
-        PSSLayer layer = null;
 
         Path localPath  = PathUtils.getLocalPath(resv);
         
         try {
             if (localPath.isLayer2()) {
-                layer = PSSLayer.LAYER2;
+                // nada
             } else if (localPath.isLayer3()) {
                 throw new PSSException("L3 not supported");
             } else {
@@ -159,10 +149,9 @@ public class BridgePSS implements PSS {
         /// should never happen because PathSetupManager enforces waiting
         this.tryStarting(resv, localPath, action);
         
-        // FIXME: find the right handler(s)
-        PSSHandler handler = null;
-
-        // FIXME: schedule all the actions
+        
+        
+        PSSHandler handler = BridgeHandler.getInstance();
         q.scheduleAction(resv, PSSDirection.BIDIRECTIONAL, action, handler);
 
         
