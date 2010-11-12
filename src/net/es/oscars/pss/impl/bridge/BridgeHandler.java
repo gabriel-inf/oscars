@@ -80,8 +80,7 @@ public class BridgeHandler implements PSSHandler {
                 throw new PSSException("null link for pathelem");
             }
         }
-        
-        Integer vlan = Integer.getInteger(vlanStr);
+        Integer vlan = Integer.valueOf(vlanStr);
         RancidConnector conn = new RancidConnector(cc);
 
         
