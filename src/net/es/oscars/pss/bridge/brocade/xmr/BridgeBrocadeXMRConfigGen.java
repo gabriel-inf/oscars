@@ -19,6 +19,23 @@ public class BridgeBrocadeXMRConfigGen extends TemplateConfigGen {
     
     public String generateL2Setup(String portA, String portZ, Integer vlan, String description)  throws PSSException {
         String templateFileName = "bridge-brocade-xmr-setup.txt";
+        if (portA.equals("lag1")) {
+            portA = "ethernet 1/1 ethernet 2/1 ethernet 3/1 ethernet 4/1";
+        } else if (portZ.equals("lag1")) {
+            portZ = "ethernet 1/1 ethernet 2/1 ethernet 3/1 ethernet 4/1";
+        }
+        if (portA.equals("lag2")) {
+            portA = "ethernet 1/3 ethernet 2/3 ethernet 3/3 ethernet 4/3";
+        } else if (portZ.equals("lag2")) {
+            portZ = "ethernet 1/3 ethernet 2/3 ethernet 3/3 ethernet 4/3";
+        }
+
+        if (portA.equals("lag3")) {
+            portA = "ethernet 1/2 ethernet 2/2 ethernet 2/4 ethernet 3/2 ethernet 3/4 ethernet 4/2 ethernet 4/4 ethernet 5/2 ethernet 6/2";
+        } else if (portZ.equals("lag3")) {
+            portZ = "ethernet 1/2 ethernet 2/2 ethernet 2/4 ethernet 3/2 ethernet 3/4 ethernet 4/2 ethernet 4/4 ethernet 5/2 ethernet 6/2";
+        }
+        
         // create and populate the model
         // this needs to match with the template
         Map root = new HashMap();
