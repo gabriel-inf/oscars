@@ -1,9 +1,11 @@
 configure
-set interfaces ${portA} unit ${vlan} encapsulation vlan-ccc
 set interfaces ${portA} unit ${vlan} vlan-id ${vlan}
-set interfaces ${portZ} unit ${vlan} encapsulation vlan-ccc
+set interfaces ${portA} unit ${vlan} encapsulation vlan-bridge 
 set interfaces ${portZ} unit ${vlan} vlan-id ${vlan}
-set protocols l2circuit local-switching interface ${portA}.${vlan} end-interface interface ${portZ}.${vlan}
-set protocols l2circuit local-switching interface ${portA}.${vlan} ignore-mtu-mismatch
-commit and-quit sync comment "IDC local-switched: ${portA}.${vlan} ,  ${portZ}.${vlan}"
+set interfaces ${portZ} unit ${vlan} encapsulation vlan-bridge 
+
+set bridge-domains vlan${vlan} vlan-id ${vlan}
+set bridge-domains vlan${vlan} interface ${portA}.${vlan}
+set bridge-domains vlan${vlan} interface ${portZ}.${vlan}
+commit and-quit sync comment "IDC bridged: ${portA}.${vlan} ,  ${portZ}.${vlan}"
 

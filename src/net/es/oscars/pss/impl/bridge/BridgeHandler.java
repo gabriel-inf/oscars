@@ -16,6 +16,7 @@ import net.es.oscars.pss.bridge.brocade.xmr.BridgeBrocadeXMRConfigGen;
 import net.es.oscars.pss.bridge.cisco.nexus.BridgeCiscoNexusConfigGen;
 import net.es.oscars.pss.bridge.junos.ex.BridgeJunosEXConfigGen;
 import net.es.oscars.pss.bridge.junos.mx.BridgeJunosMXConfigGen;
+import net.es.oscars.pss.bridge.junos.t1600.BridgeJunosT1600ConfigGen;
 import net.es.oscars.pss.common.PSSConfigProvider;
 import net.es.oscars.pss.common.PSSConnectorConfigBean;
 import net.es.oscars.pss.common.PSSHandler;
@@ -106,9 +107,9 @@ public class BridgeHandler implements PSSHandler {
                 login = RancidConnector.LOGIN.JLOGIN;
             } else if (nodeId.equals("core-rtr1")) {
                 // T1600
-                BridgeJunosMXConfigGen mx = BridgeJunosMXConfigGen.getInstance();
-                mx.setTemplateDir(templateDir);
-                command = mx.generateL2Setup(portA, portZ, vlan);
+                BridgeJunosT1600ConfigGen tcg = BridgeJunosT1600ConfigGen.getInstance();
+                tcg.setTemplateDir(templateDir);
+                command = tcg.generateL2Setup(portA, portZ, vlan);
                 login = RancidConnector.LOGIN.JLOGIN;
             } else if (nodeId.equals("core-rtr2")) {
                 // CRS
