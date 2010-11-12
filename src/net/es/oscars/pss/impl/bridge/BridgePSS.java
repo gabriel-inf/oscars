@@ -13,8 +13,11 @@ import net.es.oscars.bss.topology.PathType;
 import net.es.oscars.pss.PSS;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.common.PSSAction;
+import net.es.oscars.pss.common.PSSConfigProvider;
+import net.es.oscars.pss.common.PSSConnectorConfigBean;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.common.PSSHandlerConfigBean;
 import net.es.oscars.pss.common.PathUtils;
 
 
@@ -164,7 +167,17 @@ public class BridgePSS implements PSS {
         
         BridgeQueuer q = BridgeQueuer.getInstance();
         q.setScheduler(OSCARSCore.getInstance().getScheduleManager().getScheduler());
-
+        PSSConfigProvider cp = PSSConfigProvider.getInstance();
+        if (cp.getConnectorConfig() == null) {
+            log.info("loading connector config from oscars.properties");
+            PSSConnectorConfigBean cc = PSSConnectorConfigBean.loadConfig("oscars.properties", "pss");
+            cp.setConnectorConfig(cc);
+        }
+        if (cp.getHandlerConfig() == null) {
+            log.info("loading handler config from oscars.properties");
+            PSSHandlerConfigBean hc = PSSHandlerConfigBean.loadConfig("oscars.properties", "pss");
+            cp.setHandlerConfig(hc);
+        }
         log.debug("Bridge PSS setup complete");
 
         
