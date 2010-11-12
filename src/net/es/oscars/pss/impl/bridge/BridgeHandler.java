@@ -58,7 +58,10 @@ public class BridgeHandler implements PSSHandler {
                     // first hop should have the VLAN
                     // FIXME: check for nulls
                     try {
-                        vlanStr = pe.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
+                        if (vlanStr.equals("")) {
+                            vlanStr = pe.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
+                        }
+                        log.debug("vlan is: " +vlanStr);
                     } catch (BSSException e) {
                         log.error("error getting VLAN", e);
                         throw new PSSException("Internal PSS error");
