@@ -1,7 +1,9 @@
 configure private
 set interfaces ${portA} unit ${vlan} vlan-id ${vlan}
+set interfaces ${portA} unit ${vlan} description "IDC vlan ${vlan} -> ${portZ}"
 set interfaces ${portA} unit ${vlan} encapsulation vlan-bridge 
 set interfaces ${portZ} unit ${vlan} vlan-id ${vlan}
+set interfaces ${portZ} unit ${vlan} description "IDC vlan ${vlan} -> ${portA}"
 set interfaces ${portZ} unit ${vlan} encapsulation vlan-bridge 
 
 set bridge-domains vlan${vlan} vlan-id ${vlan}
