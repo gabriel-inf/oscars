@@ -1,0 +1,9 @@
+configure terminal
+interface ${portA}.${vlan}
+ dot1q vlan ${vlan}
+!
+interface ${portZ}.${vlan}
+ dot1q vlan ${vlan}
+!
+commit
+exit

@@ -13,6 +13,7 @@ import net.es.oscars.bss.topology.Port;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.pss.bridge.alcatel.sr.BridgeAlcatelSRConfigGen;
 import net.es.oscars.pss.bridge.brocade.xmr.BridgeBrocadeXMRConfigGen;
+import net.es.oscars.pss.bridge.cisco.crs.BridgeCiscoCRSConfigGen;
 import net.es.oscars.pss.bridge.cisco.nexus.BridgeCiscoNexusConfigGen;
 import net.es.oscars.pss.bridge.junos.ex.BridgeJunosEXConfigGen;
 import net.es.oscars.pss.bridge.junos.mx.BridgeJunosMXConfigGen;
@@ -226,8 +227,10 @@ public class BridgeHandler implements PSSHandler {
                 command = mx.generateL2Teardown(portA, portZ, vlan);
                 login = RancidConnector.LOGIN.JLOGIN;
             } else if (nodeId.equals("core-rtr2")) {
-                // CRS
-                throw new PSSException("core-rtr2 not supported");
+                BridgeCiscoCRSConfigGen ex = BridgeCiscoCRSConfigGen.getInstance();
+                ex.setTemplateDir(templateDir);
+                command = ex.generateL2Teardown(portA, portZ, vlan);
+                login = RancidConnector.LOGIN.CLOGIN;
             } else if (nodeId.equals("rtr-2042")) {
                 BridgeJunosEXConfigGen ex = BridgeJunosEXConfigGen.getInstance();
                 ex.setTemplateDir(templateDir);
