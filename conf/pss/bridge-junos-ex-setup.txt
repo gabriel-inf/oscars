@@ -1,5 +1,5 @@
 configure
 set vlans vlan${vlan} desc "${description}" vlan-id ${vlan}
-set interface ${portA} unit 0 family ethernet-switching vlan members vlan${vlan}
-set interface ${portZ} unit 0 family ethernet-switching vlan members vlan${vlan}
+set interfaces ${portA} unit 0 family ethernet-switching vlan members vlan${vlan}
+set interfaces ${portZ} unit 0 family ethernet-switching vlan members vlan${vlan}
 commit and-quit sync comment "IDC added VLAN ${vlan} to ${portA}, ${portZ}"
