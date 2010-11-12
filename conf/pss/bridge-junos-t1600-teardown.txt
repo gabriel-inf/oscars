@@ -3,5 +3,5 @@ delete interface ${portA} unit ${vlan}
 delete interface ${portZ} unit ${vlan} 
 delete protocols l2circuit local-switching interface ${portA}.${vlan} 
 
-commit and-quit sync comment "IDC local-switched: ${portA}.${vlan} ,  ${portZ}.${vlan}"
+commit and-quit sync comment "IDC removed local-switching: ${portA}.${vlan} ,  ${portZ}.${vlan}"
 
