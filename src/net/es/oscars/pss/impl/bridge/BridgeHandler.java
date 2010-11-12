@@ -172,7 +172,10 @@ public class BridgeHandler implements PSSHandler {
                     // first hop should have the VLAN
                     // FIXME: check for nulls
                     try {
-                        vlanStr = pe.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
+                        if (vlanStr.equals("")) {
+                            vlanStr = pe.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE).getValue();
+                            log.debug("vlan is: " +vlanStr);
+                        }
                     } catch (BSSException e) {
                         log.error("error getting VLAN", e);
                         throw new PSSException("Internal PSS error");
@@ -192,14 +195,14 @@ public class BridgeHandler implements PSSHandler {
             }
         }
         
-        Integer vlan = Integer.getInteger(vlanStr);
+        Integer vlan = Integer.valueOf(vlanStr);
         RancidConnector conn = new RancidConnector(cc);
 
         
         
         
         for (PortPair pair : portPairs) {
-            log.info("setting up: "+pair.getA().getFQTI() + " " + pair.getZ().getFQTI()) ;
+            log.info("tearing down up: "+pair.getA().getFQTI() + " " + pair.getZ().getFQTI()) ;
             Node n = pair.getA().getNode();
             String portA = pair.getA().getTopologyIdent();
             String portZ = pair.getZ().getTopologyIdent();
