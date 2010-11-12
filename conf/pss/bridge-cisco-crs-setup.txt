@@ -1,8 +1,8 @@
 configure terminal
-interface ${portA}.${vlan}
+interface ${portA}.${vlan} l2transport
  dot1q vlan ${vlan}
 !
-interface ${portZ}.${vlan}
+interface ${portZ}.${vlan} l2transport
  dot1q vlan ${vlan}
 !
 commit

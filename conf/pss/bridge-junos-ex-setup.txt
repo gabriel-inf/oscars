@@ -1,4 +1,4 @@
-configure
+configure private
 set vlans vlan${vlan} description "${description}" vlan-id ${vlan}
 set interfaces ${portA} unit 0 family ethernet-switching vlan members vlan${vlan}
 set interfaces ${portZ} unit 0 family ethernet-switching vlan members vlan${vlan}

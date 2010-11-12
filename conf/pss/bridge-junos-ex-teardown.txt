@@ -1,4 +1,4 @@
-configure
+configure private
 delete vlans vlan${vlan} 
 delete interfaces ${portA} unit 0 family ethernet-switching vlan members vlan${vlan}
 delete interfaces ${portZ} unit 0 family ethernet-switching vlan members vlan${vlan}

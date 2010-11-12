@@ -1,5 +1,4 @@
-configure
-
+configure private
 set interfaces ${portA} unit ${vlan} encapsulation vlan-ccc
 set interfaces ${portA} unit ${vlan} vlan-id ${vlan}
 set interfaces ${portZ} unit ${vlan} encapsulation vlan-ccc
