@@ -24,7 +24,7 @@ public class BridgeJunosMXConfigGen extends TemplateConfigGen {
         Map root = new HashMap();
         root.put("portA", portA);
         root.put("portZ", portZ);
-        root.put("vlan", vlan);
+        root.put("vlan", vlan.toString());
         
         return this.getConfig(root, templateFileName);
     }
@@ -35,7 +35,7 @@ public class BridgeJunosMXConfigGen extends TemplateConfigGen {
         Map root = new HashMap();
         root.put("portA", portA);
         root.put("portZ", portZ);
-        root.put("vlan", vlan);
+        root.put("vlan", vlan.toString());
         
         return this.getConfig(root, templateFileName);
     }

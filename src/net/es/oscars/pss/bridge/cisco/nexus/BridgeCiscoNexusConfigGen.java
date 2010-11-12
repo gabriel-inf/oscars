@@ -25,7 +25,7 @@ public class BridgeCiscoNexusConfigGen extends TemplateConfigGen {
         root.put("portA", portA);
         root.put("portZ", portZ);
         root.put("description", description);
-        root.put("vlan", vlan);
+        root.put("vlan", vlan.toString());
         
         return this.getConfig(root, templateFileName);
     }
@@ -36,7 +36,7 @@ public class BridgeCiscoNexusConfigGen extends TemplateConfigGen {
         Map root = new HashMap();
         root.put("portA", portA);
         root.put("portZ", portZ);
-        root.put("vlan", vlan);
+        root.put("vlan", vlan.toString());
         
         return this.getConfig(root, templateFileName);
     }
