@@ -1,15 +1,6 @@
 exit all
-
-configure service vpls ${vlan} customer 1 create 
-sap ${portA}:${vlan} create 
-exit
-sap ${portZ}:${vlan} create 
-exit
-no shutdown
-stp no shutdown
-igmp-snooping no shutdown
-pim-snooping
-exit
-
-
-exit
+configure service vpls ${vlan} customer 1 create sap ${portA}:${vlan} create no shutdown
+configure service vpls ${vlan} customer 1 create sap ${portZ}:${vlan} create no shutdown
+configure service vpls ${vlan} customer 1 stp no shutdown
+configure service vpls ${vlan} customer 1 igmp-snooping no shutdown
+configure service vpls ${vlan} customer 1 pim-snooping no shutdown
