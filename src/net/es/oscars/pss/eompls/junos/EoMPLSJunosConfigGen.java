@@ -208,6 +208,10 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         if (x == null || y == null || z == null) {
             throw new PSSException("could not decide a l2circuit vcid!");
         }
+        // can't lead with zeros, junos thinks it's an octal
+        if (x.equals("0")) {
+            x = "10";
+        }
         l2circuitVCID = x+y+z+vlanIdForVC;
         
         
