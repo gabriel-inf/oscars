@@ -4,3 +4,4 @@ configure service vpls ${vlan} customer 1 create sap ${portZ}:${vlan} create no 
 configure service vpls ${vlan} customer 1 stp no shutdown
 configure service vpls ${vlan} customer 1 igmp-snooping no shutdown
 configure service vpls ${vlan} customer 1 pim-snooping no shutdown
+configure service vpls ${vlan} no shutdown
