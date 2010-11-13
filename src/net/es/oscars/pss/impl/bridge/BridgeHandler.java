@@ -222,9 +222,9 @@ public class BridgeHandler implements PSSHandler {
                 login = RancidConnector.LOGIN.JLOGIN;
             } else if (nodeId.equals("core-rtr1")) {
                 // T1600
-                BridgeJunosMXConfigGen mx = BridgeJunosMXConfigGen.getInstance();
-                mx.setTemplateDir(templateDir);
-                command = mx.generateL2Teardown(portA, portZ, vlan);
+                BridgeJunosT1600ConfigGen tcg = BridgeJunosT1600ConfigGen.getInstance();
+                tcg.setTemplateDir(templateDir);
+                command = tcg.generateL2Teardown(portA, portZ, vlan);
                 login = RancidConnector.LOGIN.JLOGIN;
             } else if (nodeId.equals("core-rtr2")) {
                 BridgeCiscoCRSConfigGen ex = BridgeCiscoCRSConfigGen.getInstance();
