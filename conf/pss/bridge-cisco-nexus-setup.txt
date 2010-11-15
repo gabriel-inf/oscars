@@ -1,5 +1,9 @@
 configure terminal
 
+vlan ${vlan}
+  description ${description}
+exit
+
 interface Vlan${vlan}
   no shutdown
   mtu 9174

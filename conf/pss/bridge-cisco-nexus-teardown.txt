@@ -11,6 +11,7 @@ exit
 
 no interface Vlan${vlan}
 
+no vlan ${vlan}
 
 exit
 
