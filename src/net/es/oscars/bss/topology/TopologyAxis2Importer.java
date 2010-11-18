@@ -323,12 +323,12 @@ public class TopologyAxis2Importer {
         Link oldDbRemoteLink = dbLink.getRemoteLink();
         
         Link newDbRemoteLink = this.urnToLink(remoteLinkId, dbLink);
-        if(oldDbRemoteLink == null || newDbRemoteLink.getId() != oldDbRemoteLink.getId()){
+        if(oldDbRemoteLink == null || (newDbRemoteLink != null && newDbRemoteLink.getId() != oldDbRemoteLink.getId())) {
             if(oldDbRemoteLink != null){
                 oldDbRemoteLink.setRemoteLink(null);
                 linkDAO.update(oldDbRemoteLink);
             }
-            if(newDbRemoteLink.getRemoteLink() != null && newDbRemoteLink.getRemoteLink().getId() != dbLink.getId()){
+            if(newDbRemoteLink != null && newDbRemoteLink.getRemoteLink() != null && newDbRemoteLink.getRemoteLink().getId() != dbLink.getId()){
                 newDbRemoteLink.getRemoteLink().setRemoteLink(null);
                 linkDAO.update(newDbRemoteLink.getRemoteLink());
                 newDbRemoteLink.setRemoteLink(dbLink);

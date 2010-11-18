@@ -20,12 +20,14 @@ import net.es.oscars.bss.topology.LinkDAO;
 import net.es.oscars.bss.topology.NodeAddressDAO;
 import net.es.oscars.bss.topology.NodeDAO;
 import net.es.oscars.bss.topology.PortDAO;
+import net.es.oscars.bss.topology.PathElemDAO;
 import net.es.oscars.bss.topology.Topology;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.bss.topology.Node;
 import net.es.oscars.bss.topology.Port;
 import net.es.oscars.bss.topology.Link;
 import net.es.oscars.bss.topology.Ipaddr;
+import net.es.oscars.bss.topology.PathElem;
 import net.es.oscars.bss.topology.NodeAddress;
 import net.es.oscars.bss.topology.URNParser;
 import net.es.oscars.database.HibernateUtil;
@@ -69,6 +71,7 @@ public class TopologyManager {
     private PortDAO portDAO;
     private LinkDAO linkDAO;
     private IpaddrDAO ipaddrDAO;
+    private PathElemDAO pathElemDAO;
     private L2SwitchingCapabilityDataDAO l2swcapDAO;
     private HashMap<String, Link> validLinks;
 
@@ -89,6 +92,7 @@ public class TopologyManager {
         this.portDAO = new PortDAO(this.dbname);
         this.linkDAO = new LinkDAO(this.dbname);
         this.ipaddrDAO = new IpaddrDAO(this.dbname);
+        this.pathElemDAO = new PathElemDAO(this.dbname);
         this.l2swcapDAO = new L2SwitchingCapabilityDataDAO(this.dbname);
         this.validLinks = new HashMap<String, Link>();
 
@@ -120,6 +124,8 @@ public class TopologyManager {
 
            // step 4
 //           this.clean();
+           // Xi's patch
+           this.cleanupDB();
         } catch (BSSException e) {
            this.sf.getCurrentSession().getTransaction().rollback();
            this.log.error("updateTopology: " + e.getMessage());
@@ -652,7 +658,6 @@ public class TopologyManager {
                 remoteLink.getRemoteLink().setRemoteLink(null);
                 linkDAO.update(remoteLink.getRemoteLink());
             }
-            
             thisLink.setRemoteLink(remoteLink);
 
             linkDAO.update(thisLink);
@@ -946,6 +951,53 @@ public class TopologyManager {
         linkDB.setValid(false);
         linkDAO.update(linkDB);
     }
+
+  /* set invalid (not peering back) remoteLinkId to NULL. 
+     * set invalid linkId in pathElems to NULL
+     *
+     */
+    private void cleanupDB() {
+        this.log.debug("cleanupDB.start");
+        // remove invalid link remoteLinkId that do not point back to this link
+        List<Link> links = linkDAO.list();
+        for (int i = 0; i < links.size(); i++) {
+            Link lclLink = links.get(i);
+            if (lclLink.getRemoteLink() == null || lclLink.getRemoteLink().getFQTI().equals("urn:ogf:network:domain=*:node=*:port=*:link=*"))
+                continue;
+            for (int j = 0; j < links.size(); j++) {
+                Link rmtLink = links.get(j);
+                if (lclLink.getRemoteLink() != null && lclLink.getRemoteLink().getFQTI().equals(rmtLink.getFQTI()) 
+                    && rmtLink.getRemoteLink() != null && !rmtLink.getRemoteLink().getFQTI().equals(lclLink.getFQTI())) {
+                    lclLink.setRemoteLink(null);
+                    linkDAO.update(lclLink);
+                }    
+            }
+        }
+        this.log.debug("finished removing (set NULL) invalid remoteLinkIds");
+
+        // remove invalid linkId in pathElems
+        List<PathElem> pathElems = pathElemDAO.list();
+        for (PathElem pathElem : pathElems) {
+            Link peLink = pathElem.getLink();
+            if (peLink != null) {
+                boolean valid = false;
+                for (int k = 0; k < links.size(); k++) {
+                    Link link = links.get(k);
+                    if (peLink.getId() == link.getId()) {
+                        valid = true;
+                        break;
+                    }
+                }
+                if (!valid) {
+                    pathElem.setLink(null);
+                    pathElemDAO.update(pathElem);
+                }
+            }
+        }
+        this.log.debug("finished removing invalid linkId in pathElems");
+        this.log.debug("cleanupDB.finish");
+    }
+
 
     /*
      * Recalculates the paths for reservations with the given status.
