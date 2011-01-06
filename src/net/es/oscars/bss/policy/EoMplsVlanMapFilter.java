@@ -1,8 +1,7 @@
 package net.es.oscars.bss.policy;
 
 
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -73,12 +72,12 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             PathElem nextIngPE = this.getNextExternalL2scHop(interPathElems);
             
             VlanRange availIngVlans = combineTopoAndReq(ingPE);
-            availIngVlans = combineAvailAndReserved(availIngVlans, ingPE, activeReservations);
+            availIngVlans = combineAvailAndReserved(newReservation, availIngVlans, ingPE, activeReservations);
             availIngVlans = combineRemote(availIngVlans, ingPE, prevEgrPE);
             log.debug("Available ingress VLANs: "+ availIngVlans);
             
             VlanRange availEgrVlans = combineTopoAndReq(egrPE);
-            availEgrVlans = combineAvailAndReserved(availEgrVlans, egrPE, activeReservations);
+            availEgrVlans = combineAvailAndReserved(newReservation, availEgrVlans, egrPE, activeReservations);
             availEgrVlans = combineRemote(availEgrVlans, egrPE, nextIngPE);
             log.debug("Available egress VLANs: "+ availEgrVlans);
             
@@ -93,6 +92,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
                     PathElem.copyPathElemParams(interPathElem, egrPE, PathElemParamSwcap.L2SC);
                     break;
                 }
+                //prevEgrPE ? nextIngPE ?
             }
         } catch (BSSException e) {
             this.log.error(e);
@@ -102,16 +102,13 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     }
     
     
-    
     private void decideAndSetVlans(PathElem prevEgrPE, PathElem ingPE, PathElem egrPE, PathElem nextIngPE, 
             VlanRange availIngVlans, VlanRange availEgrVlans) throws BSSException {
         log.debug("decideAndSetVlans.start");
         // find the common subset of vlans between our ingress
         // and egress. just AND the two masks
         VlanRange localCommonVlans = VlanRange.and(availIngVlans, availEgrVlans);
-        
-        log.debug("Common VLANs for ingress and egress are: ["+localCommonVlans.toString()+"]");
-        
+               
         // first: if previous egress was not null that means
         // we're not the first domain. so we probably have received 
         // a suggested VLAN. 
@@ -131,35 +128,81 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             log.debug("No previous domain, so no suggested VLANs");
         }
         
-        if (!localCommonVlans.isEmpty()) {
-            log.debug("A common single VLAN exists, deciding..");
-            singleVlan = decideVlan(localCommonVlans, suggested);
-            log.debug("Common single VLAN is: "+singleVlan);
-            this.finalizeVlan(singleVlan, ingPE, prevEgrPE);
-            this.finalizeVlan(singleVlan, egrPE, nextIngPE);
-        } else {
-            log.debug("No common VLANs for edges, deciding ingress...");
+        // If the domain can do VLAN translation at both ingress and egress,
+        // we should always take advantage of the translation to give next domain bigger range.
+        if ((ingPE.getLink().getL2SwitchingCapabilityData() != null
+                && ingPE.getLink().getL2SwitchingCapabilityData().getVlanTranslation())
+			&& (egrPE.getLink().getL2SwitchingCapabilityData() != null
+                && egrPE.getLink().getL2SwitchingCapabilityData().getVlanTranslation())) {
             Integer ingVlan = decideVlan(availIngVlans, suggested);
             if (ingVlan == null) {
-                throw new BSSException("Could not decide an VLAN for ingress edge!");
+                throw new BSSException("Could not decide a VLAN for ingress edge!");
             }
-            log.debug("Decided inggress VLAN: "+ingVlan+" , deciding egress...");
+            log.debug("Decided ingress VLANs: "+availIngVlans.toString()+" (suggestedVlan: "+ingVlan+") , deciding egress...");
             Integer egrVlan = decideVlan(availEgrVlans, suggested);
             if (egrVlan == null) {
                 throw new BSSException("Could not decide a VLAN for egress edge!");
             }
-            log.debug("Decided egress VLAN: "+egrVlan+ " , finalizing VLANs..");
-            this.finalizeVlan(ingVlan, ingPE, prevEgrPE);
-            this.finalizeVlan(egrVlan, egrPE, nextIngPE);
-            //set interdomain links
+            log.debug("Decided egress VLANs: "+availEgrVlans.toString()+" (suggestedVlan: "+egrVlan+ " , finalizing VLANs..");
+            // If this is last domain, finalize a single VLAN for both ingress and egress
+            if (nextIngPE == null) {
+                this.finalizeVlan(egrVlan, egrPE, nextIngPE);
+                // finalize a single ingess VLAN, even this is not the first domain
+                // if there is common vlan avaialble, use same egrVlan for ingress
+                if (availIngVlans.getMap()[egrVlan])
+                    this.finalizeVlan(egrVlan, ingPE, prevEgrPE, false);
+                else { // otherwise, pick ingVlan
+                    this.finalizeVlan(ingVlan, ingPE, prevEgrPE, false);
+                    // special handling for single domain case
+                    // if picked egress vlan cannot be made at ingress, try override ingress and egress with a common vlan
+                    if (prevEgrPE == null) {
+                        singleVlan = decideVlan(localCommonVlans, suggested);
+                        if (singleVlan != null) {
+                            this.finalizeVlan(singleVlan, ingPE, prevEgrPE, false);
+                            this.finalizeVlan(singleVlan, egrPE, nextIngPE, false);
+                        }
+						//otherwise, still use the ingVlan that is diff than the egrVlan
+                    }
+                }
+            } else {
+                // otherwise, use range for egress interdomain link.
+                this.finalizeVlanRange(egrVlan, availEgrVlans, egrPE, nextIngPE);
+                // use range for ingress interdomain link, even this is the first domain
+                // if there is common vlan avaialble, use same egrVlan for ingress
+                if (availIngVlans.getMap()[egrVlan]) 
+                    this.finalizeVlanRange(egrVlan, availIngVlans, ingPE, prevEgrPE, false);
+                else // otherwise, pick ingVlan
+                    this.finalizeVlanRange(ingVlan, availIngVlans, ingPE, prevEgrPE, false);
+            }
+        } else if (!localCommonVlans.isEmpty()) {
+            // If the domain cannot do translation, try find a common/continous VLAN range for ingress and egress.
+            log.debug("Common VLANs for ingress and egress are: ["+localCommonVlans.toString()+"]");
+            log.debug("A common single VLAN exists, deciding..");
+            singleVlan = decideVlan(localCommonVlans, suggested);
+            log.debug("Common single VLAN is: "+singleVlan);
+            // If this is last domain, finalize a single VLAN 
+            if (nextIngPE == null) {
+                this.finalizeVlan(singleVlan, ingPE, prevEgrPE);
+                // finalize a single VLAN, even this is the first domain
+                this.finalizeVlan(singleVlan, egrPE, nextIngPE);
+            } else {
+                //otherwise, use range for egress interdomain link.
+                this.finalizeVlanRange(singleVlan, localCommonVlans, egrPE, nextIngPE);			
+                // use range for ingress interdomain link, even this is the first domain
+                this.finalizeVlanRange(singleVlan, localCommonVlans, ingPE, prevEgrPE);
+            }
+        } else { 
+            // Otherwise, fail the path.
+            log.debug("No common VLANs or translation.");
+            throw new BSSException("VLAN(s) not available for local segment!");
         }
         log.debug("decideAndSetVlans.end");
     }
     
-    private void finalizeVlan(Integer vlanId, PathElem edgePE, PathElem remoteEdgePE) throws BSSException {
+    private void finalizeVlan(Integer vlanId, PathElem edgePE, PathElem remoteEdgePE, boolean updateRemoteSuggestedVlan) throws BSSException {
         log.debug("finalizeVlan.start");
         
-        if (edgePE == null) {
+        if (edgePE == null) {	
             throw new BSSException("Internal error: Local edge path element is null!");
         } 
         PathElemParam pep;
@@ -171,7 +214,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             pep.setSwcap(PathElemParamSwcap.L2SC);
             pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
             pep.setValue(vlanId.toString());
-            edgePE.getPathElemParams().add(pep);
+            edgePE.addPathElemParam(pep);
         }
         
         pep = edgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
@@ -182,7 +225,7 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
             pep.setSwcap(PathElemParamSwcap.L2SC);
             pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
             pep.setValue(vlanId.toString());
-            edgePE.getPathElemParams().add(pep);
+            edgePE.addPathElemParam(pep);
         }
 
         
@@ -195,40 +238,117 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
                 pep.setSwcap(PathElemParamSwcap.L2SC);
                 pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
                 pep.setValue(vlanId.toString());
-                remoteEdgePE.getPathElemParams().add(pep);
+                remoteEdgePE.addPathElemParam(pep);
             }
-            pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+            if (updateRemoteSuggestedVlan) {
+                pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+                if (pep != null) {
+                    pep.setValue(vlanId.toString());
+                } else { 
+                    pep = new PathElemParam();
+                    pep.setSwcap(PathElemParamSwcap.L2SC);
+                    pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+                    pep.setValue(vlanId.toString());
+                    remoteEdgePE.addPathElemParam(pep);
+                }
+            }
+        }   
+    }
+
+	
+    private void finalizeVlan(Integer vlanId, PathElem edgePE, PathElem remoteEdgePE) throws BSSException {
+        finalizeVlan(vlanId, edgePE, remoteEdgePE, true);
+    }
+
+	
+    private void finalizeVlanRange(Integer suggested, VlanRange vlans, PathElem edgePE, PathElem remoteEdgePE, boolean updateRemoteSuggestedVlan)  throws BSSException {
+        log.debug("finalizeVlanRange.start");
+        
+        if (edgePE == null) {	
+            throw new BSSException("Internal error: Local edge path element is null!");
+        } 
+        PathElemParam pep;
+        pep = edgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
+        if (pep != null) {
+            pep.setValue(vlans.toString());
+        } else {
+            pep = new PathElemParam();
+            pep.setSwcap(PathElemParamSwcap.L2SC);
+            pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
+            pep.setValue(vlans.toString());
+            edgePE.addPathElemParam(pep);
+        }
+        
+        pep = edgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+        if (pep != null) {
+            pep.setValue(suggested.toString());
+        } else {
+            pep = new PathElemParam();
+            pep.setSwcap(PathElemParamSwcap.L2SC);
+            pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+            pep.setValue(suggested.toString());
+            edgePE.addPathElemParam(pep);
+        }
+		
+        
+        if (remoteEdgePE != null) {
+            pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_VLAN_RANGE);
             if (pep != null) {
-                pep.setValue(vlanId.toString());
+                pep.setValue(vlans.toString());
             } else {
                 pep = new PathElemParam();
                 pep.setSwcap(PathElemParamSwcap.L2SC);
-                pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
-                pep.setValue(vlanId.toString());
-                remoteEdgePE.getPathElemParams().add(pep);
+                pep.setType(PathElemParamType.L2SC_VLAN_RANGE);
+                pep.setValue(vlans.toString());
+                remoteEdgePE.addPathElemParam(pep);
+            }
+            if (updateRemoteSuggestedVlan) {
+                pep = remoteEdgePE.getPathElemParam(PathElemParamSwcap.L2SC, PathElemParamType.L2SC_SUGGESTED_VLAN);
+                if (pep != null) {
+                    pep.setValue(suggested.toString());
+                } else {
+                    pep = new PathElemParam();
+                    pep.setSwcap(PathElemParamSwcap.L2SC);
+                    pep.setType(PathElemParamType.L2SC_SUGGESTED_VLAN);
+                    pep.setValue(suggested.toString());
+                    remoteEdgePE.addPathElemParam(pep);
+                }
             }
         }
-
-    
     }
-    
+	
+	
+    private void finalizeVlanRange(Integer suggested, VlanRange vlans, PathElem edgePE, PathElem remoteEdgePE)  throws BSSException {
+        finalizeVlanRange(suggested, vlans, edgePE, remoteEdgePE, true);
+    }
+
+	
     private Integer decideVlan(VlanRange availVlans, VlanRange suggestedVlans) {
                 
         log.debug("decideVlan.start avail: ["+availVlans+"] sugg: ["+suggestedVlans+"]");
-        VlanRange tmp = VlanRange.copy(availVlans);
-        VlanRange suggTmp = VlanRange.and(tmp, suggestedVlans);
-        if (!suggTmp.isEmpty()) {
-            tmp = suggTmp;
+        VlanRange vlanRange = VlanRange.copy(availVlans);
+        VlanRange suggRange = VlanRange.and(vlanRange, suggestedVlans);
+        if (!suggRange.isEmpty()) {
+            vlanRange = suggRange;
         }
-        
-        int first = tmp.getFirst();
-        if (first == -1) {
+
+        boolean[] map = vlanRange.getMap();
+        ArrayList<Integer> vlanPool = new ArrayList<Integer>();
+        for (int i=0; i < map.length; i++) {
+            if (map[i])
+                vlanPool.add(i);
+        }
+        int index = 0;
+        if (vlanPool.size() > 1) {
+            Random rand = new Random();
+            index = rand.nextInt(vlanPool.size()-1);
+        } else if (vlanPool.size() == 0) {
             log.error("Could not decide on a VLAN");
             return null;
-        } else {
-            log.debug("Decided vlan: "+first);
-            return first;
-        }
+        } 
+
+        log.debug("Picking vlan: "+vlanPool.get(index));
+        return vlanPool.get(index);
     }
     
     
@@ -260,9 +380,14 @@ public class EoMplsVlanMapFilter extends VlanMapFilter implements PolicyFilter{
     
     
     
-    private VlanRange combineAvailAndReserved(VlanRange availVlans, PathElem edgePE, List<Reservation> resvs) throws BSSException {
+    private VlanRange combineAvailAndReserved(Reservation newReservation, VlanRange availVlans, 
+            PathElem edgePE, List<Reservation> resvs) throws BSSException {
+		String newGri = newReservation.getGlobalReservationId();
         for (Reservation resv : resvs) {
             String gri = resv.getGlobalReservationId();
+			//ignore the 'self' reservation
+			if (gri.equals(newGri))
+				continue;
             Path localPath = resv.getPath(PathType.LOCAL);
             List<PathElem> localPathElems = localPath.getPathElems();
             PathElem ingPE = localPathElems.get(0);
