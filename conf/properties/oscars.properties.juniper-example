@@ -1,9 +1,5 @@
 ### Example main properties file.  
-# Values are filled for an example dragon/terce site.
-# configurations for ESnet specific traceroute, topoologyExchange, pss, snmp and bss 
-# variables can be found in esnet/domain/server/oscars.properties. This repository 
-# is accessible only by authorized ESnet personnel.
-
+# Values are filled for an example juniper router based deployment.
 
 ### Hibernate section
 
@@ -11,6 +7,7 @@
 # database  - change for your site
 hibernate.connection.username=username
 hibernate.connection.password=password
+hibernate.monitor=1
 
 #Local URLs. If not set will assume port 8443 and /axis2/services/OSCARS[Notify]
 idc.url=https://hostname.internet2.edu:8443/axis2/services/OSCARS
@@ -44,7 +41,7 @@ rmi.notifybroker.registryHost = 127.0.0.1
 rmi.notifybroker.registeredServerName = notifybrokerRmiServer
 
 ### AAA configuration  - change for your site
-aaa.salt=aa
+aaa.salt=os
 
 # random names for cookies - may be changed per site
 aaa.userName=oscars
@@ -57,12 +54,13 @@ aaa.secureCookie=0
 # set default layer to 2 or 3. Set to layer 2 if
 # configured to use dragon. Set to 3 for Juniper routers.
 wbui.defaultLayer=2
+#wbui.defaultLayer=3
 
 ### pathfinder configuration
 # can be either 0 (don't find path, only used for aaa testing) or 1
 pathfinder.findPath=1
 
-# currently can be traceroute or terce
+# currently can be traceroute,perfsonar, or terce
 pathfinder.pathMethod=perfsonar,terce
 
 ### new Pathfinder configuration
@@ -74,16 +72,24 @@ pathfinder.pathMethod=perfsonar,terce
 
 
 #TEDB configuration - can be terce or oscars
-tedb.tedbMethod=terce
+#tedb.tedbMethod=terce
+tedb.tedbMethod=oscars
 
 #TERCE configuration
 terce.url=http://127.0.0.1:8080/axis2/services/TERCE
 
 ##Lookup Service and topology Service configuration
-lookup.hints=http://www.perfsonar.net/gls.root.hints
-lookup.home.1=http://hostname.internet2.edu:8005/perfSONAR_PS/services/hLS
-lookup.topology.1=http://hostname.internet2.edu:8012/perfSONAR_PS/services/topology
-perfsonar.topology_url=http://hostname.internet2.edu:8012/perfSONAR_PS/services/topology
+#lookup.hints=http://www.perfsonar.net/gls.root.hints
+#lookup.home.1=http://hostname.internet2.edu:8005/perfSONAR_PS/services/hLS
+#lookup.topology.1=http://hostname.internet2.edu:8012/perfSONAR_PS/services/topology
+#perfsonar.topology_url=http://hostname.internet2.edu:8012/perfSONAR_PS/services/topology
+
+
+topo.nsuri=http://ogf.org/schema/network/topology/ctrlPlane/20080828/
+topo.nsprefix=CtrlPlane
+topo.roottopoid=urn:ogf:network
+topo.xsdFilename=/usr/local/oscars/conf/schema/nmtopo-ctrlp.xsd
+
 external.service.topology.updateLocal=1
 
 #notification messages
@@ -92,7 +98,7 @@ external.service.topology.updateLocal=1
 # It may also be set to ws for web service notifications.
 #
 notify.observer.1=net.es.oscars.notify.EmailObserver
-#notify.observer.2=net.es.oscars.notify.WSObserver
+notify.observer.2=net.es.oscars.notify.WSObserver
 
 # External services
 # Properties for tasks such as registering with the topology service
@@ -100,12 +106,15 @@ notify.observer.1=net.es.oscars.notify.EmailObserver
 #
 external.service.1=subscribe
 external.service.2=topology
-external.service.3=lsRegister
+#external.service.3=lsRegister
 external.service.4=lsDomainUpdate
 
 # VLAN policy filter. The default is node but if you would like to be more/less
 # restrictive about VLAN use you may set it here
 #policy.vlanFilter.scope=port
+
+#VLAN translation
+policy.vlanFilter.class=eomplsVlanMap
 
 #Notification broker config options
 notifybroker.pep.1=net.es.oscars.notify.ws.policy.IDCEventPEP
@@ -115,28 +124,63 @@ notifybroker.pep.1=net.es.oscars.notify.ws.policy.IDCEventPEP
 # reservation logs will be put in a subdirectory: reservations
 logging.rsvlogdir=/usr/local/tomcat/logs
 
-## PSS configuration
-# currently can be dragon
-pss.method=dragon
+### 0.5.3 PSS configuration
+pss.method=sdn
+# PSS template handler config
+pss.logConfig=true
+pss.stubMode=true
+pss.checkStatusAfterSetup=true
+pss.checkStatusAfterTeardown=true
+pss.teardownOnFailure=true
+pss.templateDir=/usr/local/oscars/conf/pss
+pss.checkStatusMaxTries=3
+pss.checkStatusInitialDelay=10
+pss.checkStatusDelayBetween=30
+# PSS connector configuration
+pss.login=username
+pss.passphrase=passphrase
+pss.keystore=/usr/local/oscars/conf/pss/oscars.key
+pss.logRequest=true
+pss.logResponse=true
 
-pss.dragon.password=dragon
-pss.dragon.ssh.portForward=1
-pss.dragon.ssh.user=username
-pss.dragon.ssh.key=/home/oscars/.ssh/id_rsa
-pss.dragon.remotePort=2611
-pss.dragon.hasNarb=1
-pss.dragon.setERO=1
-pss.dragon.vlsr1=127.0.0.1
-pss.dragon.vlsr1.ssh=192.168.2.4
-pss.dragon.vlsr2=127.0.0.1
-pss.dragon.vlsr2.ssh=192.168.2.6
-pss.dragon.vlsr3=127.0.0.1
-pss.dragon.vlsr3.ssh=192.168.2.8
+# set this to Cisco or Juniper to use as the default when we can't
+# contact the router through SNMP.
+pss.defaultVendor=Juniper
+pss.lsp_setup-priority=4
+pss.lsp_reservation-priority=4
 
+# Juniper configuration
+pss.jnx.access=ssl
+pss.jnx.login=username
+pss.jnx.passphrase=passphrase
+pss.jnx.firewall_filter_marker=oscars-filters-start
+# XML templates for Juniper router configuration
+pss.jnx.setupL2Template=juniperSetupL2.xml
+pss.jnx.setupL2ConnTemplate=juniperSetupL2Conn.xml
+pss.jnx.statusL2Template=juniperStatusL2.xml
+pss.jnx.teardownL2Template=juniperTeardownL2.xml
+pss.jnx.teardownL2ConnTemplate=juniperTeardownL2Conn.xml
+pss.jnx.setupL3Template=juniperSetupL3.xml
+pss.jnx.statusL3Template=juniperStatusL3.xml
+pss.jnx.showRouteL3Template=juniperShowRouteL3.xml
+pss.jnx.teardownL3Template=juniperTeardownL3.xml
+pss.jnx.internal_interface_filter=internal-interface-inbound-inet.0-filter
+pss.jnx.external_interface_filter=external-interface-inbound-inet.0-filter
+pss.jnx.tester_interface_filter=test-interface-inbound-inet.0-filter
+pss.jnx.lsp_class-of-service=4
+pss.jnx.dscp=4
+pss.jnx.policer_burst-size-limit=1000000
+
+### SNMP configuration
+snmp.community=snmpcommunity
+snmp.port=161
+snmp.version=1
+snmp.timeout=500
+snmp.retries=3
 
 ## mail that reservation notification is send to - change for your site
-mail.webmaster=webmaster@blue.net
-
+#mail.webmaster=enter-email-address-here
 
 #Other properties
 mail.userAdd.subject=OSCARS user added
+

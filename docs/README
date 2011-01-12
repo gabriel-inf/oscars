@@ -1,0 +1,20 @@
+DCN Software Suite Version 0.5.3
+(10 January 2011)
+https://wiki.internet2.edu/confluence/display/DCNSS
+
+The DCN Software Suite enables the dynamic provision of circuits across multiple network technologies and administrative domains.  
+
+This software suite is based on the OSCARS (On-demand Secure Circuits and Advance Reservation System) and DRAGON (Dynamic Resource Allocation via GMPLS Optical Networks) software. This software also includes an implementation of the interdomain web service based protocols developed in the DICE control plane group working group.  
+
+The DCN Software Suite includes three software packages which are contained within this release:
+
+1. DRAGON
+2. OSCARS IDC
+3. TERCE
+
+Install documents for DRAGON can be found at dragon/docs/DRAGON-INSTALL-v0 3.pdf 
+
+Install documents for the OSCARS IDC and TERCE can be found at idc/docs/OSCARS/DCN-SUITE-INSTALL.doc or 
+idc/docs/OSCARS/DCN-SUITE-INSTALL.pdf.
+
+
