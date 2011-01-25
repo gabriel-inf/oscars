@@ -96,6 +96,7 @@
                         </from>
                         <then>
                             <count>${filter.count}</count>
+                            <sample/>
                             <forwarding-class>scavenger</forwarding-class>
                             <routing-instance>${routinginstance.name}</routing-instance>
                         </then>
