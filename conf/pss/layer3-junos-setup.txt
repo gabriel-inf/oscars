@@ -96,7 +96,7 @@
                         </from>
                         <then>
                             <count>${filter.count}</count>
-                            <forwarding-class>expedited-forwarding</forwarding-class>
+                            <forwarding-class>scavenger</forwarding-class>
                             <routing-instance>${routinginstance.name}</routing-instance>
                         </then>
                     </term>
@@ -145,6 +145,10 @@
                             </lsp-next-hop>
                         </route>
 </#list>
+                        <route>
+                            <name>0.0.0.0/0</name>
+                            <next-table>inet.0</next-table>
+                        </route>
                     </static>
                 </rib>
             </routing-options>
