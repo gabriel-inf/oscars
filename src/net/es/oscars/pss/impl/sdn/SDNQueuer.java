@@ -169,7 +169,7 @@ public class SDNQueuer implements PSSQueuer {
         
         String jobName = "contact-"+nodeId+"-"+gri;
         JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_NODECONFIG_"+nodeId, PSSContactNodeJob.class);
-        log.debug("Adding job "+jobName);
+        log.debug("Adding job "+jobName+" ("+action+" "+direction+" "+handler.getClass().getName()+")");
 
         System.out.println("Adding job "+jobName);
         jobDetail.setDurability(true);

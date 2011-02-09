@@ -151,7 +151,7 @@ public class SDNPSS implements PSS {
             if (localPath.isLayer2()) {
                 layer = PSSLayer.LAYER2;
             } else if (localPath.isLayer3()) {
-                layer = PSSLayer.LAYER2;
+                layer = PSSLayer.LAYER3;
             } else {
                 throw new PSSException("Local path has neither L2 nor L3 information");
             }
@@ -193,6 +193,7 @@ public class SDNPSS implements PSS {
             } else {
                 service = SDNService.LAYER3;
             }
+            log.debug("Service is: "+service);
             PSSHandler fwdHandler = this.getHandler(localPath, service, PSSEdgeType.A);
             PSSHandler revHandler = this.getHandler(localPath, service, PSSEdgeType.Z);
             if (action.equals(PSSAction.SETUP)) { 
