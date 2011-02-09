@@ -42,7 +42,7 @@
             <name>${prefixes.src.name}</name>
 <#list prefixes.src.items as prefix>
             <prefix-list-item>
-                <name>${prefix}</name><strict/>
+                <name>${prefix}</name>
             </prefix-list-item>
 </#list>
         </prefix-list>
@@ -51,7 +51,7 @@
             <name>${prefixes.dst.name}</name>
 <#list prefixes.dst.items as prefix>
             <prefix-list-item>
-                <name>${prefix}</name><strict/>
+                <name>${prefix}</name>
             </prefix-list-item>
 </#list>
         </prefix-list>
@@ -65,7 +65,7 @@
                 <burst-size-limit>${policer.burst_size_limit?string.computer}</burst-size-limit>
             </if-exceeding>
             <then>
-                <forwarding-class>scavenger-service</forwarding-class>
+                <forwarding-class>scavenger</forwarding-class>
             </then>
         </policer>
 
