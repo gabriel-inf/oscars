@@ -4,12 +4,21 @@ import org.apache.log4j.Logger;
 
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.common.PSSConfigProvider;
 import net.es.oscars.pss.common.PSSHandler;
 import net.es.oscars.pss.common.PSSDirection;
+import net.es.oscars.pss.common.PSSHandlerConfigBean;
 import net.es.oscars.pss.connect.JunoscriptHandler;
 
 public class Layer3_Junos implements PSSHandler {
     private Logger log = Logger.getLogger(Layer3_Junos.class);
+    private static Layer3_Junos instance;
+    public static Layer3_Junos getInstance() {
+        if (instance == null) {
+            instance = new Layer3_Junos();
+        }
+        return instance;
+    }
 
     public void setup(Reservation resv, PSSDirection direction) throws PSSException {
         log.info("setup.start");
@@ -36,7 +45,13 @@ public class Layer3_Junos implements PSSHandler {
         log.info("teardown.finish");
     }
 
-
+    private Layer3_Junos() {
+        Layer3JunosConfigGen cg = Layer3JunosConfigGen.getInstance();
+        PSSConfigProvider pc = PSSConfigProvider.getInstance();
+        PSSHandlerConfigBean hc = pc.getHandlerConfig();
+        cg.setTemplateDir(hc.getTemplateDir());
+    }
+    
 
 
 }

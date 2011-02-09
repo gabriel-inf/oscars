@@ -8,7 +8,7 @@ import net.es.oscars.pss.layer3.junos.Layer3_Junos;
 public class Layer3HandlerFactory {
     public static PSSHandler getHandler(RouterVendor rv) throws PSSException {
         if (rv.equals(RouterVendor.JUNIPER)) {
-            return new Layer3_Junos();
+            return Layer3_Junos.getInstance();
         } else {
             throw new PSSException("Unsupported router vendor: "+rv);
         }
