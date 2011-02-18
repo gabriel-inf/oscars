@@ -1,5 +1,4 @@
 package net.es.oscars.client.improved.create;
-import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,14 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import net.es.oscars.client.Client;
+import net.es.oscars.client.improved.ClientException;
 import net.es.oscars.client.improved.ConfigHelper;
 import net.es.oscars.client.improved.ImprovedClient;
 
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
-import org.apache.axis2.AxisFault;
 
-import net.es.oscars.ws.AAAFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 
 public class CreateClient extends ImprovedClient {
@@ -83,25 +81,15 @@ public class CreateClient extends ImprovedClient {
     }
 
 
-    public CreateReply performRequest(ResCreateContent createReq) {
+    public CreateReply performRequest(ResCreateContent createReq) throws ClientException {
         CreateReply response = null;
         Client oscarsClient = new Client();
 
         try {
             oscarsClient.setUp(true, wsdlUrl, repoDir);
             response = oscarsClient.createReservation(createReq);
-        } catch (AxisFault e) {
-            e.printStackTrace();
-            die("Error: "+e.getMessage());
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            die("Error: "+e.getMessage());
-        } catch (AAAFaultMessage e) {
-            e.printStackTrace();
-            die("Error: "+e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-            die("Error: "+e.getMessage());
+            throw new ClientException(e);
         } finally {
             oscarsClient.cleanUp();
         }
@@ -109,7 +97,7 @@ public class CreateClient extends ImprovedClient {
     }
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void configure() {
         if (configFile == null) {
             configFile = DEFAULT_CONFIG_FILE;

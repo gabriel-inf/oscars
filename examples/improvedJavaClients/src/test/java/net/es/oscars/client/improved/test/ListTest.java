@@ -2,6 +2,7 @@ package net.es.oscars.client.improved.test;
 
 import java.util.List;
 
+import net.es.oscars.client.improved.ClientException;
 import net.es.oscars.client.improved.list.ListClient;
 import net.es.oscars.client.improved.list.ListOutputterFactory;
 import net.es.oscars.client.improved.list.ListOutputterInterface;
@@ -24,10 +25,16 @@ public class ListTest {
         cl.configureSoap();
         cl.configure();
 
-        ListReply listResp = cl.performRequest(cl.formRequest());
-        ResDetails[] resvs = cl.filterResvs(listResp.getResDetails());
-        for (ListOutputterInterface outputter : outputters) {
-            outputter.output(resvs);
+        ListReply listResp;
+        try {
+            listResp = cl.performRequest(cl.formRequest());
+            ResDetails[] resvs = cl.filterResvs(listResp.getResDetails());
+            for (ListOutputterInterface outputter : outputters) {
+                outputter.output(resvs);
+            }
+        } catch (ClientException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

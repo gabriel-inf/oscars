@@ -1,16 +1,14 @@
 package net.es.oscars.client.improved.list;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.axis2.AxisFault;
 
 import net.es.oscars.client.Client;
+import net.es.oscars.client.improved.ClientException;
 import net.es.oscars.client.improved.ConfigHelper;
 import net.es.oscars.client.improved.ImprovedClient;
-import net.es.oscars.ws.AAAFaultMessage;
 import net.es.oscars.wsdlTypes.Layer2Info;
 import net.es.oscars.wsdlTypes.Layer3Info;
 import net.es.oscars.wsdlTypes.ListReply;
@@ -150,29 +148,16 @@ public class ListClient extends ImprovedClient {
         return listReq;
     }
 
-    public ListReply performRequest(ListRequest listReq) {
+    public ListReply performRequest(ListRequest listReq) throws ClientException {
         ListReply response = null;
         Client oscarsClient = new Client();
 
         try {
             oscarsClient.setUp(true, wsdlUrl, repoDir);
             response = oscarsClient.listReservations(listReq);
-        } catch (AxisFault e) {
-            System.err.println("Error: "+e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        } catch (RemoteException e) {
-            System.err.println("Error: "+e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        } catch (AAAFaultMessage e) {
-            System.err.println("Error: "+e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
+
         } catch (Exception e) {
-            System.err.println("Error: "+e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
+            throw new ClientException(e);
         } finally {
             oscarsClient.cleanUp();
         }
