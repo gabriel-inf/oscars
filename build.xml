@@ -29,6 +29,8 @@
     <available file="${tomcat.loc}" property="tomcat.local"/>
     <available file="${oscars.home}" type="dir" property="oscars.home.set" />
     <available file="${catalina.home}" type="dir" property="catalina.home.set" />
+	<property name="axis2.default.home" value="${axis2.home}/WEB-INF/conf"/>
+	<available file="${axis2.repo}/axis2.xml" property="axis2.xml.found"/>
 
     <target name="all" depends="clean, build-all" description="Recompile all source, build all artifacts"/>
 
@@ -684,6 +686,7 @@
         <copy file="conf/logging/axis2.log4j.properties" tofile="${axis2.home}/WEB-INF/classes/log4j.properties"/>
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/client/security/"/>
         <copy file="${build.classes}/net/es/oscars/ConfigFinder.class" todir="${axis2.home}/WEB-INF/classes/net/es/oscars/"/>
+        <copy file="${axis2.repo}/axis2.xml" tofile="${axis2.default.home}/axis2.xml"/>
     </target>
 
     <target name="deploynotifyaar" description="copy OSCARSNotify.aar to axis2 services directory" depends="notify-aar,deploylibs,copydefaults,copydomain">
@@ -844,7 +847,7 @@
 
     <target name="setupServer" description="populate the shared/classes directory"
                       depends="prepare,copydomain,copydefaults,existing.keystore.warning1,
-        new.keystore.warning1,existing.keystore.warning2,new.keystore.warning2,setupTomcat">
+        new.keystore.warning1,existing.keystore.warning2,new.keystore.warning2,setupTomcat,setAxis2Defaults">
         <mkdir dir="${conf.axistomcat}/modules"/>
         <copy todir="${conf.axistomcat}/modules/">
             <fileset dir="conf/axis-tomcat" includes="rampart*.mar"/>
@@ -948,5 +951,23 @@
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
+
+	<target name="setAxis2Defaults" unless="axis2.xml.found">
+        <echo/>
+        <echo> **** </echo>
+        <echo level="warning"> **** It is recommended to change the default axis2 username and password **** </echo>
+        <echo> **** </echo>
+        <echo/>
+        <input
+                message="Please enter a username:"
+                addproperty="tomcat.username"
+        />
+        <input
+                message="Please enter a password:"
+                addproperty="tomcat.password"
+        />
+        <replace summary="true" file="${axis2.repo}/axis2.xml" token="***admin***" value="${tomcat.username}"/>
+        <replace summary="true" file="${axis2.repo}/axis2.xml" token="***axis2***" value="${tomcat.password}"/>
+	</target>
 
 </project>
