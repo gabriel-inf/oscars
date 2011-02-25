@@ -127,12 +127,14 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
         }
         inetDscp        = layer3Data.getDscp();
         inetProtocol    = layer3Data.getProtocol();
-        if (layer3Data.getSrcIpPort() != null) {
+        
+        
+        if (layer3Data.getSrcIpPort() != null && layer3Data.getSrcIpPort() != 0) {
             inetSrcPort     = layer3Data.getSrcIpPort().toString();
         } else {
             inetSrcPort = null;
         }
-        if (layer3Data.getDestIpPort() != null) {
+        if (layer3Data.getDestIpPort() != null && layer3Data.getDestIpPort() != 0) {
             inetDstPort     = layer3Data.getDestIpPort().toString();
         } else {
             inetDstPort = null;
