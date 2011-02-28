@@ -1,5 +1,6 @@
 package net.es.oscars.pss.layer3.junos;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,6 +126,23 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
         } else {
             throw new PSSException("Invalid direction");
         }
+        
+        for (int i = 0; i < srcPrefixes.length; i++) {
+            try {
+                srcPrefixes[i] = java.net.InetAddress.getByName(srcPrefixes[i]).getHostAddress();
+            } catch (UnknownHostException e) {
+                throw new PSSException("Could not resolve host name: "+srcPrefixes[i]);
+            }
+        }
+        for (int i = 0; i < dstPrefixes.length; i++) {
+            try {
+                dstPrefixes[i] = java.net.InetAddress.getByName(dstPrefixes[i]).getHostAddress();
+            } catch (UnknownHostException e) {
+                throw new PSSException("Could not resolve host name: "+dstPrefixes[i]);
+            }
+        }
+        
+        
         inetDscp        = layer3Data.getDscp();
         inetProtocol    = layer3Data.getProtocol();
         
