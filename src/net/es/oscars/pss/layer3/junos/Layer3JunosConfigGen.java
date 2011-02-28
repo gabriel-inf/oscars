@@ -127,18 +127,23 @@ public class Layer3JunosConfigGen extends TemplateConfigGen {
             throw new PSSException("Invalid direction");
         }
         
+        
         for (int i = 0; i < srcPrefixes.length; i++) {
-            try {
-                srcPrefixes[i] = java.net.InetAddress.getByName(srcPrefixes[i]).getHostAddress();
-            } catch (UnknownHostException e) {
-                throw new PSSException("Could not resolve host name: "+srcPrefixes[i]);
+            if (!srcPrefixes[i].contains("/")) {
+                try {
+                    srcPrefixes[i] = java.net.InetAddress.getByName(srcPrefixes[i]).getHostAddress();
+                } catch (UnknownHostException e) {
+                    throw new PSSException("Could not resolve host name: "+srcPrefixes[i]);
+                }
             }
         }
         for (int i = 0; i < dstPrefixes.length; i++) {
-            try {
-                dstPrefixes[i] = java.net.InetAddress.getByName(dstPrefixes[i]).getHostAddress();
-            } catch (UnknownHostException e) {
-                throw new PSSException("Could not resolve host name: "+dstPrefixes[i]);
+            if (!dstPrefixes[i].contains("/")) {
+                try {
+                    dstPrefixes[i] = java.net.InetAddress.getByName(dstPrefixes[i]).getHostAddress();
+                } catch (UnknownHostException e) {
+                    throw new PSSException("Could not resolve host name: "+dstPrefixes[i]);
+                }
             }
         }
         
