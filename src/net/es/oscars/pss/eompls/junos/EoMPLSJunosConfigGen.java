@@ -184,6 +184,8 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         // decide VC id
         // if port at A is xe-1/3/0 and vlan is 2259
         // vcid is 1302259
+        // if port at A is ae0 and vlan is 2259
+        // vcid is 9902259 (991 for ae1. The acutal number does not matter as long as it is unique.)
         // we only use the port at A.
         String portTopoId = "";
         String vlanIdForVC = "";
@@ -199,14 +201,21 @@ public class EoMPLSJunosConfigGen extends TemplateConfigGen {
         String x = null;
         String y = null;
         String z = null;
-        
         while (matcher.find()){
             x = matcher.group(1);
             y = matcher.group(2);
             z = matcher.group(3); 
         }
         if (x == null || y == null || z == null) {
-            throw new PSSException("could not decide a l2circuit vcid!");
+            pattern =  Pattern.compile("ae(\\d+)");
+            matcher =  pattern.matcher(portTopoId);
+            while (matcher.find()){
+                z = matcher.group(1);
+            }
+            if (z == null) {
+                throw new PSSException("could not decide a l2circuit vcid!");
+            }
+            x = "9"; y = "9"; 
         }
         // can't lead with zeros, junos thinks it's an octal
         if (x.equals("0")) {
