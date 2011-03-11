@@ -1,9 +1,13 @@
-Release Notes - DCN Software Suite - Version 0.5.3
+Release Notes - DCN Software Suite - Version 0.5.4
 
 Values in brackets (i.e. [xxx]) reference the project and an entry in the bug tracker (if applicable).
 See http://code.google.com/p/oscars-idc/ for further details on changes.
 
-Version 5.3
+Version 0.5.4
+** Improvement
+*[Issue 149] Added prompt during installation to change default Axis2 username and password.
+
+Version 0.5.3
 ** Improvement
 *[Issue 117] Failed Circuit Configuration Rollback for Router based Dataplanes
 This feature added automatic configuration rollback when a circuit setup failure is observed. This feature only applies to configurations which are based on Juniper or Cisco routers, and an OSCARS only deployment.  For deployments which are based on OSCARS and DRAGON, automatic rollback features was previously available.  No changes have been made to the automatic configuration rollback behavior for OSCARS/DRAGON deployments.
