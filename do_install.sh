@@ -72,5 +72,73 @@ if [ "$READ_BUILDTOOLS" == "y" ] || [ "$READ_BUILDTOOLS" == "Y" ]; then
     echo "--- Tools built.";
 fi
 
+# Check for axis2.xml
+start_dir=`pwd`
+cd $CATALINA_HOME/webapps/axis2/WEB_INF/conf
+if [ -e axis2.xml ]
+then
+new_user_name=""
+new_password_1=""
+new_password_2=""
+
+	echo "Checking to ensure Axis2 username / password are not set to defaults"
+
+	# Check for default username 
+	old_user_name=`grep userName axis2.xml | grep admin`
+
+	if [ "$old_user_name" != "" ]
+	then
+		# Prompt for new username
+		echo "It is recommended to change the default Axis2 username"
+		while [ "$new_user_name" == "" ]
+		do
+			echo "Please enter a username for Axis2"
+			read new_user_name 
+		done
+	fi
+
+	# Check for default password
+	old_password=`grep password axis2.xml | grep axis2`
+
+	if [ "$old_password" != "" ]
+	then
+		echo "It is recommended to change the default Axis2 password"
+		while [[ "$new_password_1" == "" || "$new_password_1" != "$new_password_2" ]]
+		do
+			# Prompt for new password
+			new_password_1=""
+			new_password_2=""
+			while [ "$new_password_1" == "" ]
+			do
+				echo "Please enter a password for Axis2 (will not echo)"
+				read -s new_password_1
+			done
+			while [ "$new_password_2" == "" ]
+			do
+				echo "Please re-enter password for Axis2"
+				read -s new_password_2
+			done
+		done
+	fi
+
+	# Replace username in axis2.xml
+	if [ "$new_user_name" != "" ]
+	then
+		mv axis2.xml axis2.xml.old 
+		sed "s/>admin</>$new_user_name</" axis2.xml.old > axis2.xml
+		rm axis2.xml.old
+	fi
+
+	# Replace password in axis2.xml
+	if [ "$new_password_2" != "" ]
+	then
+		mv axis2.xml axis2.xml.old
+		sed "s/>axis2</>$new_password_2</" axis2.xml.old > axis2.xml
+		rm axis2.xml.old
+	fi
+
+	echo "done"
+fi
+cd $start_dir
 
 exit 0;

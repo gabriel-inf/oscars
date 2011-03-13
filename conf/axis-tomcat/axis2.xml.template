@@ -41,8 +41,8 @@
 <parameter name="DrillDownToRootCauseForFaultReason" locked="false">
    true 
 </parameter>
-<parameter name="userName" locked="false">***admin***</parameter>
-<parameter name="password" locked="false">***axis2***</parameter>
+<parameter name="userName" locked="false">admin</parameter>
+<parameter name="password" locked="false">axis2</parameter>
 <parameter name="manageTransportSession" locked="false">false</parameter>
 <parameter name="enableRESTInAxis2MainServlet" locked="true">false</parameter>
 <parameter name="disableREST" locked="true">false</parameter>

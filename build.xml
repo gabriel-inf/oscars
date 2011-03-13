@@ -29,8 +29,6 @@
     <available file="${tomcat.loc}" property="tomcat.local"/>
     <available file="${oscars.home}" type="dir" property="oscars.home.set" />
     <available file="${catalina.home}" type="dir" property="catalina.home.set" />
-	<property name="axis2.default.home" value="${axis2.home}/WEB-INF/conf"/>
-	<available file="${axis2.repo}/axis2.xml.set" property="axis2.xml.set" />
 
     <target name="all" depends="clean, build-all" description="Recompile all source, build all artifacts"/>
 
@@ -132,7 +130,7 @@
     </target>
 
     <!-- Compile the WAR web application file to be deployed inside an servlet container -->
-    <target name="oscars-war" description="Build war file for deploy" depends="compile, installnewdojo, copydocs, rmijar,setAxis2Defaults">
+    <target name="oscars-war" description="Build war file for deploy" depends="compile, installnewdojo, copydocs, rmijar">
 
         <!-- Copy over the specific log4j.properties file -->
         <mkdir dir="${build.home}/oscars-war/WEB-INF/classes" />
@@ -846,7 +844,7 @@
 
     <target name="setupServer" description="populate the shared/classes directory"
                       depends="prepare,copydomain,copydefaults,existing.keystore.warning1,
-        new.keystore.warning1,existing.keystore.warning2,new.keystore.warning2,setupTomcat,setAxis2Defaults">
+        new.keystore.warning1,existing.keystore.warning2,new.keystore.warning2,setupTomcat">
         <mkdir dir="${conf.axistomcat}/modules"/>
         <copy todir="${conf.axistomcat}/modules/">
             <fileset dir="conf/axis-tomcat" includes="rampart*.mar"/>
@@ -950,26 +948,5 @@
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
-
-	<target name="setAxis2Defaults" unless="axis2.xml.set">
-        <echo/>
-        <echo> **** </echo>
-        <echo level="warning"> **** It is recommended to change the default axis2 username and password **** </echo>
-        <echo> **** </echo>
-        <echo/>
-        <input
-                message="Please enter a username:"
-                addproperty="tomcat.username"
-        />
-        <input
-                message="Please enter a password:"
-                addproperty="tomcat.password"
-        />
-        <replace summary="true" file="${axis2.repo}/axis2.xml" token="***admin***" value="${tomcat.username}"/>
-        <replace summary="true" file="${axis2.repo}/axis2.xml" token="***axis2***" value="${tomcat.password}"/>
-        <copy file="${axis2.repo}/axis2.xml" tofile="${axis2.default.home}/axis2.xml"/>
-        <copy file="${axis2.repo}/axis2.xml" tofile="conf/axis-tomcat/axis2.xml"/>
-        <copy file="${axis2.repo}/axis2.xml" tofile="${axis2.repo}/axis2.xml.set"/>
-	</target>
 
 </project>
