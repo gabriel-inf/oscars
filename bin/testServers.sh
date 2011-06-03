@@ -70,9 +70,9 @@ Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
 if [ "$Conf" == "conf" ]; then
-      port=$(awk -F: '$1~/soap/,$1~/public/ $1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+      port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
 elif [ "$Conf" == "config" ]; then
-      port=$(awk -F: '$1~/soap/,$1~/public/ $1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+      port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
 porttest3=`netstat -na | grep LISTEN | grep $port`
