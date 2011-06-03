@@ -1,6 +1,0 @@
-configure private
-delete interfaces ${portA} unit ${vlan} 
-delete interfaces ${portZ} unit ${vlan} 
-delete bridge-domains vlan${vlan} 
-commit and-quit sync comment "IDC removed vlan bridging between: ${portA}.${vlan} ,  ${portZ}.${vlan}"
-

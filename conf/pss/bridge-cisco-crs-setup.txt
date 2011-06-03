@@ -1,9 +1,0 @@
-configure terminal
-interface ${portA}.${vlan} l2transport
- dot1q vlan ${vlan}
-!
-interface ${portZ}.${vlan} l2transport
- dot1q vlan ${vlan}
-!
-commit
-exit

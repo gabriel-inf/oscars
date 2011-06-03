@@ -1,0 +1,61 @@
+<assembly>
+  <id>bin</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>config</directory>
+      <outputDirectory>config</outputDirectory>
+      <includes>
+        <include>*</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>bin</directory>
+      <outputDirectory>bin</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>*</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>target</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>SimpleOSCARSClient-0.0.1-SNAPSHOT.one-jar.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>doc</directory>
+      <outputDirectory>doc</outputDirectory>
+      <includes>
+        <include>*</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>../common-soap/src/main/resources/</directory>
+      <outputDirectory>config/wsdl</outputDirectory>
+      <includes>
+        <include>*xsd</include>
+        <include>*wsdl</include>
+        <include>*xml</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>../common-soap/src/main/resources/api</directory>
+      <outputDirectory>config/wsdl/api</outputDirectory>
+      <includes>
+        <include>*xsd</include>
+        <include>*wsdl</include>
+        <include>*xml</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</assembly>

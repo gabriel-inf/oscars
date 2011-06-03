@@ -1,0 +1,15 @@
+---
+soap:
+    publishTo:  'http://localhost:9001/OSCARS'
+    
+public:
+##
+# Change URL below to the URL where you want to allow external access
+#    publishTo: 'http://my-host:9001/OSCARS'
+    name: 'OSCARS IDC'
+    description: 'OSCARS IDC for reserving circuits on my network '
+##
+#Optional lat/long parameters
+#    latitude:
+#    longitude: 
+

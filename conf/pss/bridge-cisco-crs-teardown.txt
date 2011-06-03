@@ -1,6 +1,0 @@
-configure terminal
-no interface ${portA}.${vlan}
-no interface ${portZ}.${vlan}
-commit
-exit
-

@@ -1,5 +1,0 @@
-<junoscript version="1.0" release="7.3">
-<rpc>
-  <get-l2vpn-connection-information/>
-</rpc>
-</junoscript>

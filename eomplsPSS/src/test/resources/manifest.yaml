@@ -1,0 +1,44 @@
+---
+PSSService:
+    UNITTEST:
+        config.yaml:        'OSCARS_DIST/eomplsPSS/src/test/resources/config.yaml'
+        server-cxf.xml:     'OSCARS_DIST/eomplsPSS/src/test/resources/server-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_DIST/eomplsPSS/src/test/resources/client-cxf-http.xml'
+        log4j.properties:   'OSCARS_DIST/eomplsPSS/src/test/resources/log4j.properties'
+        defs-models.yaml:   'OSCARS_DIST/eomplsPSS/src/test/resources/defs-models.yaml'
+        defs-services.yaml: 'OSCARS_DIST/eomplsPSS/src/test/resources/defs-services.yaml'
+        templateDir:        'OSCARS_DIST/eomplsPSS/config/templates'
+        config-connector-directory.yaml:        'OSCARS_DIST/eomplsPSS/src/test/resources/config-connector-directory.yaml'
+        config-device-addresses.yaml:           'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-addresses.yaml'
+        config-device-connectors.yaml:          'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-connectors.yaml'
+        config-device-models.yaml:              'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-models.yaml'
+        config-device-models.yaml:              'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-models.yaml'
+        config-eompls.yaml:                     'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls.yaml'
+        config-eompls-device-addresses.yaml:    'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls-device-addresses.yaml'
+        config-eompls-ifce-addresses.yaml:      'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls-ifce-addresses.yaml'
+        
+        
+        
+        PSSService.xsd:     'OSCARS_DIST/common-soap/src/main/resources/pss/pss.xsd'
+        PSSService.wsdl:    'OSCARS_DIST/common-soap/src/main/resources/pss/pss.wsdl'
+        CoordService.xsd:   'OSCARS_DIST/common-soap/src/main/resources/coord/coord.xsd'
+        CoordService.wsdl:  'OSCARS_DIST/common-soap/src/main/resources/coord/coord.wsdl'
+        
+
+Utils:
+    UNITTEST:
+        templateDir:        'OSCARS_DIST/Utils/config'
+        config.yaml:        'OSCARS_DIST/Utils/config/config.yaml'
+
+    DEVELOPMENT:
+        templateDir:        'OSCARS_HOME/Utils/conf/'
+        config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
+
+    SDK:
+        templateDir:        'OSCARS_HOME/Utils/conf/'
+        config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
+
+    PRODUCTION:
+        templateDir:        'OSCARS_HOME/Utils/conf/'
+        config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
+        

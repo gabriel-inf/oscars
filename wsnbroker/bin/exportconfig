@@ -1,0 +1,81 @@
+#!/bin/sh
+#
+# Export configuration files from the distribution directory into the production directory.
+#
+# syntax: exportconfig <path_to_distribution> <patch_to_production>
+#
+#
+
+SERVICE=WSNBrokerService
+MODULE=wsnbroker
+PORT=9013
+
+source $OSCARS_DIST/utils/bin/configLib.sh
+
+OSCARS_DIST=$1
+OSCARS_HOME=$2
+
+verifyArgs $OSCARS_DIST $OSCARS_HOME
+verifySvcName $SERVICE
+
+SRC_DIR=$OSCARS_DIST/$MODULE/config/
+DST_DIR=$OSCARS_HOME/$SERVICE/conf
+DST_LOGDIR=$OSCARS_HOME/logs
+
+mkdir -p $DST_LOGDIR
+mkdir -p $DST_DIR
+
+if [ ! -f $DST_DIR/$MANIFEST  ] ; then
+    cp $SRC_DIR/$MANIFEST $DST_DIR/$MANIFEST
+fi
+if [ ! -f $DST_DIR/$CONFIG_HTTP  ] ; then
+    cp $SRC_DIR/$CONFIG_HTTP $DST_DIR/$CONFIG_HTTP 
+fi
+if [ ! -f $DST_DIR/$CONFIG_SSL  ] ; then
+    cp $SRC_DIR/$CONFIG_SSL $DST_DIR/$CONFIG_SSL
+fi
+
+# Path config file so the public API's endpoint is the set to the hostname
+localhost=`hostname`
+
+# cxf configuration files
+
+if [ ! -f $DST_DIR/$CXF_SERVER_HTTP_CFG ] ; then
+    sed -e s,deploy-host,$localhost:$PORT,  -e s,wsdl-location,$OSCARS_HOME/wsdl/$SERVICE, < $SRC_DIR/$CXF_SERVER_HTTP_CFG > $DST_DIR/$CXF_SERVER_HTTP_CFG
+fi
+if [ ! -f $DST_DIR/$CXF_SERVER_SSL_CFG ] ; then
+    sed -e s,deploy-host,$localhost:$PORT,  -e s,wsdl-location,$OSCARS_HOME/wsdl/$SERVICE, <  $SRC_DIR/$CXF_SERVER_SSL_CFG > $DST_DIR/$CXF_SERVER_SSL_CFG
+fi
+if [ ! -f $DST_DIR/$CXF_CLIENT_HTTP_CFG ] ; then
+    cp $SRC_DIR/$CXF_CLIENT_HTTP_CFG  $DST_DIR/$CXF_CLIENT_HTTP_CFG
+fi
+if [ ! -f $DST_DIR/$CXF_CLIENT_SSL_CFG ] ; then
+    cp $SRC_DIR/$CXF_CLIENT_SSL_CFG  $DST_DIR/$CXF_CLIENT_SSL_CFG
+fi
+
+# Keystores
+if [ ! -f $DST_DIR/serverKeystore.properties ] ; then
+    cp $SRC_DIR/serverKeystore.properties $DST_DIR/serverKeystore.properties
+fi
+
+if [ ! -f $DST_DIR/clientKeystore.properties ] ; then
+    cp $SRC_DIR/clientKeystore.properties $DST_DIR/clientKeystore.properties
+fi
+
+# log4j
+if [ ! -f $DST_DIR/$LOG4J_PROPS_INFO ] ; then
+    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log,"  <  $SRC_DIR/$LOG4J_PROPS_INFO > $DST_DIR/$LOG4J_PROPS_INFO
+fi
+if [ ! -f $DST_DIR/$LOG4J_PROPS_DEBUG ] ; then
+    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log,"  <  $SRC_DIR/$LOG4J_PROPS_DEBUG > $DST_DIR/$LOG4J_PROPS_DEBUG
+    fi
+if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
+    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log," <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
+fi
+
+#Derby
+mkdir -p $OSCARS_HOME/$SERVICE/data
+if [ ! -d "$OSCARS_HOME/$SERVICE/data/notifyDb" ]; then
+    cp -r $SRC_DIR/notifyDb $OSCARS_HOME/$SERVICE/data/notifyDb
+fi
+

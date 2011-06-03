@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.es.oscars</groupId>
+    <artifactId>ExportConfig</artifactId>
+    <packaging>pom</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Export configration files</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>authN</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>authZ</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>resourceManager</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>topoBridge</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>wbui</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>lookup</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <!--  change the following to  wsnbroker when it is included in the OSCARS pom -->
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>notificationBridge</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <executions>
+                    <execution><!-- copy/edit the configuration files to $OCCARS_DIST -->
+                        <id>Export Config</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${OSCARS_DIST}/bin/exportconfig</executable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,25 @@
+---
+OSCARSService: 
+#    UNITTEST:
+#        templateDir:        'OSCARS_HOME/config'
+#        config.yaml:        'OSCARS_HOME/config/config.HTTP.yaml'
+#        server-cxf.xml:     'OSCARS_HOME/config/server-cxf-http.xml'
+#        client-cxf.xml:     'OSCARS_HOME/config/client-cxf-http.xml'
+#        log4j.properties:   'OSCARS_HOME/config/log4j.DEBUG.properties'
+#        serverKeystore.properties: 'OSCARS_HOME/config/serverKeystore.properties'
+#        clientKeystore.properties: 'OSCARS_HOME/config/clientKeystore.properties'
+#        wsdl:               'OSCARS_HOME/config/wsdl/api/OSCARS-0.6.wsdl'
+#        wsdl-0.6:           'OSCARS_HOME/config/wsdl/api/OSCARS-0.6.wsdl' 
+#        wsdl-0.5:           'OSCARS_HOME/config/wsdl/api/OSCARS-0.5.wsdl'
+
+    DEVELOPMENT:
+        templateDir:        'OSCARS_HOME/config'
+        config.yaml:        'OSCARS_HOME/config/config.HTTP.yaml'
+        server-cxf.xml:     'OSCARS_HOME/config/server-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_HOME/config/client-cxf-DEV.xml'
+        log4j.properties:   'OSCARS_HOME/config/log4j.DEBUG.properties'
+        serverKeystore.properties: 'OSCARS_HOME/config/serverKeystore.properties'
+        clientKeystore.properties: 'OSCARS_HOME/config/clientKeystore.properties'
+        wsdl:               'OSCARS_HOME/config/wsdl/api/OSCARS-0.6.wsdl'
+        wsdl-0.6:           'OSCARS_HOME/config/wsdl/api/OSCARS-0.6.wsdl' 
+        wsdl-0.5:           'OSCARS_HOME/config/wsdl/api/OSCARS-0.5.wsdl'

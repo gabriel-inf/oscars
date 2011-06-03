@@ -1,43 +1,48 @@
-OSCARS version 0.5
-===================
+To build and run all the servers
 
-DATE: March 1, 2007
+1. set the environment variables
+     OSCARS_DIST  - directory where sources are kept
+     OSCARS_HOME  - directory where the oscars runtime configurations will be
 
-This branch is the main development branch.
+2. Check for template files in the following config directories
+   authN/config/authN.yaml.template
+   authZ/config/authZ.yaml.template
+   coordinator/config/pce-configuration-template.xml
+   resourceManager/config/resourceManager.yaml.template
+   topoBridge/config/topoBridge.yaml.template
+   wbui/config/wbui.yaml.template
+   and copy/edit them to non-template versions
 
-Note that the aaa and bss databases must be set up correctly before
-OSCARS will work (ant sql task to be provided).
+3. run mvn from $OSCARS_DIST
+      mvn compile - just compiles
+      mvn -DskipTests install - compiles, installs does not run tests
+      mvn -Dmaven.test.failure.ignore=true  install
+           - compiles, runs tests but continues after errors and installs
+      mvn install - compiles, run tests, installs
 
-The build.xml file uses properties from conf/private/server/oscars.properties,
-which should be copied to $CATALINA_HOME using the provided Ant task.
-Test properties are in conf/private/server/test.properties, which are
-also copied by the Ant task.
+4. run $OSCARS_DIST/bin/exportconfig
+
+5. run $OSCARS_DIST/bin/startAllServers.sh
+        the output from the servers will be piped to $OSCARS_DIST/*.out
+
+6. run $OSCARS_DIST/bin/stopAllServers.sh to kill all the servers.
+
+start/stopAllServers can be used to start or stop individual servers with the params
+    authN, authZ, api, coord, topoBridge, rm stubPCE, connPCE, dijPCE
 
 
-COPYRIGHT AND LICENCE
+Currently all the tests are passed except for coordinator which requires the
+resource Manager and a PCE to be running.
 
-Copyright (C) 2006, 2007 by the Regents of the University
-of California.   Anyone may reproduce the software in this file,
-in whole or in part, provided that:
+7. Testing
+    api/bin/testIDC.sh can be called to query, list and create a reservation
+    the wrapper commands query.sh, list.sh and createRes.sh will call testIDC
+    with default args set. createRes.sh uses a default yaml file in
+    src/test/resources/create.yaml to set the values for the reservation.
 
-(1)  Any copy or redistribution of this code must show the
-        Regents of the University of California, through its
-        Lawrence Berkeley National Laboratory, as the source, and must
-        include this notice;
+    The test programs log to their working directories, eg api/api.log.
 
-(2)  Any use of this software must state that the software
-        copyright is held by the Regents of the University of
-        California, and that the software is used by their permission.
+    Test programs are also available in authN, authZ, coordinator and
+    resourceManager
 
-It is acknowledged that the U.S. Government has rights
-in this code under Contract DE-AC03-765F00098 between the U.S.
-Department of Energy and the University of California.
-
-This code is provided as a professional academic contribution
-for joint exchange.  Thus it is experimental, is provided ``as is'',
-with no warranties of any kind  whatsoever,
-no support, promise of updates, or printed documentation.
-The Regents of the University of California shall have no
-liability with respect to the infringement of copyrights by
-this code, or any part thereof.
 

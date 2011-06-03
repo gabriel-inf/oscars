@@ -1,5 +1,0 @@
-<junoscript version="1.0" release="7.3">
-<rpc>
-    <get-mpls-lsp-information/>
-</rpc>
-</junoscript>

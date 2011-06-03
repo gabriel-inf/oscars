@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Export configuration files from the distribution directory into the production directory.
+#
+# syntax: exportconfig <path_to_distribution> <patch_to_production>
+#
+#
+
+OSCARS_DIST=$1
+OSCARS_HOME=$2
+
+# Create configuration directory and copy config files
+mkdir -p $OSCARS_HOME/TemplateService/conf
+cp $OSCARS_DIST/template/config/config.yaml $OSCARS_HOME/TemplateService/conf/config.yaml
+cp $OSCARS_DIST/template/config/client-cxf.xml $OSCARS_HOME/TemplateService/conf/client-cxf.xml
+cp $OSCARS_DIST/template/config/server-cxf.xml $OSCARS_HOME/TemplateService/conf/server-cxf.xml
+
+# log4j
+mkdir -p $OSCARS_HOME/logs
+sed s,template.log,$OSCARS_HOME/logs/TemplateService.log, < $OSCARS_DIST/template/config/log4j.properties > $OSCARS_HOME/TemplateService/conf/log4j.properties
+
+

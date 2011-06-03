@@ -1,0 +1,3 @@
+#!/bin/bash
+java -Done-jar.main.class=net.es.oscars.wsnbroker.utils.PauseUtil -Djava.net.preferIPv4Stack=true -jar target/wsnbroker-0.0.1-SNAPSHOT.one-jar.jar $*
+
