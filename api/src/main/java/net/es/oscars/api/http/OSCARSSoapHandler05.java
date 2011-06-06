@@ -396,7 +396,12 @@ public class OSCARSSoapHandler05 implements OSCARS {
             throw fault05;
         }
 
-        String cancelReservationReply05 = cancelReservationReply05 =  DataTranslator05.translate (cancelReservationReply06);
+	String cancelReservationReply05 = new String();
+	try {
+   	    	cancelReservationReply05 = DataTranslator05.translate (cancelReservationReply06);
+	} catch (OSCARSServiceException e) {
+		// handle
+	}
 
         LOG.info(netLogger.end(event, cancelReservation.getGri()));
         return cancelReservationReply05;
