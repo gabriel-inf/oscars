@@ -1,0 +1,8 @@
+---
+http:
+    warFile:	'/ion-war/ion-war-0.0.1-SNAPSHOT.war'
+
+wbui:
+    userName: 'ion'
+    sessionName: 'ionsess'
+    secureCookie: '0'

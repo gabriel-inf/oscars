@@ -21,6 +21,7 @@ SVC_PCE_CONN=ConnectivityPCE
 SVC_PCE_DIJ=DijkstraPCE
 SVC_PCE_VLAN=VlanPCE
 SVC_UTILS=Utils
+SVC_ION=IONUIService #Added for ION
 
 # convenient stuff so that we don't typo
 CONFIG=config.yaml
@@ -88,6 +89,8 @@ verifySvcName () {
             ;;
         $SVC_UTILS)
             ;;
+	$SVC_ION) #Added for ION
+	    ;;
         *)
             echo "Invalid service name: $SERVICE"
             exit 1

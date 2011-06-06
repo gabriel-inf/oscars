@@ -83,6 +83,19 @@ if [ $? -eq 1 ]; then
    echo "cp $OSCARS_DIST/wbui/config/config.SSL.yaml.template $OSCARS_DIST/wbui/config/config.SSL.yaml failed";
    exit 1;
 fi
+#ION
+cp $OSCARS_DIST/ionui/config/config.HTTP.yaml.template $OSCARS_DIST/ionui/config/config.HTTP.yaml;
+if [ $? -eq 1 ]; then
+   echo "cp $OSCARS_DIST/ionui/config/config.HTTP.yaml.template $OSCARS_DIST/ionui/config/config.HTTP.yaml failed";
+   exit 1;
+fi
+cp $OSCARS_DIST/ionui/config/config.SSL.yaml.template $OSCARS_DIST/ionui/config/config.SSL.yaml;
+if [ $? -eq 1 ]; then
+   echo "cp $OSCARS_DIST/ionui/config/config.SSL.yaml.template $OSCARS_DIST/ionui/config/config.SSL.yaml failed";
+   exit 1;
+fi
+#end ion addition
+
 echo "edit the config files in authN, authZ and resourceManager so that the oscars user and password matches the one in the installed mysql database"
 echo "edit the pce-configuration files in coordinator if you wish to run different PCEs"
 echo "edit the config in topologyBridge to reflect your topology files."

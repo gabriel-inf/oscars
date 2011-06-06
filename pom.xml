@@ -37,6 +37,10 @@
         <module>notificationBridge</module>
 	<module>wsnbroker</module>
         <module>tools</module>
+	<!-- commenting 2 lines for initial checkin -->
+<!--	<module>ion-war</module> -->
+<!--    <module>ionui</module> -->
+	<!-- 2 lines above added for ion -->
         <module>bin</module>
     </modules>
 </project>

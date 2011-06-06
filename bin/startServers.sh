@@ -459,6 +459,26 @@ startWBUI(){
     fi
 }
 
+startIONUI(){
+    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService $CONTEXT ionui jetty.xml)
+    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
+    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
+    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
+    if [ "$Conf" == "conf" ]; then
+        port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+    elif [ "$Conf" == "config" ]; then
+        port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+    fi
+    port=$(echo $port | sed "s/[^0-9]//g")
+    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
+    if [ ! -z "$porttest" ]; then
+        echo IONUI already running
+    else
+        echo starting IONUI Server on port $port
+       (cd $OSCARS_DIST/ionui; bin/startServer.sh $CONTEXT > $currDir/ionui.out 2>&1 &)
+    fi
+}
+
 # execution starts here
 if [ $# -lt 2 ]; then
     printUsage
@@ -524,6 +544,7 @@ while [ ! -z $1 ]
     wbui)     startWBUI;;
     notifyBridge)     startNotificationBridge;;
     wsnbroker) startWSNBroker;;
+    ionui) startIONUI;;
     *)        echo $1 not a recognized server
   esac
   shift

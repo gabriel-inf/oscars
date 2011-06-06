@@ -24,4 +24,6 @@ public class ServiceNames {
     public static final String SVC_PCE_NULLAGG  = "NullAggregator";
     public static final String SVC_UTILS        = "Utils";
     public static final String SVC_WSNBROKER    = "WSNBrokerService";
+    //Added for ION
+    public static final String SVC_IONUI	="IONUIService";
 }
