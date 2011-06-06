@@ -159,7 +159,7 @@ public final class SimpleOSCARSClient {
             cc.setContext(context);
             cc.setServiceName(ServiceNames.SVC_API);
             try {
-                cc.loadManifest(config_path+"/"+ConfigDefaults.MANIFEST); // manifest.yaml
+                cc.loadManifest(ServiceNames.SVC_API, ConfigDefaults.MANIFEST); // manifest.yaml
                 cc.setLog4j();
             } catch (ConfigException ex) {
                 System.out.println("Caught ConfigurationException " + ex.getMessage());
@@ -220,19 +220,24 @@ public final class SimpleOSCARSClient {
                         marshaller.marshal( (new ObjectFactory()).createCreatePathResponse(response), System.out );
                     }
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
+                    /* OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
                     if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                        LOG.debug("OSCARSServiceException type is  " + faultInfo.getMsg() + " message is " +
+                                  ex.getMessage() + " " + faultInfo.getDetails());  */
                     } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
                 }
             } else if (request.equals("teardownPath")) {
                 try {
                     String gri = (String) run_parameters.get("gri");
-    
-                    // Send a teardownPath query 
+
+                    // Send a teardownPath query
                     TeardownPathContent query = new TeardownPathContent();
                     if (gri != null)  {
                         query.setGlobalReservationId(gri);
@@ -248,18 +253,19 @@ public final class SimpleOSCARSClient {
                         marshaller.marshal( (new ObjectFactory()).createTeardownPathResponse(response), System.out );
                     }
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
-                    if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
                     } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
                 }
             } else if (request.equals("queryReservation")) {
                 try {
                     String gri = (String) run_parameters.get("gri");
-    
+
                     QueryResContent query = new QueryResContent();
                     query.setGlobalReservationId(gri);
                     Object[] req = new Object[]{query};
@@ -274,17 +280,18 @@ public final class SimpleOSCARSClient {
                         marshaller.marshal( (new ObjectFactory()).createQueryReservationResponse(response), System.out );
                     }
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
-                    if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
                             } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
-                } 
+                }
             } else if (request.equals("createReservation")) {
                 try {
-                    // Send a createReservation query 
+                    // Send a createReservation query
                     ResCreateContent query = new ResCreateContent();
                     query = configure(run_parameters);
 
@@ -293,7 +300,7 @@ public final class SimpleOSCARSClient {
                     CreateReply response = (CreateReply) res[0];
                     if (outputFormat.equals("humanReadable")) {
                         System.out.println ("Response: " + response.getGlobalReservationId() + " , " + response.getStatus());
-                        System.out.println ("\n[createReservation]  gri= " + response.getGlobalReservationId() + 
+                        System.out.println ("\n[createReservation]  gri= " + response.getGlobalReservationId() +
                                         "\n                     transactionId=" + response.getMessageProperties().getGlobalTransactionId() +
                                         "\n                     status=" + response.getStatus());
 
@@ -302,19 +309,20 @@ public final class SimpleOSCARSClient {
                         marshaller.marshal( (new ObjectFactory()).createCreateReservationResponse(response), System.out );
                     }
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
-                    if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
                     } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
                 }
             } else if (request.equals("modifyReservation")) {
                 try {
                     String gri = (String) run_parameters.get("gri");
-    
-                    // Send a createReservation query 
+
+                    // Send a createReservation query
                     ResCreateContent createCon = new ResCreateContent();
                     createCon = configure(run_parameters);
 
@@ -328,22 +336,23 @@ public final class SimpleOSCARSClient {
                     Object[] res = client.invoke("modifyReservation",req);
                     ModifyResReply response = (ModifyResReply) res[0];
                     if (outputFormat.equals("humanReadable")) {
-                        System.out.println ("Response: " + response.getReservation().getGlobalReservationId() + " , " + 
+                        System.out.println ("Response: " + response.getReservation().getGlobalReservationId() + " , " +
                                 response.getReservation().getStatus());
-                        System.out.println ("[modifyReservation] completed gri= " + 
-                                    response.getReservation().getGlobalReservationId() + " status=" + 
+                        System.out.println ("[modifyReservation] completed gri= " +
+                                    response.getReservation().getGlobalReservationId() + " status=" +
                                     response.getReservation().getStatus());
                     }
                     else if (outputFormat.equals("rawResponse")) {
                         marshaller.marshal( (new ObjectFactory()).createModifyReservationResponse(response), System.out );
                     }
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
-                    if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
                     } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
                 }
             } else if (request.equals("cancelReservation")){
@@ -365,14 +374,15 @@ public final class SimpleOSCARSClient {
                     }
 
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
-                    if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
                     } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
-                } 
+                }
             } else if (request.equals("list") || request.equals("listReservations")){
                 try {
                     Integer numReq = (Integer) run_parameters.get("number");
@@ -402,7 +412,7 @@ public final class SimpleOSCARSClient {
                             die("If start-time and end-time are specified, they need to either both be strings or both be unix timestamps: "+ce2);
                         }
                     }
- 
+
                     ListRequest listReq = new ListRequest();
                     if (startTime != null && endTime != null) {
                         listReq.setStartTime(startTime);
@@ -431,12 +441,13 @@ public final class SimpleOSCARSClient {
                     }
 
                 } catch (OSCARSServiceException ex) {
-                    OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
-                    if (faultInfo != null) {
-                        LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
-                                  ex.getMessage() + " " + faultInfo.getDetails());
+                    ErrorReport errorReport = ex.getErrorReport();
+                    if (errorReport != null ){
+                        LOG.debug("OSCARSServiceException ErrorCode is " + errorReport.getErrorCode() +
+                                  " type is " + errorReport.getErrorType() +
+                                  " message is " + errorReport.getErrorMsg());
                     } else {
-                        LOG.debug("OSCARSServiceExeption " + ex.getMessage());
+                        LOG.debug("OSCARSServiceException " + ex.getMessage());
                     }
                 }
             } else {
@@ -452,7 +463,7 @@ public final class SimpleOSCARSClient {
 /*
     public static void handle_client_0_5() {
         try {
-            // Send a createPath query 
+            // Send a createPath query
             IDCClient05 client = IDCClient05.getClient (host, wsdl, authType);
             net.es.oscars.api.soap.gen.v05.CreatePathContent query = new net.es.oscars.api.soap.gen.v05.CreatePathContent();
             query.setGlobalReservationId(args[3]);
@@ -462,11 +473,11 @@ public final class SimpleOSCARSClient {
             Object[] res = client.invoke("createPath",req);
 
             net.es.oscars.api.soap.gen.v05.CreatePathResponseContent response = (net.es.oscars.api.soap.gen.v05.CreatePathResponseContent) res[0];
-            LOG.debug("Response: " + response.getGlobalReservationId() + " , " + response.getStatus()); 
+            LOG.debug("Response: " + response.getGlobalReservationId() + " , " + response.getStatus());
         } catch (OSCARSServiceException ex) {
             OSCARSFault faultInfo = (OSCARSFault) ex.getFaultInfo();
             if (faultInfo != null) {
-                LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " + 
+                LOG.debug("OSCARSServiceExeption type is  " + faultInfo.getMsg() + " message is " +
                           ex.getMessage() + " " + faultInfo.getDetails());
             } else {
                 LOG.debug("OSCARSServiceExeption " + ex.getMessage());
