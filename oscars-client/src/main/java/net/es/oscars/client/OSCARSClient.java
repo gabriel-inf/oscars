@@ -35,8 +35,10 @@ public class OSCARSClient extends Client<OSCARS>{
         } catch (MalformedURLException e) {
             throw new OSCARSClientException("Malformed URL " + wsdlUrl);
         }
+        this.prepareSSLForWSDL();
         OSCARSService service = new OSCARSService(wsdlUrlObj, new QName (NAMESPACE, SERVICE_NAME));
         this.portType = (OSCARS) service.getPort(OSCARS.class);
+        this.setServiceEndpoint(oscarsUrl);
     }
     
     public OSCARSClient(String oscarsUrl) throws OSCARSClientException{

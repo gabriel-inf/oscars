@@ -66,8 +66,10 @@ public class WSNotificationClient extends Client<WSNBrokerPortType>{
         } catch (MalformedURLException e) {
             throw new OSCARSClientException("Malformed URL " + wsdlUrl);
         }
+        this.prepareSSLForWSDL();
         WSNBrokerService service = new WSNBrokerService(wsdlUrlObj, new QName (NAMESPACE, SERVICE_NAME));
         this.portType = (WSNBrokerPortType) service.getPort(WSNBrokerPortType.class);
+        this.setServiceEndpoint(serviceUrl);
     }
     
     public WSNotificationClient(String serviceUrl) throws OSCARSClientException{

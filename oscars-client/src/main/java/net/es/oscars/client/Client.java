@@ -34,6 +34,23 @@ public abstract class Client<P> {
         client.getRequestContext().put("ws-security.signature.properties", SIG_PROP_FILE);
     }
     
+    protected void prepareSSLForWSDL(){
+        //init ssl so we can grab the wsdl
+        if(OSCARSClientConfig.getSSLKeystoreFile() != null){
+            System.setProperty("javax.net.ssl.trustStore", OSCARSClientConfig.getSSLKeystoreFile());
+        }
+        if(OSCARSClientConfig.getSSLKeystorePassword() != null){
+            System.setProperty("javax.net.ssl.trustStorePassword", OSCARSClientConfig.getSSLKeystorePassword());
+        }
+    }
+    
+    protected void setServiceEndpoint(String serviceUrl){
+        //override the service URL from the WSDL if explicitly provided by caller
+        if(serviceUrl != null){
+            ClientProxy.getClient(this.portType).getRequestContext().put("org.apache.cxf.message.Message.ENDPOINT_ADDRESS", serviceUrl);
+        }
+    }
+    
     private void prepareSSLKeyStore() throws OSCARSClientException{
         if(OSCARSClientConfig.getSSLKeystoreFile() == null){
             return;
