@@ -5,10 +5,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.es.oscars</groupId>
     <artifactId>pce</artifactId>
     <name>PCE</name>
-    <version>0.0.1-SNAPSHOT</version>
 
     <build>
         <plugins>
@@ -37,15 +35,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- specifically use java 1.5 to compile -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
 
         </plugins>
     </build>
@@ -55,14 +44,14 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
         
         <!-- common logging (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-logging</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
         
         <!-- configuration -->
@@ -148,7 +137,7 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
     </dependencies>
     <profiles>

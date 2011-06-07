@@ -7,10 +7,9 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.es.oscars</groupId>
     <artifactId>topoBridge</artifactId>
     <name>Topology Bridge</name>
-    <version>0.0.1-SNAPSHOT</version>
+
 
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
@@ -38,19 +37,19 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-logging</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
         
         <!--  quartz -->

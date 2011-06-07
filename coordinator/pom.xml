@@ -5,10 +5,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.es.oscars</groupId>
     <artifactId>coordinator</artifactId>
     <name>IDC Coordinator</name>
-    <version>0.0.1-SNAPSHOT</version>
 
     <build>
         <plugins>
@@ -49,28 +47,28 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- Resource Manager (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>resourceManager</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- OSCARS utilities -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- AuthZ (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>authZ</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
        <!-- testing -->

@@ -8,9 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   
-  <groupId>net.es.oscars</groupId>
   <artifactId>oscars-client</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>oscars-client</name>
   <url>http://maven.apache.org</url>
     
@@ -29,7 +27,7 @@
        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
             
         <!--  command-line parsing -->

@@ -8,9 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   
-  <groupId>net.es.oscars</groupId>
   <artifactId>vlanPCE</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>vlanPCE</name>
   <url>http://maven.apache.org</url>
   
@@ -29,35 +27,35 @@
    <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>common-soap</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!--  OSCARS PCE libraries -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>pce</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS utilities -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>utils</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS common logging -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>common-logging</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS resource manager -->
    <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>resourceManager</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
   </dependencies>
   

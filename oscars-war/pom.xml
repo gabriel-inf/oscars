@@ -1,10 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>net.es.oscars</groupId>
   <artifactId>oscars-war</artifactId>
   <name>war file for OSCARS WBUI</name>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <parent>
@@ -18,13 +16,13 @@
        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>authN</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
        </dependency>
 
        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>authZ</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
        </dependency>
 
       <!-- servlets -->

@@ -7,10 +7,8 @@
     <groupId>net.es.oscars</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  
-  <groupId>net.es.oscars</groupId>
+
   <artifactId>connectivityPCE</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>connectivityPCE</name>
   <url>http://maven.apache.org</url>
   
@@ -29,35 +27,35 @@
    <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>common-soap</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!--  OSCARS PCE libraries -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>pce</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS utilities -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>utils</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS topology bridge clients -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>topoBridge</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS common logging -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>common-logging</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
   </dependencies>
   

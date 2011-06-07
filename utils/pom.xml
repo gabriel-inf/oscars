@@ -1,9 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.es.oscars</groupId>
     <artifactId>utils</artifactId>
     <name>OSCARS utilities</name>
-    <version>0.0.1-SNAPSHOT</version>
 
     <parent>
         <groupId>net.es.oscars</groupId>
@@ -44,14 +42,14 @@
        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-logging</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
         
        <!-- common SOAP interfaces (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- Hibernate -->
@@ -78,9 +76,9 @@
             <groupId>org.apache.ws.security</groupId>
             <artifactId>wss4j</artifactId>
             <version>1.5.8</version>
-        </dependency>
 
         <!-- CXF -->
+        </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-soap</artifactId>

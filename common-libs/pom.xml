@@ -5,9 +5,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>net.es.oscars</groupId>
   <artifactId>common-libs</artifactId>
   <name>Common Libraries</name>
-  <version>0.0.1-SNAPSHOT</version>
 
 </project>

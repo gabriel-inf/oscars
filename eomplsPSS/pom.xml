@@ -5,9 +5,8 @@
     <groupId>net.es.oscars</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>net.es.oscars</groupId>
+
   <artifactId>eomplsPSS</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>Ethernet over MPLS PSS</name>
 
     <!-- puts all code & libraries in one jar -->
@@ -23,21 +22,21 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- OSCARS utilities (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- OSCARS utilities (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>pss</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- testing -->

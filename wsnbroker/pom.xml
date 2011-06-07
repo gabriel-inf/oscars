@@ -8,9 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   
-  <groupId>net.es.oscars</groupId>
   <artifactId>wsnbroker</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>wsnbroker</name>
   <url>http://maven.apache.org</url>
   
@@ -33,33 +31,33 @@
    <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>common-soap</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
 
     <!-- OSCARS utilities -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>utils</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <!-- OSCARS common logging -->
     <dependency>
         <groupId>net.es.oscars</groupId>
         <artifactId>common-logging</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${oscars.version}</version>
     </dependency>
     
     <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>coordinator</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
        </dependency>
 
        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>authN</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
        </dependency>
 
 

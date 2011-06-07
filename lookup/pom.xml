@@ -1,9 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <name>OSCARS Lookup Service</name>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.es.oscars</groupId>
     <artifactId>lookup</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
 
     <parent>
         <groupId>net.es.oscars</groupId>
@@ -29,21 +27,21 @@
        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!--  OSCARS Common Logging -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-logging</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- OSCARS utilities -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- testing -->

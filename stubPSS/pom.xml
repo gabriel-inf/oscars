@@ -5,11 +5,9 @@
     <groupId>net.es.oscars</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>net.es.oscars</groupId>
-  <artifactId>stubPSS</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Stub PSS component</name>
 
+  <artifactId>stubPSS</artifactId>
+  <name>Stub PSS component</name>
 
 
     <!-- puts all code & libraries in one jar -->
@@ -25,21 +23,21 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>common-soap</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- OSCARS utilities (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- OSCARS utilities (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>pss</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
 
         <!-- testing -->
