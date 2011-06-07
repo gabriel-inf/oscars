@@ -23,8 +23,7 @@ if [ $? -eq 1 ]; then
    echo "cp $OSCARS_DIST/authN/config/authN.SSL.yaml.template $OSCARS_DIST/authN/config/authN.SSL.yaml failed";
    exit 1;
 fi
-cp $OSCARS_DIST/authN/config/authN.TESTING.yaml.template $OSCARS_DIST/authN/config/authN.TESTING.yam
-l;
+cp $OSCARS_DIST/authN/config/authN.TESTING.yaml.template $OSCARS_DIST/authN/config/authN.TESTING.yaml;
 if [ $? -eq 1 ]; then   echo "cp $OSCARS_DIST/authN/config/authN.TESTING.yaml.template $OSCARS_DIST/authN/config/authN.TE
 STING.yaml failed";
    exit 1;fi
@@ -39,9 +38,9 @@ if [ $? -eq 1 ]; then
    echo "cp $OSCARS_DIST/authZ/config/authZ.SSL.yaml.template $OSCARS_DIST/authZ/config/authZ.SSL.yaml failed";
    exit 1;
 fi
-cp $OSCARS_DIST/authN/config/authZ.TESTING.yaml.template $OSCARS_DIST/authN/config/authZ.TESTING.yaml;
+cp $OSCARS_DIST/authZ/config/authZ.TESTING.yaml.template $OSCARS_DIST/authZ/config/authZ.TESTING.yaml;
 if [ $? -eq 1 ]; then
-   echo "cp $OSCARS_DIST/authN/config/authZ.TESTING.yaml.template $OSCARS_DIST/authN/config/authZ.TESTING.yaml failed";
+   echo "cp $OSCARS_DIST/authZ/config/authZ.TESTING.yaml.template $OSCARS_DIST/authZ/config/authZ.TESTING.yaml failed";
    exit 1;
 fi
 cp $OSCARS_DIST/coordinator/config/pce-configuration-http-template.xml $OSCARS_DIST/coordinator/config/pce-configuration-http.xml;
