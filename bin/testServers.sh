@@ -25,7 +25,7 @@ else
     printUsage
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh authN $CONTEXT authN)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh AuthNService $CONTEXT authN)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -35,6 +35,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "AuthN port is $port"
 porttest1=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest1" ]; then
      echo "AuthN is not running";
@@ -45,7 +46,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh authZ $CONTEXT authZ)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh AuthZ $CONTEXT authZ)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -55,6 +56,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "AuthZ port is $port"
 porttest2=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest2" ]; then
      echo "AuthZ is not running";
@@ -65,7 +67,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh api $CONTEXT api)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh OSCARSService $CONTEXT api)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -75,6 +77,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "api port is $port"
 porttest3=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest3" ]; then
      echo "OSCARSService (Api) is not running";
@@ -85,7 +88,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh coordinator $CONTEXT coordinator)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh CoordService $CONTEXT coordinator)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -95,6 +98,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "coordinator port is $port"
 porttest4=`netstat -na | grep LISTEN | grep $port` 
 if [ -z "$porttest4" ]; then
      echo "Coordinator is not running";
@@ -105,7 +109,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh resourceManager $CONTEXT resourceManager)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh ResourceManager $CONTEXT resourceManager)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -115,6 +119,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "coordinator port is $port"
 porttest5=`netstat -na | grep LISTEN | grep $port` 
 if [ -z "$porttest5" ]; then
      echo "ResourceManager is not running";
@@ -125,7 +130,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh topoBridge $CONTEXT topoBridge)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh TopoBridge $CONTEXT topoBridge)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -135,6 +140,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "TopoBridge port is $port"
 porttest6=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest6" ]; then
      echo "TopoBridge is not running";
@@ -145,27 +151,8 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh nullPCE $CONTEXT pce)
-Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-if [ "$Conf" == "conf" ]; then
-      port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-elif [ "$Conf" == "config" ]; then
-      port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-fi
-port7=$(echo $port | sed "s/[^0-9]//g")
-porttest7=`netstat -na | grep LISTEN | grep $port7`
-if [ -z "$porttest7" ]; then
-     echo "NullPCE is not running";
-     echo "Please restart NullPCE using startServers.sh $CONTEXT nullPCE";
-     echo "-----------------------------------------------------------";
-else
-     echo "NullPCE is running";   
-     echo "-----------------------------------------------------------";
-fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh nullAGG $CONTEXT pce)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh NullAggregator $CONTEXT pce)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -175,6 +162,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "nullAGG port is $port"
 porttest8=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest8" ]; then
      echo "NullAgg is not running";
@@ -195,17 +183,18 @@ elif [ "$Conf" == "config" ]; then
      port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "PSS port is $port"
 porttest9=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest9" ]; then
-     echo "StubPSS is not running";
-     echo "Please restart stubPSS using startServers.sh $CONTEXT stubPSS";
+     echo "PSS is not running";
+     echo "Please restart a PSS servoce using startServers.sh $CONTEXT stubPSS";
     echo "-----------------------------------------------------------";
 else
-     echo "StubPSS is running";
+     echo "PSS is running";
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh lookup $CONTEXT lookup)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Lookup $CONTEXT lookup)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
@@ -215,6 +204,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "Lookup port is $port"
 porttest10=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest10" ]; then
       echo "Lookup is not running";
@@ -235,6 +225,7 @@ elif [ "$Conf" == "config" ]; then
      port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "WBUI port is $port"
 porttest11=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest11" ]; then
      echo "WBUI is not running";
@@ -245,7 +236,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh connectivityPCE $CONTEXT connectivityPCE)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh ConnectivityPCE $CONTEXT connectivityPCE)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -255,6 +246,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "Connctivity port is $port"
 porttest12=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest12" ]; then
      echo "Connectivtiy PCE is not running";   
@@ -265,7 +257,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh bandwidthPCE $CONTEXT bandwidthPCE)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh BandwidthPCE $CONTEXT bandwidthPCE)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -275,6 +267,7 @@ elif [ "$Conf" == "config" ]; then
      port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "bandwidthPCE port is $port"
 porttest13=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest13" ]; then
      echo "Bandwidth PCE is not running";
@@ -285,7 +278,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh dijkstraPCE $CONTEXT dijkstraPCE)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh DijkstraPCE $CONTEXT dijkstraPCE)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -295,6 +288,7 @@ elif [ "$Conf" == "config" ]; then
        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "dojkstraPCE port is $port"
 porttest14=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest14" ]; then
      echo "Dijkstra PCE is not running";
@@ -305,7 +299,7 @@ else
      echo "-----------------------------------------------------------";
 fi
 
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh vlanPCE $CONTEXT vlanPCE)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh VlanPCE $CONTEXT vlanPCE)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -315,6 +309,7 @@ elif [ "$Conf" == "config" ]; then
       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
 fi 
 port=$(echo $port | sed "s/[^0-9]//g")
+echo "VlanPCE port is $port"
 porttest15=`netstat -na | grep LISTEN | grep $port`
 if [ -z "$porttest15" ]; then
      echo "Vlan PCE is not running";

@@ -23,7 +23,7 @@ DIRECTORY=$3
 for i in `cat $OSCARS_DIST/$DIRECTORY/config/manifest.yaml`
 do
   Line=$(echo $i)
-  if [ $CONTFND -eq 1 ] && [ $CONTFND -eq 1 ] && [ $CONFFND -eq 1 ];then
+  if  [ $CONFFND -eq 1 ];then
          echo $Line
          break
   elif [ $SVCFND -eq 0 ]; then

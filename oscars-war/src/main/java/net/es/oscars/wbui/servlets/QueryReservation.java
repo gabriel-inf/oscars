@@ -32,15 +32,12 @@ import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
 import net.es.oscars.api.soap.gen.v06.Layer3Info;
 import net.es.oscars.api.soap.gen.v06.MplsInfo;
-import net.es.oscars.api.soap.gen.v06.ListRequest;
-import net.es.oscars.api.soap.gen.v06.ListReply;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
 import net.es.oscars.api.soap.gen.v06.VlanTag;
-import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.authZ.soap.gen.CheckAccessReply;
 
@@ -56,7 +53,7 @@ public class QueryReservation extends HttpServlet {
     /**
      * Handles QueryReservation servlet request.
      *
-     * @param request HttpServletRequest contains the gri of the reservation
+     * @param servletRequest HttpServletRequest contains the gri of the reservation
      * @param response HttpServletResponse contains: gri, status, user,
      *        description start, end and create times, bandwidth, vlan tag,
      *        and path information.
