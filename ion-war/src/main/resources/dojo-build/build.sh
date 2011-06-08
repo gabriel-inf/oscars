@@ -2,8 +2,10 @@
 
 APP_NAME="ion";
 DOJO_VERSION="1.3.1";
+#BUILD_PROFILE="../../../ion.profile.js";
+#TARGET_PATH="../../../web/lib";
 BUILD_PROFILE="../../../ion.profile.js";
-TARGET_PATH="../../../web/lib";
+TARGET_PATH="../../../webapp/lib";
 
 if [ ! -f dojo-release-$DOJO_VERSION-src.tar.gz ] && [ ! -d dojo-release-$DOJO_VERSION-src ]; then
     echo "-- Unpacking Dojo $DOJO_VERSION source...";
