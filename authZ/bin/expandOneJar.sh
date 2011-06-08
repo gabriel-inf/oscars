@@ -1,5 +1,6 @@
 #!/bin/sh
-rm -rf target/tmp
-mkdir target/tmp
-cp config/log4j.*.properties target/classes
-(cd target/tmp; jar -xf ../authZ-0.0.1-SNAPSHOT.one-jar.jar )
+vers=`cat $OSCARS_DIST/VERSION`
+rm -rf  $OSCARS_DIST/authZ/target/tmp
+mkdir  $OSCARS_DIST/authZ/target/tmp
+cp  $OSCARS_DIST/authZ/config/log4j.*.properties  $OSCARS_DIST/authZ/target/classes
+(cd $OSCARS_DIST/authZ/target/tmp; jar -xf ../authZ-$vers.one-jar.jar )

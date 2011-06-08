@@ -1,5 +1,6 @@
 #!/bin/sh
-rm -rf target/tmp
-mkdir target/tmp
-cp config/log4j*properties target/classes
-(cd target/tmp; jar -xf ../pce-0.0.1-SNAPSHOT.one-jar.jar )
+vers=`cat $OSCARS_DIST/VERSION`
+rm -rf $OSCARS_DIST/pce/target/tmp
+mkdir $OSCARS_DIST/pce/target/tmp
+cp $OSCARS_DIST/pce/config/log4j*properties $OSCARS_DIST/pce/target/classes
+(cd $OSCARS_DIST/pce/target/tmp; jar -xf ../pce-$vers.one-jar.jar )
