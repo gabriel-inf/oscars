@@ -21,7 +21,8 @@ dojo.require("dojo.data.ItemFileReadStore");
 google.load("visualization", "1", {packages:["areachart"]});
 google.load('visualization', '1', {packages:['annotatedtimeline']});
 
-dojo.registerModulePath("ion", "../../ion")
+//dojo.registerModulePath("ion", "../../ion");
+dojo.registerModulePath("ion", "../../../ion_js");
 
 function navReserveCircuit(){
 	wizardCleanup();
@@ -169,13 +170,8 @@ function navUserProfile(){
 	
 	dijit.byId("contentDiv").setContent('<div dojoType="ion.UserProfile"></div>');
 }
-function navAbout1() {
-	alert('Click on the Hello World Button');	
-	hideErrorDiv();
-}
 
 function navAbout(){
-	 dialogAlert('Cky-click!', 'Woohoo! You clicked and now you see this box.');
 	hideErrorDiv();
 	
 	//update primary nav
@@ -189,22 +185,19 @@ function navAbout(){
 	if (secondaryNav != null) {
 		dojo.query('*', secondaryNav).forEach(dojo.destroy);
 	}
+	dijit.byId("contentDiv").setHref("forms/about.html");
 	
-	dijit.byId("contentDiv").setHref("about.html");
+	//DEBUG. TBD remove
+	//dialogAlert('DEBUG', '4');
 }
 
-	        function dialogAlert(txtTitle, txtContent)
-	 
-	        {
+//DEBUG AID. TBD Remove/comment out
+function dialogAlert(txtTitle, txtContent) {
 
-var thisdialog = new dijit.Dialog({ title: txtTitle, content: txtContent });
-
-dojo.body().appendChild(thisdialog.domNode);
-
-thisdialog.startup();
-
-thisdialog.show();
-
+	var thisdialog = new dijit.Dialog({ title: txtTitle, content: txtContent });
+	dojo.body().appendChild(thisdialog.domNode);
+	thisdialog.startup();
+	thisdialog.show();
 }
 
 dojo.declare("ion.CircuitManager", null, {
@@ -1319,9 +1312,9 @@ dojo.declare("ion.CircuitWizardStep", null, {
 });
 
 dojo.declare("ion.LoginWidget", dijit._Widget, {
-	loginFormURL: dojo.moduleUrl("ion", "templates/loginForm.html"),
-	splashPageURL: dojo.moduleUrl("ion", "forms/splashPage.html"),
-	navUrl: dojo.moduleUrl("ion", "forms/nav.html"),
+	loginFormURL: dojo.moduleUrl("ion", "../forms/templates/loginForm.html"),
+	splashPageURL: dojo.moduleUrl("ion", "../forms/splashPage.html"),
+	navUrl: dojo.moduleUrl("ion", "../forms/nav.html"),
 	verifyURL: '',
 	loginURL: '',
 	logoutURL: '',
@@ -1335,7 +1328,8 @@ dojo.declare("ion.LoginWidget", dijit._Widget, {
 		this._loginButtonEvent = null;
 		this._loginFormEvent = null;
 		this._signInTabEvent = null;
-		
+//TBD . Remove debug print
+//alert ("load topSignIn page");	
 		dojo.connect(dojo.byId('topSignIn'), "onclick", dojo.hitch(this, this.loadLoginForm));
 		//verify session
 		this.verifySession();
