@@ -9,7 +9,7 @@ case $# in
 0) context="DEVELOPMENT";;
 1) context=$1;;
 esac 
-echo "Starting AuthZ with version:$version context:$context"
+echo "Starting AuthZ with version:$vers context:$context"
 java -jar $OSCARS_DIST/authZ/target/authZ-$vers.one-jar.jar -c $context &
 echo $! > $DEFAULT_PID_DIR/authZ.pid
 
