@@ -112,7 +112,8 @@ public class QueryReservation extends HttpServlet {
         String authVal = null;
         Map<String, Object> outputMap = new HashMap<String, Object>();
         try {
-            // Send a queryReservation request 
+            // Send a queryReservation request
+            // Coordinator enforces which hops the user is allowed to see
             Object[] req = new Object[]{subjectAttrs,queryReq};
             Object[] res = coordClient.invoke("queryReservation",req);
             resDetails = ((QueryResReply) res[0]).getReservationDetails();
@@ -144,13 +145,8 @@ public class QueryReservation extends HttpServlet {
             } else {
                 outputMap.put("resvCloneDisplay", Boolean.FALSE);
             }
-            AuthConditions conds = checkAccessReply.getConditions();
-            boolean intHopsAllowed = false;
-            for (AuthConditionType ac: conds.getAuthCondition()){
-                if (ac.getName().equals(AuthZConstants.INT_HOPS_ALLOWED))
-                    intHopsAllowed = true;
-            }
-            this.contentSection(resDetails, intHopsAllowed, faultReports,outputMap);
+
+            this.contentSection(resDetails, faultReports,outputMap);
         } catch (Exception ex) {
             // any error will show up as an exception
             ServletUtils.handleFailure(out, log, ex, methodName);
@@ -177,8 +173,7 @@ public class QueryReservation extends HttpServlet {
     }
 
     public void
-        contentSection(ResDetails resv, boolean intHopsAllowed,
-                       List <OSCARSFaultReport> faultReports, Map<String,Object> outputMap)
+        contentSection(ResDetails resv, List <OSCARSFaultReport> faultReports, Map<String,Object> outputMap)
             throws OSCARSServiceException {
         try {
         InetAddress inetAddress = null;
@@ -281,14 +276,14 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("lspClassReplace", mplsInfo.getLspClass());
             }
         }
-        QueryReservation.outputPaths(path, intHopsAllowed, outputMap);
+        QueryReservation.outputPaths(path, outputMap);
         } catch (Exception e){
             System.out.println("caught exception in ContentSection");
             e.printStackTrace();
         }
     }
 
-    public static void handleVlans(CtrlPlanePathContent path, String status, Layer2Info layer2Info, 
+    public static void handleVlans(CtrlPlanePathContent path, String status, Layer2Info layer2Info,
                                    Map<String,Object> outputMap) 
             throws OSCARSServiceException {
 
@@ -321,14 +316,20 @@ public class QueryReservation extends HttpServlet {
             }
         }
         ArrayList<CtrlPlaneHopContent> hops = (ArrayList<CtrlPlaneHopContent>) path.getHop();
-        for (CtrlPlaneHopContent hop: hops){
-            CtrlPlaneLinkContent link = hop.getLink();
-            String vlanRangeAvail = "any";
-            CtrlPlaneSwcapContent swcap= link.getSwitchingCapabilityDescriptors();
-            if (swcap != null) {
-                CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = swcap.getSwitchingCapabilitySpecificInfo();
-                if (specInfo != null) {
-                    vlanTags.add(specInfo.getVlanRangeAvailability()); 
+        if (hops.size() > 0) {
+            for (CtrlPlaneHopContent hop: hops){
+                CtrlPlaneLinkContent link = hop.getLink();
+                String vlanRangeAvail = "0";
+                CtrlPlaneSwcapContent swcap= link.getSwitchingCapabilityDescriptors();
+                if (swcap != null) {
+                    CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = swcap.getSwitchingCapabilitySpecificInfo();
+                    if (specInfo != null) {
+                        if (specInfo.getVlanRangeAvailability() == null) {
+                            vlanTags.add(vlanRangeAvail);
+                        } else {
+                            vlanTags.add(specInfo.getVlanRangeAvailability());
+                        }
+                    }
                 }
             }
         }
@@ -364,36 +365,33 @@ public class QueryReservation extends HttpServlet {
     }
 
     public static void
-    outputPaths(CtrlPlanePathContent path, boolean intHopsAllowed,
-            Map<String,Object> outputMap) throws OSCARSServiceException {
+    outputPaths(CtrlPlanePathContent path, Map<String,Object> outputMap) throws OSCARSServiceException {
 
         String pathStr = new String();
-        log.debug("in outputPaths, intHopsAllowed is " + intHopsAllowed );
         if (path != null  ){
             log.debug("path not null");
             ArrayList<CtrlPlaneHopContent> hops = (ArrayList<CtrlPlaneHopContent>) path.getHop();
             if (hops.size() > 0) {
-                if (intHopsAllowed) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<tbody>");
-                    for ( CtrlPlaneHopContent ctrlHop : hops ) {
-                        CtrlPlaneLinkContent link = ctrlHop.getLink();
-                        if (link != null ) {
-                            sb.append("<tr><td class='innerHops'>" + link.getId()+ "</td></tr>");
-                        } else {
-                            String id = ctrlHop.getLinkIdRef();
-                            sb.append("<tr><td class='innerHops'>" + id+ "</td></tr>");
-                        }
-                    }
-                    sb.append("</tbody>");
-                    //if (Layer2) {
-                    if (true) {
-                        log.debug("hop: " + sb.toString());
-                        outputMap.put("interPathReplace", sb.toString());
+                StringBuilder sb = new StringBuilder();
+                sb.append("<tbody>");
+                for ( CtrlPlaneHopContent ctrlHop : hops ) {
+                    CtrlPlaneLinkContent link = ctrlHop.getLink();
+                    if (link != null ) {
+                        sb.append("<tr><td class='innerHops'>" + link.getId()+ "</td></tr>");
                     } else {
-                        outputMap.put("interPath3Replace", sb.toString());
+                        String id = ctrlHop.getLinkIdRef();
+                        sb.append("<tr><td class='innerHops'>" + id+ "</td></tr>");
                     }
+                }
+                sb.append("</tbody>");
+                //if (Layer2) {
+                if (true) {
+                    log.debug("hop: " + sb.toString());
+                    outputMap.put("interPathReplace", sb.toString());
                 } else {
+                    outputMap.put("interPath3Replace", sb.toString());
+                }
+      /*          } else {
                     // don't allow non-authorized user to see internal hops
                     CtrlPlaneHopContent [] endHops = { hops.get(0), hops.get(hops.size()-1) };
                     for (CtrlPlaneHopContent hop : endHops) {
@@ -406,7 +404,7 @@ public class QueryReservation extends HttpServlet {
                         }
                     }
                     // seems like this should be setting something in outputMap - mrt
-                }
+                }  */
             }
         }
     }

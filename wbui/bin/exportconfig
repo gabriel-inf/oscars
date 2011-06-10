@@ -10,7 +10,6 @@ OSCARS_DIST=$1
 OSCARS_HOME=$2
 
 SERVICE=WBUIService
-WARFILE=oscars-war-0.0.1-SNAPSHOT.war
 MODULE=wbui
 
 source $OSCARS_DIST/utils/bin/configLib.sh
@@ -18,6 +17,7 @@ source $OSCARS_DIST/utils/bin/configLib.sh
 OSCARS_DIST=$1
 OSCARS_HOME=$2
 
+vers=`cat $OSCARS_DIST/VERSION`
 verifyArgs $OSCARS_DIST $OSCARS_HOME
 verifySvcName $SERVICE
 
@@ -63,7 +63,7 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
 fi
 
 # TODO: better solution later
-sed s,/oscars-war,$OSCARS_HOME/$SERVICE/, < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
-sed s,/oscars-war,$OSCARS_HOME/$SERVICE/, < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
+sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE/, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
+sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE/, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
 
-cp $OSCARS_DIST/oscars-war/target/oscars-war-0.0.1-SNAPSHOT.war $OSCARS_HOME/$SERVICE/
+cp $OSCARS_DIST/oscars-war/target/oscars-war-$vers.war $OSCARS_HOME/$SERVICE/
