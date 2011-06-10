@@ -28,8 +28,7 @@ public class IDCAddUtil {
         String proto = defaultProtocolType;
         HashMap<String, String> protoMap = new HashMap<String, String>();
         protoMap.put("OSCARS5", "https://oscars.es.net/OSCARS");
-        //TODO: Make below the correct URL
-        protoMap.put("OSCARS6", "https://controlplane.net/IDC/20091201");
+        protoMap.put("OSCARS6", "http://oscars.es.net/OSCARS/06");
         
         OptionParser parser = new OptionParser(){
             {
