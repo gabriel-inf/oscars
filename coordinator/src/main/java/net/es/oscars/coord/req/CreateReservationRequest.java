@@ -9,7 +9,6 @@ import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
-
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.common.soap.gen.OSCARSFaultReport;
@@ -65,8 +64,9 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
     /**
      * Called by CoordImpl to start the execution of a Create Reservation request. 
      * Synchronous parts of the processing are done and a PCERuntime action is
-     * created to start the path calculation. If it returns without throwing an exception
-     * the new GRI has been placed in this CoordRequest object
+     * created to start the path calculation. If it returns without setting an error
+     * the new GRI has been placed in this CoordRequest object  and the reservation
+     * has been stored in the RM with status ACCEPTED
      * @params were set by the constructor or by setRequestData
      * @return sets the new GRI into this request object
      * @throws OSCARSServiceException - nothing is expected, but could get runtimeError
@@ -77,7 +77,7 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
         
         LOG.debug(netLogger.start(method));
 
-        ResCreateContent  createResvReq = this.getRequestData();;
+        ResCreateContent  createResvReq = this.getRequestData();
         try {
             // Check if the request already has a GRI
             if (createResvReq.getGlobalReservationId() != null) {
@@ -174,21 +174,19 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
      *
      *  The resourceManage should be informed of the failure and store an ErrorReport
      *  A  notify message of RESERVATION_CREATE_FAILED should be sent, and if this in an
-     *  interdomain reservation the peerIDCs need to be sent an InterdomainEvent of  RESERVATION_CREATE_FAILED
+     *  interdomain reservation the peerIDCs may need to be sent an InterdomainEvent of  RESERVATION_CREATE_FAILED
      * @param exception reason for failure
      */
     public void failed (Exception exception) {
         String method = "CreateReservationRequest.failed";
         LOG.error(netLogger.error(method, ErrSev.FATAL, " CreateReservation failed with " + exception.getMessage()));
 
-        ErrorReport errorRep = this.getErrorReport(method, ErrorCodes.RESV_CREATE_FAILED, exception);
-
-        // TODO send upstream and downstream IDE RESV_CREATE_FAILED
-
-        // send notification of createReservation failure
-        this.notifyError (errorRep.getErrorCode() + ":" + errorRep.getErrorMsg(),
-                          this.getGRI());
+        if (this.getGRI() == null ) {
+            // died trying to get a GRI
+            return;
+        }
         // update status
+        ErrorReport errorRep = this.getErrorReport(method, ErrorCodes.RESV_CREATE_FAILED, exception);
         RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
                                                                   this,
                                                                   this.getGRI(),
@@ -200,6 +198,10 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
             LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
                                       action.getException().getMessage()));
         }
+        // send notification of createReservation failure
+        this.notifyError (errorRep.getErrorCode() + ":" + errorRep.getErrorMsg(),
+                          this.getGRI());
+
         PCERuntimeAction.releaseMutex(this.getGRI());
         super.failed(exception); // this calls coordAction.failed
     }

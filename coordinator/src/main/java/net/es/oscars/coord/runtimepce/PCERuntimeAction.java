@@ -263,7 +263,7 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         
         if (rmUpdateStatusAction.getResultData() != null) {
             LOG.debug(netLogger.getMsg(event,"State was set to " + rmUpdateStatusAction.getResultData().getStatus()));
-        } else {
+        } else { // shouldn't happen
             LOG.error(netLogger.error(event,ErrSev.MINOR, "rmUpdateStatus resultData is null."));
         }
         this.executed();
