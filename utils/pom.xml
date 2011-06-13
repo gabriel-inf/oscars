@@ -17,6 +17,15 @@
         </pluginRepository>
     </pluginRepositories>
 
+   <repositories>
+       <repository>
+           <id>OSCARS</id>
+           <name>OSCARS Maven Repository</name>
+           <layout>default</layout>
+           <url>file:///${basedir}/../common-libs/repo</url>
+      </repository>
+   </repositories>
+
     <dependencies>
         
         <!--  perfsonar -->
