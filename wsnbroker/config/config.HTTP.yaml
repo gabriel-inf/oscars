@@ -2,9 +2,9 @@
 soap:
     publishTo:  'http://localhost:9013/OSCARS/wsnbroker'
     
-authNUrl:  'http://localhost:9090/OSCARS/authN' 
+#authNUrl:  'http://localhost:9090/OSCARS/authN' 
 
-authZUrl:  'http://localhost:9190/OSCARS/authZ'
+#authZUrl:  'http://localhost:9190/OSCARS/authZ'
 
 peps:
     - class: 'net.es.oscars.wsnbroker.policy.IDCEventPEP'

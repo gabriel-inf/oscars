@@ -1,5 +1,6 @@
 package net.es.oscars.wsnbroker;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -158,34 +159,60 @@ public class NotificationGlobals {
         if(config.containsKey(PROP_AUTHN_URL)){
             this.authNUrl = (String) config.get(PROP_AUTHN_URL);
         }else{
-            //allow to run without auth module
-            this.authNUrl = null;
+            //otherwise look for authN config
+            try {
+                String configFilename = cc.getFilePath(ServiceNames.SVC_AUTHN,cc.getContext(),
+                        ConfigDefaults.CONFIG);
+                HashMap<String,Object> authNMap = 
+                    (HashMap<String,Object>)ConfigHelper.getConfiguration(configFilename);
+                HashMap<String,Object> soap = (HashMap<String,Object>) authNMap.get("soap");
+                if (soap == null ) {
+                    throw new ConfigException("soap stanza not found in authN yaml");
+                }
+                this.authNUrl = (String)soap.get("publishTo");
+            } catch (ConfigException e) {
+               //allow to run without auth module
+                this.authNUrl = null;
+            }
         }
         if(config.containsKey(PROP_AUTHN_WSDL_URL)){
             this.authNWsdl = (String) config.get(PROP_AUTHN_WSDL_URL);
-        }else if(this.authNUrl != null){
-            //default to service URL plus ?wsdl since thats the cxf default
-            this.authNWsdl = this.authNUrl + "?wsdl";
         }else{
-            this.authNWsdl = null;
+            try {
+                this.authNWsdl = cc.getWSDLPath(ServiceNames.SVC_AUTHN,null) + "";
+            } catch (MalformedURLException e) {
+                this.authNWsdl = this.authNUrl != null ? this.authNUrl + "?wsdl" : null;
+            }
         }
         
         //init authZ url and WSDL
         if(config.containsKey(PROP_AUTHZ_URL)){
             this.authZUrl = (String) config.get(PROP_AUTHZ_URL);
         }else{
-            //allow to run without authZ module
-            this.authZUrl = null;
+           //otherwise look for authZ config
+            try {
+                String configFilename = cc.getFilePath(ServiceNames.SVC_AUTHZ,cc.getContext(),
+                        ConfigDefaults.CONFIG);
+                HashMap<String,Object> authZMap = 
+                    (HashMap<String,Object>)ConfigHelper.getConfiguration(configFilename);
+                HashMap<String,Object> soap = (HashMap<String,Object>) authZMap.get("soap");
+                if (soap == null ) {
+                    throw new ConfigException("soap stanza not found in authZ yaml");
+                }
+                this.authZUrl = (String)soap.get("publishTo");
+            } catch (ConfigException e) {
+               //allow to run without authZ module
+                this.authZUrl = null;
+            }
         }
         if(config.containsKey(PROP_AUTHZ_WSDL_URL)){
             this.authZWsdl = (String) config.get(PROP_AUTHZ_WSDL_URL);
         }else if(this.authZUrl != null){
-            //default to service URL plus ?wsdl since thats the cxf default
             this.authZWsdl = this.authZUrl + "?wsdl";
         }else{
+            //allow to run without authZ module
             this.authZWsdl = null;
         }
-        
     }
     
     static public NotificationGlobals getInstance() throws OSCARSServiceException {

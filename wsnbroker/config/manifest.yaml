@@ -14,7 +14,7 @@ WSNBrokerService:
         templateDir:        'OSCARS_HOME/WSNBrokerService/conf/'
         config.yaml:        'OSCARS_HOME/WSNBrokerService/conf/config.HTTP.yaml'
         server-cxf.xml:     'OSCARS_HOME/WSNBrokerService/conf/server-cxf-http.xml'
-        client-cxf.xml:     'OSCARS_HOME/WSNBrokerService/conf/client-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_HOME/WSNBrokerService/conf/client-cxf-ssl.xml'
         log4j.properties:   'OSCARS_HOME/WSNBrokerService/conf/log4j.MESSAGE.properties'
         derby.home:         'OSCARS_HOME/WSNBrokerService/data'
         serverKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/serverKeystore.properties'
@@ -58,3 +58,31 @@ Utils:
     PRODUCTION:
         templateDir:        'OSCARS_HOME/Utils/conf/'
         config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
+
+AuthNService:
+    UNITTEST:
+        config.yaml:    'OSCARS_DIST/authN/config/authN.HTTP.yaml'
+        wsdl:           'OSCARS_DIST/common-soap/src/main/resources/authN/authN.wsdl'
+    DEVELOPMENT:
+        config.yaml:    'OSCARS_HOME/AuthNService/conf/authN.SSL.yaml'
+        wsdl:           'OSCARS_HOME/wsdl/AuthNService/AuthNService.wsdl'
+    SDK:
+        config.yaml:    'OSCARS_HOME/AuthNService/conf/authN.HTTP.yaml'
+        wsdl:           'OSCARS_HOME/wsdl/AuthNService/AuthNService.wsdl'
+    PRODUCTION:
+        config.yaml:    'OSCARS_HOME/AuthNService/conf/authN.SSL.yaml'
+        wsdl:           'OSCARS_HOME/wsdl/AuthNService/AuthNService.wsdl'
+
+AuthZService:
+    UNITTEST:
+        config.yaml:    'OSCARS_DIST/authZ/config/authZ.HTTP.yaml'
+        wsdl:           'OSCARS_DIST/common-soap/src/main/resources/authZ/authZ.wsdl'
+    DEVELOPMENT:
+        config.yaml:    'OSCARS_HOME/AuthZService/conf/authZ.HTTP.yaml'
+        wsdl:           'OSCARS_HOME/wsdl/AuthZService/AuthZService.wsdl'
+    SDK:
+        config.yaml:    'OSCARS_HOME/AuthZService/conf/authZ.HTTP.yaml'
+        wsdl:           'OSCARS_HOME/wsdl/AuthZService/AuthZService.wsdl'
+    PRODUCTION:
+        config.yaml:    'OSCARS_HOME/AuthZService/conf/authZ.SSL.yaml'
+        wsdl:           'OSCARS_HOME/wsdl/AuthZService/AuthZService.wsdl'
