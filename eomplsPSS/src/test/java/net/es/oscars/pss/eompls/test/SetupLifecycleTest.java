@@ -21,6 +21,7 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 import org.apache.log4j.Logger;
 
+import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 @Test
@@ -33,7 +34,8 @@ public class SetupLifecycleTest {
         cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
         cc.setContext(ConfigDefaults.CTX_TESTING);
         cc.setServiceName(ServiceNames.SVC_PSS);
-        
+
+        try {
         String configFn = cc.getFilePath("config.yaml");
         ConfigHolder.loadConfig(configFn);
         ClassFactory.getInstance().configure();
@@ -43,6 +45,10 @@ public class SetupLifecycleTest {
         String eoMPLSConfigFilePath = cc.getFilePath("config-eompls.yaml");
         EoMPLSConfigHolder.loadConfig(eoMPLSConfigFilePath);
         EoMPLSClassFactory.getInstance().configure();
+        } catch (ConfigException ex ) {
+            log.debug ("skipping Tests, eompls is  not configured");
+            throw new SkipException("skipping Tests, eompls is  not configured");
+        }
         
         log.debug("starting PSS main scheduler");
         PSSScheduler sched = PSSScheduler.getInstance();
@@ -99,5 +105,12 @@ public class SetupLifecycleTest {
         log.debug("simulation.run.end");
         PSSScheduler.getInstance().stop();
     }
+    /*
+    public class PSSkipException extends SkipException {
+        PSSkipException ( ) {
+            new Exception()  ()
+        }
+
+    } */
 
 }

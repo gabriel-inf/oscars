@@ -16,6 +16,9 @@ SH=/bin/sh
 # First export WSDL/XSD
 $SH $OSCARS_DIST/common-soap/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
+#utils
+$SH $OSCARS_DIST/utils/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+
 # IDC API
 $SH $OSCARS_DIST/api/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
@@ -44,8 +47,31 @@ $SH $OSCARS_DIST/authZ/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 # resource manager
 $SH $OSCARS_DIST/resourceManager/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
-# ESnet path setup
-$SH $OSCARS_DIST/stubPSS/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+# path setup
+DRAGONPSS="DRAGON"
+EOMPLSPSS="EOMPLS"
+CONTEXT="DEVELOPMENT"
+#Get PSS choice, but keep stubPSS the default
+whichPSS="STUB"
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils)
+Service=$(echo $Config | awk -F/ '$1~//{print $2}')
+Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
+Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
+#echo "config:$Config yaml:$Yaml conf:$Conf"
+if [ "$Conf" == "conf" ]; then
+     whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+elif [ "$Conf" == "config" ]; then
+     whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+fi
+whichPSS=$(echo $whichPSS | sed 's/^ *\(.*\) *$/\1/')
+echo "Exporting configuration files for $whichPSS"
+if [ "$whichPSS" == "$DRAGONPSS" ]; then
+    $SH $OSCARS_DIST/dragonPSS/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
+    $SH $OSCARS_DIST/eomplsPSS/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+else
+    $SH $OSCARS_DIST/stubPSS/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+fi
 
 # Template Service
 #$SH $OSCARS_DIST/template/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
@@ -53,11 +79,8 @@ $SH $OSCARS_DIST/stubPSS/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 # WBUI
 $SH $OSCARS_DIST/wbui/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
-#lookup Servie
+#lookup Service
 $SH $OSCARS_DIST/lookup/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
-
-#utils
-$SH $OSCARS_DIST/utils/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
 #notificationBridge
 $SH $OSCARS_DIST/notificationBridge/bin/exportconfig $OSCARS_DIST $OSCARS_HOME

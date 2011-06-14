@@ -328,31 +328,29 @@ startnullAGG () {
 
 ##########Subroutine to decide which PSS to start
 startPSS() {
-	DRAGONPSS="DRAGON"
-	EOMPLSPSS="EOMPLS"
-	#Get PSS choice, but keep stubPSS the default
-	whichPSS=stubPSS
-	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils)
-   	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-   	Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-   	if [ "$Conf" == "conf" ]; then
-        	whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-   	elif [ "$Conf" == "config" ]; then
-       		whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-   	fi
-	#echo "Starting PSS :$whichPSS"
-	whichPSS=$(echo $whichPSS | sed 's/^ *\(.*\) *$/\1/')
-	#Now start based on choice obtained
-	if [ "$whichPSS" == "$DRAGONPSS" ]; then
-		#echo "Dragon"
-		startDragonPSS
-	elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
-		startEomplsPSS
-	else
-		#echo "stub"
-		startStubPSS
-	fi
+    DRAGONPSS="DRAGON"
+    EOMPLSPSS="EOMPLS"
+    #Get PSS choice, but keep stubPSS the default
+    whichPSS="STUB"
+    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils)
+    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
+    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
+    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
+    if [ "$Conf" == "conf" ]; then
+        whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+    elif [ "$Conf" == "config" ]; then
+        whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+    fi
+    whichPSS=$(echo $whichPSS | sed 's/^ *\(.*\) *$/\1/')
+    #echo "Starting PSS :$whichPSS"
+    #Now start based on choice obtained
+    if [ "$whichPSS" == "$DRAGONPSS" ]; then
+        startDragonPSS
+    elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
+        startEomplsPSS
+    else
+        startStubPSS
+    fi
 }
 
 startStubPSS(){
@@ -369,7 +367,7 @@ startStubPSS(){
     porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
     if [ ! -z "$porttest" ]
     then
-        echo stubPSS  already running
+        echo PSS  already running
     else
         echo starting stubPSS Server on port $port
        (cd $OSCARS_DIST/stubPSS; bin/startServer.sh $CONTEXT > $currDir/stubPSS.out 2>&1 &)
@@ -390,7 +388,7 @@ startDragonPSS(){
     porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
     if [ ! -z "$porttest" ]
     then
-        echo dragonPSS  already running
+        echo PSS  already running
     else
         echo starting dragonPSS Server on port $port
        (cd $OSCARS_DIST/dragonPSS; bin/startServer.sh $CONTEXT > $currDir/dragonPSS.out 2>&1 &)
@@ -411,7 +409,7 @@ startEomplsPSS(){
     porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
     if [ ! -z "$porttest" ]
     then
-        echo EomplsPSS  already running
+        echo PSS  already running
     else
         echo starting EomplsPSS Server on port $port
        (cd $OSCARS_DIST/eomplsPSS; bin/startServer.sh $CONTEXT > $currDir/eomplsPSS.out 2>&1 &)
@@ -536,7 +534,7 @@ while [ ! -z $1 ]
     vlanPCE)  startVlanPCE;;
     nullPCE)  startnullPCE;;
     nullAGG)  startnullAGG;;
-    PSS)      startPSS;;	
+    PSS)      startPSS;;
     stubPSS) startPSS;; #TBD- remove generic used for testing startStubPSS;;
     dragonPSS)startDragonPSS;;
     eomplsPSS)startEomplsPSS;;

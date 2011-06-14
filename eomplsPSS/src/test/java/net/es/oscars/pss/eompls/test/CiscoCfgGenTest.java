@@ -7,13 +7,17 @@ import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.svc.ServiceNames;
 
+import org.apache.log4j.Logger;
+import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 @Test
 public class CiscoCfgGenTest {
+    private Logger log = Logger.getLogger(CiscoCfgGenTest.class);
     @Test(groups = { "cfg" })
     public void testSetup() throws PSSException, ConfigException {
         // set up our configuration context
+        try {
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
         cc.setContext(ConfigDefaults.CTX_TESTING);
@@ -51,5 +55,9 @@ public class CiscoCfgGenTest {
         gen.setVcid(vcid);
 
         System.out.println(gen.generateConfig());
+        } catch (ConfigException ex) {
+            log.debug("skipping tests, eompls configuration not deployed");
+            throw new SkipException("skipping tests, eompls configuration not deployed");
+        }
     }
 }
