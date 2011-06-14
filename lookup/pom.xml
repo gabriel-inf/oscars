@@ -22,6 +22,16 @@
         </repository>
     </repositories>
 
+    <!-- puts all code & libraries in one jar -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>onejar-maven-plugin.googlecode.com</id>
+            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+
     <dependencies>
         <!-- common SOAP interfaces (from local repository) -->
        <dependency>
