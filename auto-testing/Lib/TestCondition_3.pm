@@ -20,16 +20,24 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 
 my $tester = new Lib::Tester;
 
+# Seconds to sleep between checks for state changes
+our $SLEEP = 30;
 
+# Number of times to check for state changes
+our $COUNT = 10;
+
+# Start time can be 'no' or a number of minutes in the future.
+#our $STARTTIME = 'now';
+our $STARTTIME = 3;
+
+# End time is reservation duration.
+our $ENDTIME = '+00:00:10';
 
 
 sub single_test_3_1
 {
 	# Test Scenario (3.1)
 	# specific_vlan_tag-to-specific_vlan_tag : serial-execution : no-translation : inter-domain
-
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
 
 	my %testParams = (
 		testName => $NAME . "_scenario_1",
@@ -38,6 +46,10 @@ sub single_test_3_1
 		srcVlan => "1000",
 		dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-3:link=link-1",
 		dstVlan => "1000",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 
@@ -51,9 +63,6 @@ sub single_test_3_2
 	# Test Scenario (3.2)
 	# specific_vlan_tag-to-specific_vlan_tag : serial-execution : translation (src_tag!=dst_tag) : inter-domain
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 		testName => $NAME . "_scenario_2",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
@@ -61,6 +70,10 @@ sub single_test_3_2
 		srcVlan => "1000",
 		dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
 		dstVlan => "1100",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "FAILED"
 	);
 
@@ -74,9 +87,6 @@ sub single_test_3_3
 	# Test Scenario (3.3)
 	# any_vlan_tag-to-any_vlan_tag : serial-execution : inter-domain
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 		testName => $NAME . "_scenario_3",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
@@ -84,6 +94,10 @@ sub single_test_3_3
 		srcVlan => "any",
 		dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
 		dstVlan => "any",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 
@@ -97,9 +111,6 @@ sub single_test_3_4
 	# Test Scenario (3.4)
 	# specific_vlan_tag-to-any_vlan_tag : serial-execution : inter-domain
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 		testName => $NAME . "_scenario_4",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
@@ -107,6 +118,10 @@ sub single_test_3_4
 		srcVlan => "1000",
 		dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
 		dstVlan => "any",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 
@@ -120,9 +135,6 @@ sub single_test_3_5
 	# Test Scenario (3.5)
 	# any_vlan_tag-to-specific_vlan_tag : serial-execution : inter-domain
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 		testName => $NAME . "_scenario_5",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
@@ -130,6 +142,10 @@ sub single_test_3_5
 		srcVlan => "any",
 		dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
 		dstVlan => "1000",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 
@@ -143,9 +159,6 @@ sub single_test_3_6
 	# Test Scenario (3.6)
 	# specific_vlan_tag-to-specific_vlan_tag : serial-execution : inter-domain : single-node-path-in-both-domains
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 		testName => $NAME . "_scenario_6",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
@@ -153,6 +166,10 @@ sub single_test_3_6
 		srcVlan => "1000",
 		dst => "urn:ogf:network:domain=testdomain-1.net:node=node-1:port=port-11:link=link-1",
 		dstVlan => "1000",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 

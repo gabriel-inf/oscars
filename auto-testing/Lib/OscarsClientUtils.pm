@@ -6,6 +6,7 @@ use Fcntl qw(:flock);
 use Log::Log4perl qw(get_logger);
 use Params::Validate qw(:all);
 use	POSIX qw(strftime); 
+use Time::Format qw(time_format);
 use strict;
 use warnings;
 
@@ -28,6 +29,8 @@ use fields qw(NAME);
 our $OSCARS_logs = "/usr/local/oscars/logs/";
 # Location of scripts.
 our $BINPATH = "./bin";
+our $COUNT = 30;
+our $SLEEP = 60;
 
 
 # Main log of test name, topology file, command arguments and test result.
@@ -50,7 +53,7 @@ sub createCancelRes
 {
 	my $self = shift;
 	my %args = validate(@_, {yamlFile => 1, topology => 1, logFile => 1, testName => 1, 
-				src => 1, dst => 1, sleep => {default => 15}, count => {default => 60}, result => 1});
+				src => 1, dst => 1, sleep => {default => $SLEEP}, count => {default => $COUNT}, result => 1});
 	my $gri = "";
 	my $status = "";
 
@@ -156,6 +159,13 @@ sub writeYaml
 		print "OscarsClientUtils->writeYaml() $args{'yamlFile'}: $args{'testName'}: $args{'src'} $args{'srcVlan'} => $args{'dst'} $args{'dstVlan'}\n";
 	}
 
+	my $start;
+	if ($args{'startTime'} ne 'now') {
+		$start = getStartTime($args{'startTime'});
+	} else {
+		$start = $args{'startTime'};
+	}
+		
     open FILE, ">$args{'yamlFile'}" or die $!;
 
     $str = "---\n";
@@ -167,7 +177,8 @@ sub writeYaml
     $str .= "    dst:    $args{'dst'}\n";
     $str .= "    bandwidth:    $args{'bandwidth'}\n"; 
     $str .= "    description:    'a timer-automatic reservation'\n";
-    $str .= "    start-time:    '$args{'startTime'}'\n";
+    #$str .= "    start-time:    '$args{'startTime'}'\n";
+    $str .= "    start-time:    '$start'\n";
     $str .= "    end-time:    '$args{'endTime'}'\n";
     $str .= "    path-setup-mode:    'timer-automatic'\n";
     $str .= "    srcvlan:    '$args{'srcVlan'}'\n";
@@ -310,6 +321,16 @@ sub name
     
     if (@_) { $self->{NAME} = shift }
     return $self->{NAME};
+}
+
+
+sub getStartTime()
+{
+	my $mins = shift;
+	
+	my $t = time();
+	my $starttime = $t + (60 * $mins);
+	my $start = time_format('yyyy-mm-dd hh:mm', $starttime);
 }
 
 

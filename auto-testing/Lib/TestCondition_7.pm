@@ -20,14 +20,24 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 
 my $tester = new Lib::Tester;
 
+# Seconds to sleep between checks for state changes
+our $SLEEP = 30;
+
+# Number of times to check for state changes
+our $COUNT = 10;
+
+# Start time can be 'no' or a number of minutes in the future.
+#our $STARTTIME = 'now';
+our $STARTTIME = 3;
+
+# End time is reservation duration.
+our $ENDTIME = '+00:00:10';
+
 
 sub single_test_7_1
 {
 	# Test Scenario (7.1)
 	# specific_vlan_tag-to-specific_vlan_tag : v0.6-api-client-at-v0.5.3-domain : serial-execution : translation and no-translation : inter-domain path
-
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
 
 	my %testParams = (
 		testName => $NAME . "_scenario_1",
@@ -36,6 +46,10 @@ sub single_test_7_1
 		srcVlan => "1000",
 		dst => "urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-3:link=link-1",
 		dstVlan => "1000",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 	
@@ -49,9 +63,6 @@ sub single_test_7_2
 	# Test Scenario (7.2)
 	# any_vlan_tag-to-any_vlan_tag : v0.6-api-client-at-v0.5.3-domain : serial-execution : translation and no-translation : inter-domain path
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 		testName => $NAME . "_scenario_1",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
@@ -59,6 +70,10 @@ sub single_test_7_2
 		srcVlan => "any",
 		dst => "urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-3:link=link-1",
 		dstVlan => "any",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 

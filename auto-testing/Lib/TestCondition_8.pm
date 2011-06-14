@@ -23,6 +23,19 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 
 my $tester = new Lib::Tester;
 
+# Seconds to sleep between checks for state changes
+our $SLEEP = 30;
+
+# Number of times to check for state changes
+our $COUNT = 10;
+
+# Start time can be 'no' or a number of minutes in the future.
+#our $STARTTIME = 'now';
+our $STARTTIME = 3;
+
+# End time is reservation duration.
+our $ENDTIME = '+00:00:10';
+
 
 sub multi_test_8_1
 {
@@ -48,8 +61,6 @@ sub _do_test
 	my $t_name = shift;
 	my $iterations = shift;
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
     my @arr;
 	my $topologyFile = "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml";
 	my $parser = new Lib::TopologyUtils;
@@ -83,6 +94,10 @@ sub _do_test
         	dst => $dst,
         	dstVlan => $dstVlan,
 			endTime => $endTime,	
+            sleep => "$SLEEP",
+            count => "$COUNT",
+            startTime => "$STARTTIME",
+            endTime => "$ENDTIME",
         	expectedResult => "CANCELLED"
    		);
     	push @arr, \%testParams_0;

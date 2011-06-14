@@ -11,19 +11,10 @@ cd $OSCARS_DIST/api
 perl simpletest_main.pl
 
 
-Gotcha's:
-localDomainId and/or domain file needs to be set in 
-$OSCARS_HOME/ResourceManagerService/conf/config.HTTP.yaml and config.SSL.yaml
-$OSCARS_HOME/TopoBridgeService/conf/config.HTTP.yaml and config.SSL.yaml
-$OSCARS_HOME/VlanPCE/conf/config.HTTP.yaml and config.SSL.yaml
-$OSCARS_HOME/Utils/conf/config.yaml
-
-
 
 Description:
 
-This suite of tests is designed to automate running of the OSCARS test scripts in $OSCARS_DIST/api/bin
-and implement the tests defined in http://code.google.com/p/oscars-idc/wiki/OSCARS_v6_Testing.
+This suite of tests is designed to automate running of the OSCARS test scripts in $OSCARS_DIST/api/bin.
 
 
 Installation:
@@ -56,12 +47,6 @@ Tests are defined in Lib/<testname>.pm
 Creating new tests:
 
 There are example tests for both unit style tests and tests that will process an entire topology file.
-Tests take parameters corresponding to XML elements in the topology file, or the parameters can 
-be read from a topology file.
 
 To create a new test copy SimpleTest.pm and set your parameters as needed.
-
-
-Questions:
-Please direct questions/comments to http://code.google.com/p/oscars-idc/wiki/OSCARS_v6_Testing.
 

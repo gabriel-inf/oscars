@@ -20,15 +20,25 @@ L2SC edge links with VLAN translation enabled and PSC trunk links;
 
 my $tester = new Lib::Tester;
 
+# Seconds to sleep between checks for state changes
+our $SLEEP = 30;
+
+# Number of times to check for state changes
+our $COUNT = 10;
+
+# Start time can be 'no' or a number of minutes in the future.
+#our $STARTTIME = 'now';
+our $STARTTIME = 3;
+
+# End time is reservation duration.
+our $ENDTIME = '+00:00:10';
+
 
 # Add reservations as needed
 sub multi_test_4_1
 {
 	# Test Scenario (4.1)
 	# specific_vlan_tag-to-specific_vlan_tag : simultaneous-execution-to-saturate : mixed translation and no-translation
-
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
 
 	my @arr;
 
@@ -39,6 +49,10 @@ sub multi_test_4_1
 		srcVlan => "3",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-8:link=link-1",
 		dstVlan => "3",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 	push @arr, \%testParams_0;
@@ -64,9 +78,6 @@ sub multi_test_4_2
 	# Test Scenario (4.2)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : no-translation
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
     my @arr;
 
 	my %testParams_0 = (
@@ -76,6 +87,10 @@ sub multi_test_4_2
 		srcVlan => "any",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-9:link=link-1",
 		dstVlan => "any",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 	push @arr, \%testParams_0;
@@ -87,6 +102,10 @@ sub multi_test_4_2
 		srcVlan => "5",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-9:link=link-1",
 		dstVlan => "5",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 	push @arr, \%testParams_1;
@@ -101,9 +120,6 @@ sub multi_test_4_3
 	# Test Scenario (4.3)
 	# specific_vlan_tag-to-specific_vlan_tag : simultaneous-execution-to-saturate : no-translation : single-node-path with one end on the bottleneck link
 
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
     my @arr;
 
     my %testParams_0 = (
@@ -113,6 +129,10 @@ sub multi_test_4_3
 		srcVlan => "10",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-11:link=link-1",
 		dstVlan => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
         expectedResult => "CANCELLED"
     );
     push @arr, \%testParams_0;
@@ -124,6 +144,10 @@ sub multi_test_4_3
 		srcVlan => "15",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-11:link=link-1",
 		dstVlan => "15",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
         expectedResult => "CANCELLED"
     );
     push @arr, \%testParams_1;

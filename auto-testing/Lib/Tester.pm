@@ -20,6 +20,8 @@ Tester
 =cut
 
 our $Debugging = 0;
+our $SLEEP = 60;
+our $COUNT = 30;
 
 
 our $NAME = "Tester";
@@ -80,7 +82,8 @@ sub single_test
 	my $srcVlan = $params{'srcVlan'}; 
 	my $dst = $params{'dst'}; 
 	my $dstVlan = $params{'dstVlan'}; 
-	my $count = exists($params{'count'}) ? $params{'count'} : 60;
+	my $sleep = $params{'sleep'} ? $params{'sleep'} : $SLEEP;
+	my $count = exists($params{'count'}) ? $params{'count'} : $COUNT;
 	my $startTime = exists($params{'startTime'}) ? $params{'startTime'} : 'now';
 	my $endTime = exists($params{'endTime'}) ? $params{'endTime'} : '+00:00:12';
 
@@ -92,7 +95,7 @@ sub single_test
 	# Run test
 	$result = $client->createCancelRes(yamlFile => $yamlFile, topology => $params{'topology'}, 
 			logFile => $logFile, testName => $name, src => $src, 
-			dst => $dst, result => $params{'expectedResult'}, count => $count);
+			dst => $dst, result => $params{'expectedResult'}, sleep => $sleep, count => $count);
 
 	return $result;
 }
