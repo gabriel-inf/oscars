@@ -1,2 +1,3 @@
 #!/bin/sh
-cp target/ion-war-0.0.1-SNAPSHOT.war $OSCARS_HOME/IONUIService
+vers=`cat $OSCARS_DIST/VERSION`
+cp $OSCARS_DIST/ion-war/target/ion-war-${vers}.war $OSCARS_HOME/IONUIService

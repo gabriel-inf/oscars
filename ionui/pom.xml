@@ -3,7 +3,6 @@
     <groupId>edu.internet2.ion</groupId>
     <artifactId>ionui</artifactId>
     <name>ION UI</name>
-    <version>0.0.1-SNAPSHOT</version>
     
     <parent>
         <groupId>net.es.oscars</groupId>
@@ -24,7 +23,7 @@
         <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
         </dependency>
         
         <dependency>
@@ -38,7 +37,7 @@
         <dependency>
             <groupId>edu.internet2.ion</groupId>
             <artifactId>ion-war</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${oscars.version}</version>
             <type>war</type>
             <scope>provided</scope>
         </dependency>
