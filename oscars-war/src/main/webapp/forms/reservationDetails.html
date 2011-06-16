@@ -140,6 +140,8 @@
       <td>Bandwidth (Mbps)</td><td colspan="2" id="bandwidthReplace" /></tr>
   <tr><td>Source</td><td colspan="2" id="sourceReplace" /></tr>
   <tr><td>Destination</td><td colspan="2" id="destinationReplace" /></tr>
+
+
   <tr class="layer2Replace">
       <td />
       <td>VLAN</td>
@@ -189,12 +191,19 @@
   <tr class="layer3Replace" style="display: none">
       <td>LSP</td><td colspan="2" id="lspClassReplace" />
   </tr>
+
+  <!-- would like it to be red, but can't get it cooperate -mrt -->
+  <tr style="color:#FF0000">
+      <td>Error Report</td>
+      <td style="color:#FF0000" colspan="2"><table id="errorReportReplace" ></table></td>
+  </tr >
   </tbody>
 </table>
 </span>
-</form>
+
 <!-- tooltip section for buttons -->
 <div dojoType = "dijit.Tooltip" connectId="queryReservation" position="after">
+</form>
     Gets the current status of the reservation identified by NEW GRI from the
     server.
 </div>

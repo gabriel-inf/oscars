@@ -146,7 +146,7 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("resvCloneDisplay", Boolean.FALSE);
             }
 
-            this.contentSection(resDetails, faultReports,outputMap);
+            this.contentSection(resDetails, faultReports, outputMap);
         } catch (Exception ex) {
             // any error will show up as an exception
             ServletUtils.handleFailure(out, log, ex, methodName);
@@ -262,7 +262,7 @@ public class QueryReservation extends HttpServlet {
             if (strParam != null) {
                 outputMap.put("protocolReplace", strParam);
             }
-            strParam = layer3Info.getDscp();
+            strParam =  layer3Info.getDscp();
             if (strParam !=  null) {
                 outputMap.put("dscpReplace", strParam);
             }
@@ -276,7 +276,14 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("lspClassReplace", mplsInfo.getLspClass());
             }
         }
+
         QueryReservation.outputPaths(path, outputMap);
+
+        if (!faultReports.isEmpty()) {
+            handleErrorReports(faultReports, outputMap);
+        } else {
+            outputMap.put("errorReportReplace","" );
+        }
         } catch (Exception e){
             System.out.println("caught exception in ContentSection");
             e.printStackTrace();
@@ -391,20 +398,6 @@ public class QueryReservation extends HttpServlet {
                 } else {
                     outputMap.put("interPath3Replace", sb.toString());
                 }
-      /*          } else {
-                    // don't allow non-authorized user to see internal hops
-                    CtrlPlaneHopContent [] endHops = { hops.get(0), hops.get(hops.size()-1) };
-                    for (CtrlPlaneHopContent hop : endHops) {
-                        CtrlPlaneLinkContent link = hop.getLink();
-                        if (link != null ) {
-                            pathStr = link.getId() + "\n";
-                            log.debug("hop: " + pathStr);
-                        }else {
-                            pathStr = hop.getLinkIdRef() + "\n";
-                        }
-                    }
-                    // seems like this should be setting something in outputMap - mrt
-                }  */
             }
         }
     }
@@ -424,6 +417,18 @@ public class QueryReservation extends HttpServlet {
         }
         sb.append("</tbody>");
         outputMap.put(nodeId, sb.toString());
+    }
+
+   public static void handleErrorReports(List<OSCARSFaultReport> faultReports, Map<String,Object> outputMap)  {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<tbody>");
+        for (OSCARSFaultReport faultReport: faultReports) {
+            sb.append("<tr><td> Error Code </td><td>" + faultReport.getErrorCode() + "</td></tr>");
+            sb.append("<tr><td> Error Message </td><td>" + faultReport.getErrorMsg() + "</td></tr>");
+            sb.append("<tr><td> Error Type </td><td>" + faultReport.getErrorType() + "</td></tr>");
+        }
+        sb.append("</tbody>");
+       outputMap.put("errorReportReplace", sb.toString());
     }
     /**
      * hack to create a layer2Info from a CtrlPlanPathContent 
@@ -469,4 +474,5 @@ public class QueryReservation extends HttpServlet {
         }
         return null;
     }
+
 }

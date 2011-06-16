@@ -255,12 +255,15 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         // applying results of query
         var node = dojo.byId("srcVlanReplace");
         node.innerHTML = "";
+        var node1 = dojo.byId("errorReportReplace");
+        node1.innerHTML = "";
         var refreshButton = dojo.byId("resvRefreshDisplay");
         refreshButton.style.display = ""; 
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
         // for displaying only layer 2 or layer 3 fields
         oscars.ReservationDetails.layerParams(responseObject);
+        oscars.ReservationDetails.errorReportParams(responseObject);
         oscars.ReservationDetails.setDateTimes();
         var reservationDetailsNode = dojo.byId("reservationDetailsDisplay");
         reservationDetailsNode.style.display = "";
@@ -370,6 +373,24 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
         }
     }
 };
+
+// This didn't work for me. I just blanked it out in the servlet -mrt
+oscars.ReservationDetails.errorReportParams = function (responseObject) {
+    var i;
+    var tableN;
+    var n = dojo.byId("errorReportReplace");
+    //var errorReportNodes = dojo.query(".errRepReplace");
+    if (!oscars.Utils.isBlank(n.innerHTML)) {
+        // blank tables if not present in new reservation
+        if (!responseObject.errorReportReplace) {
+            tableN = dojo.byId("errorReportReplace");
+            tableN.innerHTML = "";
+        }
+       for (i=0; i < errorReportNodes.length; i++){
+            errorReportNodes[i].style.display="";
+       }
+    }
+}
 
 // take action based on this tab's selection
 oscars.ReservationDetails.tabSelected = function (

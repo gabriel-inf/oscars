@@ -177,6 +177,11 @@ public class QueryReservationStatus extends HttpServlet {
         if (layer2Info != null) {
             QueryReservation.handleVlans(path, status, layer2Info, outputMap);
         }
+        if (!faultReports.isEmpty()) {
+            QueryReservation.handleErrorReports(faultReports,outputMap);
+        } else {
+            outputMap.put("errorReportReplace","" );
+        }
         QueryReservation.outputPaths(path, outputMap);
     }
 }
