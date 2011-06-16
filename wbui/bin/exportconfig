@@ -63,7 +63,7 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
 fi
 
 # TODO: better solution later
-sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE/, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
-sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE/, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
+sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
+sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
 
 cp $OSCARS_DIST/oscars-war/target/oscars-war-$vers.war $OSCARS_HOME/$SERVICE/
