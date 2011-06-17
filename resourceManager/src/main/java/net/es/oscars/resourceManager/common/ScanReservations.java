@@ -112,16 +112,14 @@ public class ScanReservations {
                   * and schedule a setup call
                   */
                  List<Reservation> setUpResList = resDAO.pendingReservations(lookAhead);
-                 if (setUpResList.size() > 0 ){
-                    //LOG.debug(netLogger.getMsg(event,"found "  + setUpResList.size() + " setup reservations"));
-                 }
+
                  for (Reservation res: setUpResList) {
                      if (res.getConstraint(ConstraintType.USER).getPath().getPathSetupMode().equals("timer-automatic")) {
                          ResDetails resDetails = RMUtils.res2resDetails(res,true);  // internalHopAllowed
                          if (resDetails.getReservedConstraint() == null) {
                              LOG.warn(netLogger.error(event,ErrSev.MINOR,"skipping reservation " + 
-                                     resDetails.getGlobalReservationId()  +
-                                     ": status is RESERVED but no reservedConstraint"));
+                                                      resDetails.getGlobalReservationId()  +
+                                                      ": status is RESERVED but no reservedConstraint"));
                              continue;
                          }
                          LOG.debug(netLogger.getMsg(event, "scheduling setup for " + resDetails.getGlobalReservationId()));

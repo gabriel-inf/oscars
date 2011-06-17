@@ -22,10 +22,13 @@ public class SchedulerJob implements Job {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         netLogger.init(ModuleName.RMSCHED, "0001");
         ScanReservations scanReservations = ScanReservations.getInstance(null);
-        if (System.currentTimeMillis() >= scanReservations.getLastScanned() + 
-            RMCore.getInstance().getScanInterval() * 1000) {
 
-            scanReservations.scan();
+        scanReservations.scan();
+
+        // Notify the Scheduler that scanning the database is completed
+        RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
+        if (scheduler != null) {
+            scheduler.processed();
         }
     }  
     

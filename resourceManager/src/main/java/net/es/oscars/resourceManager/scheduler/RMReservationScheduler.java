@@ -53,6 +53,7 @@ public class RMReservationScheduler implements ReservationScheduler {
     public static String schedLock = new String("unlocked");
     private static Logger LOG = null;
     private OSCARSNetLogger netLogger = null;
+    private boolean processing = false;
 
 
     /**
@@ -138,57 +139,57 @@ public class RMReservationScheduler implements ReservationScheduler {
         }
     }
     
-/**
- * Schedules a PathTeardown job
- * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
- * The ResourceManager is responsible for re-scheduling a reservation if its content is changed.
- * 
- * @param resDetails
- */
-public void scheduleTeardown (ResDetails resDetails) {
-    
-    String event = "RMReservationScheduler.teardown";
-    this.netLogger = OSCARSNetLogger.getTlogger();
-    this.netLogger.setGRI(resDetails.getGlobalReservationId());
-    long now = (System.currentTimeMillis() / 1000);
-    LOG.debug(this.netLogger.start(event));
-    if (resDetails == null) {
-        // Sanity check
-        return;
+    /**
+     * Schedules a PathTeardown job
+     * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
+     * The ResourceManager is responsible for re-scheduling a reservation if its content is changed.
+     *
+     * @param resDetails
+     */
+    public void scheduleTeardown (ResDetails resDetails) {
+
+        String event = "RMReservationScheduler.teardown";
+        this.netLogger = OSCARSNetLogger.getTlogger();
+        this.netLogger.setGRI(resDetails.getGlobalReservationId());
+        long now = (System.currentTimeMillis() / 1000);
+        LOG.debug(this.netLogger.start(event));
+        if (resDetails == null) {
+            // Sanity check
+            return;
+        }
+        // Check if we need to schedule a path teardown
+        if (resDetails.getReservedConstraint().getEndTime() <= (now + this.lookAhead)) {
+            this.teardown (resDetails);
+        } else {
+            LOG.warn(netLogger.error(event, ErrSev.MINOR, "no job was scheduled" ));
+        }
     }
-    // Check if we need to schedule a path teardown
-    if (resDetails.getReservedConstraint().getEndTime() <= (now + this.lookAhead)) {
-        this.teardown (resDetails);
-    } else {
-        LOG.warn(netLogger.error(event, ErrSev.MINOR, "no job was scheduled" ));
+    /**
+     * Schedules a reservation finish job
+     * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
+     * The ResourceManager is responsible for re-scheduling a reservation if its content is changed.
+     *
+     * @param resDetails
+     */
+    public void scheduleFinish (ResDetails resDetails) {
+
+        String event = "RMReservationScheduler.finish";
+        this.netLogger = OSCARSNetLogger.getTlogger();
+        this.netLogger.setGRI(resDetails.getGlobalReservationId());
+        long now = (System.currentTimeMillis() / 1000);
+        LOG.debug(this.netLogger.start(event));
+        if (resDetails == null) {
+            // Sanity check
+            return;
+        }
+        // Check if we need to schedule a reservation finish job
+        // use UserRequestConstraint here since there might not be a reservedConstraint
+        if (resDetails.getUserRequestConstraint().getEndTime() <= (now + this.lookAhead)) {
+            this.finish (resDetails);
+        } else {
+            LOG.warn(this.netLogger.error(event, ErrSev.MINOR, "no job was scheduled" ));
+        }
     }
-}
-/**
- * Schedules a reservation finish job
- * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
- * The ResourceManager is responsible for re-scheduling a reservation if its content is changed.
- * 
- * @param resDetails
- */
-public void scheduleFinish (ResDetails resDetails) {
-    
-    String event = "RMReservationScheduler.finish";
-    this.netLogger = OSCARSNetLogger.getTlogger();
-    this.netLogger.setGRI(resDetails.getGlobalReservationId());
-    long now = (System.currentTimeMillis() / 1000);
-    LOG.debug(this.netLogger.start(event));
-    if (resDetails == null) {
-        // Sanity check
-        return;
-    }
-    // Check if we need to schedule a reservation finish job
-    // use UserRequestConstraint here since there might not be a reservedConstraint
-    if (resDetails.getUserRequestConstraint().getEndTime() <= (now + this.lookAhead)) {
-        this.finish (resDetails);
-    } else {
-        LOG.warn(this.netLogger.error(event, ErrSev.MINOR, "no job was scheduled" ));
-    }
-}
     /**
      * Remove any scheduled action for this reservation. Called when a reservation is canceled.
      * ResourceManger.cancel has RMReservationScheduler.schedLock held
@@ -319,6 +320,26 @@ private void initNotifySender() throws OSCARSServiceException {
         
         JobDetail     jobDetail  = new JobDetail("Reservation Scheduler Background Thread", null,SchedulerJob.class);
         this.quartzScheduler.scheduleJob(jobDetail, jobTrigger);
+
+    }
+
+    public synchronized void scheduleNow () {
+        if (this.processing) {
+            // Already currently scanning the database. Ignore.
+            return;
+        }
+        this.processing = true;
+
+        try {
+            // this.quartzScheduler.rescheduleJob("Reservation Scheduler Background Thread",null,jobTrigger);
+            this.quartzScheduler.triggerJob("Reservation Scheduler Background Thread",null);
+        } catch (SchedulerException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public synchronized void processed() {
+        this.processing = false;
     }
     /**
      * schedules a quartz job to setup a reservation path
@@ -333,10 +354,10 @@ private void initNotifySender() throws OSCARSServiceException {
         long now = (System.currentTimeMillis() / 1000);
         SimpleTrigger jobTrigger = null;
         
-        synchronized(this.pendingReservations){
+        synchronized(this.pendingReservations) {
             // Check if there is any SETUP already scheduled for this reservation.
             ReservationHandler pending = this.getPendingReservationHandler(resDetails.getGlobalReservationId(),
-                    ReservationHandler.PATHSETUP);
+                                                                           ReservationHandler.PATHSETUP);
 
             if (resDetails.getReservedConstraint().getStartTime() <= (now + RMReservationScheduler.SCHEDULER_LATENCY)) {
                 // Schedule for immediate setup if not already scheduled.
@@ -352,8 +373,8 @@ private void initNotifySender() throws OSCARSServiceException {
                 // Create a new trigger for immediate execution
                 if (pending == null){
                     jobTrigger = new SimpleTrigger(resDetails.getGlobalReservationId() + 
-                            "-" + ReservationHandler.PATHSETUP,
-                            null);
+                                                   "-" + ReservationHandler.PATHSETUP,
+                                                   null);
                 }
             } else { // start time is > now + SCHEDUlER_LATENCY
                 if ((pending != null) && (pending.getExecutionTime()/1000) != resDetails.getReservedConstraint().getStartTime()) {
@@ -368,17 +389,17 @@ private void initNotifySender() throws OSCARSServiceException {
                 if (pending == null){
                     Date when = new Date (resDetails.getReservedConstraint().getStartTime() * 1000);
                     jobTrigger = new SimpleTrigger(resDetails.getGlobalReservationId() +
-                            "-" + ReservationHandler.PATHSETUP,
-                            null,
-                            when);
+                                                   "-" + ReservationHandler.PATHSETUP,
+                                                   null,
+                                                   when);
                }
             }
             // need to schedule a job
             if (jobTrigger != null) {
                 JobDetail jobDetail  = new JobDetail(resDetails.getGlobalReservationId() + 
-                        "-" + ReservationHandler.PATHSETUP,
-                        null,
-                        PathSetupJob.class);
+                                                     "-" + ReservationHandler.PATHSETUP,
+                                                     null,
+                                                     PathSetupJob.class);
                 // Add the ResDetails into the JobDetail's context
                 MessagePropertiesType msgProps = RMUtils.getMsgProps(resDetails);
                 ReservationJob.setResDetails(jobDetail, resDetails,msgProps);
@@ -386,9 +407,10 @@ private void initNotifySender() throws OSCARSServiceException {
                     LOG.debug(this.netLogger.getMsg(event,"Calling quartz.scheduleJob"));
                     this.quartzScheduler.scheduleJob(jobDetail, jobTrigger);
                     ReservationHandler rh = new ReservationHandler(resDetails, 
-                            ReservationHandler.PATHSETUP,
-                            jobTrigger.getNextFireTime().getTime());
+                                                                   ReservationHandler.PATHSETUP,
+                                                                   jobTrigger.getNextFireTime().getTime());
                     pendingReservations.add(rh);
+
                 } catch (SchedulerException e) {
                     LOG.warn(this.netLogger.error(event, ErrSev.MINOR,
                             "failed to schedule setup job, exception was: "+ e.getMessage()));
@@ -428,8 +450,8 @@ private void initNotifySender() throws OSCARSServiceException {
                 if (pending == null){
                 // Create a new trigger
                     jobTrigger = new SimpleTrigger(resDetails.getGlobalReservationId() + 
-                            "-" + ReservationHandler.TEARDOWN,
-                            null);
+                                                   "-" + ReservationHandler.TEARDOWN,
+                                                   null);
                 }
             } else {
                 if ((pending != null) && (pending.getExecutionTime()/1000 != resDetails.getReservedConstraint().getEndTime())) {
@@ -444,9 +466,9 @@ private void initNotifySender() throws OSCARSServiceException {
                 // Schedule teardown at the provided date if not already scheduled.
                     Date when = new Date (resDetails.getReservedConstraint().getEndTime() * 1000);
                     jobTrigger = new SimpleTrigger(resDetails.getGlobalReservationId() + 
-                            "-" + ReservationHandler.TEARDOWN,
-                            null,
-                            when);
+                                                   "-" + ReservationHandler.TEARDOWN,
+                                                   null,
+                                                   when);
                 }
             }
 
@@ -463,8 +485,8 @@ private void initNotifySender() throws OSCARSServiceException {
                     LOG.debug(this.netLogger.getMsg(event, "scheduling path Teardown"));
                     this.quartzScheduler.scheduleJob(jobDetail, jobTrigger);
                     ReservationHandler rh = new ReservationHandler(resDetails, 
-                            ReservationHandler.TEARDOWN,
-                            jobTrigger.getNextFireTime().getTime());
+                                                                   ReservationHandler.TEARDOWN,
+                                                                   jobTrigger.getNextFireTime().getTime());
                     pendingReservations.add(rh);
                 } catch (SchedulerException e) {
                     LOG.warn(this.netLogger.error(event, ErrSev.MINOR,
@@ -508,8 +530,8 @@ private void initNotifySender() throws OSCARSServiceException {
                 if (pending == null){
                 // Create a new trigger
                     jobTrigger = new SimpleTrigger(resDetails.getGlobalReservationId() + 
-                            "-" + ReservationHandler.FINISH,
-                            null);
+                                                   "-" + ReservationHandler.FINISH,
+                                                   null);
                 }
             } else {
                 if ((pending != null) && (pending.getExecutionTime()/1000 != resDetails.getUserRequestConstraint().getEndTime())) {
@@ -524,16 +546,16 @@ private void initNotifySender() throws OSCARSServiceException {
                 // Schedule finish at the provided date if not already scheduled.
                     Date when = new Date (resDetails.getUserRequestConstraint().getEndTime() * 1000);
                     jobTrigger = new SimpleTrigger(resDetails.getGlobalReservationId() + 
-                            "-" + ReservationHandler.FINISH,
-                            null,
-                            when);
+                                                   "-" + ReservationHandler.FINISH,
+                                                   null,
+                                                   when);
                 }
             }
             if (jobTrigger != null) {
                 JobDetail     jobDetail  = new JobDetail(resDetails.getGlobalReservationId() + 
-                        "-" + ReservationHandler.FINISH,
-                        null,
-                        ReservationFinishJob.class);
+                                                         "-" + ReservationHandler.FINISH,
+                                                         null,
+                                                         ReservationFinishJob.class);
                 // Add the ResDetails into the JobDetail's context
                 MessagePropertiesType msgProps = RMUtils.getMsgProps(resDetails);
                 ReservationJob.setResDetails(jobDetail, resDetails,msgProps);
@@ -542,8 +564,8 @@ private void initNotifySender() throws OSCARSServiceException {
                     LOG.debug(this.netLogger.getMsg(event,"scheduling reservation finish"));
                     this.quartzScheduler.scheduleJob(jobDetail, jobTrigger);
                     ReservationHandler rh = new ReservationHandler(resDetails, 
-                            ReservationHandler.FINISH,
-                            jobTrigger.getNextFireTime().getTime());
+                                                                   ReservationHandler.FINISH,
+                                                                   jobTrigger.getNextFireTime().getTime());
                     pendingReservations.add(rh);
                 } catch (SchedulerException e) {
                     LOG.warn(this.netLogger.error(event,ErrSev.MINOR,
@@ -569,7 +591,6 @@ private void initNotifySender() throws OSCARSServiceException {
         } catch (SchedulerException e) {
             LOG.error(this.netLogger.error(event, ErrSev.MINOR,
                                           "failed to delete a quartz job, exception was: "+ e.getMessage()));
-            System.out.println("RMReservationScheduler at cancel");
             e.printStackTrace();
         }
         synchronized (this.pendingReservations) {

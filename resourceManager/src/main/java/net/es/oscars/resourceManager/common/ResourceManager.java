@@ -139,17 +139,14 @@ public class ResourceManager {
                 res.getLocalStatus() != RMUtils.expiredSent )   {
             RMUtils.notify(NotifyRequestTypes.RESERVATION_PERIOD_FINISHED, res);
         }
-        // ERIC: I am commenting the following code out because it is un-necessary since the Scheduler will
-        // process it at a later time, but, also causes a flood of requests onto the database, resulting, in
-        // turn, to a flood of request to setup or teardown the gri
-        /***
-        if (outStatus.equals(StateEngineValues.RESERVED) ||
-            outStatus.equals(StateEngineValues.ACTIVE)) {
+
+        if (outStatus.equals(StateEngineValues.RESERVED)) {
             // check to see if it should be scheduled
-            ScanReservations scanRes = ScanReservations.getInstance(null);
-            scanRes.scan();
+            RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
+            if (scheduler != null) {
+             scheduler.scheduleNow();
+            }
         }
-        **/
 
        this.log.debug(netLogger.end("updateStatus"));
        return outStatus;
@@ -242,17 +239,14 @@ public class ResourceManager {
                 }
             }
             resvDAO.update(res);
-            // ERIC: I am commenting the following code out because it is un-necessary since the Scheduler will
-            // process it at a later time, but, also causes a flood of requests onto the database, resulting, in
-            // turn, to a flood of request to setup or teardown the gri
-            /***
+
             if (res.getStatus().equals(StateEngineValues.RESERVED)) {
                 // check to see if it should be scheduled
-                ScanReservations scanRes = ScanReservations.getInstance(null);
-                this.log.debug(netLogger.getMsg(event,"RMStore calling scan"));
-                scanRes.scan();
+                RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
+                if (scheduler != null) {
+                    scheduler.scheduleNow();
+                }
             }
-            **/
         } catch (RMException rmEx) {
             this.log.error(netLogger.error(event, ErrSev.MAJOR, rmEx.getMessage()));
             throw new OSCARSServiceException( ErrorCodes.RESV_DATABASE_ERROR, rmEx.getMessage(), ErrorReport.SYSTEM);
