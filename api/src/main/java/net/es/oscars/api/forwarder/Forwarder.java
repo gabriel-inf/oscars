@@ -36,7 +36,7 @@ public abstract class Forwarder {
     private URL    url          = null;
     
     public Forwarder (String destDomainId, URL url) {
-        this.destDomainId = null;
+        this.destDomainId = destDomainId;
         this.url = url;
     }
 
