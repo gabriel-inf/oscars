@@ -32,8 +32,8 @@ import net.es.oscars.api.soap.gen.v06.ModifyResReply;
 
 public abstract class Forwarder {
     
-    private String destDomainId = null;
-    private URL    url          = null;
+    protected String destDomainId = null;
+    protected URL    url          = null;
     
     public Forwarder (String destDomainId, URL url) {
         this.destDomainId = destDomainId;

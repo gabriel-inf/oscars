@@ -29,14 +29,11 @@ public class Forwarder05 extends Forwarder {
     private static Logger LOG = Logger.getLogger(Forwarder06.class.getName());
     private static final String DEFAULT_CONNTYPE = "x509";
     
-    private String      destDomainId = null;
-    private URL         url          = null;
     private IDCClient05 client       = null;
     private SubscribeManager05 subscribeManager;
     
     public Forwarder05 (String destDomainId, URL url) throws OSCARSServiceException {
         super (destDomainId, url);
-        this.url = url;
         // Instantiates Forwarder06 client
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_API);
    
