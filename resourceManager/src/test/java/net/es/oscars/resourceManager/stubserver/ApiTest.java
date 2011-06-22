@@ -202,16 +202,11 @@ public class ApiTest {
   @Test(dependsOnMethods ={ "reservationStore2" })
     public void scanReservations() throws RMException, SchedulerException {
       LOG.debug("scanning reservations in database " + this.dbname);
+
       // the following in needed because we have a different dbname than is in RMcore
-      this.sf.getCurrentSession().beginTransaction();
       ScanReservations scanner = ScanReservations.getInstance(this.dbname);
-      //SchedulerFactory schedFact = new StdSchedulerFactory();
-      //Scheduler quartzScheduler = schedFact.getScheduler();
-      //TriggerFiredBundle tfBundle = new TriggerFiredBundle(null,null,null,false,null,null,null,null);
-      //JobExecutionContext context = new JobExecutionContext(null, null, null);
       scanner.scan();
-      this.sf.getCurrentSession().getTransaction().commit();
-      LOG.debug("finished scanning resrevations");
+      LOG.debug("finished scanning reservations");
   }
   
 /* test the mapping of Reservation to ResDetails by the ResourceManager */

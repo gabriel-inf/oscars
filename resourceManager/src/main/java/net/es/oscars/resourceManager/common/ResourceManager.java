@@ -28,6 +28,7 @@ import net.es.oscars.resourceManager.dao.ReservationDAO;
 import net.es.oscars.resourceManager.http.WSDLTypeConverter;
 import net.es.oscars.resourceManager.scheduler.RMReservationScheduler;
 import net.es.oscars.resourceManager.scheduler.ReservationScheduler;
+import org.hibernate.Session;
 
 import static net.es.oscars.resourceManager.common.RMUtils.res2resDetails;
 
@@ -40,6 +41,7 @@ public class ResourceManager {
     private Logger log;
     private StateEngine stateEngine;
     private String dbname;
+    private RMCore core;
     private String localDomainName;
     private String moduleName = ModuleName.RM;
 
@@ -51,7 +53,7 @@ public class ResourceManager {
      */
     public ResourceManager() {
         this.log = Logger.getLogger(this.getClass());
-        RMCore core = RMCore.getInstance();
+        this.core = RMCore.getInstance();
         this.dbname = core.getDbname();
         this.localDomainName = core.getLocalDomainId();
         this.stateEngine = core.getStateEngine();
@@ -64,7 +66,7 @@ public class ResourceManager {
     
     public ResourceManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
-        RMCore core = RMCore.getInstance(dbname);
+        this.core = RMCore.getInstance(dbname);
         this.dbname = dbname;
         this.localDomainName = core.getLocalDomainId();
         this.stateEngine = core.getStateEngine();
@@ -135,12 +137,16 @@ public class ResourceManager {
         }
 
         outStatus = this.stateEngine.updateStatus(res, inStatus, isFailure);
+
         if (outStatus.equals(StateEngineValues.FINISHED) &&
                 res.getLocalStatus() != RMUtils.expiredSent )   {
             RMUtils.notify(NotifyRequestTypes.RESERVATION_PERIOD_FINISHED, res);
         }
 
         if (outStatus.equals(StateEngineValues.RESERVED)) {
+            // get data updated to database before scanReservations looks for it./
+            Session session = this.core.getSession();
+            session.flush();
             // check to see if it should be scheduled
             RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
             if (scheduler != null) {
@@ -159,7 +165,7 @@ public class ResourceManager {
      * @throws OSCARSServiceException if reservation is not found
      */
     public String getStatus(String gri) throws OSCARSServiceException {
-        
+
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
         Reservation res = resvDAO.query(gri);
         return res.getStatus();
@@ -241,6 +247,9 @@ public class ResourceManager {
             resvDAO.update(res);
 
             if (res.getStatus().equals(StateEngineValues.RESERVED)) {
+                 // get data updated to database before scanReservations looks for it./
+                Session session = this.core.getSession();
+                session.flush();
                 // check to see if it should be scheduled
                 RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
                 if (scheduler != null) {

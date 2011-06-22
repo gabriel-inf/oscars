@@ -41,8 +41,6 @@ import net.es.oscars.utils.svc.ServiceNames;
  */
 
 public class RMReservationScheduler implements ReservationScheduler {
-
-    static private long           SCHEDULER_LATENCY        = 60; // 1 minute in seconds
     
     private static RMReservationScheduler instance;
     private Scheduler quartzScheduler;
@@ -359,13 +357,13 @@ private void initNotifySender() throws OSCARSServiceException {
             ReservationHandler pending = this.getPendingReservationHandler(resDetails.getGlobalReservationId(),
                                                                            ReservationHandler.PATHSETUP);
 
-            if (resDetails.getReservedConstraint().getStartTime() <= (now + RMReservationScheduler.SCHEDULER_LATENCY)) {
+            if (resDetails.getReservedConstraint().getStartTime() <= now ) {
                 // Schedule for immediate setup if not already scheduled.
-                if ((pending != null) && (pending.getExecutionTime()/1000 > (now + RMReservationScheduler.SCHEDULER_LATENCY))) {
+                if ((pending != null) && (pending.getExecutionTime()/1000 > now )) {
                     // Reservation start time has been advanced. Cancel pending operation and re-schedule
                     LOG.debug(this.netLogger.getMsg(event,"Rescheduling setup: endTime: " + 
                                                     resDetails.getReservedConstraint().getEndTime() +
-                                                    " now:  " + now + RMReservationScheduler.SCHEDULER_LATENCY +
+                                                    " now:  " + now +
                                                     " executionTime: " + pending.getExecutionTime()/1000 ));
                     this.cancel (pending);
                     pending = null;
@@ -376,7 +374,7 @@ private void initNotifySender() throws OSCARSServiceException {
                                                    "-" + ReservationHandler.PATHSETUP,
                                                    null);
                 }
-            } else { // start time is > now + SCHEDUlER_LATENCY
+            } else { // start time is > now
                 if ((pending != null) && (pending.getExecutionTime()/1000) != resDetails.getReservedConstraint().getStartTime()) {
                     // Reservation start time has been changed. Cancel pending operation and re-schedule
                     LOG.debug(this.netLogger.getMsg(event,"Rescheduling setup: endTime: " + 
@@ -436,13 +434,13 @@ private void initNotifySender() throws OSCARSServiceException {
             if (pending != null){
                 LOG.debug(this.netLogger.getMsg(event,"found pending TEARDOWN"));
             }
-            if (resDetails.getReservedConstraint().getEndTime() <= (now + RMReservationScheduler.SCHEDULER_LATENCY)) {
+            if (resDetails.getReservedConstraint().getEndTime() <= now) {
                 // Schedule for immediate teardown if not already scheduled.
-                if ((pending != null) && (pending.getExecutionTime()/1000 >  (now + RMReservationScheduler.SCHEDULER_LATENCY))) {
+                if ((pending != null) && (pending.getExecutionTime()/1000 >  now )) {
                     // Reservation end time has been advanced. Cancel pending operation and re-schedule
                     LOG.debug(this.netLogger.getMsg(event,"Rescheduling teardown: endTime: " + 
                                                     resDetails.getReservedConstraint().getEndTime() +
-                                                    " now:  " + now + RMReservationScheduler.SCHEDULER_LATENCY +
+                                                    " now:  " + now  +
                                                     " executionTime: " + pending.getExecutionTime()/1000 ));
                     this.cancel (pending);
                     pending = null;
@@ -517,12 +515,12 @@ private void initNotifySender() throws OSCARSServiceException {
             // use UserRequestConstraint here since there might not be a reservedConstraint
             pending = this.getPendingReservationHandler(resDetails.getGlobalReservationId(),
                     ReservationHandler.FINISH);
-            if (resDetails.getUserRequestConstraint().getEndTime() <= (now + RMReservationScheduler.SCHEDULER_LATENCY)) {
-                if ((pending != null) && (pending.getExecutionTime()/1000 >  (now + RMReservationScheduler.SCHEDULER_LATENCY))) {
+            if (resDetails.getUserRequestConstraint().getEndTime() <= now) {
+                if ((pending != null) && (pending.getExecutionTime()/1000 >  now )) {
                     // Reservation end time has been advanced. Cancel pending operation and re-schedule
                     LOG.debug(this.netLogger.getMsg(event, "Rescheduling finish: endTime: " +
                                                     resDetails.getUserRequestConstraint().getEndTime() +
-                                                    " now:  " + now + RMReservationScheduler.SCHEDULER_LATENCY +
+                                                    " now:  " + now +
                                                     " executionTime: " + pending.getExecutionTime()/1000 ));
                     this.cancel (pending);
                     pending = null;

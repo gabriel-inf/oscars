@@ -95,15 +95,7 @@ public class ScanReservations {
              ReservationDAO resDAO = new ReservationDAO(this.dbname);
              ResourceManager manager = new ResourceManager();
              Session session = this.core.getSession();
-             boolean sessionOpen = false;
-             try {
-                 if (session.getTransaction() != null ) {
-                     sessionOpen = true;
-                     // was called from ResourceManager rather than scheduler
-                 }
-             } catch (HibernateException ex) {
-                 // probably means there is no transaction
-             }
+
              session.beginTransaction();
              RMReservationScheduler rmSched = RMReservationScheduler.getInstance();
              List<String> griList = new ArrayList<String>();
@@ -221,9 +213,7 @@ public class ScanReservations {
                  // Found an invalid reservation in table: no user constraint or no reserved constraint
                  LOG.warn(netLogger.error(event, ErrSev.MINOR,"Exception: " + ex.getMessage()));
              }
-             if (sessionOpen == false ){
-                 session.getTransaction().commit();
-             }
+             session.getTransaction().commit();
              //RMReservationScheduler.schedLock.unlock();
              RMReservationScheduler.schedLock = "unlocked";
              LOG.debug(netLogger.end(event));
