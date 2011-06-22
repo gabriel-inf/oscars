@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 
 import net.es.oscars.api.soap.gen.v06.ListReply;
 import net.es.oscars.api.soap.gen.v06.ListRequest;
-import net.es.oscars.authZ.soap.gen.CheckAccessReply;
 import net.es.oscars.common.soap.gen.AuthConditions;
 import net.es.oscars.coord.workers.RMWorker;
 import net.es.oscars.logging.ErrSev;

@@ -11,7 +11,6 @@ import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
-import sun.reflect.generics.tree.Tree;
 
 public class StateEngine {
 

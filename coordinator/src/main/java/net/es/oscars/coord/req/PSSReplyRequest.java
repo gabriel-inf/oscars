@@ -15,8 +15,6 @@ import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.sharedConstants.PSSConstants;
 
 import net.es.oscars.coord.actions.CoordAction;
-import net.es.oscars.coord.actions.RMGetStatusAction;
-import net.es.oscars.coord.actions.CoordAction;
 import net.es.oscars.coord.soap.gen.PSSReplyContent;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 

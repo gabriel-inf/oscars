@@ -6,8 +6,6 @@ package net.es.oscars.resourceManager.common;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.corba.se.impl.orbutil.concurrent.ReentrantMutex;
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;

@@ -2,10 +2,8 @@ package net.es.oscars.coord.req;
 
 import org.apache.log4j.Logger;
 
-import net.es.oscars.api.soap.gen.v06.GlobalReservationId;
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
-import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.common.soap.gen.AuthConditions;
 import net.es.oscars.coord.workers.RMWorker;
 import net.es.oscars.logging.ErrSev;

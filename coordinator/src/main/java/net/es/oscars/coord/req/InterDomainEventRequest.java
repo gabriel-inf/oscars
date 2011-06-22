@@ -16,10 +16,6 @@ import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.sharedConstants.StateEngineValues;
-import org.apache.log4j.spi.ErrorCode;
-
-import javax.management.OperationsException;
-import java.awt.*;
 
 
 public class InterDomainEventRequest extends CoordRequest <InterDomainEventContent,Object >{

@@ -5,7 +5,6 @@ import net.es.oscars.coord.actions.*;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.soap.ErrorReport;
-import org.apache.bcel.classfile.Method;
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
@@ -491,7 +490,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             this.setReservationState (newState);
         }
         if (event != null) {
-            // if event has been set, the request is either comleted or failed
+            // if event has been set, the request is either completed or failed
             // remove from alias list
             LOG.debug(netLogger.end("PathRequest.setReservationState", " calling unRegisterAlias with " +
                                         this.getName()));
