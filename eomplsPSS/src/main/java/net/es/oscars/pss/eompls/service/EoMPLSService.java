@@ -146,12 +146,12 @@ public class EoMPLSService implements CircuitService {
         }
         
         Verifier vf = ClassFactory.getInstance().getVerifier();
-        vf.verify(action, deviceId);
         
-        action.setStatus(ActionStatus.SUCCESS);
-        ClassFactory.getInstance().getWorkflow().update(action);
-        coordNotify.process(action);
-        return action;
+        
+        PSSAction verifiedAction = vf.verify(action, deviceId);
+        ClassFactory.getInstance().getWorkflow().update(verifiedAction);
+        coordNotify.process(verifiedAction);
+        return verifiedAction;
     }
     
     public void setConfig(CircuitServiceConfig config) {

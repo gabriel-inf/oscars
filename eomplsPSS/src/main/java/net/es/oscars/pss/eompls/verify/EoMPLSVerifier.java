@@ -46,15 +46,18 @@ public class EoMPLSVerifier implements Verifier {
     public PSSAction verify(PSSAction action, String deviceId) throws PSSException {
         if (performVerify == false) {
             // automatic immediate success
+            log.debug("not performing verify because of config, returning success");
             action.setStatus(ActionStatus.SUCCESS);
             return action;
         }
         // no need to verify a status
         if (action.getActionType().equals(ActionType.STATUS)) {
+            log.debug("not performing verify because action is status check, returning success");
             action.setStatus(ActionStatus.SUCCESS);
             return action;
         } else if (action.getActionType().equals(ActionType.MODIFY)) {
             // TODO: modify always fails (for now)
+            log.debug("not performing verify because action is modify, returning failure");
             action.setStatus(ActionStatus.FAIL);
             return action;
         }
@@ -75,15 +78,15 @@ public class EoMPLSVerifier implements Verifier {
         int tries = 1;
         while (!decided) {
             while (tries <= verifyTries) {
+                log.debug("verify try");
                 tries++;
-                PSSAction statusAction = new PSSAction();
-                statusAction.setActionType(ActionType.STATUS);
-                statusAction.setRequest(action.getRequest());
-                statusAction.setStatus(ActionStatus.OUTSTANDING);
-                success = this.checkStatus(statusAction, deviceId, action);
+                log.debug("verify try: "+tries+" of "+verifyTries+" starting");
+                success = this.checkStatus(deviceId, action);
                 if (success) {
+                    log.debug("verify try: "+tries+" succeeded");
                     decided = true;
                 } else {
+                    log.debug("verify try: "+tries+" failed, will try again in "+delaySec+" seconds");
                     try {
                         Thread.sleep(delaySec * 1000);
                     } catch (InterruptedException e) {
@@ -97,17 +100,21 @@ public class EoMPLSVerifier implements Verifier {
         // by now it's either successful so return
         if (success) {
             action.setStatus(ActionStatus.SUCCESS);
+            log.debug("verify success, returning");
             return action;
             
         // or failed & we need to clean up 
         } else if (cleanupOnFail) {
+            log.debug("verify failed all attempts, cleaning up");
             if (action.getActionType().equals(ActionType.SETUP)) {
+                log.error("cleaning up setup: tearing down");
                 PSSAction cleanupAction = new PSSAction();
                 cleanupAction.setActionType(ActionType.TEARDOWN);
                 cleanupAction.setRequest(action.getRequest());
                 cleanupAction.setStatus(ActionStatus.OUTSTANDING);
                 this.cleanup(cleanupAction, deviceId);
             } else if (action.getActionType().equals(ActionType.TEARDOWN)) {
+                log.error("cleaning up teardown: don't know how");
                 // can't cleanup a failed teardown
                 // TODO: notify IDC admins
             }
@@ -121,25 +128,36 @@ public class EoMPLSVerifier implements Verifier {
     }
     
     @SuppressWarnings("rawtypes")
-    private boolean checkStatus(PSSAction action, String deviceId, PSSAction prevAction) throws PSSException {
+    private boolean checkStatus(String deviceId, PSSAction prevAction) throws PSSException {
         boolean success = false;
-        String resultString = ConnectorUtils.sendAction(action, deviceId, EoMPLSService.SVC_ID);
-        
         
         ActionType prevActionType = prevAction.getActionType();
         ResDetails res;
         if (prevActionType.equals(ActionType.SETUP)) {
-            res = action.getRequest().getSetupReq().getReservation();
+            res = prevAction.getRequest().getSetupReq().getReservation();
         } else if (prevActionType.equals(ActionType.TEARDOWN)) {
-            res = action.getRequest().getTeardownReq().getReservation();
+            res = prevAction.getRequest().getTeardownReq().getReservation();
         } else {
-            throw new PSSException("cannot check status unless previous actionw as setup or teardown");
+            throw new PSSException("cannot check status unless previous action was setup or teardown");
         }
+        String gri = res.getGlobalReservationId();
+        log.debug("checking status for "+gri+" action: "+prevActionType);
+        
+        PSSAction statusAction = new PSSAction();
+        statusAction.setActionType(ActionType.STATUS);
+        statusAction.setRequest(prevAction.getRequest());
+        statusAction.setStatus(ActionStatus.OUTSTANDING);
+        String resultString = ConnectorUtils.sendAction(statusAction, deviceId, EoMPLSService.SVC_ID);
+        log.debug("status result string:\n"+resultString);
+        
+        
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
 
         CtrlPlaneLinkContent ingressLink = pi.getPath().getHop().get(0).getLink();
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
+        
+        
         
         String srcLinkId = ingressLink.getId();
         URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
@@ -240,7 +258,18 @@ public class EoMPLSVerifier implements Verifier {
             }
         } 
         
-        
+        if (isVCup) {
+            log.debug(gri+": VC is up"); 
+        } else {
+            log.debug(gri+": VC is down"); 
+        }
+            
+        if (isVCConfigured) {
+            log.debug(gri+": VC is configured"); 
+        } else {
+            log.debug(gri+": VC is not configured"); 
+            
+        }
         
         
         if (prevActionType.equals(ActionType.SETUP)) {
