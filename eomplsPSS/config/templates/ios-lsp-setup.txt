@@ -10,16 +10,16 @@ policy-map ${policy.name}
 !
 
 <#-- the pseudowire -->
-pseudowire-class ${pseudowire.name}
+pseudowire-class ${lsp.name}
  encapsulation mpls
  preferred-path interface Tunnel${vlan} disable-fallback
 !
 
 <#-- the tunnel -->
 interface Tunnel${vlan}
- description ${tunnel.description}
+ description ${lsp.description}
  ip unnumbered Loopback0
- tunnel destination ${tunnel.destination} <#-- the ip address of the internal-facing interface at the egress router -->
+ tunnel destination ${lsp.to} <#-- the ip address of the internal-facing interface at the egress router -->
  tunnel mode mpls traffic-eng
  tunnel mpls traffic-eng priority 4 4
  tunnel mpls traffic-eng path-option 100 explicit name ${path.name}

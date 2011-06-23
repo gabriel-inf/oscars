@@ -35,8 +35,8 @@ public class EoMPLSPSSSoapServer extends OSCARSSoapService<PSSService, PSSPortTy
             sched.setWorkflowInspector(WorkflowInspectorJob.class);
             sched.start();
         } catch (PSSException ex) {
-                // TODO Auto-generated catch block
             ex.printStackTrace();
+            throw new OSCARSServiceException(ex);
         }
     }
 }
