@@ -30,6 +30,7 @@ import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.service.EoMPLSService;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
+import net.es.oscars.pss.soap.gen.TeardownReqContent;
 import net.es.oscars.pss.util.ConnectorUtils;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
@@ -112,6 +113,14 @@ public class EoMPLSVerifier implements Verifier {
                 cleanupAction.setActionType(ActionType.TEARDOWN);
                 cleanupAction.setRequest(action.getRequest());
                 cleanupAction.setStatus(ActionStatus.OUTSTANDING);
+                
+                TeardownReqContent td = new TeardownReqContent();
+                td.setReservation(action.getRequest().getSetupReq().getReservation());
+                td.setCallbackEndpoint(action.getRequest().getSetupReq().getCallbackEndpoint());
+                td.setTransactionId(action.getRequest().getSetupReq().getTransactionId());
+                
+                cleanupAction.getRequest().setTeardownReq(td);
+                
                 this.cleanup(cleanupAction, deviceId);
             } else if (action.getActionType().equals(ActionType.TEARDOWN)) {
                 log.error("cleaning up teardown: don't know how");
@@ -210,6 +219,7 @@ public class EoMPLSVerifier implements Verifier {
         nsmap.put( "ns", uri);
 
         String xpathExpr = "//ns:l2circuit-neighbor[ns:neighbor-address='"+l2circuitEgress+"']/ns:connection[ns:local-interface/ns:interface-name='"+ifceFullName+"']";
+        
         log.debug("xpath is: "+xpathExpr);
         
         XPath xpath;
