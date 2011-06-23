@@ -1,7 +1,5 @@
 package net.es.oscars.pss.notify;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
@@ -54,11 +52,17 @@ public class CoordNotifier implements Notifier {
             log.debug("calling Coordinator at " + coordURL.toString());
             cl = CoordClient.getClient(coordURL, wsdlURL);
             PSSReplyContent reply = new PSSReplyContent();
-            if (action.getStatus() == ActionStatus.SUCCESS) {
+            if (action.getStatus().equals(ActionStatus.SUCCESS)) {
                 reply.setStatus(PSSConstants.SUCCESS);
             } else {
                 reply.setStatus(PSSConstants.FAIL);
+                if (action.getFaultReport() != null) {
+                    reply.setErrorReport(action.getFaultReport());
+                }
             }
+            
+            
+            
             if (action.getActionType().equals(ActionType.SETUP)) {
                 reply.setGlobalReservationId(
                             action.getRequest().getSetupReq().getReservation().getGlobalReservationId());
