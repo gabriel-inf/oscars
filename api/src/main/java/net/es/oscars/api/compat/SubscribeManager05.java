@@ -52,6 +52,7 @@ public class SubscribeManager05 {
     private W3CEndpointReference consumerEpr;
     private URL lookupUrl;
     private URL lookupWsdl;
+    private URL notify05Wsdl;
     
     final private String PROP_LOOKUP_URL = "lookupUrl";
     final private String PROP_LOOKUP_WSDL = "lookupWsdl";
@@ -74,6 +75,12 @@ public class SubscribeManager05 {
         String configFilename = cc.getFilePath(ConfigDefaults.CONFIG);
         Map config = ConfigHelper.getConfiguration(configFilename);
         
+        //get 0.5 wsdl
+        try{
+            this.notify05Wsdl = new URL("file:" + cc.getFilePath("wsdl-notify-0.5"));
+        }catch(Exception e){
+            throw new ConfigException("Unable to load notify 0.5 wsdl");
+        }
         //get local URL of API service
         this.consumerEpr = (new W3CEndpointReferenceBuilder()).address(this.getPublishTo(config)).build();
 
@@ -145,7 +152,7 @@ public class SubscribeManager05 {
         
         //subscribe
         try {
-            NotifyClient05 nbClient = NotifyClient05.getClient(new URL(nbUrl), new URL(nbUrl+"?wsdl"));
+            NotifyClient05 nbClient = NotifyClient05.getClient(new URL(nbUrl), this.notify05Wsdl);
             //clear old subscriptions
             try{
                 Unsubscribe unsubscribe = new Unsubscribe();

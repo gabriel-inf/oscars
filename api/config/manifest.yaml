@@ -11,7 +11,8 @@ OSCARSService:
         wsdl:    'OSCARS_DIST/common-soap/src/main/resources/api/OSCARS-0.6.wsdl'
         wsdl-0.6:           'OSCARS_DIST/common-soap/src/main/resources/api/OSCARS-0.6.wsdl' 
         wsdl-0.5:           'OSCARS_DIST/common-soap/src/main/resources/api/OSCARS-0.5.wsdl'
-
+        wsdl-notify-0.5:    'OSCARS_DIST/common-soap/src/main/resources/api/OSCARS-0.5-Notify.wsdl'
+        
     DEVELOPMENT:
         templateDir:        'OSCARS_HOME/OSCARSService/conf/'
         config.yaml:        'OSCARS_HOME/OSCARSService/conf/config.HTTP.yaml'
@@ -23,7 +24,8 @@ OSCARSService:
         wsdl:               'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.6.wsdl'
         wsdl-0.6:           'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.6.wsdl'
         wsdl-0.5:           'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5.wsdl'
-
+        wsdl-notify-0.5:    'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5-Notify.wsdl'
+        
     SDK:
         templateDir:        'OSCARS_HOME/OSCARSService/conf/'
         config.yaml:        'OSCARS_HOME/OSCARSService/conf/config.HTTP.yaml'
@@ -35,7 +37,8 @@ OSCARSService:
         wsdl:               'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.6.wsdl'
         wsdl-0.6:           'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.6.wsdl'
         wsdl-0.5:           'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5.wsdl'
-
+        wsdl-notify-0.5:    'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5-Notify.wsdl'
+        
     PRODUCTION:
         templateDir:        'OSCARS_HOME/OSCARSService/conf/'
         config.yaml:        'OSCARS_HOME/OSCARSService/conf/config.SSL.yaml'
@@ -47,7 +50,8 @@ OSCARSService:
         wsdl:               'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.6.wsdl'
         wsdl-0.6:           'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.6.wsdl'
         wsdl-0.5:           'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5.wsdl'
-
+        wsdl-notify-0.5:    'OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5-Notify.wsdl'
+        
 OSCARSInternalService:
     UNITTEST:
         config.yaml:        'OSCARS_DIST/api/config/config-internal.HTTP.yaml'
