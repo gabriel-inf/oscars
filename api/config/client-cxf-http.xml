@@ -53,7 +53,20 @@
         <entry key="jaxen.net.ssl.trustStore" value="keystore-truststore.jks"/>
       </jaxws:properties>
     </jaxws:client>
-
+    
+    <jaxws:client name="{http://oscars.es.net/OSCARS}OSCARSNotify"
+      createdFromAPI="true">
+      <jaxws:properties>
+        <entry key="ws-security.signature.username" value="mykey" />
+        <entry key="ws-security.callback-handler"
+          value="net.es.oscars.utils.clients.ClientX509PasswordCB"/>
+        <entry key="ws-security.signature.properties"
+          value="clientKeystore.properties" />
+        <!--  the following keeps jsse from loading all the default cacerts 
+                unlike the cxf security stuff, jsse does not  need a password for the trust store -->
+        <entry key="jaxen.net.ssl.trustStore" value="keystore-truststore.jks"/>
+      </jaxws:properties>
+    </jaxws:client>
 
   <http:conduit name="{http://oscars.es.net/OSCARS}OSCARS.http-conduit">
   </http:conduit>

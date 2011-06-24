@@ -10,6 +10,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Logger;
 import org.oasis_open.docs.wsn.b_2.FilterType;
 import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
@@ -153,6 +154,8 @@ public class SubscribeManager05 {
         //subscribe
         try {
             NotifyClient05 nbClient = NotifyClient05.getClient(new URL(nbUrl), this.notify05Wsdl);
+            ClientProxy.getClient(nbClient.getPortType()).getRequestContext().put("org.apache.cxf.message.Message.ENDPOINT_ADDRESS", nbUrl);
+
             //clear old subscriptions
             try{
                 Unsubscribe unsubscribe = new Unsubscribe();
