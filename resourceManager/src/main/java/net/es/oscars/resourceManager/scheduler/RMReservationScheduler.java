@@ -34,10 +34,10 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 
 /**
- * Adds and removes reservations to the scheduling system. The reservation is encapsulated within a ResDetails.
- * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
- * The ResourceManager is responsible for re-scheduling a reservation if its content is changed.
- * and removing the reservation if it is canceled
+ * Adds and removes reservation pathSetup, teardowns and finish actions to the scheduling system.
+ * The reservation is encapsulated within a ResDetails.
+ * The ResourceManager is responsible for re-scheduling a reservation if its trigger times are changed
+ * and removing any scheduled actions if it is canceled.
  */
 
 public class RMReservationScheduler implements ReservationScheduler {
@@ -139,7 +139,8 @@ public class RMReservationScheduler implements ReservationScheduler {
     
     /**
      * Schedules a PathTeardown job
-     * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
+     * Called from ScanReservations.scan and
+     * ResourceManager store and updateStatus when status changes to ACTIVE
      * The ResourceManager is responsible for re-scheduling a reservation if its content is changed.
      *
      * @param resDetails
@@ -158,10 +159,9 @@ public class RMReservationScheduler implements ReservationScheduler {
         // Check if we need to schedule a path teardown
         if (resDetails.getReservedConstraint().getEndTime() <= (now + this.lookAhead)) {
             this.teardown (resDetails);
-        } else {
-            LOG.warn(netLogger.error(event, ErrSev.MINOR, "no job was scheduled" ));
         }
     }
+
     /**
      * Schedules a reservation finish job
      * Called from ScanReservations.scan which holds the RMReservationScheduler.schedLock.
@@ -189,8 +189,9 @@ public class RMReservationScheduler implements ReservationScheduler {
         }
     }
     /**
-     * Remove any scheduled action for this reservation. Called when a reservation is canceled.
-     * ResourceManger.cancel has RMReservationScheduler.schedLock held
+     * Remove any scheduled pathset or teardown for this reservation.
+     * Called when a reservation is canceled and when a signal-xml reservation
+     * is set to status RESERVED
      * @param resDetails the details of the reservation
      */
     public void forget (ResDetails resDetails) {
@@ -204,18 +205,20 @@ public class RMReservationScheduler implements ReservationScheduler {
         this.netLogger.setGRI(gri);
         LOG.debug(this.netLogger.start(event));
 
-        // Is there any PATH SETUP pending job for that reservation ?
-        ReservationHandler pending = this.getPendingReservationHandler(gri, ReservationHandler.PATHSETUP);
-        if (pending != null) {
-            LOG.debug(this.netLogger.getMsg(event,"canceling path setup" ));
-            this.cancel (pending);
-        }
-        // Is there any TEAR DOWN pending for that reservation
-        pending = this.getPendingReservationHandler(gri, ReservationHandler.TEARDOWN);
-        if (pending != null) {
-            // Coordinator.cancel will teardown an active reservation
-            LOG.debug(this.netLogger.getMsg(event,"canceling path teardown" ));
-            this.cancel (pending);
+        synchronized (this.pendingReservations) {
+            // Is there any PATH SETUP pending job for that reservation ?
+            ReservationHandler pending = this.getPendingReservationHandler(gri, ReservationHandler.PATHSETUP);
+            if (pending != null) {
+                LOG.debug(this.netLogger.getMsg(event,"canceling path setup" ));
+                this.cancel (pending);
+            }
+            // Is there any TEAR DOWN pending for that reservation
+            pending = this.getPendingReservationHandler(gri, ReservationHandler.TEARDOWN);
+            if (pending != null) {
+                // Coordinator.cancel will teardown an active reservation
+                LOG.debug(this.netLogger.getMsg(event,"canceling path teardown" ));
+                this.cancel (pending);
+            }
         }
     }
 
@@ -394,7 +397,7 @@ private void initNotifySender() throws OSCARSServiceException {
             }
             // need to schedule a job
             if (jobTrigger != null) {
-                JobDetail jobDetail  = new JobDetail(resDetails.getGlobalReservationId() + 
+                JobDetail jobDetail  = new JobDetail(resDetails.getGlobalReservationId() +
                                                      "-" + ReservationHandler.PATHSETUP,
                                                      null,
                                                      PathSetupJob.class);

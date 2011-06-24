@@ -16,6 +16,7 @@ import net.es.oscars.resourceManager.beans.Reservation;
 import net.es.oscars.resourceManager.dao.ReservationDAO;
 import net.es.oscars.resourceManager.scheduler.RMReservationScheduler;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
+import net.es.oscars.resourceManager.beans.Path;
 
 import org.apache.log4j.Logger;
 
@@ -104,7 +105,7 @@ public class ScanReservations {
                  List<Reservation> setUpResList = resDAO.pendingReservations(lookAhead);
 
                  for (Reservation res: setUpResList) {
-                     if (res.getConstraint(ConstraintType.USER).getPath().getPathSetupMode().equals("timer-automatic")) {
+                     if (res.getConstraint(ConstraintType.USER).getPath().getPathSetupMode().equals(Path.MODE_AUTO)) {
                          ResDetails resDetails = RMUtils.res2resDetails(res,true);  // internalHopAllowed
                          if (resDetails.getReservedConstraint() == null) {
                              LOG.warn(netLogger.error(event,ErrSev.MINOR,"skipping reservation " + 

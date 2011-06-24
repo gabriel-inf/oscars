@@ -143,19 +143,46 @@ public class ResourceManager {
             RMUtils.notify(NotifyRequestTypes.RESERVATION_PERIOD_FINISHED, res);
         }
 
-        if (outStatus.equals(StateEngineValues.RESERVED)) {
-            // get data updated to database before scanReservations looks for it./
+        // see if any setup or teardown actions should be scheduled
+        try {
+            ResDetails resDetails = res2resDetails(res,true);
+            this.schedulePathAction(resDetails,outStatus,
+                                    res.getConstraint(ConstraintType.USER).getPath().getPathSetupMode());
+         } catch (RMException RMex) {
+                // shouldn't happen
+                throw new OSCARSServiceException(ErrorCodes.RESV_DATABASE_ERROR, RMex.getMessage(),
+                                                 ErrorReport.SYSTEM );
+         }
+         this.log.debug(netLogger.end("updateStatus"));
+         return outStatus;
+    }
+
+    /**
+     * Check to see if any pathActions should be scheduled or removed and if so, calls RMScheduler
+     * to doit.
+     * @param resDetails  reservation details
+     * @param outStatus   new status for reservation
+     * @param pathSetupMode  Path.MODE_AUTO or Path MODE.SIGNAL
+     */
+    private void schedulePathAction(ResDetails resDetails, String outStatus, String pathSetupMode) {
+        RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
+        if (scheduler != null) {
+            // get data updated to database before RMSchedule looks for it.
             Session session = this.core.getSession();
             session.flush();
-            // check to see if it should be scheduled
-            RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
-            if (scheduler != null) {
-             scheduler.scheduleNow();
+            if (outStatus.equals(StateEngineValues.RESERVED)) {
+                if (pathSetupMode.equals(Path.MODE_AUTO)) {
+                    // see if setup should be scheduled
+                    scheduler.scheduleSetup(resDetails);
+                } else {
+                     // see if a teardown has been scheduled for MODE_SIGNAL and should be deleted
+                    scheduler.forget(resDetails);
+                }
+            }
+            if (outStatus.equals(StateEngineValues.ACTIVE)){
+                    scheduler.scheduleTeardown(resDetails);
             }
         }
-
-       this.log.debug(netLogger.end("updateStatus"));
-       return outStatus;
     }
     /**
      * getStatus
@@ -246,15 +273,14 @@ public class ResourceManager {
             }
             resvDAO.update(res);
 
-            if (res.getStatus().equals(StateEngineValues.RESERVED)) {
-                 // get data updated to database before scanReservations looks for it./
-                Session session = this.core.getSession();
-                session.flush();
-                // check to see if it should be scheduled
-                RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
-                if (scheduler != null) {
-                    scheduler.scheduleNow();
-                }
+            // get data updated to database before RMScheduler looks for it.
+            Session session = this.core.getSession();
+            session.flush();
+            // check to see if setup should be scheduled
+            RMReservationScheduler scheduler = RMReservationScheduler.getInstance();
+            if (scheduler != null) {
+               this.schedulePathAction(resDetails, res.getStatus(),
+                                        res.getConstraint(ConstraintType.USER).getPath().getPathSetupMode());
             }
         } catch (RMException rmEx) {
             this.log.error(netLogger.error(event, ErrSev.MAJOR, rmEx.getMessage()));
@@ -500,46 +526,43 @@ public class ResourceManager {
         StdConstraint constraint = null;
         Map <String,StdConstraint> conMap = new HashMap<String,StdConstraint>();
         Boolean internalPathAuthorized = true; // Coord needs complete path to send to PCECancel
+
         // throws RMException if no reservation is found
-        synchronized (RMReservationScheduler.schedLock){
-            RMReservationScheduler.schedLock = "cancelReservation";
-            res = resvDAO.query(gri);
-            String loginId = this.getPermittedLogin(authConditions);
-            List<String> domains = getPermittedDomains(authConditions);
-            if (loginId != null) {
-                if (!res.getLogin().equals(loginId)){
-                    throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, "not owner", ErrorReport.USER);
+        res = resvDAO.query(gri);
+        String loginId = this.getPermittedLogin(authConditions);
+        List<String> domains = getPermittedDomains(authConditions);
+        if (loginId != null) {
+            if (!res.getLogin().equals(loginId)){
+                throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, "not owner", ErrorReport.USER);
+            }
+        }
+        try {
+            if (domains != null ){
+                if (!checkDomains(res,domains,netLogger, event)){
+                    this.log.info(netLogger.getMsg(event,"user " + loginId + " not allowed to cancel this reservation: " + gri));
+                    throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, "not owm domain", ErrorReport.USER);
                 }
             }
+            boolean accepted = false;
+            String status = res.getStatus();
             try {
-                if (domains != null ){
-                    if (!checkDomains(res,domains,netLogger, event)){
-                        this.log.info(netLogger.getMsg(event,"user " + loginId + " not allowed to cancel this reservation: " + gri));
-                        throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, "not owm domain", ErrorReport.USER);
-                    }
+                if (status.equals(StateEngineValues.ACCEPTED)) {
+                    stateEngine.updateStatus(res, StateEngineValues.CANCELLED, true);
+                    accepted = true;
+                } else {
+                    String newStatus = StateEngine.canModifyStatus(status,StateEngineValues.INCANCEL);
                 }
-                boolean finished = false;
-                String status = res.getStatus();
-                try {
-                    if (status.equals(StateEngineValues.ACCEPTED)) {
-                        stateEngine.updateStatus(res, StateEngineValues.CANCELLED, true);
-                        finished = true;
-                    } else {
-                        String newStatus = StateEngine.canModifyStatus(status,StateEngineValues.INCANCEL);
-                    }
-                } catch( OSCARSServiceException oEx) {
-                    throw new OSCARSServiceException( ErrorCodes.RESV_STATE_ERROR, oEx.getMessage(), ErrorReport.USER);
-                }
-                resDetails = res2resDetails(res, internalPathAuthorized);
-                if (!finished) {
-                    RMReservationScheduler.getInstance().forget(resDetails);
-                }
-            } catch (RMException rmEx) {
-                throw new OSCARSServiceException( ErrorCodes.RESV_DATABASE_ERROR, rmEx.getMessage(), ErrorReport.SYSTEM);
+            } catch( OSCARSServiceException oEx) {
+                throw new OSCARSServiceException( ErrorCodes.RESV_STATE_ERROR, oEx.getMessage(), ErrorReport.USER);
             }
-            RMReservationScheduler.schedLock = "unlocked";
-        } // end synchronized block
-        
+            resDetails = res2resDetails(res, internalPathAuthorized);
+            if (!accepted) {
+                RMReservationScheduler.getInstance().forget(resDetails);
+            }
+        } catch (RMException rmEx) {
+            throw new OSCARSServiceException( ErrorCodes.RESV_DATABASE_ERROR, rmEx.getMessage(), ErrorReport.SYSTEM);
+        }
+
         this.log.debug(netLogger.end(event));
         return resDetails;
     }

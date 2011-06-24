@@ -18,6 +18,9 @@ public class Path extends HibernateBean implements Serializable {
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
 
+    public static String MODE_AUTO = "timer-automatic";
+    public static String MODE_SIGNAL = "signal-xml";
+
     /** persistent field */
     private String pathSetupMode;
 
