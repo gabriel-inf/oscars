@@ -246,7 +246,8 @@ public class SubscribeManager05 {
         netLogProps.put("domain", domainId);
         this.log.info(netLog.start("SubscribeManager05.sendRenew"));
         try {
-            NotifyClient05 nbClient = NotifyClient05.getClient(new URL(nbUrl), new URL(nbUrl+"?wsdl"));
+            NotifyClient05 nbClient = NotifyClient05.getClient(new URL(nbUrl), this.notify05Wsdl);
+            ClientProxy.getClient(nbClient.getPortType()).getRequestContext().put("org.apache.cxf.message.Message.ENDPOINT_ADDRESS", nbUrl);
             Renew renewRequest = new Renew();
             renewRequest.setSubscriptionReference(this.subscriptionIdMap.get(domainId));
             RenewResponse renewResp = nbClient.getPortType().renew(renewRequest);
