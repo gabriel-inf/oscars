@@ -154,8 +154,8 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
             response.setSubscriptionReference(request.getSubscriptionReference());   
-            this.globals.getSubscribeMgr().changeStatus(WSAddrParser.getAddress(request.getSubscriptionReference()), 
-                    SubscriptionStatus.INACTIVE_STATUS, authConds);
+            this.globals.getSubscribeMgr().changeStatus(request.getSubscriptionReference(), 
+                    SubscriptionStatus.INACTIVE_STATUS, subjAttrs, authConds);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.unsubscribe", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
@@ -200,8 +200,8 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
             response.setSubscriptionReference(request.getSubscriptionReference());   
-            this.globals.getSubscribeMgr().changeStatus(WSAddrParser.getAddress(request.getSubscriptionReference()), 
-                    SubscriptionStatus.PAUSED_STATUS, authConds);
+            this.globals.getSubscribeMgr().changeStatus(request.getSubscriptionReference(), 
+                    SubscriptionStatus.PAUSED_STATUS, subjAttrs, authConds);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.pauseSubscription", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
@@ -222,8 +222,8 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
             response.setSubscriptionReference(request.getSubscriptionReference());
-            this.globals.getSubscribeMgr().changeStatus(WSAddrParser.getAddress(request.getSubscriptionReference()), 
-                    SubscriptionStatus.ACTIVE_STATUS, authConds);
+            this.globals.getSubscribeMgr().changeStatus(request.getSubscriptionReference(), 
+                    SubscriptionStatus.ACTIVE_STATUS, subjAttrs, authConds);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.resumeSubscription", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();

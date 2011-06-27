@@ -493,35 +493,62 @@ public class SubscribeManager {
         
         return topics;
     }
-
-    public void changeStatus(String subscriptionId, int newStatus, 
-            AuthConditions authConds) throws OSCARSServiceException {
+    
+    public void changeStatus(W3CEndpointReference epr, int newStatus, 
+            SubjectAttributes subjAttrs, AuthConditions authConds) throws OSCARSServiceException {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         this.log.debug(netLogger.start("SubscribeManager.changeStatus"));
+        
+        //Legacy support for 0.5 subscription ID format
+        String subscriptionId = WSAddrParser.get05SubscriptionId(epr);
+        if(subscriptionId == null){
+            subscriptionId = WSAddrParser.getAddress(epr);
+        }
         try{
+            PreparedStatement updateSQL = null;
             Connection conn = NotificationGlobals.getInstance().getConnection();
-            PreparedStatement querySQL = conn.prepareStatement("SELECT status, userLogin FROM subscriptions WHERE referenceId=?");
-            querySQL.setString(1, subscriptionId);
-            ResultSet queryResult = querySQL.executeQuery();
-            if(!queryResult.next()){
-                throw new OSCARSServiceException("Unable to find subscription with id " + subscriptionId);
+            //ALL is special case that modifies all subscriptions belonging to a user
+            if("ALL".equals(subscriptionId)){
+                String userLogin = null;
+                for(AttributeType attr : subjAttrs.getSubjectAttribute()){
+                    if(AuthZConstants.LOGIN_ID.equals(attr.getName()) &&
+                            !attr.getAttributeValue().isEmpty()){
+                        userLogin = (String) attr.getAttributeValue().get(0);
+                    }
+                }
+                if(userLogin == null){
+                    throw new OSCARSServiceException("Cannot determine user that made request");
+                }
+                updateSQL = conn.prepareStatement("UPDATE subscriptions SET status=? WHERE userLogin=? AND status != ?");
+                updateSQL.setInt(1, newStatus);
+                updateSQL.setString(2, userLogin);
+                updateSQL.setInt(3, SubscriptionStatus.INACTIVE_STATUS);
+            }else{
+                
+                PreparedStatement querySQL = conn.prepareStatement("SELECT status, userLogin FROM subscriptions WHERE referenceId=?");
+                querySQL.setString(1, subscriptionId);
+                ResultSet queryResult = querySQL.executeQuery();
+                if(!queryResult.next()){
+                    throw new OSCARSServiceException("Unable to find subscription with id " + subscriptionId);
+                }
+                
+                //check permissions
+                this.checkAuthConditions(queryResult.getString(2), authConds);
+                
+                int currentStatus = queryResult.getInt(1);
+                if(newStatus == SubscriptionStatus.PAUSED_STATUS && 
+                        currentStatus == SubscriptionStatus.INACTIVE_STATUS){
+                    throw new OSCARSServiceException("Cannot pause a subscription that is in state INACTIVE");
+                }else if(newStatus == SubscriptionStatus.ACTIVE_STATUS && 
+                        currentStatus == SubscriptionStatus.INACTIVE_STATUS){
+                    throw new OSCARSServiceException("Cannot resume a subscription that is in state INACTIVE");
+                }
+                
+                updateSQL = conn.prepareStatement("UPDATE subscriptions SET status=? WHERE referenceId=?");
+                updateSQL.setInt(1, newStatus);
+                updateSQL.setString(2, subscriptionId);
             }
             
-            //check permissions
-            this.checkAuthConditions(queryResult.getString(2), authConds);
-            
-            int currentStatus = queryResult.getInt(1);
-            if(newStatus == SubscriptionStatus.PAUSED_STATUS && 
-                    currentStatus == SubscriptionStatus.INACTIVE_STATUS){
-                throw new OSCARSServiceException("Cannot pause a subscription that is in state INACTIVE");
-            }else if(newStatus == SubscriptionStatus.ACTIVE_STATUS && 
-                    currentStatus == SubscriptionStatus.INACTIVE_STATUS){
-                throw new OSCARSServiceException("Cannot resume a subscription that is in state INACTIVE");
-            }
-            
-            PreparedStatement updateSQL = conn.prepareStatement("UPDATE subscriptions SET status=? WHERE referenceId=?");
-            updateSQL.setInt(1, newStatus);
-            updateSQL.setString(2, subscriptionId);
             updateSQL.executeUpdate();
         }catch(SQLException e){
             this.log.debug(netLogger.error("SubscribeManager.changeStatus", ErrSev.MINOR, e.getMessage()));
