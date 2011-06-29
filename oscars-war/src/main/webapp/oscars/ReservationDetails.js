@@ -255,6 +255,7 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         // applying results of query
         var node = dojo.byId("srcVlanReplace");
         node.innerHTML = "";
+        // reset node which indicates there is an errorReport
         var node1 = dojo.byId("errorReportReplace");
         node1.innerHTML = "";
         var refreshButton = dojo.byId("resvRefreshDisplay");
@@ -263,7 +264,7 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         oscars.Form.applyParams(responseObject);
         // for displaying only layer 2 or layer 3 fields
         oscars.ReservationDetails.layerParams(responseObject);
-        oscars.ReservationDetails.errorReportParams(responseObject);
+        //oscars.ReservationDetails.errorReportParams(responseObject);
         oscars.ReservationDetails.setDateTimes();
         var reservationDetailsNode = dojo.byId("reservationDetailsDisplay");
         reservationDetailsNode.style.display = "";
@@ -374,8 +375,9 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
     }
 };
 
-// This didn't work for me. I just blanked it out in the servlet -mrt
-oscars.ReservationDetails.errorReportParams = function (responseObject) {
+// The loop over errorReportNodes didn't work for me.
+// I just blanked the whole errorReplaceReport in the servlet -mrt
+/*oscars.ReservationDetails.errorReportParams = function (responseObject) {
     var i;
     var tableN;
     var n = dojo.byId("errorReportReplace");
@@ -391,6 +393,7 @@ oscars.ReservationDetails.errorReportParams = function (responseObject) {
        }
     }
 }
+*/
 
 // take action based on this tab's selection
 oscars.ReservationDetails.tabSelected = function (

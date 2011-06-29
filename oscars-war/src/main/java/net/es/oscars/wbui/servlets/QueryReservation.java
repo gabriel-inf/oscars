@@ -67,6 +67,7 @@ public class QueryReservation extends HttpServlet {
         OSCARSNetLogger netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_WBUI,transId);
         OSCARSNetLogger.setTlogger(netLogger);
+        netLogger.setGRI(servletRequest.getParameter("gri"));
         log.info(netLogger.start(methodName));
 
         PrintWriter out = response.getWriter();
@@ -148,6 +149,7 @@ public class QueryReservation extends HttpServlet {
 
             this.contentSection(resDetails, faultReports, outputMap);
         } catch (Exception ex) {
+            log.error("caught exception " + ex.getMessage());
             // any error will show up as an exception
             ServletUtils.handleFailure(out, log, ex, methodName);
             return;
@@ -218,8 +220,8 @@ public class QueryReservation extends HttpServlet {
         // innerHTML
         outputMap.put("newGri", "");
         outputMap.put("griReplace", gri);
-        outputMap.put("statusReplace", status);
-        outputMap.put("userReplace", resv.getLogin());
+         outputMap.put("statusReplace", status);
+       outputMap.put("userReplace", resv.getLogin());
         String sanitized = resv.getDescription().replace("<", "");
         String sanitized2 = sanitized.replace(">", "");
         outputMap.put("descriptionReplace", sanitized2);
@@ -229,6 +231,12 @@ public class QueryReservation extends HttpServlet {
         outputMap.put("createdTimeConvert", resv.getCreateTime());
         // now stored in Mbps, commas added by Dojo
         outputMap.put("bandwidthReplace", Integer.toString(uConstraint.getBandwidth()));
+        // Do error report now, since failed reservations may cause exceptions to be thrown
+        if (!faultReports.isEmpty()) {
+            handleErrorReports(faultReports, outputMap);
+        } else {
+            outputMap.put("errorReportReplace"," " );
+        }
         if (layer2Info != null) {
             outputMap.put("sourceReplace", layer2Info.getSrcEndpoint());
             outputMap.put("destinationReplace", layer2Info.getDestEndpoint());
@@ -279,11 +287,7 @@ public class QueryReservation extends HttpServlet {
 
         QueryReservation.outputPaths(path, outputMap);
 
-        if (!faultReports.isEmpty()) {
-            handleErrorReports(faultReports, outputMap);
-        } else {
-            outputMap.put("errorReportReplace","" );
-        }
+
         } catch (Exception e){
             System.out.println("caught exception in ContentSection");
             e.printStackTrace();
@@ -299,8 +303,12 @@ public class QueryReservation extends HttpServlet {
         String srcVlanTag = "";
         String destVlanTag = "";
         if (layer2Info != null ) {
-            srcVlanTag = layer2Info.getSrcVtag().getValue();
-            destVlanTag = layer2Info.getDestVtag().getValue();
+            if (layer2Info.getSrcVtag() != null) {
+                srcVlanTag = layer2Info.getSrcVtag().getValue();
+            }
+            if (layer2Info.getDestVtag() != null ){
+                destVlanTag = layer2Info.getDestVtag().getValue();
+            }
             log.debug("srcVlanTag:" + srcVlanTag + " destVlanTag:" + destVlanTag);
         }
         if (!srcVlanTag.equals("")) {
@@ -376,7 +384,7 @@ public class QueryReservation extends HttpServlet {
 
         String pathStr = new String();
         if (path != null  ){
-            log.debug("path not null");
+            //log.debug("path not null");
             ArrayList<CtrlPlaneHopContent> hops = (ArrayList<CtrlPlaneHopContent>) path.getHop();
             if (hops.size() > 0) {
                 StringBuilder sb = new StringBuilder();
@@ -393,7 +401,7 @@ public class QueryReservation extends HttpServlet {
                 sb.append("</tbody>");
                 //if (Layer2) {
                 if (true) {
-                    log.debug("hop: " + sb.toString());
+                    //log.debug("hop: " + sb.toString());
                     outputMap.put("interPathReplace", sb.toString());
                 } else {
                     outputMap.put("interPath3Replace", sb.toString());
