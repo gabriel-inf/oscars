@@ -3,9 +3,9 @@
     xmlns="http://ogf.org/schema/network/topology/ctrlPlane/20080828//" 
     id="testdomain-4.net">
     
-    <idcId>https://idcdev5.internet2.edu:8443/axis2/services/OSCARS</idcId>
+    <idcId>https://odev-vm-25.es.net:8443/axis2/services/OSCARS</idcId>
 
-    <domain id="testdomain-4.net">
+    <domain id="urn:ogf:network:domain=testdomain-4.net">
         
         <!-- Node-1 -->
         <node id="urn:ogf:network:domain=testdomain-4.net:node=node-1">
