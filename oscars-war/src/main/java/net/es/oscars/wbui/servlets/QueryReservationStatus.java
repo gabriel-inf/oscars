@@ -43,6 +43,7 @@ import net.es.oscars.utils.topology.PathTools;
  */
 public class QueryReservationStatus extends HttpServlet {
     private Logger log = Logger.getLogger(QueryReservationStatus.class);
+    private OSCARSNetLogger netLogger = null;
 
     /**
      * Handles QueryReservationStatus servlet request.
@@ -67,8 +68,9 @@ public class QueryReservationStatus extends HttpServlet {
             ServletUtils.fatalError(out, methodName);
         }
         String transId = core.getTransId();
-        OSCARSNetLogger netLogger = new OSCARSNetLogger();
+        this.netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_WBUI,transId);
+        netLogger.setGRI(servletRequest.getParameter("gri"));
         OSCARSNetLogger.setTlogger(netLogger);
         this.log.info(netLogger.start(methodName));
  
@@ -159,8 +161,14 @@ public class QueryReservationStatus extends HttpServlet {
             }
             pathInfo=uConstraint.getPathInfo();
             pathType="requested";
-            System.out.println("no path reserved, using requested path ");
+            log.debug(netLogger.getMsg("QueryReservationStatus","no path reserved, using requested path "));
         }
+        if (!faultReports.isEmpty()) {
+            QueryReservation.handleErrorReports(faultReports,outputMap);
+        } else {
+            outputMap.put("errorReportReplace","" );
+        }
+
         CtrlPlanePathContent path = null;
         Layer2Info layer2Info = null;
         if (pathInfo != null) {
@@ -176,11 +184,6 @@ public class QueryReservationStatus extends HttpServlet {
         outputMap.put("statusReplace", status);
         if (layer2Info != null) {
             QueryReservation.handleVlans(path, status, layer2Info, outputMap);
-        }
-        if (!faultReports.isEmpty()) {
-            QueryReservation.handleErrorReports(faultReports,outputMap);
-        } else {
-            outputMap.put("errorReportReplace","" );
         }
         QueryReservation.outputPaths(path, outputMap);
     }

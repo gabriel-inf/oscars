@@ -199,10 +199,11 @@
   </tbody>
 </table>
 </span>
+</form>
 
 <!-- tooltip section for buttons -->
 <div dojoType = "dijit.Tooltip" connectId="queryReservation" position="after">
-</form>
+
     Gets the current status of the reservation identified by NEW GRI from the
     server.
 </div>
@@ -239,7 +240,7 @@
     </tr>
   </table>
 </div>
-<!-- dialogs for buttons to use with extreme caution --L>
+<!-- dialogs for buttons to use with extreme caution -->
 <div dojoType="dijit.Dialog" id="createPathDialog"
     style="display:none;" title="Are you sure you want to force path creation?"
     execute="oscars.ReservationDetails.postCreatePath(arguments[0]);">

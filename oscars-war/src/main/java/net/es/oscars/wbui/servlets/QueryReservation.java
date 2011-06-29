@@ -49,6 +49,7 @@ import net.es.oscars.authZ.soap.gen.CheckAccessReply;
  */
 public class QueryReservation extends HttpServlet {
     private static Logger log = Logger.getLogger(QueryReservation.class);
+    private OSCARSNetLogger netLogger = null;
 
     /**
      * Handles QueryReservation servlet request.
@@ -64,7 +65,7 @@ public class QueryReservation extends HttpServlet {
 
         String methodName = "QueryReservation";
         String transId  = PathTools.getLocalDomainId() + "-WBUI-" + UUID.randomUUID().toString();
-        OSCARSNetLogger netLogger = new OSCARSNetLogger();
+        this.netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_WBUI,transId);
         OSCARSNetLogger.setTlogger(netLogger);
         netLogger.setGRI(servletRequest.getParameter("gri"));
@@ -199,7 +200,7 @@ public class QueryReservation extends HttpServlet {
             }
             pathInfo=uConstraint.getPathInfo();
             pathType="requested";
-            System.out.println("no path reserved, using requested path ");
+            log.debug(netLogger.getMsg("QueryReservationSatus","no path reserved, using requested path "));
         }
         CtrlPlanePathContent path = null;
         Layer2Info layer2Info = null;
@@ -220,8 +221,8 @@ public class QueryReservation extends HttpServlet {
         // innerHTML
         outputMap.put("newGri", "");
         outputMap.put("griReplace", gri);
-         outputMap.put("statusReplace", status);
-       outputMap.put("userReplace", resv.getLogin());
+        outputMap.put("statusReplace", status);
+        outputMap.put("userReplace", resv.getLogin());
         String sanitized = resv.getDescription().replace("<", "");
         String sanitized2 = sanitized.replace(">", "");
         outputMap.put("descriptionReplace", sanitized2);
