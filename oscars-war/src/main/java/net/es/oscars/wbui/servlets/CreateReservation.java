@@ -31,12 +31,11 @@ import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
+import net.es.oscars.api.soap.gen.v06.VlanTag;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
 import net.es.oscars.api.soap.gen.v06.Layer3Info;
 import net.es.oscars.api.soap.gen.v06.MplsInfo;
 import net.es.oscars.api.soap.gen.v06.CreateReply;
-import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
-import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
@@ -205,7 +204,6 @@ public class CreateReservation extends HttpServlet {
         this.log.debug("handlePath:start");
         String strParam = null;
 
-        //List<PathElem> pathElems = new ArrayList<PathElem>();
         //PropHandler propHandler = new PropHandler("oscars.properties");
         //Properties props = propHandler.getPropertyGroup("wbui", true);
         //String defaultLayer = props.getProperty("defaultLayer");
@@ -257,6 +255,7 @@ public class CreateReservation extends HttpServlet {
         if (strParam != null && !strParam.trim().equals("")) {
             srcVlan = strParam.trim();
         }
+
         boolean layer2 = false;
         // TODO: support VLAN translation
 
@@ -266,6 +265,8 @@ public class CreateReservation extends HttpServlet {
             this.log.debug("handlePath. in layer2 processing");
 
             Layer2Info layer2Info = new Layer2Info();
+            VlanTag srcVtag = new VlanTag();
+            VlanTag destVtag = new VlanTag();
             srcVlan = (srcVlan == null||srcVlan.equals("") ? "any" : srcVlan);
             String destVlan = "";
             strParam = request.getParameter("destVlan");
@@ -285,17 +286,14 @@ public class CreateReservation extends HttpServlet {
             if (strParam != null && !strParam.trim().equals("")) {
                 taggedDestVlan = strParam.trim();
             }
-            boolean tagged = taggedSrcVlan.equals("Tagged");
-            if (!tagged) {
-                srcVlan = "0";
-            }
-            tagged = taggedDestVlan.equals("Tagged");
-            if (!tagged) {
-                destVlan = "0";
-            }
-
+            srcVtag.setTagged(taggedSrcVlan.equals("Tagged"));
+            srcVtag.setValue(srcVlan);
+            destVtag.setTagged(taggedDestVlan.equals("Tagged"));
+            destVtag.setValue(destVlan);
             layer2Info.setSrcEndpoint(source);
             layer2Info.setDestEndpoint(destination);
+            layer2Info.setSrcVtag(srcVtag);
+            layer2Info.setDestVtag(destVtag);
             requestedPath.setLayer2Info(layer2Info);
 
             // If no explicit path for layer 2, we must fill this in
@@ -307,18 +305,6 @@ public class CreateReservation extends HttpServlet {
                 destHop.setLinkIdRef(destination);
                 pathHops.add(destHop);
             }
-            /* Need to set a linkContent rather than a linkIdRef in order to store link params
-            PathElemParam srcVlanParam = new PathElemParam();
-            srcVlanParam.setSwcap(PathElemParamSwcap.L2SC);
-            srcVlanParam.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            srcVlanParam.setValue(srcVlan);
-            PathElemParam destVlanParam = new PathElemParam();
-            destVlanParam.setSwcap(PathElemParamSwcap.L2SC);
-            destVlanParam.setType(PathElemParamType.L2SC_VLAN_RANGE);
-            destVlanParam.setValue(destVlan);
-            requestedPath.getPathElems().get(0).addPathElemParam(srcVlanParam);
-            requestedPath.getPathElems().get(requestedPath.getPathElems().size()-1).addPathElemParam(destVlanParam);
-            */
         }
         if (!layer2) {
             return null;
