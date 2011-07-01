@@ -173,9 +173,9 @@ public class ReservationDAO
         if (endTime != null) {
             query.setLong("endTime", endTime);
         }
-
+        log.debug("query is " + query.getQueryString());
         this.reservations = query.list();
-        //log.debug(reservations.size() + " reservations returned");
+        log.debug(reservations.size() + " reservations returned");
         //log.debug("done with Hibernate query");
 
         if (vlanTags != null && !vlanTags.isEmpty() &&
@@ -188,7 +188,7 @@ public class ReservationDAO
             }
             for (Reservation rsv : removeThese) {
                 this.reservations.remove(rsv);
-                //log.debug("removing reservation");
+                // log.debug("removing reservation");
             }
         }
         //log.debug("list.finish");
@@ -438,7 +438,8 @@ public class ReservationDAO
         }
         String tagStr = tagStrs.get(0);
         // no associated VLAN
-        if (tagStr == null) {
+        if (tagStr == null || tagStr.equals("any") || tagStr.equals("")) {
+            log.debug ("first vlanTag is empty");
             return false;
         }
         int resvVtag = Math.abs(Integer.parseInt(tagStr));

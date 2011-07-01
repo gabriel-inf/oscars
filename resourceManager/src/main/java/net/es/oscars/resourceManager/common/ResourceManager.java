@@ -497,7 +497,7 @@ public class ResourceManager {
                                                     );
 
                  errReport.add(nextErrReport);
-                 this.log.debug(netLogger.getMsg(event,"adding errorReport"));
+                 //this.log.debug(netLogger.getMsg(event,"adding errorReport"));
              }
          }
          this.log.debug(netLogger.end(event));
@@ -689,8 +689,8 @@ public class ResourceManager {
 
                     boolean matches =this.matches(path, patterns);
                     if (!matches) {
-                        this.log.debug(netLogger.getMsg(event,"not returning: " +
-                                rsv.getGlobalReservationId()));
+                        /* this.log.debug(netLogger.getMsg(event,"not returning: " +
+                                       rsv.getGlobalReservationId())); */
                         removeThese.add(rsv);
                     }
                 }
@@ -755,7 +755,6 @@ public class ResourceManager {
         List<PathElem> pathElems = path.getPathElems();
         StringBuilder sb = new StringBuilder();
         for (PathElem pathElem: pathElems) {
-            //String topologyIdent = pathElem.getLink().getFQTI();
             String topologyIdent = pathElem.getUrn();
             sb.append(topologyIdent);
             String localIdent = URNParser.abbreviate(topologyIdent);

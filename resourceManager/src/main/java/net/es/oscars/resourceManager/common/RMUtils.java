@@ -323,13 +323,25 @@ public class RMUtils {
             pathElem.initializePathElemParams();
             PathElemParam pep =
                 pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
+                                          PathElemParamType.L2SC_SUGGESTED_VLAN);
+            if (pep == null ) {
+                pep = pathElem.getPathElemParam(PathElemParamSwcap.MPLS,
+                                                PathElemParamType.MPLS_SUGGESTED_VLAN);
+            }
+            if (pep == null ) {
+                pathElem.getPathElemParam(PathElemParamSwcap.L2SC,
                                           PathElemParamType.L2SC_VLAN_RANGE);
+            }
             if (pep == null) {
-                log.debug(netLogger.getMsg(event,"pep is null"));
-                vlanTags.add("");
+                pep = pathElem.getPathElemParam(PathElemParamSwcap.MPLS,
+                                                PathElemParamType.MPLS_VLAN_RANGE);
+            } if (pep == null) {
+                log.debug(netLogger.getMsg(event,"no suggested_vlan or vlan range"));
+                //vlanTags.add("");
             } else {
                 String vlanTag = pep.getValue();
                 vlanTags.add(vlanTag);
+                // log.debug(netLogger.getMsg(event,"adding vlanTag " + vlanTag));
             }
         }
         return vlanTags;

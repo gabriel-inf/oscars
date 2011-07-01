@@ -44,6 +44,8 @@ import net.es.oscars.common.soap.gen.SubjectAttributes;
 
 public class ListReservations extends HttpServlet {
     private Logger log = Logger.getLogger(ListReservations.class);
+    private OSCARSNetLogger netLogger = null;
+    private static String methodName = "ListReservations";
 
     /**
      * Handles servlet request (both get and post) from list reservations form.
@@ -55,9 +57,8 @@ public class ListReservations extends HttpServlet {
         doGet(HttpServletRequest servletRequest, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String methodName = "ListReservations";
         String transId  = PathTools.getLocalDomainId() + "-WBUI-" + UUID.randomUUID().toString();
-        OSCARSNetLogger netLogger = new OSCARSNetLogger();
+        this.netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_WBUI,transId);
         OSCARSNetLogger.setTlogger(netLogger);
         this.log.info(netLogger.start(methodName));
@@ -100,6 +101,7 @@ public class ListReservations extends HttpServlet {
         msgProps.setGlobalTransactionId(transId);
         CheckAccessReply checkAccessReply = null;
         try {
+            this.log.debug("calling getParameters") ;
             listReq = this.getParameters(servletRequest);
             listReq.setMessageProperties(msgProps);
             // Send a listReservation request 
@@ -154,6 +156,7 @@ public class ListReservations extends HttpServlet {
 
     public ListRequest getParameters(HttpServletRequest servletRequest) {
 
+        this.log.debug(netLogger.start(methodName + ":getParams"));
         ListRequest listReq = new ListRequest();
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
@@ -192,12 +195,13 @@ public class ListReservations extends HttpServlet {
         List<VlanTag> vlans = listReq.getVlanTag();
         for (String vtag: this.getList(servletRequest, "vlanSearch")) {
             VlanTag vt = new VlanTag();
+            log.debug(netLogger.getMsg(methodName, "vlan: " + vtag));
             vt.setValue(vtag);
             vt.setTagged(true);
             vlans.add(vt);
         }
         List<String> linkIds = listReq.getLinkId();
-        for (String linkId : this.getList(servletRequest, "vlanSearch")) {
+        for (String linkId : this.getList(servletRequest, "linkIds")) {
             linkIds.add(linkId);
         }
         return listReq;
@@ -259,8 +263,6 @@ public class ListReservations extends HttpServlet {
         String hostName = null;
         String destination = null;
 
-        this.log.debug("to outputReservations");
-
         ArrayList<HashMap<String,Object>> resvList =
             new ArrayList<HashMap<String,Object>>();
         int ctr = 0;
@@ -285,7 +287,7 @@ public class ListReservations extends HttpServlet {
                 this.log.debug("no path reserved, using requested path ");
             }
             path = pathInfo.getPath();
-            this.log.debug("past getPath");
+            //this.log.debug("past getPath");
             if (path == null) {
                 this.log.debug("path is null");
             }
@@ -293,7 +295,7 @@ public class ListReservations extends HttpServlet {
             String localSrc = null;
             String localDest = null;
             if (pathStr != null && !pathStr.equals("")) {
-                this.log.debug(pathStr);
+               // this.log.debug(pathStr);
                 String[] hops = pathStr.trim().split("\n");
                 localSrc = hops[0];
                 localDest = hops[hops.length-1];
@@ -306,8 +308,8 @@ public class ListReservations extends HttpServlet {
             if (path != null ) {
                 layer3Info = pathInfo.getLayer3Info();
                 layer2Info = pathInfo.getLayer2Info();
-                log.debug("layer2Info set to " + layer2Info);
-                log.debug("layer3Info set to " + layer3Info);
+                //log.debug("layer2Info set to " + layer2Info);
+                //log.debug("layer3Info set to " + layer3Info);
             }
             resvMap.put("id", Integer.toString(ctr));
             resvMap.put("gri", gri);
@@ -315,7 +317,7 @@ public class ListReservations extends HttpServlet {
             Integer mbps = uConstraint.getBandwidth();
 
             String bandwidthField = mbps.toString() + "Mbps";
-            log.debug("bandwidth is " + bandwidthField);
+            //log.debug("bandwidth is " + bandwidthField);
             resvMap.put("bandwidth", bandwidthField);
             // entries are converted on the fly on the client to standard
             // date and time format before the model's data is set
@@ -338,13 +340,13 @@ public class ListReservations extends HttpServlet {
                 resvMap.put("localSource", "");
             }
             // start of second sub-row
-            log.debug ("start of second sub-row");
+            //log.debug ("start of second sub-row");
             resvMap.put("user", resv.getLogin());
             // assumes just layer2 src and dest vlan tags for now -- mrt
             String vlanTag = "";
             // note this code assumes only one vlan tag for the whole path
             if (layer2Info != null  && layer2Info.getSrcVtag() != null) {
-                log.debug("getting vlan from layer2");
+               // log.debug("getting vlan from layer2");
                 vlanTag = layer2Info.getSrcVtag().getValue();
                 if (!vlanTag.equals("")) {
                     // if not a range
