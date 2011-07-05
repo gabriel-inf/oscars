@@ -9,11 +9,11 @@
 
 
 printUsage() {
-   echo "\nusage stopServers <server>"
+   echo
+   echo "usage stopServers <server>"
    echo "<server> is either ALL or one or more of:"
-   echo "\t authN authZ api coord topoBridge rm stubPSS  dragonPSS eomplsPSS PSS lookup wbui"
-   #echo "\t stubPCE bwPCE connPCE dijPCE vlanPCE nullAGG stubPSS"
-   echo "\t bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker ionui"
+   echo "     authN authZ api coord topoBridge rm stubPSS  dragonPSS eomplsPSS PSS lookup wbui"
+   echo "     stubPCE bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker ionui"
    exit 1
 }
 
@@ -26,147 +26,83 @@ if  [ -z $OSCARS_HOME ]; then
  fi
  DEFAULT_PID_DIR="${OSCARS_HOME-.}/run"
  
-stopauthN() {
-PID_FILE=$DEFAULT_PID_DIR/authN.pid
+stopService() {
+PID_FILE=$DEFAULT_PID_DIR/$ShortName.pid
 if [ -f $PID_FILE ]
 then
    PID=`cat $PID_FILE`
-   echo killing authN
+   echo killing $Service
    `kill -9 $PID`
    rm $PID_FILE
 else
-    echo "AuthN is not running"
+    echo "$Service is not running"
 fi
 }
 
+stopauthN() {
+    Service="AuthNService"
+    ShortName="authN"
+    stopService
+}
 stopauthZ() {
-PID_FILE=$DEFAULT_PID_DIR/authZ.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing authZ
-   `kill -9 $PID`
-   rm $PID_FILE
-else
-    echo "AuthZ is not running"
-fi
+    Service="AuthZService"
+    ShortName="authZ"
+    stopService
 }
 
 stopCoord () {
-PID_FILE=$DEFAULT_PID_DIR/coord.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-    echo killing coordinator
-    `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "Coordinator is not running"
-fi
+    Service="CoordinatorService"
+    ShortName="coord"
+    stopService
 }
 
 stopRM () {
-PID_FILE=$DEFAULT_PID_DIR/rm.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing resourceManager
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "Resource Manager is not running"
-fi
+    Service="ResourceManager"
+    ShortName="rm"
+    stopService
 }
 
 stopTopoBridge() {
-PID_FILE=$DEFAULT_PID_DIR/topoBridge.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing TopoBridge
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "TopoBridge is not running"
-fi
+    Service="TopoBridgeService"
+    ShortName="topoBridge"
+    stopService
 }
+
 stopStubPCE(){
-PID_FILE=$DEFAULT_PID_DIR/stubPCE.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing stubPCE
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "StubPCE is not running"
-fi
+    Service="stubPCE"
+    ShortName="stubPCE"
+    stopService
 }
 
 stopConnPCE() {
- PID_FILE=$DEFAULT_PID_DIR/connPCE.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing connectivity PCE
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "ConnPCE is not running"
-fi
+    Service="ConnectivityPCE"
+    ShortName="connPCE"
+    stopService
 }
 
 stopBWPCE() {
- PID_FILE=$DEFAULT_PID_DIR/bwPCE.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing bandwidth PCE
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "BWPCE is not running"
-fi
+    Service="BandwidthPCE"
+    ShortName="bwPCE"
+    stopService
 }
 
 stopDijPCE () {
-PID_FILE=$DEFAULT_PID_DIR/dijPCE.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing dijkstarPCE
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "DijkstraPCE is not running"
-fi
+    Service="DijkstraPCE"
+    ShortName="dijPCE"
+    stopService
 }
 
 stopVlanPCE () {
-PID_FILE=$DEFAULT_PID_DIR/vlanPCE.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing vlanPCE
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "VlanPCE is not running"
-fi
+    Service="VlanPCE"
+    ShortName="vlanPCE"
+    stopService
 }
 
-#stopstubPSS () {
-#PID_FILE=$DEFAULT_PID_DIR/stubPSS.pid
-#if [ -f $PID_FILE ]
-#then
- #  PID=`cat $PID_FILE`
- # echo killing stubPSS
- #  `kill -9 $PID`
- #   rm $PID_FILE
-#else
- #   echo "StubPSS is not running"
-#fi
-#}
+stopstubPSS () {
+    Service="StubPSS"
+    ShortName="stubPSS"
+    stopService
+}
 
 
 ##############################################################################
@@ -214,105 +150,51 @@ stopPSS () {
 }
 
 stopnullPCE () {
-PID_FILE=$DEFAULT_PID_DIR/nullpce.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing nullpce  [$PID]
-   `kill -9 $PID`
-    rm $PID_FILE
-fi
+    Service="PCEService"
+    ShortName="nullpce"
+    stopService
 }
 
 stopnullAGG () {
-PID_FILE=$DEFAULT_PID_DIR/nullagg.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing nulagg [$PID]
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "nullAGG is not running"
-fi
+    Service="NullAggregator"
+    ShortName="nullagg"
+    stopService
 }
 
 stopOSCARSService() {
-PID_FILE=$DEFAULT_PID_DIR/api.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing OSCARSService
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "OSCARSService api is not running"
-fi
+    Service="OSCARSService"
+    ShortName="api"
+    stopService
 }
 
 stopLookup() {
-PID_FILE=$DEFAULT_PID_DIR/lookup.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing LookupService
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "Lookup is not running"
-fi
+    Service="LookupService"
+    ShortName="lookup"
+    stopService
 }
 
 stopNotificationBridge() {
-PID_FILE=$DEFAULT_PID_DIR/notificationBridge.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing NotificationBridge
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "NotificationBridge is not running"
-fi
+    Service="NotificationBridgeService"
+    ShortName="notificationBridge"
+    stopService
 }
 
 stopWSNBroker() {
-PID_FILE=$DEFAULT_PID_DIR/wsnbroker.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing WSNBroker
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "WSNBroker is not running"
-fi
+    Service="WSNBrokerService"
+    ShortName="wsnbroker"
+    stopService
 }
 
 stopWBUI() {
-PID_FILE=$DEFAULT_PID_DIR/wbui.pid
-if [ -f $PID_FILE ]
-then
-   PID=`cat $PID_FILE`
-   echo killing WBUI
-   `kill -9 $PID`
-    rm $PID_FILE
-else
-    echo "WBUI is not running"
-fi
+    Service="WBUIService"
+    ShortName="wbui"
+    stopService
 }
 
 stopIONUI() {
-	PID_FILE=$DEFAULT_PID_DIR/ionui.pid
-	if [ -f $PID_FILE ]
-	then
-   		PID=`cat $PID_FILE`
-   		echo killing IONUI
-   		`kill -9 $PID`
-    		rm $PID_FILE
-	else
-    		echo "IONUI is not running"
-	fi
+    Service="IONUIService"
+    ShortName="ionui"
+    stopService
 }
 
 while [ ! -z $1 ]

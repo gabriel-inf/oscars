@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh  
 # Script to start OSCARS services.
 # Call with a context and a list of servers to start.
 # ALL will start all the servers.Individual server args are:
@@ -19,311 +19,160 @@ if  [ -z $OSCARS_DIST ]; then
  fi
  
 printUsage() {
-   echo "\nusage startServers <context> <server >"
+   echo
+   echo "usage startServers [-v] <context> <server >"
+   echo " -v  prints out debugging messages. Must be first arg"
    echo "<context> is one of: PRODUCTION|pro UNITTEST|test DEVELOPMENT|dev SDK|sdk"
    echo "<server> is either ALL or one or more of:"
-   echo "\t authN authZ api coord topoBridge rm stubPSS eomplsPSS dragonPSS PSS "
-   echo "\t lookup wbui bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker"
+   echo "     authN authZ api coord topoBridge rm stubPSS eomplsPSS dragonPSS PSS "
+   echo "     lookup wbui bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker"
    exit 1
 }
-startauthN() {
-   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh AuthNService $CONTEXT authN | sed "s/'//g")
-   Service=$(echo $Config | awk -F/ '$1~//{print $2}')
+startService() {
+   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $Service $CONTEXT $Directory | sed "s/'//g")
+   if [ $debug ]; then
+       echo "Starting $Service"
+   fi
    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
    if [ "$Conf" == "conf" ]; then
-       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+       if [ $debug ]; then
+           echo "using configuration file $OSCARS_HOME/$Service/$Conf/$Yaml"
+       fi
+       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print}' $OSCARS_HOME/$Service/$Conf/$Yaml)
    elif [ "$Conf" == "config" ]; then
-       port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+       if [ $debug ]; then
+           echo "using configuration file  $OSCARS_DIST/$Service/$Conf/$Yaml"
+       fi
+       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+   fi
+    if [ $debug ]; then
+       echo "port definition line is  $port"
    fi
    port=$(echo $port | sed "s/[^0-9]//g")
-   porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-   if [ ! -z "$porttest" ]; then
-       echo authN already running
-   else
-       echo starting AuthN on port $port
-      (cd $OSCARS_DIST/authN; bin/startServer.sh $CONTEXT > $currDir/authN.out 2>&1  & )
+   if [ $debug ]; then
+       echo "port is $port"
    fi
+   if [ $debug ]; then
+       line=`netstat -na | grep tcp | grep LISTEN | grep $port`
+       echo "checking $line"
+   fi
+   porttest=`netstat -na | grep tcp | grep LISTEN | grep "[:|\.]$port "`
+   if [ ! -z "$porttest" ]; then
+       echo $Service is  already running
+   else
+       echo starting $ShortName on port $port
+       if [ $ShortName != "nullagg" ]; then
+           (cd $OSCARS_DIST/$Directory; bin/startServer.sh $CONTEXT > $currDir/$ShortName.out 2>&1  & )
+       else
+           (cd $OSCARS_DIST/$Directory; bin/startNullAgg.sh $CONTEXT > $currDir/$ShortName.out 2>&1 &)
+       fi
+   fi
+}
+startauthN() {
+   Service="AuthNService"
+   ShortName="authN"
+   Directory="authN"
+   startService
 }
 
 startauthZ(){
-   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh AuthZService $CONTEXT authZ)
-   Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-   Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-   Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-   if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-   elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-   fi
-   port=$(echo $port | sed "s/[^0-9]//g")
-   porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-   if [ ! -z "$porttest" ]; then
-       echo authZ already running
-   else
-       echo starting AuthZ on port $port
-       (cd $OSCARS_DIST/authZ; bin/startServer.sh $CONTEXT > $currDir/authZ.out 2>&1 &)
-   fi
+   Service="AuthZService"
+   ShortName="authZ"
+   Directory="authZ"
+   startService
 }
 
 startOSCARSService() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh OSCARSService $CONTEXT api) 
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo OSCARSService already running
-    else
-        echo starting OSCARSService on port $port
-        (cd $OSCARS_DIST/api; bin/startServer.sh $CONTEXT > $currDir/api.out 2>&1 &)
-    fi
+    Service="OSCARSService"
+    ShortName="api"
+    Directory="api"
+    startService
 }
 
 startCoord() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh CoordService $CONTEXT coordinator)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo coordinator  already running
-    else
-        echo starting coordinator on port $port
-        (cd $OSCARS_DIST/coordinator; bin/startServer.sh $CONTEXT > $currDir/coord.out 2>&1 &)
-    fi
+    Service="CoordService"
+    ShortName="coord"
+    Directory="coordinator"
+    startService
 }
 
 startRM(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh ResourceManagerService $CONTEXT resourceManager)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo resourceManager already running
-    else
-        echo starting resource Manager on port $port
-       (cd $OSCARS_DIST/resourceManager; bin/startServer.sh $CONTEXT > $currDir/rm.out 2>&1 &)
-    fi
+    Service="ResourceManagerService"
+    ShortName="rm"
+    Directory="resourceManager"
+    startService
 }
 
 startTopoBridge() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh TopoBridgeService $CONTEXT topoBridge)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo TopoBridge  already running
-    else
-        echo starting topoBridge Server on port $port
-       (cd $OSCARS_DIST/topoBridge; bin/startServer.sh $CONTEXT >  $currDir/topoBridge.out 2>&1 &)
-    fi
+    Service="TopoBridgeService"
+    ShortName="topoBridge"
+    Directory="topoBridge"
+    startService
 }
 
 startNotificationBridge() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh NotificationBridgeService $CONTEXT notificationBridge)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo NotificationBridge  already running
-    else
-        echo starting notificationBridge Server on port $port
-       (cd $OSCARS_DIST/notificationBridge; bin/startServer.sh $CONTEXT >  $currDir/notificationBridge.out 2>&1 &)
-    fi
+    Service="NotificationBridgeService"
+    ShortName="notificationBridge"
+    Directory="notificationBridge"
+    startService
 }
 
 startWSNBroker() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WSNBrokerService $CONTEXT wsnbroker)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo WSNBroker  already running
-    else
-        echo starting wsnbroker Server on port $port
-       (cd $OSCARS_DIST/wsnbroker; bin/startServer.sh $CONTEXT >  $currDir/wsnbroker.out 2>&1 &)
-    fi
+    Service="WSNBrokerService"
+    ShortName="wsnbroker"
+    Directory="wsnbroker"
+    startService
 }
 
 startStubPCE(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh StubPCE $CONTEXT stubPCE)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo stubPCE  already running
-    else
-        echo starting stubPCE Server on port $port
-       (cd $OSCARS_DIST/stubPCE; bin/startServer.sh $CONTEXT > $currDir/stubPCE.out 2>&1 &)
-    fi
+    Service="StubPCE"
+    ShortName="stubPCE"
+    Directory="stubPCE"
+    startService
 }
 
 startConnPCE() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh ConnectivityPCE $CONTEXT connectivityPCE)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-       echo connectivityPCE already running
-    else
-       echo starting connectivity PCE on port $port
-       (cd $OSCARS_DIST/connectivityPCE; bin/startServer.sh $CONTEXT > $currDir/connPCE.out 2>&1 &)
-    fi
+    Service="ConnectivityPCE"
+    ShortName="connPCE"
+    Directory="connectivityPCE"
+    startService
 }
 
 startBandwidthPCE() {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh BandwidthPCE $CONTEXT bandwidthPCE)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo bandwidthPCE already running
-    else
-        echo starting bandwidthPCE on port $port
-        (cd $OSCARS_DIST/bandwidthPCE; bin/startServer.sh $CONTEXT > $currDir/bwPCE.out 2>&1 & )
-    fi
+    Service="BandwidthPCE"
+    ShortName="bwPCE"
+    Directory="bandwidthPCE"
+    startService
 }
 
 startDijPCE () {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh DijkstraPCE $CONTEXT dijkstraPCE)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo dijkstraPCE already running
-    else
-        echo starting dijkstraPCE on port $port
-        (cd $OSCARS_DIST/dijkstraPCE; bin/startServer.sh $CONTEXT > $currDir/dijPCE.out 2>&1 &)
-    fi
+    Service="DijkstraPCE"
+    ShortName="dijPCE"
+    Directory="dijkstraPCE"
+    startService
 }
 
 startVlanPCE () {
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh VlanPCE $CONTEXT vlanPCE)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi  
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo vlanPCE already running
-    else
-        echo starting VlanPCE on port $port
-        (cd $OSCARS_DIST/vlanPCE; bin/startServer.sh $CONTEXT >  $currDir/vlanPCE.out 2>&1 &)
-    fi
+    Service="VlanPCE"
+    ShortName="vlanPCE"
+    Directory="vlanPCE"
+    startService
 }
 
 startnullPCE () {
-   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh nullPCE $CONTEXT pce)
-   Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-   Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-   Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-   if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-   elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-   fi
-   port=$(echo $port | sed "s/[^0-9]//g")
-   porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-   if [ ! -z "$porttest" ]; then
-        echo nullPCE already running
-    else
-       echo starting nullPCE on port $port
-       (cd $OSCARS_DIST/pce; bin/startNullPCE.sh $CONTEXT > $currDir/nullpce.out 2>&1 & )
-   fi
+    Service="nullPCE"
+    ShortName="nullpce"
+    Directory="pce"
+    startService
+
 }
 
 startnullAGG () {
-   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh NullAggregator $CONTEXT pce)
-   Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-   Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-   Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-   if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-   elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-   fi
-   port=$(echo $port | sed "s/[^0-9]//g")
-   porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-   if [ ! -z "$porttest" ]; then
-        echo nullAGG  already running
-   else
-        echo starting nullAGG on port $port
-        (cd $OSCARS_DIST/pce; bin/startNullAgg.sh $CONTEXT > $currDir/nullagg.out 2>&1 &)
-   fi
+    Service="PCEService"
+    ShortName="nullagg"
+    Directory="pce"
+    startService
 }
 
 ##########Subroutine to decide which PSS to start
@@ -342,7 +191,9 @@ startPSS() {
         whichPSS=$(awk -F: '$1~/PSSChoice/{print $2}' $OSCARS_DIST/$Service/$Conf/$Yaml)
     fi
     whichPSS=$(echo $whichPSS | sed 's/^ *\(.*\) *$/\1/')
-    #echo "Starting PSS :$whichPSS"
+    if [ $debug ]; then
+        echo "Starting PSS :$whichPSS"
+    fi
     #Now start based on choice obtained
     if [ "$whichPSS" == "$DRAGONPSS" ]; then
         startDragonPSS
@@ -354,97 +205,48 @@ startPSS() {
 }
 
 startStubPSS(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh PSSService $CONTEXT stubPSS)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]
-    then
-        echo PSS  already running
-    else
-        echo starting stubPSS Server on port $port
-       (cd $OSCARS_DIST/stubPSS; bin/startServer.sh $CONTEXT > $currDir/stubPSS.out 2>&1 &)
-    fi
+    Service="PSSService"
+    ShortName="stubPSS"
+    Directory="stubPSS"
+    startService
 }
 
 startDragonPSS(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh PSSService $CONTEXT dragonPSS)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]
-    then
-        echo PSS  already running
-    else
-        echo starting dragonPSS Server on port $port
-       (cd $OSCARS_DIST/dragonPSS; bin/startServer.sh $CONTEXT > $currDir/dragonPSS.out 2>&1 &)
-    fi
+    Service="PSSService"
+    ShortName="dragonPSS"
+    Directory="dragonPSS"
+    startService
 }
 
 startEomplsPSS(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh PSSService $CONTEXT eomplsPSS)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]
-    then
-        echo PSS  already running
-    else
-        echo starting EomplsPSS Server on port $port
-       (cd $OSCARS_DIST/eomplsPSS; bin/startServer.sh $CONTEXT > $currDir/eomplsPSS.out 2>&1 &)
-    fi
+    Service="PSSService"
+    ShortName="eomplsPSS"
+    Directory="eomplsPSS"
+    startService
 }
 
-
 startLookup(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh LookupService $CONTEXT lookup)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F: '$1~/publishTo/{print $4}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-       echo Lookup  already running
-    else
-       echo starting Lookup Server on port $port
-       (cd $OSCARS_DIST/lookup; bin/startServer.sh $CONTEXT > $currDir/lookup.out 2>&1 &)
-    fi
+    Service="LookupService"
+    ShortName="lookup"
+    Directory="lookup"
+    startService
 }
 
 startWBUI(){
+# gets its port from the jetty.xml file
     Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
     Service=$(echo $Config | awk -F/ '$1~//{print $2}')
     Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
     Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
     if [ "$Conf" == "conf" ]; then
+        if [ $debug ]; then
+            echo "configuration file is $OSCARS_HOME/$Service/$Conf/$Yaml"
+        fi
         port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_HOME/$Service/$Conf/$Yaml)
     elif [ "$Conf" == "config" ]; then
+        if [ debug ]; then
+            echo "configuration file is $OSCARS_DIST/$Service/$Conf/$Yaml"
+        fi
         port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_DIST/$Service/$Conf/$Yaml)
     fi
     port=$(echo $port | sed "s/[^0-9]//g")
@@ -452,28 +254,8 @@ startWBUI(){
     if [ ! -z "$porttest" ]; then
         echo WBUI  already running
     else
-        echo starting WBUI Server on port $port
+       echo starting WBUI Server on port $port
        (cd $OSCARS_DIST/wbui; bin/startServer.sh $CONTEXT > $currDir/wbui.out 2>&1 &)
-    fi
-}
-
-startIONUI(){
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService $CONTEXT ionui jetty.xml)
-    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
-    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
-    if [ "$Conf" == "conf" ]; then
-        port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_HOME/$Service/$Conf/$Yaml)
-    elif [ "$Conf" == "config" ]; then
-        port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_DIST/$Service/$Conf/$Yaml)
-    fi
-    port=$(echo $port | sed "s/[^0-9]//g")
-    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
-    if [ ! -z "$porttest" ]; then
-        echo IONUI already running
-    else
-        echo starting IONUI Server on port $port
-       (cd $OSCARS_DIST/ionui; bin/startServer.sh $CONTEXT > $currDir/ionui.out 2>&1 &)
     fi
 }
 
@@ -481,8 +263,11 @@ startIONUI(){
 if [ $# -lt 2 ]; then
     printUsage
 fi
-
 currDir=$(pwd)
+if [ $1 == "-v" ]; then
+    debug=1
+    shift
+fi
 CONTEXT=$1
 case $1 in
     d|D|dev|DEV) CONTEXT="DEVELOPMENT";;
@@ -492,9 +277,9 @@ case $1 in
 esac
    
 if [ "$CONTEXT" ==  "PRODUCTION" ] || [ "$CONTEXT" == "UNITTEST" ] || [ "$CONTEXT" == "DEVELOPMENT" ] || [ "$CONTEXT" == "SDK" ]; then
-    echo "Start services in CONTEXT $CONTEXT"
+    echo "Start services in $CONTEXT context"
 else
-    echo "CONTEXT  $CONTEXT is not recognized"
+    echo "context  $CONTEXT is not recognized"
     printUsage
 fi
 shift
@@ -515,7 +300,6 @@ while [ ! -z $1 ]
       startConnPCE
       startBandwidthPCE
       startVlanPCE
-#      startStubPSS
       startPSS
       startNotificationBridge
       startWSNBroker
