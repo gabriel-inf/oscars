@@ -75,6 +75,8 @@ public class UserSession {
             }
             status += "Please try logging in again.";
             ServletUtils.handleFailure(out, status, methodName);
+	    //debug
+            log.debug("userName= "+ userName +",sessionName="+ sessionName);		
             return null;
         }
         AttrReply attrReply = null;

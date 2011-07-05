@@ -272,7 +272,9 @@ dojo.declare("ion.CircuitManager", null, {
 	},
 	handleQueryReservationStatus: function(response, ioArgs){
 		if(response.success){
-			if((response.localStatusReplace & 8) == 8 ||
+			//if((response.localStatusReplace & 8) == 8 ||
+			//commented above for porting
+			if(response.statusReplace == "CANCELLING" ||
 				response.statusReplace == "CANCELLED"){
 				dijit.byId(this.cancellingDialog).hide();
 				if (this.successFunction != null) {
@@ -331,7 +333,7 @@ dojo.declare("ion.CircuitManager", null, {
 });
 
 dojo.declare("ion.CircuitList", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/circuitList.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/circuitList.html"),
 	templateString: null,
 	widgetsInTemplate: true,
 	serviceURL: 'servlet/ListReservations',
@@ -353,7 +355,8 @@ dojo.declare("ion.CircuitList", [dijit._Widget, dijit._Templated], {
 	statuses: [],
 	currStatuses: ['ACTIVE', 'PENDING', 'INCREATE', 'INSETUP', 'INTEARDOWN', 'INMODIFY'],
 	histStatuses: ['FINISHED', 'CANCELLED', 'FAILED'],
-	cancelStatuses: ['ACTIVE', 'PENDING'],
+	//cancelStatuses: ['ACTIVE', 'PENDING'],
+	cancelStatuses: ['ACTIVE', 'PENDING', 'CANCELLING'], //added CANCELLING status
 	sortBy: "startTime desc",
 	headerLabels: ['ID', 'Fav', 'Description', 'Creator', 'Start', 'End', 'Status'],
 	headerFieldNames: ['globalReservationId', 'favorite', 'description', 'login', 'startTime', 'endTime', 'status'],
@@ -457,7 +460,9 @@ dojo.declare("ion.CircuitList", [dijit._Widget, dijit._Templated], {
 				this.createTableCol(resvDatum.user, tr);
 				this.createTableCol(formatDate(resvDatum.startTime), tr);
 				this.createTableCol(formatDate(resvDatum.endTime), tr);
-				this.createTableNodeCol(formatStatus(resvDatum.status,resvDatum.localStatus), tr);
+				//this.createTableNodeCol(formatStatus(resvDatum.status,resvDatum.localStatus), tr);
+				//commented above to replace with below
+				this.createTableNodeCol(formatStatus(resvDatum.status), tr);
 				//add buttons
 				var buttonCol = dojo.create('td', null, tr);
 				this.createButton(
@@ -628,7 +633,7 @@ dojo.declare("ion.CircuitList", [dijit._Widget, dijit._Templated], {
 });
 
 dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/circuitInfo.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/circuitInfo.html"),
 	templateString: null,
 	widgetsInTemplate: true,
 	measurementURL: 'servlet/QueryCircuitStatistics',
@@ -643,7 +648,9 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 	infoFields: ['gri','source', 'destination','modifyStartSeconds', 
 		'modifyEndSeconds', 'bandwidth', 'description', 'srcVlan', 
 		'destVlan', 'srcTagged', 'destTagged', 'user', 'status',
-		'localStatus', 'rawPath', 'rawInterPath', 'favorite'],
+		//'localStatus', 'rawPath', 'rawInterPath', 'favorite'],
+		//commented above for replacing with below
+		'rawPath', 'rawInterPath', 'favorite'],
 	postCreate: function(){
 		if (this.gri != '') {
 			this._init();
@@ -687,34 +694,49 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 		});
 	},
 	handleQueryReservation: function(response, ioArgs){
+//TBD remove debug
 		if(!response.success){
 			this.handleError(response, ioArgs);
 		}
 		for(var i=0; i < this.infoFields.length; i++){
 			var infoFieldName = 'info_'+this.gri+'_'+this.infoFields[i];
+console.debug("--info:"+ this.infoFields[i]);
 			if(this.infoFields[i] == "modifyStartSeconds" || this.infoFields[i] == "modifyEndSeconds"){
 				secondsToWidget(eval("response."+this.infoFields[i]), infoFieldName+'_date',  infoFieldName+'_time');
+console.debug("modifyStartSeconds" + this.infoFields[i]);
 			}else if(this.infoFields[i] == "srcTagged" || this.infoFields[i] == "destTagged"){
 				if(eval("response."+this.infoFields[i]+'Replace') == 'true'){
 					dojo.byId(infoFieldName).innerHTML = "Tagged";
 				}else{
 					dojo.byId(infoFieldName).innerHTML = "Untagged";
 				}
+console.debug("src/DestTagged" + this.infoFields[i]);
 			}else if(this.infoFields[i] == "srcVlan" || this.infoFields[i] == "destVlan"){
+console.debug("src/DestVlan" + this.infoFields[i]);
 				if(eval("response."+this.infoFields[i]+'Replace').toLowerCase() == "unknown"){
 					dojo.byId(infoFieldName).innerHTML = "-";
 				}else{
 					dojo.byId(infoFieldName).innerHTML = eval("response."+this.infoFields[i]+'Replace');
 				}
+console.debug("src/DestVlan Done");
 			}else if(this.infoFields[i] == "bandwidth"){
 				dojo.byId(infoFieldName).innerHTML = formatBandwidth(response.bandwidthReplace);
+console.debug("bandwidth" + this.infoFields[i]);
+
 			}else if(this.infoFields[i] == "status"){
 				dojo.byId(infoFieldName).innerHTML = formatStatus(
+						/* commented below for porting with below
 						response.statusReplace,
-						response.localStatusReplace
+						response.localStatusReplace */
+						response.statusReplace
 					);
-			}else if (this.infoFields[i] == "rawInterPath") {
-				dojo.byId(infoFieldName).innerHTML = outputInterPath(eval("response." + this.infoFields[i]));
+console.debug("status" + this.infoFields[i]);
+	}else if (this.infoFields[i] == "rawInterPath") {
+console.debug("started rawInterPath" + this.infoFields[i]);
+
+				//dojo.byId(infoFieldName).innerHTML = outputInterPath(eval("response." + this.infoFields[i]));
+				//Evaluate response without calling local method to get domains
+				dojo.byId(infoFieldName).innerHTML = eval("response." + this.infoFields[i]);
 			}else if(this.infoFields[i] == "rawPath"){
 			    gmaps_init();
 			    display_map(response.rawPath);
@@ -729,7 +751,10 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 					dojo.byId(infoFieldName).innerHTML = formatURN(eval("response." + this.infoFields[i] + 'Replace'), 4);
 				}
 			}else if(this.infoFields[i] == 'gri'){
-				dojo.byId(infoFieldName).innerHTML = formatGRI(response.griReplace);
+				//new for porting . Check to see if griReplace is null to avoid JS error
+				if (response.griReplace != null) {
+					dojo.byId(infoFieldName).innerHTML = formatGRI(response.griReplace);
+				}
 			}else if (dojo.byId(infoFieldName) != null) {
 				dojo.byId(infoFieldName).innerHTML = eval("response." + this.infoFields[i] + 'Replace');
 			}
@@ -739,7 +764,7 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 		if(this.updateInterval > 0){
 			setTimeout(dojo.hitch(this, this.queryReservationStatus), this.updateInterval);
 		}
-		
+		console.debug("Duration by secs complete");	
 		//print any error messages
 		if(response.statusReplace == "FAILED"){
 			showErrorDiv(response.status);
@@ -748,7 +773,7 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 		//set modify values
 		this.bandwidth = response.bandwidthReplace;
 		this.description = response.descriptionReplace;
-		
+		console.debug("Bandwidth and description set" + this.bandwidth +","+ this.description);
 		//add clone connection
 		if(this._cloneEvent != null){
 			dojo.disconnect(this._cloneEvent);
@@ -756,9 +781,10 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 		}
 		this._cloneEvent = dojo.connect(dojo.byId('info_'+this.gri+'_cloneButton'), 'onclick',
 			dojo.hitch(this._circuitMgr, this._circuitMgr.cloneReservation, response));
-		
+		console.debug("Clone event done");	
 		//add start and end time connections
-		this._enableStartEnd(response.statusReplace, response.localStatusReplace);
+		//this._enableStartEnd(response.statusReplace, response.localStatusReplace);
+		this._enableStartEnd(response.statusReplace); //replaced above with this
 		dojo.connect(dijit.byId('info_'+this.gri+'_modifyStartSeconds_date'), 'onChange', 
 			dojo.hitch(this, this._dateOnChange));
 		dojo.connect(dijit.byId('info_'+this.gri+'_modifyStartSeconds_time'), 'onChange', 
@@ -767,12 +793,13 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 			dojo.hitch(this, this._dateOnChange));
 		dojo.connect(dijit.byId('info_'+this.gri+'_modifyEndSeconds_time'), 'onChange', 
 			dojo.hitch(this, this._dateOnChange));
-		
+		console.debug("End dates section");
 		//add favorite connection
 		if(this._favEvent != null){
 			dojo.disconnect(this._favEvent);
 			this._favEvent = null;
 		}
+		console.debug("End favorite event");
 		this._favEvent = dojo.connect(
 			dijit.byId('info_'+this.gri+'_saveButton'), 
 			"onClick", 
@@ -782,6 +809,7 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 				"favoriteCheck"
 			)
 		);
+		console.debug("Manage favs end");
 
 		this.queryReservationUtilization();
 	},
@@ -923,7 +951,9 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 	handleQueryReservationStatus: function(response,ioArgs){
 		if (dojo.byId('info_' + this.gri + '_status') != null && response.griReplace == this.gri) {
 			dojo.byId('info_' + this.gri + '_status').innerHTML = formatStatus(response.statusReplace);
-			this._enableStartEnd(response.statusReplace, response.localStatusReplace);
+			//this._enableStartEnd(response.statusReplace, response.localStatusReplace);
+			//commented above with below for porting
+			this._enableStartEnd(response.statusReplace); 
 			//if inmodify still want to set timeout
 			if(response.statusReplace == "INMODIFY"){
 				dijit.byId('info_'+this.gri+'_modifyingDialog').hide();
@@ -1009,8 +1039,10 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 		this.gri = gri;
 		this._init();
 	},
-	_enableStartEnd: function(status, localStatus){
-		if((status == "PENDING" || status == "ACTIVE") && (localStatus & 8) == 0){
+	//_enableStartEnd: function(status, localStatus){
+	//replacing above with below
+	_enableStartEnd: function(status){
+		if((status == "PENDING" || status == "ACTIVE") && ( status != "CANCELLING")){
 			dijit.byId('info_'+this.gri+'_modifyStartSeconds_date').setDisabled(false);
 			dijit.byId('info_'+this.gri+'_modifyStartSeconds_time').setDisabled(false);
 			dijit.byId('info_'+this.gri+'_modifyEndSeconds_date').setDisabled(false);
@@ -1037,18 +1069,18 @@ dojo.declare("ion.CircuitInfo", [dijit._Widget, dijit._Templated], {
 });
 
 dojo.declare("ion.CircuitWizard", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/circuitWizard.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/circuitWizard.html"),
 	templateString: null,
 	widgetsInTemplate: true,
 	serviceURL: 'servlet/CreateReservation',
 	statusURL: 'servlet/QueryReservationStatus',
-	sourceFormUrl: dojo.moduleUrl("ion", 'forms/create1_source.html'),
-	destFormUrl: dojo.moduleUrl("ion", 'forms/create2_dest.html'),
-	timeFormUrl: dojo.moduleUrl("ion", 'forms/create3_time.html'),
-	bandwidthFormUrl: dojo.moduleUrl("ion", 'forms/create4_bandwidth.html'),
-	vlanFormUrl: dojo.moduleUrl("ion", 'forms/create5_vlan.html'),
-	summaryFormUrl: dojo.moduleUrl("ion", 'forms/create6_summary.html'),
-	expressFormUrl: dojo.moduleUrl("ion", 'forms/create_express.html'),
+	sourceFormUrl: dojo.moduleUrl("ion", '../forms/create1_source.html'),
+	destFormUrl: dojo.moduleUrl("ion", '../forms/create2_dest.html'),
+	timeFormUrl: dojo.moduleUrl("ion", '../forms/create3_time.html'),
+	bandwidthFormUrl: dojo.moduleUrl("ion", '../forms/create4_bandwidth.html'),
+	vlanFormUrl: dojo.moduleUrl("ion", '../forms/create5_vlan.html'),
+	summaryFormUrl: dojo.moduleUrl("ion", '../forms/create6_summary.html'),
+	expressFormUrl: dojo.moduleUrl("ion", '../forms/create_express.html'),
 	express: false,
 	steps: [],
 	events: [],
@@ -1328,8 +1360,6 @@ dojo.declare("ion.LoginWidget", dijit._Widget, {
 		this._loginButtonEvent = null;
 		this._loginFormEvent = null;
 		this._signInTabEvent = null;
-//TBD . Remove debug print
-//alert ("load topSignIn page");	
 		dojo.connect(dojo.byId('topSignIn'), "onclick", dojo.hitch(this, this.loadLoginForm));
 		//verify session
 		this.verifySession();
@@ -1522,7 +1552,7 @@ dojo.declare("ion.LoginWidget", dijit._Widget, {
 });
 
 dojo.declare("ion.EndpointComboBox", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/endpointComboBox.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/endpointComboBox.html"),
 	templateString: null,
 	widgetsInTemplate: true,
 	url: '',
@@ -1532,7 +1562,7 @@ dojo.declare("ion.EndpointComboBox", [dijit._Widget, dijit._Templated], {
 });
 
 dojo.declare("ion.EndpointBrowser", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/endpointBrowser.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/endpointBrowser.html"),
 	templateString: null,
 	url: '',
 	target: '',
@@ -1795,7 +1825,7 @@ dojo.declare("ion.ModalBox", dijit.Dialog, {
 );
 
 dojo.declare("ion.Button", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/ionButton.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/ionButton.html"),
 	templateString: null,
 	label: ''
 });
@@ -1918,8 +1948,12 @@ function formatBandwidth(fieldVal){
 	return fieldVal;
 }
 
-function formatStatus(status, localStatus){
-	if ((localStatus & 8) == 8) {
+//function formatStatus(status, localStatus){
+//commenting above with below
+function formatStatus(status){
+	//if ((localStatus & 8) == 8) {
+	//replacing above with below
+	if (status == 'CANCELLING'){
 		status = '<span class="cancellingStatus">CANCELLING...</span>';
 	}else if(status == 'PENDING'){
 		status = '<span class="reservedStatus">RESERVED</span>';
@@ -2029,7 +2063,7 @@ function hideErrorDiv(){
 }
 
 dojo.declare('ion.UserProfile', [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/userProfile.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/userProfile.html"),
 	templateString: null,
 	widgetsInTemplate: true,
 	queryURL: 'servlet/UserQuery',

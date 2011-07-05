@@ -66,6 +66,8 @@ $SQL -u $SQLRoot -p$passwd < $OSCARS_DIST/authN/sql/populateDefaults.sql
 $SQL -u $SQLRoot -p$passwd < $OSCARS_DIST/authZ/sql/createTables.sql
 $SQL -u $SQLRoot -p$passwd < $OSCARS_DIST/authZ/sql/populateDefaults.sql
 $SQL -u $SQLRoot -p$passwd < $OSCARS_DIST/resourceManager/sql/createTables.sql
+#ion tables
+./ioncreatedb.sh $SQL $SQLRoot $passwd
 fi
 
 ans="n"

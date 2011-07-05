@@ -1,7 +1,7 @@
 #!/bin/sh 
 ############################################################################
-# Script to allow access to wbui for outside hosts 
-# Usage: idc-wbuiaccess <context> <allow|deny>
+# Script to allow access to ionui for outside hosts 
+# Usage: idc-ionuiaccess <context> <allow|deny>
 # TBD: Run from OSCARS_HOME?
 ############################################################################
 #check if $OSCARS_HOME is set
@@ -24,14 +24,14 @@ fi
 #Subroutine to print usage details
 ###########################################################################
 printUsage() {
-	echo -e "\nusage idc-wbuiaccess <context> <option>"
+	echo -e "\nusage idc-ionui <context> <option>"
 	echo "<context> is one of: PRODUCTION|pro DEVELOPMENT|dev SDK|sdk"
 	echo "<option> is one of : ALLOW|allow DENY|deny"
 	exit 1
 }
 
-viewWebUIPort(){
-	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
+viewIONUIPort(){
+	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService $CONTEXT ionui jetty.xml)
 	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 	Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -109,7 +109,7 @@ esac
 #echo $WHAT   
 if [ "$CONTEXT" ==  "PRODUCTION" ] || [ "$CONTEXT" == "UNITTEST" ] || [ "$CONTEXT" == "DEVELOPMENT" ] || [ "$CONTEXT" == "SDK" ]; then
 	if [ "$WHAT" != "quit" ]; then
-    		echo ""$WHAT"ing WBUI access to external hosts in CONTEXT $CONTEXT"
+    		echo ""$WHAT"ing IONUI access to external hosts in CONTEXT $CONTEXT"
 	else
 		echo "You choice of action is not recognized. Quitting now"
 		exit 1;
@@ -119,5 +119,5 @@ else
 	printUsage
 fi
 
-viewWebUIPort $WHAT;
+viewIONUIPort $WHAT;
 

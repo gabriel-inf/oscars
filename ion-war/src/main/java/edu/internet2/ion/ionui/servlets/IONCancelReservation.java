@@ -1,4 +1,4 @@
-package net.es.oscars.wbui.servlets;
+package edu.internet2.ion.ionui.servlets;
 
 import java.io.*;
 import java.util.*;
@@ -28,19 +28,19 @@ import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 
-
+import net.es.oscars.wbui.servlets.ServletCore;
+import net.es.oscars.wbui.servlets.ServletUtils;
+import net.es.oscars.wbui.servlets.CheckSessionReply;
 /**
  * Cancel Reservation servlet
  *
- * @author David Robertson, Mary Thompson
- *
  */
 
-public class CancelReservation extends HttpServlet {
-    private Logger log = Logger.getLogger(CancelReservation.class);
+public class IONCancelReservation extends HttpServlet {
+    private Logger log = Logger.getLogger(IONCancelReservation.class);
 
     /**
-     * Handles CancelReservation servlet request.
+     * Handles ION CancelReservation request.
      *
      * @param request HttpServletRequest - contains gri of reservation to cancel
      * @param response HttpServletResponse -contains gri of reservation, success or error status
@@ -50,10 +50,10 @@ public class CancelReservation extends HttpServlet {
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
-        String methodName = "CancelReservation";
-        String transId = PathTools.getLocalDomainId() + "-WBUI-" + UUID.randomUUID().toString();
+        String methodName = "IONCancelReservation";
+        String transId = PathTools.getLocalDomainId() + "-IONUI-" + UUID.randomUUID().toString();
         OSCARSNetLogger netLogger = new OSCARSNetLogger();
-        netLogger.init(ServiceNames.SVC_WBUI,transId);
+        netLogger.init(ServiceNames.SVC_IONUI,transId);
         OSCARSNetLogger.setTlogger(netLogger);
         this.log.info(netLogger.start(methodName));
         PrintWriter out = response.getWriter();
@@ -106,6 +106,7 @@ public class CancelReservation extends HttpServlet {
             ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
+	outputMap.put("gri", gri);
         outputMap.put("status", "Reservation " + gri + " cancellation: " +
                                 status); 
         outputMap.put("method", methodName);

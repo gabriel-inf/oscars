@@ -37,9 +37,9 @@ public class AuthenticateUser extends HttpServlet {
             throws IOException, ServletException {
 
         String methodName = "AuthenticateUser";
-        String transId  = PathTools.getLocalDomainId() + "-WBUI-" + UUID.randomUUID().toString();
+        String transId  = PathTools.getLocalDomainId() + "-IONUI-" + UUID.randomUUID().toString();
         OSCARSNetLogger netLogger = new OSCARSNetLogger();
-        netLogger.init(ServiceNames.SVC_WBUI,transId);
+        netLogger.init(ServiceNames.SVC_IONUI,transId);
         OSCARSNetLogger.setTlogger(netLogger);
         log.info(netLogger.start(methodName));
         PrintWriter out = response.getWriter();

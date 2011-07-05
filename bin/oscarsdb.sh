@@ -47,15 +47,21 @@ case "$1" in
    cempt)
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authN/sql/createTables.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authZ/sql/createTables.sql
-       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/createTables.sql;;
+       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/createTables.sql
+       #ion. Does not fill in the oscars related tables
+       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/ion-war/sql/createTables.sql;;
    ct)
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authN/sql/createTables.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authN/sql/populateDefaults.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authZ/sql/createTables.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authZ/sql/populateDefaults.sql
-       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/createTables.sql;;
+       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/createTables.sql
+       #ion tables
+       ./ioncreatedb.sh $SQL $SQLRoot $passwd;;
    rt)
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authN/sql/removeTables.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authZ/sql/removeTables.sql
-       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/removeTables.sql;;
+       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/removeTables.sql
+       #ion tables
+       $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/ion-war/sql/removeTables.sql;;
 esac

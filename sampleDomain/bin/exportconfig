@@ -292,3 +292,17 @@ rm -f $tmpFile
 # cp $tmpFile $OSCARS_HOME/TemplateService/conf/server-cxf.xml
 # rm -f $tmpFile
 
+
+#
+# ION (cwION Web User interface)
+#
+SERVICE=$SVC_ION
+tmpFile=/tmp/tmpconf.$$
+sed -e "s,keystore-server\.jks,$OSCARS_HOME/sampleDomain/certs/localhost.jks," < $OSCARS_HOME/$SERVICE/conf/jetty.SSL.xml > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/jetty.SSL.xml
+rm -f $tmpFile
+sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG  > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG
+rm -f $tmpFile
+#
+

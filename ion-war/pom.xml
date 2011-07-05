@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>edu.internet2.ion</groupId>
   <artifactId>ion-war</artifactId>
   <name>war file for ION WBUI</name>
   <packaging>war</packaging>
@@ -14,34 +13,71 @@
 
   <dependencies>
       <!-- internal OSCARS dependencies for clients -->
-       <dependency>
+	<dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>authN</artifactId>
             <version>${oscars.version}</version>
-       </dependency>
+	 </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>net.es.oscars</groupId>
             <artifactId>authZ</artifactId>
             <version>${oscars.version}</version>
-       </dependency>
+        </dependency>
+	<dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>resourceManager</artifactId>
+            <version>${oscars.version}</version>
+	</dependency>
+	<dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>oscars-war</artifactId>
+            <version>${oscars.version}</version>
+	    <type>jar</type>
+        </dependency>
+	<dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>coordinator</artifactId>
+            <version>${oscars.version}</version>
+            <type>jar</type>
+        </dependency>
 
-      <!-- servlets -->
-      <dependency>
-          <groupId>org.apache.geronimo.specs</groupId>
-          <artifactId>geronimo-servlet_2.4_spec</artifactId>
-          <version>1.1.1</version>
-      </dependency>
+	<!-- servlets -->
+	<dependency>
+	<groupId>org.apache.geronimo.specs</groupId>
+		<artifactId>geronimo-servlet_2.4_spec</artifactId>
+		<version>1.1.1</version>
+	</dependency>
 
-      <!-- JSON -->
-      <dependency>
-          <groupId>net.sf.json-lib</groupId>
-          <artifactId>json-lib</artifactId>
-          <version>2.2.3</version>
-          <classifier>jdk15</classifier>
-      </dependency> 
+	<!-- Derby database -->
+	<!-- 
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.5.3.0_1</version>
+        </dependency>	
+	-->
+	<!-- JSON -->
+	<dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <version>2.2.3</version>
+            <classifier>jdk15</classifier>
+	</dependency> 
+
+	<dependency>
+	    <groupId>net.sf.opencsv</groupId>
+	    <artifactId>opencsv</artifactId>
+	    <version>2.0</version>
+ 	</dependency>
+
+	<!-- 2.1.1 seems to be the latest -->
+	<dependency>
+	    <groupId>dnsjava</groupId>
+	    <artifactId>dnsjava</artifactId>
+	    <version>2.1.1</version>
+	 </dependency>
       
-      <!-- TBD ..add csv reader and other libs --> 
   </dependencies>
 
     <build>
@@ -74,6 +110,45 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+
+	     <!-- execute mysql db statements.Moved to shell scripts for better usage of authN -->
+<!--	     <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>sql-maven-plugin</artifactId>
+                <version>1.2</version>
+		 <dependencies>
+           	    <dependency>
+                	<groupId>mysql</groupId>
+               		<artifactId>mysql-connector-java</artifactId>
+              		<version>5.0.5</version>
+           	    </dependency>
+        	</dependencies>
+		<configuration>
+			<driver>com.mysql.jdbc.Driver</driver>
+			<url>jdbc:mysql://localhost:3306/ion</url>
+			<username>oscars</username>
+           		<password></password>
+		</configuration>
+		<executions>
+                    <execution>
+                        <id>createTables</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <fileset>
+                                <basedir>${basedir}/sql</basedir>
+                                <includes>
+                                    <include>createTables.sql</include>
+                                </includes>
+                            </fileset>
+                            <onError>continue</onError>
+                        </configuration>
+                    </execution>
+		</executions>
+	     </plugin>
+-->
         </plugins>
     </build>
 </project>

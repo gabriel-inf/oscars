@@ -2,13 +2,13 @@ use authn;
 
 #attributes table has changes:attrType changed to attrId not null after id
 ## name changed to name text not null
-INSERT INTO attributes VALUES(NULL, 'role', 'ION-administrator', 'manage all users added by your organization');
-INSERT INTO attributes VALUES(NULL, 'role', 'ION-operator', 'view site reservations');     
+INSERT INTO attributes VALUES(NULL, 'ION-administrator', 'role', 'manage all users added by your organization');
+INSERT INTO attributes VALUES(NULL, 'ION-operator', 'role', 'view site reservations');     
 
 
 use authz;
-INSERT INTO attributes VALUES(NULL, 'role', 'ION-administrator', 'manage all users added by your organization');
-INSERT INTO attributes VALUES(NULL, 'role', 'ION-operator', 'view site reservations');
+INSERT INTO attributes VALUES(NULL, 'ION-administrator', 'role', 'manage all users added by your organization');
+INSERT INTO attributes VALUES(NULL, 'ION-operator', 'role', 'view site reservations');
 
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="ION-administrator"),

@@ -3,21 +3,21 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Internet2 ION</title>
-<link rel="icon" href="images/favicon.png" type="image/png">
-<link rel="stylesheet" href="style/ion-dojo.css">
-<link href="ion-content.css" rel="stylesheet" type="text/css" media="all" />
-<link rel="stylesheet" href="style/ion.css">
-<link href="ion-style.css" rel="stylesheet" type="text/css" media="all" />
-<link href="ion-admin.css" rel="stylesheet" type="text/css" media="all" />
+<link rel="icon" href="../images/favicon.png" type="image/png">
+<link rel="stylesheet" href="../css/ion-dojo.css">
+<link href="../css/ion-content.css" rel="stylesheet" type="text/css" media="all" />
+<link rel="stylesheet" href="../css/ion.css">
+<link href="../css/ion-style.css" rel="stylesheet" type="text/css" media="all" />
+<link href="../css/ion-admin.css" rel="stylesheet" type="text/css" media="all" />
 <style type="text/css">
 	@import "lib/dojo/dijit/themes/tundra/tundra.css";
 </style>
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAsqJB51eIGY0t-4zHbP54GxS_RBo8BKLZ-cjLLaQcaUHfWHXBNBQen_JLKtngwfjgLN-UKO1ZNd1T5A" type="text/javascript"></script>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-<script type="text/javascript" src="lib/dojo/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
-<script type="text/javascript" src="lib/dojo/dojo/dojo-ion.js"></script>
-<script type="text/javascript" src="lib/ion/ion.js"></script>
-<script type="text/javascript" src="lib/ion/ion_admin.js"></script>
+<script type="text/javascript" src="../lib/dojo/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
+<script type="text/javascript" src="../lib/dojo/dojo/dojo-ion.js"></script>
+<script type="text/javascript" src="../ion_js/ion.js"></script>
+<script type="text/javascript" src="../ion_js/ion_admin.js"></script>
 
 </head>
 
@@ -37,7 +37,7 @@
 </div><!--/main-nav-->
 
 <div id="content">
-	<div dojoType="ion.LoginWidget" verifyURL="servlet/VerifyAdminSession" loginURL="servlet/IONAuthenticateAdmin" logoutURL="servlet/UserLogout" admin="true"></div>
+	<div dojoType="ion.LoginWidget" verifyURL="../servlet/VerifyAdminSession" loginURL="../servlet/IONAuthenticateAdmin" logoutURL="../servlet/UserLogout" admin="true"></div>
 	<div id="contentDiv" dojoType="dijit.layout.ContentPane" class="tundra">
 	</div>
 </div> <!--/content-->

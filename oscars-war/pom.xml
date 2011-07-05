@@ -72,6 +72,42 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+<plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.3.1</version>
+            <executions>
+            	<execution>
+            		<phase>compile</phase>
+            		<goals>
+            			<goal>jar</goal>
+            		</goals>
+		</execution>
+            </executions>
+</plugin>
+
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-install-plugin</artifactId>
+	<executions>
+		<execution>
+			<phase>install</phase>
+			<goals>
+				<goal>install-file</goal>
+			</goals>
+			<configuration>
+				<packaging>jar</packaging>
+				<artifactId>${project.artifactId}</artifactId>
+				<version>${project.version}</version>
+				<groupId>${project.groupId}</groupId>
+				<file>
+					${project.build.directory}/${project.artifactId}-${project.version}.jar
+				</file> 
+			</configuration>
+		</execution>
+	</executions>
+</plugin> 
+
         </plugins>
     </build>
 </project>

@@ -13,7 +13,7 @@ printUsage() {
    echo "<server> is either ALL or one or more of:"
    echo "\t authN authZ api coord topoBridge rm stubPSS  dragonPSS eomplsPSS PSS lookup wbui"
    #echo "\t stubPCE bwPCE connPCE dijPCE vlanPCE nullAGG stubPSS"
-   echo "\t bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker"
+   echo "\t bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker ionui"
    exit 1
 }
 
@@ -302,6 +302,19 @@ else
 fi
 }
 
+stopIONUI() {
+	PID_FILE=$DEFAULT_PID_DIR/ionui.pid
+	if [ -f $PID_FILE ]
+	then
+   		PID=`cat $PID_FILE`
+   		echo killing IONUI
+   		`kill -9 $PID`
+    		rm $PID_FILE
+	else
+    		echo "IONUI is not running"
+	fi
+}
+
 while [ ! -z $1 ]
   do 
   case $1 in
@@ -324,7 +337,8 @@ while [ ! -z $1 ]
     stopLookup
     stopNotificationBridge
     stopWSNBroker
-    stopWBUI;;
+    stopWBUI
+    stopIONUI;;
   authN)    stopauthN;;
   authZ)    stopauthZ;;
   api)      stopOSCARSService;;
@@ -348,6 +362,7 @@ while [ ! -z $1 ]
   wbui)     stopWBUI;;
   notifyBridge)     stopNotificationBridge;;
   wsnbroker) stopWSNBroker;;
+  ionui)    stopIONUI;;
   *)        echo server $1 not recognized;;
   esac
   shift

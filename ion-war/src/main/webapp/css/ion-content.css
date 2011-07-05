@@ -4,14 +4,14 @@ Design:  Iman A Muttardy   iam at internet2 dot edu */
 
 /******* Global Styles *******/
 /* Error div */
-#errorDiv {background:url(images/error-bottom.png) no-repeat bottom; padding: 0px 10px 10px 10px;}
-.errorTop{background:url(images/error-top.png) no-repeat top; height:32px; margin:0;}
+#errorDiv {background:url(../images/error-bottom.png) no-repeat bottom; padding: 0px 10px 10px 10px;}
+.errorTop{background:url(../images/error-top.png) no-repeat top; height:32px; margin:0;}
 table {border-collapse:collapse; width:100%;}
 td {padding: 5px 5px 5px 5px;}
 
 /* Buttons */
 .ionButton, .circuitListPageNav_prev, .circuitListPageNav_next{
-	background:#000000 url(images/top-nav-divider-cen.png) repeat-y center; 
+	background:#000000 url(../images/top-nav-divider-cen.png) repeat-y center; 
 	color:#FFFFFF; 
 	width:120px; 
 	height:40px; 
@@ -22,7 +22,7 @@ td {padding: 5px 5px 5px 5px;}
 
 /******* Circuit list table *******/
 /* Table head */
-.circuitListTableHead { background:#000000 url(images/blue-bg.png) repeat-x center;}
+.circuitListTableHead { background:#000000 url(../images/blue-bg.png) repeat-x center;}
 #content .circuitListTableHead tr th a {color:#FFFFFF; text-decoration:none;}
 /* Table body */
 tr.circuitListOddRow, tr.oddrow {background-color:#EEEEEE;}
@@ -39,13 +39,13 @@ div.circuitListPageNav div a,#content #contentDiv div .circuitListPageNav div a 
 /******* Circuit wizard *******/
 .left-content {width: 480px; padding: 10px 10px 10px 0px; float:left; margin-top:5px;} 
 .right-content {width: 480px; float:left; margin-top:5px;} 
-.right-content {background:url(images/textbox-bottom.png) no-repeat bottom; padding: 0px 0px 20px;}
-.right-top{ background:url(images/textbox-top.png) no-repeat top; height:40px; padding: 5px 15px;}
-.right-header{background:url(images/textbox-header.png) no-repeat left; margin-left:9px; padding: 7px 0px 7px 8px;}
+.right-content {background:url(../images/textbox-bottom.png) no-repeat bottom; padding: 0px 0px 20px;}
+.right-top{ background:url(../images/textbox-top.png) no-repeat top; height:40px; padding: 5px 15px;}
+.right-header{background:url(../images/textbox-header.png) no-repeat left; margin-left:9px; padding: 7px 0px 7px 8px;}
 .right-content span {padding-left: 25px; padding-right:10px; margin-bottom: 10px; display:block;}
 
 /******* Circuit details *******/
-.tdheader {background:#000000 url(images/blue-bg.png) repeat-x center; color:#FFFFFF;}
+.tdheader {background:#000000 url(../images/blue-bg.png) repeat-x center; color:#FFFFFF;}
 
 /* added by Andy */
 .buttonRow{

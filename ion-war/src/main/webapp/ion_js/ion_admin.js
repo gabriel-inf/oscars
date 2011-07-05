@@ -1,9 +1,9 @@
 dojo.declare("ion.UserList", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/userList.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/userList.html"),
 	templateString: null,
 	widgetsInTemplate: true,
-	serviceURL: 'servlet/IONUserList',
-	cancelURL: 'servlet/CancelReservation',
+	serviceURL: '../servlet/IONUserList',
+	cancelURL: '../servlet/CancelReservation',
 	page: 0,
 	resultsPerPage: 10,
 	id: 'userList',
@@ -195,12 +195,12 @@ dojo.declare("ion.UserList", [dijit._Widget, dijit._Templated], {
 });
 
 dojo.declare("ion.UserInfo", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/userInfo.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/userInfo.html"),
 	templateString: null,
 	widgetsInTemplate: true,
-	serviceURL: 'servlet/IONUserQuery',
-	deleteURL: 'servlet/IONUserDelete',
-	modifyURL: 'servlet/IONUserModify',
+	serviceURL: '../servlet/IONUserQuery',
+	deleteURL: '../servlet/IONUserDelete',
+	modifyURL: '../servlet/IONUserModify',
 	id: 'userInfo',
 	username: '', 
 	postCreate: function(){
@@ -320,10 +320,10 @@ dojo.declare("ion.UserInfo", [dijit._Widget, dijit._Templated], {
 });
 
 dojo.declare("ion.UserAdd", [dijit._Widget, dijit._Templated], {
-	templatePath: dojo.moduleUrl("ion", "templates/userAdd.html"),
+	templatePath: dojo.moduleUrl("ion", "../forms/templates/userAdd.html"),
 	templateString: null,
 	widgetsInTemplate: true,
-	serviceURL: 'servlet/IONUserAdd',
+	serviceURL: '../servlet/IONUserAdd',
 	id: 'userAdd',
 	username: '', 
 	addUser: function(){

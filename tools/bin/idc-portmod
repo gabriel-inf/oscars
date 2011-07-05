@@ -31,7 +31,7 @@ printUsage() {
 	echo "<server> is either ALL or one or more of:"
 	echo -e "\t authN authZ api coord topoBridge rm stubPSS lookup wbui"
 	#echo "\t stubPCE bwPCE connPCE dijPCE vlanPCE nullAGG stubPSS"
-	echo -e "\t bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker"
+	echo -e "\t bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker ionui"
 	exit 1
 }
 
@@ -43,12 +43,17 @@ findPort() {
 	printf "Enter the new port number to run $SERVICE on: "
 	read userport;
 	stty echo;
-	echo "";
+	#echo "";
 
+	#if user entered a newline, do not attempt to replace
+	if [ -z "`echo "$userport" | tr -d '\n'`" ]; then
+		echo "--You chose to retain the same port number"
+		return 0;
+	fi
 	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $SERVICE $CONTEXT $fileLoc | sed "s/'//g")
-	echo "Config file:$Config"
+	#echo "Config file:$Config"
 	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
-echo "Service :$Service"	
+#echo "Service :$Service"	
 	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 	Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
 	#echo "Conf: $Conf, Yaml=$Yaml";
@@ -89,21 +94,23 @@ echo "Service :$Service"
 		sed -i -e "s/$port/$userport/g" $OSCARS_HOME/$Service/$Conf/$Yaml;
 		#replace in server_cxf.xml
 		sed -i -e 's/<httpj:engine port=\"'$port'\">/<httpj:engine port=\"'$userport'\">/' $OSCARS_HOME/$Service_cxf/$Conf_cxf/$Yaml_cxf
-		echo "The port number for $SERVICE has been replaced to $userport";
-   		echo $SERVICE set to run in context $CONTEXT on port $userport. Restart service to start using this port.
+		echo "--The port number for $SERVICE has been replaced to $userport";
+   		echo "--$SERVICE set to run in context $CONTEXT on port $userport."
+		echo "--Restart service to start using this port."
 	fi
    	port=0  
 }
 
-viewWebUIPort(){
+viewUIPort(){
 	# prompt user for port number
 	printf "Enter the new port number to run $SERVICE on: "
    	read jettyport;
    	stty echo;
-   	echo "";
+   	#echo "";
 
 	#Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $SERVICE $CONTEXT $fileLoc )
-	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
+	#Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
+	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $SERVICE $CONTEXT $fileLoc $file)
 	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 	Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -130,9 +137,10 @@ viewWebUIPort(){
 			echo "--Please change it manually by changing the entry in lines like "<SystemProperty name="jetty.port" default="xxxx"/>" in file $OSCARS_HOME/$Service/$Conf/$Yaml"
 			exit 1;
         	fi
+		echo "$SERVICE set to run in context $CONTEXT on port $jettyport."
+		echo "Restart this service to start using this port."
 	fi
 	
-	echo WBUISERVICE set to run in context $CONTEXT on port $jettyport. Please restart this service to start using this port.
 	#neutralize
 	port=0 
 }
@@ -164,8 +172,8 @@ shift
 #Removed WBUI for specific handling
 #_allLocations=(authN authZ api coordinator topoBridge resourceManager stubPSS lookup pce bandwidthPCE connectivityPCE dijkstraPCE vlanPCE pce notificationBridge wsnbroker) #TBD:nullAGG==pce check
 #_allServices=(AuthNService AuthZService OSCARSService CoordService TopoBridgeService ResourceManagerService PSSService LookupService StubPCE BandwidthPCE ConnectivityPCE DijkstraPCE VlanPCE NullAggregator NotificationBridgeService WSNBrokerService)
-_allLocations=(authN authZ api coordinator topoBridge resourceManager stubPSS lookup bandwidthPCE connectivityPCE dijkstraPCE vlanPCE pce notificationBridge wsnbroker) #TBD:nullAGG==pce check
-_allServices=(AuthNService AuthZService OSCARSService CoordService TopoBridgeService ResourceManagerService PSSService LookupService BandwidthPCE ConnectivityPCE DijkstraPCE VlanPCE NullAggregator NotificationBridgeService WSNBrokerService)
+_allLocations=(authN authZ api coordinator topoBridge resourceManager stubPSS lookup bandwidthPCE connectivityPCE dijkstraPCE vlanPCE pce notificationBridge wsnbroker ) #TBD:nullAGG==pce check
+_allServices=(AuthNService AuthZService OSCARSService CoordService TopoBridgeService ResourceManagerService PSSService LookupService BandwidthPCE ConnectivityPCE DijkstraPCE VlanPCE NullAggregator NotificationBridgeService WSNBrokerService )
 
 while [ ! -z $1 ]
     do 
@@ -180,7 +188,9 @@ while [ ! -z $1 ]
 		findPort;		
 	done
 	# now separately call WBUI processing
-	viewWebUIPort;
+	#viewWebUIPort;
+	SERVICE=WBUIService; fileLoc=wbui; file=jetty.xml;viewUIPort;
+	SERVICE=IONUIService; fileLoc=ionui; file=jetty.xml;viewUIPort;
 	#file location for each varies
 	;;
     	authN)    SERVICE=${_allServices[0]}; fileLoc=${_allLocations[0]};findPort ;;#startauthN;;
@@ -192,7 +202,7 @@ while [ ! -z $1 ]
     	stubPSS)  SERVICE=${_allServices[6]}; fileLoc=${_allLocations[6]};findPort;;
     	lookup)   SERVICE=${_allServices[7]}; fileLoc=${_allLocations[7]};findPort;;
     	#wbui)     SERVICE=${_allServices[8]}; fileLoc="${_allLocations[8]} jetty.xml";viewWebUIPort;;
-    	wbui)     viewWebUIPort;;
+    	wbui)     SERVICE=WBUIService; fileLoc=wbui; file=jetty.xml;viewUIPort;;
     	#stubPCE)  SERVICE=${_allServices[8]}; fileLoc=${_allLocations[8]};findPort;;
     	bwPCE)    SERVICE=${_allServices[8]}; fileLoc=${_allLocations[8]};findPort;;
     	connPCE)  SERVICE=${_allServices[9]}; fileLoc=${_allLocations[9]};findPort;;
@@ -201,6 +211,7 @@ while [ ! -z $1 ]
     	nullAGG)  SERVICE=${_allServices[12]}; fileLoc=${_allLocations[12]};findPort;;
     	notifyBridge)     SERVICE=${_allServices[13]}; fileLoc=${_allLocations[13]};findPort;;
     	wsnbroker) SERVICE=${_allServices[14]}; fileLoc=${_allLocations[14]};findPort;;
+	ionui)  SERVICE=IONUIService; fileLoc=ionui; file=jetty.xml;viewUIPort;;
     	*)        echo $1 not a recognized server
   esac
   shift

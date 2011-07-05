@@ -1,6 +1,6 @@
 /* Buttons */
 .userListPageNav_prev, .userListPageNav_next{
-	background:#000000 url(images/top-nav-divider-cen.png) repeat-y center; 
+	background:#000000 url(../images/top-nav-divider-cen.png) repeat-y center; 
 	color:#FFFFFF; 
 	width:120px; 
 	height:40px; 
@@ -11,7 +11,7 @@
 
 /******* user list table *******/
 /* Table head */
-.userListTableHead { background:#000000 url(images/blue-bg.png) repeat-x center;}
+.userListTableHead { background:#000000 url(../images/blue-bg.png) repeat-x center;}
 #content .userListTableHead tr th a {color:#FFFFFF; text-decoration:none;}
 /* Table body */
 tr.userListOddRow, tr.oddrow {background-color:#EEEEEE;}
