@@ -28,3 +28,7 @@ if [ ! -f $DST_DIR/$CONFIG ] ; then
     cp $SRC_DIR/$CONFIG  $DST_DIR/$CONFIG 
 fi
 
+if [ ! -f $DST_DIR/$MANIFEST ] ; then
+    cp $SRC_DIR/$MANIFEST  $DST_DIR/$MANIFEST
+fi
+

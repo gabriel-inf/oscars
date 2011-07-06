@@ -25,26 +25,30 @@ printUsage() {
    echo "<context> is one of: PRODUCTION|pro UNITTEST|test DEVELOPMENT|dev SDK|sdk"
    echo "<server> is either ALL or one or more of:"
    echo "     authN authZ api coord topoBridge rm stubPSS eomplsPSS dragonPSS PSS "
-   echo "     lookup wbui bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker"
+   echo "     lookup wbui bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker"
    exit 1
 }
 startService() {
-   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $Service $CONTEXT $Directory | sed "s/'//g")
+   serviceDir=$1
+   service=$2
+   shortName=$3
+   srcDir=$4
+   Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $serviceDir $service $CONTEXT | sed "s/'//g")
    if [ $debug ]; then
-       echo "Starting $Service"
+       echo "Starting $service Using configuration $Config"
    fi
    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
    if [ "$Conf" == "conf" ]; then
        if [ $debug ]; then
-           echo "using configuration file $OSCARS_HOME/$Service/$Conf/$Yaml"
+           echo "using configuration file $OSCARS_HOME/$serviceDir/$Conf/$Yaml"
        fi
-       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_HOME/$serviceDir/$Conf/$Yaml)
    elif [ "$Conf" == "config" ]; then
        if [ $debug ]; then
-           echo "using configuration file  $OSCARS_DIST/$Service/$Conf/$Yaml"
+           echo "using configuration file  $OSCARS_DIST/$srcDir/$Conf/$Yaml"
        fi
-       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+       port=$(awk -F: '/soap/,/public/ $1~/publishTo/{print $4}' $OSCARS_DIST/$srcDir/$Conf/$Yaml)
    fi
     if [ $debug ]; then
        echo "port definition line is  $port"
@@ -54,125 +58,80 @@ startService() {
        echo "port is $port"
    fi
    if [ $debug ]; then
-       line=`netstat -na | grep tcp | grep LISTEN | grep $port`
-       echo "checking $line"
+       line=`netstat -na | grep tcp | grep LISTEN | grep "[:|\.]$port "`
+       echo "checking netstat $line"
    fi
    porttest=`netstat -na | grep tcp | grep LISTEN | grep "[:|\.]$port "`
    if [ ! -z "$porttest" ]; then
-       echo $Service is  already running
+       echo $service is  already running
    else
-       echo starting $ShortName on port $port
-       if [ $ShortName != "nullagg" ]; then
-           (cd $OSCARS_DIST/$Directory; bin/startServer.sh $CONTEXT > $currDir/$ShortName.out 2>&1  & )
+       echo starting $shortName on port $port
+       if [ $shortName != "nullAgg" ]; then
+           (cd $OSCARS_DIST/$srcDir; bin/startServer.sh $CONTEXT > $currDir/$shortName.out 2>&1  & )
        else
-           (cd $OSCARS_DIST/$Directory; bin/startNullAgg.sh $CONTEXT > $currDir/$ShortName.out 2>&1 &)
+           (cd $OSCARS_DIST/$srcDir; bin/startNullAgg.sh $CONTEXT > $currDir/$shortName.out 2>&1 &)
        fi
    fi
 }
 startauthN() {
-   Service="AuthNService"
-   ShortName="authN"
-   Directory="authN"
-   startService
+   startService  "AuthNService" "AuthNService" "authN" "authN"
 }
 
 startauthZ(){
-   Service="AuthZService"
-   ShortName="authZ"
-   Directory="authZ"
-   startService
+   startService  "AuthZService" "AuthZService" "authZ"  "authZ"
 }
 
 startOSCARSService() {
-    Service="OSCARSService"
-    ShortName="api"
-    Directory="api"
-    startService
+    startService  "OSCARSService" "OSCARSService" "api" "api"
 }
 
 startCoord() {
-    Service="CoordService"
-    ShortName="coord"
-    Directory="coordinator"
-    startService
+    startService "CoordService" "CoordService" "coord" "coordinator"
 }
 
 startRM(){
-    Service="ResourceManagerService"
-    ShortName="rm"
-    Directory="resourceManager"
-    startService
+    startService "ResourceManagerService" "ResourceManagerService" "rm" "resourceManager"
 }
 
 startTopoBridge() {
-    Service="TopoBridgeService"
-    ShortName="topoBridge"
-    Directory="topoBridge"
-    startService
+    startService "TopoBridgeService" "TopoBridgeService" "topoBridge" "topoBridge"
 }
 
 startNotificationBridge() {
-    Service="NotificationBridgeService"
-    ShortName="notificationBridge"
-    Directory="notificationBridge"
-    startService
+    startService  "NotificationBridgeService" "NotificationBridgeService" "notificationBridge" "notificationBridge"
 }
 
 startWSNBroker() {
-    Service="WSNBrokerService"
-    ShortName="wsnbroker"
-    Directory="wsnbroker"
-    startService
+    startService "WSNBrokerService" "WSNBrokerService" "wsnbroker" "wsnbroker"
 }
 
 startStubPCE(){
-    Service="StubPCE"
-    ShortName="stubPCE"
-    Directory="stubPCE"
-    startService
+    startService "StubPCE" "StubPCE" "stubPCE" "stubPCE"
 }
 
 startConnPCE() {
-    Service="ConnectivityPCE"
-    ShortName="connPCE"
-    Directory="connectivityPCE"
-    startService
+    startService "ConnectivityPCE" "ConnectivityPCE" "connPCE" "connectivityPCE"
 }
 
 startBandwidthPCE() {
-    Service="BandwidthPCE"
-    ShortName="bwPCE"
-    Directory="bandwidthPCE"
-    startService
+    startService "BandwidthPCE" "BandwidthPCE" "bwPCE" "bandwidthPCE"
 }
 
 startDijPCE () {
-    Service="DijkstraPCE"
-    ShortName="dijPCE"
-    Directory="dijkstraPCE"
-    startService
+    startService  "DijkstraPCE" "DijkstraPCE" "dijPCE" "dijkstraPCE"
 }
 
 startVlanPCE () {
-    Service="VlanPCE"
-    ShortName="vlanPCE"
-    Directory="vlanPCE"
-    startService
+    startService "VlanPCE" "VlanPCE" "vlanPCE" "vlanPCE"
 }
 
 startnullPCE () {
-    Service="nullPCE"
-    ShortName="nullpce"
-    Directory="pce"
-    startService
+    startService "PCEService" "PCEService" "nullpce" "pce"
 
 }
 
-startnullAGG () {
-    Service="PCEService"
-    ShortName="nullagg"
-    Directory="pce"
-    startService
+startnullAgg() {
+    startService "PCEService" "NullAggregator" "nullAgg" "pce"
 }
 
 ##########Subroutine to decide which PSS to start
@@ -181,7 +140,7 @@ startPSS() {
     EOMPLSPSS="EOMPLS"
     #Get PSS choice, but keep stubPSS the default
     whichPSS="STUB"
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils)
+    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils Utils $CONTEXT )
     Service=$(echo $Config | awk -F/ '$1~//{print $2}')
     Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
     Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -205,36 +164,24 @@ startPSS() {
 }
 
 startStubPSS(){
-    Service="PSSService"
-    ShortName="stubPSS"
-    Directory="stubPSS"
-    startService
+    startService "PSSService" "PSSService" "stubPSS" "stubPSS"
 }
 
 startDragonPSS(){
-    Service="PSSService"
-    ShortName="dragonPSS"
-    Directory="dragonPSS"
-    startService
+    startService "PSSService" "PSSService" "dragonPSS" "dragonPSS"
 }
 
 startEomplsPSS(){
-    Service="PSSService"
-    ShortName="eomplsPSS"
-    Directory="eomplsPSS"
-    startService
+    startService "PSSService" "PSSService" "eomplsPSS" "eomplsPSS"
 }
 
 startLookup(){
-    Service="LookupService"
-    ShortName="lookup"
-    Directory="lookup"
-    startService
+    startService "LookupService" "LookupService" "lookup" "lookup"
 }
 
 startWBUI(){
 # gets its port from the jetty.xml file
-    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
+    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService WBUIService $CONTEXT jetty.xml)
     Service=$(echo $Config | awk -F/ '$1~//{print $2}')
     Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
     Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -295,7 +242,7 @@ while [ ! -z $1 ]
       startCoord
 #     startStubPCE
 #     startnullPCE
-      startnullAGG
+      startnullAgg
       startDijPCE
       startConnPCE
       startBandwidthPCE
@@ -317,7 +264,7 @@ while [ ! -z $1 ]
     dijPCE)   startDijPCE;;
     vlanPCE)  startVlanPCE;;
     nullPCE)  startnullPCE;;
-    nullAGG)  startnullAGG;;
+    nullAgg)  startnullAgg;;
     PSS)      startPSS;;
     stubPSS) startPSS;; #TBD- remove generic used for testing startStubPSS;;
     dragonPSS)startDragonPSS;;

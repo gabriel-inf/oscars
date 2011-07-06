@@ -27,8 +27,8 @@ mkdir -p $DST_DIR
 CONFIG_HTTP=nullagg.HTTP.yaml
 CONFIG_SSL=nullagg.SSL.yaml
 
-if [ ! -f $DST_DIR/pce-$MANIFEST ] ; then
-    cp $SRC_DIR/$MANIFEST  $DST_DIR/pce-$MANIFEST      
+if [ ! -f $DST_DIR/$MANIFEST ] ; then
+    cp $SRC_DIR/$MANIFEST  $DST_DIR/$MANIFEST
 fi
 if [ ! -f $DST_DIR/$CONFIG_HTTP  ] ; then
     cp $SRC_DIR/$CONFIG_HTTP $DST_DIR/$CONFIG_HTTP 

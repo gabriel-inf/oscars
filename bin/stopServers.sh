@@ -13,7 +13,7 @@ printUsage() {
    echo "usage stopServers <server>"
    echo "<server> is either ALL or one or more of:"
    echo "     authN authZ api coord topoBridge rm stubPSS  dragonPSS eomplsPSS PSS lookup wbui"
-   echo "     stubPCE bwPCE connPCE dijPCE vlanPCE nullAGG notifyBridge wsnbroker ionui"
+   echo "     stubPCE bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker ionui"
    exit 1
 }
 
@@ -155,7 +155,7 @@ stopnullPCE () {
     stopService
 }
 
-stopnullAGG () {
+stopnullAgg () {
     Service="NullAggregator"
     ShortName="nullagg"
     stopService
@@ -215,7 +215,7 @@ while [ ! -z $1 ]
 #    stopstubPSS
     stopPSS #Stops whichever PID is present
 #    stopnullPCE
-    stopnullAGG
+    stopnullAgg
     stopLookup
     stopNotificationBridge
     stopWSNBroker
@@ -233,7 +233,7 @@ while [ ! -z $1 ]
   dijPCE)   stopDijPCE;;
   vlanPCE)  stopVlanPCE;;
   nullPCE)  stopnullPCE;;
-  nullAGG)  stopnullAGG;;
+  nullAgg)  stopnullAgg;;
 #  stubPSS)  stopstubPSS;;
 #PSS option stops which ever PSS is running
   PSS)	stopPSS;;

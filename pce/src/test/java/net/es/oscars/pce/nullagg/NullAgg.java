@@ -136,8 +136,7 @@ public class NullAgg extends PCEProtocolServer implements Runnable {
             parseArgs(args);
             cc.setContext(context);
             try {
-                System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
-                cc.loadManifest(ServiceNames.SVC_PCE,  "pce-" + ConfigDefaults.MANIFEST); // manifest.yaml
+                cc.loadManifest(ServiceNames.SVC_PCE,  ConfigDefaults.MANIFEST); // manifest.yaml
                 cc.setLog4j();
                 // need to do this after the log4j.properties file has been set
                 log = Logger.getLogger(NullAgg.class);

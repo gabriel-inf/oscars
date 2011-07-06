@@ -8,19 +8,20 @@ CONFILE=config.yaml
 case $# in
   0)
    echo "usage parseManifest <arg1> <arg2>"
-   echo "<arg1> is Service Name"
-   echo "<arg2> is Context "
-   echo "<arg> is source directory name"
+   echo "<arg1> is Service Directory Name"
+   echo "<arg2> is Service name"
+   echo "<arg3> is Context "
+   echo "<arg4> is configuration file name if different than config.yaml"
    exit;;
   4)
    CONFILE=$4
 esac
 
-SERVICE=$1
-CONTEXT=$2
-DIRECTORY=$3
+SERVICEDIR=$1
+SERVICE=$2
+CONTEXT=$3
 
-for i in `cat $OSCARS_DIST/$DIRECTORY/config/manifest.yaml`
+for i in `cat $OSCARS_HOME/$SERVICEDIR/conf/manifest.yaml`
 do
   Line=$(echo $i)
   if  [ $CONFFND -eq 1 ];then
