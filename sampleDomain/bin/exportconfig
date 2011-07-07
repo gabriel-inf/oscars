@@ -276,7 +276,9 @@ tmpFile=/tmp/tmpconf.$$
 sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG  > $tmpFile
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG 
 rm -f $tmpFile
-
+sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-server\.jks,$OSCARS_HOME/sampleDomain/certs/localhost.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_SERVER_SSL_CFG  > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_SERVER_SSL_CFG 
+rm -f $tmpFile
 sed  "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/clientKeystore.properties > $tmpFile
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/clientKeystore.properties
 rm -f $tmpFile
