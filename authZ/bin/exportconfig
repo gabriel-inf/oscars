@@ -76,12 +76,12 @@ fi
 
 # log4j
 if [ ! -f $DST_DIR/$LOG4J_PROPS_INFO ] ; then
-    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars.log,$DST_LOGDIR/oscars.log," -e "s,hibernate.log,$DST_LOGDIR/hibernate.log," < $SRC_DIR/$LOG4J_PROPS_INFO > $DST_DIR/$LOG4J_PROPS_INFO
+    sed -e "s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars\.log,$DST_LOGDIR/oscars.log," -e "s,hibernate\.log,$DST_LOGDIR/hibernate.log," < $SRC_DIR/$LOG4J_PROPS_INFO > $DST_DIR/$LOG4J_PROPS_INFO
 fi
 if [ ! -f $DST_DIR/$LOG4J_PROPS_DEBUG ] ; then
-    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars.log,$DST_LOGDIR/oscars.log," -e "s,hibernate.log,$DST_LOGDIR/hibernate.log," <  $SRC_DIR/$LOG4J_PROPS_DEBUG > $DST_DIR/$LOG4J_PROPS_DEBUG
+    sed -e "s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars\.log,$DST_LOGDIR/oscars.log," -e "s,hibernate\.log,$DST_LOGDIR/hibernate.log," <  $SRC_DIR/$LOG4J_PROPS_DEBUG > $DST_DIR/$LOG4J_PROPS_DEBUG
     fi
 if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
-    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars.log,$DST_LOGDIR/oscars.log," -e "s,hibernate.log,$DST_LOGDIR/hibernate.log," <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
+    sed -e "s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars\.log,$DST_LOGDIR/oscars.log," -e "s,hibernate\.log,$DST_LOGDIR/hibernate.log," <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
 fi
 

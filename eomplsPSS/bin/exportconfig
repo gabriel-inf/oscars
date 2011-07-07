@@ -50,13 +50,13 @@ fi
 
 #log4j files
 if [ ! -f $DST_DIR/$LOG4J_PROPS_INFO ] ; then
-    sed -e "s,$MODULE.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars.log,$DST_LOGDIR/oscars.log,"  < $SRC_DIR/$LOG4J_PROPS_INFO > $DST_DIR/$LOG4J_PROPS_INFO
+    sed -e "s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars\.log,$DST_LOGDIR/oscars.log,"  < $SRC_DIR/$LOG4J_PROPS_INFO > $DST_DIR/$LOG4J_PROPS_INFO
 fi
 if [ ! -f $DST_DIR/$LOG4J_PROPS_DEBUG ] ; then
-    sed s,$MODULE.log,$DST_LOGDIR/$SERVICE.log, <  $SRC_DIR/$LOG4J_PROPS_DEBUG > $DST_DIR/$LOG4J_PROPS_DEBUG
+    sed s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log, <  $SRC_DIR/$LOG4J_PROPS_DEBUG > $DST_DIR/$LOG4J_PROPS_DEBUG
     fi
 if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
-    sed s,$MODULE.log,$DST_LOGDIR/$SERVICE.log, <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
+    sed s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log, <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
 fi
 
 # definitions
