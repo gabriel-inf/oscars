@@ -26,7 +26,7 @@
   </cxf:bus>
 
   <httpj:engine-factory>
-   <httpj:engine port="9008">
+   <httpj:engine port="9012">
     <httpj:tlsServerParameters>
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
