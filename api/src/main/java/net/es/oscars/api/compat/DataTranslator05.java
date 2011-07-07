@@ -22,6 +22,7 @@ import oasis.names.tc.saml._2_0.assertion.AttributeType;
 import org.oasis_open.docs.wsn.b_2.MessageType;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 public class DataTranslator05 {
@@ -592,13 +593,32 @@ public class DataTranslator05 {
         if (pathInfo06.getMplsInfo() != null) {
             pathInfo05.setMplsInfo(translate(pathInfo06.getMplsInfo()));
         }
-
+        
+        //we must have a path element to forward
+        if(pathInfo06.getPath() == null){
+            throw new OSCARSServiceException("Unable to translate v06 PathInfo. " +
+                "There must be a path element.");
+        }
+        //The hop list must have at least two hops.
+        //JAXB creates an empty list so no need for a null check.
+        if(pathInfo06.getPath().getHop().size() < 2){
+            throw new OSCARSServiceException("Unable to translate v06 PathInfo. " +
+                "The path must contain at least two hops.");
+        }
+        //path is not null and we have hops so populate the list
+        for(CtrlPlaneHopContent hop06 : pathInfo06.getPath().getHop()){
+            ctrlPlanePathContent.getHop().add(hop06);
+        }
+        //id is required but has no semantic meaning so just generate default if null
+        if (pathInfo06.getPath().getId() != null) {
+            ctrlPlanePathContent.setId(pathInfo06.getPath().getId());
+        }else{
+            ctrlPlanePathContent.setId("path06to05");
+        }
+        
         // These elements may be null
         if (pathInfo06.getPath().getDirection() != null) {
             ctrlPlanePathContent.setDirection(pathInfo06.getPath().getDirection());
-        }
-        if (pathInfo06.getPath().getId() != null) {
-            ctrlPlanePathContent.setId(pathInfo06.getPath().getId());
         }
         if (pathInfo06.getPath().getLifetime() != null) {
             ctrlPlanePathContent.setLifetime(pathInfo06.getPath().getLifetime());
