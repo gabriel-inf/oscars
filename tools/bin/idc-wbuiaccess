@@ -31,7 +31,13 @@ printUsage() {
 }
 
 viewWebUIPort(){
-	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
+	#Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService $CONTEXT wbui jetty.xml)
+	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService WBUIService $CONTEXT jetty.xml)
+	if [ -z $Config ]; then
+		echo "The configuration file is not found. Have you run the bin/copyTemplates.sh and/or bin/exportconfig commands?"
+		exit 1
+	fi 
+	#echo "Config: $Config"
 	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 	Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -40,7 +46,12 @@ viewWebUIPort(){
 	elif [ "$Conf" == "config" ]; then
 		configfile=$OSCARS_DIST/$Service/$Conf/$Yaml
 	fi
-	#echo "Config file:$configfile"
+	if [ -z $configfile ] || [ ! -f $configfile ]; then
+		echo "The configuration file is not found. You either have to :"
+		echo "  1. Rerun this script after running copyTemplates.sh and/or bin/exportconfig, or "
+		echo "  2. Change files \"$OSCARS_HOME/WBUIService/conf/jetty.HTTP.xml or jetty.SSL.xml\" files manually to allow access to all hosts"
+		exit 1
+	fi 
 
 	ALLOW="Allow"
 	DENY="Deny"
