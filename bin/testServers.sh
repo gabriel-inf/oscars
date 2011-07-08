@@ -81,7 +81,7 @@ testService "VlanPCE" "VlanPCE" "vlanPCE" "vlanPCE"
 
 testService "WSNBrokerService" "WSNBrokerService" "wsnbroker" "wsnbroker"
 
-testService "NotificationBridgeService" "NotificationBridgeService" "notificationBridge" "notificationBridge"
+testService "NotificationBridgeService" "NotificationBridgeService" "notifyBridge" "notificationBridge"
 
 #WBUI service gets its port from jetty.xml
 Config=$(sh $OSCARS_DIST/bin/parseManifest.sh WBUIService WBUIService $CONTEXT jetty.xml)
