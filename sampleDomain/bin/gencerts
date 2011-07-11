@@ -112,7 +112,11 @@ cd $BUILDDIR
 rm -rf demoCA
 mkdir -p demoCA/newcerts
 cp /dev/null demoCA/index.txt
-echo "1345" > demoCA/serial
+#echo "1345" > demoCA/serial
+#CA_random_serial=$RANDOM #random serial number - this did not work;method below worked
+CA_random_serial=`echo $(date +%Y%m%d%H%M)0001`
+echo "Using new random serial #:$CA_random_serial"
+echo $CA_random_serial > demoCA/serial
 
 # This file makes sure that the certificate for CN=TheRA can be a Certificate
 # Authority, i.e. can sign the user certificates, e.g. "CN=Client".
@@ -131,7 +135,10 @@ if [ ! -f sharedCred.tar ]; then
 #   -nodes means do not encrypt private key.
 #   -set_serial sets the serial number of the certificate
 
-    openssl req -verbose -x509 -new -nodes -set_serial 1234 \
+#generate random serial num
+random_serial=$RANDOM
+echo "Random number=$random_serial"
+    openssl req -verbose -x509 -new -nodes -set_serial $random_serial \
     -subj "/CN=TheCA/OU=NOT FOR PRODUCTION/O=ESNET/ST=CA/C=US" \
     -days 365 -out cacert.pem -keyout caprivkey.pem -config $OSCARS_DIST/sampleDomain/bin/openssl.cnf
 
