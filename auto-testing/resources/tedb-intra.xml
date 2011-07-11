@@ -566,6 +566,31 @@
                 </link>
             </port>
 
+            <!-- Port-10 to Node-5 --> 
+            <port id="urn:ogf:network:domain=testdomain-4.net:node=node-2:port=port-10">
+                <capacity>1000000000</capacity>
+                <maximumReservableCapacity>1000000000</maximumReservableCapacity>
+                <minimumReservableCapacity>1000000</minimumReservableCapacity>
+                <granularity>100000</granularity>
+               
+                <link id="urn:ogf:network:domain=testdomain-4.net:node=node-2:port=port-10:link=link-1">
+                    <remoteLinkId>urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-10:link=link-1</remoteLinkId>
+                    <trafficEngineeringMetric>100</trafficEngineeringMetric>
+                    <capacity>100000000</capacity>
+                    <maximumReservableCapacity>1000000000</maximumReservableCapacity>
+                    <minimumReservableCapacity>1000000</minimumReservableCapacity>
+                    <granularity>100000</granularity>
+                    <SwitchingCapabilityDescriptors>
+                        <switchingcapType>l2sc</switchingcapType>
+                        <encodingType>ethernet</encodingType>
+                        <switchingCapabilitySpecificInfo>
+                            <interfaceMTU>9000</interfaceMTU>
+                            <vlanRangeAvailability>2-400</vlanRangeAvailability>
+                        </switchingCapabilitySpecificInfo>
+                    </SwitchingCapabilityDescriptors>
+                </link>
+            </port>
+
         </node>
 
         <!-- Node-5 to testdomain-2.net -->
@@ -792,6 +817,31 @@
                         <switchingCapabilitySpecificInfo>
                             <interfaceMTU>9000</interfaceMTU>
                             <vlanRangeAvailability>2-20</vlanRangeAvailability>
+                        </switchingCapabilitySpecificInfo>
+                    </SwitchingCapabilityDescriptors>
+                </link>
+            </port>
+
+            <!-- Port-10 to Node-2 --> 
+            <port id="urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-10">
+                <capacity>1000000000</capacity>
+                <maximumReservableCapacity>1000000000</maximumReservableCapacity>
+                <minimumReservableCapacity>1000000</minimumReservableCapacity>
+                <granularity>100000</granularity>
+               
+                <link id="urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-10:link=link-1">
+                    <remoteLinkId>urn:ogf:network:domain=testdomain-4.net:node=node-2:port=port-10:link=link-1</remoteLinkId>
+                    <trafficEngineeringMetric>100</trafficEngineeringMetric>
+                    <capacity>100000000</capacity>
+                    <maximumReservableCapacity>1000000000</maximumReservableCapacity>
+                    <minimumReservableCapacity>1000000</minimumReservableCapacity>
+                    <granularity>100000</granularity>
+                    <SwitchingCapabilityDescriptors>
+                        <switchingcapType>l2sc</switchingcapType>
+                        <encodingType>ethernet</encodingType>
+                        <switchingCapabilitySpecificInfo>
+                            <interfaceMTU>9000</interfaceMTU>
+                            <vlanRangeAvailability>2-400</vlanRangeAvailability>
                         </switchingCapabilitySpecificInfo>
                     </SwitchingCapabilityDescriptors>
                 </link>
