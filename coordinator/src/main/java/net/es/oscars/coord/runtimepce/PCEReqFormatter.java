@@ -145,11 +145,10 @@ public class PCEReqFormatter {
         resConstraint.setPathInfo(new PathInfo());
         
         //build new PathInfo
-        PathInfo pathInfo = new PathInfo();
-        pathInfo.setLayer3Info(userConstraint.getPathInfo().getLayer3Info());
-        pathInfo.setMplsInfo(userConstraint.getPathInfo().getMplsInfo());
-        pathInfo.setPathSetupMode(userConstraint.getPathInfo().getPathSetupMode());
-        pathInfo.setPathType(userConstraint.getPathInfo().getPathType());
+        resConstraint.getPathInfo().setLayer3Info(userConstraint.getPathInfo().getLayer3Info());
+        resConstraint.getPathInfo().setMplsInfo(userConstraint.getPathInfo().getMplsInfo());
+        resConstraint.getPathInfo().setPathSetupMode(userConstraint.getPathInfo().getPathSetupMode());
+        resConstraint.getPathInfo().setPathType(userConstraint.getPathInfo().getPathType());
         if(userConstraint.getPathInfo().getPath() != null && userConstraint.getPathInfo().getPath().getHop().size() >= 2){
             //TODO: Check path for non-URNs
             resConstraint.getPathInfo().setPath(userConstraint.getPathInfo().getPath());
