@@ -671,6 +671,14 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
             /* if (data.getTopology().getPath().size() != 0) {
                 pathInfo.setPath(data.getTopology().getPath().get(0));
             }*/
+            //set remaining pathInfo parameters
+            if(data.getReservedConstraint().getPathInfo() != null){
+                pathInfo.setPathSetupMode(data.getReservedConstraint().getPathInfo().getPathSetupMode());
+                pathInfo.setLayer2Info(data.getReservedConstraint().getPathInfo().getLayer2Info());
+                pathInfo.setLayer3Info(data.getReservedConstraint().getPathInfo().getLayer3Info());
+                pathInfo.setMplsInfo(data.getReservedConstraint().getPathInfo().getMplsInfo());
+                pathInfo.setPathType(data.getReservedConstraint().getPathInfo().getPathType());
+            }
             reservedConstraint.setPathInfo(pathInfo);
         } else if(data.getReservedConstraint() != null){
             reservedConstraint = data.getReservedConstraint();
