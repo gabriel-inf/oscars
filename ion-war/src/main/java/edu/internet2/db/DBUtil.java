@@ -14,8 +14,6 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 import org.apache.log4j.Logger;
 
-//TBD: Move class to a different name to indicate SQL instead of Derby
-//TBD : Have a class variable Connection?
 public class DBUtil {
     private static Logger log =  Logger.getLogger(DBUtil.class);
     private static String dburl = null;
@@ -26,7 +24,6 @@ public class DBUtil {
 
 
     static {
-        // same properties for authZ and authZPolicy
         try {
             ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_IONUI);
             String configFile =cc.getFilePath(ConfigDefaults.CONFIG);
@@ -80,15 +77,11 @@ public class DBUtil {
     }
 
     /* Method to get DB connection 
-    *
-    *TBD put these values in some config file
-    * dbConn, dbUserName, dbPAssword, or get them as parameters
     */
     public static Connection getDBConnection() {
          Connection conn = null; 
 	 try{
             conn = DriverManager.getConnection(dburl+dbname,username,password); 
-            log.warn("-DB Connection obtained" + conn);
             log.debug("-INFO: DB Connection obtained" + conn);
             //end SQL
 

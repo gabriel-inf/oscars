@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS favorites (
 	gri 		VARCHAR(100) NOT NULL,
 	PRIMARY KEY (id)
 ) ENGINE=MyISAM;
+#create_index_if_not_exists('favorites','loginIndex','login');
+#create index will throw a warning if already existing.
 CREATE INDEX loginIndex ON favorites(login);
 CREATE UNIQUE INDEX loginGRIIndex ON favorites(login, gri);
 

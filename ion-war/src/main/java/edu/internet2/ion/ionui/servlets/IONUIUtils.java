@@ -50,51 +50,53 @@ public class IONUIUtils {
 	//constants for organization and role
 	public static String ATTR_ORG = "institution";
 
+	public static String ATTR_ROLE = "role";
+	
 	public static String getTopologyFile() {
 		ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_IONUI);
-                cc.setServiceName(ServiceNames.SVC_IONUI);
+		cc.setServiceName(ServiceNames.SVC_IONUI);
 
-                String configFilename = null;
-                try {
-                    cc.setContext(System.getProperty("context"));
-                    cc.loadManifest(ServiceNames.SVC_IONUI,  ConfigDefaults.MANIFEST);
-                    configFilename = cc.getFilePath(ION_TOPOLOGY_FILE);
-                } catch (ConfigException e) {
-                        log.error("ConfigException when getting ION Topo file path:" + e);
-                    //return null;
-                }
-                log.debug("ION Topology file is:" + configFilename);
+		String configFilename = null;
+		try {
+			cc.setContext(System.getProperty("context"));
+			cc.loadManifest(ServiceNames.SVC_IONUI,  ConfigDefaults.MANIFEST);
+			configFilename = cc.getFilePath(ION_TOPOLOGY_FILE);
+		} catch (ConfigException e) {
+			log.error("ConfigException when getting ION Topo file path:" + e);
+			//return null;
+		}
+		log.debug("ION Topology file is:" + configFilename);
 		return configFilename;
 	}
 
 	/* 
-	* Method to get endpoint URL 
-	*/
+	 * Method to get endpoint URL 
+	 */
 	public static Map<String, Object> getEndpointURL() {
 		Map<String,Object> endPointsData = Collections.synchronizedMap(new HashMap());
 		ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_IONUI);
-        	cc.setServiceName(ServiceNames.SVC_IONUI);
+		cc.setServiceName(ServiceNames.SVC_IONUI);
 
-                String configFilename = null;
-                try {
-                    cc.setContext(System.getProperty("context"));
-                    cc.loadManifest(ServiceNames.SVC_IONUI,  ConfigDefaults.MANIFEST);
-                    configFilename = cc.getFilePath(ConfigDefaults.CONFIG);
-                } catch (ConfigException e) {
-                        log.error("ConfigException when gettting ENDPOINTS data" + e);
-                    //return null;
-                }
-                log.debug("Endpoint to be read from config file:" + configFilename);
-                HashMap<String,Object> utilConfig =
-                        (HashMap<String,Object>)ConfigHelper.getConfiguration(configFilename);
-                log.debug("Context:"+ cc.getContext() + "," + utilConfig + "," + configFilename);
-                if(utilConfig.containsKey("endpoint")){
-                        endPointsData = (HashMap<String,Object>) utilConfig.get("endpoint");
-                }
-                else {
-                        log.error("No endpoints found, is utilConfig null?" + utilConfig);
-                }
-                //to remove until here
+		String configFilename = null;
+		try {
+			cc.setContext(System.getProperty("context"));
+			cc.loadManifest(ServiceNames.SVC_IONUI,  ConfigDefaults.MANIFEST);
+			configFilename = cc.getFilePath(ConfigDefaults.CONFIG);
+		} catch (ConfigException e) {
+			log.error("ConfigException when gettting ENDPOINTS data" + e);
+			//return null;
+		}
+		log.debug("Endpoint to be read from config file:" + configFilename);
+		HashMap<String,Object> utilConfig =
+			(HashMap<String,Object>)ConfigHelper.getConfiguration(configFilename);
+		log.debug("Context:"+ cc.getContext() + "," + utilConfig + "," + configFilename);
+		if(utilConfig.containsKey("endpoint")){
+			endPointsData = (HashMap<String,Object>) utilConfig.get("endpoint");
+		}
+		else {
+			log.error("No endpoints found, is utilConfig null?" + utilConfig);
+		}
+		//to remove until here
 
 		/*
         	Iterator iterator = endPointsData.entrySet().iterator();
@@ -103,63 +105,63 @@ public class IONUIUtils {
             		log.debug( "(" + entry.getKey() + ": " +
                               entry.getValue() + "), " );
         	}		 
-		*/
-	        return endPointsData;
+		 */
+		return endPointsData;
 	}
 
 	/* get String userName */	
 	public static String getUserNameFromSession(HttpServletRequest request, String methodName,
-		PrintWriter out, ServletCore core) {
-        	AuthNClient authNClient = core.getAuthNClient();
-        	AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
-        	AuthZClient authZClient = core.getAuthZClient();
+			PrintWriter out, ServletCore core) {
+		AuthNClient authNClient = core.getAuthNClient();
+		AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
+		AuthZClient authZClient = core.getAuthZClient();
 
-        	UserSession userSession = new UserSession(core);
-        	CheckSessionReply sessionReply =
-            		userSession.checkSession(out, authNPolicyClient, request,
-                                     methodName);
-        	if (sessionReply == null) {
-            		log.warn("No user session: cookies invalid???");
-            		return  null;
-        	}
+		UserSession userSession = new UserSession(core);
+		CheckSessionReply sessionReply =
+			userSession.checkSession(out, authNPolicyClient, request,
+					methodName);
+		if (sessionReply == null) {
+			log.warn("No user session: cookies invalid???");
+			return  null;
+		}
 		return sessionReply.getUserName();	
 	}
 
 
 	/* Utility method to get a CheckSessionReply object */
 	public static CheckSessionReply getUserSession(HttpServletRequest request, String methodName,
-                PrintWriter out, ServletCore core) {
-        	AuthNClient authNClient = core.getAuthNClient();
-        	AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
-        	AuthZClient authZClient = core.getAuthZClient();
+			PrintWriter out, ServletCore core) {
+		AuthNClient authNClient = core.getAuthNClient();
+		AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
+		AuthZClient authZClient = core.getAuthZClient();
 
-        	UserSession userSession = new UserSession(core);
-        	CheckSessionReply sessionReply =
-            		userSession.checkSession(out, authNPolicyClient, request,
-                                     methodName);
-        	if (sessionReply == null) {
-            		log.warn("No user session: cookies invalid???");
-            		return  null;
-        	}
-        	return sessionReply;
-        } //end CheckSessionReply
-	
-	
-	
+		UserSession userSession = new UserSession(core);
+		CheckSessionReply sessionReply =
+			userSession.checkSession(out, authNPolicyClient, request,
+					methodName);
+		if (sessionReply == null) {
+			log.warn("No user session: cookies invalid???");
+			return  null;
+		}
+		return sessionReply;
+	} //end CheckSessionReply
+
+
+
 	/*utility method to get Paths in a string format */
 	public static String [] getRawPathArray (CtrlPlanePathContent path) {
 		if (path == null) {
 			log.warn("Path input parameter null! Returning ");
 			return null;
 		}
-		
+
 		List <CtrlPlaneHopContent> hops = path.getHop();
-		
+
 		if (hops == null) {
 			log.warn("Hops null for this path! Returning ");
 			return null;
 		}
-			
+
 		java.util.ListIterator <CtrlPlaneHopContent>  listIterator = hops.listIterator();
 		String arrPaths[] = new String[hops.size()];
 		int iIndex = 0;
@@ -178,28 +180,28 @@ public class IONUIUtils {
 		}
 		return arrPaths;
 	}
-	
+
 	/* utility method to get Domains involved in path */
 	public static String getDomainsString (CtrlPlanePathContent path) {
-		
+
 		java.util.HashSet <String> domains = new HashSet<String>();
 		java.util.List <CtrlPlaneHopContent> hops = null;
-		
+
 		if (path != null)
-			 hops = path.getHop();
+			hops = path.getHop();
 		else {
 			log.warn("Path input parameter null! Returning ");
 			return null;
 		}
-		
+
 		if (hops == null) {
 			log.warn("Hops null for this path! Returning ");
 			return null;
 		}
-		
+
 		java.util.ListIterator<CtrlPlaneHopContent> listIter = 
-				hops.listIterator();
-			
+			hops.listIterator();
+
 		//add to unique list of domains
 		String domainId = "" ;
 		while(listIter.hasNext()) {			
@@ -218,64 +220,88 @@ public class IONUIUtils {
 								" Hop id:" +  tempHopObj.getId() +
 								"path id " + path.getId()
 								);
-								*/
+			 */
 			CtrlPlaneLinkContent linkObj = (CtrlPlaneLinkContent)tempHopObj.getLink();
 			if (linkObj == null)
 				continue;
 			String linkURN = linkObj.getId();
 			//not checking for null/empty linkURN
 			URNParserResult urnFields = URNParser.parseTopoIdent(linkURN, PathTools.getLocalDomainId());
-            domainId = urnFields.getDomainId(); 
+			domainId = urnFields.getDomainId(); 
 			domains.add(domainId);			
 		}
-		
+
 		//form string of domains with a newline divider
 		Iterator iter = domains.iterator();
 		String sAllDomains = "";
-      		while (iter.hasNext())		
+		while (iter.hasNext())		
 			sAllDomains = "Domain: "+ iter.next() + "\n";
 		return sAllDomains;		
 	}
 
 
 	/* Method to determine whether a given user has administrative role */
-    public static boolean isAdminUser(List <AttributeType> userAttributes) {
-	boolean isAdmin = false;
-	for(AttributeType attr : userAttributes){
-                log.debug("UserAttr=" + attr.getName()+
-                        "attrValue " + attr.getAttributeValue());
-                //check for user role
-                if ( (attr != null) && (attr.getName().equals("role")) ) {
-                        List<Object> samlValues = attr.getAttributeValue();
-                        for (Object samlValue: samlValues) {
-                                String value = (String) samlValue;
-                                log.debug("saml value " + value);
-                                if(ION_ADMIN_ATTR_NAME.equals(value)){
-                                        isAdmin = true;
-                                        break;
-                                }
-                        }
-                        if (isAdmin) break; //break out of outer loop
-                }
-        }
-	return isAdmin;
-    } //end isAdminUSer method
-	
-    public static String getUsersOrg(List <AttributeType> userAttributes) {
- 	String orgName = "";	
-        for(AttributeType attr : userAttributes){
-                log.debug("UserAttr=" + attr.getName()+
-                        "attrValue " + attr.getAttributeValue());
-                //check for user orgranization 
-                if ( (attr != null) && (attr.getName().equals(ATTR_ORG)) ) {
-                        List<Object> samlValues = attr.getAttributeValue();
-                        for (Object samlValue: samlValues) {
-                                orgName = (String) samlValue;
-                                log.error("Org user belongs to " + orgName);
-                        }
-			break; //quit out of loop, organization found
-                }
-        }
-        return orgName;
-    } //end getUsersOrg method
+	public static boolean isAdminUser(List <AttributeType> userAttributes) {
+		boolean isAdmin = false;
+		for(AttributeType attr : userAttributes){
+			log.debug("UserAttr=" + attr.getName()+
+					"attrValue " + attr.getAttributeValue());
+			//check for user role
+			if ( (attr != null) && (attr.getName().equals(ATTR_ROLE)) ) {
+				List<Object> samlValues = attr.getAttributeValue();
+				for (Object samlValue: samlValues) {
+					String value = (String) samlValue;
+					log.debug("saml value " + value);
+					if(ION_ADMIN_ATTR_NAME.equals(value)){
+						isAdmin = true;
+						break;
+					}
+				}
+				if (isAdmin) break; //break out of outer loop
+			}
+		}
+		return isAdmin;
+	} //end isAdminUSer method
+
+	public static String getUsersOrg(List <AttributeType> userAttributes) {
+		String orgName = "";	
+		for(AttributeType attr : userAttributes){
+			log.error("UserAttr=" + attr.getName()+
+					"attrValue " + attr.getAttributeValue());
+			//check for user orgranization 
+			if ( (attr != null) && (attr.getName().equals(ATTR_ORG)) ) {
+				List<Object> samlValues = attr.getAttributeValue();
+				for (Object samlValue: samlValues) {
+					orgName = (String) samlValue;
+					log.debug("Org user belongs to " + orgName);
+				}
+				break; //quit out of loop, organization found
+			}
+		}
+		return orgName;
+	} //end getUsersOrg method
+
+	/*
+	public static HashSet<String> getUserRoles(List <AttributeType> userAttributes,
+			HashSet<E> roles) {
+		String tempRole = "";
+		log.debug("Current size of roles array"+ roles.size());
+		
+		for(AttributeType attr : userAttributes){
+			log.debug("UserAttr=" + attr.getName()+
+					"attrValue " + attr.getAttributeValue());
+			//check for user orgranization 
+			if ( (attr != null) && (attr.getName().equals(ATTR_ROLE)) ) {
+				List<Object> samlValues = attr.getAttributeValue();
+				for (Object samlValue: samlValues) {
+					tempRole = (String) samlValue;
+					roles.add(tempRole);
+					log.error("Role " + tempRole + " added ");
+				}
+			}
+		}
+		return roles;
+	} //end method
+	*/
+
 }

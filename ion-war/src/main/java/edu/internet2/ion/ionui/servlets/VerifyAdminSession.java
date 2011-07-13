@@ -81,6 +81,11 @@ public class VerifyAdminSession extends HttpServlet{
         AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
 
         CheckSessionReply sessionReply = IONUIUtils.getUserSession(request, methodName, out, core);
+	if (sessionReply == null) {
+		this.log.error(netLogger.error(methodName,ErrSev.MINOR,"No user session. Returning"));
+     		return;
+	}
+
         String userName = sessionReply.getUserName();
         this.log.debug("userName from sessionReply="+  userName);
         if (userName == null) {

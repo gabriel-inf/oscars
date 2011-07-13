@@ -122,7 +122,7 @@ public class IONUserList extends HttpServlet{
 
         CheckSessionReply sessionReply = IONUIUtils.getUserSession(request, methodName, out, core);
         String userName = sessionReply.getUserName();
-        this.log.error("userName from sessionReply="+  userName);
+        this.log.debug("userName from sessionReply="+  userName);
         if (userName == null) {
             this.log.warn(netLogger.error(methodName,ErrSev.MINOR,"No user session: cookies invalid, user null"));
             return;
@@ -199,13 +199,13 @@ public class IONUserList extends HttpServlet{
             PreparedStatement userStmt = conn.prepareStatement("SELECT username " +
                 "FROM adminOrganizationUsers WHERE organization=?");
 
-            this.log.error("SELECT username FROM adminOrganizationUsers WHERE organization="+organization);
+            this.log.debug("SELECT username FROM adminOrganizationUsers WHERE organization="+organization);
 
             userStmt.setString(1, organization);
             ResultSet users = userStmt.executeQuery();
             while(users.next()){
                 userMap.put(users.getString(1), true);
-                this.log.error("Got user: "+users.getString(1));
+                this.log.debug("Got user: "+users.getString(1));
             }
             conn.close();
         } catch (SQLException e) {
@@ -268,7 +268,7 @@ public class IONUserList extends HttpServlet{
              if (user.getInstitution().equals(organization)) {
                  userMap.put(user.getLogin(), true);
 		 //TBD change to debug
-		 log.error ("-Adding user " + user.getLogin() + " to the list");
+		 log.debug ("-Adding user " + user.getLogin() + " to the list");
              }
         }
 
@@ -315,9 +315,9 @@ public class IONUserList extends HttpServlet{
         Arrays.sort(sortedUsers, new UserComparator<UserDetails>(sortField, sortAsc));
         for (int i = 0; i < sortedUsers.length; i++) {
             //this.log.debug("Got user from RMI "+sortedUsers[i].getLogin());
-            this.log.error("Got user from SQL-DB "+sortedUsers[i].getLogin());
+            this.log.debug("Got user from SQL-DB "+sortedUsers[i].getLogin());
             if(!userMap.containsKey(sortedUsers[i].getLogin())){
-                this.log.error("User "+sortedUsers[i].getLogin()+" not found");
+                this.log.debug("User "+sortedUsers[i].getLogin()+" not found");
                 continue;
             }
 

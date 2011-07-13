@@ -7,11 +7,11 @@ dojo.declare("ion.UserList", [dijit._Widget, dijit._Templated], {
 	page: 0,
 	resultsPerPage: 10,
 	id: 'userList',
-	prevPageIcon: 'images/previous.png',
-	nextPageIcon: 'images/next.png', 
-	sortAscIcon: 'images/sort_asc.png',
-	sortDescIcon: 'images/sort_desc.png',
-	nextPageIcon: 'images/next.png',
+	prevPageIcon: '../images/previous.png',
+	nextPageIcon: '../images/next.png', 
+	sortAscIcon: '../images/sort_asc.png',
+	sortDescIcon: '../images/sort_desc.png',
+	nextPageIcon: '../images/next.png',
 	viewEditButton: '',
 	cancelButton: '',
 	maxColChars: 20,
@@ -223,6 +223,10 @@ dojo.declare("ion.UserInfo", [dijit._Widget, dijit._Templated], {
 		);
 	},
 	handleQueryUser: function(response, ioArgs){
+	    if ( (response.success !=undefined) && !response.success) {
+		this.handleErrorString(response.status);
+		return;
+	    }
 	    this.userSpan.innerHTML = response.login;
 	    this.userField.value = response.login;
 	    this.passwdField.value = "********";
@@ -236,18 +240,20 @@ dojo.declare("ion.UserInfo", [dijit._Widget, dijit._Templated], {
 	    this.phoneField.value = response.phonePrimary;
 	    this.phoneSecondaryField.value = response.phoneSecondary;
 	    this.descriptionField.value = response.description;
-	    for(var i = 0; i < response.attributes.length; i++){
-	    	if(response.attributes[i] == "OSCARS-user"){
-	    		this.userRoleField.checked = true;
-	    	}else if(response.attributes[i] == "ION-administrator"){
-	    		this.adminRoleField.checked = true;
-	    	}else if(response.attributes[i] == "OSCARS-site-administrator"){
-	    		this.engineerRoleField.checked = true;
-	    	}else if(response.attributes[i] == "ION-operator"){
-	    		this.operatorRoleField.checked = true;
+	    if (response.attributes != null) {
+	    	for(var i = 0; i < response.attributes.length; i++){
+	    		if(response.attributes[i] == "OSCARS-user"){
+	    			this.userRoleField.checked = true;
+	    		}else if(response.attributes[i] == "ION-administrator"){
+	    			this.adminRoleField.checked = true;
+	    		}else if(response.attributes[i] == "OSCARS-site-administrator"){
+	    			this.engineerRoleField.checked = true;
+	    		}else if(response.attributes[i] == "ION-operator"){
+	    			this.operatorRoleField.checked = true;
+	    		}
 	    	}
 	    }
-		dijit.byId(this.id+"_loadingDialog").hide();
+	    dijit.byId(this.id+"_loadingDialog").hide();
 	},
 	verifyDelete: function(){
 		dijit.byId(this.id+"_deleteVerifyDialog").show();
@@ -292,6 +298,15 @@ dojo.declare("ion.UserInfo", [dijit._Widget, dijit._Templated], {
 		dijit.byId(this.id+"_loadingDialog").hide();
 		dijit.byId(this.id + '_deletingDialog').hide();
 	},
+	handleErrorString: function(responseStr) { 
+                if(responseStr != null){
+                        showErrorDiv(responseStr);
+                }else{
+                        showErrorDiv(defaultErrorMsg());
+                }
+                dijit.byId(this.id+"_loadingDialog").hide();
+                dijit.byId(this.id + '_deletingDialog').hide();
+        },
 	modifyUser: function(){
 	    hideErrorDiv();
 		dijit.byId(this.id+"_modifyingDialog").show();

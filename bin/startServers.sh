@@ -25,7 +25,7 @@ printUsage() {
    echo "<context> is one of: PRODUCTION|pro UNITTEST|test DEVELOPMENT|dev SDK|sdk"
    echo "<server> is either ALL or one or more of:"
    echo "     authN authZ api coord topoBridge rm stubPSS eomplsPSS dragonPSS PSS "
-   echo "     lookup wbui bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker"
+   echo "     lookup wbui bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker ionui"
    exit 1
 }
 startService() {
@@ -205,6 +205,27 @@ startWBUI(){
        (cd $OSCARS_DIST/wbui; bin/startServer.sh $CONTEXT > $currDir/wbui.out 2>&1 &)
     fi
 }
+
+startIONUI(){
+    Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService IONUIService $CONTEXT jetty.xml)
+    Service=$(echo $Config | awk -F/ '$1~//{print $2}')
+    Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
+    Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
+    if [ "$Conf" == "conf" ]; then
+        port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_HOME/$Service/$Conf/$Yaml)
+    elif [ "$Conf" == "config" ]; then
+        port=$(awk -F\" '$4~/jetty.port/{print $6}' $OSCARS_DIST/$Service/$Conf/$Yaml)
+    fi
+    port=$(echo $port | sed "s/[^0-9]//g")
+    porttest=`netstat -na | grep tcp | grep LISTEN | grep $port`
+    if [ ! -z "$porttest" ]; then
+        echo IONUI already running
+    else
+        echo starting IONUI Server on port $port
+       (cd $OSCARS_DIST/ionui; bin/startServer.sh $CONTEXT > $currDir/ionui.out 2>&1 &)
+    fi
+}
+
 
 # execution starts here
 if [ $# -lt 2 ]; then

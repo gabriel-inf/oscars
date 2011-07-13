@@ -24,14 +24,19 @@ fi
 #Subroutine to print usage details
 ###########################################################################
 printUsage() {
-	echo -e "\nusage idc-ionui <context> <option>"
+	echo -e "\nusage idc-ionuiaccess <context> <option>"
 	echo "<context> is one of: PRODUCTION|pro DEVELOPMENT|dev SDK|sdk"
 	echo "<option> is one of : ALLOW|allow DENY|deny"
 	exit 1
 }
 
 viewIONUIPort(){
-	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService $CONTEXT ionui jetty.xml)
+	#Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService $CONTEXT ionui jetty.xml)
+	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh IONUIService IONUIService $CONTEXT jetty.xml)
+	if [ -z $Config ]; then
+                echo "The configuration file is not found. Have you run the bin/copyTemplates.sh and/or bin/exportconfig commands?"
+                exit 1
+        fi
 	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 	Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -41,6 +46,12 @@ viewIONUIPort(){
 		configfile=$OSCARS_DIST/$Service/$Conf/$Yaml
 	fi
 	#echo "Config file:$configfile"
+	 if [ -z $configfile ] || [ ! -f $configfile ]; then
+                echo "The configuration file is not found. You either have to :"
+                echo "  1. Rerun this script after running copyTemplates.sh and/or bin/exportconfig, or "
+                echo "  2. Change files \"$OSCARS_HOME/WBUIService/conf/jetty.HTTP.xml or jetty.SSL.xml\" files manually to allow access to all hosts"
+                exit 1
+        fi
 
 	ALLOW="Allow"
 	DENY="Deny"

@@ -627,6 +627,8 @@ public class IONQueryCircuitStatistics extends HttpServlet{
 	JSONObject jsonObject = JSONObject.fromObject(outputMap);
 	jsonObject.put("data", data);
 	out.println("{}&&" + jsonObject);
+	
+	this.log.info(methodName +":end");
 
 	return;
 }

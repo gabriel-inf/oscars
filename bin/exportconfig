@@ -89,7 +89,7 @@ $SH $OSCARS_DIST/notificationBridge/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 $SH $OSCARS_DIST/wsnbroker/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
 #ion.new addition
-#$SH $OSCARS_DIST/ionui/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+$SH $OSCARS_DIST/ionui/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
 #
 # SAMPLE DOMAIN SPECIFIC

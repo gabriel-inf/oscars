@@ -118,9 +118,11 @@ if [ $? -eq 1 ]; then
 fi
 
 echo
-echo "edit the config files in authN, authZ and resourceManager so that the oscars user and password matches the one in the installed mysql database"
+echo "edit the config files in authN, authZ,resourceManager and ionui so that the oscars user and password matches the one in the installed mysql database"
+echo "--Alternatively: cd tools; bin/idc-dbpassmod"
 echo "edit the pce-configuration files in coordinator if you wish to run different PCEs"
 echo "edit the config in topologyBridge to reflect your topology files."
+echo "--Alternatively: see tools/bin/idc-toposerveradd, tools/bin/idc-domainXXX for your needs"
 echo "edit the config file in wbui if you wish to use secure cookies or rename the cookies"
 echo "then run  $OSCARS_DIST/bin/exportconfig"
 exit 0;

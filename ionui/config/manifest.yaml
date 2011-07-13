@@ -8,25 +8,25 @@ IONUIService:
         ion_topology.yaml:  'OSCARS_DIST/ionui/config/ion_topology.yaml'
 
     DEVELOPMENT:
-        config.yaml:        'OSCARS_HOME/IONUIService/conf/config.HTTP.yaml'
-        jetty.xml:          'OSCARS_HOME/IONUIService/conf/jetty.HTTP.xml'
-        client-cxf.xml:     'OSCARS_HOME/IONUIService/conf/client-cxf-http.xml'
+        config.yaml:        'OSCARS_HOME/IONUIService/conf/config.SSL.yaml'
+        jetty.xml:          'OSCARS_HOME/IONUIService/conf/jetty.SSL.xml'
+        client-cxf.xml:     'OSCARS_HOME/IONUIService/conf/client-cxf-ssl.xml'
         log4j.properties:   'OSCARS_HOME/IONUIService/conf/log4j.MESSAGE.properties'
-        ion_topology.yaml:  'OSCARS_DIST/ionui/config/ion_topology.yaml'
+        ion_topology.yaml:  'OSCARS_HOME/IONUIService/conf/ion_topology.yaml'
 
     SDK:
         config.yaml:        'OSCARS_HOME/IONUIService/conf/config.HTTP.yaml'
         jetty.xml:          'OSCARS_HOME/IONUIService/conf/jetty.HTTP.xml'
         client-cxf.xml:     'OSCARS_HOME/IONUIService/conf/client-cxf-http.xml'
         log4j.properties:   'OSCARS_HOME/IONUIService/conf/log4j.DEBUG.properties'
-        ion_topology.yaml:  'OSCARS_DIST/ionui/config/ion_topology.yaml'
+        ion_topology.yaml:  'OSCARS_HOME/IONUIService/conf/ion_topology.yaml'
     
     PRODUCTION:
         config.yaml:        'OSCARS_HOME/IONUIService/conf/config.SSL.yaml'
         jetty.xml:          'OSCARS_HOME/IONUIService/conf/jetty.SSL.xml'
         client-cxf.xml:     'OSCARS_HOME/IONUIService/conf/client-cxf-ssl.xml'
         log4j.properties:   'OSCARS_HOME/IONUIService/conf/log4j.INFO.properties'
-        ion_topology.yaml:  'OSCARS_DIST/ionui/config/ion_topology.yaml'
+        ion_topology.yaml:  'OSCARS_HOME/IONUIService/conf/ion_topology.yaml'
 
 AuthNService:
     UNITTEST:

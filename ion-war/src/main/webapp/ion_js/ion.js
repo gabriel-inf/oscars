@@ -2082,7 +2082,8 @@ dojo.declare('ion.UserProfile', [dijit._Widget, dijit._Templated], {
 		});
 	},
 	handleUserQuery: function(response, ioArgs){
-		if(!response.success){
+		//new check for displaying correct value
+                if(!response.success){
 			this.handleError(response,ioArgs);
 			return;
 		}

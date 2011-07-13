@@ -224,12 +224,23 @@
         	<servlet-name>IONUserAdd</servlet-name>
         	<servlet-class>edu.internet2.ion.ionui.servlets.IONUserAdd</servlet-class>
     	</servlet>
-<!--
+	<servlet>
+       		<servlet-name>IONUserModify</servlet-name>
+        	<servlet-class>edu.internet2.ion.ionui.servlets.IONUserModify</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>IONUserDelete</servlet-name>
+        	<servlet-class>edu.internet2.ion.ionui.servlets.IONUserDelete</servlet-class>
+                <load-on-startup>1</load-on-startup>
+    	</servlet>
+	<servlet-mapping>
+        	<servlet-name>IONUserModify</servlet-name>
+        	<url-pattern>/servlet/IONUserModify</url-pattern>
+    	</servlet-mapping>
     	<servlet-mapping>
         	<servlet-name>IONUserDelete</servlet-name>
         	<url-pattern>/servlet/IONUserDelete</url-pattern>
     	</servlet-mapping>
--->
     	<servlet-mapping>
         	<servlet-name>UserRemove</servlet-name>
         	<url-pattern>/servlet/UserRemove</url-pattern>

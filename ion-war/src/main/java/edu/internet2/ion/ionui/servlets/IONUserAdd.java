@@ -26,7 +26,7 @@ import net.es.oscars.rmi.model.ModelObject;
 import net.es.oscars.rmi.model.ModelOperation;
 import net.es.oscars.servlets.ServletUtils;
 import net.es.oscars.servlets.UserSession;
-*/ // commented for porting
+ */ // commented for porting
 import net.es.oscars.wbui.servlets.AuthenticateUser;
 import net.es.oscars.wbui.servlets.UserSession;
 import net.es.oscars.wbui.servlets.CheckSessionReply;
@@ -60,64 +60,68 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
 public class IONUserAdd extends HttpServlet{
-    private Logger log = Logger.getLogger(IONUserList.class);
-    
-    private static final String[] FIELDS = {"username", "password", "passwordConfirmation", 
-	    "certSubject", "firstName", "lastName", "institutionName", "emailPrimary", 
-	    "emailSecondary", "phonePrimary", "phoneSecondary", "description"};
-    
-    private static final String[] REQ_FIELDS = {"username", "password", "passwordConfirmation", 
-	    "firstName", "lastName", "institutionName", "emailPrimary", "phonePrimary"};
-    
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-        
-        String methodName= "IONUserAdd";
-        PrintWriter out = response.getWriter();
-        
-        //authenticate the reservation
-	
-	//comment below to change for porting
-	/*
+	private Logger log = Logger.getLogger(IONUserAdd.class);
+
+	private static final String[] FIELDS = {"username", "password", "passwordConfirmation", 
+		"certSubject", "firstName", "lastName", "institutionName", "emailPrimary", 
+		"emailSecondary", "phonePrimary", "phoneSecondary", "description"};
+
+	private static final String[] REQ_FIELDS = {"username", "password", "passwordConfirmation", 
+		"firstName", "lastName", "institutionName", "emailPrimary", "phonePrimary"};
+
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+	throws IOException, ServletException {
+
+		String methodName= "IONUserAdd";
+		PrintWriter out = response.getWriter();
+
+		//authenticate the reservation
+
+		//comment below to change for porting
+		/*
         UserSession userSession = new UserSession();
         String userName = userSession.checkSession(out, request, methodName);
         if (userName == null) {
             return;
         }
-	*/
-	
-	String transId  = PathTools.getLocalDomainId() + "-IONUI-" + UUID.randomUUID().toString();
-        OSCARSNetLogger netLogger = new OSCARSNetLogger();
-        netLogger.init(ServiceNames.SVC_IONUI,transId);
-        OSCARSNetLogger.setTlogger(netLogger);
-        this.log.info(netLogger.start(methodName));
+		 */
+
+		String transId  = PathTools.getLocalDomainId() + "-IONUI-" + UUID.randomUUID().toString();
+		OSCARSNetLogger netLogger = new OSCARSNetLogger();
+		netLogger.init(ServiceNames.SVC_IONUI,transId);
+		OSCARSNetLogger.setTlogger(netLogger);
+		this.log.info(netLogger.start(methodName));
 
 
-        ServletCore core = (ServletCore)
-                getServletContext().getAttribute(ServletCore.CORE);
-        if (core == null) {
-            ServletUtils.fatalError(out, methodName);
-        }
-        CoordClient coordClient = core.getCoordClient();
-        //get authZ client
-        AuthZClient authZClient = core.getAuthZClient();
-        //AuthNclient
-        AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
+		ServletCore core = (ServletCore)
+		getServletContext().getAttribute(ServletCore.CORE);
+		if (core == null) {
+			ServletUtils.fatalError(out, methodName);
+		}
+		CoordClient coordClient = core.getCoordClient();
+		//get authZ client
+		AuthZClient authZClient = core.getAuthZClient();
+		//AuthNclient
+		AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
 
-        CheckSessionReply sessionReply = IONUIUtils.getUserSession(request, methodName, out, core);
-        String userName = sessionReply.getUserName();
-        this.log.error("userName from sessionReply="+  userName);
-        if (userName == null) {
-            this.log.warn(netLogger.error(methodName,ErrSev.MINOR,"No user session: cookies invalid, user null"));
-            return;
-        }
-        //end new addition
+		CheckSessionReply sessionReply = IONUIUtils.getUserSession(request, methodName, out, core);
+		if (sessionReply == null) {
+                	this.log.error(netLogger.error(methodName,ErrSev.MINOR,"No user session. Returning"));
+                	return;
+       		}
+		String userName = sessionReply.getUserName();
+		this.log.debug("userName from sessionReply="+  userName);
+		if (userName == null) {
+			this.log.error(netLogger.error(methodName,ErrSev.MINOR,"No user session: cookies invalid, user null"));
+			return;
+		}
+		//end new addition
 
-        
-	//commented below block to use new code for porting
-	/*
+
+		//commented below block to use new code for porting
+		/*
         AaaRmiInterface rmiClient = userSession.getAaaInterface();
-        
+
         //verify is admin
         boolean isAdmin = false;
         String organization = "";
@@ -139,191 +143,196 @@ public class IONUserAdd extends HttpServlet{
             if(!isAdmin){
                 throw new Exception("You do not have administrator privileges");
             }
-            
+
             //get user institution
             organization = rmiClient.getInstitution(userName);
         } catch (Exception e) {
             ServletUtils.handleFailure(out, log, e, methodName);
             return;
         }
-	*/
-	
-	//new block starts
-       	//verify is admin
-        String organization = "";
-        boolean isAdmin = false;
-        try {
-            List<AttributeType> userAttributes = sessionReply.getAttributes();
-            isAdmin = IONUIUtils.isAdminUser(userAttributes);
-            if(!isAdmin){
-                throw new Exception("You do not have administrator privileges");
-            }
+		 */
 
-            //get user institution
-            organization = IONUIUtils.getUsersOrg(userAttributes);
-            log.debug ("obtained user's org: "+ organization);
+		//new block starts
+		//verify is admin
+		String organization = "";
+		boolean isAdmin = false;
+		try {
+			List<AttributeType> userAttributes = sessionReply.getAttributes();
+			isAdmin = IONUIUtils.isAdminUser(userAttributes);
+			if(!isAdmin){
+				throw new Exception("You do not have administrator privileges");
+			}
 
-        } catch (Exception e) {
-            ServletUtils.handleFailure(out, log, e, methodName);
-            return;
-        }
-	//new block ends
+			//get user institution
+			organization = IONUIUtils.getUsersOrg(userAttributes);
+			log.debug ("obtained user's org: "+ organization);
 
- 
-        //User newUser = processUserForm(request, methodName, out, rmiClient);
-	//comment above for porting to include below
-        UserDetails newUser = processUserForm(request, methodName, out, authNPolicyClient, userName);
-        if(newUser == null){ 
-            return;
-        }
-        
-        //call rmi to add user
-        HashMap<String, Object> rmiParams = new HashMap<String, Object>();
-        ArrayList<String> roles = new ArrayList<String>();
-        if(request.getParameter("adminRole") != null && "1".equals(request.getParameter("adminRole"))){
-            roles.add("ION-administrator");
-        }
-        if(request.getParameter("engineerRole") != null && "1".equals(request.getParameter("engineerRole"))){
-            roles.add("OSCARS-site-administrator");
-        }
-        if(request.getParameter("operatorRole") != null && "1".equals(request.getParameter("operatorRole"))){
-            roles.add("ION-operator");
-        }
-        if((request.getParameter("userRole") != null && "1".equals(request.getParameter("userRole"))) || roles.isEmpty()){
-            roles.add("OSCARS-user");
-        }
+		} catch (Exception e) {
+			ServletUtils.handleFailure(out, log, e, methodName);
+			return;
+		}
+		//new block ends
 
-	/*
+
+		//User newUser = processUserForm(request, methodName, out, rmiClient);
+		//comment above for porting to include below
+		UserDetails newUser = processUserForm(request, methodName, out, authNPolicyClient, userName);
+		if(newUser == null){ 
+			log.error("New User details turns out to be null. Returning with no further action");
+			return;
+		}
+
+		//call rmi to add user
+		HashMap<String, Object> rmiParams = new HashMap<String, Object>();
+		ArrayList<String> roles = new ArrayList<String>();
+		if(request.getParameter("adminRole") != null && "1".equals(request.getParameter("adminRole"))){
+			roles.add("ION-administrator");
+		}
+		if(request.getParameter("engineerRole") != null && "1".equals(request.getParameter("engineerRole"))){
+			roles.add("OSCARS-site-administrator");
+		}
+		if(request.getParameter("operatorRole") != null && "1".equals(request.getParameter("operatorRole"))){
+			roles.add("ION-operator");
+		}
+		if((request.getParameter("userRole") != null && "1".equals(request.getParameter("userRole"))) || roles.isEmpty()){
+			roles.add("OSCARS-user");
+		}
+
+		/*
         rmiParams.put("addRoles", roles);
         rmiParams.put("objectType", ModelObject.USER);
         rmiParams.put("operation", ModelOperation.ADD);
         rmiParams.put("user", newUser);
         try{
             HashMap<String, Object> rmiResult = ServletUtils.manageAaaObject(rmiClient, methodName, log, out, rmiParams);
-	*/
+		 */
 
-	FullUserParams req = new FullUserParams();
-	req.setUserDetails(newUser);
-        List<String> newAttributes = req.getNewAttributes();
-        for (String addRole: roles) {
-        	newAttributes.add(addRole);
-        }
-	try {
-        	Object[] soapReq = new Object[]{req};
-        	Object[] resp = authNPolicyClient.invoke("addUser", soapReq);
-        } catch(Exception e){
-            ServletUtils.handleFailure(out, "Unable to add user", methodName);
-            this.log.error(e.getMessage());
-            return;
-        }
-        
-        //add user to local db
-	Connection conn = null;
-        try {
-            //Connection conn = DriverManager.getConnection("jdbc:derby:ion");
-	    conn = DBUtil.getDBConnection();
-            PreparedStatement userStmt = conn.prepareStatement("INSERT INTO " +
-                "adminOrganizationUsers VALUES(DEFAULT,?,?)");
-            userStmt.setString(1, organization);
-            userStmt.setString(2, newUser.getLogin());
-            userStmt.execute();
-            conn.close();
-        } catch (SQLException e) {
-            this.log.error(e.getMessage());
-	     try {
-                if (conn != null)
-                        conn.close();
-            } catch (SQLException sqlEx) {
-                ServletUtils.handleFailure(out, "Unable to close DB Conn", methodName);
-            }
-            ServletUtils.handleFailure(out, "Unable to load users", methodName);
-            return;
-        }
-        
-        JSONObject jsonObject =new JSONObject();
-        jsonObject.put("success", new Boolean("true"));
-        jsonObject.put("login", request.getParameter("username"));
-        out.println("{}&&" + jsonObject);
-    }
-    
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-        this.doGet(request, response);
-    }
+		log.debug("Starting to add user...");
+		FullUserParams req = new FullUserParams();
+		req.setUserDetails(newUser);
+		List<String> newAttributes = req.getNewAttributes();
+		for (String addRole: roles) {
+			log.debug("..Adding role:" + addRole);
+			newAttributes.add(addRole);
+		}
+		try {
+			Object[] soapReq = new Object[]{req};
+			Object[] resp = authNPolicyClient.invoke("addUser", soapReq);
+		} catch(Exception e){
+			ServletUtils.handleFailure(out, "Unable to add user", methodName);
+			this.log.error(" Exception when adding new user" + e); //.getMessage());
+			e.printStackTrace();
+			return;
+		}
 
-	
-    //method to process user input and create an UserDetails object
-    public static UserDetails processUserForm(HttpServletRequest request, String methodName, PrintWriter out, AuthNPolicyClient client, String userName) {
-        //check null fields
-        for(String field : REQ_FIELDS){
-            if(request.getParameter(field) == null) {
-                 ServletUtils.handleFailure(out, field + " cannot be null.", methodName);
-                 return null;            
-	    }
-        }
+		//add user to local db
+		Connection conn = null;
+		try {
+			//Connection conn = DriverManager.getConnection("jdbc:derby:ion");
+			conn = DBUtil.getDBConnection();
+			PreparedStatement userStmt = conn.prepareStatement("INSERT INTO " +
+			"adminOrganizationUsers VALUES(DEFAULT,?,?)");
+			userStmt.setString(1, organization);
+			userStmt.setString(2, newUser.getLogin());
+			userStmt.execute();
+			conn.close();
+		} catch (SQLException e) {
+			this.log.error(e.getMessage());
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException sqlEx) {
+				ServletUtils.handleFailure(out, "Unable to close DB Conn", methodName);
+			}
+			ServletUtils.handleFailure(out, "Unable to load users", methodName);
+			return;
+		}
 
-        //check password        
-	if(!request.getParameter("password").equals(request.getParameter("passwordConfirmation"))) {
-            ServletUtils.handleFailure(out, "Password fields do not match", methodName);
-            return null;
-        }
-
-        //check institution
-	List <String> insts = null;
-	String userInputInst = "";
-        try {
-	    Object[] soapReq = new Object[]{userName};
-            Object[] resp = client.invoke("listInsts", soapReq);
-            ListInstsReply reply = (ListInstsReply) resp[0];
-            List<String> institutions = reply.getName();
-            //log.error ("obtained institutions list:"+ institutions);
-
-            boolean instExists = false;
-	    userInputInst = request.getParameter("institutionName");
-            for(String inst : insts){
-                if(inst.equals(userInputInst)){
-		    //log.debug("Institution of new user already exists.");
-                    instExists = true;
-                    break;
-                }
-            }
-	    //add institutions to MySql db if it does not already exist
-            if(!instExists){
-		soapReq = new Object[]{userInputInst};
-        	resp = client.invoke("addInst", soapReq);
-		//log.debug("Adding institute "+ userInputInst + " to MySQL Db");
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-            ServletUtils.handleFailure(out, "Unable to set institution", methodName);
-            return null;
-        }
-
-        //build user
-        UserDetails newUser = new UserDetails();
-	try {
-        newUser.setLogin(request.getParameter("username"));
-	String psWord = ServletUtils.checkPassword(request.getParameter("password"), request.getParameter("passwordConfirmation"));
-        newUser.setPassword(psWord);
-        newUser.setCertSubject(request.getParameter("certSubject"));
-        newUser.setFirstName(request.getParameter("firstName"));
-        newUser.setLastName(request.getParameter("lastName"));
-        newUser.setInstitution(userInputInst);
-        newUser.setEmailPrimary(request.getParameter("emailPrimary"));
-        newUser.setEmailSecondary(request.getParameter("emailSecondary"));
-        newUser.setPhonePrimary(request.getParameter("phonePrimary"));
-        newUser.setPhoneSecondary(request.getParameter("phoneSecondary"));
-        newUser.setDescription(request.getParameter("description"));
-	} catch (Exception e) {
-		e.printStackTrace();
-        	ServletUtils.handleFailure(out, "Unable to create new User", methodName);
-		return null; 
+		JSONObject jsonObject =new JSONObject();
+		jsonObject.put("success", new Boolean("true"));
+		jsonObject.put("login", request.getParameter("username"));
+		out.println("{}&&" + jsonObject);
 	}
-        return newUser;
-    }
 
-  //commented out to use above version for porting
-  /*
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
+	throws IOException, ServletException {
+		this.doGet(request, response);
+	}
+
+
+	//method to process user input and create an UserDetails object
+	public static UserDetails processUserForm(HttpServletRequest request, String methodName, PrintWriter out, AuthNPolicyClient client, String userName) {
+		//check null fields
+		for(String field : REQ_FIELDS){
+			if(request.getParameter(field) == null) {
+				ServletUtils.handleFailure(out, field + " cannot be null.", methodName);
+				return null;            
+			}
+		}
+
+		//check password        
+		if(!request.getParameter("password").equals(request.getParameter("passwordConfirmation"))) {
+			ServletUtils.handleFailure(out, "Password fields do not match", methodName);
+			return null;
+		}
+
+		//check institution
+		List <String> insts = null;
+		String userInputInst = "";
+		try {
+			Object[] soapReq = new Object[]{userName};
+			Object[] resp = client.invoke("listInsts", soapReq);
+			ListInstsReply reply = (ListInstsReply) resp[0];
+			insts = reply.getName();
+			//log.error ("obtained institutions list:"+ institutions);
+
+			boolean instExists = false;
+			userInputInst = request.getParameter("institutionName");
+			for(String inst : insts){
+				if(inst.equals(userInputInst)){
+					//log.debug("Institution of new user already exists.");
+					instExists = true;
+					break;
+				}
+			}
+			//add institutions to MySql db if it does not already exist
+			if(!instExists){
+				soapReq = new Object[]{userInputInst};
+				resp = client.invoke("addInst", soapReq);
+				//log.debug("Adding institute "+ userInputInst + " to MySQL Db");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			ServletUtils.handleFailure(out, "Unable to set institution", methodName);
+			return null;
+		}
+
+		//build user
+		UserDetails newUser = new UserDetails();
+		try {
+			newUser.setLogin(request.getParameter("username"));
+			System.out.println("LOGINNN:"+ newUser.getLogin());
+			String psWord = ServletUtils.checkPassword(request.getParameter("password"), request.getParameter("passwordConfirmation"));
+			newUser.setPassword(psWord);
+			newUser.setCertSubject(request.getParameter("certSubject"));
+			newUser.setFirstName(request.getParameter("firstName"));
+			newUser.setLastName(request.getParameter("lastName"));
+			newUser.setInstitution(userInputInst);
+			newUser.setEmailPrimary(request.getParameter("emailPrimary"));
+			newUser.setEmailSecondary(request.getParameter("emailSecondary"));
+			newUser.setPhonePrimary(request.getParameter("phonePrimary"));
+			newUser.setPhoneSecondary(request.getParameter("phoneSecondary"));
+			newUser.setDescription(request.getParameter("description"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			ServletUtils.handleFailure(out, "Unable to create new User", methodName);
+			return null; 
+		}
+		return newUser;
+	}
+
+	//commented out to use above version for porting
+	/*
   public static User processUserForm(HttpServletRequest request, String methodName, 
 	    PrintWriter out, AaaRmiInterface rmiClient){
 	//check null fields
@@ -333,13 +342,13 @@ public class IONUserAdd extends HttpServlet{
         	 return null;
             }
         }
-        
+
         //check password
         if(!request.getParameter("password").equals(request.getParameter("passwordConfirmation"))){
             ServletUtils.handleFailure(out, "Password fields do not match", methodName);
             return null;
         }
-        
+
         //check institution
         try {
             HashMap<String, Object> instQueryParams = new HashMap<String, Object>();
@@ -368,7 +377,7 @@ public class IONUserAdd extends HttpServlet{
             ServletUtils.handleFailure(out, "Unable to set institution", methodName);
             return null;
         }
-        
+
         //build user
         User newUser = new User();
         newUser.setLogin(request.getParameter("username"));
@@ -384,8 +393,8 @@ public class IONUserAdd extends HttpServlet{
         newUser.setPhonePrimary(request.getParameter("phonePrimary"));
         newUser.setPhoneSecondary(request.getParameter("phoneSecondary"));
         newUser.setDescription(request.getParameter("description"));
-        
+
         return newUser;
     }
-    */ //end comment for porting
+	 */ //end comment for porting
 }
