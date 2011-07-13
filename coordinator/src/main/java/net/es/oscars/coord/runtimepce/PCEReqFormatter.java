@@ -145,6 +145,7 @@ public class PCEReqFormatter {
         resConstraint.setPathInfo(new PathInfo());
         
         //build new PathInfo
+        resConstraint.getPathInfo().setLayer2Info(userConstraint.getPathInfo().getLayer2Info());
         resConstraint.getPathInfo().setLayer3Info(userConstraint.getPathInfo().getLayer3Info());
         resConstraint.getPathInfo().setMplsInfo(userConstraint.getPathInfo().getMplsInfo());
         resConstraint.getPathInfo().setPathSetupMode(userConstraint.getPathInfo().getPathSetupMode());
