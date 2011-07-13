@@ -17,6 +17,11 @@ public class PathInfoValidator {
             throw new RuntimeException("PathInfo object must contain a " +
                         "layer2Info, layer3Info or path object.");
         }
+        if(obj.getPathSetupMode() == null){
+            //default to automatic reservation
+            obj.setPathSetupMode("timer-automatic");
+        }
+        
         DataValidator.validate (obj.getLayer2Info(), true);
         DataValidator.validate (obj.getLayer3Info(), true);
         DataValidator.validate (obj.getMplsInfo(), true);

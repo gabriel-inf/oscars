@@ -573,11 +573,13 @@ public class DataTranslator05 {
             throws OSCARSServiceException {
         net.es.oscars.api.soap.gen.v05.PathInfo pathInfo05 = new net.es.oscars.api.soap.gen.v05.PathInfo();
         CtrlPlanePathContent ctrlPlanePathContent = new CtrlPlanePathContent();
-
-        try {    // These elements are required
+        
+        //pathSteupMode required
+        if(pathInfo06.getPathSetupMode() != null){
             pathInfo05.setPathSetupMode(pathInfo06.getPathSetupMode());
-        } catch (Exception e) {
-            throw new OSCARSServiceException("Unable to translate v06 PathInfo");
+        } else {
+            throw new OSCARSServiceException("Unable to translate v06 PathInfo:" +
+                " pathSetupMode is required by 0.5 but is null");
         }
 
         // These elements may be null
