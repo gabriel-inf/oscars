@@ -35,38 +35,31 @@ public class DataTranslator05 {
         net.es.oscars.api.soap.gen.v06.UserRequestConstraintType userRequestConstraint06 = new net.es.oscars.api.soap.gen.v06.UserRequestConstraintType();
         MessagePropertiesType msgProps = new MessagePropertiesType();
 
-        try {   // These elements are required
+        // These elements are required
+        if(createReply05.getGlobalReservationId() != null){
             createReply06.setGlobalReservationId(createReply05.getGlobalReservationId());
+        }else{
+            throw new OSCARSServiceException("Unable to translate v05.CreateReply: GRI is null");
+        }
+        
+        if(createReply05.getStatus() != null){
             createReply06.setStatus(createReply05.getStatus());
-        } catch (Exception e) {
-            throw new OSCARSServiceException("Unable to translate v05.CreateReply");
+        }else{
+            throw new OSCARSServiceException("Unable to translate v05.CreateReply: status is null");
         }
-
-        // These elements may be null
-        if (createReply05.getToken() != null) {
-            createReply06.setToken(createReply05.getToken());
-        }
-        Long tmp = Long.parseLong(createReply05.getPathInfo().getPath().getLifetime().getStart().toString());
-        if (tmp != null) {
-            reservedConstraint06.setStartTime(tmp);
-        }
-        tmp = Long.parseLong(createReply05.getPathInfo().getPath().getLifetime().getEnd().toString());
-        if (tmp != null) {
-            reservedConstraint06.setEndTime(tmp);
-        }
+        
         if (createReply05.getPathInfo() != null) {
             reservedConstraint06.setPathInfo(translate(createReply05.getPathInfo()));
-        }
-        createReply06.setReservedConstraint(reservedConstraint06);
-
-        try {   // These elements are required
-            userRequestConstraint06.setStartTime(Long.parseLong(createReply05.getPathInfo().getPath().getLifetime().getStart().toString()));
-            userRequestConstraint06.setEndTime(Long.parseLong(createReply05.getPathInfo().getPath().getLifetime().getEnd().toString()));
             userRequestConstraint06.setPathInfo(translate(createReply05.getPathInfo()));
-            createReply06.setUserRequestConstraint(userRequestConstraint06);
-        } catch (NullPointerException e) {
-            throw new OSCARSServiceException("Unable to translate v05.CreateReply");
+        }else{
+            throw new OSCARSServiceException("Unable to translate v05.CreateReply:pathInfo is null");
         }
+        
+        createReply06.setReservedConstraint(reservedConstraint06);
+        createReply06.setUserRequestConstraint(userRequestConstraint06);
+        
+        // These elements may be null
+        createReply06.setToken(createReply05.getToken());
 
         String transId = PathTools.getLocalDomainId() + "-V05-" + UUID.randomUUID().toString();
         msgProps.setGlobalTransactionId(transId);
