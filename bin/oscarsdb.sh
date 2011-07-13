@@ -57,7 +57,7 @@ case "$1" in
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authZ/sql/populateDefaults.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/resourceManager/sql/createTables.sql
        #ion tables
-       ./ioncreatedb.sh $SQL $SQLRoot $passwd;;
+       $OSCARS_DIST/bin/ioncreatedb.sh $SQL $SQLROOT $passwd;;
    rt)
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authN/sql/removeTables.sql
        $SQL -u $SQLROOT -p$passwd < $OSCARS_DIST/authZ/sql/removeTables.sql
