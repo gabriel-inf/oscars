@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;
+import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 import net.es.oscars.pss.api.CircuitService;
 import net.es.oscars.pss.api.Connector;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
@@ -16,11 +17,15 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.CircuitServiceConfig;
 import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.enums.ActionStatus;
+import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.notify.CoordNotifier;
+import net.es.oscars.pss.util.ActionUtils;
 import net.es.oscars.pss.util.ClassFactory;
 import net.es.oscars.pss.util.ConnectorUtils;
-
+import net.es.oscars.utils.soap.ErrorReport;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
+import net.es.oscars.utils.topology.PathTools;
 
 public class EoMPLSService implements CircuitService {
     private Logger log = Logger.getLogger(EoMPLSService.class);
@@ -109,17 +114,39 @@ public class EoMPLSService implements CircuitService {
     
     private PSSAction processActionForDevice(PSSAction action, String deviceId) throws PSSException {
         CoordNotifier coordNotify = new CoordNotifier();
+        String errorMessage = null;
+        OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+        faultReport.setDomainId(PathTools.getLocalDomainId());
+        ResDetails res = null;
 
+        try {
+            res = ActionUtils.getReservation(action);
+        } catch (PSSException e) {
+            errorMessage = "Could not locate ResDetails for device "+deviceId+"\n"+e.getMessage();
+            action.setStatus(ActionStatus.FAIL);
+            faultReport.setErrorMsg(errorMessage);
+            faultReport.setErrorType(ErrorReport.SYSTEM);
+            faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+            action.setFaultReport(faultReport);
+            ClassFactory.getInstance().getWorkflow().update(action);
+            coordNotify.process(action);
+            throw new PSSException(e);
+        }
+        
         DeviceConfigGenerator cg = null;
         try {
             cg = ConnectorUtils.getDeviceConfigGenerator(deviceId, SVC_ID);
         } catch (PSSException e) {
+            errorMessage = "Could not locate config generator for device "+deviceId+"\n"+e.getMessage();
             action.setStatus(ActionStatus.FAIL);
+            faultReport.setErrorMsg(errorMessage);
+            faultReport.setGri(res.getGlobalReservationId());
+            faultReport.setErrorType(ErrorReport.SYSTEM);
+            faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+            action.setFaultReport(faultReport);
             ClassFactory.getInstance().getWorkflow().update(action);
             coordNotify.process(action);
-            e.printStackTrace();
             throw new PSSException(e);
-            
         }
         
         String deviceCommand = cg.getConfig(action, deviceId);
@@ -140,6 +167,21 @@ public class EoMPLSService implements CircuitService {
         } catch (PSSException e) {
             log.error(e);
             action.setStatus(ActionStatus.FAIL);
+            faultReport.setErrorMsg(errorMessage);
+            faultReport.setGri(res.getGlobalReservationId());
+            faultReport.setErrorType(ErrorReport.SYSTEM);
+            if (action.getActionType().equals(ActionType.MODIFY)) {
+                faultReport.setErrorCode(ErrorCodes.UNKNOWN);
+            } else if (action.getActionType().equals(ActionType.SETUP)) {
+                faultReport.setErrorCode(ErrorCodes.PATH_SETUP_FAILED);
+            } else if (action.getActionType().equals(ActionType.STATUS)) {
+                faultReport.setErrorCode(ErrorCodes.UNKNOWN);
+            } else if (action.getActionType().equals(ActionType.TEARDOWN)) {
+                faultReport.setErrorCode(ErrorCodes.PATH_TEARDOWN_FAILED);
+                
+            }
+            action.setFaultReport(faultReport);
+            
             ClassFactory.getInstance().getWorkflow().update(action);
             coordNotify.process(action);
             throw e;
