@@ -50,7 +50,7 @@ if [ ! -f $DST_DIR/config-internal.SSL.yaml ]; then
     cp $SRC_DIR/config-internal.SSL.yaml $DST_DIR_INT/config-internal.SSL.yaml
 fi
 
-# not sure if following is necessary
+# the following is necessary for SSL connections, so that the hostname will match the CN name in oscarsidc.jks
 # Path config file so the public API's endpoint is the set to the hostname
 localhost=`hostname`
 sed s,localhost,$localhost, < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP 

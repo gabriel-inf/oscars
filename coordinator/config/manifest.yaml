@@ -65,7 +65,7 @@ PCERuntimeService:
         templateDir:        'OSCARS_HOME/CoordService/conf/'
         config.yaml:        'OSCARS_HOME/PCEService/conf/pce-runtime.SSL.yaml'
         pce-config.xml:     'OSCARS_HOME/PCEService/conf/pce-configuration-ssl.xml'
-        server-cxf.xml:     'OSCARS_HOME/CoordService/conf/server-cxf-ssl.xml'
+        server-cxf.xml:     'OSCARS_HOME/PCEService/conf/pce-runtime-server-cxf-ssl.xml'
         client-cxf.xml:     'OSCARS_HOME/CoordService/conf/client-cxf-ssl.xml'
         log4j.properties:   'OSCARS_HOME/CoordService/conf/log4j.INFO.properties'
         wsdl:               'OSCARS_HOME/wsdl/OSCARSService/PCEService-0.6.wsdl'

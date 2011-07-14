@@ -68,13 +68,4 @@
       </jaxws:properties>
     </jaxws:client>
 
-  <http:conduit name="{http://oscars.es.net/OSCARS}OSCARS.http-conduit">
-  </http:conduit>
-
-  <http:conduit name="{http://oscars.es.net/OSCARS/06}OSCARS.http-conduit">
-   </http:conduit>
-
-  <http:conduit name="{http://oscars.es.net/OSCARS/06}OSCARSInternalPortType.http-conduit">
-   </http:conduit>
-
 </beans>

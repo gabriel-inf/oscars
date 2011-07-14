@@ -27,7 +27,7 @@
 
 
   <httpj:engine-factory>
-   <httpj:engine port="9008">
+   <httpj:engine port="9012">
    </httpj:engine>
   </httpj:engine-factory>
 </beans>

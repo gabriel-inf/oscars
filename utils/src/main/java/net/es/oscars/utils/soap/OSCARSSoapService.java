@@ -56,7 +56,7 @@ public class OSCARSSoapService <S,P> {
     static public void setSSLBusConfiguration (URL keyStoreConf) {
         LOG=Logger.getLogger(OSCARSSoapService.class);
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        LOG.debug(netLogger.start("setSSLBusConfiguration", " using " + keyStoreConf.toString()));
+        LOG.info(netLogger.start("setSSLBusConfiguration", " using " + keyStoreConf.toString()));
          // The following prevents the default Java default cacerts from being added
         System.setProperty("javax.net.ssl.trustStore","DoNotUsecacerts");
         if (keyStoreConf != null) {
@@ -76,7 +76,7 @@ public class OSCARSSoapService <S,P> {
         LOG=Logger.getLogger(OSCARSSoapService.class);
         String event = "OSCARSSoapServiceInstantiated";
         this.netLogger = getOSCARSNetLogger();
-        LOG.debug(netLogger.start(event));
+        LOG.debug(netLogger.start(event, "service:" +  module));
         this.configurePublishedPaths(module);
     }
     /**
@@ -240,11 +240,11 @@ public class OSCARSSoapService <S,P> {
                 this.serviceName = meta.serviceName();
             }
             if (this.implementor != "") {
-                /* LOG.debug(this.netLogger.start(event,"implementor:"+ this.implementor + 
+                 LOG.debug(this.netLogger.start(event,"implementor:"+ this.implementor +
                                                 " namespace:" + this.namespace  +
                                                 " serviceName:" + this.serviceName +
                                                 " this.wsdlURL:" + this.wsdlURL.toString()));
-                */
+
                 Class impl = Class.forName(this.implementor);
                 Constructor c = impl.getConstructor(URL.class, QName.class);
                 if (c == null) {

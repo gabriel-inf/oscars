@@ -101,7 +101,7 @@ public class OSCARSFaultUtils {
         }
         OSCARSFault of = new OSCARSFault();
         of.setErrorReport(faultRep);
-        System.out.println("Creating new oscarsFaultMessage");
+        //System.out.println("Creating new oscarsFaultMessage");
         OSCARSFaultMessage ofm =  new OSCARSFaultMessage(message,of);
         throw ofm;
     }

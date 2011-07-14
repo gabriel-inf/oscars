@@ -1,14 +1,17 @@
 package net.es.oscars.coord.runtimepce;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.net.URL;
 
 import java.lang.ref.WeakReference;
 
 import net.es.oscars.utils.sharedConstants.PCERequestTypes;
+import net.es.oscars.utils.soap.OSCARSSoapService;
 import org.apache.log4j.Logger;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -414,7 +417,18 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
     }
 
     private synchronized void startPCERuntimeService () throws OSCARSServiceException {
+        String event = "startPCERuntimeService";
+        LOG.debug(netLogger.start(event));
         if (! PCERuntimeAction.pceServiceStarted) {
+            try{
+                URL url = new URL("file:" + cc.getFilePath(ServiceNames.SVC_PCERUNTIME,"server-cxf.xml"));
+                LOG.debug(netLogger.getMsg (event, "URL is" + url.toString()));
+                OSCARSSoapService.setSSLBusConfiguration(url);
+            } catch (Exception ex) {
+                LOG.error(netLogger.getMsg(event,
+                        "Exception in PCERuntimeAction.startPCERuntimeService" +
+                                    ex.getMessage()));
+            }
             PCERuntimeSoapServer.getInstance().startServer(false);
             PCERuntimeAction.pceServiceStarted = true;
         }

@@ -71,6 +71,7 @@ rm -f $tmpFile
 sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG  > $tmpFile
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG 
 rm -f $tmpFile
+
 #
 # CoordService (Coordinator/internal API)
 #
@@ -81,6 +82,7 @@ cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_SERVER_SSL_CFG
 rm -f $tmpfile
 sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG > $tmpFile
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG
+rm -f $tmpfile
 
 #
 # authNStub and authN
@@ -212,6 +214,21 @@ rm -f $tmpfile
 sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$NA_CXF_CLIENT_SSL_CFG > $tmpFile
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$NA_CXF_CLIENT_SSL_CFG
 rm -f $tmpFile
+
+#
+# PCERuntime Service
+tmpFile=/tmp/tmpconf.$$
+SERVICE=$SVC_PCE
+CFX_SERVER_SSL_PCERUNTIME=pce-runtime-server-cxf-ssl.xml
+CFX_CLIENT_SSL_PCERUNTIME=pce-runtime-client-cxf-ssl.xml
+tmpFile=/tmp/tmpconf.$$
+sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-server\.jks,$OSCARS_HOME/sampleDomain/certs/localhost.jks," < $OSCARS_HOME/$SERVICE/conf/$CFX_SERVER_SSL_PCERUNTIME > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CFX_SERVER_SSL_PCERUNTIME
+rm -f $tmpFile
+sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$CFX_CLIENT_SSL_PCERUNTIME > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CFX_CLIENT_SSL_PCERUNTIME
+rm -f $tmpFile
+
 
 # PSSService
 #

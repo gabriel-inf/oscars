@@ -5,6 +5,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.lang.Exception;
 
+import org.apache.log4j.Logger;
+
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.logging.OSCARSNetLoggerize;
@@ -18,6 +21,7 @@ import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.soap.OSCARSSoapService;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.config.ConfigDefaults;
+
 
 /**
  * PCERuntimeClient a singleton class used by the PCEs to send reply messages
@@ -33,7 +37,8 @@ import net.es.oscars.utils.config.ConfigDefaults;
         config      = ConfigDefaults.CONFIG
 )
 public class PCERuntimeClient extends OSCARSSoapService<PCEService,PCEPortType> {
-   
+
+    private static Logger LOG = Logger.getLogger(PCERuntimeClient.class.getName());
     private static URL wsdlURL = null;
     private static HashMap<String, PCERuntimeClient> clients = new HashMap<String, PCERuntimeClient>();
     
@@ -43,7 +48,8 @@ public class PCERuntimeClient extends OSCARSSoapService<PCEService,PCEPortType> 
  
     public static PCERuntimeClient getPCERuntimeClient (String proxyEndpoint)
                                         throws MalformedURLException, OSCARSServiceException {
-        
+
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         if (PCERuntimeClient.wsdlURL == null) {
             PCERuntimeClient.wsdlURL = new URL(proxyEndpoint + "?wsdl");
         }
@@ -58,6 +64,8 @@ public class PCERuntimeClient extends OSCARSSoapService<PCEService,PCEPortType> 
                 PCERuntimeClient.clients.put(proxyEndpoint, client);
             }
         }
+        LOG.debug(netLogger.end("getPCERuntimeClient", " wsdlURL:" +
+                                 PCERuntimeClient.wsdlURL + " endpoint:" + proxyEndpoint));
         return client;
     }
  

@@ -5,6 +5,7 @@
   xmlns:http="http://cxf.apache.org/transports/http/configuration"
   xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
   xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+  xmlns:cxf="http://cxf.apache.org/core"
   xsi:schemaLocation="
             http://cxf.apache.org/configuration/security
             http://cxf.apache.org/schemas/configuration/security.xsd
@@ -12,11 +13,20 @@
             http://cxf.apache.org/schemas/configuration/http-conf.xsd
             http://cxf.apache.org/transports/http-jetty/configuration
             http://cxf.apache.org/schemas/configuration/http-jetty.xsd
+            http://cxf.apache.org/core 
+            http://cxf.apache.org/schemas/core.xsd
             http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+                       
+<!--  Comment out the following to suppress printing of messages -->
+ <cxf:bus>
+        <cxf:features>
+            <cxf:logging/>
+        </cxf:features>
+  </cxf:bus>
 
   <httpj:engine-factory>
-   <httpj:engine port="9014">
+     <httpj:engine port="10000">
     <httpj:tlsServerParameters>
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
@@ -28,10 +38,10 @@
       </sec:trustManagers>
 
      <sec:cipherSuitesFilter>
-        <!-- these filters ensure that a ciphersuite with
+          <!-- these filters ensure that a ciphersuite with
           export-suitable or null encryption is used,
           but exclude anonymous Diffie-Hellman key change as
-          this is vulnerable to man-in-the-middle attacks -->
+          this is vulnerable to man-in-the-middle attacks -->  
         <sec:include>.*_EXPORT_.*</sec:include>
         <sec:include>.*_EXPORT1024_.*</sec:include>
         <sec:include>.*_WITH_DES_.*</sec:include>
@@ -39,7 +49,7 @@
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>
       <sec:clientAuthentication want="true" required="true"/>
-    </httpj:tlsServerParameters>
+    </httpj:tlsServerParameters> 
    </httpj:engine>
   </httpj:engine-factory>
 </beans>

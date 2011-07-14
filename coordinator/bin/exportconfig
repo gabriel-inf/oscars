@@ -61,6 +61,7 @@ fi
 if [ ! -f $DST_DIR/$CXF_CLIENT_SSL_CFG ] ; then
     cp $SRC_DIR/$CXF_CLIENT_SSL_CFG  $DST_DIR/$CXF_CLIENT_SSL_CFG
 fi
+
 # log4j
 if [ ! -f $DST_DIR/$LOG4J_PROPS_INFO ] ; then
     sed -e "s,$MODULE\.log,$DST_LOGDIR/$SERVICE.log," -e "s,oscars\.log,$DST_LOGDIR/oscars.log," < $SRC_DIR/$LOG4J_PROPS_INFO > $DST_DIR/$LOG4J_PROPS_INFO
@@ -71,7 +72,7 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_DEBUG ] ; then
 if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
     sed s,$MODULE.log,$DST_LOGDIR/$SERVICE.log, <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
 fi
-# Copy the PCE configuration file
+# Copy the PCERuntime configuration files
 mkdir -p $OSCARS_HOME/PCEService/conf
 cp $SRC_DIR/pce-configuration-http.xml $DST_DIR_PCE/pce-configuration-http.xml
 cp $SRC_DIR/pce-configuration-ssl.xml $DST_DIR_PCE/pce-configuration-ssl.xml
@@ -79,3 +80,12 @@ cp $SRC_DIR/pce-configuration-ssl.xml $DST_DIR_PCE/pce-configuration-ssl.xml
 cp $SRC_DIR/pce-runtime.HTTP.yaml $DST_DIR_PCE/pce-runtime.HTTP.yaml
 cp $SRC_DIR/pce-runtime.SSL.yaml $DST_DIR_PCE/pce-runtime.SSL.yaml
 
+# CFX-SSL configuration for pceruntime
+CFX_SERVER_SSL_PCERUNTIME=pce-runtime-server-cxf-ssl.xml
+CFX_CLIENT_SSL_PCERUNTIME=pce-runtime-client-cxf-ssl.xml
+if [ ! -f $DST_DIR_PCE/$CXF_SERVER_SSL_PCERUNTIME ] ; then
+    cp $SRC_DIR/$CFX_SERVER_SSL_PCERUNTIME $DST_DIR_PCE/$CFX_SERVER_SSL_PCERUNTIME
+fi
+if [ ! -f $DST_DIR_PCE/$CXF_CLIENT_SSL_PCERUNTIME ] ; then
+    cp $SRC_DIR/$CFX_CLIENT_SSL_PCERUNTIME $DST_DIR_PCE/$CFX_CLIENT_SSL_PCERUNTIME
+fi
