@@ -48,12 +48,12 @@ sub create
 	my $count = exists($params{'count'}) ? $params{'count'} : 60;
 	my $startTime = exists($params{'startTime'}) ? $params{'startTime'} : 'now';
 	my $endTime = exists($params{'endTime'}) ? $params{'endTime'} : '+00:00:12';
-
+	my $bandwidth = exists($params{'bandwidth'}) ? $params{'bandwidth'} : '100';
 
 	# Set parameters
 	$client->writeYaml(yamlFile => $yamlFile, testName => $name, 
 			src => $src, dst => $dst, srcVlan => $srcVlan, dstVlan => $dstVlan,
-			startTime => $startTime, endTime => $endTime);
+			bandwidth => $bandwidth, startTime => $startTime, endTime => $endTime);
 	# Run test
 	$result = $client->create(yamlFile => $yamlFile, topology => $params{'topology'}, 
 			logFile => $logFile, testName => $name, src => $src, 

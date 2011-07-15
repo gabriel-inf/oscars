@@ -26,7 +26,7 @@ our $SLEEP = 30;
 # Number of times to check for state changes
 our $COUNT = 10;
 
-# Start time can be 'no' or a number of minutes in the future.
+# Start time can be 'now' or a number of minutes in the future.
 #our $STARTTIME = 'now';
 our $STARTTIME = 3;
 
@@ -49,6 +49,7 @@ sub multi_test_4_1
 		srcVlan => "3",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-8:link=link-1",
 		dstVlan => "3",
+		bandwidth => "1",
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
@@ -64,11 +65,17 @@ sub multi_test_4_1
 		srcVlan => "5",
 		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-9:link=link-1",
 		dstVlan => "5",
+		bandwidth => "1",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
 		expectedResult => "CANCELLED"
 	);
 	push @arr, \%testParams_1;
 
-	$tester->multi_test(@arr);
+	#$tester->multi_test(@arr);
+	$tester->multi_create(@arr);
 }
 
 
@@ -110,7 +117,8 @@ sub multi_test_4_2
 	);
 	push @arr, \%testParams_1;
 
-    $tester->multi_test(@arr);
+    #$tester->multi_test(@arr);
+	$tester->multi_create(@arr);
 }
 
 
@@ -152,7 +160,8 @@ sub multi_test_4_3
     );
     push @arr, \%testParams_1;
 
-    $tester->multi_test(@arr);
+    #$tester->multi_test(@arr);
+	$tester->multi_create(@arr);
 }
 
 

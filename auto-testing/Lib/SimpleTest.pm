@@ -2,7 +2,6 @@
 package Lib::SimpleTest;
 use Carp;
 use Lib::Tester;
-#use Lib::TopologyUtils;
 
 use fields qw(NAME);
 
@@ -13,17 +12,30 @@ my $tester = new Lib::Tester;
 
 
 
+sub test_transitive
+{
+	my %testParams = (
+			testName => $NAME . "_test_transitive",
+			topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-1.net.xml",
+			src => "urn:ogf:network:domain=testdomain-1.net:node=node-1:port=port-2:link=link-1",
+			srcVlan => "any",
+			dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-10:link=link-1",
+			dstVlan => "any",
+			expectedResult => "CANCELLED"
+	);
+
+	my $result = $tester->single_test(%testParams);
+	$result;
+}
+
 sub test_local 
 {
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 			testName => $NAME . "_test_local",
-			topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-			src => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-2:link=link-1",
+			topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-1.net.xml",
+			src => "urn:ogf:network:domain=testdomain-1.net:node=node-1:port=port-2:link=link-1",
 			srcVlan => "any",
-			dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-2:link=link-1",
+			dst => "urn:ogf:network:domain=testdomain-1.net:node=node-2:port=port-2:link=link-1",
 			dstVlan => "any",
 			expectedResult => "CANCELLED"
 	);
@@ -35,15 +47,12 @@ sub test_local
 
 sub test_remote
 {
-	# Additional optional parameters are:
-	# layer, bandwidth, start-time, end-time, path-setup-mode
-
 	my %testParams = (
 			testName => $NAME . "_test_remote",
-			topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-			src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-2:link=link-1",
+			topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-1.net.xml",
+			src => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
 			srcVlan => "any",
-			dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
+			dst => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-2:link=link-1",
 			dstVlan => "any",
 			expectedResult => "CANCELLED"
 	);

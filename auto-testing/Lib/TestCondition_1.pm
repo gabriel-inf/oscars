@@ -21,14 +21,14 @@ my $tester = new Lib::Tester;
 
 
 # Seconds to sleep between checks for state changes
-our $SLEEP = 60;
+our $SLEEP = 30;
 
 # Number of times to check for state changes
 our $COUNT = 10;
 
 # Start time can be 'now' or a number of minutes in the future.
 #our $STARTTIME = 'now';
-our $STARTTIME = 3;
+our $STARTTIME = 2;
 
 # End time is reservation duration.
 our $ENDTIME = '+00:00:10';

@@ -29,7 +29,7 @@ our $COUNT = 10;
 
 # Start time can be 'no' or a number of minutes in the future.
 #our $STARTTIME = 'now';
-our $STARTTIME = 3;
+our $STARTTIME = 2;
 
 # End time is reservation duration.
 our $ENDTIME = '+00:00:10';
