@@ -36,7 +36,7 @@
       </sec:trustManagers>
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
-                file="keystore-client.jks"/>
+                file="keystore-ssl.jks"/>
       </sec:keyManagers> 
 
          <!--  these filters ensure that a ciphersuite with

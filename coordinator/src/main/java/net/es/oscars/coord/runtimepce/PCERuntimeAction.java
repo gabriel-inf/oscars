@@ -394,7 +394,7 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
     private static void readConfiguration (OSCARSNetLogger netLogger) throws OSCARSServiceException {
         try {
             if (PCERuntimeAction.config == null) {
-                String fileName = cc.getFilePath(ServiceNames.SVC_PCERUNTIME,
+                String fileName = cc.getFilePath(ServiceNames.SVC_PCE,
                                                  cc.getContext(),
                                                  PCERuntimeAction.PCE_CONFIGURATION);
                 LOG.debug(netLogger.start("readConfig","from file " + fileName));
@@ -421,7 +421,7 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         LOG.debug(netLogger.start(event));
         if (! PCERuntimeAction.pceServiceStarted) {
             try{
-                URL url = new URL("file:" + cc.getFilePath(ServiceNames.SVC_PCERUNTIME,"server-cxf.xml"));
+                URL url = new URL("file:" + cc.getFilePath(ServiceNames.SVC_PCE,"server-cxf.xml"));
                 LOG.debug(netLogger.getMsg (event, "URL is" + url.toString()));
                 OSCARSSoapService.setSSLBusConfiguration(url);
             } catch (Exception ex) {

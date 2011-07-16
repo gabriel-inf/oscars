@@ -27,7 +27,7 @@ BandwidthPCE:
         templateDir:        'OSCARS_HOME/BandwidthPCE/conf/'
         config.yaml:        'OSCARS_HOME/BandwidthPCE/conf/config.SSL.yaml'
         server-cxf.xml:     'OSCARS_HOME/BandwidthPCE/conf/server-cxf-ssl.xml'
-        client-cxf.xml:     'OSCARS_HOME/BandwithPCE/conf/client-cxf-ssl.xml'
+        client-cxf.xml:     'OSCARS_HOME/BandwidthPCE/conf/client-cxf-ssl.xml'
         log4j.properties:   'OSCARS_HOME/BandwidthPCE/conf/log4j.INFO.properties'
         wsdl:               'OSCARS_HOME/wsdl/OSCARSService/PCEService-0.6.wsdl'
 

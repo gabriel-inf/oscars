@@ -569,7 +569,7 @@ public class PCEWorker extends ModuleWorker {
         String event = "PCEWorker.reconnect";
         try {
             ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_COORD);
-            URL pceWsdl = cc.getWSDLPath(ServiceNames.SVC_PCERUNTIME,null);
+            URL pceWsdl = cc.getWSDLPath(ServiceNames.SVC_PCE,null);
             LOG.debug (netLogger.start(event,"PCE Module host= " + this.pceEndpoint + " WSDL= " + pceWsdl.toString()));
             this.pceClient = PCEProxyClient.getClient(this.pceEndpoint,pceWsdl);
         } catch (Exception e) {

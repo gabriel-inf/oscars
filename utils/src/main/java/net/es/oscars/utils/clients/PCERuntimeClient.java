@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.lang.Exception;
 
+import net.es.oscars.utils.config.ContextConfig;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -19,8 +20,11 @@ import net.es.oscars.pce.soap.gen.v06.PCEService;
 import net.es.oscars.utils.soap.OSCARSService;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.soap.OSCARSSoapService;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
+import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.config.ConfigDefaults;
+import net.es.oscars.utils.config.ConfigException;
 
 
 /**
@@ -33,7 +37,7 @@ import net.es.oscars.utils.config.ConfigDefaults;
 @OSCARSService (
         implementor = "net.es.oscars.pce.soap.gen.v06.PCEService",
         namespace   = "http://oscars.es.net/OSCARS/PCE/20090922",
-        serviceName = ServiceNames.SVC_PCERUNTIME,
+        serviceName = ServiceNames.SVC_PCE,
         config      = ConfigDefaults.CONFIG
 )
 public class PCERuntimeClient extends OSCARSSoapService<PCEService,PCEPortType> {
@@ -50,12 +54,20 @@ public class PCERuntimeClient extends OSCARSSoapService<PCEService,PCEPortType> 
                                         throws MalformedURLException, OSCARSServiceException {
 
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        ContextConfig cc = ContextConfig.getInstance();
         if (PCERuntimeClient.wsdlURL == null) {
-            PCERuntimeClient.wsdlURL = new URL(proxyEndpoint + "?wsdl");
+            //PCERuntimeClient.wsdlURL = new URL(proxyEndpoint + "?wsdl");  didn't work with https- mrt
+            PCERuntimeClient.wsdlURL= cc.getWSDLPath(null);
         }
-        
         PCERuntimeClient client = null;
         URL proxyEndpointURL = new URL (proxyEndpoint);
+        try {
+            OSCARSSoapService.setSSLBusConfiguration(
+                        new URL("file:" + cc.getFilePath(ConfigDefaults.CXF_CLIENT)));
+        } catch (ConfigException ex ){
+            throw new OSCARSServiceException(ErrorCodes.CONFIG_ERROR, ex.getMessage(),
+                                             ErrorReport.SYSTEM);
+        }
         synchronized (PCERuntimeClient.clients) {
             client = PCERuntimeClient.clients.get(proxyEndpoint);
             if (client == null) {

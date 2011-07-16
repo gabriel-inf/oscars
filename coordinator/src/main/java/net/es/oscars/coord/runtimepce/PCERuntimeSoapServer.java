@@ -14,7 +14,7 @@ import net.es.oscars.pce.soap.gen.v06.PCEService;
 @OSCARSNetLoggerize(moduleName=ModuleName.PCERUNTIME)
 @OSCARSService (
 		implementor = "net.es.oscars.coord.runtimepce.PCERuntimeSoapHandler",
-		serviceName = ServiceNames.SVC_PCERUNTIME,
+		serviceName = ServiceNames.SVC_PCE,
 		config = ConfigDefaults.CONFIG
 )
 public class PCERuntimeSoapServer extends OSCARSSoapService  <PCEService, PCEPortType> {

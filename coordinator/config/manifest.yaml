@@ -33,7 +33,7 @@ CoordService:
         wsdl:               'OSCARS_HOME/wsdl/CoordService/CoordService.wsdl'
 
 
-PCERuntimeService:
+PCEService:
     UNITTEST:
         templateDir:        'OSCARS_DIST/coordinator/config'
         config.yaml:        'OSCARS_DIST/coordinator/config/pce-runtime.HTTP.yaml'
@@ -66,7 +66,7 @@ PCERuntimeService:
         config.yaml:        'OSCARS_HOME/PCEService/conf/pce-runtime.SSL.yaml'
         pce-config.xml:     'OSCARS_HOME/PCEService/conf/pce-configuration-ssl.xml'
         server-cxf.xml:     'OSCARS_HOME/PCEService/conf/pce-runtime-server-cxf-ssl.xml'
-        client-cxf.xml:     'OSCARS_HOME/CoordService/conf/client-cxf-ssl.xml'
+        client-cxf.xml:     'OSCARS_HOME/PCEService/conf/pce-runtime-client-cxf-ssl.xml'
         log4j.properties:   'OSCARS_HOME/CoordService/conf/log4j.INFO.properties'
         wsdl:               'OSCARS_HOME/wsdl/OSCARSService/PCEService-0.6.wsdl'
 
@@ -139,21 +139,6 @@ PSSService:
     PRODUCTION:
         config.yaml:    'OSCARS_HOME/PSSService/conf/config.SSL.yaml'
         wsdl:           'OSCARS_HOME/wsdl/PSSService/PSSService.wsdl'
-
-PCEService:
-    UNITTEST:
-        config.yaml:    'OSCARS_DIST/connectivityPCE/config/config.HTTP.yaml'
-        wsdl:           'OSCARS_DIST/common-soap/src/main/resources/api/pce-0.6.wsdl'
-
-    DEVELOPMENT:
-        config.yaml:    'OSCARS_HOME/ConnectivityPCE/config.HTTP.yaml'
-        wsdl:  'OSCARS_HOME/wsdl/OSCARSService/PCEService-0.6.wsdl'
-    SDK:
-        config.yaml:    'OSCARS_HOME/ConnectivityPCE/config.HTTP.yaml'
-        wsdl:  'OSCARS_HOME/wsdl/OSCARSService/PCEService-0.6.wsdl'
-    PRODUCTION:
-        config.yaml:    'OSCARS_HOME/ConnectivityPCE/config.SSL.yaml'
-        wsdl:  'OSCARS_HOME/wsdl/OSCARSService/PCEService-0.6.wsdl'
 
 Utils:
     UNITTEST:

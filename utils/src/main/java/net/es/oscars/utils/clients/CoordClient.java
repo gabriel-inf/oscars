@@ -70,6 +70,11 @@ public class CoordClient extends OSCARSSoapService<CoordService, CoordPortType> 
             }
             throw new OSCARSServiceException(e.getMessage());
         }
+        if (wsdl.getProtocol().equals("https")) {
+            // https for wsdls doesn't work  -mrt
+            wsdl=cc.getWSDLPath(ServiceNames.SVC_COORD,null);
+            LOG.debug(netLogger.getMsg(event,"changing wsdl from https URL to " + wsdl));
+        }
         CoordClient client = new CoordClient (host, wsdl);
         return client;
     }

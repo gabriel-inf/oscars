@@ -31,7 +31,7 @@
     <httpj:tlsServerParameters>
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
-                file="keystore-server.jks"/>
+                file="keystore-ssl.jks"/>
       </sec:keyManagers>
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"

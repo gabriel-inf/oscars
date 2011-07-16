@@ -20,7 +20,7 @@ import net.es.oscars.utils.clients.CoordClient;
  * @author Evangelos Chaniotakis, Mary Thompson
  *
  */
-public class CoordNotifier implements Notifier {
+public class  CoordNotifier implements Notifier {
     private Logger log = Logger.getLogger(CoordNotifier.class);
     // private GenericConfig config = null;
     /**
