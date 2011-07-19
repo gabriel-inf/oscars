@@ -46,6 +46,9 @@ sed "s,OSCARS-0\.5\.xsd,$OSCARS_HOME/wsdl/OSCARSService/OSCARS-0.5.xsd," < $OSCA
 sed -e "s,OSCARS-0\.5\.xsd,$OSCARS_HOME/wsdl/OSCARSService/OSCARS-0.5.xsd," -e "s,sec-policy\.wsdl,$OSCARS_HOME/wsdl/OSCARSService/sec-policy.wsdl," -e "s,b-2-idc-0\.5\.xsd,$OSCARS_HOME/wsdl/OSCARSService/b-2-idc-0.5.xsd," -e "s,r-2-idc\.xsd,$OSCARS_HOME/wsdl/OSCARSService/r-2-idc.xsd," -e "s,br-2-idc-0.5\.xsd,$OSCARS_HOME/wsdl/OSCARSService/br-2-idc-0.5.xsd," < $OSCARS_DIST/common-soap/src/main/resources/api/OSCARS-0.5-Notify.wsdl > $OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5-Notify.wsdl
 cp $OSCARS_DIST/common-soap/src/main/resources/api/br-2-idc-0.5.xsd $OSCARS_HOME/wsdl/OSCARSService/br-2-idc-0.5.xsd
 
+# Patch the location of the XSD files for 0.5 Notify only file
+sed -e "s,b-2-idc-0\.5\.xsd,$OSCARS_HOME/wsdl/OSCARSService/b-2-idc-0.5.xsd," -e "s,r-2-idc\.xsd,$OSCARS_HOME/wsdl/OSCARSService/r-2-idc.xsd," -e "s,br-2-idc-0.5\.xsd,$OSCARS_HOME/wsdl/OSCARSService/br-2-idc-0.5.xsd," < $OSCARS_DIST/common-soap/src/main/resources/api/OSCARS-0.5-NotifyOnly.wsdl > $OSCARS_HOME/wsdl/OSCARSService/OSCARSService-0.5-NotifyOnly.wsdl
+
 #
 # PCE
 #

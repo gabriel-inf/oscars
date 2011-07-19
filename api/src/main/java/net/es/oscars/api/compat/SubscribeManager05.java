@@ -82,8 +82,8 @@ public class SubscribeManager05 {
         }catch(Exception e){
             throw new ConfigException("Unable to load notify 0.5 wsdl");
         }
-        //get local URL of API service
-        this.consumerEpr = (new W3CEndpointReferenceBuilder()).address(this.getPublishTo(config)).build();
+        //get local URL of API service and add 'Notify05'. Not pretty.
+        this.consumerEpr = (new W3CEndpointReferenceBuilder()).address(this.getPublishTo(config) + "Notify05").build();
 
         //Create lookup client
         if(config.containsKey(PROP_LOOKUP_URL)){

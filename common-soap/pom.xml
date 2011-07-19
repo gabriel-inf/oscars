@@ -420,6 +420,30 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>generate-api-0.5-notifyonly-sources</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <sourceRoot>${basedir}/src/main/java</sourceRoot>
+                            <wsdlOptions>
+                                <wsdlOption>
+                                    <extraargs>
+                                        <extraarg>-impl</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://oscars.es.net/OSCARS=net.es.oscars.api.soap.gen.v05</extraarg>
+                                    </extraargs>
+                                    <wsdl>${basedir}/src/main/resources/api/OSCARS-0.5-NotifyOnly.wsdl</wsdl>
+                                    <bindingFiles>
+                                        <bindingFile>${basedir}/src/main/resources/nmtopoBinding.xml</bindingFile>
+                                        <bindingFile>${basedir}/src/main/resources/api/binding-0.5-notifyonly.xml</bindingFile>
+                                    </bindingFiles>
+                                </wsdlOption>
+                            </wsdlOptions>
+                        </configuration>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>generate-api-0.6-sources</id>
                         <phase>generate-sources</phase>
                         <configuration>

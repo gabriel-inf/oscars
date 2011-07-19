@@ -12,7 +12,6 @@ import net.es.oscars.api.compat.SubscribeJob05;
 import net.es.oscars.api.compat.SubscribeManager05;
 
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import org.oasis_open.docs.wsn.b_2.Notify;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -209,27 +208,6 @@ public class OSCARSSoapHandler05 implements OSCARS {
 
     }
 
-    /* (non-Javadoc)
-     * Notify is called ONLY by the Notification Broker. Never by a client or an IDC. It does not require
-     * protocol backward compatibility per say (the Notification Broker protocol has not changed), but only 0.5 IDC
-     * will use the Notification Broker for signaling other IDC. In 0.6, a new IDC API (InterDomainEvent) is used
-     * by IDC's to signal each other.
-     *
-     * @see net.es.oscars.api.soap.gen.v05.OSCARS#notify(net.es.oscars.api.soap.gen.v05.Notify  notify )*
-     */
-
-    public void notify(Notify notify) {
-        String event = "OSCARSSoapHandler05.notify";
-        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-
-        net.es.oscars.api.soap.gen.v06.InterDomainEventContent interDomain06 = new net.es.oscars.api.soap.gen.v06.InterDomainEventContent();
-        try {
-            interDomain06 =  DataTranslator05.translate (notify);
-        } catch (OSCARSServiceException e) {
-            // handle
-        }
-        OSCARSSoapHandler06.interDomainEvent (interDomain06, this.myContext);
-    }
 
     /* (non-Javadoc)
      * @see net.es.oscars.api.soap.gen.v05.OSCARS#listReservations(net.es.oscars.api.soap.gen.v05.ListRequest  listReservations )*

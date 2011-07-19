@@ -110,6 +110,13 @@
 
       </jaxws:properties>
     </jaxws:endpoint>
+    
+    <jaxws:endpoint id="OSCARSNotify05"
+      serviceName="tns05:OSCARSNotifyOnlyService" endpointName="tns05:OSCARSNotifyOnly"
+      address="http://deploy-host/OSCARSNotify05"
+      wsdlLocation="wsdl-location/OSCARSService-0.5-NotifyOnly.wsdl"
+      implementor="net.es.oscars.api.http.OSCARSNotify05SoapHandler">
+    </jaxws:endpoint>
 
 </beans>
 
