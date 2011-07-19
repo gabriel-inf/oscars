@@ -37,25 +37,22 @@ if [ ! -f $DST_DIR/$MANIFEST ] ; then
     cp $SRC_DIR/$MANIFEST  $DST_DIR/$MANIFEST      
 fi
 
+# copy and edit the config.yaml files so the public API's endpoint is the set to the hostname
+localhost=`hostname`
 if [ ! -f $DST_DIR/$CONFIG_HTTP ] ; then
-    cp $SRC_DIR/$CONFIG_HTTP  $DST_DIR/$CONFIG_HTTP 
+    sed s,localhost,$localhost, < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
 fi
 if [ ! -f $DST_DIR/$CONFIG_SSL  ] ; then
-    cp $SRC_DIR/$CONFIG_SSL  $DST_DIR/$CONFIG_SSL 
+    sed s,localhost,$localhost, < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
 fi
-if [ ! -f $DST_DIR/config-internal.HTTP.yaml ]; then
-    cp $SRC_DIR/config-internal.HTTP.yaml $DST_DIR_INT/config-internal.HTTP.yaml
+# the internalAPI endpoint needs to match the public one because they share the same server-cxf file and
+# thus use the ocsarsidc keystore.
+if [ ! -f $DST_DIR_INT/config-internal.HTTP.yaml ]; then
+    sed s,localhost,$localhost, < $SRC_DIR/config-internal.HTTP.yaml > $DST_DIR_INT/config-internal.HTTP.yaml
 fi
-if [ ! -f $DST_DIR/config-internal.SSL.yaml ]; then
-    cp $SRC_DIR/config-internal.SSL.yaml $DST_DIR_INT/config-internal.SSL.yaml
+if [ ! -f $DST_DIR_INT/config-internal.SSL.yaml ]; then
+    sed s,localhost,$localhost, < $SRC_DIR/config-internal.SSL.yaml > $DST_DIR_INT/config-internal.SSL.yaml
 fi
-
-# the following is necessary for SSL connections, so that the hostname will match the CN name in oscarsidc.jks
-# Path config file so the public API's endpoint is the set to the hostname
-localhost=`hostname`
-sed s,localhost,$localhost, < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP 
-sed s,localhost,$localhost, < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL 
-
 
 # Copy CXF configuration files for both client and server. Patch publishing information in server
 
