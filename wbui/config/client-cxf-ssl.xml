@@ -18,7 +18,7 @@
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <http:conduit name="{http://oscars.es.net/OSCARS/authN}AuthNPort.http-conduit">
+  <http:conduit name="*.http-conduit">
     <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
@@ -41,33 +41,6 @@
       </sec:cipherSuitesFilter>
     </http:tlsClientParameters>
    </http:conduit>
-   <http:conduit name="{http://oscars.es.net/OSCARS/authNPolicy}AuthNPolicyPort.http-conduit">
-    <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
-      <sec:trustManagers>
-          <sec:keyStore type="JKS" password="changeit"
-               file="keystore-truststore.jks"/>
-      </sec:trustManagers>
-      <sec:keyManagers keyPassword="changeit">
-           <sec:keyStore type="JKS" password="changeit"
-                file="keystore-client.jks"/>
-      </sec:keyManagers>
-      <sec:cipherSuitesFilter>
-        <!-- these filters ensure that a ciphersuite with
-          export-suitable or null encryption is used,
-          but exclude anonymous Diffie-Hellman key change as
-          this is vulnerable to man-in-the-middle attacks -->
-        <sec:include>.*_EXPORT_.*</sec:include>
-        <sec:include>.*_EXPORT1024_.*</sec:include>
-        <sec:include>.*_WITH_DES_.*</sec:include>
-        <sec:include>.*_WITH_NULL_.*</sec:include>
-        <sec:exclude>.*_DH_anon_.*</sec:exclude>
-      </sec:cipherSuitesFilter>
-    </http:tlsClientParameters>
-   </http:conduit>
-   <http:conduit name="{http://oscars.es.net/OSCARS/coord}CoordPort.http-conduit"/>
-   <http:conduit name="{http://oscars.es.net/OSCARS/authZ}AuthZPort.http-conduit"/>
-   <http:conduit name="{http://oscars.es.net/OSCARS/authZPolicy}AuthZPolicyPort.http-conduit"/>
-
 
 </beans>
 
