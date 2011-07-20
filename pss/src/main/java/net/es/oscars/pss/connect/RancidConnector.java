@@ -45,8 +45,8 @@ public class RancidConnector implements Connector {
         
         if (executable.length() == 0) {
             throw new PSSException("no value set for executable");
-        } else if (!executable.startsWith(File.pathSeparator)) {
-            throw new PSSException("must set absolute path for rancid executable");
+        } else if (!executable.startsWith(File.separator)) {
+            throw new PSSException("must set absolute path for rancid executable: ["+executable+"]");
         }
     }
 
