@@ -557,7 +557,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
             }
             Vector results = (Vector) inContext.get(WSHandlerConstants.RECV_RESULTS);
             //HashMap results = (HashMap) inContext.get(MessageContext.HTTP_REQUEST_HEADERS);
-            LOG.debug(netLogger.getMsg(event,"results size of RECV_RESULTS is " + results.size()));
+            //LOG.debug(netLogger.getMsg(event,"results size of RECV_RESULTS is " + results.size()));
             //System.out.println("results size of HTTP_REQUEST_HEADERS is " + results.size());
             
             for (int i = 0; results != null && i < results.size(); i++) {

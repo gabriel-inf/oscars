@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
@@ -22,6 +24,7 @@ import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -371,6 +374,76 @@ public class SubscribeManager05 {
                 (double)(termTime - currentTime)); 
     }
     
+    /**
+     * Given a subscription reference, verify its one we made
+     * 
+     */
+    public boolean validateSubscription(W3CEndpointReference subRef){
+        if(subRef == null){
+            return false;
+        }
+        
+        String subRefAddr = this.getAddress(subRef);
+        String subRefId = this.get05SubscriptionId(subRef);
+        for(W3CEndpointReference mySubRef : this.subscriptionIdMap.values()){
+            String mySubRefAddr = this.getAddress(mySubRef);
+            String mySubRefId = this.get05SubscriptionId(mySubRef);
+            if(subRefId.equals(mySubRefId) && mySubRefAddr.equals(subRefAddr)){
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private String getAddress(W3CEndpointReference epr){
+        //Create instance of DocumentBuilderFactory
+         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+         //Get the DocumentBuilder
+         DocumentBuilder docBuilder = null;
+         try {
+             docBuilder = docBuilderFactory.newDocumentBuilder();
+         } catch (ParserConfigurationException e) {
+             return null;
+         }
+         Document doc = docBuilder.newDocument();
+         DOMResult domResult = new DOMResult(doc);
+         epr.writeTo(domResult);
+         if(doc == null){
+             return null;
+         }
+         if(doc.getElementsByTagName("Address") == null || 
+                 doc.getElementsByTagName("Address").getLength() != 1){
+             return null;
+         }
+         
+         return doc.getElementsByTagName("Address").item(0).getTextContent();
+     }
+     
+    private String get05SubscriptionId(W3CEndpointReference epr){
+         //Create instance of DocumentBuilderFactory
+          DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+          //Get the DocumentBuilder
+          DocumentBuilder docBuilder = null;
+          try {
+              docBuilder = docBuilderFactory.newDocumentBuilder();
+          } catch (ParserConfigurationException e) {
+              return null;
+          }
+          Document doc = docBuilder.newDocument();
+          DOMResult domResult = new DOMResult(doc);
+          epr.writeTo(domResult);
+          if(doc == null){
+              return null;
+          }
+          NodeList subscriptionId = doc.getElementsByTagNameNS("http://oscars.es.net/OSCARS", "subscriptionId");
+          if(subscriptionId == null || subscriptionId.getLength() < 1){
+              return null;
+          }
+          
+          return subscriptionId.item(0).getTextContent();
+      }
+     
 /*    public static void main(String[] args){
         try {
             ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_API);

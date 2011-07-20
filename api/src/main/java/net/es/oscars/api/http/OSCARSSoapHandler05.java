@@ -1,23 +1,11 @@
 package net.es.oscars.api.http;
 
-import java.text.ParseException;
-import java.util.List;
-
 import net.es.oscars.api.soap.gen.v05.*;
 
 import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.api.compat.DataTranslator05;
-import net.es.oscars.api.compat.SubscribeJob05;
-import net.es.oscars.api.compat.SubscribeManager05;
-
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
-import org.quartz.impl.StdSchedulerFactory;
 
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.validator.DataValidator;
@@ -25,7 +13,6 @@ import net.es.oscars.api.compat.ForwardTypes;
 
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.logging.OSCARSNetLoggerize;
-import net.es.oscars.lookup.jobs.CleanDBJob;
 
 import javax.xml.ws.WebServiceContext;
 
@@ -40,34 +27,9 @@ public class OSCARSSoapHandler05 implements OSCARS {
 
     @javax.annotation.Resource
     private WebServiceContext myContext;
-    private Scheduler scheduler;
     
-    // Implements requests
-    private static final String DEFAULT_RENEW_SCHED = "0 0/2 * * * ?"; //every 2 minutes
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(OSCARSSoapHandler06.class.getName());
     private static final String moduleName = ModuleName.API;
-    
-    /**
-     * Initialize the class by scheduling a job to maintain subscriptions with 
-     * 0.5 NotificationBrokers
-     */
-    public OSCARSSoapHandler05(){
-        SchedulerFactory schedFactory = new StdSchedulerFactory();
-        try {
-            //init subscribe manager
-            SubscribeManager05.getInstance();
-            //schedule renew job
-            this.scheduler =  schedFactory.getScheduler();
-            this.scheduler.start();
-            CronTrigger cronTrigger = new CronTrigger("Renew05Trigger", "RENEW05", DEFAULT_RENEW_SCHED);
-            JobDetail jobDetail = new JobDetail("Renew05Job", "RENEW05", SubscribeJob05.class);
-            this.scheduler.scheduleJob(jobDetail, cronTrigger);
-            
-        } catch (Exception e) {
-            LOG.error("Unable to init renew job: " + e.getMessage());
-            System.exit(1);
-        } 
-    }
     
     /* (non-Javadoc)
      * @see net.es.oscars.api.soap.gen.v05.OSCARS#queryReservation(net.es.oscars.api.soap.gen.v05.GlobalReservationId  queryReservation )*
