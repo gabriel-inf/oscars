@@ -46,6 +46,7 @@ public class SetupLifecycleTest {
         EoMPLSConfigHolder.loadConfig(eoMPLSConfigFilePath);
         EoMPLSClassFactory.getInstance().configure();
         } catch (ConfigException ex ) {
+            ex.printStackTrace();
             log.debug ("skipping Tests, eompls is  not configured");
             throw new SkipException("skipping Tests, eompls is  not configured");
         }

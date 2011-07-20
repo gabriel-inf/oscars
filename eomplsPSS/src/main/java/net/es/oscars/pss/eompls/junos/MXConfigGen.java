@@ -201,7 +201,7 @@ public class MXConfigGen implements DeviceConfigGenerator {
         lspName                 = ng.getLSPName(gri);
         l2circuitDescription    = ng.getL2CircuitDescription(gri);
         l2circuitEgress         = dar.getDeviceAddress(lspTargetDeviceId);
-        l2circuitVCID           = EoMPLSUtils.genVCId(ifceName, ifceVlan);
+        l2circuitVCID           = EoMPLSUtils.genJunosVCId(ifceName, ifceVlan);
 
         // community is 30000 - 65500
         String oscarsCommunity;

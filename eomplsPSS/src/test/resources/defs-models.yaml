@@ -6,4 +6,12 @@
     
     - id:               stub
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+
+- id: "cisco-ios"
+  services: 
+    - id:               eompls
+      configGenerator:  "net.es.oscars.pss.eompls.ios.IOSConfigGen"
+    
+    - id:               stub
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
             

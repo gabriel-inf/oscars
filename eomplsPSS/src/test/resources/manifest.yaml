@@ -2,6 +2,7 @@
 PSSService:
     UNITTEST:
         config.yaml:        'OSCARS_DIST/eomplsPSS/src/test/resources/config.yaml'
+        config-eompls.yaml: 'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls.yaml'
         server-cxf.xml:     'OSCARS_DIST/eomplsPSS/src/test/resources/server-cxf-http.xml'
         client-cxf.xml:     'OSCARS_DIST/eomplsPSS/src/test/resources/client-cxf-http.xml'
         log4j.properties:   'OSCARS_DIST/eomplsPSS/src/test/resources/log4j.properties'

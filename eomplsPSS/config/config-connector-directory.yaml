@@ -6,7 +6,7 @@
         "privkeyfile":  "/home/oscars/privkeyfile"
         "passphrase":   "secret"
 
-  - id:                 "clogin"
+-   id:                 "clogin"
     impl:               "net.es.oscars.pss.connect.RancidConnector"
     params:
         "executable":   "/opt/rancid/clogin"

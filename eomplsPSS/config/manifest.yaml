@@ -2,6 +2,7 @@
 PSSService:
     UNITTEST:
         config.yaml:        'OSCARS_DIST/eomplsPSS/config/config.HTTP.yaml'
+        config-eompls.yaml: 'OSCARS_DIST/eomplsPSS/config/config-eompls.yaml'
         templateDir:        'OSCARS_DIST/eomplsPSS/config/templates'
         
         server-cxf.xml:     'OSCARS_DIST/eomplsPSS/config/server-cxf-http.xml'

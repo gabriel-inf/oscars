@@ -3,7 +3,6 @@ package net.es.oscars.pss.eompls.ios;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
@@ -77,16 +76,95 @@ public class IOSConfigGen implements DeviceConfigGenerator {
         if (sameDevice) {
             throw new PSSException("Same device crossconnects not supported on IOS");
         } else {
-            return ""; // TODO: this.getLSPTeardown(res, deviceId);
+            return this.getLSPTeardown(res, deviceId);
         }
     }
     
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private String getLSPTeardown(ResDetails res, String deviceId) throws PSSException {
+        String templateFile = "ios-lsp-teardown.txt";
+
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        
+        String policyName;
+        String pathName;
+        String lspName;
+        String ifceName;
+        String ifceVlan;
+        
+        
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        String gri = res.getGlobalReservationId();
+        
+
+        policyName              = ng.getPolicyName(gri);
+        pathName                = ng.getPathName(gri);
+        lspName                 = ng.getLSPName(gri);
+        
+        
+        ReservedConstraintType rc = res.getReservedConstraint();
+        PathInfo pi = rc.getPathInfo();
+
+        CtrlPlaneLinkContent ingressLink = pi.getPath().getHop().get(0).getLink();
+        CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
+        
+        String srcLinkId = ingressLink.getId();
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        String dstLinkId = egressLink.getId();
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        
+
+        log.debug("source edge device id is: "+srcDeviceId+", config to generate is for "+deviceId);
+        if (srcDeviceId.equals(deviceId)) {
+            // forward direction
+            log.debug("forward");
+            ifceName = srcRes.getPortId();
+            ifceVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+        } else {
+            // reverse direction
+            log.debug("reverse");
+            ifceName = dstRes.getPortId();
+            ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+        }
+
+        Map root = new HashMap();
+        Map policy = new HashMap();
+        Map lsp = new HashMap();
+        Map path = new HashMap();
+        Map ifce = new HashMap();
+
+        // set up data model structure
+        root.put("policy", policy);
+        root.put("path", path);
+        root.put("lsp", lsp);
+        root.put("ifce", ifce);
+
+        // fill in scalars
+        policy.put("name", policyName);
+        
+        ifce.put("name", ifceName);
+        ifce.put("vlan", ifceVlan);
+        
+        path.put("name", pathName);
+        
+        lsp.put("name", lspName);
+
+        policy.put("name", policyName);
+
+        
+        
+        
+        String config       = EoMPLSUtils.generateConfig(root, templateFile);
+        log.debug("getLSPSetup done");
+        return config;
+
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private String getLSPSetup(ResDetails res, String deviceId) throws PSSException  {
-        log.debug("getLSPSetup start");
 
-        String templateFile = "eompls-ios-setup.txt";
+        String templateFile = "ios-lsp-setup.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -153,6 +231,11 @@ public class IOSConfigGen implements DeviceConfigGenerator {
             lspTargetDeviceId = srcRes.getNodeId();
             reverse = true;
         }
+        
+        if (!ifceVlan.equals(egressVlan)) {
+            throw new PSSException("Must specify same VLAN for ingress and egress if any edge is an IOS device");
+        }
+        
         LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
 
     
@@ -163,7 +246,7 @@ public class IOSConfigGen implements DeviceConfigGenerator {
         lspName                 = ng.getLSPName(gri);
         l2circuitDescription    = ng.getL2CircuitDescription(gri);
         l2circuitEgress         = dar.getDeviceAddress(lspTargetDeviceId);
-        l2circuitVCID           = EoMPLSUtils.genVCId(ifceName, ifceVlan);
+        l2circuitVCID           = EoMPLSUtils.genIOSVCId(ifceName, ifceVlan);
 
         // create data model objects
         Map root = new HashMap();
@@ -192,6 +275,7 @@ public class IOSConfigGen implements DeviceConfigGenerator {
         
         path.put("hops", lspBean.getPathAddresses());
         path.put("name", pathName);
+        path.put("egressLoopback", l2circuitEgress);
         
         lsp.put("name", lspName);
         lsp.put("from", lspBean.getFrom());
@@ -204,7 +288,6 @@ public class IOSConfigGen implements DeviceConfigGenerator {
         
         policy.put("name", policyName);
 
-        log.debug("getLSPSetup ready");
         String config       = EoMPLSUtils.generateConfig(root, templateFile);
 
         log.debug("getLSPSetup done");

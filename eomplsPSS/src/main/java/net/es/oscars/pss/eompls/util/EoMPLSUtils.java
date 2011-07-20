@@ -48,7 +48,7 @@ public class EoMPLSUtils {
         return srcDeviceId;
     }
 
-    public static String genVCId(String portId, String vlanId) throws PSSException {
+    public static String genJunosVCId(String portId, String vlanId) throws PSSException {
 
         Pattern pattern =  Pattern.compile(".*(\\d).(\\d).(\\d).*");
         Matcher matcher =  pattern.matcher(portId);
@@ -69,6 +69,27 @@ public class EoMPLSUtils {
             x = "10";
         }
         return(x+y+z+vlanId);
+    }
+
+    public static String genIOSVCId(String portId, String vlanId) throws PSSException {
+
+        Pattern pattern =  Pattern.compile(".*(\\d).(\\d).*");
+        Matcher matcher =  pattern.matcher(portId);
+        String x = null;
+        String y = null;
+        
+        while (matcher.find()){
+            x = matcher.group(1);
+            y = matcher.group(2);
+        }
+        if (x == null || y == null ) {
+            throw new PSSException("could not decide a l2circuit vcid!");
+        }
+        // can't lead with zeros, junos thinks it's an octal
+        if (x.equals("0")) {
+            x = "10";
+        }
+        return(x+y+vlanId);
     }
     
     @SuppressWarnings("rawtypes")

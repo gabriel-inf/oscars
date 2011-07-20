@@ -3,7 +3,7 @@ configure terminal
 <#-- a policy-map to soft-police at the reservation bandwidth -->
 policy-map ${policy.name}
   class class-default
-   police cir ${bandwidth}
+   police cir ${lsp.bandwidth}
      conform-action set-mpls-exp-topmost-transmit 4
      exceed-action policed-dscp-transmit
      violate-action policed-dscp-transmit
@@ -12,12 +12,12 @@ policy-map ${policy.name}
 <#-- the pseudowire -->
 pseudowire-class ${lsp.name}
  encapsulation mpls
- preferred-path interface Tunnel${vlan} disable-fallback
+ preferred-path interface Tunnel${ifce.vlan} disable-fallback
 !
 
 <#-- the tunnel -->
-interface Tunnel${vlan}
- description ${lsp.description}
+interface Tunnel${ifce.vlan}
+ description ${tunnel.description}
  ip unnumbered Loopback0
  tunnel destination ${lsp.to} <#-- the ip address of the internal-facing interface at the egress router -->
  tunnel mode mpls traffic-eng
@@ -26,10 +26,10 @@ interface Tunnel${vlan}
 !
 
 <#-- the customer-facing subinterface -->
-interface ${ifce.name}.${vlan}
+interface ${ifce.name}.${ifce.vlan}
  description ${ifce.description}
- encapsulation dot1Q ${vlan}
- xconnect ${path.egressLoopback} ${l2circuit.vcid} encapsulation mpls pw-class ${pseudowire.name}
+ encapsulation dot1Q ${ifce.vlan}
+ xconnect ${path.egressLoopback} ${l2circuit.vcid} encapsulation mpls pw-class ${lsp.name}
  service-policy input ${policy.name}
 !
 

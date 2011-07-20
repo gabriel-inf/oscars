@@ -5,5 +5,14 @@
       configGenerator:  "net.es.oscars.pss.eompls.junos.MXConfigGen"
     
     - id:               stub
-      "configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
             
+- id: "cisco-ios"
+  services: 
+    - id:               eompls
+      configGenerator:  "net.es.oscars.pss.eompls.ios.IOSConfigGen"
+    
+    - id:               stub
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+            
+
