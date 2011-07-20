@@ -53,6 +53,7 @@ public final class IDCTest {
     public static String tid = null;
     public static Integer numReq = null;
     public static Integer offSet = null;
+    public static String  userName = null;
     public static String status = null;
     public static String paramFile = null;
     public static ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_API);
@@ -263,6 +264,9 @@ public final class IDCTest {
                         if (status != null) {
                             listReq.getResStatus().add(status);
                         }
+                        if (userName != null) {
+                            listReq.setUser(userName);
+                        }
                         Object [] req = new Object[]{listReq};
                         Object [] res = client.invoke("listReservations",req);
                         ListReply reply = (ListReply) res[0];
@@ -352,46 +356,46 @@ public final class IDCTest {
     }
     public static void createResUsage() {
         System.out.println("usage  createReservation -pf <parameter_file>");
-        System.out.println("\t parameter_file: a yaml file containing the parameters for reservation creation");
-        System.out.println("\t see api/src/test/resources/autoTD1.yaml for an example file");
+        System.out.println("     parameter_file: a yaml file containing the parameters for reservation creation");
+        System.out.println("     see api/src/test/resources/autoTD1.yaml for an example file");
         System.exit(0);
     }
     public static void queryUsage() {
         System.out.println("usage  query -gri <gri> ");
-        System.out.println("\t gri: global reservation id of reservation");
+        System.out.println("     gri: global reservation id of reservation");
         System.exit(0);
     }
     public static void getErrorRepUsage() {
         System.out.println("usage  getErrorReport -tid <tansactionId> ");
-        System.out.println("\t tid: Id of transaction for which to find errorReports");
+        System.out.println("     tid: Id of transaction for which to find errorReports");
         System.exit(0);
     }
     public static void listResUsage() {
         System.out.println("usage  list  -n <numReq> -o <offset> -st <status>");
-        System.out.println("\t numReq: number of reservations requested, optional defaults to all");
-        System.out.println("\t offset: reservation at which to start list, optional defaults to 0");
-        System.out.println("\t status: limit reservations to those with this status, optional defaults to all");
+        System.out.println("     numReq: number of reservations requested, optional defaults to all");
+        System.out.println("     offset: reservation at which to start list, optional defaults to 0");
+        System.out.println("     status: limit reservations to those with this status, optional defaults to all");
         System.exit(0);
     }
     public static void modifyResUsage() {
         System.out.println("usage  modifyReservation -pf <parameter_file>");
-        System.out.println("\t parameter_file: a yaml file containing the parameters to modify the reservation");
-        System.out.println("\t see api/src/test/resources/autoTD1.yaml for an example file, only the gri must be set to the reservation that is to be modified");
+        System.out.println("     parameter_file: a yaml file containing the parameters to modify the reservation");
+        System.out.println("     see api/src/test/resources/autoTD1.yaml for an example file, only the gri must be set to the reservation that is to be modified");
         System.exit(0);
     }
     public static void cancelResUsage() {
         System.out.println("usage  cancelReservation -gri <gri> ");
-        System.out.println("\t gri: global reservation id of reservation to cancel");
+        System.out.println("     gri: global reservation id of reservation to cancel");
         System.exit(0);
     }
     public static void setupPathUsage() {
         System.out.println("usage  setupPath -gri <gri> ");
-        System.out.println("\t gri: global reservation id of reservation for which to setup path");
+        System.out.println("     gri: global reservation id of reservation for which to setup path");
         System.exit(-1);
     }
     public static void teardownPathUsage() {
         System.out.println("usage  teardownPath -gri <gri> ");
-        System.out.println("\t gri: global reservation id of reservation whose path is to be torndown");
+        System.out.println("     gri: global reservation id of reservation whose path is to be torndown");
         System.exit(0);
     }
     public static void parseArgs(String args[])  throws java.io.IOException {
@@ -408,6 +412,7 @@ public final class IDCTest {
         OptionSpec<String> STATUS = parser.accepts("st", "status of reservations requested").withRequiredArg().ofType(String.class);
         OptionSpec<String> PARAMS = parser.accepts("pf", "parameter file for createReservation" ).withRequiredArg().ofType(String.class);
         OptionSpec<String> CONTEXT = parser.accepts("C", "context:UNITTEST,DEVELOPMENT,SDK,PRODUCTION").withRequiredArg().ofType(String.class);
+        OptionSpec<String> USER = parser.accepts("u", "owner of reservations to be listed").withRequiredArg().ofType(String.class);
 
         OptionSet options = parser.parse( args );
 
@@ -480,6 +485,9 @@ public final class IDCTest {
         }
         if (options.has("o")) {
             offSet = options.valueOf(OFFSET);
+        }
+        if (options.has("u")) {
+            userName = options.valueOf(USER);
         }
         if (options.has("st")){
             status = options.valueOf(STATUS);
@@ -730,14 +738,14 @@ public final class IDCTest {
     private static void printFaultDetails(List<OSCARSFaultReport> faultReports){
         System.out.println("\nError Report");
         for (OSCARSFaultReport rep: faultReports) {
-            System.out.println("ErrorCode: \t" + rep.getErrorCode() );
-            System.out.println("ErrorMsg: \t" + rep.getErrorMsg() );
-            System.out.println("ErrorType: \t" + rep.getErrorType() );
-            System.out.println("GRI: \t" + rep.getGri() );
-            System.out.println("TransId: \t" + rep.getTransId() );
-            System.out.println("Timestamp: \t" + new Date(rep.getTimestamp()*1000L) );
-            System.out.println("ModuleName: \t" + rep.getModuleName() );
-            System.out.println("DomainId: \t" + rep.getDomainId() );
+            System.out.println("ErrorCode:     " + rep.getErrorCode() );
+            System.out.println("ErrorMsg:     " + rep.getErrorMsg() );
+            System.out.println("ErrorType:     " + rep.getErrorType() );
+            System.out.println("GRI:     " + rep.getGri() );
+            System.out.println("TransId:     " + rep.getTransId() );
+            System.out.println("Timestamp:     " + new Date(rep.getTimestamp()*1000L) );
+            System.out.println("ModuleName:     " + rep.getModuleName() );
+            System.out.println("DomainId:     " + rep.getDomainId() );
         }
     }
 

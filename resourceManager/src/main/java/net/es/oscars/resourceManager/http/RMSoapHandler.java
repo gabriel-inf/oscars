@@ -412,6 +412,7 @@ public class RMSoapHandler implements RMPortType {
 
         Long startTime = request.getStartTime();;
         Long endTime = request.getEndTime();
+        String userName = request.getUser();
         List<String> linkIds = request.getLinkId();
         List<VlanTag> inVlanTags = request.getVlanTag();
         List<String> statuses = request.getResStatus();
@@ -443,7 +444,7 @@ public class RMSoapHandler implements RMPortType {
         try {
             session.beginTransaction();
             reservations = mgr.list(authConditions, numRequested, resOffset,
-                    statuses,  description,  linkIds, vlanTags, startTime, endTime);
+                    statuses,  description,  userName, linkIds, vlanTags, startTime, endTime);
             response.setTotalResults(reservations.size());
             for ( ResDetails res : reservations ) {
                 response.getResDetails().add(res);

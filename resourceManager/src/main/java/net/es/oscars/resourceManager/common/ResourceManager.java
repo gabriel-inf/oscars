@@ -633,6 +633,8 @@ public class ResourceManager {
      *
      * @param description the reservation description field
      *
+     * @param userName if not null, return only reservation owned by this user
+     *
      * @param linkIds a list of link id's. If not null / empty, results will
      * only include reservations whose path includes at least one of the links.
      * If null / empty, results will include reservations with any path.
@@ -655,7 +657,7 @@ public class ResourceManager {
      */
     
     public List<ResDetails> list(AuthConditions authConditions, int numRequested, int resOffset,
-            List<String> statuses, String description, List<String> linkIds,
+            List<String> statuses, String description, String userName, List<String> linkIds,
             List<String> vlanTags,  Long startTime, Long endTime)
             throws OSCARSServiceException {
 
@@ -671,8 +673,17 @@ public class ResourceManager {
 
         reqLogin = getPermittedLogin(authConditions);
         if (reqLogin != null){
-            // get only reservations that belong to this user
-            loginIds.add(reqLogin);
+            if ((userName == null) || (userName.equals(reqLogin))) {
+             // get only reservations that belong to this user
+                loginIds.add(reqLogin);
+            } else {
+                throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED,
+                                                 "no permission to get reservations for " + userName,
+                                                  ErrorReport.USER);
+            }
+        }
+        if (userName != null && reqLogin == null ) {
+            loginIds.add(userName);
         }
         try {
             ReservationDAO dao = new ReservationDAO(this.dbname);

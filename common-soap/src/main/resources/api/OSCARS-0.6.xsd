@@ -248,6 +248,8 @@
                    maxOccurs="unbounded" minOccurs="0" />
            <xsd:element name="vlanTag" type="tns:vlanTag" minOccurs="0"
                    maxOccurs="unbounded" />
+           <xsd:element name="user" type="xsd:string"
+                        minOccurs="0"/>
            <xsd:element name="resRequested" type="xsd:int"
                        minOccurs="0"/>
            <xsd:element name="resOffset" type="xsd:int"

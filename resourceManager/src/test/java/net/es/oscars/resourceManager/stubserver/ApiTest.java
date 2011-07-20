@@ -185,9 +185,9 @@ public class ApiTest {
         linkIds.add(CommonParams.getSrcEndpoint());
         try {
             /*list(authConditions, numRequested, offset, 
-            List<String> statuses, String description, List<String> linkIds,
+            List<String> statuses, String description, Strin userName, List<String> linkIds,
             List<String> vlanTags,  Long startTime, Long endTime) */
-            reservations = mgr.list(authCond,0,0, null, null, linkIds, null, null, null);
+            reservations = mgr.list(authCond,0,0, null, null, null, linkIds, null, null, null);
  
         } catch (OSCARSServiceException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();

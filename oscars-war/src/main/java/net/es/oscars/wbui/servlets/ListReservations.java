@@ -50,7 +50,7 @@ public class ListReservations extends HttpServlet {
     /**
      * Handles servlet request (both get and post) from list reservations form.
      *
-     * @param request servlet request
+     * @param requestRequest servlet request
      * @param response servlet response
      */
     public void
@@ -178,11 +178,11 @@ public class ListReservations extends HttpServlet {
             numRowsReq = Integer.parseInt(numRowParam);
         }
         listReq.setResRequested(numRowsReq);
-        /*
+
         if (!loginEntered.trim().equals("")) {
-            listReq.setLogin(loginEntered.trim());
+            listReq.setUser(loginEntered.trim());
         }
-        */
+
         if (!description.trim().equals("")) {
             listReq.setDescription(description.trim());
         }
