@@ -1,5 +1,7 @@
 package net.es.oscars.pss.util;
 
+import org.apache.log4j.Logger;
+
 import net.es.oscars.pss.api.Connector;
 import net.es.oscars.pss.api.DeviceAddressResolver;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
@@ -11,6 +13,8 @@ import net.es.oscars.pss.beans.definitions.DeviceModelService;
 import net.es.oscars.pss.config.ConfigHolder;
 
 public class ConnectorUtils {
+    
+    private static Logger log = Logger.getLogger(ConnectorUtils.class);
     public static DeviceConfigGenerator getDeviceConfigGenerator(String deviceId, String serviceId) throws PSSException {
         String modelId = ClassFactory.getInstance().getDeviceModelMap().getDeviceModel(deviceId);
         DeviceModelDefinition dmd = ConfigHolder.getInstance().getDeviceModelDefinition(modelId);
@@ -34,8 +38,10 @@ public class ConnectorUtils {
     }
     
     public static String getDeviceAddress(String deviceId) throws PSSException {
+        log.debug("finding address for "+deviceId);
         DeviceAddressResolver res = ClassFactory.getInstance().getDeviceResolver();
         String deviceAddress = res.getDeviceAddress(deviceId);
+        log.debug("address for "+deviceId+" was:"+deviceAddress);
         return deviceAddress;
     }
     public static String sendAction(PSSAction action, String deviceId, String serviceId) throws PSSException {

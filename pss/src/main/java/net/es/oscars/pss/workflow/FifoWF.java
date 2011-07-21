@@ -66,6 +66,10 @@ public class FifoWF implements Workflow {
 
     public synchronized void update(PSSAction action) {
         ActionStatus status = action.getStatus();
+        if (status == null) {
+            log.error("Got null status, setting to failed");
+            status = ActionStatus.FAIL;
+        }
         if (action.equals(running)) {
             running.setStatus(status);
 

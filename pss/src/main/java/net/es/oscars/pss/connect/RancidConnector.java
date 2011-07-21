@@ -21,7 +21,6 @@ public class RancidConnector implements Connector {
     private static Logger log = Logger.getLogger(RancidConnector.class);
     private CircuitServiceConfig circuitServiceConfig = null;
     private String executable;
-    private String address;
 
     
     public RancidConnector() {
@@ -62,9 +61,15 @@ public class RancidConnector implements Connector {
 
     
     public String sendCommand(PSSCommand command) throws PSSException {
-        log.info("sendCommand.start to: "+address);
-
         String deviceCommand = command.getDeviceCommand();
+        String address = command.getDeviceAddress();
+        if (deviceCommand == null) {
+            throw new PSSException("null device command");
+        } else if (address == null) {
+            throw new PSSException("null device address");
+        }
+        log.debug("sendCommand deviceCommand "+deviceCommand);
+        log.debug("sendCommand address "+address);
 
         if (circuitServiceConfig.isLogRequest()) {
             log.info("SENDING to "+address+" :\n\n"+command);
