@@ -13,9 +13,11 @@ import net.es.oscars.pss.notify.CoordNotifier;
 import net.es.oscars.pss.soap.gen.ModifyReqContent;
 import net.es.oscars.pss.soap.gen.PSSPortType;
 import net.es.oscars.pss.soap.gen.SetupReqContent;
-import net.es.oscars.coord.soap.gen.PSSReplyContent;
+import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 import net.es.oscars.pss.soap.gen.StatusReqContent;
 import net.es.oscars.pss.soap.gen.TeardownReqContent;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
+import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.svc.ServiceNames;
 
 /**
@@ -43,7 +45,12 @@ public class StubPSSSoapHandler implements PSSPortType {
         netLogger.setGRI(gri);
         log.info(netLogger.start(event));
  
-        PSSReplyContent resp = new PSSReplyContent();
+        boolean simulateFailure = false;
+        if (setupReq.getReservation().getGlobalReservationId().equals("error")) {
+            simulateFailure = true;
+        }
+        
+        
         PSSAction act = new PSSAction();
         CoordNotifier coordNotify = new CoordNotifier();
         try {
@@ -53,7 +60,17 @@ public class StubPSSSoapHandler implements PSSPortType {
 
             act.setRequest(req);
             act.setActionType(net.es.oscars.pss.enums.ActionType.SETUP);
-            act.setStatus(ActionStatus.SUCCESS);
+            if (!simulateFailure) {
+                act.setStatus(ActionStatus.SUCCESS);
+            } else {
+                OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+                faultReport.setErrorMsg("simulated PSS error");
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.PATH_SETUP_FAILED);
+                act.setFaultReport(faultReport);
+                act.setStatus(ActionStatus.FAIL);
+            }
+            
             log.debug(netLogger.getMsg(event,"calling coordNotify.process"));
             coordNotify.process(act);
         } catch (PSSException e) {
@@ -69,8 +86,13 @@ public class StubPSSSoapHandler implements PSSPortType {
         String gri = teardownReq.getReservation().getGlobalReservationId();
         netLogger.setGRI(gri);
         log.info(netLogger.start(event));
+        boolean simulateFailure = false;
+        if (gri.equals("error")) {
+            simulateFailure = true;
+        }
 
-        PSSReplyContent resp = new PSSReplyContent();
+        
+        
         PSSAction act = new PSSAction();
         CoordNotifier coordNotify = new CoordNotifier();
         try {
@@ -80,7 +102,18 @@ public class StubPSSSoapHandler implements PSSPortType {
 
             act.setRequest(req);
             act.setActionType(net.es.oscars.pss.enums.ActionType.TEARDOWN);
-            act.setStatus(ActionStatus.SUCCESS);
+            if (!simulateFailure) {
+                act.setStatus(ActionStatus.SUCCESS);
+            } else {
+                OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+                faultReport.setErrorMsg("simulated PSS error");
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.PATH_TEARDOWN_FAILED);
+                act.setFaultReport(faultReport);
+                act.setStatus(ActionStatus.FAIL);
+            }
+
+            
             coordNotify.process(act);
         } catch (PSSException e) {
             log.error(netLogger.error(event,ErrSev.MAJOR,"caught PSSException " + e.getMessage()));
@@ -97,7 +130,6 @@ public class StubPSSSoapHandler implements PSSPortType {
         netLogger.setGRI(gri);
         log.info(netLogger.start(event));
         
-        PSSReplyContent resp = new PSSReplyContent();
         PSSAction act = new PSSAction();
         CoordNotifier coordNotify = new CoordNotifier();
         try {
@@ -107,6 +139,11 @@ public class StubPSSSoapHandler implements PSSPortType {
 
             act.setRequest(req);
             act.setActionType(net.es.oscars.pss.enums.ActionType.MODIFY);
+            OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+            faultReport.setErrorMsg("Modify not supported");
+            faultReport.setErrorType(ErrorReport.SYSTEM);
+            faultReport.setErrorCode(ErrorCodes.NOT_IMPLEMENTED);
+            act.setFaultReport(faultReport);
             act.setStatus(ActionStatus.FAIL);
             coordNotify.process(act);
         } catch (PSSException e) {
@@ -123,7 +160,6 @@ public class StubPSSSoapHandler implements PSSPortType {
         netLogger.setGRI(gri);
         log.info(netLogger.start(event));
  
-        PSSReplyContent resp = new PSSReplyContent();
         PSSAction act = new PSSAction();
         CoordNotifier coordNotify = new CoordNotifier();
         try {
@@ -133,6 +169,11 @@ public class StubPSSSoapHandler implements PSSPortType {
 
             act.setRequest(req);
             act.setActionType(net.es.oscars.pss.enums.ActionType.STATUS);
+            OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+            faultReport.setErrorMsg("Status not supported");
+            faultReport.setErrorType(ErrorReport.SYSTEM);
+            faultReport.setErrorCode(ErrorCodes.NOT_IMPLEMENTED);
+            act.setFaultReport(faultReport);
             act.setStatus(ActionStatus.FAIL);
             coordNotify.process(act);
         } catch (PSSException e) {
