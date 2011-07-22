@@ -26,8 +26,8 @@ public class Layer2InfoValidator {
             obj.setDestEndpoint(EndpointValidator.lookupHostUrn(obj.getDestEndpoint()));
         }
 
-        DataValidator.validate (obj.getDestVtag(), false);
-        DataValidator.validate (obj.getSrcVtag(), false);
+        DataValidator.validate (obj.getDestVtag(), true);
+        DataValidator.validate (obj.getSrcVtag(), true);
 
     }
 }

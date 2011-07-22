@@ -21,15 +21,17 @@ import net.es.oscars.wsnbroker.soap.gen.SubscribeCreationFailedFault;
  * Example of how to subscribe to notifications and send request a
  * createReservation request. The handling of the message callback is not shown.
  *
- *
+ *  The reservation assumes the IDC is handling reservations for testdomain-3.
+ *  Thus $OSCARS_HOME/Utils/conf/config.yaml must specify the localDomain:id as testdomaain-3
  */
 public class CreateReservationNotify {
     public static void main(String[] args){
         try {
-            //Setup keystores 
-            OSCARSClientConfig.setClientKeystore("oscarsuser", 
-                "/home/oscars/oscars-client/keystores/oscars-cert.jks", "mypassword");
-            OSCARSClientConfig.setSSLKeyStore("/home/oscars/oscars-client/keystores/oscars-ssl.jks", "oscars");
+            /* Setup keystores using the ones created by the sampleDomain/bin/gencerts script */
+            String oscarsHome = System.getenv("OSCARS_HOME");
+            System.out.println("oscarsHome is " + oscarsHome);
+            OSCARSClientConfig.setClientKeystore("mykey", oscarsHome + "/sampleDomain/certs/client.jks", "changeit");
+            OSCARSClientConfig.setSSLKeyStore(oscarsHome +"/sampleDomain/certs/localhost.jks", "changeit");
 
             //initialize client with service URL
             OSCARSClient client = new OSCARSClient("http://localhost:9001/OSCARS");

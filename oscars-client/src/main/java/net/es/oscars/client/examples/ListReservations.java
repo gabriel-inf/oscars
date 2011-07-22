@@ -9,33 +9,36 @@ import net.es.oscars.client.OSCARSClientException;
 import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
 
 /**
- * Example of listing all reservations with the RESERVED or ACTIVE status
+ * Example of listing all reservations with the RESERVED, ACTIVE and FINISHED statuses
  *
  */
 public class ListReservations {
     public static void main(String[] args){
         try {
-            //Setup keystores 
-            OSCARSClientConfig.setClientKeystore("oscarsuser", "/home/oscars/oscars-client/keystores/oscars-cert.jks", "mypassword");
-            OSCARSClientConfig.setSSLKeyStore("/home/oscars/oscars-client/keystores/oscars-ssl.jks", "oscars");
-            
+            /* Setup keystores using the ones created by the sampleDomain/bin/gencerts script */
+            String oscarsHome = System.getenv("OSCARS_HOME");
+            System.out.println("oscarsHome is " + oscarsHome);
+            OSCARSClientConfig.setClientKeystore("mykey", oscarsHome + "/sampleDomain/certs/client.jks", "changeit");
+            OSCARSClientConfig.setSSLKeyStore(oscarsHome +"/sampleDomain/certs/localhost.jks", "changeit");
+
             //initialize client with service URL
             OSCARSClient client = new OSCARSClient("http://localhost:9001/OSCARS");
-            
-            //Build request that asks for all ACTIVE and RESERVED reservations
+
+            //Build request that asks for all ACTIVE, RESERVED and FINISHED reservations
             ListRequest request = new ListRequest();
             request.getResStatus().add(OSCARSClient.STATUS_ACTIVE);
             request.getResStatus().add(OSCARSClient.STATUS_RESERVED);
-            
+            request.getResStatus().add(OSCARSClient.STATUS_FINISHED);
+
             //send request
             ListReply reply = client.listReservations(request);
-            
+
             //handle case where no reservations returned
             if(reply.getResDetails().size() == 0){
                 System.out.println("No ACTIVE or RESERVED reservations found.");
                 System.exit(0);
             }
-            
+
             //print reservations
             for(ResDetails resDetails : reply.getResDetails() ){
                 System.out.println("GRI: " + resDetails.getGlobalReservationId());

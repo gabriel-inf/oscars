@@ -5,10 +5,12 @@ import java.util.Arrays;
 
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
+import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.client.OSCARSClient;
 import net.es.oscars.client.OSCARSClientConfig;
 import net.es.oscars.client.OSCARSClientException;
 import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
+
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -119,6 +121,8 @@ public class QueryReservation {
             request.setGlobalReservationId(gri);
             QueryResReply response = client.queryReservation(request);
             System.out.println("GRI: " + response.getReservationDetails().getGlobalReservationId());
+            ResDetails resDetails = response.getReservationDetails();
+            OSCARSClientUtils.printResDetails(resDetails);
         } catch (OSCARSClientException e) {
             System.err.println("Error creating oscars client: " + e.getMessage());
             System.exit(1);
@@ -127,4 +131,5 @@ public class QueryReservation {
             System.exit(1);
         }
     }
+
 }

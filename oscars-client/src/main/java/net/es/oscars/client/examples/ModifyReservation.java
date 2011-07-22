@@ -31,10 +31,12 @@ public class ModifyReservation {
             }
             String gri = args[0];
             
-            //Setup keystores 
-            OSCARSClientConfig.setClientKeystore("oscarsuser", "/home/oscars/oscars-client/keystores/oscars-cert.jks", "mypassword");
-            OSCARSClientConfig.setSSLKeyStore("/home/oscars/oscars-client/keystores/oscars-ssl.jks", "oscars");
-            
+ /* Setup keystores using the ones created by the sampleDomain/bin/gencerts script */
+            String oscarsHome = System.getenv("OSCARS_HOME");
+            System.out.println("oscarsHome is " + oscarsHome);
+            OSCARSClientConfig.setClientKeystore("mykey", oscarsHome + "/sampleDomain/certs/client.jks", "changeit");
+            OSCARSClientConfig.setSSLKeyStore(oscarsHome +"/sampleDomain/certs/localhost.jks", "changeit");
+
             //initialize client with service URL
             OSCARSClient client = new OSCARSClient("http://localhost:9001/OSCARS");
             WSNotificationClient notifyClient = new WSNotificationClient("http://localhost:9013/OSCARS/wsnbroker");

@@ -19,9 +19,11 @@ import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
 public class CreateReservationPoll {
     public static void main(String[] args){
         try {
-            //Setup keystores 
-            OSCARSClientConfig.setClientKeystore("oscarsuser", "/home/oscars/oscars-client/keystores/oscars-cert.jks", "mypassword");
-            OSCARSClientConfig.setSSLKeyStore("/home/oscars/oscars-client/keystores/oscars-ssl.jks", "oscars");
+            /* Setup keystores using the ones created by the sampleDomain/bin/gencerts script */
+            String oscarsHome = System.getenv("OSCARS_HOME");
+            System.out.println("oscarsHome is " + oscarsHome);
+            OSCARSClientConfig.setClientKeystore("mykey", oscarsHome + "/sampleDomain/certs/client.jks", "changeit");
+            OSCARSClientConfig.setSSLKeyStore(oscarsHome +"/sampleDomain/certs/localhost.jks", "changeit");
 
             //initialize client with service URL
             OSCARSClient client = new OSCARSClient("http://localhost:9001/OSCARS");
@@ -74,7 +76,7 @@ public class CreateReservationPoll {
                     break;
                 } 
             }
-            System.out.println("Circuit" + gri + " has been reserved");
+            System.out.println("Circuit " + gri + " has been reserved");
         } catch (OSCARSClientException e) {
             System.err.println("Error configuring client: " + e.getMessage());
             System.exit(1);
