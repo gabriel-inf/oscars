@@ -62,7 +62,15 @@ public class EoMPLSUtils {
             z = matcher.group(3); 
         }
         if (x == null || y == null || z == null) {
-            throw new PSSException("could not decide a l2circuit vcid!");
+            pattern =  Pattern.compile("ae(\\d+)");
+            matcher =  pattern.matcher(portId);
+            while (matcher.find()){
+                z = matcher.group(1);
+            }
+            if (z == null) {
+                throw new PSSException("could not decide a l2circuit vcid!");
+            }
+            x = "9"; y = "9"; 
         }
         // can't lead with zeros, junos thinks it's an octal
         if (x.equals("0")) {
