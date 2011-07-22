@@ -5,6 +5,9 @@ import java.lang.reflect.Member;
 import java.net.NetPermission;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
@@ -24,6 +27,7 @@ import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.w3c.dom.Element;
 
 public class DataTranslator05 {
 
@@ -809,32 +813,108 @@ public class DataTranslator05 {
             throws OSCARSServiceException {
         net.es.oscars.api.soap.gen.v06.InterDomainEventContent interDomainEventContent = new net.es.oscars.api.soap.gen.v06.InterDomainEventContent();
         MessagePropertiesType msgProps = new MessagePropertiesType();
-        net.es.oscars.api.soap.gen.v06.ResDetails resDetails = new net.es.oscars.api.soap.gen.v06.ResDetails();
-
-        try {   // These elements are required
-            interDomainEventContent.setErrorSource(notify05.getNotificationMessage().get(0).getProducerReference().toString());
-        } catch (Exception e) {
-            throw new OSCARSServiceException("Unable to translate v05 Notify");
+        
+        
+        if(notify05 == null || notify05.getNotificationMessage() == null || 
+                notify05.getNotificationMessage().size() == 0){
+            throw new OSCARSServiceException("Unable to translate v05 Notify: " +
+                    "The message did not contain a NotificationMessage");
         }
-/*
-        interDomainEventContent.setErrorCode();
-        interDomainEventContent.setErrorMessage();
-        interDomainEventContent.setResDetails();
-        interDomainEventContent.setType():
-
-        notify05.getNotificationMessage().get(0).getMessage();
-        notify05.getNotificationMessage().get(0).getSubscriptionReference();
-        notify05.getNotificationMessage().get(0).getTopic();
-*/
-
-
+        NotificationMessageHolderType notifyMsg05 = notify05.getNotificationMessage().get(0);
+        if(notifyMsg05.getMessage() == null){
+            throw new OSCARSServiceException("Unable to translate v05 Notify: " +
+            "The message did not contain a NotificationMessage/Message element");
+        }
+        if(notifyMsg05.getMessage().getAny() == null || notifyMsg05.getMessage().getAny().isEmpty()){
+            throw new OSCARSServiceException("Unable to translate v05 Notify: " +
+            "The message contained an empty NotificationMessage/Message element");
+        }
+        
+        net.es.oscars.api.soap.gen.v05.EventContent idcEvent05 = null;
+        for(Object notifyMsgObj : notifyMsg05.getMessage().getAny()){         
+            //convert string to IDC Event
+            try {
+                JAXBContext context = JAXBContext.newInstance(net.es.oscars.api.soap.gen.v05.EventContent.class);
+                idcEvent05 = (net.es.oscars.api.soap.gen.v05.EventContent) ((JAXBElement)notifyMsgObj).getValue();
+            } catch (Exception e) {
+                continue;
+            }
+            
+            break;
+        }
+        
+        if(idcEvent05 == null){
+            throw new OSCARSServiceException("Unable to translate v05 Notify: " +
+                "Unable to find idc:event in message");
+        }
+        
         String transId = PathTools.getLocalDomainId() + "-V05-" + UUID.randomUUID().toString();
         msgProps.setGlobalTransactionId(transId);
         interDomainEventContent.setMessageProperties(msgProps);
-
+        if(idcEvent05.getResDetails() != null){
+            interDomainEventContent.setResDetails(DataTranslator05.translate(idcEvent05.getResDetails()));
+        }
+        interDomainEventContent.setType(idcEvent05.getType());
+        interDomainEventContent.setErrorCode(idcEvent05.getErrorCode());
+        interDomainEventContent.setErrorMessage(idcEvent05.getErrorMessage());
+        interDomainEventContent.setErrorSource(idcEvent05.getErrorSource());
+        
         return interDomainEventContent;
     }
 
+    public static net.es.oscars.api.soap.gen.v06.ResDetails translate(
+            net.es.oscars.api.soap.gen.v05.ResDetails resDetails05) throws OSCARSServiceException {
+        net.es.oscars.api.soap.gen.v06.ResDetails resDetails06 = new net.es.oscars.api.soap.gen.v06.ResDetails();
+        
+        if(resDetails05.getGlobalReservationId() == null){
+            throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
+                "globalreservationId cannot be null");
+        }
+        resDetails06.setGlobalReservationId(resDetails05.getGlobalReservationId());
+        
+        if(resDetails05.getLogin() == null){
+            throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
+                "login cannot be null");
+        }
+        resDetails06.setLogin(resDetails05.getLogin());
+        
+        if(resDetails05.getDescription() == null){
+            throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
+                "description cannot be null");
+        }
+        resDetails06.setDescription(resDetails05.getDescription());
+        
+        if(resDetails05.getStatus() == null){
+            throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
+                "status cannot be null");
+        }
+        resDetails06.setStatus(resDetails05.getStatus());
+        
+        if(resDetails05.getPathInfo() == null){
+            throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
+            "pathInfo cannot be null");
+        }
+        
+        //create time is set to 0 during failure so accept anything
+        resDetails06.setCreateTime(resDetails05.getCreateTime());
+        
+        UserRequestConstraintType userConstraint = new UserRequestConstraintType();
+        userConstraint.setStartTime(resDetails05.getStartTime());
+        userConstraint.setEndTime(resDetails05.getEndTime());
+        userConstraint.setBandwidth(resDetails05.getBandwidth());
+        userConstraint.setPathInfo(DataTranslator05.translate(resDetails05.getPathInfo()));
+        resDetails06.setUserRequestConstraint(userConstraint);
+        
+        ReservedConstraintType resvConstraint = new ReservedConstraintType();
+        resvConstraint.setStartTime(resDetails05.getStartTime());
+        resvConstraint.setEndTime(resDetails05.getEndTime());
+        resvConstraint.setBandwidth(resDetails05.getBandwidth());
+        resvConstraint.setPathInfo(DataTranslator05.translate(resDetails05.getPathInfo()));
+        resDetails06.setReservedConstraint(resvConstraint);
+        
+        return resDetails06;
+    }
+    
     // TODO: check this
     public static org.oasis_open.docs.wsn.b_2.Notify translate(net.es.oscars.api.soap.gen.v06.InterDomainEventContent eventContent06)
             throws OSCARSServiceException {
