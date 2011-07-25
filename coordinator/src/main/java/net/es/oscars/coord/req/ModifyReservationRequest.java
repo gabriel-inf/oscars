@@ -55,6 +55,7 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
         super (name, modifyResvReq.getMessageProperties().getGlobalTransactionId(), gri, authConds);
         this.setRequestData(loginName, modifyResvReq);
         this.setCoordRequest(this);
+        this.setMessageProperties(modifyResvReq.getMessageProperties() );
         this.setLog();
     }
 

@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,10 @@ public final class IDCTest {
     public static String  userName = null;
     public static String status = null;
     public static String paramFile = null;
+    public static String description = "" ;
+    public static Long startTime = 0L;
+    public static Long endTime = 0L;
+    public static Integer bandwidth = 0;
     public static ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_API);
     private static String context = ConfigDefaults.CTX_DEVELOPMENT;
     
@@ -159,6 +164,9 @@ public final class IDCTest {
                             if (paramFile != null)  {
                                 query =configure(paramFile);
                             } else {
+                                 System.out.println("Create must be called with a parameter file");
+                                  System.exit(-1);
+                                /*
                                 UserRequestConstraintType userConstraint = new UserRequestConstraintType();
                                 long currentTime = System.currentTimeMillis() / 1000;
                                 userConstraint.setStartTime(currentTime + 3600); // One hour after now.
@@ -182,7 +190,7 @@ public final class IDCTest {
                                 pathInfo.setPath(pathContent);
                                 userConstraint.setPathInfo(pathInfo);
                                 query.setDescription("IDCTest");
-                                query.setUserRequestConstraint(userConstraint);
+                                query.setUserRequestConstraint(userConstraint); */
                             }                        
                             Object[] req = new Object[]{query};
                             Object[] res = client.invoke("createReservation",req);
@@ -202,19 +210,21 @@ public final class IDCTest {
                         }
                 } else if (request.equals("modifyReservation")) {
                     try {
-                        // Send a createReservation query 
-                        ResCreateContent createCon = new ResCreateContent();
-                        if (paramFile != null)  {
-                            createCon =configure(paramFile);
-                        } else {
-                            System.out.println("Modify must be called with a parameter file");
+                        ModifyResContent query = new ModifyResContent();
+                        UserRequestConstraintType uc = new UserRequestConstraintType();
+                        if (gri != null) {
+                            query.setGlobalReservationId(gri);
+                        }  else {
+                            System.out.println("modifyReservation must be called with a gri");
                             System.exit(-1);
                         }
-                        //hack
-                        ModifyResContent query = new ModifyResContent();
-                        query.setDescription(createCon.getDescription());
-                        query.setUserRequestConstraint(createCon.getUserRequestConstraint());
-                        query.setGlobalReservationId(gri);
+                        query.setDescription(description);
+                        uc.setEndTime(endTime);
+                        uc.setStartTime(startTime);
+                        uc.setBandwidth(bandwidth);
+                        uc.setPathInfo(new PathInfo());
+                        query.setUserRequestConstraint(uc);
+
 
                         Object[] req = new Object[]{query};
                         Object[] res = client.invoke("modifyReservation",req);
@@ -222,9 +232,7 @@ public final class IDCTest {
                         LOG.debug("Response: transactionId= " +response.getMessageProperties().getGlobalTransactionId()  +
                                 "\nGRI: "  + response.getReservation().getGlobalReservationId() + " , " +
                                 response.getReservation().getStatus());
-                        System.out.println ("[modifyReservation] completed gri= " + 
-                                    response.getReservation().getGlobalReservationId() + " status=" + 
-                                    response.getReservation().getStatus());
+                        printResDetails(response.getReservation());
                     } catch (OSCARSServiceException ex) {
                         ErrorReport errReport = ex.getErrorReport();
                         if (errReport !=null) {
@@ -378,9 +386,11 @@ public final class IDCTest {
         System.exit(0);
     }
     public static void modifyResUsage() {
-        System.out.println("usage  modifyReservation -pf <parameter_file>");
-        System.out.println("     parameter_file: a yaml file containing the parameters to modify the reservation");
-        System.out.println("     see api/src/test/resources/autoTD1.yaml for an example file, only the gri must be set to the reservation that is to be modified");
+        System.out.println("usage  modifyReservation -gri <globalReservationId");
+        System.out.println("     -d description for the reservation");
+        System.out.println("     -bw new bandwidth");
+        System.out.println("     -start new start time ");
+        System.out.println("     -end new end time ");
         System.exit(0);
     }
     public static void cancelResUsage() {
@@ -413,7 +423,10 @@ public final class IDCTest {
         OptionSpec<String> PARAMS = parser.accepts("pf", "parameter file for createReservation" ).withRequiredArg().ofType(String.class);
         OptionSpec<String> CONTEXT = parser.accepts("C", "context:UNITTEST,DEVELOPMENT,SDK,PRODUCTION").withRequiredArg().ofType(String.class);
         OptionSpec<String> USER = parser.accepts("u", "owner of reservations to be listed").withRequiredArg().ofType(String.class);
-
+        OptionSpec<String> DESC = parser.accepts("d", "description for modify reservation").withRequiredArg().ofType(String.class);
+        OptionSpec<Integer> BW =parser.accepts( "bw", "bandwidth for modify reservation").withRequiredArg().ofType( Integer.class );
+        OptionSpec<String> START = parser.accepts("start", "start time for modify reservation").withRequiredArg().ofType(String.class);
+        OptionSpec<String> END = parser.accepts("end", "end time for modify reservation").withRequiredArg().ofType(String.class);
         OptionSet options = parser.parse( args );
 
         if (options.has (CMD)){
@@ -495,12 +508,37 @@ public final class IDCTest {
         if (options.has("pf")) {
             paramFile = options.valueOf(PARAMS);
         }
+        if (options.has("d"))  {
+            description = options.valueOf(DESC);
+        }
+        if (options.has("bw")){
+            bandwidth = options.valueOf(BW);
+        }
+        if (options.has("start")) {
+            System.out.println("start time is " + options.valueOf(START));
+            startTime = parseTime(options.valueOf(START));
+        }
+        if (options.has("end")){
+            System.out.println ("end time is " + options.valueOf(END));
+            endTime = parseTime(options.valueOf(END));
+        }
         if (request.equals("query") && gri == null){
             System.out.println("query command requires gri argument");
             System.exit(-1);
         }
     }
-    
+
+    public static Long parseTime(String time){
+       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd:HH:mm");
+        Long outTime = 0L;
+        try {
+            outTime = df.parse(time.trim()).getTime()/1000;
+        } catch (java.text.ParseException ex) {
+                die("Error parsing start date: "+ex.getMessage());
+        }
+        return outTime;
+    }
+
     @SuppressWarnings("unchecked")
     public static ResCreateContent configure(String configFile) {
         if (configFile == null) {

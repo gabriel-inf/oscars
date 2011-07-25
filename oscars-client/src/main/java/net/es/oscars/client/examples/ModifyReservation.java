@@ -6,6 +6,7 @@ import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 
 import net.es.oscars.api.soap.gen.v06.ModifyResContent;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
+import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.client.OSCARSClient;
 import net.es.oscars.client.OSCARSClientConfig;
 import net.es.oscars.client.OSCARSClientException;
@@ -59,6 +60,7 @@ public class ModifyReservation {
             UserRequestConstraintType userConstraints = new UserRequestConstraintType();
             request.setGlobalReservationId(gri);
             userConstraints.setEndTime(endTime);
+            userConstraints.setPathInfo(new PathInfo());
             request.setUserRequestConstraint(userConstraints);
             
             //send modify request

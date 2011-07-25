@@ -281,8 +281,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         try {
             CheckAccessReply authDecision = checkAuthorization(method, transId,  gri, subjectAttributes, AuthZConstants.CREATE);
             /* check for bandwidth, duration, hops allowed  or permitted domains constraints */
-            checkCreateConditions( authDecision, createResvReq.getGlobalReservationId(), 
-                                   createResvReq.getUserRequestConstraint() );
+            checkConditions( authDecision, createResvReq.getGlobalReservationId(),
+                                   createResvReq.getUserRequestConstraint(),false );
 
             if (gri == null ) {
                 request = new CreateReservationRequest(method, loginName, createResvReq);
@@ -376,10 +376,11 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         return reply;
     }
     /**
-     * modifyReservation - modify a reserved or active reservation.Can change start and end time only, for now
+     * modifyReservation - can modify the start and end Times and bandwidth of a RESERVED reservation
+     * and the end time of an ACTIVE reservation
      * @param subjectAttributes - the subjectAttributes of the requester as returned by
      *     the AuthN service
-     * @param modifyResvReq contains the GRI, description, userConstraint, reservedconstraint and
+     * @param modifyResvReq contains the GRI, description, userConstraint,and optionally a reservedconstraint and
      *     optional constraints for the reservation
      * @return the resDetails for the modified reservation
      */
@@ -398,13 +399,82 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         }
         ModifyResReply modifyReply = null;
         CheckAccessReply authDecision = null;
-        String gri = modifyResvReq.getGlobalReservationId();;
+        String gri = modifyResvReq.getGlobalReservationId();
         netLogger.setGRI(gri);
         LOG.info(netLogger.start(method));
         String loginName =  null;
         try {
             authDecision = checkAuthorization(method, transId, gri, subjectAttributes, AuthZConstants.MODIFY);
-            checkCreateConditions( authDecision, null, modifyResvReq.getUserRequestConstraint() );
+            UserRequestConstraintType userConstraint =   modifyResvReq.getUserRequestConstraint();
+
+            // Get any missing values from the existing reservation
+            QueryResContent queryResCon = new QueryResContent();
+            queryResCon.setMessageProperties(modifyResvReq.getMessageProperties());
+            queryResCon.setGlobalReservationId(modifyResvReq.getGlobalReservationId());
+            QueryReservationRequest queryReq = new QueryReservationRequest(method,
+                                                                          authDecision.getConditions(),
+                                                                          queryResCon);
+            queryReq.execute();
+            if (queryReq.getState() == CoordAction.State.FAILED) {
+                queryReq.logError();
+                throw queryReq.getException();
+            }
+            ResDetails resDetails = queryReq.getResultData().getReservationDetails();
+
+            // check that requested modifications are allowed
+            String resState = resDetails.getStatus();
+            Long curtime = System.currentTimeMillis()/1000L;
+            if (userConstraint.getBandwidth() != 0) {
+                if ( !resState.equals(StateEngineValues.RESERVED)) {
+                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                                    "Cannot change bandwidth of " +
+                                                     resState + " reservation",
+                                                     ErrorReport.USER);
+                }
+            } else {
+                userConstraint.setBandwidth(resDetails.getUserRequestConstraint().getBandwidth());
+            }
+
+            if (userConstraint.getStartTime()!= 0 ) {
+                if ( !resState.equals(StateEngineValues.RESERVED)) {
+                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                                    "Cannot change start time of " +
+                                                     resState + " reservation",
+                                                     ErrorReport.USER);
+                }
+                if (userConstraint.getStartTime() <= curtime) {
+                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                                    "requested start time in the past",
+                                                    ErrorReport.USER);
+                }
+            } else {
+                userConstraint.setStartTime(resDetails.getUserRequestConstraint().getStartTime());
+            }
+
+            if (userConstraint.getEndTime() != 0 ) {
+                if ( !resState.equals(StateEngineValues.RESERVED)  ||
+                     !resState.equals(StateEngineValues.ACTIVE)   ) {
+                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                                    "Cannot change end time of " +
+                                                       resState + " reservation",
+                                                    ErrorReport.USER);
+                }
+                if ( (userConstraint.getEndTime() <= curtime) ||
+                        (userConstraint.getEndTime() <= userConstraint.getStartTime())) {
+                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                                "requested end time earlier than current or start time",
+                                                 ErrorReport.USER);
+                }
+            } else {
+                userConstraint.setEndTime(resDetails.getUserRequestConstraint().getEndTime());
+            }
+
+            // For now ignore any path values that the user may have input
+            userConstraint.setPathInfo(resDetails.getUserRequestConstraint().getPathInfo());
+
+            modifyResvReq.setUserRequestConstraint(userConstraint);
+
+            checkConditions( authDecision, null, userConstraint, true);
             loginName = getLoginName (subjectAttributes);
  
             /* Create a ModifyReservationRequest, set the description, subjectAttributes
@@ -777,7 +847,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
     }
     
     /* check to see if any max-bandwidth or max-duration conditions are satisfied */
-    private void checkCreateConditions(CheckAccessReply authDecision, String gri, UserRequestConstraintType userConstraint ) 
+    private void checkConditions(CheckAccessReply authDecision, String gri, UserRequestConstraintType userConstraint, boolean modify )
                                                                 throws OSCARSServiceException {
         AuthConditions authConds = authDecision.getConditions();
         boolean hopsAllowed = false;
@@ -807,6 +877,10 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                      ErrorReport.USER);
                 }
             }
+        }
+        if (modify) {
+            // path and gri are ok
+            return;
         }
         if (userConstraint.getPathInfo().getPath() != null &&
                 !userConstraint.getPathInfo().getPath().getHop().isEmpty() ) {

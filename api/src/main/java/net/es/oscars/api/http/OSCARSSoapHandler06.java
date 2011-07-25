@@ -134,6 +134,8 @@ public class OSCARSSoapHandler06 implements OSCARS {
         LOG.info(netLogger.start(event));
         ModifyResReply response = null;
         try {
+            // don't do data validation at this point, since the UserConstraint is allowed to
+            // have no path information. It will be filled in by the Coordinator..
             SubjectAttributes subjectAttributes = OSCARSSoapHandler06.AuthNRequester(msgProps, context, netLogger);
             msgProps = OSCARSSoapHandler06.updateMessageProperties(msgProps, event, subjectAttributes, netLogger);
             // update messageProperties in case it has been modified
@@ -143,11 +145,11 @@ public class OSCARSSoapHandler06 implements OSCARS {
             // Build the query
             Object[] req = new Object[]{subjectAttributes, modifyReservation};
             Object[] res = coordClient.invoke("modifyReservation",req);
+            response = (ModifyResReply) res[0];
             // be sure that reply from api includes the transactionId.
             if (response.getMessageProperties() == null ){
                 response.setMessageProperties(msgProps);
             }
-            response = (ModifyResReply) res[0];
             
         } catch (OSCARSServiceException ex) {
             OSCARSFaultUtils.handleError( ex, true, null, LOG, event);
