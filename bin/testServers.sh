@@ -29,7 +29,7 @@ testService() {
     serviceDir=$1
     service=$2
     shortName=$3
-    srcDir=$r
+    srcDir=$4
     Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $serviceDir $service $CONTEXT)
     #echo "Config is $Config"
     Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
