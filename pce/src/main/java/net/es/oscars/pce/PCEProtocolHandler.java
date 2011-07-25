@@ -59,12 +59,7 @@ public class PCEProtocolHandler implements PCEPortType {
         OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCE, 
                         pceCreateCommit.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_CREATE_COMMIT, ErrSev.MAJOR, "Executing operation pceCreateCommit in base class"));
-        System.out.println("In PCEProtocolHandler.pceCreateCommit");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("pceCreateCommit called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -74,12 +69,7 @@ public class PCEProtocolHandler implements PCEPortType {
         OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCE,
                         pceModifyCommit.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_MODIFY_COMMIT, ErrSev.MAJOR, "Executing operation pceModifyCommit in base class"));
-        System.out.println("In PCEProtocolHandler.pceModifyCommit");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("pceModifyCommit called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -90,12 +80,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 pceCancelReply.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_CANCEL_REPLY, ErrSev.MAJOR,
                                   "Executing operation pceCancelReply in base class"));
-        System.out.println("In PCEProtocolHandler.pceCancelReply");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+         throw new RuntimeException("pceCancelReply called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -106,12 +91,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 pceCreateCommitReply.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_CREATE_COMMIT_REPLY, ErrSev.MAJOR,
                                   "Executing operation pceCreateCommitReply in base class"));
-        System.out.println("In PCEProtocolHandler.pceCreateCommitReply");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+         throw new RuntimeException("pceCreateCommitReply called in base method PCEProtocolHandler");
     }
     /* (non-Javadoc)
      * @see net.es.oscars.pce.soap.gen.v06.PCEPortType#pceModifyCommitReply(net.es.oscars.pce.soap.gen.v06.PCEModifyCommitReplyContent  pceModifyCommitReply )*
@@ -121,12 +101,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 pceModifyCommitReply.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_MODIFY_COMMIT_REPLY, ErrSev.MAJOR,
                                   "Executing operation pceModifyCommitReply in base class"));
-        System.out.println("In PCEProtocolHandler.pceModifyCommitReply");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("pceModifyCommitReply called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -136,12 +111,7 @@ public class PCEProtocolHandler implements PCEPortType {
         OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCE, 
                 pceCancel.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_CANCEL, ErrSev.MAJOR,"Executing operation pceCancel in base class"));
-        System.out.println("In PCEProtocolHandler.pceCancel");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("pceCancel called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -152,12 +122,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 pceModifyReply.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_MODIFY_REPLY,
                                    ErrSev.MAJOR,"Executing operation pceModifyReply in base class"));
-        System.out.println("In PCEProtocolHandler.pceModifyReply");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("pceModifyReply called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -168,12 +133,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 pceModify.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_MODIFY, ErrSev.MAJOR,
                                   "Executing operation pceModify in base class"));
-        System.out.println("In PCEProtocolHandler.pceModify");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+         throw new RuntimeException("pceModify called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -184,12 +144,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 aggregatorModify.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.AGGREGATOR_MODIFY, ErrSev.MAJOR,
                                   "Executing operation aggregatorModify in base class"));
-        System.out.println("In PCEProtocolHandler.aggregatorModify");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+         throw new RuntimeException("aggregatorModify called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -199,12 +154,7 @@ public class PCEProtocolHandler implements PCEPortType {
         OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCE, 
                 pceReply.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_REPLY, ErrSev.MAJOR,"Executing operation pceReply in base class"));
-        System.out.println("In PCEProtocolHandler.pceReply");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+         throw new RuntimeException("pceReply called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -214,12 +164,7 @@ public class PCEProtocolHandler implements PCEPortType {
         OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCE, 
                 pceCreate.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.PCE_CREATE, ErrSev.MAJOR,"Executing operation pceCreate in base class"));
-        System.out.println("In PCEProtocolHandler.pceCreate");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("pceCreate called in base method PCEProtocolHandler");
     }
 
     /* (non-Javadoc)
@@ -230,24 +175,14 @@ public class PCEProtocolHandler implements PCEPortType {
                 aggregatorCreate.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.AGGREGATOR_CREATE, ErrSev.MAJOR,
                                   "Executing operation aggregatorCreate in base class"));
-        System.out.println("In PCEProtocolHandler.aggregatorCreate");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+       throw new RuntimeException("aggregatorCreate called in base method PCEProtocolHandler");
     }
     public void aggregatorCreateCommit(AggregatorCreateCommitContent aggregatorCreateCommit) {
         OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCE, 
                 aggregatorCreateCommit.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.AGGREGATOR_CREATE_COMMIT, ErrSev.MAJOR,
                                   "Executing operation aggregatorCreateCcommit in base class"));
-        System.out.println("In PCEProtocolHandler.aggregatorCreateCommit");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+       throw new RuntimeException("aggregatorCreateCommit called in base method PCEProtocolHandler");
     }
 
     public void aggregatorModifyCommit(AggregatorModifyCommitContent aggregatorModifyCommit) {
@@ -255,12 +190,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 aggregatorModifyCommit.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.AGGREGATOR_MODIFY_COMMIT, ErrSev.MAJOR,
                                   "Executing operation aggregatorModifyCcommit in base class"));
-        System.out.println("In PCEProtocolHandler.aggregatorModifyCommit");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+       throw new RuntimeException("aggregatorModifyCommit called in base method PCEProtocolHandler");
     }
 
     public void aggregatorCancel(AggregatorCancelContent aggregatorCancel) { 
@@ -268,12 +198,7 @@ public class PCEProtocolHandler implements PCEPortType {
                 aggregatorCancel.getMessageProperties().getGlobalTransactionId());
         LOG.error(netLogger.error(PCERequestTypes.AGGREGATOR_CANCEL, ErrSev.MAJOR,
                                   "Executing operation aggregatorCancel in base class"));
-        System.out.println("In PCEProtocolHandler.aggregatorCancel");
-        try {
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new RuntimeException("aggregatorCancel called in base method PCEProtocolHandler");
     }
 
 

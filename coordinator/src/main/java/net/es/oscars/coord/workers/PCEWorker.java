@@ -302,7 +302,57 @@ public class PCEWorker extends ModuleWorker {
         this.getPCEProxyClient().invoke("AggregatorCreateCommit", req);
         LOG.info (netLogger.end(event,agg.getName()));
     }
- 
+
+    /**
+      * sendAggregatorCreate -sends a query message to an aggregator
+      *
+      * @param agg AggProxyAction containing the parameters for the query message
+      * @throws OSCARSServiceException
+      */
+     public void sendAggregatorModify (AggProxyAction agg) throws OSCARSServiceException {
+         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+         String event = "sendAggregatorModify";
+         LOG.info (netLogger.start(event, agg.getName()));
+         // Retrieve all the PCEData this aggregator needs to process
+         HashMap<String, PCEData> aggData = agg.getAggData();
+
+         // Build the AggregatorCreate request
+         TagDataContent pceDataContent = new TagDataContent();
+         Set<Map.Entry<String,PCEData>> dataSet = aggData.entrySet();
+
+         ArrayList<TagDataContent> tagData = new ArrayList<TagDataContent>();
+
+         for (Map.Entry<String, PCEData> dataEntry : dataSet) {
+             TagDataContent data = new TagDataContent();
+             data.setTag (dataEntry.getKey());
+             PCEData pceData = dataEntry.getValue();
+
+             PCEDataContent dataContent = new PCEDataContent();
+             dataContent.setUserRequestConstraint(pceData.getUserRequestConstraint());
+             dataContent.setReservedConstraint(pceData.getReservedConstraint());
+             dataContent.getOptionalConstraint().addAll(pceData.getOptionalConstraint());
+             dataContent.setTopology(pceData.getTopology());
+
+             data.setConstraints(dataContent);
+
+             tagData.add(data);
+         }
+         AggregatorModifyContent queryContent = new AggregatorModifyContent();
+         ModifyResContent requestContent = (ModifyResContent) agg.getCoordRequest().getRequestData();
+         MessagePropertiesType msgProps = requestContent.getMessageProperties();
+         queryContent.setMessageProperties(msgProps);
+         queryContent.setGlobalReservationId(agg.getCoordRequest().getGRI());
+         queryContent.setPceName(agg.getName());
+         queryContent.setCallBackEndpoint(agg.getProxyEndpoint());
+         queryContent.setId(agg.getTransactionId());
+         List<TagDataContent> tagDataContent = queryContent.getPceData();
+         tagDataContent.addAll(tagData);
+
+         Object[] req = new Object[] {queryContent};
+         this.getPCEProxyClient().invoke("AggregatorModify", req);
+         LOG.info (netLogger.end(event, agg.getName()));
+     }
+
     /**
       * sendAggregatorModifyCommit -sends a query message to an aggregator
       *
@@ -341,8 +391,8 @@ public class PCEWorker extends ModuleWorker {
 
          MessagePropertiesType msgProps = null;
          Object requestData = (Object) agg.getCoordRequest().getRequestData();
-         if (requestData instanceof ResCreateContent) {
-             ResCreateContent requestContent = (ResCreateContent) requestData;
+         if (requestData instanceof ModifyResContent) {
+             ModifyResContent requestContent = (ModifyResContent) requestData;
              msgProps = requestContent.getMessageProperties();
          } else if (requestData instanceof InterDomainEventContent) {
              InterDomainEventContent requestContent = (InterDomainEventContent) requestData;
@@ -479,7 +529,7 @@ public class PCEWorker extends ModuleWorker {
             LOG.warn(netLogger.error(event,ErrSev.MINOR, "no PCE data in pceModifyCommit to " + pce.getName()));
             throw new OSCARSServiceException ("no PCE data");
         }
-        CoordRequest coordRequest = pce.getCoordRequest();
+
         // Build the PCEModifyCommit request
         PCEDataContent pceDataContent = new PCEDataContent();
         pceDataContent.setUserRequestConstraint (pceData.getUserRequestConstraint());
@@ -490,8 +540,15 @@ public class PCEWorker extends ModuleWorker {
             pceDataContent.getOptionalConstraint().addAll(pceData.getOptionalConstraint());
         }
 
-        Object requestData = (Object) coordRequest.getRequestData();
         MessagePropertiesType msgProps = null;
+        Object requestData = (Object) pce.getCoordRequest().getRequestData();
+        if (requestData instanceof ModifyResContent) {
+             ModifyResContent requestContent = (ModifyResContent) requestData;
+             msgProps = requestContent.getMessageProperties();
+        } else if (requestData instanceof InterDomainEventContent) {
+             InterDomainEventContent requestContent = (InterDomainEventContent) requestData;
+             msgProps = requestContent.getMessageProperties();
+        }
         List<TagDataContent> tagDataContent = null;
 
         PCEModifyCommitContent queryContent = new PCEModifyCommitContent();

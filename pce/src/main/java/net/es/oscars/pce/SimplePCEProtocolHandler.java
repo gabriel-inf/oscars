@@ -49,7 +49,7 @@ public class SimplePCEProtocolHandler extends PCEProtocolHandler {
         String pceName = pceCreate.getPceName();
         String callBackEndpoint = pceCreate.getCallBackEndpoint();
         PCEDataContent pceData = pceCreate.getPceData();
-        if(this.netLogModName != null){
+        if (this.netLogModName != null){
             netLogger = OSCARSNetLogger.getTlogger();
             netLogger.init(netLogModName,msgProps.getGlobalTransactionId());
             netLogger.setGRI(globalReservationId);
@@ -123,7 +123,7 @@ public class SimplePCEProtocolHandler extends PCEProtocolHandler {
         /**
      * handles pceModifyCommit message
      */
-    public void pceModifyModifyCommit(PCEModifyCommitContent pceModifyCommit)  {
+    public void pceModifyCommit(PCEModifyCommitContent pceModifyCommit)  {
         OSCARSNetLogger netLogger = null;
         String event = PCERequestTypes.PCE_MODIFY_COMMIT;
         MessagePropertiesType msgProps = pceModifyCommit.getMessageProperties();

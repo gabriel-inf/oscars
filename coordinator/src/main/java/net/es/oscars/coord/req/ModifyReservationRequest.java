@@ -107,7 +107,11 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
             ModifyResReply response = (ModifyResReply) res [0];
             resDetails = response.getReservation();
             String state = resDetails.getStatus();
-            this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE,resDetails.getDescription());
+            if (request.getDescription().equals("")) {
+                this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE,resDetails.getDescription());
+            } else {
+                this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE,request.getDescription());
+            }
             // this is the previous state, not INMODIFY
             this.setAttribute(CoordRequest.STATE_ATTRIBUTE, state);
             this.setResultData(response);

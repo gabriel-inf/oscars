@@ -75,7 +75,6 @@ public abstract class SimplePCEServer extends PCEProtocolServer implements Runna
                     pceData = this.calculatePath(job.getMessage());
                 } catch ( OSCARSServiceException e) {
                     // exception has already been logged, return error to PCERuntime
-                    System.out.println("exception thrown by pceCreate: " + e.toString());
                     ex = e;
                 }
                 // need the transactionId
@@ -88,7 +87,6 @@ public abstract class SimplePCEServer extends PCEProtocolServer implements Runna
                     pceData = this.commitPath(job.getMessage());
                 } catch ( OSCARSServiceException e) {
                     // exception has already been logged, return error to PCERuntime
-
                     ex =e;
                 }
                 client.sendCreateCommitReply(job.getMessage().getMessageProperties(),
@@ -185,7 +183,6 @@ public abstract class SimplePCEServer extends PCEProtocolServer implements Runna
                 String  jobType = ( job.getJobType() == SimplePCEJob.CREATE_TYPE ? "create" : "commit"); 
                 netLogProps.put("jobType", jobType);
                 this.log.error(netLogger.error("processJob",null,"exception caught in processJob",null,netLogProps));
-                System.out.println("At SimplePCEServer after processJob");
                  e.printStackTrace();
             }
         }

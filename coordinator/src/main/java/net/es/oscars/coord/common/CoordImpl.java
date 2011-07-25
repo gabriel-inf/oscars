@@ -452,7 +452,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             }
 
             if (userConstraint.getEndTime() != 0 ) {
-                if ( !resState.equals(StateEngineValues.RESERVED)  ||
+                if ( !resState.equals(StateEngineValues.RESERVED)  &&
                      !resState.equals(StateEngineValues.ACTIVE)   ) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "Cannot change end time of " +

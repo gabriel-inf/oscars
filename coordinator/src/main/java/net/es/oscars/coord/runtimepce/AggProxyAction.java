@@ -172,13 +172,16 @@ public class AggProxyAction extends ProxyAction  {
                                                      this.getPceEndpoint());
         pceWorker.sendAggregatorCancel(this);
     }
+
     protected void sendModifyQuery() throws OSCARSServiceException, MalformedURLException {
 
         PCEWorker pceWorker = PCEWorker.getPCEWorker(this.getName(),
                                                      this.getProxyEndpoint(),
                                                      this.getPceEndpoint());
-        pceWorker.sendPceModify(this);
+    //    pceWorker.sendPceModify(this);
+        pceWorker.sendAggregatorModify(this);
     }
+
 
     /**
      *   If all the required data has been received, send the pceQuery for this request to the Aggregator
