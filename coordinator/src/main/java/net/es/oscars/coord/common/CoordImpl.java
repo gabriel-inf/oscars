@@ -459,14 +459,15 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                        resState + " reservation",
                                                     ErrorReport.USER);
                 }
-                if ( (userConstraint.getEndTime() <= curtime) ||
-                        (userConstraint.getEndTime() <= userConstraint.getStartTime())) {
-                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
-                                                "requested end time earlier than current or start time",
-                                                 ErrorReport.USER);
-                }
             } else {
-                userConstraint.setEndTime(resDetails.getUserRequestConstraint().getEndTime());
+                    userConstraint.setEndTime(resDetails.getUserRequestConstraint().getEndTime());
+            }
+            if ( (userConstraint.getEndTime() <= curtime) ||
+                    (userConstraint.getEndTime() <= userConstraint.getStartTime())) {
+                throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                            "requested end time earlier than current or start time",
+                                             ErrorReport.USER);
+
             }
 
             // For now ignore any path values that the user may have input
