@@ -538,11 +538,14 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
                         String nextDomain = PathTools.getNextDomain (resDetails.getReservedConstraint().getPathInfo().getPath(),
                                                                      PathTools.getLocalDomainId());
 
-                        ReservationCompletedForwarder forwarder = new ReservationCompletedForwarder (this.getName() + "-CreateResvCompletedForwarder",
-                                                                                                     this.getCoordRequest(),
-                                                                                                     NotifyRequestTypes.RESV_CREATE_COMPLETED,
-                                                                                                     nextDomain,
-                                                                                                     resDetails);
+                        ReservationCompletedForwarder forwarder =
+                                new ReservationCompletedForwarder (this.getName() + "-CreateResvCompletedForwarder",
+                                                                   this.getCoordRequest(),
+                                                                   requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) ?
+                                                                                      NotifyRequestTypes.RESV_CREATE_COMPLETED :
+                                                                                      NotifyRequestTypes.RESV_MODIFY_COMPLETED,
+                                                                   nextDomain,
+                                                                   resDetails);
                         forwarder.execute();
 
                         if (forwarder.getState() == CoordAction.State.FAILED) {

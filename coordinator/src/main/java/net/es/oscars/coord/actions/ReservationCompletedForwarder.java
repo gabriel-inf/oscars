@@ -10,8 +10,8 @@ import net.es.oscars.utils.topology.PathTools;
 
 
 /**
- * ReservationCompletedForwarder sends a NotifyEvent message to the previous IDC (if any).
- * This is done during after a path has been calculated and is being committed.
+ * ReservationCompletedForwarder sends a IDE Event message to the previous IDC (if any).
+ * This is done during after a path has been calculated or modified and is being committed.
  * 
  * @author lomax
  *
@@ -19,7 +19,7 @@ import net.es.oscars.utils.topology.PathTools;
 public class ReservationCompletedForwarder extends ForwarderAction <ResDetails,Object> {
 
     private static final long       serialVersionUID = 1L;
-    private String type = null;
+    private String type = null;  // set to either RESV_MODIFY_COMPLETED or RESV_CREATE_COMPLETED
 
     @SuppressWarnings("unchecked")
     public ReservationCompletedForwarder (String name,
@@ -38,7 +38,7 @@ public class ReservationCompletedForwarder extends ForwarderAction <ResDetails,O
                 
                 InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(), 
                                                                  this.getRequestData(), 
-                                                                 NotifyRequestTypes.RESV_CREATE_COMPLETED,
+                                                                 this.type,
                                                                  this.getDestDomainId());
             }
         } catch (OSCARSServiceException e) {

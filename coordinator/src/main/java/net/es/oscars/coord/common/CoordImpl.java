@@ -405,7 +405,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         String loginName =  null;
         try {
             authDecision = checkAuthorization(method, transId, gri, subjectAttributes, AuthZConstants.MODIFY);
-            UserRequestConstraintType userConstraint =   modifyResvReq.getUserRequestConstraint();
+            UserRequestConstraintType inputUC =   modifyResvReq.getUserRequestConstraint();
 
             // Get any missing values from the existing reservation
             QueryResContent queryResCon = new QueryResContent();
@@ -420,38 +420,38 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                 throw queryReq.getException();
             }
             ResDetails resDetails = queryReq.getResultData().getReservationDetails();
-
+            UserRequestConstraintType modUC =  resDetails.getUserRequestConstraint();
             // check that requested modifications are allowed
             String resState = resDetails.getStatus();
             Long curtime = System.currentTimeMillis()/1000L;
-            if (userConstraint.getBandwidth() != 0) {
+            if (inputUC.getBandwidth() != modUC.getBandwidth()) {
                 if ( !resState.equals(StateEngineValues.RESERVED)) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "Cannot change bandwidth of " +
                                                      resState + " reservation",
                                                      ErrorReport.USER);
                 }
-            } else {
-                userConstraint.setBandwidth(resDetails.getUserRequestConstraint().getBandwidth());
+                modUC.setBandwidth(inputUC.getBandwidth());
             }
 
-            if (userConstraint.getStartTime()!= 0 ) {
+            if ((inputUC.getStartTime() != 0) &&
+                    (inputUC.getStartTime() != modUC.getStartTime())) {
                 if ( !resState.equals(StateEngineValues.RESERVED)) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "Cannot change start time of " +
                                                      resState + " reservation",
                                                      ErrorReport.USER);
                 }
-                if (userConstraint.getStartTime() <= curtime) {
+                if (inputUC.getStartTime() <= curtime) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "requested start time in the past",
                                                     ErrorReport.USER);
                 }
-            } else {
-                userConstraint.setStartTime(resDetails.getUserRequestConstraint().getStartTime());
+                modUC.setStartTime(inputUC.getStartTime());
             }
 
-            if (userConstraint.getEndTime() != 0 ) {
+            if ( (inputUC.getEndTime() != 0) &&
+                    (inputUC.getEndTime() != modUC.getEndTime()))  {
                 if ( !resState.equals(StateEngineValues.RESERVED)  &&
                      !resState.equals(StateEngineValues.ACTIVE)   ) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
@@ -459,23 +459,24 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                        resState + " reservation",
                                                     ErrorReport.USER);
                 }
-            } else {
-                    userConstraint.setEndTime(resDetails.getUserRequestConstraint().getEndTime());
+                if (inputUC.getEndTime() <= curtime) {
+                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
+                                                    "requested end time in the past",
+                                                    ErrorReport.USER);
+                }
+                modUC.setEndTime(inputUC.getEndTime());
             }
-            if ( (userConstraint.getEndTime() <= curtime) ||
-                    (userConstraint.getEndTime() <= userConstraint.getStartTime())) {
+
+            if (modUC.getEndTime() <= modUC.getStartTime()) {
                 throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
-                                            "requested end time earlier than current or start time",
+                                            "requested end time earlier than start time",
                                              ErrorReport.USER);
 
             }
 
-            // For now ignore any path values that the user may have input
-            userConstraint.setPathInfo(resDetails.getUserRequestConstraint().getPathInfo());
+            modifyResvReq.setUserRequestConstraint(modUC);
 
-            modifyResvReq.setUserRequestConstraint(userConstraint);
-
-            checkConditions( authDecision, null, userConstraint, true);
+            checkConditions( authDecision, null, modUC, true);
             loginName = getLoginName (subjectAttributes);
  
             /* Create a ModifyReservationRequest, set the description, subjectAttributes

@@ -1,7 +1,9 @@
 package net.es.oscars.coord.actions;
 
 import net.es.oscars.coord.runtimepce.PCERuntimeAction;
+import net.es.oscars.coord.workers.NotifyWorker;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
+import net.es.oscars.utils.sharedConstants.PCERequestTypes;
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
@@ -73,7 +75,7 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
         
         if (!localRes && !lastDomain) {
             try {
-                // Send CREATE_RESV_COMPLETED event to the next IDC
+                // Send RESV_MODIFY_COMPLETED event to the next IDC
                 String nextDomain = PathTools.getNextDomain (resDetails.getReservedConstraint().getPathInfo().getPath(),
                                                              PathTools.getLocalDomainId());
                 ReservationCompletedForwarder forwarder = new ReservationCompletedForwarder (this.getName() + "-ModifyResvCompletedForwarder",
@@ -95,6 +97,12 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
                 this.fail(e);
                 return;                        
             }
+        }
+        if (!localRes && lastDomain) {
+            // notify that request is completed
+                 NotifyWorker.getInstance().sendInfo (this.getCoordRequest(),
+                                                      NotifyRequestTypes.RESV_MODIFY_COMPLETED,
+                                                      resDetails);
         }
         // Release the RuntimePCE global lock
         PCERuntimeAction.releaseMutex(this.getCoordRequest().getGRI());
