@@ -81,9 +81,25 @@ SOURCE="source"
 printf "Enter the new domain you would like to add:";
 read user_domain;
 stty echo;
+#trim string
+user_domain=$(echo $user_domain | sed 's/^ *\(.*\) *$/\1/')
 
 #Search topology file and get the config file name
-config_file=$(getConfigFile TopoBridgeService $CONTEXT topoBridge)
+#config_file=$(getConfigFile TopoBridgeService $CONTEXT topoBridge)
+config_file=$(getConfigFile TopoBridgeService TopoBridgeService $CONTEXT)
+#if file not found, return
+if [ -z $config_file ] || [ ! -f $config_file ]; then
+        echo "The configuration file is not found. Check if your $OSCARS_HOME/TopoBridgeService/conf folder has configuration files present"
+        exit 1
+fi
+
+#do not re-add the same domain
+localDmId=$(awk -F: '$1~/'\'$user_domain\''/{print "FOUND"}' $config_file) 
+echo "localdm = $localDmId, user=$user_domain"
+if [[ "$localDmId" == *FOUND* ]]; then
+	echo "--This domain is already present. Use idc-domaininfomod to modify further"
+	exit 1
+fi
 
 printf "Enter the source of the topology for this domain: file/topoServer?";
 #stty echo;
@@ -119,7 +135,7 @@ fi
 	
 #Redirect domain addition to file
 # did not see it necessary to parse the file to check for "domains", and then append
-domain_str="\n\t'$user_domain':\n\t    $SOURCE:\t'$user_src'\n\t    $USER_SRC_TYPE:\t$user_location"
+domain_str="\n        '$user_domain':\n            $SOURCE:         '$user_src'\n            $USER_SRC_TYPE:           $user_location"
 echo -e "$domain_str" >> $config_file
 if [ $? == 0 ]; then
 	echo "--Domain $user_domain added succesfully"

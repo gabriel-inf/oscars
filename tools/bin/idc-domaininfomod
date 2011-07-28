@@ -76,6 +76,8 @@ if [ "$CONTEXT" ==  "PRODUCTION" ] || [ "$CONTEXT" == "UNITTEST" ] || [ "$CONTEX
 	printf "Enter the domain you would like to modify for context $CONTEXT:";
 	read user_domain;
 	stty echo;
+	#trim string
+        user_domain=$(echo $user_domain | sed 's/^ *\(.*\) *$/\1/')
 	echo "--Trying to locate domain $user_domain..."
 else
 	echo "CONTEXT  $CONTEXT is not recognized"
@@ -85,7 +87,13 @@ fi
 SOURCE="source"
 
 #Search topology file and get the config file name
-config_file=$(getConfigFile TopoBridgeService $CONTEXT topoBridge)
+#config_file=$(getConfigFile TopoBridgeService $CONTEXT topoBridge)
+config_file=$(getConfigFile TopoBridgeService TopoBridgeService $CONTEXT)
+#if file not found, return
+if [ -z $config_file ] || [ ! -f $config_file ]; then
+        echo "The configuration file is not found. Check if your $OSCARS_HOME/TopoBridgeService/conf folder has configuration files present"
+        exit 1
+fi
 
 SOURCE="source"
 DMNFND=0
@@ -147,6 +155,9 @@ elif [ $DMNFND -eq 1 ]; then
 		read user_src;
 		if [ "$user_src" != "file" ] && [ "$user_src" != "topoServer" ]; then
 			user_src=0;
+			#error message to user 
+			echo "--You did not select a valid value for file/toposerver. Quitting now"
+			exit 1;
 		fi
 	done
 	#if file prompt for file location
@@ -172,17 +183,17 @@ elif [ $DMNFND -eq 1 ]; then
 fi
 
 # did not see it necessary to parse the file to check for "domains", and then append
-src_line="\t\t$SOURCE:\t'$user_src'"
-location_line="\t\t$USER_SRC_TYPE:\t$user_location"
+src_line="            $SOURCE:         '$user_src'"
+location_line="            $USER_SRC_TYPE:           $user_location"
 
 sed -i -e ""$srcLine"s/.*/$src_line/" $config_file
 sed -i -e ""$filenameLine"s/.*/$location_line/" $config_file
 
 if [ $? == 0 ]; then
-	echo "Domain $user_domain added succesfully"
+	echo "Domain $user_domain modified succesfully"
 	#echo "$File : $config_file"
 else
-	echo "There was an error while adding the new domain to $config_file. Please add a domain to this file manually"
+	echo "There was an error while modifying domain $user_domain in $config_file. Please modify this manually"
 fi
 
 

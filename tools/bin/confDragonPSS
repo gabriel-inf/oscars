@@ -23,9 +23,14 @@ getConfigFile () {
                 echo "Error: Argument list insufficient"
                 exit 1;
         fi
-#       echo "$1, $2, $3"
+        #echo "$1, $2, $3 $4"
+	fileArg=$4
+        if [ -z $fileArg ]; then
+                #echo "Filename empty"
+                fileArg=""
+        fi
 #TDB run from OSCARS_HOME?
-        Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $1 $2 $3 $4| sed "s/'//g")
+        Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $1 $2 $3 $fileArg| sed "s/'//g")
 #       echo "Config in local Method :$Config"
         Service=$(echo $Config | awk -F/ '$1~//{print $2}')
         Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
@@ -143,7 +148,14 @@ LOCAL_DOMAIN_ID="localDomainId"
 #CIRCUIT_SERVICE=
 
 #Get all variable values from the file
-Config2=$(getConfigFile PSSService $CONTEXT dragonPSS)
+#Config2=$(getConfigFile PSSService $CONTEXT dragonPSS)
+Config2=$(getConfigFile PSSService PSSService $CONTEXT)
+#if file not found, return
+if [ -z $Config2 ] || [ ! -f $Config2 ]; then
+        echo "The configuration file is not found. Check if your $OSCARS_HOME/PSSService/conf folder has configuration files present"
+        exit 1
+fi
+
 #echo "config file= $Config2"
 
 #get current Local Domain used
@@ -175,8 +187,14 @@ sed -i -e "s/$stubLine/$final_str/" $Config2
 #New file. could move this to another script, but keeping it here for now
 #get other config file
 #config-connector-directory.yaml
-connector_config=$(getConfigFile PSSService $CONTEXT dragonPSS config-connector-directory.yaml)
+#connector_config=$(getConfigFile PSSService $CONTEXT dragonPSS config-connector-directory.yaml)
+connector_config=$(getConfigFile PSSService PSSService $CONTEXT config-connector-directory.yaml)
 #echo "Connector == $connector_config"
+#if file not found, return
+if [ -z $connector_config ] || [ ! -f $connector_config ]; then
+        echo "The configuration file is not found. Check if your $OSCARS_HOME/PSSService/conf folder has configuration files present"
+        exit 1
+fi
 
 #kludge. code is slow, will need to be bettered
 params=( cliUser cliPassword promptPattern sshPortForward sshUser sshKey sshPort localAddress remotePort hasNarb setERO tunnelMode )

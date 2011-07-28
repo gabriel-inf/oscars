@@ -2,7 +2,7 @@
 #########################################################################
 # Script used to view current local domain
 # Usage: idc-domainmod <context>
-# TDB: Removing echo/prints. Retaining expecting future changes
+# TBD: Removing echo/prints. Retaining expecting future changes
 # TBD: Run from OSCARS_HOME. Right now run from OSCARS_DIST
 #########################################################################
 
@@ -23,9 +23,16 @@ getConfigFile () {
 		echo "Error: Argument list insufficient"
 		exit 1;
 	fi
-#	echo "$1, $2, $3"
-#TDB run from OSCARS_HOME?
+#TBD run from OSCARS_HOME?
 	Config=$(sh $OSCARS_DIST/bin/parseManifest.sh $1 $2 $3 | sed "s/'//g")
+	#Should find manifest file, and it should have the config line we're looking for.
+	##If not, there is some error in either the manifest file copy, or the manifest file that is copied
+	if [ -z $Config ]; then
+                echo "The manifest file is not found/is invalid. Have you run the bin/copyTemplates.sh and/or bin/exportconfig commands?"
+
+                exit 1
+        fi
+
 #	echo "Config in local Method :$Config"
 	Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 	Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
@@ -50,7 +57,6 @@ else
 	exit 1
 fi
 
-#TBD remove later
 if  [ -z $OSCARS_DIST ]; then
     echo "Please set the environment var OSCARS_DIST to the OSCARS source directory"
     exit -1
@@ -70,9 +76,15 @@ case $1 in
 esac
 
 #Search topology file and get the values
-Config2=$(getConfigFile Utils $CONTEXT utils) #configFile
+#Config2=$(getConfigFile Utils $CONTEXT utils) #configFile
+Config2=$(getConfigFile Utils Utils $CONTEXT) 
+#if file not found, return
+if [ -z $Config2 ] || [ ! -f $Config2 ]; then
+	echo "The configuration file is not found. Check if your $OSCARS_HOME/Utils/conf folder has configuration files present"
+	exit 1
+fi
 
-#echo "The config file location is $Config2"
+
 
 SVCFND=0
 CONTFND=0
@@ -83,21 +95,29 @@ printf "Enter the new domain you would like to use as the local domain: ";
 read user_choice;
 stty echo;
 echo "";
+#trim string
+user_choice=$(echo $user_choice | sed 's/^ *\(.*\) *$/\1/')
 
 #Get all topo files to check if this topology is present
 #Edit  $OSCARS_HOME/TopoBridgeService/conf /config.XXX.yaml
-topoConfigFile=$(getConfigFile TopoBridgeService $CONTEXT topoBridge) #configFile
+#topoConfigFile=$(getConfigFile TopoBridgeService $CONTEXT topoBridge) #configFile
+topoConfigFile=$(getConfigFile TopoBridgeService TopoBridgeService $CONTEXT) 
+#If file not found, return
+if [ -z $topoConfigFile ] || [ ! -f $topoConfigFile ]; then
+        echo "The configuration file is not found. Have you run the bin/copyTemplates.sh and/or bin/exportconfig commands? "
+        exit 1
+fi
 
 #Check if user's choice is present in current list of topology files
 #echo "Config File where all domains are found= $topoConfigFile"
-isDomainFound=$(awk -F: '$1~/'$user_choice'/{print "FOUND"}' $topoConfigFile)
+#quotes to avoid duplicate matches like testdomain-1, testdomain-11 when searching for testdomain-1
+isDomainFound=$(awk -F: '$1~/'\'$user_choice\''/{print "FOUND"}' $topoConfigFile)
 if [ "$isDomainFound" != "FOUND" ]; then
 	echo "--NOTE: Your choice of domain is not found in the current set of configured topologies."
 	echo "--Run idc-domainadd to add this new domain"
 fi
 
 #get current Local Domain used
-#TBD manifest location
 lineNum=0;
 while read i; 
 do
@@ -121,7 +141,7 @@ do
 			localDomain=$(echo $Line | awk -F: '$1~/id/{print $2}' | sed "s/'//g")
 			CONTFND=0
 		#fi
-		echo "localDomain=$localDomain. Linenum = $lineNum"
+		#echo "localDomain=$localDomain. Linenum = $lineNum"
 		#trimming
                 localDomain=$(echo $localDomain | sed 's/^ *\(.*\) *$/\1/')
 		break;
@@ -131,7 +151,8 @@ done<$Config2
 		
 #got line number and localDomain. Replace now
 echo "--Replacing your current local domain from $localDomain to $user_choice"; 
-sed -i -e ""$lineNum"s/$localDomain/$user_choice/" $Config2
+#sed -i ""$lineNum"s/$localDomain/$user_choice/" $Config2
+sed -i ""$lineNum"s/id:.*\'$localDomain\'/id: \'$user_choice\'/" $Config2
 if [ $? != 0 ]; then
 	echo "-- Sed returned an error when updating $Config2. Please manually change the localDomain identifier in this file";
 else

@@ -1,4 +1,4 @@
-#!/bin/sh
+
 ############################################################################
 # Script used to add a new topoServer. This script is used to only add a
 # TS to a currently used domain. To add a new domain and an associated TS ,
@@ -77,6 +77,7 @@ if [ "$CONTEXT" ==  "PRODUCTION" ] || [ "$CONTEXT" == "UNITTEST" ] || [ "$CONTEX
 	printf "Enter the domain for which you would like to add a topoServer. Options: */specific domain name : ";
 	read user_domain;
 	stty echo;
+	user_domain=$(echo $user_domain | sed 's/^ *\(.*\) *$/\1/')
 	echo "--Locating domain $user_domain"
 else
 	echo "CONTEXT $CONTEXT is not recognized"
@@ -84,8 +85,15 @@ else
 fi
 
 #Search topology file and get the config file name
-config_file=$(getConfigFile TopoBridgeService $CONTEXT topoBridge)
+#config_file=$(getConfigFile TopoBridgeService $CONTEXT topoBridge)
+config_file=$(getConfigFile TopoBridgeService TopoBridgeService $CONTEXT)
 #echo "Config file= $config_file"
+#if file not found, return
+if [ -z $config_file ] || [ ! -f $config_file ]; then
+        echo "The configuration file is not found. Check if your $OSCARS_HOME/TopoBridgeService/conf folder has configuration files present"
+        exit 1
+fi
+
 
 #Find if domain is already present, else instruct user to add domain and associated TS.
 SOURCE="source"
@@ -104,7 +112,8 @@ do
         lineNum=`expr $lineNum + 1`
 	#echo "$lineNum:$Line, DNMFND:$DMNFND, ISTOP: $ISTOPOSERVER, SERVER:$SERVERLISTFOUND"
         if [ $DMNFND -eq 0 ]; then
-                localDmId=$(echo $Line | awk -F: '$1~/'$user_domain'/{print "FOUND"}' ) # '{if ( $1~"$user_domain" ) print "FOUND"}')
+		#quotes to avoid duplicate search results
+                localDmId=$(echo $Line | awk -F: '$1~/'\'$user_domain\''/{print "FOUND"}' ) # '{if ( $1~"$user_domain" ) print "FOUND"}')
                 if [ "$localDmId" == "FOUND" ]; then
                         DMNFND=1
 			domainLineNum=$lineNum			
@@ -151,7 +160,7 @@ elif [ $DMNFND == 1 ] && [ $ISTOPOSERVER -eq 0 ]; then
 fi
 
 #Replace in file
-domain_str="\t    $SERVERS:\t$STARTDELIM$serverList'$user_TS'$ENDDELIM"
+domain_str="            $SERVERS:        $STARTDELIM$serverList'$user_TS'$ENDDELIM"
 sed -i -e ""$lineNum"s/.*/$domain_str/" $config_file
 if [ $? == 0 ]; then
 	echo "Topology Server $user_TS has been added succesfully"

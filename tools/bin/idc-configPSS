@@ -106,9 +106,14 @@ PSSChoice="PSSChoice"
 
 
 #Search topology file and get the values
-Config2=$(getConfigFile Utils $CONTEXT utils) #configFile
-
-echo "The config file location is $Config2"
+#Config2=$(getConfigFile Utils $CONTEXT utils) #configFile
+Config2=$(getConfigFile Utils Utils $CONTEXT) #configFile
+#if file not found, return
+if [ -z $Config2 ] || [ ! -f $Config2 ]; then
+        echo "The configuration file is not found. Check if your $OSCARS_HOME/Utils/conf folder has configuration files present"
+        exit 1
+fi
+#echo "The config file location is $Config2"
 
 #prompt user for new domain
 printf "Enter the PSS (Path setup subsystem) you would like to use: Stub/Dragon/EoMPLS? ";
@@ -128,9 +133,8 @@ PSSLine="PSSChoice:\t$user_choice"
 #TBD write if not found/replace
 #echo -e "$PSSLine" >> $Config2
 ifPSSChoicePresent=$(awk -F: '$1~/PSSChoice/{print "FOUND"}' $Config2)
-echo "PSS found: :$ifPSSChoicePresent:, config=$Config2, PSSLine=$PSSLine, Choice=:$PSSChoice:"
+#echo "PSS found: :$ifPSSChoicePresent:, config=$Config2, PSSLine=$PSSLine, Choice=:$PSSChoice:"
 if [ "$ifPSSChoicePresent" == "FOUND" ]; then
-	echo "i------------FOUND"
 	sed -i -e "s/"$PSSChoice":.*/"$PSSLine"/" $Config2
 	#sed -i -e "s/.*/"$PSSLine"/" $Config2
 else

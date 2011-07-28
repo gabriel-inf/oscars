@@ -19,7 +19,12 @@ fi
 
 ## define context to be production, since the local Domain is defined in just one place
 CONTEXT=PRODUCTION
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils) # | sed "s/'//g")
+#Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils) # | sed "s/'//g")
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils Utils $CONTEXT | sed "s/'//g")
+if [ -z $Config ]; then
+      echo "The manifest file is not found/or is invalid. Have you run the bin/copyTemplates.sh and/or bin/exportconfig commands?"
+      exit 1
+fi
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")
@@ -29,6 +34,13 @@ elif [ "$Conf" == "config" ]; then
 	configFile=$OSCARS_DIST/$Service/$Conf/$Yaml
 fi
 #echo "The config file location is $configFile"
+
+if [ -z $configFile ] || [ ! -f $configFile ]; then
+	echo "The configuration file is not found. You may have to:"
+	echo "  1. Rerun this script after running copyTemplates.sh and/or bin/exportconfig"
+	echo "  2. alternatively, look up the local domain used in $OSCARS_HOME/Utils/conf/config.yaml (if present)"
+	exit 1
+fi
 
 SVCFND=0
 CONTFND=0
