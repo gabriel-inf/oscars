@@ -375,25 +375,26 @@ public class SubscribeManager05 {
     }
     
     /**
-     * Given a subscription reference, verify its one we made
+     * Given a subscription reference, return domain that owns it or null
      * 
      */
-    public boolean validateSubscription(W3CEndpointReference subRef){
+    public String validateSubscription(W3CEndpointReference subRef){
         if(subRef == null){
-            return false;
+            return null;
         }
         
         String subRefAddr = this.getAddress(subRef);
         String subRefId = this.get05SubscriptionId(subRef);
-        for(W3CEndpointReference mySubRef : this.subscriptionIdMap.values()){
+        for(String domainId : this.subscriptionIdMap.keySet()){
+            W3CEndpointReference mySubRef = this.subscriptionIdMap.get(domainId);
             String mySubRefAddr = this.getAddress(mySubRef);
             String mySubRefId = this.get05SubscriptionId(mySubRef);
             if(subRefId.equals(mySubRefId) && mySubRefAddr.equals(subRefAddr)){
-                return true;
+                return domainId;
             }
         }
         
-        return false;
+        return null;
     }
     
     private String getAddress(W3CEndpointReference epr){

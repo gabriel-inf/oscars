@@ -81,8 +81,9 @@ public class OSCARSNotify05SoapHandler implements OSCARSNotifyOnly{
                         "Received empty 0.5 Notify message"));
                 return;
             }
-            if(!SubscribeManager05.getInstance().validateSubscription(
-                    notify.getNotificationMessage().get(0).getSubscriptionReference())){
+            String subscripDomainId = SubscribeManager05.getInstance().validateSubscription(
+                    notify.getNotificationMessage().get(0).getSubscriptionReference());
+            if(subscripDomainId == null){
                 LOG.error(netLogger.error(event, ErrSev.MAJOR,
                     "Invalid subscription ID in message"));
                 return;
@@ -95,10 +96,22 @@ public class OSCARSNotify05SoapHandler implements OSCARSNotifyOnly{
             //We already validated the subscription id, so we'll set a role
             //this requires a server wanting to talk to 0.5 to have the OSCARS-Service role
             SubjectAttributes subjectAttributes = new SubjectAttributes();
-            AttributeType attribute = new AttributeType();
-            attribute.setName(AuthZConstants.ROLE);
-            attribute.getAttributeValue().add("OSCARS-service");
-            subjectAttributes.getSubjectAttribute().add(attribute);
+            AttributeType roleAttr = new AttributeType();
+            roleAttr.setName(AuthZConstants.ROLE);
+            roleAttr.getAttributeValue().add("OSCARS-service");
+            subjectAttributes.getSubjectAttribute().add(roleAttr);
+            
+            //Another hack. The login-id must be the same as the domain id
+            AttributeType loginAttr = new AttributeType();
+            loginAttr.setName(AuthZConstants.LOGIN_ID);
+            loginAttr.getAttributeValue().add(subscripDomainId);
+            subjectAttributes.getSubjectAttribute().add(loginAttr);
+            
+           //Another hack. The institution must be the same as the domain id
+            AttributeType instAttr = new AttributeType();
+            instAttr.setName(AuthZConstants.INSTITUTION);
+            instAttr.getAttributeValue().add(subscripDomainId);
+            subjectAttributes.getSubjectAttribute().add(instAttr);
             
             CoordClient coordClient = OSCARSIDC.getInstance().getCoordClient();
             Object[] req = new Object[]{subjectAttributes,interDomain06};

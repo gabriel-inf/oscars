@@ -18,6 +18,7 @@ import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.resourceManager.beans.Reservation;
 import net.es.oscars.utils.sharedConstants.AuthZConstants;
+import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 
@@ -854,11 +855,21 @@ public class DataTranslator05 {
         if(idcEvent05.getResDetails() != null){
             interDomainEventContent.setResDetails(DataTranslator05.translate(idcEvent05.getResDetails()));
         }
-        interDomainEventContent.setType(idcEvent05.getType());
         interDomainEventContent.setErrorCode(idcEvent05.getErrorCode());
         interDomainEventContent.setErrorMessage(idcEvent05.getErrorMessage());
         interDomainEventContent.setErrorSource(idcEvent05.getErrorSource());
         
+        //Translate even types that have changed between 0.5 and 0.6
+        if(idcEvent05.getType() == null){
+            throw new OSCARSServiceException("Unable to translate v05 Notify: " +
+            "Unable to find idc:event/type in message");
+        }else if(NotifyRequestTypes.RESV_CREATE_CONFIRMED.equals(idcEvent05.getType())){
+            interDomainEventContent.setType(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED);
+        }else if(NotifyRequestTypes.RESV_MODIFY_CONFIRMED.equals(idcEvent05.getType())){
+            interDomainEventContent.setType(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED);
+        }else{
+            interDomainEventContent.setType(idcEvent05.getType());
+        }
         return interDomainEventContent;
     }
 
