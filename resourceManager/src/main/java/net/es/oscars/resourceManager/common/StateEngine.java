@@ -111,6 +111,7 @@ public class StateEngine {
         String retStatus = newStatus;
         if (newStatus.equals(status)) {
             // no-ops always allowed
+            allowed = true;
         } else if (newStatus.equals("SUBMITTED")) {
             throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                              "SUBMITTED is no longer a valid state value. It is replaced by " +

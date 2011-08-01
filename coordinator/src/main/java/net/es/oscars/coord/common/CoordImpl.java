@@ -424,7 +424,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             // check that requested modifications are allowed
             String resState = resDetails.getStatus();
             Long curtime = System.currentTimeMillis()/1000L;
-            if (inputUC.getBandwidth() != modUC.getBandwidth()) {
+            if ( (inputUC.getBandwidth() != 0 )&&
+                    (inputUC.getBandwidth() != modUC.getBandwidth())) {
                 if ( !resState.equals(StateEngineValues.RESERVED)) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "Cannot change bandwidth of " +
@@ -433,36 +434,36 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                 }
                 modUC.setBandwidth(inputUC.getBandwidth());
             }
-
+            // the WBUI only keeps times in minutes and always inputs time values even if they were not changed
             if ((inputUC.getStartTime() != 0) &&
-                    (inputUC.getStartTime() != modUC.getStartTime())) {
+                    ((inputUC.getStartTime() > modUC.getStartTime() + 61) ||
+                    (inputUC.getStartTime() < modUC.getStartTime() - 61)))  {
                 if ( !resState.equals(StateEngineValues.RESERVED)) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "Cannot change start time of " +
                                                      resState + " reservation",
                                                      ErrorReport.USER);
-                }
-                if (inputUC.getStartTime() <= curtime) {
-                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
-                                                    "requested start time in the past",
-                                                    ErrorReport.USER);
+                } else {
+                    if (inputUC.getStartTime() <= curtime) {
+                        inputUC.setStartTime(curtime);
+                    }
                 }
                 modUC.setStartTime(inputUC.getStartTime());
             }
-
+            // the WBUI only keeps times in minutes and always inputs time values even if they were not changed
             if ( (inputUC.getEndTime() != 0) &&
-                    (inputUC.getEndTime() != modUC.getEndTime()))  {
+                    ((inputUC.getEndTime() > modUC.getEndTime() + 61) ||
+                    (inputUC.getEndTime() < modUC.getEndTime() - 61)))  {
                 if ( !resState.equals(StateEngineValues.RESERVED)  &&
                      !resState.equals(StateEngineValues.ACTIVE)   ) {
                     throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
                                                     "Cannot change end time of " +
                                                        resState + " reservation",
                                                     ErrorReport.USER);
-                }
-                if (inputUC.getEndTime() <= curtime) {
-                    throw new OSCARSServiceException(ErrorCodes.INVALID_PARAM,
-                                                    "requested end time in the past",
-                                                    ErrorReport.USER);
+                } else {
+                    if (inputUC.getEndTime() <= curtime) {
+                        inputUC.setEndTime(curtime);
+                    }
                 }
                 modUC.setEndTime(inputUC.getEndTime());
             }
@@ -487,12 +488,17 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                                              loginName,
                                                                              authDecision.getConditions(),
                                                                              modifyResvReq);
+             // save original description if no new one is input
+            if (request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE).equals("")) {
+                request.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE, resDetails.getDescription());
+            }
+            // this is the current reservation state, not INMODIFY
+            request.setAttribute(CoordRequest.STATE_ATTRIBUTE,resDetails.getStatus());
             request.execute();
             if (request.getState() == CoordAction.State.FAILED) {
                 request.logError();
                 throw request.getException();
             }
-            // TODO change ModResReply to just have a status, since the modification is only queued at this point
             modifyReply = request.getResultData();
         } catch (OSCARSServiceException ex) {
             // session = null, no database connected

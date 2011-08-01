@@ -226,7 +226,7 @@ public class QueryReservation extends HttpServlet {
         String sanitized = resv.getDescription().replace("<", "");
         String sanitized2 = sanitized.replace(">", "");
         outputMap.put("descriptionReplace", sanitized2);
-
+        //outputMap.put("modifyDescription", sanitized2);
         outputMap.put("modifyStartSeconds", uConstraint.getStartTime());
         outputMap.put("modifyEndSeconds", uConstraint.getEndTime());
         outputMap.put("createdTimeConvert", resv.getCreateTime());

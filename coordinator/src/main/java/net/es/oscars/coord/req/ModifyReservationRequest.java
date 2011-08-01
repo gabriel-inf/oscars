@@ -87,7 +87,6 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
         netLogger.setGRI(this.getGRI());
         LOG.debug(netLogger.start(method));
 
-        ResDetails resDetails = null;
         try {
             /* Call resource Manager to do its part of modifyReservation and return the resDetails
              * for the reservation. It will set the new state to INMODIFY
@@ -104,18 +103,10 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
                 this.notifyError("No response from ResourceManager", this.getGRI());
                 throw new OSCARSServiceException ("No response from ResourceManager");
             }
-            ModifyResReply response = (ModifyResReply) res [0];
-            resDetails = response.getReservation();
-            String state = resDetails.getStatus();
-            if (request.getDescription().equals("")) {
-                this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE,resDetails.getDescription());
-            } else {
-                this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE,request.getDescription());
-            }
-            // this is the previous state, not INMODIFY
-            this.setAttribute(CoordRequest.STATE_ATTRIBUTE, state);
+            ModifyResReply response = (ModifyResReply) res [0];;
             this.setResultData(response);
-            LOG.debug(netLogger.getMsg(method,"received cancel for reservation in state " + state));
+            LOG.debug(netLogger.getMsg(method,"received modify for reservation in state " +
+                                       response.getStatus()));
 
             PCERuntimeAction pceRuntimeAction = new PCERuntimeAction (this.getName() + "-Modify-PCERuntimeAction",
                                                                       this,
@@ -130,16 +121,12 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
 
             pceRuntimeAction.setRequestData(pceData);
 
-            this.add(pceRuntimeAction);
+             this.add(pceRuntimeAction);
             this.executed();
 
         } catch (OSCARSServiceException ex ) {
             LOG.debug(netLogger.error(method, ErrSev.MINOR, "caught OSCARSServiceException "+ ex.getMessage()));
-            if (resDetails != null) {
-                this.notifyError (method + "caught Exception: " +ex.getMessage(),resDetails);
-            } else {
-                this.notifyError (method + "caught Exception: " +ex.getMessage(),this.getGRI());
-            }
+            this.notifyError (method + "caught Exception: " +ex.getMessage(),this.getGRI());
             this.fail(new OSCARSServiceException(method + "caught Exception: " +ex.getMessage(), "user"));
         } catch (Exception ex ) {
             String message = ex.getMessage();
@@ -147,11 +134,7 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
                 message = ex.toString();
             }
             LOG.debug(netLogger.error(method, ErrSev.MINOR, "caught Exception "+ message));
-            if (resDetails != null) {
-                this.notifyError (method + "caught Exception: " +ex.getMessage(),resDetails);
-            } else {
-                this.notifyError (method + "caught Exception: " +ex.getMessage(),this.getGRI());
-            }
+            this.notifyError (method + "caught Exception: " +ex.getMessage(),this.getGRI());
             this.fail (new OSCARSServiceException(method + "caught Exception: " +message, "system"));
         }
         LOG.debug(netLogger.end(method));

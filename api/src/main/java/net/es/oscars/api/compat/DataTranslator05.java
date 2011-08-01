@@ -52,7 +52,7 @@ public class DataTranslator05 {
         }else{
             throw new OSCARSServiceException("Unable to translate v05.CreateReply: status is null");
         }
-        
+        /*
         if (createReply05.getPathInfo() != null) {
             reservedConstraint06.setPathInfo(translate(createReply05.getPathInfo()));
             userRequestConstraint06.setPathInfo(translate(createReply05.getPathInfo()));
@@ -62,7 +62,7 @@ public class DataTranslator05 {
         
         createReply06.setReservedConstraint(reservedConstraint06);
         createReply06.setUserRequestConstraint(userRequestConstraint06);
-        
+        */
         // These elements may be null
         createReply06.setToken(createReply05.getToken());
 
@@ -89,10 +89,11 @@ public class DataTranslator05 {
         if (createReply06.getToken() != null) {
             createReply05.setToken(createReply06.getToken());
         }
+        /*
         if (createReply06.getReservedConstraint().getPathInfo() != null) {
             createReply05.setPathInfo(translate(createReply06.getReservedConstraint().getPathInfo()));
         }
-
+        */
         return createReply05;
     }
 
@@ -498,8 +499,8 @@ public class DataTranslator05 {
         net.es.oscars.api.soap.gen.v05.ModifyResReply modifyResReply05 = new net.es.oscars.api.soap.gen.v05.ModifyResReply();
         ResDetails resDetails = new ResDetails();
 
-        try {   // These elements are required
-            resDetails.setBandwidth(modifyResReply06.getReservation().getReservedConstraint().getBandwidth());
+        try {   // These elements are required  u 05 but no longer returned by 06
+            /* resDetails.setBandwidth(modifyResReply06.getReservation().getReservedConstraint().getBandwidth());
             resDetails.setCreateTime(modifyResReply06.getReservation().getCreateTime());
             resDetails.setDescription(modifyResReply06.getReservation().getDescription());
             resDetails.setLogin(modifyResReply06.getReservation().getLogin());
@@ -507,7 +508,9 @@ public class DataTranslator05 {
             resDetails.setEndTime(modifyResReply06.getReservation().getReservedConstraint().getEndTime());
             resDetails.setStatus(modifyResReply06.getReservation().getStatus());
             resDetails.setPathInfo(translate(modifyResReply06.getReservation().getReservedConstraint().getPathInfo()));
-
+             */
+            resDetails.setStatus(modifyResReply06.getStatus());
+            resDetails.setGlobalReservationId(modifyResReply06.getGlobalReservationId());
             modifyResReply05.setReservation(resDetails);
         } catch (Exception e) {
             throw new OSCARSServiceException("Unable to translate v06 ModifyResReply");
@@ -518,30 +521,33 @@ public class DataTranslator05 {
     public static net.es.oscars.api.soap.gen.v06.ModifyResReply translate(net.es.oscars.api.soap.gen.v05.ModifyResReply modifyResReply05)
             throws OSCARSServiceException {
         net.es.oscars.api.soap.gen.v06.ModifyResReply modifyResReply06 = new net.es.oscars.api.soap.gen.v06.ModifyResReply();
-        net.es.oscars.api.soap.gen.v06.ResDetails resDetails06 = new net.es.oscars.api.soap.gen.v06.ResDetails();
-        net.es.oscars.api.soap.gen.v06.ReservedConstraintType reservedConstraint06 = new net.es.oscars.api.soap.gen.v06.ReservedConstraintType();
-        net.es.oscars.api.soap.gen.v06.UserRequestConstraintType userRequestConstraint06 = new net.es.oscars.api.soap.gen.v06.UserRequestConstraintType();
+        //net.es.oscars.api.soap.gen.v06.ResDetails resDetails06 = new net.es.oscars.api.soap.gen.v06.ResDetails();
+        //net.es.oscars.api.soap.gen.v06.ReservedConstraintType reservedConstraint06 = new net.es.oscars.api.soap.gen.v06.ReservedConstraintType();
+        //net.es.oscars.api.soap.gen.v06.UserRequestConstraintType userRequestConstraint06 = new net.es.oscars.api.soap.gen.v06.UserRequestConstraintType();
         MessagePropertiesType msgProps = new MessagePropertiesType();
         SubjectAttributes originator = new SubjectAttributes();
         AttributeType attr = new AttributeType();
 
         try {    // These elements are required
-            resDetails06.setGlobalReservationId(modifyResReply05.getReservation().getGlobalReservationId());
+            modifyResReply06.setGlobalReservationId(modifyResReply05.getReservation().getGlobalReservationId());
+            modifyResReply06.setStatus(modifyResReply05.getReservation().getStatus());
+
+            /*  no longer needed
             resDetails06.setDescription(modifyResReply05.getReservation().getDescription());
-            resDetails06.setStatus(modifyResReply05.getReservation().getStatus());
-            resDetails06.setCreateTime(modifyResReply05.getReservation().getCreateTime());
-            resDetails06.setLogin(modifyResReply05.getReservation().getLogin());
+            resDetails.setCreateTime(modifyResReply05.getReservation().getCreateTime());
+            resDetails.setLogin(modifyResReply05.getReservation().getLogin());
 
             userRequestConstraint06.setBandwidth(modifyResReply05.getReservation().getBandwidth());
             userRequestConstraint06.setStartTime(modifyResReply05.getReservation().getStartTime());
             userRequestConstraint06.setEndTime(modifyResReply05.getReservation().getEndTime());
             userRequestConstraint06.setPathInfo(translate(modifyResReply05.getReservation().getPathInfo()));
             resDetails06.setUserRequestConstraint(userRequestConstraint06);
+            */
         } catch (Exception e) {
             throw new OSCARSServiceException("Unable to translate v05 ModifyResReply");
         }
 
-        // These elements may be null
+        /* These elements no longer used
         if (modifyResReply05.getReservation().getPathInfo() != null) {
             reservedConstraint06.setPathInfo(translate(modifyResReply05.getReservation().getPathInfo()));
         }
@@ -554,7 +560,7 @@ public class DataTranslator05 {
         resDetails06.setReservedConstraint(reservedConstraint06);
 
         modifyResReply06.setReservation(resDetails06);
-
+        */
         String transId = PathTools.getLocalDomainId() + "-V05-" + UUID.randomUUID().toString();
         msgProps.setGlobalTransactionId(transId);
 

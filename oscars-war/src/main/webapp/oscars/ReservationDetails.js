@@ -71,6 +71,7 @@ oscars.ReservationDetails.postModify = function () {
     var bandwidth = dojo.byId("bandwidthReplace").innerHTML;
     formNode.modifyBandwidth.value = bandwidth;
     var description = dojo.byId("descriptionReplace").innerHTML;
+    //var description = dojo.byId("newDescription").innerHTML;
     formNode.modifyDescription.value = description;
     dojo.xhrPost({
         url: 'servlet/ModifyReservation',
@@ -156,6 +157,8 @@ oscars.ReservationDetails.cloneReservation = function () {
     // copy fields from reservation details form to reservation creation form
     var node = dojo.byId("descriptionReplace");
     dijit.byId("reservationDescription").setValue(node.innerHTML);
+    //var node = dojo.byId("modifyDescription");
+    //dijit.byId("reservationDescription").setValue(node.innerHTML);
     node = dojo.byId("bandwidthReplace");
     dijit.byId("bandwidth").setValue(node.innerHTML);
     node = dojo.byId("sourceReplace");
@@ -207,7 +210,7 @@ oscars.ReservationDetails.cloneReservation = function () {
         var nodes = dojo.query(".destVlan");
         if (node.innerHTML == srcVlan) {
             nodes[0].style.display = "none";
-            cb.setAttribute('checked', true);
+            cb.setAttribute('Ded', true);
             dijit.byId("destVlan").setValue("");
         } else {
             nodes[0].style.display = "";
@@ -244,6 +247,7 @@ oscars.ReservationDetails.cloneReservation = function () {
 // handles all servlet replies
 oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
     oscarsState.reservationDetailsEntered = false;
+    console.log("start handleReply");
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
@@ -259,9 +263,20 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         var node1 = dojo.byId("errorReportReplace");
         node1.innerHTML = "";
         var refreshButton = dojo.byId("resvRefreshDisplay");
-        refreshButton.style.display = ""; 
+        refreshButton.style.display = "";
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
+        /*
+        console.log(responseObject);
+        var node3=dojo.byId(bandwidthReplace);
+        console.log(node3);
+        console.log(node3.value);
+        var node2 = dojo.byId("newDescription");
+        console.log(node2);
+        console.log(responseObject["modifyDescription"]);
+        node2.innerHTML=responseObject["modifyDescription"];
+        console.log(node2);
+        */
         // for displaying only layer 2 or layer 3 fields
         oscars.ReservationDetails.layerParams(responseObject);
         //oscars.ReservationDetails.errorReportParams(responseObject);
@@ -356,10 +371,10 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
             tableN.innerHTML = "";
         }
         for (i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = ""; 
+            layer2Nodes[i].style.display = "";
         }
         for (i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = "none"; 
+            layer3Nodes[i].style.display = "none";
         }
     } else {
         if (!responseObject.interPath3Replace) {
@@ -367,10 +382,10 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
             tableN.innerHTML = "";
         }
         for (i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = "none"; 
+            layer2Nodes[i].style.display = "none";
         }
         for (i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = ""; 
+            layer3Nodes[i].style.display = "";
         }
     }
 };

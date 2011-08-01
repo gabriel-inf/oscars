@@ -230,9 +230,8 @@ public final class IDCTest {
                         Object[] res = client.invoke("modifyReservation",req);
                         ModifyResReply response = (ModifyResReply) res[0];
                         LOG.debug("Response: transactionId= " +response.getMessageProperties().getGlobalTransactionId()  +
-                                "\nGRI: "  + response.getReservation().getGlobalReservationId() + " , " +
-                                response.getReservation().getStatus());
-                        printResDetails(response.getReservation());
+                                "\nGRI: "  + response.getGlobalReservationId() + " , " +
+                                response.getStatus());
                     } catch (OSCARSServiceException ex) {
                         ErrorReport errReport = ex.getErrorReport();
                         if (errReport !=null) {

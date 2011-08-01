@@ -364,13 +364,13 @@ public class RMSoapHandler implements RMPortType {
         netLogger.init(moduleName, transId);
         netLogger.setGRI(modifyReservationRequest.getGlobalReservationId());
         LOG.info(netLogger.start(event));
-        ResDetails resDetails = new ResDetails();
+        String status = null;
         ModifyResReply response = new ModifyResReply();
         ResourceManager mgr = core.getResourceManager();
         Session session = core.getSession();
         try {
             session.beginTransaction();
-            resDetails = mgr.modify(authConditions,modifyReservationRequest.getGlobalReservationId());
+            status = mgr.modify(authConditions,modifyReservationRequest.getGlobalReservationId());
         
         } catch (OSCARSServiceException ex) {
             completeErrorReport(ex,modifyReservationRequest.getGlobalReservationId(),transId);
@@ -379,7 +379,8 @@ public class RMSoapHandler implements RMPortType {
             OSCARSFaultUtils.handleError( ex, false, session, LOG, event);
         }
         session.getTransaction().commit();
-        response.setReservation(resDetails);
+        response.setGlobalReservationId(modifyReservationRequest.getGlobalReservationId());
+        response.setStatus(status);
         response.setMessageProperties(modifyReservationRequest.getMessageProperties());
         LOG.info(netLogger.end(event));
         return response;

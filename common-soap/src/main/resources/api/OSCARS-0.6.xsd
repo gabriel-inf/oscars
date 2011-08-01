@@ -88,9 +88,6 @@
             <xsd:element name="globalReservationId" type="xsd:string" />
             <xsd:element name="token" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="status" type="xsd:string" />
-            <xsd:element name="userRequestConstraint" type="tns:userRequestConstraintType" maxOccurs="1" minOccurs="1" />
-            <xsd:element name="reservedConstraint" type="tns:reservedConstraintType" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="optionalConstraint" type="tns:optionalConstraintType" maxOccurs="unbounded" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -137,7 +134,8 @@
     <xsd:complexType name="modifyResReply"> 
         <xsd:sequence>
             <xsd:element name="messageProperties" type ="authP:messagePropertiesType" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="reservation" type="tns:resDetails" />
+            <xsd:element name="globalReservationId" type="xsd:string" />
+            <xsd:element name="status" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
 

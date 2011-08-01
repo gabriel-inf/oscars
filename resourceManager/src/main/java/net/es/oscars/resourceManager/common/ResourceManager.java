@@ -570,14 +570,14 @@ public class ResourceManager {
     /**
      * modifyReservation called by Coordinator. Checks that user is authorized to modify this reservation and
      * that the reservation is in a state that allows modification.. 
-     *  returns details about the reservation to the coordinator
+     *  returns the current status of the reservation to the coordinator
      * @param authConditions AuthConditions that may include restrictions on
      *     which reservations may be modified. 
      * @param gri GlobalReservationId of reservation to be queried
-     * @return ResDetails structure for the reservation
+     * @return status
      * @throws OSCARSServiceException
      */
-    public ResDetails modify(AuthConditions authConditions,String gri) throws OSCARSServiceException{
+    public String modify(AuthConditions authConditions,String gri) throws OSCARSServiceException{
 
         String event = "mgrModifyReservation";
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
@@ -618,7 +618,7 @@ public class ResourceManager {
             }
         }// end synchronized block
         this.log.debug(netLogger.end(event));
-        return resDetails;
+        return res.getStatus();
     }
     /**
      * list returns details about the reservations that match the input constraints

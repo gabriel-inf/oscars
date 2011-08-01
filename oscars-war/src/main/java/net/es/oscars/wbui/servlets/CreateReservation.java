@@ -22,19 +22,15 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
-import net.es.oscars.utils.clients.AuthZClient;
 import net.es.oscars.utils.clients.AuthNPolicyClient;
 import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
-import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.VlanTag;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
-import net.es.oscars.api.soap.gen.v06.Layer3Info;
-import net.es.oscars.api.soap.gen.v06.MplsInfo;
 import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
@@ -61,7 +57,8 @@ public class CreateReservation extends HttpServlet {
         throws IOException, ServletException {
 
         String methodName= "CreateReservation";
-        String transId  = PathTools.getLocalDomainId() + "-WBUI-" + UUID.randomUUID().toString();
+        String transId  = PathTools.getLocalDomainId() + "-WBUI-" +
+                          UUID.randomUUID().toString();
         OSCARSNetLogger netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_WBUI,transId);
         OSCARSNetLogger.setTlogger(netLogger);
@@ -87,8 +84,7 @@ public class CreateReservation extends HttpServlet {
             this.log.warn(netLogger.error(methodName, ErrSev.MINOR,"No user session: cookies invalid"));
             return;
         }
-        String userName = sessionReply.getUserName();
-        response.setContentType("application/json");
+
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
 
         List<AttributeType> userAttributes = sessionReply.getAttributes(); 
@@ -103,7 +99,7 @@ public class CreateReservation extends HttpServlet {
         ResCreateContent createReq = null;
         String gri = null;
         try {
-            createReq = this.toReservation(userName, request);
+            createReq = this.toReservation( request);
             createReq.setMessageProperties(msgProps);
             // Send a createReservation request 
             Object[] req = new Object[]{subjectAttrs,createReq};
@@ -133,7 +129,7 @@ public class CreateReservation extends HttpServlet {
     }
 
     private ResCreateContent
-        toReservation(String userName, HttpServletRequest request)
+        toReservation(HttpServletRequest request)
            throws OSCARSServiceException {
         this.log.debug("toReservation:start");
 

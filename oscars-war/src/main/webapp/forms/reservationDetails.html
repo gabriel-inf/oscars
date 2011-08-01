@@ -103,7 +103,10 @@
   <tr><td>Status</td><td colspan="2" id="statusReplace" /></tr>
   <tr><td>User</td><td colspan="2" id="userReplace" /></tr>
   <tr><td>Description</td><td colspan="2" id="descriptionReplace" /></tr>
-  <tr>
+  <!--
+  <tr><td>Description</td><td colspan="2" i dd="newDescription" /></tr>
+  -->
+   <tr>
     <td>Start date</td>
     <td colspan="2">
         <input dojoType="dijit.form.DateTextBox" name="modifyStartDate"
@@ -136,8 +139,19 @@
   <tr>
       <td>Created time</td> <td colspan="2" id="createdTimeConvert" />
   </tr>
+  <!--
   <tr>
-      <td>Bandwidth (Mbps)</td><td colspan="2" id="bandwidthReplace" /></tr>
+      <td>Bandwidth (Mbps)</td>
+      <td colspan="2" >
+        <input type="text" name="newBandwidth" id="newBandwidth"
+          dojoType="dijit.form.NumberTextBox"
+          constraints="{min:1,max:10000,places:0}"
+          promptMessage="Enter a value between 1 and 10000"
+          invalidMessage="Invalid bandwidth." />
+      </td>
+  </tr>
+  -->
+  <tr><td>Bandwidth (Mbps)</td><td colspan="2" id="bandwidthReplace" /></tr>
   <tr><td>Source</td><td colspan="2" id="sourceReplace" /></tr>
   <tr><td>Destination</td><td colspan="2" id="destinationReplace" /></tr>
 

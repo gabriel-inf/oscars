@@ -97,12 +97,10 @@
         <servlet-name>QueryReservationStatus</servlet-name>
         <servlet-class>net.es.oscars.wbui.servlets.QueryReservationStatus</servlet-class>
     </servlet>
-    <!-- 
     <servlet>
         <servlet-name>ModifyReservation</servlet-name>
         <servlet-class>net.es.oscars.wbui.servlets.ModifyReservation</servlet-class>
     </servlet>
-     -->
     <servlet-mapping>
         <servlet-name>AuthenticateUser</servlet-name>
         <url-pattern>/servlet/AuthenticateUser</url-pattern>
@@ -187,10 +185,8 @@
         <servlet-name>QueryReservationStatus</servlet-name>
         <url-pattern>/servlet/QueryReservationStatus</url-pattern>
     </servlet-mapping>
-    <!-- 
     <servlet-mapping>
         <servlet-name>ModifyReservation</servlet-name>
         <url-pattern>/servlet/ModifyReservation</url-pattern>
     </servlet-mapping>
-    -->
 </web-app>
