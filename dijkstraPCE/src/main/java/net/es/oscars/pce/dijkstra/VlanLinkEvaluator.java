@@ -305,7 +305,8 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         
         //determine if can get remote link id
         String remoteLinkId = null;
-        if(linkMap.containsKey(currLinkId) && linkMap.get(currLinkId) != null){
+        if(linkMap.containsKey(currLinkId) && linkMap.get(currLinkId) != null && 
+                linkMap.get(currLinkId).getRemoteLinkId() != null){
             remoteLinkId = NMWGParserUtil.normalizeURN(linkMap.get(currLinkId).getRemoteLinkId());
         }
         

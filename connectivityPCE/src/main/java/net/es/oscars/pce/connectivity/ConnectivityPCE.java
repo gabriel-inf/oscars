@@ -293,13 +293,30 @@ public class ConnectivityPCE {
         }
         
         //create topology
+        String prevNodeId = null;
+        CtrlPlaneLinkContent prevLink = null;
         NMWGTopoBuilder topoBuilder = new NMWGTopoBuilder();
         for(CtrlPlaneHopContent hop : path.getHop()){
             //path during commit must have links so no need for extra checks
             if(hop.getLink() == null){
                 throw new OSCARSServiceException("Received path during commit phase with no link object in hop");
             }
+            //make sure the remoteLinkId is set since no implied order in topology element
+            String currNodeId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop, NMWGParserUtil.NODE_TYPE));
+            if(prevLink != null && prevLink.getRemoteLinkId() == null && 
+                    !currNodeId.equals(prevNodeId)){
+                prevLink.setRemoteLinkId(NMWGParserUtil.getURN(hop, NMWGParserUtil.LINK_TYPE));
+                hop.getLink().setRemoteLinkId(NMWGParserUtil.getURN(prevLink.getId(), NMWGParserUtil.LINK_TYPE));
+            }else if(prevLink != null && prevLink.getRemoteLinkId() == null){
+                prevLink.setRemoteLinkId("urn:ogf:network:*:*:*:*");
+            }
             topoBuilder.addLink(hop.getLink());
+            prevNodeId = currNodeId;
+            prevLink = hop.getLink();
+        }
+        //if last link remoteLinkId is not set then set to wildcard
+        if(prevLink != null && prevLink.getRemoteLinkId() == null){
+            prevLink.setRemoteLinkId("urn:ogf:network:*:*:*:*");
         }
         pceData.setTopology(topoBuilder.getTopology());
         
