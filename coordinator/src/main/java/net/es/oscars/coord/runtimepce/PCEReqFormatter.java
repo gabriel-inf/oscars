@@ -1,6 +1,8 @@
 package net.es.oscars.coord.runtimepce;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import net.es.oscars.api.soap.gen.v06.PathInfo;
@@ -58,14 +60,18 @@ public class PCEReqFormatter {
             return pathConstraint;
         }
         //build maps
+        HashMap<String, List<CtrlPlaneLinkContent>> domainMap = new HashMap<String, List<CtrlPlaneLinkContent>>();
         HashMap<String, CtrlPlaneNodeContent> nodeMap = new HashMap<String, CtrlPlaneNodeContent>();
         HashMap<String, CtrlPlaneLinkContent> linkMap = new HashMap<String, CtrlPlaneLinkContent>();
         for(CtrlPlaneDomainContent domain : topo.getDomain()){
+            List<CtrlPlaneLinkContent> domainLinks = new ArrayList<CtrlPlaneLinkContent>();
+            domainMap.put(NMWGParserUtil.normalizeURN(domain.getId()), domainLinks);
             for(CtrlPlaneNodeContent node : domain.getNode()){
                 nodeMap.put(NMWGParserUtil.normalizeURN(node.getId()), node);
                 for(CtrlPlanePortContent port : node.getPort()){
                     for(CtrlPlaneLinkContent link : port.getLink()){
                         linkMap.put(NMWGParserUtil.normalizeURN(link.getId()), link);
+                        domainLinks.add(link);
                     }
                 }
             }
@@ -83,9 +89,12 @@ public class PCEReqFormatter {
             path.getHop().add(this.createHop(currLink));
             String remoteLinkId = NMWGParserUtil.normalizeURN(currLink.getRemoteLinkId());
             String nodeId = null;
+            String domainId = null;
             try {
                 nodeId = NMWGParserUtil.normalizeURN(
                         NMWGParserUtil.getURN(currLinkId, NMWGParserUtil.NODE_TYPE));
+                domainId = NMWGParserUtil.normalizeURN(
+                        NMWGParserUtil.getURN(currLinkId, NMWGParserUtil.DOMAIN_TYPE));
             } catch (OSCARSServiceException e) {
                 throw new RuntimeException(e);
             }
@@ -101,8 +110,17 @@ public class PCEReqFormatter {
                         break;
                     }
                 }
-            }else{
-                break;
+            }
+            
+            //treat the domain like a node if domain only has two hops and no other options
+            if(currLinkId == null && domainMap.containsKey(domainId) && domainMap.get(domainId).size() == 2){
+                for(CtrlPlaneLinkContent link : domainMap.get(domainId)){
+                    String tmpLinkId = NMWGParserUtil.normalizeURN(link.getId());
+                    if(linkMap.containsKey(tmpLinkId)){
+                        currLinkId = tmpLinkId;
+                        break;
+                    }
+                }
             }
         }
         
