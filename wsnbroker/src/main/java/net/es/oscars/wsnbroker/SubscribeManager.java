@@ -55,7 +55,8 @@ public class SubscribeManager {
         this.defaultExpiration = defaultExpiration;
     }
     
-    public SubscribeResponse create(Subscribe subscribe, SubjectAttributes subjAttrs) throws OSCARSServiceException{
+    public SubscribeResponse create(Connection conn, Subscribe subscribe, 
+            SubjectAttributes subjAttrs) throws OSCARSServiceException{
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         this.log.debug(netLogger.start("SubscribeManager.create"));
         SubscribeResponse subscribeResponse = new SubscribeResponse();
@@ -156,8 +157,6 @@ public class SubscribeManager {
         
         //insert into database
         try {
-            Connection conn = NotificationGlobals.getInstance().getConnection();
-            
             //insert subscriptions
             PreparedStatement subscripInsert = conn.prepareStatement("INSERT INTO " +
                     "subscriptions VALUES(DEFAULT, ?, ?, ?, ?, ?, ?)", 
@@ -494,7 +493,7 @@ public class SubscribeManager {
         return topics;
     }
     
-    public void changeStatus(W3CEndpointReference epr, int newStatus, 
+    public void changeStatus(Connection conn, W3CEndpointReference epr, int newStatus, 
             SubjectAttributes subjAttrs, AuthConditions authConds) throws OSCARSServiceException {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         this.log.debug(netLogger.start("SubscribeManager.changeStatus"));
@@ -506,7 +505,6 @@ public class SubscribeManager {
         }
         try{
             PreparedStatement updateSQL = null;
-            Connection conn = NotificationGlobals.getInstance().getConnection();
             //ALL is special case that modifies all subscriptions belonging to a user
             if("ALL".equals(subscriptionId)){
                 String userLogin = null;
@@ -558,14 +556,13 @@ public class SubscribeManager {
         
     }
 
-    public RenewResponse renew(String subscriptionId, String reqTermTime, 
+    public RenewResponse renew(Connection conn, String subscriptionId, String reqTermTime, 
             AuthConditions authConds) throws OSCARSServiceException{
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         this.log.debug(netLogger.start("SubscribeManager.renew"));
         RenewResponse renewResponse = new RenewResponse();
         renewResponse.setSubscriptionReference(WSAddrParser.createAddress(subscriptionId));
         try{
-            Connection conn = NotificationGlobals.getInstance().getConnection();
             PreparedStatement querySQL = conn.prepareStatement("SELECT id, userLogin FROM subscriptions WHERE referenceId=?");
             querySQL.setString(1, subscriptionId);
             ResultSet queryResult = querySQL.executeQuery();

@@ -222,8 +222,18 @@ public class NotificationGlobals {
         return instance;
     }
     
-    synchronized public Connection getConnection() throws SQLException{
-        return dataSource.getConnection();
+    public Connection getConnection() throws OSCARSServiceException{
+        OSCARSNetLogger netLog = OSCARSNetLogger.getTlogger();
+        Connection conn = null;
+        try{
+            this.log.debug(netLog.start("getConnection"));
+            conn = this.dataSource.getConnection();
+        }catch(SQLException e){
+            this.log.debug(netLog.end("getConnection", ErrSev.CRITICAL, e.getMessage()));
+            throw new OSCARSServiceException("Error connecting to the local subscription database.");
+        }
+        this.log.debug(netLog.end("getConnection"));
+        return conn;
     }
 
     public Scheduler getScheduler() {
@@ -333,5 +343,17 @@ public class NotificationGlobals {
             throw new OSCARSServiceException(e.getMessage());
         }
         this.log.debug(netLog.end("initAuthZClient"));
+    }
+    
+    /**
+     * Closes a DB connection when finished with it.
+     * @param conn
+     */
+    public void releaseDbConnection(Connection conn){
+        if(conn != null){
+            try {
+                conn.close();
+            } catch (SQLException e1) {}
+        }
     }
 }

@@ -1,6 +1,7 @@
 package net.es.oscars.wsnbroker.http;
 
 import java.security.Principal;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -98,18 +99,22 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
     public void notify(Notify request)  {
         OSCARSNetLogger netLogger = this.initNetLogger();
         this.log.info(netLogger.start("NotificationSoapHandler.notify"));
+        Connection conn = null;
         try{
+            conn = this.globals.getConnection();
             SubjectAttributes subjAttrs = this.getAuthNAttributes();
             //throws exception if permission is denied
             this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.PUBLISHTO);
             for(NotificationMessageHolderType notifcation : request.getNotificationMessage()){
-                this.globals.getNotifyMgr().processNotify(notifcation);
+                this.globals.getNotifyMgr().processNotify(conn, notifcation);
             }
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.notify", ErrSev.MAJOR, e.getMessage()));
+            this.globals.releaseDbConnection(conn);
             e.printStackTrace();
             return;
         }
+        this.globals.releaseDbConnection(conn);
         this.log.info(netLogger.end("NotificationSoapHandler.notify"));
         
     }
@@ -127,18 +132,21 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
         OSCARSNetLogger netLogger = this.initNetLogger();
         this.log.info(netLogger.start("NotificationSoapHandler.subscribe"));
         SubscribeResponse response = new SubscribeResponse();
+        Connection conn = null;
         try{
+            conn = this.globals.getConnection();
             SubjectAttributes subjAttrs = this.getAuthNAttributes();
             //throws exception if permission is denied
             this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.CREATE);
-            response = this.globals.getSubscribeMgr().create(request, 
+            response = this.globals.getSubscribeMgr().create(conn, request, 
                     subjAttrs);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.subscribe", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
+            this.globals.releaseDbConnection(conn);
             throw new SubscribeCreationFailedFault(e.getMessage());
         }
-        
+        this.globals.releaseDbConnection(conn);
         this.log.info(netLogger.end("NotificationSoapHandler.subscribe"));
         return response;
     }
@@ -149,18 +157,22 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
         OSCARSNetLogger netLogger = this.initNetLogger();
         this.log.info(netLogger.start("NotificationSoapHandler.unsubscribe"));
         UnsubscribeResponse response = new UnsubscribeResponse();
+        Connection conn = null;
         try{
+            conn = this.globals.getConnection();
             SubjectAttributes subjAttrs = this.getAuthNAttributes();
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
             response.setSubscriptionReference(request.getSubscriptionReference());   
-            this.globals.getSubscribeMgr().changeStatus(request.getSubscriptionReference(), 
+            this.globals.getSubscribeMgr().changeStatus(conn, request.getSubscriptionReference(), 
                     SubscriptionStatus.INACTIVE_STATUS, subjAttrs, authConds);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.unsubscribe", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
+            this.globals.releaseDbConnection(conn);
             throw new UnableToDestroySubscriptionFault(e.getMessage());
         }
+        this.globals.releaseDbConnection(conn);
         this.log.info(netLogger.end("NotificationSoapHandler.unsubscribe"));
         
         return response;
@@ -171,19 +183,23 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
         OSCARSNetLogger netLogger = this.initNetLogger();
         this.log.info(netLogger.start("NotificationSoapHandler.renew"));
         RenewResponse response = new RenewResponse();
+        Connection conn = null;
         try{
+            conn = this.globals.getConnection();
             SubjectAttributes subjAttrs = this.getAuthNAttributes();
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
-            response = this.globals.getSubscribeMgr().renew(
+            response = this.globals.getSubscribeMgr().renew(conn,
                     WSAddrParser.getAddress(request.getSubscriptionReference()), 
                     request.getTerminationTime(), authConds);
 
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.renew", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
+            this.globals.releaseDbConnection(conn);
             throw new ResourceUnknownFault(e.getMessage());
         }
+        this.globals.releaseDbConnection(conn);
         this.log.info(netLogger.end("NotificationSoapHandler.renew"));
      
         return response;
@@ -195,18 +211,22 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
         this.log.info(netLogger.start("NotificationSoapHandler.pauseSubscription"));
         
         PauseSubscriptionResponse response = new PauseSubscriptionResponse();
+        Connection conn = null;
         try{
+            conn = this.globals.getConnection();
             SubjectAttributes subjAttrs = this.getAuthNAttributes();
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
             response.setSubscriptionReference(request.getSubscriptionReference());   
-            this.globals.getSubscribeMgr().changeStatus(request.getSubscriptionReference(), 
+            this.globals.getSubscribeMgr().changeStatus(conn, request.getSubscriptionReference(), 
                     SubscriptionStatus.PAUSED_STATUS, subjAttrs, authConds);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.pauseSubscription", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
+            this.globals.releaseDbConnection(conn);
             throw new PauseFailedFault(e.getMessage());
         }
+        this.globals.releaseDbConnection(conn);
         this.log.info(netLogger.end("NotificationSoapHandler.pauseSubscription"));
         return response;
     }
@@ -217,18 +237,22 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
         this.log.info(netLogger.start("NotificationSoapHandler.resumeSubscription"));
         
         ResumeSubscriptionResponse response = new ResumeSubscriptionResponse();
+        Connection conn = null;
         try{
+            conn = this.globals.getConnection();
             SubjectAttributes subjAttrs = this.getAuthNAttributes();
             AuthConditions authConds =
                 this.authzOp(subjAttrs, AuthZConstants.SUBSCRIPTIONS, AuthZConstants.MODIFY);
             response.setSubscriptionReference(request.getSubscriptionReference());
-            this.globals.getSubscribeMgr().changeStatus(request.getSubscriptionReference(), 
+            this.globals.getSubscribeMgr().changeStatus(conn, request.getSubscriptionReference(), 
                     SubscriptionStatus.ACTIVE_STATUS, subjAttrs, authConds);
         }catch(Exception e){
             this.log.error(netLogger.error("NotificationSoapHandler.resumeSubscription", ErrSev.MAJOR, e.getMessage()));
             e.printStackTrace();
+            this.globals.releaseDbConnection(conn);
             throw new ResumeFailedFault(e.getMessage());
         }
+        this.globals.releaseDbConnection(conn);
         this.log.info(netLogger.end("NotificationSoapHandler.resumeSubscription"));
         
         return response;

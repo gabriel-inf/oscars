@@ -34,7 +34,7 @@ import org.quartz.SimpleTrigger;
 public class NotifyManager {
     Logger log = Logger.getLogger(NotifyManager.class);
     
-    public void processNotify(NotificationMessageHolderType notification) throws OSCARSServiceException{
+    public void processNotify(Connection conn, NotificationMessageHolderType notification) throws OSCARSServiceException{
         OSCARSNetLogger netLog = OSCARSNetLogger.getTlogger();
         this.log.debug(netLog.start("processNotify"));
         HashMap<String,String> netLogProps = new HashMap<String,String>();
@@ -67,8 +67,6 @@ public class NotifyManager {
         }
         topicQuery += ")";
         try{
-            Connection conn = NotificationGlobals.getInstance().getConnection();
-            
             //Query Based on Topic
             PreparedStatement topicStmt = conn.prepareStatement(topicQuery);
             int topicStmtIndex = 0;
