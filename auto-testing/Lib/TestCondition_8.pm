@@ -24,17 +24,16 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 my $tester = new Lib::Tester;
 
 # Seconds to sleep between checks for state changes
-our $SLEEP = 30;
+our $SLEEP = 15;
 
 # Number of times to check for state changes
-our $COUNT = 10;
+our $COUNT = 4;
 
 # Start time can be 'no' or a number of minutes in the future.
-#our $STARTTIME = 'now';
-our $STARTTIME = 3;
+our $STARTTIME = 'now';
 
 # End time is reservation duration.
-our $ENDTIME = '+00:00:10';
+our $ENDTIME = '+00:00:03';
 
 
 sub multi_test_8_1
@@ -51,7 +50,7 @@ sub multi_test_8_2
 	# Test Scenario (8.2)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : translation and no-translation : intra-domain and inter-domain paths : :schedule-for-ten-thousand-circuits : continue-random-execution-and-monitor  
 	
-	_do_test("_scenario_2", 10000);
+	_do_test("_scenario_2", 10);
 }
 
 
@@ -104,7 +103,7 @@ sub _do_test
 		$c++;
 	}
 
-    $tester->multi_test(@arr);
+    $tester->multi_create(@arr);
 }
 
 

@@ -27,6 +27,83 @@ our $COUNT = 30;
 our $NAME = "Tester";
 
 
+# Create a reservation and do not monitor.
+sub reserve 
+{
+	my $self = shift;
+	my %params = @_;
+	my $parser = new Lib::TopologyUtils;
+	my $client = new Lib::OscarsClientUtils;
+	my $yamlFile = $self->name . "_" . __get_rand() . ".yaml";
+	my $logFile = $params{'testName'} . ".log";
+	my $result;
+
+
+	$Lib::OscarsClientUtils::Debugging = 0;
+
+	my $name = $params{'testName'};
+	my $src = $params{'src'}; 
+	my $srcVlan = $params{'srcVlan'}; 
+	my $dst = $params{'dst'}; 
+	my $dstVlan = $params{'dstVlan'}; 
+	my $count = exists($params{'count'}) ? $params{'count'} : 60;
+	my $startTime = exists($params{'startTime'}) ? $params{'startTime'} : 'now';
+	my $endTime = exists($params{'endTime'}) ? $params{'endTime'} : '+00:00:12';
+	my $bandwidth = exists($params{'bandwidth'}) ? $params{'bandwidth'} : '100';
+
+	# Set parameters
+	$client->writeYaml(yamlFile => $yamlFile, testName => $name, 
+			src => $src, dst => $dst, srcVlan => $srcVlan, dstVlan => $dstVlan,
+			bandwidth => $bandwidth, startTime => $startTime, endTime => $endTime);
+	# Run test
+	$result = $client->reserve(yamlFile => $yamlFile, topology => $params{'topology'}, 
+			logFile => $logFile, testName => $name, src => $src, 
+			dst => $dst, result => $params{'expectedResult'}, count => $count);
+
+	return $result;
+}
+
+
+# Call reserve several times
+sub multi_create
+{
+	my $self = shift;
+	my @arr = @_;
+	my @children;
+	my $len = $#arr + 1;
+	my $sleepMax = 1;
+
+	for (my $i = 0; $i < $len; $i++) {
+		#sleep(int(rand($sleepMax)));		
+		my %params = %{$arr[$i]};
+	
+		my $pid = fork();
+		if ($pid) {
+			push (@children, $pid);
+		} elsif ($pid == 0) {
+			my $tester = new Lib::Tester;
+
+			# create reservation, get status, cancel reservation and get status
+			#$tester->single_test(%params);
+
+			# create reservation and get status 
+			#$tester->create(%params);
+
+			# create reservation only
+			$tester->reserve(%params);
+			exit 0;
+		} else {
+			die "$NAME couldn't fork: $!\n";
+		}
+	}
+	
+	foreach (@children) {
+		my $pid = waitpid($_, 0);
+	}
+}
+
+
+# Create a reservation and monitor up to ACTIVE or FAILED
 sub create 
 {
 	my $self = shift;
@@ -64,6 +141,7 @@ sub create
 
 
 
+# Create a reservation and cancel the reservation while monitoring.
 sub single_test
 {
 	my $self = shift;
@@ -101,6 +179,7 @@ sub single_test
 }
 
 
+# Call single_test several times.
 sub multi_test
 {
 	my $self = shift;
@@ -119,36 +198,6 @@ sub multi_test
 		} elsif ($pid == 0) {
 			my $tester = new Lib::Tester;
 			$tester->single_test(%params);
-			exit 0;
-		} else {
-			die "$NAME couldn't fork: $!\n";
-		}
-	}
-	
-	foreach (@children) {
-		my $pid = waitpid($_, 0);
-	}
-}
-
-
-sub multi_create
-{
-	my $self = shift;
-	my @arr = @_;
-	my @children;
-	my $len = $#arr + 1;
-	my $sleepMax = 1;
-
-	for (my $i = 0; $i < $len; $i++) {
-		sleep(int(rand($sleepMax)));		
-		my %params = %{$arr[$i]};
-	
-		my $pid = fork();
-		if ($pid) {
-			push (@children, $pid);
-		} elsif ($pid == 0) {
-			my $tester = new Lib::Tester;
-			$tester->create(%params);
 			exit 0;
 		} else {
 			die "$NAME couldn't fork: $!\n";

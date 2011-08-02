@@ -38,5 +38,11 @@ sub run_simpletests
 
 	print "testing remote reservation\n";
 	$simpletest->test_remote();
+
+	#print "testing multi hop reservation\n";
+	#$simpletest->test_transitive();
+
+	#print "testing intra version\n";
+	#$simpletest->test_versions();
 }
 

@@ -23,17 +23,16 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 my $tester = new Lib::Tester;
 
 # Seconds to sleep between checks for state changes
-our $SLEEP = 30;
+our $SLEEP = 15;
 
 # Number of times to check for state changes
-our $COUNT = 10;
+our $COUNT = 4;
 
-# Start time can be 'no' or a number of minutes in the future.
-#our $STARTTIME = 'now';
-our $STARTTIME = 3;
+# Start time can be 'now' or a number of minutes in the future.
+our $STARTTIME = 'now';
 
 # End time is reservation duration.
-our $ENDTIME = '+00:00:10';
+our $ENDTIME = '+00:00:03';
 
 
 # This test must be run manually from testdomain-4.net to testdomain-2.net
@@ -45,9 +44,9 @@ sub single_test_6_1
 	my %testParams = (
 		testName => $NAME . "_scenario_1",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-		src => "",
+		src => "urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-3:link=link-1",
 		srcVlan => "1000",
-		dst => "",
+		dst => "urn:ogf:network:domain=testdomain-4.net:node=node-2:port=port-10:link=link-1",
 		dstVlan => "1000",
         sleep => "$SLEEP",
         count => "$COUNT",
@@ -69,9 +68,9 @@ sub single_test_6_2
 	my %testParams = (
 		testName => $NAME . "_scenario_2",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-		src => "",
+		src => "urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-5:link=link-1",
 		srcVlan => "any",
-		dst => "",
+		dst => "urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-1:link=link-1",
 		dstVlan => "any",
         sleep => "$SLEEP",
         count => "$COUNT",
@@ -124,7 +123,7 @@ sub single_test_6_4
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "$ENDTIME",
+        endTime => "00:00:06",
 		expectedResult => "CANCELLED"
 	);
 	my $result = tester->single_test(%testParams);

@@ -47,6 +47,36 @@ Log::Log4perl::init(\$log_conf);
 my $logger = Log::Log4perl::get_logger();
 
 
+# Request a reservation only
+sub reserve 
+{
+	my $self = shift;
+	my %args = validate(@_, {yamlFile => 1, topology => 1, logFile => 1, testName => 1, 
+				src => 1, dst => 1, sleep => {default => 15}, count => {default => 5}, result => 1});
+	my $gri = "";
+	my $status = "";
+
+	if ($Debugging) {
+		unlink $args{'yamlFile'};
+		$status = "Debugging";
+		return $status;
+	}
+
+	# Call createRes.sh
+	$gri = __execCreate(yamlFile => $args{'yamlFile'});
+	if ($gri eq '') {
+		$status = "execCreate() failed\n";
+		return $status;
+	}
+	print "GRI: $gri - ";
+	print strftime('%T', localtime);
+	print " - Made reservation\n";
+
+	unlink($args{'yamlFile'});
+	return $status;
+}
+
+
 # Execute createRes.sh, list.sh, cancelRes.sh and list.sh and log errors.
 # This could use some refactoring.
 sub createCancelRes
@@ -183,7 +213,8 @@ sub writeYaml
     $str .= "    path-setup-mode:    'timer-automatic'\n";
     $str .= "    srcvlan:    '$args{'srcVlan'}'\n";
     $str .= "    dstvlan:    '$args{'dstVlan'}'\n";
-    
+   
+	#print $str; 
     print FILE $str;
     close FILE;
 	return $status;
@@ -248,6 +279,7 @@ sub __execList
 }
 
 
+# Create a reservation and ensure it monitor one state transition
 sub create
 {
 	my $self = shift;

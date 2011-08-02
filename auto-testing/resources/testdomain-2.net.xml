@@ -197,10 +197,10 @@
 
             <!-- Port-8 to Node-2 limited vlan range and limited bandwitch --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-8">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-8:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-8:link=link-1</CtrlPlane:remoteLinkId>
@@ -223,10 +223,10 @@
 
             <!-- Port-9 to Node-2 limited vlan range and limited bandwitch no translation --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-9">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-9:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-9:link=link-1</CtrlPlane:remoteLinkId>
@@ -541,10 +541,10 @@
 
             <!-- Port-8 to Node-1 limited vlan range and limited bandwitch --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-8">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-8:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-8:link=link-1</CtrlPlane:remoteLinkId>
@@ -567,10 +567,10 @@
 
             <!-- Port-9 to Node-1 limited vlan range and limited bandwitch no translation --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-9">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-9:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-9:link=link-1</CtrlPlane:remoteLinkId>
@@ -859,10 +859,10 @@
 
             <!-- Port-8 to testdomain-1 limited vlan range and limited bandwitch --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-8">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-8:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-8:link=link-1</CtrlPlane:remoteLinkId>
@@ -885,10 +885,10 @@
 
             <!-- Port-9 to testdomain-1 limited vlan range and limited bandwitch no translation --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-9">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>100000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>100000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>100000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-9:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-9:link=link-1</CtrlPlane:remoteLinkId>
@@ -1125,10 +1125,10 @@
 
             <!-- Port-8 to testdomain-3 limited vlan range and limited bandwitch --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-8">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-8:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-8:link=link-1</CtrlPlane:remoteLinkId>
@@ -1151,10 +1151,10 @@
 
             <!-- Port-9 to testdomain-3 limited vlan range and limited bandwitch no translation --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-9">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-9:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-9:link=link-1</CtrlPlane:remoteLinkId>
@@ -1391,10 +1391,10 @@
 
             <!-- Port-8 to testdomain-4 limited vlan range and limited bandwitch --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-8">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-8:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-8:link=link-1</CtrlPlane:remoteLinkId>
@@ -1417,10 +1417,10 @@
 
             <!-- Port-9 to testdomain-4 limited vlan range and limited bandwitch no translation --> 
             <CtrlPlane:port id="urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-9">
-                <CtrlPlane:capacity>1000000</CtrlPlane:capacity>
-                <CtrlPlane:maximumReservableCapacity>1000000</CtrlPlane:maximumReservableCapacity>
-                <CtrlPlane:minimumReservableCapacity>1000</CtrlPlane:minimumReservableCapacity>
-                <CtrlPlane:granularity>1000</CtrlPlane:granularity>
+                <CtrlPlane:capacity>1000000000</CtrlPlane:capacity>
+                <CtrlPlane:maximumReservableCapacity>1000000000</CtrlPlane:maximumReservableCapacity>
+                <CtrlPlane:minimumReservableCapacity>1000000</CtrlPlane:minimumReservableCapacity>
+                <CtrlPlane:granularity>1000000</CtrlPlane:granularity>
                
                 <CtrlPlane:link id="urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-9:link=link-1">
                     <CtrlPlane:remoteLinkId>urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-9:link=link-1</CtrlPlane:remoteLinkId>

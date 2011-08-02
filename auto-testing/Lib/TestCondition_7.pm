@@ -21,17 +21,16 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 my $tester = new Lib::Tester;
 
 # Seconds to sleep between checks for state changes
-our $SLEEP = 30;
+our $SLEEP = 15;
 
 # Number of times to check for state changes
-our $COUNT = 10;
+our $COUNT = 4;
 
 # Start time can be 'no' or a number of minutes in the future.
-#our $STARTTIME = 'now';
-our $STARTTIME = 3;
+our $STARTTIME = 'now';
 
 # End time is reservation duration.
-our $ENDTIME = '+00:00:10';
+our $ENDTIME = '+00:00:03';
 
 
 sub single_test_7_1
@@ -73,7 +72,7 @@ sub single_test_7_2
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "$ENDTIME",
+        endTime => "00:00:06",
 		expectedResult => "CANCELLED"
 	);
 

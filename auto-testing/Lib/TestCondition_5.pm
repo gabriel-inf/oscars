@@ -22,21 +22,20 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 my $tester = new Lib::Tester;
 
 # Seconds to sleep between checks for state changes
-our $SLEEP = 30;
+our $SLEEP = 15;
 
 # Number of times to check for state changes
-our $COUNT = 10;
+our $COUNT = 4;
 
 # Start time can be 'no' or a number of minutes in the future.
-#our $STARTTIME = 'now';
-our $STARTTIME = 3;
+our $STARTTIME = 'now';
 
 # End time is reservation duration.
-our $ENDTIME = '+00:00:10';
+our $ENDTIME = '+00:00:03';
 
 
 # Add circuits as needed
-sub multi_test_5_1
+sub multi_create_5_1
 {
 	# Test Scenario (5.1)
 	# specific_vlan_tag-to-specific_vlan_tag : simultaneous-execution-to-saturate : mixed translation and no-translation : inter-domain path
@@ -46,10 +45,11 @@ sub multi_test_5_1
     my %testParams_0 = (
         testName => $NAME . "_scenario_1",
         topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-8:link=link-1",
-        srcVlan => "3",
-        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-8:link=link-1",
-        dstVlan => "3",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-2:link=link-1",
+        srcVlan => "2",
+        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-2:link=link-1", 
+        dstVlan => "4",
+		bandwidth => "10",
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
@@ -61,10 +61,11 @@ sub multi_test_5_1
     my %testParams_1 = (
         testName => $NAME . "_scenario_1",
         topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-9:link=link-1",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-3:link=link-1",
         srcVlan => "5",
-        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-9:link=link-1",
+        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-3:link=link-1",
         dstVlan => "5",
+		bandwidth => "10",
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
@@ -73,12 +74,76 @@ sub multi_test_5_1
 	);
     push @arr, \%testParams_1;
 
-    $tester->multi_test(@arr);
+    my %testParams_2 = (
+        testName => $NAME . "_scenario_1",
+        topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-4:link=link-1",
+        srcVlan => "1",
+        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-4:link=link-1", 
+        dstVlan => "6",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
+        expectedResult => "CANCELLED"
+	);
+    push @arr, \%testParams_2;
+
+    my %testParams_3 = (
+        testName => $NAME . "_scenario_1",
+        topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-3:link=link-1",
+        srcVlan => "7",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-3:link=link-1",
+        dstVlan => "7",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
+        expectedResult => "CANCELLED"
+	);
+    push @arr, \%testParams_3;
+
+    my %testParams_4 = (
+        testName => $NAME . "_scenario_1",
+        topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-5:link=link-1",
+        srcVlan => "9",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-5:link=link-1", 
+        dstVlan => "9",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
+        expectedResult => "CANCELLED"
+	);
+    push @arr, \%testParams_4;
+
+    my %testParams_5 = (
+        testName => $NAME . "_scenario_1",
+        topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-6:link=link-1",
+        srcVlan => "8",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-6:link=link-1",
+        dstVlan => "10",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "$ENDTIME",
+        expectedResult => "CANCELLED"
+	);
+    push @arr, \%testParams_5;
+
+    $tester->multi_create(@arr);
 }
 
 
 # Add circuits as needed
-sub multi_test_5_2
+sub multi_create_5_2
 {
 	# Test Scenario (5.2)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : no-translation : inter-domain 
@@ -86,14 +151,15 @@ sub multi_test_5_2
     my %testParams_0 = (
         testName => $NAME . "_scenario_1",
         topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-        src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-9:link=link-1",
-        srcVlan => "7",
-        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-9:link=link-1",
-        dstVlan => "7",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-9:link=link-1",
+        srcVlan => "any",
+        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-9:link=link-1",
+        dstVlan => "any",
+		bandwidth => "10",
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "$ENDTIME",
+        endTime => "00:00:07",
         expectedResult => "CANCELLED"
 	);
     push @arr, \%testParams_0;
@@ -101,20 +167,57 @@ sub multi_test_5_2
     my %testParams_1 = (
         testName => $NAME . "_scenario_1",
         topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-9:link=link-1",
-        srcVlan => "any",
-        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-9:link=link-1",
-        dstVlan => "any",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-7:link=link-1",
+        srcVlan => "3022",
+        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-4:port=port-7:link=link-1",
+        dstVlan => "3022",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "00:00:08",
         expectedResult => "CANCELLED"
 	);
     push @arr, \%testParams_1;
 
-    $tester->multi_test(@arr);
+    my %testParams_2 = (
+        testName => $NAME . "_scenario_1",
+        topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-5:link=link-1",
+        srcVlan => "any",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-5:link=link-1",
+        dstVlan => "any",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "00:00:06",
+        expectedResult => "CANCELLED"
+	);
+    push @arr, \%testParams_2;
+
+    my %testParams_3 = (
+        testName => $NAME . "_scenario_1",
+        topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-3:port=port-8:link=link-1",
+        srcVlan => "any",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-8:link=link-1",
+        dstVlan => "any",
+		bandwidth => "10",
+        sleep => "$SLEEP",
+        count => "$COUNT",
+        startTime => "$STARTTIME",
+        endTime => "00:00:07",
+        expectedResult => "CANCELLED"
+	);
+    push @arr, \%testParams_3;
+
+    $tester->multi_create(@arr);
 }
 
 
 # Add circuits as needed
-sub multi_test_5_3
+sub multi_create_5_3
 {
 	# Test Scenario (5.3)
 	# specific_vlan_tag-to-specific_vlan_tag : simultaneous-execution-to-saturate : no-translation : single-hop-path-on-bottleneck-interdomain-link
@@ -122,9 +225,9 @@ sub multi_test_5_3
     my %testParams_0 = (
         testName => $NAME . "_scenario_3",
         topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-        src => "urn:ogf:network:domain=testdomain-2.net:node=node-4:port=port-9:link=link-1",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-12:link=link-1",
         srcVlan => "8",
-        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-1:port=port-13:link=link-1",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-2:link=link-1",
         dstVlan => "8",
         sleep => "$SLEEP",
         count => "$COUNT",
@@ -137,20 +240,19 @@ sub multi_test_5_3
     my %testParams_1 = (
         testName => $NAME . "_scenario_3",
         topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-        src => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-11",
+        src => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-13:link=link-1",
         srcVlan => "9",
-        dst => "urn:ogf:network:domain=testdomain-3.net:node=node-1:port=port-13:link=link-1",
+        dst => "urn:ogf:network:domain=testdomain-1.net:node=node-3:port=port-5:link=link-1",
         dstVlan => "9",
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "$ENDTIME",
+        endTime => "00:00:06:w",
         expectedResult => "CANCELLED"
 	);
     push @arr, \%testParams_1;
 
-
-    $tester->multi_test(@arr);
+    $tester->multi_create(@arr);
 }
 
 
