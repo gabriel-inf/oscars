@@ -137,28 +137,27 @@ public class ModifyReservation extends HttpServlet {
         // necessary type conversions performed here; validation done in
         // ReservationManager
         strParam = request.getParameter("modifyStartSeconds");
-        this.log.debug("modifyStartSeconds is " + strParam);
+        //this.log.debug("modifyStartSeconds is " + strParam);
         if ((strParam != null) && (!strParam.equals(""))) {
             seconds = Long.parseLong(strParam);
         }
         userCon.setStartTime(seconds);
         seconds = 0L;
         strParam = request.getParameter("modifyEndSeconds");
-        this.log.debug("modifyEndSeconds is " + strParam);
+        //this.log.debug("modifyEndSeconds is " + strParam);
         if ((strParam != null) && (!strParam.equals(""))) {
             seconds = Long.parseLong(strParam);
         }
         userCon.setEndTime(seconds);
 
-        // currently hidden form fields; not modifiable
         strParam = request.getParameter("modifyBandwidth");
-        this.log.debug("bandwidth is " + strParam);
+        //this.log.debug("modifyBandwidth is " + strParam);
         if (strParam != null && !strParam.trim().equals("")) {
             bandwidth = Integer.valueOf(strParam.trim());
         }
         userCon.setBandwidth(bandwidth);
         strParam = request.getParameter("modifyDescription");
-        this.log.debug("modifyDescription is " + strParam);
+        //this.log.debug("modifyDescription is " + strParam);
         if ((strParam != null) && (!strParam.equals(""))){
             description = strParam;
         }

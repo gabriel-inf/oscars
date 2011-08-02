@@ -66,7 +66,6 @@ oscars.Form.resetStatus = function (responseObject) {
 // Note that  widget id's of "method", "status", and "succeed" will mess
 // things up, since they are parameter names used by handleReply.
 oscars.Form.applyParams = function (responseObject) {
-//console.log("form.applyParms start");
     for (var param in responseObject) {
       if (responseObject.hasOwnProperty(param)) {
         var n = dojo.byId(param);
@@ -149,7 +148,6 @@ oscars.Form.applyParams = function (responseObject) {
             n.innerHTML = responseObject[param];
         // set widget value
         } else {
-            //console.log("setting n.value");
             n.value = responseObject[param];
         }   
       }

@@ -102,15 +102,16 @@
   </tr>
   <tr><td>Status</td><td colspan="2" id="statusReplace" /></tr>
   <tr><td>User</td><td colspan="2" id="userReplace" /></tr>
-  <tr><td>Description</td><td colspan="2" id="descriptionReplace" /></tr>
-  <!--
-  <tr><td>Description</td><td colspan="2" i dd="newDescription" /></tr>
-  -->
-   <tr>
+  <tr><td>Description</td>
+      <td colspan="2">
+          <input dojoType="dijit.form.TextBox" name="descriptionReplace"
+                id="descriptionReplace" style="width: 28em"/>
+  </tr>
+  <tr>
     <td>Start date</td>
     <td colspan="2">
         <input dojoType="dijit.form.DateTextBox" name="modifyStartDate"
-               id="modifyStartDate" size="28" />
+               id="modifyStartDate" style="width: 28em"" />
     </td>
   </tr>
   <tr><td>Start time</td>
@@ -119,13 +120,13 @@
              id="modifyStartTime"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the start time in format HH:MM"
-             invalidMessage="Invalid format:  use HH:MM" size="28" /></td>
+             invalidMessage="Invalid format:  use HH:MM" style="width: 28em" /></td>
   </tr>
   <tr>
     <td>End date</td>
     <td colspan="2">
         <input dojoType="dijit.form.DateTextBox" name="modifyEndDate"
-               id="modifyEndDate" size="28" />
+               id="modifyEndDate" style="width: 28em"/>
     </td>
   </tr>
   <tr><td>End time</td>
@@ -134,24 +135,24 @@
              id="modifyEndTime"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the end time in format HH:MM"
-             invalidMessage="Invalid format:  use HH:MM" size="28" /></td>
+             invalidMessage="Invalid format:  use HH:MM" style="width: 28em"" /></td>
   </tr>
   <tr>
       <td>Created time</td> <td colspan="2" id="createdTimeConvert" />
   </tr>
-  <!--
+
   <tr>
       <td>Bandwidth (Mbps)</td>
       <td colspan="2" >
-        <input type="text" name="newBandwidth" id="newBandwidth"
+        <input type="text" name="bandwidthReplace" id="bandwidthReplace"
           dojoType="dijit.form.NumberTextBox"
           constraints="{min:1,max:10000,places:0}"
           promptMessage="Enter a value between 1 and 10000"
-          invalidMessage="Invalid bandwidth." />
+          invalidMessage="Invalid bandwidth." style="width: 28em"/>
       </td>
   </tr>
-  -->
-  <tr><td>Bandwidth (Mbps)</td><td colspan="2" id="bandwidthReplace" /></tr>
+
+  <!--<tr><td>Bandwidth (Mbps)</td><td colspan="2" id="bandwidthReplace" /></tr>  -->
   <tr><td>Source</td><td colspan="2" id="sourceReplace" /></tr>
   <tr><td>Destination</td><td colspan="2" id="destinationReplace" /></tr>
 

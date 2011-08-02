@@ -68,10 +68,9 @@ oscars.ReservationDetails.postModify = function () {
     oscars.ReservationDetails.setCurrentGri(formNode);
     // non-modifiable fields, but necessary to send to comply with
     // interface
-    var bandwidth = dojo.byId("bandwidthReplace").innerHTML;
+    var bandwidth = dojo.byId("bandwidthReplace").value;
     formNode.modifyBandwidth.value = bandwidth;
-    var description = dojo.byId("descriptionReplace").innerHTML;
-    //var description = dojo.byId("newDescription").innerHTML;
+    var description = dojo.byId("descriptionReplace").value;
     formNode.modifyDescription.value = description;
     dojo.xhrPost({
         url: 'servlet/ModifyReservation',
@@ -156,11 +155,9 @@ oscars.ReservationDetails.cloneReservation = function () {
     oscars.ReservationCreate.resetFields();
     // copy fields from reservation details form to reservation creation form
     var node = dojo.byId("descriptionReplace");
-    dijit.byId("reservationDescription").setValue(node.innerHTML);
-    //var node = dojo.byId("modifyDescription");
-    //dijit.byId("reservationDescription").setValue(node.innerHTML);
+    dijit.byId("reservationDescription").setValue(node.value);
     node = dojo.byId("bandwidthReplace");
-    dijit.byId("bandwidth").setValue(node.innerHTML);
+    dijit.byId("bandwidth").setValue(node.value);
     node = dojo.byId("sourceReplace");
     dijit.byId("source").setValue(node.innerHTML);
     node = dojo.byId("destinationReplace");
@@ -247,7 +244,7 @@ oscars.ReservationDetails.cloneReservation = function () {
 // handles all servlet replies
 oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
     oscarsState.reservationDetailsEntered = false;
-    console.log("start handleReply");
+    //console.log("start handleReply");
     if (!oscars.Form.resetStatus(responseObject)) {
         return;
     }
@@ -266,17 +263,11 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         refreshButton.style.display = "";
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
-        /*
-        console.log(responseObject);
-        var node3=dojo.byId(bandwidthReplace);
-        console.log(node3);
-        console.log(node3.value);
-        var node2 = dojo.byId("newDescription");
-        console.log(node2);
-        console.log(responseObject["modifyDescription"]);
-        node2.innerHTML=responseObject["modifyDescription"];
-        console.log(node2);
-        */
+        var node2=dojo.byId("bandwidthReplace");
+        node2.value=responseObject["bandwidthReplace"];
+        var node3 = dojo.byId("descriptionReplace");
+        node3.value=responseObject["descriptionReplace"];
+
         // for displaying only layer 2 or layer 3 fields
         oscars.ReservationDetails.layerParams(responseObject);
         //oscars.ReservationDetails.errorReportParams(responseObject);
