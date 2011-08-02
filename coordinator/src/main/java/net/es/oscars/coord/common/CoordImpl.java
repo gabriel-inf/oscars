@@ -489,7 +489,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                                              authDecision.getConditions(),
                                                                              modifyResvReq);
              // save original description if no new one is input
-            if (request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE).equals("")) {
+            if ( (request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE) == null) ||
+                    (request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE).equals(""))) {
                 request.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE, resDetails.getDescription());
             }
             // this is the current reservation state, not INMODIFY
