@@ -168,10 +168,10 @@ sub multi_test_4_2
 	my %testParams_3 = (
 		testName => $NAME . "_scenario_1",
 		topology => "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml",
-		src => "",
-		srcVlan => "any",
-		dst => "",
-		dstVlan => "any",
+		src => "urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-5:link=link-1",
+		srcVlan => "16",
+		dst => "urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-5:link=link-1",
+		dstVlan => "16",
 		bandwidth => "10",
         sleep => "$SLEEP",
         count => "$COUNT",
@@ -220,7 +220,7 @@ sub multi_test_4_3
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "00:00:06",
+        endTime => "+00:00:06",
         expectedResult => "CANCELLED"
     );
     push @arr, \%testParams_1;

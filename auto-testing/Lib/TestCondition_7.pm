@@ -72,7 +72,7 @@ sub single_test_7_2
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "00:00:06",
+        endTime => "+00:00:06",
 		expectedResult => "CANCELLED"
 	);
 

@@ -123,7 +123,7 @@ sub single_test_6_4
         sleep => "$SLEEP",
         count => "$COUNT",
         startTime => "$STARTTIME",
-        endTime => "00:00:06",
+        endTime => "+00:00:06",
 		expectedResult => "CANCELLED"
 	);
 	my $result = tester->single_test(%testParams);
