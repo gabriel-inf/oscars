@@ -20,7 +20,7 @@ my $tester = new Lib::Tester;
 
 sub create 
 {
-	_do_test("_create", 10);
+	_do_test("_create", 30);
 }
 
 
@@ -41,6 +41,8 @@ sub _do_test
 	my $endMins;
 	my $endTime;
 
+	srand(1000);
+
 	while ($c < $iterations) {
 		my $r = int(rand($n));		
 		$src = $topology[$r]->{'linkId'};
@@ -55,7 +57,8 @@ sub _do_test
 		next if ($pSrc{'node'} eq '*');
 		next if ($pDst{'node'} eq '*');
 
-		$endMins = 10 + int(rand(59 - 10));
+		#$endMins = 10 + int(rand(59 - 10));
+		$endMins = 10 + int(rand(15 - 10));
 		$endTime = "+00:00:" . $endMins;
 
 	    my %testParams = (
@@ -74,7 +77,8 @@ sub _do_test
     	$tester->create(%testParams);
 		$c++;
 		if ($c != $iterations) {
-			my $sleepTime = 1 + int(rand(15 * 60));
+			#my $sleepTime = 1 + int(rand(15 * 60));
+			my $sleepTime = 1 + int(rand(2 * 60));
 			print "sleeping ...\n";
 			sleep($sleepTime);
 		}
