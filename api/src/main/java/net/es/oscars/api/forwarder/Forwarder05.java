@@ -164,6 +164,8 @@ public class Forwarder05 extends Forwarder {
             notify05Msg.setProducerReference(
                     (new W3CEndpointReferenceBuilder()).address(this.wsnProducer).build());
         }
+        this.wsnClient.notify(notify05);
+        
         LOG.info(netLog.end("Forwarder05.notify"));
     }
 
