@@ -114,9 +114,31 @@ information on the reservations chosen.</p>
 
 </tr>
 <tr>
-  <td colspan="5">Link ids (widget will expand vertically):
+
+    <!-- Shows prompt message, but only gives a single line textBox
+  <td colspan="5">Link ids: space separated list of full, abbreviated or partial topology ids:
+     <textarea name="linkIds" id="linkIds"
+         dojoType="dijit.form.TextBox"
+         promptMessage="e.g urn:org:network:domain:testdomain:node=node1:port=3:link=* testdomain:node1:3 node2">
+     </textarea>
+  </td>
+  -->
+    <!--  gives an expandable text box, but no promt mesage  -->
+  <td colspan="4">Link ids space separated list of full, abbreviated or partial topology ids:
       <textarea name="linkIds" id="linkIds" dojoType="dijit.form.Textarea">
     </textarea>
+  </td>
+
+  <div dojoType="dijit.Dialog" id="linkDialog"
+    style="display:none;" title="LinkId formats" >
+   Example formats:<br><i>full urn</i> - urn:org:network:domain:testdomain:node=node1:port=3:link=* <br><i>abbreviated urn</i> - testdomain:node1:3<br><i>partial urn</i> - node1
+ </div>
+
+  <td><button id="linkIdHelp" dojoType="dijit.form.Button"
+        onclick="dijit.byId('linkDialog').show();"
+        style="color:#FF0000">
+        show link formats
+        </button>
   </td>
 
   <td>Description sub-string:

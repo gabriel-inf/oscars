@@ -211,7 +211,7 @@ public class ListReservations extends HttpServlet {
      * Gets list of statuses selected from menu.
      *
      * @param servletRequest servlet request
-     * @return list of statuses to send to BSS
+     * @return list of statuses to send to coordService:listReservations
      */
     public List<String> getStatuses(HttpServletRequest servletRequest) {
 
@@ -238,7 +238,7 @@ public class ListReservations extends HttpServlet {
         List<String> paramList = new ArrayList<String>();
         String param = servletRequest.getParameter(paramName);
         if ((param != null) && !param.trim().equals("")) {
-            String[] paramTags = param.trim().split(" ");
+            String[] paramTags = param.trim().split("\\s+" );
             for (int i=0; i < paramTags.length; i++) {
                 paramList.add(paramTags[i]);
             }
