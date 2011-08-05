@@ -7,7 +7,11 @@ import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
@@ -28,6 +32,7 @@ import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class DataTranslator05 {
@@ -932,7 +937,6 @@ public class DataTranslator05 {
         return resDetails06;
     }
     
-    // TODO: check this
     public static org.oasis_open.docs.wsn.b_2.Notify translate(net.es.oscars.api.soap.gen.v06.InterDomainEventContent eventContent06)
             throws OSCARSServiceException {
         org.oasis_open.docs.wsn.b_2.Notify notify = new org.oasis_open.docs.wsn.b_2.Notify();
@@ -941,56 +945,73 @@ public class DataTranslator05 {
         MessageType messageType = new MessageType();
         net.es.oscars.api.soap.gen.v05.ResDetails resDetails = new net.es.oscars.api.soap.gen.v05.ResDetails();
         net.es.oscars.api.soap.gen.v05.EventContent eventContent = new net.es.oscars.api.soap.gen.v05.EventContent();
-
+        
+        eventContent.setId(UUID.randomUUID().toString());
+        eventContent.setTimestamp(System.currentTimeMillis()/1000);
+        
         topicExpressionType.setValue("idc:IDC");
         topicExpressionType.setDialect("http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full");
         notificationMessageHolder.setTopic(topicExpressionType);
-
+        
         try {
             resDetails.setPathInfo(translate(eventContent06.getResDetails().getReservedConstraint().getPathInfo()));
         } catch (Exception e) {
             throw new OSCARSServiceException("Unable to translate v06 InterDomainEventContent");
         }
-
+        
         if (eventContent06.getResDetails().getDescription() != null) {
             resDetails.setDescription(eventContent06.getResDetails().getDescription());
         }
-
+        
         resDetails.setStartTime(eventContent06.getResDetails().getReservedConstraint().getStartTime());
         resDetails.setEndTime(eventContent06.getResDetails().getReservedConstraint().getEndTime());
-
         if (eventContent06.getResDetails().getLogin() != null) {
             resDetails.setLogin(eventContent06.getResDetails().getLogin());
         }
         if (eventContent06.getResDetails().getStatus() != null) {
             resDetails.setStatus(eventContent06.getResDetails().getStatus());
         }
-
+        
         resDetails.setBandwidth(eventContent06.getResDetails().getReservedConstraint().getBandwidth());
-
+        
         if (eventContent06.getResDetails().getGlobalReservationId() != null) {
             resDetails.setGlobalReservationId(eventContent06.getResDetails().getGlobalReservationId());
         }
-
         eventContent.setResDetails(resDetails);
-
+        
         if (eventContent06.getErrorSource() != null) {
             eventContent.setErrorSource(eventContent06.getErrorSource());
         }
+        
         if (eventContent06.getErrorCode() != null) {
             eventContent.setErrorCode(eventContent06.getErrorCode());
         }
+        
         if (eventContent06.getErrorMessage() != null) {
             eventContent.setErrorMessage(eventContent06.getErrorMessage());
         }
+        
         if (eventContent06.getType() != null) {
             eventContent.setType(eventContent06.getType());
         }
-
-        messageType.getAny().set(0, eventContent);
+        
+        try {
+            net.es.oscars.api.soap.gen.v05.ObjectFactory objFactory = new net.es.oscars.api.soap.gen.v05.ObjectFactory();
+            Document eventDoc = null;
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            eventDoc = db.newDocument();
+            JAXBContext jaxbContext = JAXBContext.newInstance("net.es.oscars.api.soap.gen.v05");
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.marshal(objFactory.createEvent(eventContent), eventDoc);
+            messageType.getAny().add(eventDoc.getDocumentElement());
+        } catch (Exception e) {
+            throw new RuntimeException("Error translating 06 Event: " + e.getMessage());
+        }
+        
         notificationMessageHolder.setMessage(messageType);
-        notify.getNotificationMessage().set(0, notificationMessageHolder);
-
+        notify.getNotificationMessage().add(notificationMessageHolder);
 
         return notify;
     }

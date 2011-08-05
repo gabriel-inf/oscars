@@ -10,7 +10,9 @@ import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.clients.WSNBrokerClient;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.wsnbroker.soap.gen.WSNBrokerPortType;
 
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Logger;
 import org.oasis_open.docs.wsn.b_2.MessageType;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
@@ -32,8 +34,10 @@ public class SendNotifyJob implements Job{
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String url = dataMap.getString("url");
         try {
-            WSNBrokerClient client = WSNBrokerClient.getClient(url, 
-                    cc.getWSDLPath(null)+"");
+            WSNBrokerPortType client = WSNBrokerClient.getClient(url, 
+                    cc.getWSDLPath(null)+"").getPortType();
+            ClientProxy.getClient(client).getRequestContext().put(
+                    "org.apache.cxf.message.Message.ENDPOINT_ADDRESS", url);
             Notify notifyRequest = new Notify();
             NotificationMessageHolderType notifyMsg = new NotificationMessageHolderType();
             notifyMsg.setProducerReference((W3CEndpointReference) dataMap.get("producer"));
@@ -41,7 +45,7 @@ public class SendNotifyJob implements Job{
             notifyMsg.setTopic((TopicExpressionType) dataMap.get("topics"));
             notifyMsg.setMessage((MessageType) dataMap.get("message"));
             notifyRequest.getNotificationMessage().add(notifyMsg);
-            client.getPortType().notify(notifyRequest);
+            client.notify(notifyRequest);
         } catch (Exception e) {
             log.info(netLogger.error("SendNotifyJob.execute", ErrSev.MAJOR, 
                     e.getMessage(), url));

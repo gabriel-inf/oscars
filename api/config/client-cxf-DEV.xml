@@ -67,7 +67,18 @@
         <entry key="jaxen.net.ssl.trustStore" value="keystore-truststore.jks"/>
       </jaxws:properties>
     </jaxws:client>
-
+    
+    <jaxws:client name="{http://oscars.es.net/OSCARS/wsnbroker}WSNBrokerPort"
+      createdFromAPI="true">
+      <jaxws:properties>
+        <entry key="ws-security.signature.username" value="mykey" />
+        <entry key="ws-security.callback-handler" 
+          value="net.es.oscars.utils.clients.ClientX509PasswordCB"/>
+        <entry key="ws-security.signature.properties"
+          value="clientKeystore.properties" />
+      </jaxws:properties>
+    </jaxws:client>
+    
   <http:conduit name="{http://oscars.es.net/OSCARS/06}OSCARS.http-conduit">
    </http:conduit>
 
@@ -118,6 +129,32 @@
    
 <!--  in DEVELOPMENT context authN runs over ssl -->
  <http:conduit name="{http://oscars.es.net/OSCARS/authN}AuthNPort.http-conduit">
+    <http:tlsClientParameters secureSocketProtocol="SSL">
+      <sec:trustManagers>
+          <sec:keyStore type="JKS" password="changeit"
+               file="keystore-truststore.jks"/>
+      </sec:trustManagers>
+      <sec:keyManagers keyPassword="changeit">
+           <sec:keyStore type="JKS" password="changeit"
+                file="keystore-client.jks"/>
+      </sec:keyManagers>
+
+      <sec:cipherSuitesFilter>
+        <!-- these filters ensure that a ciphersuite with
+          export-suitable or null encryption is used,
+          but exclude anonymous Diffie-Hellman key change as
+          this is vulnerable to man-in-the-middle attacks -->
+        <sec:include>.*_EXPORT_.*</sec:include>
+        <sec:include>.*_EXPORT1024_.*</sec:include>
+        <sec:include>.*_WITH_DES_.*</sec:include>
+        <sec:include>.*_WITH_NULL_.*</sec:include>
+        <sec:exclude>.*_DH_anon_.*</sec:exclude>
+      </sec:cipherSuitesFilter>
+
+    </http:tlsClientParameters>
+   </http:conduit>
+   
+   <http:conduit name="{http://oscars.es.net/OSCARS/wsnbroker}WSNBrokerPort.http-conduit">
     <http:tlsClientParameters secureSocketProtocol="SSL">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"

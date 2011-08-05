@@ -2,20 +2,34 @@ package net.es.oscars.api.forwarder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
    // net.es.oscars.api.soap.gen.v06.
 
-import net.es.oscars.api.soap.gen.v05.ResCreateContent;
+import net.es.oscars.logging.ErrSev;
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.clients.IDCClient05;
+import net.es.oscars.utils.clients.WSNBrokerClient;
+import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
+import net.es.oscars.utils.config.ConfigHelper;
 import net.es.oscars.utils.config.ContextConfig;
+import net.es.oscars.utils.notify.TopicDialect;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.wsnbroker.soap.gen.WSNBrokerPortType;
 import net.es.oscars.api.compat.ForwardTypes;
 import net.es.oscars.api.compat.SubscribeManager05;
 
 import net.es.oscars.api.compat.DataTranslator05;
 
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Logger;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 
 /**
  * This abstract class is to be extended by the IDC message forwarders, implementing when necessary, protocol adaptation.
@@ -31,6 +45,14 @@ public class Forwarder05 extends Forwarder {
     
     private IDCClient05 client       = null;
     private SubscribeManager05 subscribeManager;
+    private WSNBrokerPortType wsnClient = null;
+    private String wsnUrl;
+    private String wsnWsdl;
+    private String wsnProducer;
+    
+    final private String PROP_BROKER_URL = "wsn.url";
+    final private String PROP_BROKER_WSDL_URL = "wsn.wsdl";
+    final private String PROP_PRODUCER_URL = "wsn.producer05";
     
     public Forwarder05 (String destDomainId, URL url) throws OSCARSServiceException {
         super (destDomainId, url);
@@ -51,8 +73,58 @@ public class Forwarder05 extends Forwarder {
             throw new OSCARSServiceException ("Cannot create a subscription management class: " + e.getMessage());
         };
         
+        //setup 0.6 WSN client
+        /* The broker URL specifies the URL of the external NotificationBroker 
+         * to contact. If it is not explicitly defined in teh file then the code 
+         * looks to see if the WSNBroker service is on the same machine, and reads 
+         * the publishTo property from its config file.
+         */
+        String configFile = null;
+        Map config = null;
+        try {
+            configFile = cc.getFilePath(ConfigDefaults.CONFIG);
+            config = ConfigHelper.getConfiguration(configFile);
+            if(config.containsKey(PROP_BROKER_URL)){
+                this.wsnUrl = (String) config.get(PROP_BROKER_URL);
+            }else{
+                HashMap<String,Object> wsnConfig = (HashMap<String,Object>)ConfigHelper
+                .getConfiguration(cc.getFilePath(ServiceNames.SVC_WSNBROKER, cc.getContext(),
+                        ConfigDefaults.CONFIG));
+                Map soap = (HashMap<String,Object>) wsnConfig.get("soap");
+                if (soap == null ){
+                    throw new ConfigException("The notificationBridge cannot find " +
+                            "the required property " + PROP_BROKER_URL);
+                }
+                this.wsnUrl = (String)soap.get("publishTo");
+            }
+            
+            if(config.containsKey(PROP_BROKER_WSDL_URL)){
+                this.wsnWsdl = (String) config.get(PROP_BROKER_WSDL_URL);
+            }else{
+                this.wsnWsdl = "file:" + cc.getFilePath(ServiceNames.SVC_WSNBROKER, cc.getContext(), "wsdl");
+            }
+            
+            //set producer property
+            Map apiConfig = ConfigHelper.getConfiguration(cc.getFilePath(ConfigDefaults.CONFIG));
+            Map soap = (HashMap<String,Object>) apiConfig.get("public");
+            if(apiConfig.containsKey("public")){
+                HashMap<String, Object> pubConf = (HashMap<String,Object>) apiConfig.get("public");
+                this.wsnProducer = (String) pubConf.get("publishTo");
+            }
+            if(this.wsnProducer == null && apiConfig.containsKey("soap")){
+                HashMap<String, Object> soapConf = (HashMap<String,Object>) apiConfig.get("soap");
+                this.wsnProducer = (String) soapConf.get("publishTo");
+            }
+            if(this.wsnProducer == null){
+                throw new ConfigException("No publishTo property provided");
+            }
+        } catch (ConfigException e) {
+            throw new OSCARSServiceException(e.getMessage());
+        }
+        
+        
     }
-
+    
     /* (non-Javadoc)
      * @see OSCARSInternalPortType#createPath(CreatePathContent  createPath ,)String  destDomainId )*
      */
@@ -71,7 +143,28 @@ public class Forwarder05 extends Forwarder {
      * @see OSCARSInternalPortType#notify(EventContent  notify ,)String  destDomainId )*
      */
     public void notify(net.es.oscars.api.soap.gen.v06.InterDomainEventContent notify06) throws OSCARSServiceException {
-        throw new RuntimeException ("Not yet implemented");
+        OSCARSNetLogger netLog = OSCARSNetLogger.getTlogger();
+        LOG.info(netLog.start("Forwarder05.notify"));
+        synchronized(this){
+            if(this.wsnClient == null){
+                try {
+                    this.wsnClient = WSNBrokerClient.getClient(this.wsnUrl, this.wsnWsdl).getPortType();
+                    ClientProxy.getClient(this.wsnClient).getRequestContext().put(
+                            "org.apache.cxf.message.Message.ENDPOINT_ADDRESS", this.wsnUrl);
+                } catch (Exception e) {
+                    LOG.info(netLog.error("Forwarder05.notify", ErrSev.MAJOR, e.getMessage()));
+                    throw new OSCARSServiceException(e.getMessage());
+                }
+            }
+        }
+        
+        Notify notify05 = DataTranslator05.translate(notify06);
+        for(NotificationMessageHolderType notify05Msg : notify05.getNotificationMessage()){
+            //set producer
+            notify05Msg.setProducerReference(
+                    (new W3CEndpointReferenceBuilder()).address(this.wsnProducer).build());
+        }
+        LOG.info(netLog.end("Forwarder05.notify"));
     }
 
     /* (non-Javadoc)

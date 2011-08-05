@@ -118,3 +118,19 @@ LookupService:
         config.yaml:        'OSCARS_HOME/LookupService/conf/config.SSL.yaml'
         wsdl:               'OSCARS_HOME/wsdl/LookupService/LookupService.wsdl'
 
+WSNBrokerService:
+    UNITTEST:
+        config.yaml:        'OSCARS_DIST/wsnbroker/config/config.HTTP.yaml'
+        wsdl:               'OSCARS_DIST/common-soap/src/main/resources/wsnbroker/wsnbroker.wsdl'
+        
+    DEVELOPMENT:
+        config.yaml:        'OSCARS_HOME/WSNBrokerService/conf/config.HTTP.yaml'
+        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerService.wsdl'
+
+    SDK:
+        config.yaml:        'OSCARS_HOME/WSNBrokerService/conf/config.HTTP.yaml'
+        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerService.wsdl'
+
+    PRODUCTION:
+        config.yaml:        'OSCARS_HOME/WSNBrokerService/conf/config.SSL.yaml'
+        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerService.wsdl'

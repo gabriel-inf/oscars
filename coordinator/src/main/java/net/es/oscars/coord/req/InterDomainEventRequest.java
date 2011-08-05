@@ -76,7 +76,14 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             */
 
             resDetails = eventContent.getResDetails();
-
+            
+            /* Set login to reservation owner Note that its not the user that sent the event.
+             * This is because we do not use this attribute in cases where we care about the
+             * event sender. If this changes we may need to make separate attributes.
+             */
+            this.setAttribute(CoordRequest.LOGIN_ATTRIBUTE, resDetails.getLogin());
+            this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE, resDetails.getDescription());
+            
             if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED)) {
 
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-CreateCommittedEventAction",

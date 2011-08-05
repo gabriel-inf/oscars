@@ -67,5 +67,16 @@
         <entry key="jaxen.net.ssl.trustStore" value="keystore-truststore.jks"/>
       </jaxws:properties>
     </jaxws:client>
-
+    
+    <jaxws:client name="{http://oscars.es.net/OSCARS/wsnbroker}WSNBrokerPort"
+      createdFromAPI="true">
+      <jaxws:properties>
+        <entry key="ws-security.signature.username" value="mykey" />
+        <entry key="ws-security.callback-handler" 
+          value="net.es.oscars.utils.clients.ClientX509PasswordCB"/>
+        <entry key="ws-security.signature.properties"
+          value="clientKeystore.properties" />
+      </jaxws:properties>
+    </jaxws:client>
+    
 </beans>

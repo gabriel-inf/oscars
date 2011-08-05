@@ -178,3 +178,5 @@ mkdir -p $DST_DIR
 # Copy xsd, and change file name to match service namecp $SRC_DIR/$MODULE.xsd $DST_DIR/$SERVICE.xsd
 # Copy wsdl, change file name, and patch the location of the XSD file and common files
 sed -e "s,\.\./api,$OSCARS_HOME/wsdl/OSCARSService," -e "s,\.\./common\.wsdl,$OSCARS_HOME/wsdl/common.wsdl," -e "s,\.\./common\.xsd,$OSCARS_HOME/wsdl/common.xsd," -e "s,$MODULE\.xsd,file:$OSCARS_HOME/wsdl/$SERVICE/$SERVICE.xsd," < $SRC_DIR/$MODULE.wsdl > $DST_DIR/$SERVICE.wsdl
+#this is the one used for the client the wsnbroker uses to send to subscribers
+sed -e "s,\.\./api,$OSCARS_HOME/wsdl/OSCARSService," -e "s,\.\./common\.wsdl,$OSCARS_HOME/wsdl/common.wsdl," -e "s,\.\./common\.xsd,$OSCARS_HOME/wsdl/common.xsd," -e "s,$MODULE\.xsd,file:$OSCARS_HOME/wsdl/$SERVICE/$SERVICE.xsd," < $SRC_DIR/${MODULE}out.wsdl > $DST_DIR/${SERVICE}Out.wsdl
