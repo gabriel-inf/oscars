@@ -1,5 +1,6 @@
 package net.es.oscars.authN.test.common;
 
+import java.io.File;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeSuite;
@@ -36,8 +37,9 @@ public void setUpTests() {
     cc.setContext(context);
     cc.setServiceName(ServiceNames.SVC_AUTHN);
     try {
-      System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
-      cc.loadManifest(ServiceNames.SVC_AUTHN,  ConfigDefaults.MANIFEST); // manifest.yaml
+      //System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST)
+       cc.loadManifest(new File("config/"+ConfigDefaults.MANIFEST));
+      //cc.loadManifestFromSrc(ServiceNames.SVC_AUTHN,  ConfigDefaults.MANIFEST); // manifest.yaml
       cc.setLog4j();
       // need to do this after the log4j.properties file has been set
       log = Logger.getLogger(InitTest.class);

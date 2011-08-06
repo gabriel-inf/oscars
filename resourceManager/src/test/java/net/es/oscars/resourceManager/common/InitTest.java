@@ -1,5 +1,6 @@
 package net.es.oscars.resourceManager.common;
 
+import java.io.File;
 import java.util.*;
 
 import org.apache.log4j.Logger;
@@ -33,7 +34,7 @@ public class InitTest {
       cc.setContext(context);
       cc.setServiceName(ServiceNames.SVC_RM);
       try {
-          cc.loadManifest(ServiceNames.SVC_RM,  ConfigDefaults.MANIFEST); // manifest.yaml
+          cc.loadManifest(new File("config/"+ConfigDefaults.MANIFEST));
           cc.setLog4j();
           // need to do this after the log4j.properties file has been set
           log = Logger.getLogger(InitTest.class);

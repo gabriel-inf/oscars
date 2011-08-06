@@ -1,9 +1,6 @@
 package net.es.oscars.authZ.test.common;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
@@ -11,13 +8,11 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.AfterSuite;
 
 import net.es.oscars.authZ.common.AuthZCore;
-import net.es.oscars.database.hibernate.Initializer;
 import net.es.oscars.database.hibernate.HibernateUtil;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
-import net.es.oscars.utils.config.ConfigHelper;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.svc.ServiceNames;
 
@@ -39,8 +34,7 @@ public class InitTest {
       cc.setContext(context);
       cc.setServiceName(ServiceNames.SVC_AUTHZ);
       try {
-          System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
-          cc.loadManifest(ServiceNames.SVC_AUTHZ,  ConfigDefaults.MANIFEST); // manifest.yaml
+          cc.loadManifest(new File("config/" + ConfigDefaults.MANIFEST));
           cc.setLog4j();
           // need to do this after the log4j.properties file has been set
           log = Logger.getLogger(InitTest.class);

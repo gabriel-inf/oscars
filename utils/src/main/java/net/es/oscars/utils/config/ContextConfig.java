@@ -152,19 +152,24 @@ public class ContextConfig {
         return filePath;
     }
 
-
     /**
      * Utility function to populate the manifest map with a YAML
      * file.
      *
-     * @param fileName where to find the yaml file
+     * @param service name of the directory where the service's configuration files are deployed
+     * @param fileName name of the manifest.yaml file (normally "manifest.yaml"
      * @throws ConfigException
      */
     @SuppressWarnings({ "unchecked", "static-access" })
     public void loadManifest(String service, String fileName) throws ConfigException {
         String filePath = new SharedConfig (service).getFilePath(fileName);
+
+        loadManifest(new File(filePath));
+    }
+
+    public void loadManifest(File manifestFile) throws ConfigException {
         Map yaml = null;
-        File manifestFile = new File (filePath);
+        String filePath = manifestFile.getAbsolutePath();
         System.out.println("Loading manifest from " + manifestFile);
         InputStream manifestIs = null;
         if (manifestFile.exists()) {

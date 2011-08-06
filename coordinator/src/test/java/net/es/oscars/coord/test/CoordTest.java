@@ -3,6 +3,7 @@ package net.es.oscars.coord.test;
 import org.apache.log4j.Logger;
 import org.testng.annotations.*;
 
+import java.io.File;
 import java.util.List;
 import java.lang.Exception;
 
@@ -38,8 +39,7 @@ public class CoordTest {
       cc.setContext(context);
       cc.setServiceName(ServiceNames.SVC_COORD);
       try {
-          System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
-          cc.loadManifest(ServiceNames.SVC_COORD,  ConfigDefaults.MANIFEST); // manifest.yaml
+          cc.loadManifest(new File("config/"+ConfigDefaults.MANIFEST));
           cc.setLog4j();
           // need to do this after the log4j.properties file has been set
           log = Logger.getLogger(CoordTest.class);

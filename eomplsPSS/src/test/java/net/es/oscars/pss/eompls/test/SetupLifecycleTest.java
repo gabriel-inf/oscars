@@ -24,6 +24,8 @@ import org.apache.log4j.Logger;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
 
+import java.io.File;
+
 @Test
 public class SetupLifecycleTest {
     private Logger log = Logger.getLogger(SetupLifecycleTest.class);
@@ -31,7 +33,7 @@ public class SetupLifecycleTest {
     public void testSetup() throws ConfigException, PSSException {
         
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
-        cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
+        cc.loadManifest(new File("src/test/resources/"+ConfigDefaults.MANIFEST));
         cc.setContext(ConfigDefaults.CTX_TESTING);
         cc.setServiceName(ServiceNames.SVC_PSS);
 
