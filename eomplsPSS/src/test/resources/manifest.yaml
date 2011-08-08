@@ -28,8 +28,8 @@ PSSService:
 
 Utils:
     UNITTEST:
-        templateDir:        'OSCARS_DIST/Utils/config'
-        config.yaml:        'OSCARS_DIST/Utils/config/config.yaml'
+        templateDir:        'OSCARS_DIST/utils/config'
+        config.yaml:        'OSCARS_DIST/utils/config/config.yaml'
 
     DEVELOPMENT:
         templateDir:        'OSCARS_HOME/Utils/conf/'
