@@ -93,6 +93,12 @@ public class OSCARSNotify05SoapHandler implements OSCARSNotifyOnly{
             InterDomainEventContent interDomain06 =  DataTranslator05.translate (notify);
             interDomain06.getMessageProperties().setGlobalTransactionId(guid);
             
+            //we can ignore path_setup_completed messages
+            if("PATH_SETUP_COMPLETED".equals(interDomain06.getType())){
+                LOG.info(netLogger.end(event));
+                return;
+            }
+            
             //We already validated the subscription id, so we'll set a role
             //this requires a server wanting to talk to 0.5 to have the OSCARS-Service role
             SubjectAttributes subjectAttributes = new SubjectAttributes();

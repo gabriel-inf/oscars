@@ -296,9 +296,9 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             }
             if ( ! this.isLocalOnly) {
                 if (this.isFirstDomain) {
-                    this.sendDownStream(null);
-                } else if (this.isLastDomain) {
                     this.sendUpStream(null);
+                } else if (this.isLastDomain) {
+                    this.sendDownStream(null);
                 } else {
                     if (this.receivedDownStream) {
                         this.sendDownStream(null);
@@ -386,7 +386,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     }
 
         
-    private void sendDownStream(String errorMsg) {
+    private void sendUpStream(String errorMsg) {
         String reqType = this.getRequestData().getType();
         try {
             this.receivedDownStream = true;
@@ -395,15 +395,15 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                     InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(),
                                                                  this.resDetails, 
                                                                  reqType.equals(PathRequestParams.CREATEPATHCONTENT) ?
-                                                                         NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED :
-                                                                         NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_CONFIRMED,
+                                                                         NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED :
+                                                                         NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_CONFIRMED,
                                                                  this.nextIDC);
                 } else {
                     InternalAPIWorker.getInstance().sendErrorEvent(this.getCoordRequest(),
                                                                    this.resDetails,
                                                                    reqType.equals(PathRequestParams.CREATEPATHCONTENT) ?
-                                                                           NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_FAILED :
-                                                                           NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED,
+                                                                           NotifyRequestTypes.PATH_SETUP_UPSTREAM_FAILED :
+                                                                           NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED,
                                                                    errorMsg,
                                                                    PathTools.getLocalDomainId(),
                                                                    this.nextIDC);
@@ -414,7 +414,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         }       
     }
     
-    private void sendUpStream(String errorMsg) {
+    private void sendDownStream(String errorMsg) {
         String reqType = this.getRequestData().getType();
         try {
             this.receivedUpStream = true;
@@ -423,15 +423,15 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                     InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(),
                                                                      this.resDetails,
                                                                      reqType.equals(PathRequestParams.CREATEPATHCONTENT) ?
-                                                                             NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED :
-                                                                             NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_CONFIRMED,
+                                                                             NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED :
+                                                                             NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_CONFIRMED,
                                                                      this.previousIDC);
                 } else {
                      InternalAPIWorker.getInstance().sendErrorEvent(this.getCoordRequest(),
                                                                     this.resDetails,
                                                                     reqType.equals(PathRequestParams.CREATEPATHCONTENT) ?
-                                                                            NotifyRequestTypes.PATH_SETUP_UPSTREAM_FAILED :
-                                                                            NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED,
+                                                                            NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_FAILED :
+                                                                            NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED,
                                                                     errorMsg,
                                                                     PathTools.getLocalDomainId(),
                                                                     this.previousIDC);
@@ -571,11 +571,11 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         if ( ! this.isLocalOnly) {
             if (! this.isFirstDomain) {
                 LOG.debug(netLogger.getMsg(method,"calling sendDownStream to " + this.nextIDC));
-                this.sendUpStream(errorRep.getErrorMsg());
+                this.sendDownStream(errorRep.getErrorMsg());
             }
             if (! this.isLastDomain) {
                  LOG.debug(netLogger.getMsg(method,"calling sendUpStream to " + this.previousIDC));
-                this.sendDownStream(errorRep.getErrorMsg());
+                this.sendUpStream(errorRep.getErrorMsg());
             }
         }
         this.notifyError (exception.getMessage(), this.resDetails);

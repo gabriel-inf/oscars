@@ -873,11 +873,19 @@ public class DataTranslator05 {
         //Translate even types that have changed between 0.5 and 0.6
         if(idcEvent05.getType() == null){
             throw new OSCARSServiceException("Unable to translate v05 Notify: " +
-            "Unable to find idc:event/type in message");
+                "Unable to find idc:event/type in message");
         }else if(NotifyRequestTypes.RESV_CREATE_CONFIRMED.equals(idcEvent05.getType())){
             interDomainEventContent.setType(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED);
         }else if(NotifyRequestTypes.RESV_MODIFY_CONFIRMED.equals(idcEvent05.getType())){
             interDomainEventContent.setType(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED);
+        }else if("DOWNSTREAM_PATH_SETUP_CONFIRMED".equals(idcEvent05.getType())){
+            interDomainEventContent.setType(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED);
+        }else if("UPSTREAM_PATH_SETUP_CONFIRMED".equals(idcEvent05.getType())){
+            interDomainEventContent.setType(NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED);
+        }else if("DOWNSTREAM_PATH_TEARDOWN_CONFIRMED".equals(idcEvent05.getType())){
+            interDomainEventContent.setType(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_CONFIRMED);
+        }else if("UPSTREAM_PATH_TEARDOWN_CONFIRMED".equals(idcEvent05.getType())){
+            interDomainEventContent.setType(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_CONFIRMED);
         }else{
             interDomainEventContent.setType(idcEvent05.getType());
         }
@@ -991,7 +999,23 @@ public class DataTranslator05 {
             eventContent.setErrorMessage(eventContent06.getErrorMessage());
         }
         
-        if (eventContent06.getType() != null) {
+        //Translate event types that have changed between 0.5 and 0.6
+        if(eventContent06.getType() == null){
+            throw new OSCARSServiceException("Unable to translate v06 interdomain event: " +
+                "Unable to find idc:event type in message");
+        }else if(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED.equals(eventContent06.getType())){
+            eventContent.setType(NotifyRequestTypes.RESV_CREATE_CONFIRMED);
+        }else if(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED.equals(eventContent06.getType())){
+            eventContent.setType(NotifyRequestTypes.RESV_MODIFY_CONFIRMED);
+        }else if(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED.equals(eventContent06.getType())){
+            eventContent.setType("DOWNSTREAM_PATH_SETUP_CONFIRMED");
+        }else if(NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED.equals(eventContent06.getType())){
+            eventContent.setType("UPSTREAM_PATH_SETUP_CONFIRMED");
+        }else if(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_CONFIRMED.equals(eventContent06.getType())){
+            eventContent.setType("DOWNSTREAM_PATH_TEARDOWN_CONFIRMED");
+        }else if(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_CONFIRMED.equals(eventContent06.getType())){
+            eventContent.setType("UPSTREAM_PATH_TEARDOWN_CONFIRMED");
+        }else{
             eventContent.setType(eventContent06.getType());
         }
         
