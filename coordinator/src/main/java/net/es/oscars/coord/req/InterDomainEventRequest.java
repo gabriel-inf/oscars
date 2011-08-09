@@ -334,13 +334,22 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             // Not much we can do. Cannot happen
             return;
         }
-
+        String eventType = eventContent.getType();
+        
+        //if it was a COMPLETED message that failed we need to decide if we actually 
+        // need to fail the reservation or if this was a duplicate
+        if(NotifyRequestTypes.RESV_CREATE_COMPLETED.equals(eventType) && 
+                !this.checkStatus(StateEngineValues.INCOMMIT)){
+            LOG.warn(netLogger.error(method,ErrSev.MAJOR,"RESV_CREATE_COMPLETED received in a non-INCOMMIT state. Ignoring message."));
+            return;
+        }
+        
+        
         // if we failed while processing an event (other than MODIFY)
         // try to fail the reservation now
          ErrorReport errRep = this.getCoordRequest().getErrorReport("InterDomainEventRequest.failed",
                                                                      ErrorCodes.IDE_FAILED,
                                                                      e);
-        String eventType = eventContent.getType();
 
         if (! eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED) &&
             ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED) &&
@@ -367,5 +376,38 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
 
         super.failed(e);
     }
-
+    
+    /**
+     * Method to check status of reservation. Used to see if we should fail the reservation when a 
+     * store action fails. This protects against duplicate notifications (like those from 0.5) 
+     * failing the reservation.
+     * 
+     * @param targetStatus the status the reservation should have
+     * @return true if status matches the given target, false otherwise
+     */
+    private boolean checkStatus(String targetStatus) {
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        LOG.info(netLogger.start("CreateResvCompletedAction.checkStatus"));
+        QueryResContent queryReq = new QueryResContent();
+        queryReq.setMessageProperties(this.getMessageProperties());
+        queryReq.setGlobalReservationId(this.getGRI());
+        QueryReservationRequest qRequest= new QueryReservationRequest("QueryReservation-" + this.getGRI(),
+                                                                       null,
+                                                                       queryReq);
+        qRequest.execute();
+        if (qRequest.getState() == CoordAction.State.FAILED){
+            //can't determine state
+            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false1"));
+            return false;
+        }
+        
+        QueryResReply qReply = qRequest.getResultData();
+        if(qReply.getReservationDetails() != null && 
+                targetStatus.equals(qReply.getReservationDetails().getStatus())){
+            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus -true"));
+            return true;
+        }
+        LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false2"));
+        return false;
+    }
 }

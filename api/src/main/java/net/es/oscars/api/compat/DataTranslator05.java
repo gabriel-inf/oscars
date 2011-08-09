@@ -23,6 +23,7 @@ import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.resourceManager.beans.Reservation;
 import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
+import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 
@@ -889,6 +890,7 @@ public class DataTranslator05 {
         }else{
             interDomainEventContent.setType(idcEvent05.getType());
         }
+        
         return interDomainEventContent;
     }
 
@@ -918,7 +920,13 @@ public class DataTranslator05 {
             throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
                 "status cannot be null");
         }
-        resDetails06.setStatus(resDetails05.getStatus());
+        
+        //translate status
+        if("PENDING".equals(resDetails05.getStatus())){
+           resDetails06.setStatus(StateEngineValues.RESERVED);
+        }else{
+            resDetails06.setStatus(resDetails05.getStatus());
+        }
         
         if(resDetails05.getPathInfo() == null){
             throw new OSCARSServiceException("Unable to translate v05 resDetails: " +
@@ -977,7 +985,11 @@ public class DataTranslator05 {
             resDetails.setLogin(eventContent06.getResDetails().getLogin());
         }
         if (eventContent06.getResDetails().getStatus() != null) {
-            resDetails.setStatus(eventContent06.getResDetails().getStatus());
+            if(eventContent06.getResDetails().getStatus().equals(StateEngineValues.RESERVED)){
+                resDetails.setStatus("PENDING");
+            }else{
+                resDetails.setStatus(eventContent06.getResDetails().getStatus());
+            }
         }
         
         resDetails.setBandwidth(eventContent06.getResDetails().getReservedConstraint().getBandwidth());
