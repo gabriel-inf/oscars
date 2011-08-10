@@ -93,8 +93,9 @@ public class OSCARSNotify05SoapHandler implements OSCARSNotifyOnly{
             InterDomainEventContent interDomain06 =  DataTranslator05.translate (notify);
             interDomain06.getMessageProperties().setGlobalTransactionId(guid);
             
-            //we can ignore path_setup_completed messages
-            if("PATH_SETUP_COMPLETED".equals(interDomain06.getType())){
+            //we can ignore these messages
+            if("PATH_SETUP_COMPLETED".equals(interDomain06.getType()) || 
+                    "PATH_TEARDOWN_COMPLETED".equals(interDomain06.getType())){
                 LOG.info(netLogger.end(event));
                 return;
             }

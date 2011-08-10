@@ -620,6 +620,11 @@ public class DataTranslator05 {
         //path is not null and we have hops so populate the list
         for(CtrlPlaneHopContent hop06 : pathInfo06.getPath().getHop()){
             ctrlPlanePathContent.getHop().add(hop06);
+            if(hop06.getLink() != null && hop06.getLink().getTrafficEngineeringMetric() == null){
+                //set the trafficEngineeringMetric because its required by the schema
+                //the 10 is insignificant. just a value to act as placeholder
+                hop06.getLink().setTrafficEngineeringMetric("10");
+            }
         }
         //id is required but has no semantic meaning so just generate default if null
         if (pathInfo06.getPath().getId() != null) {
