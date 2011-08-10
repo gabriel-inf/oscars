@@ -7,6 +7,7 @@ import net.es.oscars.utils.soap.OSCARSServiceException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.jdom.Document;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -29,6 +30,10 @@ public class TopologyRegisterJob implements Job{
                 return;
             }
             XMLOutputter outputter = new XMLOutputter();
+            Format topoFormat = Format.getRawFormat();
+            topoFormat.setOmitEncoding(true);
+            topoFormat.setOmitDeclaration(true);
+            outputter.setFormat(topoFormat);
             String domainString = outputter.outputString(domain);
             String newTopoHash = DigestUtils.md5Hex(domainString);
             //if topology has not changed then do not re-register
