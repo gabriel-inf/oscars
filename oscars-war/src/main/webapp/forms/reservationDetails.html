@@ -18,6 +18,7 @@
 <body>
 <form id="reservationDetailsForm" dojoType="dijit.form.Form">
 <input type="hidden" name="gri" id="gri" />
+<input type="hidden" name="status" id="status" />
 <input type="hidden" name="modifyStartSeconds" id="modifyStartSeconds" />
 <input type="hidden" name="modifyEndSeconds" id="modifyEndSeconds" />
 <!-- not currently modifiable; hidden preferable to fields that look to
@@ -76,6 +77,7 @@
       </button>
   </span>
   <span id="resvCautionDisplay" style="display:none">
+      <!--
        <button dojoType="dijit.form.Button" id="createPath"
            onclick="dijit.byId('createPathDialog').show();"
            style="color:#FF0000">
@@ -86,6 +88,7 @@
            style="color:#FF0000">
         TEAR DOWN PATH
       </button>
+      -->
        <button dojoType="dijit.form.Button" id="overrideStatus"
            onclick="dijit.byId('overrideStatusDialog').show();"
            style="color:#FF0000">
@@ -233,12 +236,14 @@
 <div dojoType = "dijit.Tooltip" connectId="cancelReservation" position="above">
     Cancels the current reservation if it is pending or active.
 </div>
+<!--
 <div dojoType = "dijit.Tooltip" connectId="createPath" position="below">
     Forces the recreation of a circuit.  Use with caution.
 </div>
 <div dojoType = "dijit.Tooltip" connectId="teardownPath" position="below">
     Forces the teardown of a circuit.  Use with caution.
 </div>
+-->
 <div dojoType = "dijit.Tooltip" connectId="overrideStatus" position="below">
     Immediately changes the status of a reservation.  Use with caution.
 </div>
@@ -256,6 +261,7 @@
   </table>
 </div>
 <!-- dialogs for buttons to use with extreme caution -->
+<!--
 <div dojoType="dijit.Dialog" id="createPathDialog"
     style="display:none;" title="Are you sure you want to force path creation?"
     execute="oscars.ReservationDetails.postCreatePath(arguments[0]);">
@@ -286,6 +292,7 @@
     </tr>
   </table>
 </div>
+-->
 <div dojoType="dijit.Dialog" id="overrideStatusDialog"
     style="display:none;" title="Are you sure you want to force status change?"
     execute="oscars.ReservationDetails.postOverrideStatus(arguments[0]);">
@@ -299,15 +306,18 @@
           onChange="oscars.ReservationDetails.forcedStatus();return false;">
       <option value="FAILED" selected="selected">FAILED</option>
       <option value="ACTIVE">ACTIVE</option>
-      <option value="PENDING">PENDING</option>
+      <option value="RESERVED">RESERVED</option>
       <option value="FINISHED">FINISHED</option>
       <option value="CANCELLED">CANCELLED</option>
       <option value="ACCEPTED">ACCEPTED</option>
-      <option value="SUBMITTED">SUBMITTED</option>
-      <option value="INCREATE">INCREATE</option>
+      <option value="INPATHCALCULATION">INPATHCALCULATION</option>
+      <option value="PATHCALCULATED">PATHCALCULATED</option>
+      <option value="INCOMMIT">INCOMMIT</option>
+      <option value="COMMITTED">INCOMMITED</option>
       <option value="INSETUP">INSETUP</option>
       <option value="INTEARDOWN">INTEARDOWN</option>
       <option value="INMODIFY">INMODIFY</option>
+      <option value="INCANCEL">INCANCEL</option>
   </select>
   </td>
   <td>

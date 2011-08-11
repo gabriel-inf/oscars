@@ -11,20 +11,14 @@ import oasis.names.tc.saml._2_0.assertion.AttributeType;
 import org.apache.log4j.Logger;
 import net.sf.json.*;
 
-import oasis.names.tc.saml._2_0.assertion.AttributeType;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.clients.AuthNPolicyClient;
-import net.es.oscars.utils.clients.AuthZClient;
 import net.es.oscars.utils.clients.CoordClient;
-import net.es.oscars.utils.sharedConstants.AuthZConstants;
-import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.CancelResContent;
 import net.es.oscars.api.soap.gen.v06.CancelResReply;
-import net.es.oscars.api.soap.gen.v06.CreateReply;
-import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 
@@ -42,7 +36,7 @@ public class CancelReservation extends HttpServlet {
     /**
      * Handles CancelReservation servlet request.
      *
-     * @param request HttpServletRequest - contains gri of reservation to cancel
+     * @param servletRequest HttpServletRequest - contains gri of reservation to cancel
      * @param response HttpServletResponse -contains gri of reservation, success or error status
      */
     public void
@@ -68,7 +62,6 @@ public class CancelReservation extends HttpServlet {
         }
         CoordClient coordClient = core.getCoordClient();
         AuthNPolicyClient authNPolicyClient = core.getAuthNPolicyClient();
-        AuthZClient authZClient = core.getAuthZClient();
         UserSession userSession = new UserSession(core);
         CheckSessionReply sessionReply =
             userSession.checkSession(out, authNPolicyClient, servletRequest,

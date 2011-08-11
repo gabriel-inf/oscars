@@ -9,6 +9,7 @@
     xmlns:wsnt = "http://docs.oasis-open.org/wsn/b-2"
     xmlns:oscars = "http://oscars.es.net/OSCARS/06"
     xmlns:authP = "http://oscars.es.net/OSCARS/authParams"
+    xmlns:rm = "http://oscars.es.net/OSCARS/resourceManager"
     xmlns:com = "http://oscars.es.net/OSCARS/common" >
 
     <wsdl:documentation>
@@ -16,7 +17,7 @@
         implementation specific service that coordinates the actions of the
         rest of the ESNet/I2 OSCARS 0.6 services. It is assumed that user authentication
         is done before the coordinator is called, and each request message contains a
-        list of authenticated subject attibutes for the user.
+        list of authenticated subject attributes for the user.
     </wsdl:documentation>
 
     <!--  defines common OSCARSFaultMessage -->
@@ -39,6 +40,9 @@
             <xsd:import 
                 namespace="http://oscars.es.net/OSCARS/authParams" 
                 schemaLocation="../authParams.xsd" />
+            <xsd:import
+                namespace="http://oscars.es.net/OSCARS/resourceManager"
+                schemaLocation="../resourceManager/resourceManager.xsd" />
         </xsd:schema>
     </wsdl:types>
 
@@ -132,7 +136,16 @@
          <wsdl:part name="subjectAttributes"    type="authP:subjectAttributes" />
          <wsdl:part name="interDomainEvent" element="oscars:interDomainEvent"/>
     </wsdl:message>
- 
+
+    <wsdl:message name="forceUpdateStatusReq">
+        <wsdl:part name="subjectAttributes"   type="authP:subjectAttributes" />
+        <wsdl:part name="updateFailureStatusReq"   element="rm:updateFailureStatusReq" />
+    </wsdl:message>
+
+    <wsdl:message name="forceUpdateStatusResp">
+        <wsdl:part name="updateStatusResp"  element="rm:updateStatusResp" />
+    </wsdl:message>
+
     <wsdl:portType name="CoordPortType">
         <wsdl:operation name="createReservation">
             <wsdl:input message="tns:createResvReq" />
@@ -190,6 +203,11 @@
             <wsdl:input message="tns:interDomainEvent" />
         </wsdl:operation>
 
+        <wsdl:operation name="forceUpdateStatus">
+            <wsdl:input message="tns:forceUpdateStatusReq" />
+            <wsdl:output message="tns:forceUpdateStatusResp" />
+            <wsdl:fault name=" OSCARSErrorException" message="com:OSCARSFaultMessage" />
+        </wsdl:operation>
     </wsdl:portType>
  
     <wsdl:binding name="CoordBinding" type="tns:CoordPortType">
@@ -326,7 +344,20 @@
                 <soap:body use="literal" parts="interDomainEvent" />
             </wsdl:input>
         </wsdl:operation>
- 
+
+        <wsdl:operation name="forceUpdateStatus">
+            <soap:operation style="document"
+                soapAction="http://oscars.es.net/OSCARS/coord/forceUpdateStatus" />
+            <wsdl:input>
+                <soap:body use="literal" parts="subjectAttributes forceUpdateStatus" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" parts="forceUpdateStatusResp" />
+            </wsdl:output>
+            <wsdl:fault name=" OSCARSErrorException">
+                <soap:fault name=" OSCARSErrorException" use="literal" />
+            </wsdl:fault>
+        </wsdl:operation>
     </wsdl:binding>
 
     <wsdl:service name="CoordService">

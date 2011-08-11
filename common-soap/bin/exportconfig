@@ -61,7 +61,7 @@ sed -e "s,OSCARS-0\.6\.xsd,$OSCARS_HOME/wsdl/OSCARSService/OSCARS-0.6.xsd," < $O
 #
 mkdir -p $OSCARS_HOME/wsdl/CoordService
 # Patch the location of the XSD files
-sed  -e "s,coord\.xsd,file:$OSCARS_HOME/wsdl/CoordService/CoordService.xsd," -e "s,\.\./common\.wsdl,$OSCARS_HOME/wsdl/common.wsdl," -e "s,\.\./api,$OSCARS_HOME/wsdl/OSCARSService," < $OSCARS_DIST/common-soap/src/main/resources/coord/coord.wsdl > $OSCARS_HOME/wsdl/CoordService/CoordService.wsdl
+sed  -e "s,coord\.xsd,file:$OSCARS_HOME/wsdl/CoordService/CoordService.xsd," -e "s,\.\./common\.wsdl,$OSCARS_HOME/wsdl/common.wsdl," -e "s,\.\./api,$OSCARS_HOME/wsdl/OSCARSService,"  -e "s,\.\./resourceManager/resourceManager\.xsd,$OSCARS_HOME/wsdl/ResourceManagerService/ResourceManagerService.xsd," < $OSCARS_DIST/common-soap/src/main/resources/coord/coord.wsdl > $OSCARS_HOME/wsdl/CoordService/CoordService.wsdl
 cp $OSCARS_DIST/common-soap/src/main/resources/coord/coord.xsd  $OSCARS_HOME/wsdl/CoordService/CoordService.xsd
 #
 # Resource Manager

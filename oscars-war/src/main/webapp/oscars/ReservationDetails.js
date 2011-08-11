@@ -7,8 +7,8 @@ David Robertson (dwrobertson@lbl.gov)
 postQueryReservation()
 postQueryReservationStatus()
 postCancelReservation(dialogFields)
-postCreatePath(dialogFields)
-postTeardownPath(dialogFields)
+postCreatePath(dialogFields)   not implemented
+postTeardownPath(dialogFields)  not implemented
 postOverrideStatus(dialogFields)
 handleReply(responseObject, ioArgs)
 layerParams(responseObject)
@@ -66,8 +66,6 @@ oscars.ReservationDetails.postModify = function () {
     }
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     oscars.ReservationDetails.setCurrentGri(formNode);
-    // non-modifiable fields, but necessary to send to comply with
-    // interface
     var bandwidth = dojo.byId("bandwidthReplace").value;
     formNode.modifyBandwidth.value = bandwidth;
     var description = dojo.byId("descriptionReplace").value;
@@ -95,6 +93,7 @@ oscars.ReservationDetails.postCancelReservation = function (dialogFields) {
 };
 
 // posts create path request to server
+/*
 oscars.ReservationDetails.postCreatePath = function (dialogFields) {
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     oscars.ReservationDetails.setCurrentGri(formNode);
@@ -119,11 +118,14 @@ oscars.ReservationDetails.postTeardownPath = function (dialogFields) {
             form: formNode
     });
 };
+*/
 
 // posts override status request to server
 oscars.ReservationDetails.postOverrideStatus = function (dialogFields) {
     var formNode = dijit.byId("reservationDetailsForm").domNode;
     oscars.ReservationDetails.setCurrentGri(formNode);
+    var currentStatus = dojo.byId("statusReplace").innerHTML;
+    formNode.status.value = currentStatus;
     if ((formNode.forcedStatus.value === null) ||
         oscars.Utils.isBlank(formNode.forcedStatus.value)) {
         oscars.ReservationDetails.forcedStatus();
@@ -287,6 +289,7 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         }
     } else if (responseObject.method == "OverrideStatusReservation") {
         var formNode = dijit.byId("reservationDetailsForm").domNode;
+        oscars.Form.applyParams(responseObject);
         formNode.forcedStatus.value = "";
     }
     if (responseObject.method != "QueryReservationStatus") {

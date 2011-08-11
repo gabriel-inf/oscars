@@ -101,6 +101,11 @@
         <servlet-name>ModifyReservation</servlet-name>
         <servlet-class>net.es.oscars.wbui.servlets.ModifyReservation</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>OverrideStatusReservation</servlet-name>
+        <servlet-class>net.es.oscars.wbui.servlets.OverrideStatusReservation</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>AuthenticateUser</servlet-name>
         <url-pattern>/servlet/AuthenticateUser</url-pattern>
@@ -189,4 +194,9 @@
         <servlet-name>ModifyReservation</servlet-name>
         <url-pattern>/servlet/ModifyReservation</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OverrideStatusReservation</servlet-name>
+        <url-pattern>/servlet/OverrideStatusReservation</url-pattern>
+    </servlet-mapping>
+
 </web-app>

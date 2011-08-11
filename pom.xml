@@ -38,8 +38,9 @@
         <module>notificationBridge</module>
         <module>wsnbroker</module>
         <module>tools</module>
+<!--
 	<module>ion-war</module> 
-	<module>ionui</module>
+	<module>ionui</module> -->
 	<!-- 2 lines above added for ion -->
         <module>bin</module>
     </modules>

@@ -5,6 +5,8 @@ import java.util.Date;
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.authZ.soap.gen.CheckAccessParams;
 import net.es.oscars.authZ.soap.gen.CheckAccessReply;
+import net.es.oscars.resourceManager.soap.gen.UpdateStatusRespContent;
+import net.es.oscars.resourceManager.soap.gen.UpdateFailureStatusReqContent;
 import net.es.oscars.common.soap.gen.*;
 import net.es.oscars.coord.req.*;
 import net.es.oscars.coord.soap.gen.PSSReplyContent;
@@ -27,6 +29,8 @@ import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.soap.OSCARSFaultUtils;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+
+import javax.net.ssl.SSLEngineResult;
 
 import static net.es.oscars.utils.topology.PathTools.*;
 
@@ -217,14 +221,71 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
     }
 
     /**
-     *  what calls this? another IDC, RM?
+     *  Called by the WBUI to allow a network engineer to clean up the data base
+     *
+     *  @param updateStatusReq contains the  new status and an error report explaining why it is being reset
+     *  @return the new status
+     */
 
-    public UpdateStatusRespContent updateStatus(UpdateStatusReqContent updateStatusReq) throws OSCARSFaultMessage    {
-        String method = "updateStatus";
-        LOG.info(netLogger.start(method));
-        throw new OSCARSFaultMessage("updateStatus is not implemented yet");
+    public UpdateStatusRespContent forceUpdateStatus(SubjectAttributes subjectAttributes,
+                                                     UpdateFailureStatusReqContent updateStatusReq)
+            throws OSCARSFaultMessage    {
+
+
+        String method = "forceUpdateStatus";
+        if (updateStatusReq == null) {
+            LOG.warn(netLogger.error(method,ErrSev.MAJOR, "invalid argument: updateStatusReq is null"));
+            // session = null, no database connected
+            OSCARSFaultUtils.handleError ( new OSCARSServiceException("updateStatusReq is null","user"),
+                    null, LOG, method);
+        }
+        String transId = updateStatusReq.getTransactionId();
+        String gri = updateStatusReq.getGlobalReservationId();
+        String status = updateStatusReq.getStatus();
+        UpdateStatusRespContent reply = null;
+        netLogger = OSCARSNetLogger.getTlogger();
+        netLogger.init(moduleName,transId);
+        netLogger.setGRI(gri);
+        LOG.info(netLogger.start(method, "Forcing status to " + status));
+        if (subjectAttributes == null) {
+            throw new OSCARSFaultMessage("invalid input to forceUpdateStatus: subjectAttributes is null");
+        }
+        if (gri == null) {
+            throw new OSCARSFaultMessage("invalid input to forceUpdateStatus: gri is null");
+        }
+        try {
+            CheckAccessReply authDecision = checkAuthorization(method, transId,  gri,
+                                                               subjectAttributes, AuthZConstants.MODIFY);
+            ForceUpdateStatusRequest request = new ForceUpdateStatusRequest(method + gri,
+                                                                           authDecision.getConditions(),
+                                                                           updateStatusReq);
+             request.execute();
+             if (request.getState() == CoordAction.State.FAILED) {
+                 request.logError();
+                 throw request.getException();
+             }
+             reply = request.getResultData();
+             // LOG.debug("returning from execute");
+        } catch (Exception ex) {
+            OSCARSServiceException oEx;
+            if (ex.getClass().getName().equals("net.es.oscars.utils.soap.OSCARSServiceException")){
+                oEx = (OSCARSServiceException) ex;
+                LOG.info(netLogger.error(method, ErrSev.MINOR, oEx.getErrorReport().getErrorMsg(),
+                        oEx.getErrorReport().getErrorCode()));
+            } else {
+                LOG.info(netLogger.error(method, ErrSev.MINOR, ex.getMessage()+ " " + ex.toString()));
+                ErrorReport errRep = new ErrorReport(ErrorCodes.RESV_MODIFY_FAILED , ex.getMessage(),
+                                                     ErrorReport.SYSTEM, gri, transId,
+                                                     System.currentTimeMillis()/1000L, moduleName,
+                                                     PathTools.getLocalDomainId());
+                oEx = new OSCARSServiceException(errRep);
+            }
+
+        }
+        LOG.info(netLogger.end(method));
+        return reply;
     }
-*/
+
 
     /**
      * Create Reservation
@@ -244,7 +305,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         if (createResvReq == null) {
             LOG.warn(netLogger.error(method,ErrSev.MAJOR, "invalid argument: createResvReq is null"));
             // session = null, no database connected
-            OSCARSFaultUtils.handleError ( new OSCARSServiceException("createResvReq is null","user"), 
+            OSCARSFaultUtils.handleError ( new OSCARSServiceException("createResvReq is null","user"),
                     null, LOG, method);
         }
         String gri = createResvReq.getGlobalReservationId();

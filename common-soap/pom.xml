@@ -75,6 +75,8 @@
                                         <extraarg>http://oscars.es.net/OSCARS/06=net.es.oscars.api.soap.gen.v06</extraarg>
                                         <extraarg>-p</extraarg>
                                         <extraarg>http://oscars.es.net/OSCARS/common=net.es.oscars.common.soap.gen</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://oscars.es.net/OSCARS/resourceManager=net.es.oscars.resourceManager.soap.gen</extraarg>
                                     </extraargs>
                                     <wsdl>${basedir}/src/main/resources/coord/coord.wsdl</wsdl>
                                     <bindingFiles>
