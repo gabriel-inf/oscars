@@ -19,7 +19,7 @@ WSNBrokerService:
         derby.home:         'OSCARS_HOME/WSNBrokerService/data'
         serverKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/serverKeystore.properties'
         clientKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/clientKeystore.properties'
-        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerService.wsdl'
+        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerServiceOut.wsdl'
 
     SDK:
         templateDir:        'OSCARS_HOME/WSNBrokerService/conf/'
@@ -30,7 +30,7 @@ WSNBrokerService:
         derby.home:         'OSCARS_HOME/WSNBrokerService/data'
         serverKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/serverKeystore.properties'
         clientKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/clientKeystore.properties'
-        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerService.wsdl'
+        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerServiceOut.wsdl'
 
     PRODUCTION:
         templateDir:        'OSCARS_HOME/WSNBrokerService/conf/'
@@ -41,7 +41,7 @@ WSNBrokerService:
         derby.home:         'OSCARS_HOME/WSNBrokerService/data'
         serverKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/serverKeystore.properties'
         clientKeystore.properties: 'OSCARS_HOME/WSNBrokerService/conf/clientKeystore.properties'
-        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerService.wsdl'
+        wsdl:               'OSCARS_HOME/wsdl/WSNBrokerService/WSNBrokerServiceOut.wsdl'
 Utils:
     UNITTEST:
         templateDir:        'OSCARS_DIST/utils/config'
