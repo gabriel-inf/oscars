@@ -13,6 +13,8 @@ import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.utils.sharedConstants.PSSConstants;
 import net.es.oscars.utils.clients.CoordClient;
+import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.utils.topology.PathTools;
 
 /**
  * Called when a pss action fails or is completed
@@ -57,6 +59,18 @@ public class  CoordNotifier implements Notifier {
             } else {
                 reply.setStatus(PSSConstants.FAIL);
                 if (action.getFaultReport() != null) {
+                    // Fill in any missing bits
+                    if (action.getFaultReport().getModuleName() == null) {
+                        action.getFaultReport().setModuleName(ServiceNames.SVC_PSS);
+                    }
+                    if (action.getFaultReport().getTimestamp() == 0L) {
+                        // TODO REMOVE
+                        log.debug("setting timestamp to current time");
+                        action.getFaultReport().setTimestamp(System.currentTimeMillis()/1000L);
+                    }
+                    if (action.getFaultReport().getDomainId() == null) {
+                        action.getFaultReport().setDomainId(PathTools.getLocalDomainId());
+                    }
                     reply.setErrorReport(action.getFaultReport());
                 }
             }

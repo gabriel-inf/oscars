@@ -203,7 +203,8 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
                 if (errorRep.getModuleName() == null) {
                     errorRep.setModuleName(CoordRequest.moduleName);
                 }
-                if (errorRep.getTimestamp() == null) {
+                if (errorRep.getTimestamp() == null ||
+                        errorRep.getTimestamp() == 0L) {
                     errorRep.setTimestamp(System.currentTimeMillis()/1000L);
                 }
             }

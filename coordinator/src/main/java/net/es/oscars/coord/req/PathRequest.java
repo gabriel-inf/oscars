@@ -559,7 +559,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
                                                                   this,
                                                                   this.getGRI(),
-                                                                  StateEngineValues.FAILED,
+                                                                  StateEngineValues.UNKNOWN,
                                                                   errorRep);
         action.execute();
 

@@ -46,11 +46,11 @@ public class StubPSSSoapHandler implements PSSPortType {
         log.info(netLogger.start(event));
  
         boolean simulateFailure = false;
-        if (setupReq.getReservation().getGlobalReservationId().equals("error")) {
+        if (setupReq.getTransactionId().equals("error")) {
             simulateFailure = true;
         }
         
-        
+
         PSSAction act = new PSSAction();
         CoordNotifier coordNotify = new CoordNotifier();
         try {
@@ -67,10 +67,11 @@ public class StubPSSSoapHandler implements PSSPortType {
                 faultReport.setErrorMsg("simulated PSS error");
                 faultReport.setErrorType(ErrorReport.SYSTEM);
                 faultReport.setErrorCode(ErrorCodes.PATH_SETUP_FAILED);
+                faultReport.setModuleName("StubPSS");
+
                 act.setFaultReport(faultReport);
                 act.setStatus(ActionStatus.FAIL);
             }
-            
             log.debug(netLogger.getMsg(event,"calling coordNotify.process"));
             coordNotify.process(act);
         } catch (PSSException e) {
@@ -87,11 +88,9 @@ public class StubPSSSoapHandler implements PSSPortType {
         netLogger.setGRI(gri);
         log.info(netLogger.start(event));
         boolean simulateFailure = false;
-        if (gri.equals("error")) {
+        if (teardownReq.getTransactionId().equals("error")) {
             simulateFailure = true;
         }
-
-        
         
         PSSAction act = new PSSAction();
         CoordNotifier coordNotify = new CoordNotifier();
@@ -109,6 +108,7 @@ public class StubPSSSoapHandler implements PSSPortType {
                 faultReport.setErrorMsg("simulated PSS error");
                 faultReport.setErrorType(ErrorReport.SYSTEM);
                 faultReport.setErrorCode(ErrorCodes.PATH_TEARDOWN_FAILED);
+                faultReport.setModuleName("StubPSS");
                 act.setFaultReport(faultReport);
                 act.setStatus(ActionStatus.FAIL);
             }

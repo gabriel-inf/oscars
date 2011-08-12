@@ -2,7 +2,9 @@ package net.es.oscars.resourceManager.scheduler;
 
 import java.util.UUID;
 
-import org.quartz.Job;
+import net.es.oscars.resourceManager.common.RMCore;
+import net.es.oscars.resourceManager.common.ResourceManager;
+import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.apache.log4j.Logger;
@@ -13,8 +15,6 @@ import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.logging.OSCARSNetLogger;
-import net.es.oscars.resourceManager.scheduler.RMReservationScheduler;
-import net.es.oscars.resourceManager.scheduler.ReservationHandler;
 import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
@@ -29,7 +29,7 @@ public class PathTeardownJob extends ReservationJob {
 
     /**
      *  Called by the quartz scheduler when a teardown job is triggered
-     *  Sends message to Coordinator to start a pathSetup
+     *  Sends message to Coordinator to start a pathTeardown
      */
     public void execute(JobExecutionContext context) throws JobExecutionException {
         
@@ -52,8 +52,18 @@ public class PathTeardownJob extends ReservationJob {
         }
         netLogger.setGRI(resDetails.getGlobalReservationId());
         LOG.debug(netLogger.start(event));
+        // Check to see if reservation is still ACTIVE, it may have been signaled down or cancelled
+        ResourceManager mgr = RMCore.getInstance().getResourceManager();
+        try {
+            String status = mgr.getStatus(resDetails.getGlobalReservationId());
+            if (!status.equals(StateEngineValues.ACTIVE)) {
+                return;
+            }
+        } catch (OSCARSServiceException ex)  {
+             throw new JobExecutionException("No reservation found for gri " +
+                                              resDetails.getGlobalReservationId());
+        }
 
- 
         TeardownPathContent tdContent = new TeardownPathContent();
         tdContent.setMessageProperties(msgProps);
         tdContent.setGlobalReservationId(resDetails.getGlobalReservationId());
