@@ -45,8 +45,8 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     private boolean isLocalOnly = false;
     private boolean isLastDomain = true;
     private boolean isFirstDomain = true;
-    private boolean receivedUpStream = false;
-    private boolean receivedDownStream = false;
+    private boolean receivedUpStream = false;   // received an UPSTREAM event
+    private boolean receivedDownStream = false; // received a DOWNSTREAM event
     private String status = null;   // null until set by PSSReply or by FAILURE EVENT
     private String failedEvent = null;
     private String errorCode = null;
@@ -385,11 +385,11 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         this.fail (new OSCARSServiceException(errRep));
     }
 
-        
+    // sends UPSTREAM event to nextIDC (downstream) IDC
     private void sendUpStream(String errorMsg) {
         String reqType = this.getRequestData().getType();
         try {
-            this.receivedUpStream = true; // needed for the first domain
+            this.receivedUpStream = true; // needed for the first domain which never actually receives an upstream event
             if (this.nextIDC != null) {
                 if  (errorMsg == null) {
                     InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(),
@@ -413,11 +413,11 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             this.fail(e);
         }       
     }
-    
+    // sends a DOWNSTREAM event to the previousIDC (upstream) IDC
     private void sendDownStream(String errorMsg) {
         String reqType = this.getRequestData().getType();
         try {
-            this.receivedDownStream = true; // needed for the last domain
+            this.receivedDownStream = true; // needed for the last domain which never actually receives an downstream event
             if (this.previousIDC != null) {
                 if (errorMsg == null ) {
                     InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(),
