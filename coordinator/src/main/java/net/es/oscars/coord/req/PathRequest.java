@@ -389,7 +389,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     private void sendUpStream(String errorMsg) {
         String reqType = this.getRequestData().getType();
         try {
-            this.receivedDownStream = true;
+            this.receivedUpStream = true; // needed for the first domain
             if (this.nextIDC != null) {
                 if  (errorMsg == null) {
                     InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(),
@@ -417,7 +417,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     private void sendDownStream(String errorMsg) {
         String reqType = this.getRequestData().getType();
         try {
-            this.receivedUpStream = true;
+            this.receivedDownStream = true; // needed for the last domain
             if (this.previousIDC != null) {
                 if (errorMsg == null ) {
                     InternalAPIWorker.getInstance().sendEventContent(this.getCoordRequest(),

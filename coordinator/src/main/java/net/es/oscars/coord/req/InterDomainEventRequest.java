@@ -163,9 +163,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
 
                 request.checkIfExecuted();  // keeps anything else from executing it
                 request.processErrorEvent(eventType, eventContent);
-                if (request.getState() == CoordAction.State.FAILED){
-                    throw request.getException();
-                }
             } else if (eventType.equals(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED) ||
                        eventType.equals(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED)) {
 
@@ -175,9 +172,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                                   resDetails);
                 request.checkIfExecuted(); // keeps anything else from executing it
                 request.processErrorEvent(eventType, eventContent);
-                if (request.getState() == CoordAction.State.FAILED) {
-                    throw request.getException();
-                }
 
             } else if (eventType.equals(NotifyRequestTypes.RESV_CANCEL_CONFIRMED) ||
                        eventType.equals(NotifyRequestTypes.RESV_CANCEL_COMPLETED) ||
