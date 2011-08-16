@@ -22,6 +22,9 @@ Lib::OscarsClientUtils contains tools for for automation of test scripts.
 =cut
 
 our $Debugging = 0;
+#our $MODE = "";
+our $MODE = "-C PRODUCTION";
+
 
 use fields qw(NAME);
 
@@ -232,7 +235,7 @@ sub __execCreate
 		print "__execCreate() $args{'yamlFile'}\n";
 	}
 
-    my @output = `$BINPATH/createRes.sh -pf $args{'yamlFile'}`;
+    my @output = `$BINPATH/createRes.sh -pf $args{'yamlFile'} $MODE`;
     foreach my $line (@output) {
         if ($line =~ /gri=/) {
              my @tmp = split(/ /, $line);
@@ -250,7 +253,7 @@ sub __execCancel
     my %args = validate(@_, {gri => 1});
 	my $status = "";
 
-    my @output = `$BINPATH/cancelRes.sh -gri $args{'gri'}`;
+    my @output = `$BINPATH/cancelRes.sh -gri $args{'gri'} $MODE`;
 
 	return $status;
 }
@@ -263,7 +266,7 @@ sub __execList
     my $status = "list.sh Failed";
 	my $found = 0;
 
-    my @output = `$BINPATH/list.sh`;
+    my @output = `$BINPATH/list.sh $MODE`;
     foreach my $line (@output) {
         if ($line =~ /$args{'gri'}/) {
 			$found = 1;
@@ -279,7 +282,7 @@ sub __execList
 }
 
 
-# Create a reservation and ensure it monitor one state transition
+# Create a reservation monitor it through one state transition
 sub create
 {
 	my $self = shift;

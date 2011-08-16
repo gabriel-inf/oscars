@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#MODE=DEVELOPMENT
+MODE=PRODUCTION
+
 export MAVEN_OPTS='-Xmx512M -XX:MaxPermSize=512M'
 
 OSCARS_DIST=/usr/local/oscars-0.6
@@ -65,6 +68,9 @@ cp -f $OSCARS_DIST/auto-testing/resources/testdomain* $OSCARS_HOME/TopoBridgeSer
 cp -rf $OSCARS_DIST/auto-testing/Lib $OSCARS_DIST/api/
 cp -f $OSCARS_DIST/api/Lib/SimpleTest.pm.bak $OSCARS_DIST/api/Lib/SimpleTest.pm
 
-$OSCARS_DIST/bin/startServers.sh DEVELOPMENT ALL
-$OSCARS_DIST/bin/testServers.sh DEVELOPMENT
+#switch back to OSCARS_DIST so that the .out files will be put there
+cd $OSCARS_DIST
+
+$OSCARS_DIST/bin/startServers.sh $MODE ALL
+$OSCARS_DIST/bin/testServers.sh $MODE 
 
