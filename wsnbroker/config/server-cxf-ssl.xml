@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<beans xmlns="http://www.springframework.org/schema/beans"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:sec="http://cxf.apache.org/configuration/security"
-  xmlns:cxf="http://cxf.apache.org/core"
-  xmlns:http="http://cxf.apache.org/transports/http/configuration"
-  xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
-  xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
-  xsi:schemaLocation="
-            http://cxf.apache.org/core
-            http://cxf.apache.org/schemas/core.xsd
-            http://cxf.apache.org/configuration/security
-            http://cxf.apache.org/schemas/configuration/security.xsd
-            http://cxf.apache.org/transports/http/configuration
-            http://cxf.apache.org/schemas/configuration/http-conf.xsd
-            http://cxf.apache.org/transports/http-jetty/configuration
-            http://cxf.apache.org/schemas/configuration/http-jetty.xsd
-            http://www.springframework.org/schema/beans
-            http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
-
-
+<beans xmlns="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://cxf.apache.org/transports/http/configuration"
+      xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
+      xmlns:jaxws="http://cxf.apache.org/jaxws"
+      xmlns:cxf="http://cxf.apache.org/core"
+      xmlns:p="http://cxf.apache.org/policy"
+      xmlns:sec="http://cxf.apache.org/configuration/security"
+      xmlns:tns="http://oscars.es.net/OSCARS/wsnbroker"
+      xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://cxf.apache.org/transports/http/configuration   http://cxf.apache.org/schemas/configuration/http-conf.xsd
+          http://cxf.apache.org/transports/http-jetty/configuration http://cxf.apache.org/schemas/configuration/http-jetty.xsd
+          http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+          http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+          http://cxf.apache.org/policy http://cxf.apache.org/schemas/policy.xsd
+          http://cxf.apache.org/configuration/security
+          http://cxf.apache.org/schemas/configuration/security.xsd">
+          
+  <!--  Comment out the following to suppress printing of messages -->
   <cxf:bus>
         <cxf:features>
             <cxf:logging/>
+            <p:policies ignoreUnknownAssertions="true"/>
         </cxf:features>
   </cxf:bus>
+
 
   <httpj:engine-factory>
    <httpj:engine port="9013">
@@ -55,7 +58,7 @@
   
   <jaxws:endpoint id="WSSEC"
       serviceName="tns:WSNBrokerService" endpointName="tns:WSNBrokerPort"
-      address="http://deploy-host/OSCARS/wsnbroker"
+      address="https://deploy-host/OSCARS/wsnbroker"
       wsdlLocation="wsdl-location/WSNBrokerService.wsdl"
       implementor="net.es.oscars.wsnbroker.http.WSNBrokerSoapHandler">
     <jaxws:properties>
@@ -73,4 +76,3 @@
     </jaxws:properties>
   </jaxws:endpoint>
 </beans>
-
