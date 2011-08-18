@@ -52,17 +52,6 @@ public class PathTeardownJob extends ReservationJob {
         }
         netLogger.setGRI(resDetails.getGlobalReservationId());
         LOG.debug(netLogger.start(event));
-        // Check to see if reservation is still ACTIVE, it may have been signaled down or cancelled
-        ResourceManager mgr = RMCore.getInstance().getResourceManager();
-        try {
-            String status = mgr.getStatus(resDetails.getGlobalReservationId());
-            if (!status.equals(StateEngineValues.ACTIVE)) {
-                return;
-            }
-        } catch (OSCARSServiceException ex)  {
-             throw new JobExecutionException("No reservation found for gri " +
-                                              resDetails.getGlobalReservationId());
-        }
 
         TeardownPathContent tdContent = new TeardownPathContent();
         tdContent.setMessageProperties(msgProps);
