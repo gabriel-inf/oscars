@@ -22,7 +22,7 @@ import net.es.oscars.utils.topology.PathTools;
  * @author Evangelos Chaniotakis, Mary Thompson
  *
  */
-public class  CoordNotifier implements Notifier {
+public class CoordNotifier implements Notifier {
     private Logger log = Logger.getLogger(CoordNotifier.class);
     // private GenericConfig config = null;
     /**
@@ -54,7 +54,7 @@ public class  CoordNotifier implements Notifier {
             log.debug("calling Coordinator at " + coordURL.toString());
             cl = CoordClient.getClient(coordURL, wsdlURL);
             PSSReplyContent reply = new PSSReplyContent();
-            if (action.getStatus().equals(ActionStatus.SUCCESS)) {
+            if (action.getStatus() == ActionStatus.SUCCESS) {
                 reply.setStatus(PSSConstants.SUCCESS);
             } else {
                 reply.setStatus(PSSConstants.FAIL);
@@ -64,8 +64,6 @@ public class  CoordNotifier implements Notifier {
                         action.getFaultReport().setModuleName(ServiceNames.SVC_PSS);
                     }
                     if (action.getFaultReport().getTimestamp() == 0L) {
-                        // TODO REMOVE
-                        log.debug("setting timestamp to current time");
                         action.getFaultReport().setTimestamp(System.currentTimeMillis()/1000L);
                     }
                     if (action.getFaultReport().getDomainId() == null) {
