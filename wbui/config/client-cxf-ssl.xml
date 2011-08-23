@@ -19,6 +19,7 @@
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <http:conduit name="*.http-conduit">
+    <http:client ReceiveTimeout="120000"/>
     <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"

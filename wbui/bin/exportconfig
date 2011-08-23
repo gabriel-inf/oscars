@@ -18,6 +18,7 @@ OSCARS_DIST=$1
 OSCARS_HOME=$2
 
 vers=`cat $OSCARS_DIST/VERSION`
+localhost=`hostname`
 verifyArgs $OSCARS_DIST $OSCARS_HOME
 verifySvcName $SERVICE
 
@@ -39,11 +40,13 @@ fi
 if [ ! -f $DST_DIR/$CONFIG_SSL ] ; then
     cp $SRC_DIR/$CONFIG_SSL  $DST_DIR/$CONFIG_SSL
 fi
+# Run over http only if accessible to localhost
 if [ ! -f $DST_DIR/$JETTY-CONFIG_HTTP  ] ; then
     cp $SRC_DIR/$JETTY_CONFIG_HTTP  $DST_DIR/$JETTY_CONFIG_HTTP 
 fi
+# when run over ssl, make accessible to outside hosts.
 if [ ! -f $DST_DIR/$JETTY_CONFIG_SSL  ] ; then
-    cp $SRC_DIR/$JETTY_CONFIG_SSL  $DST_DIR/$JETTY_CONFIG_SSL 
+    sed s,localhost,$localhost, < $SRC_DIR/$JETTY_CONFIG_SSL > $DST_DIR/$JETTY_CONFIG_SSL
 fi
 
 if [ ! -f $DST_DIR/$CXF_CLIENT_HTTP_CFG ] ; then

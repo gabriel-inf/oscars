@@ -66,7 +66,7 @@ rm -f $tmpFile
 #
 SERVICE=$SVC_WBUI
 tmpFile=/tmp/tmpconf.$$
-sed -e "s,keystore-server\.jks,$OSCARS_HOME/sampleDomain/certs/localhost.jks," < $OSCARS_HOME/$SERVICE/conf/jetty.SSL.xml > $tmpFile
+sed -e "s,keystore-server\.jks,$OSCARS_HOME/sampleDomain/certs/oscarsidc.jks," < $OSCARS_HOME/$SERVICE/conf/jetty.SSL.xml > $tmpFile
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/jetty.SSL.xml
 rm -f $tmpFile
 sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-client\.jks,$OSCARS_HOME/sampleDomain/certs/client.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG  > $tmpFile

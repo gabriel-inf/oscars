@@ -29,6 +29,7 @@
   </cxf:bus> 
 
   <http:conduit name="*.http-conduit">
+      <http:client ReceiveTimeout="120000"/>
    </http:conduit>
 </beans>
 
