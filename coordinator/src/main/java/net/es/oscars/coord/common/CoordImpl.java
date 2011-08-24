@@ -7,6 +7,7 @@ import net.es.oscars.authZ.soap.gen.CheckAccessParams;
 import net.es.oscars.authZ.soap.gen.CheckAccessReply;
 import net.es.oscars.resourceManager.soap.gen.UpdateStatusRespContent;
 import net.es.oscars.resourceManager.soap.gen.UpdateFailureStatusReqContent;
+import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.*;
 import net.es.oscars.coord.req.*;
 import net.es.oscars.coord.soap.gen.PSSReplyContent;
@@ -256,16 +257,26 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         try {
             CheckAccessReply authDecision = checkAuthorization(method, transId,  gri,
                                                                subjectAttributes, AuthZConstants.MODIFY);
+
             ForceUpdateStatusRequest request = new ForceUpdateStatusRequest(method + gri,
                                                                            authDecision.getConditions(),
                                                                            updateStatusReq);
-             request.execute();
-             if (request.getState() == CoordAction.State.FAILED) {
-                 request.logError();
-                 throw request.getException();
-             }
-             reply = request.getResultData();
-             // LOG.debug("returning from execute");
+            MessagePropertiesType msgProps = new MessagePropertiesType();
+            msgProps.setGlobalTransactionId(transId);
+            // not used, but fill in enough to conform to schema
+            SubjectAttributes subj = new SubjectAttributes();
+            AttributeType attr = new AttributeType();
+            attr.setName("");
+            subj.getSubjectAttribute().add(attr);
+            msgProps.setOriginator(subj);
+
+            request.setMessageProperties(msgProps);
+            request.execute();
+            if (request.getState() == CoordAction.State.FAILED) {
+                request.logError();
+                throw request.getException();
+            }
+            reply = request.getResultData();
         } catch (Exception ex) {
             OSCARSServiceException oEx;
             if (ex.getClass().getName().equals("net.es.oscars.utils.soap.OSCARSServiceException")){
@@ -280,7 +291,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                      PathTools.getLocalDomainId());
                 oEx = new OSCARSServiceException(errRep);
             }
-
+            OSCARSFaultUtils.handleError ( oEx, null, LOG, method);
         }
         LOG.info(netLogger.end(method));
         return reply;

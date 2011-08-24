@@ -1,12 +1,13 @@
 package net.es.oscars.coord.req;
 
-import net.es.oscars.resourceManager.soap.gen.UpdateFailureStatusReqContent;
-import net.es.oscars.resourceManager.soap.gen.UpdateStatusRespContent;
+import net.es.oscars.coord.actions.CoordAction;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.resourceManager.soap.gen.UpdateFailureStatusReqContent;
 import net.es.oscars.resourceManager.soap.gen.UpdateStatusRespContent;
 import net.es.oscars.common.soap.gen.AuthConditions;
+import net.es.oscars.api.soap.gen.v06.QueryResContent;
+import net.es.oscars.api.soap.gen.v06.QueryResReply;
 import net.es.oscars.coord.workers.RMWorker;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -35,8 +36,12 @@ public class ForceUpdateStatusRequest extends CoordRequest <UpdateFailureStatusR
     }
 
     /**
+     * Called from CoordImpl.ForceUpdateStatus which is called from the WBUI.
+     * It needs to check access, unlike actions.RMUPdateFailureStatus which is only called
+     * internal to the coordinator
+     *
      * sends a synchronous updateFailureStatusReservation message to the ResourceManager
-     * were set in the constructor: authDecision, QueryResContent
+     * @params were set in the constructor: authDecision, QueryResContent
      * @return UpdateStatusResponse set in this.ResultData.
      */
     public void execute(){
@@ -46,10 +51,23 @@ public class ForceUpdateStatusRequest extends CoordRequest <UpdateFailureStatusR
         netLogger.setGRI(this.getGRI());
         LOG.debug(netLogger.start(method));
 
-        // Call the ResourceManager to change the status
-        UpdateStatusRespContent reply = null;
-        Object [] res =  null;
         try {
+            // QueryReservation to check the conditions that apply to MODIFY
+            QueryResContent queryResCon = new QueryResContent();
+            UpdateFailureStatusReqContent updateStatusReq = this.getRequestData();
+            AuthConditions authConditions = this.getAuthConditions();
+            queryResCon.setMessageProperties(this.getMessageProperties());
+            queryResCon.setGlobalReservationId(updateStatusReq.getGlobalReservationId());
+            QueryReservationRequest queryReq = new QueryReservationRequest(method,
+                                                                          authConditions,
+                                                                          queryResCon);
+            queryReq.execute();
+            if (queryReq.getState() == CoordAction.State.FAILED) {
+                throw queryReq.getException();
+            }
+            // Call the ResourceManager to change the status
+            UpdateStatusRespContent reply = null;
+            Object [] res =  null;
             RMWorker rmWorker = RMWorker.getInstance();
             RMClient rmClient = rmWorker.getRMClient();
             Object [] req = new Object[]{this.getRequestData()};
@@ -69,6 +87,7 @@ public class ForceUpdateStatusRequest extends CoordRequest <UpdateFailureStatusR
             this.fail(new OSCARSServiceException(message, "system"));
             LOG.debug(netLogger.error(method, ErrSev.MINOR, "catching exception setting fail  "  +
                                       ex.getMessage()));
+            ex.printStackTrace();
         }
         LOG.debug(netLogger.end(method));
     }
