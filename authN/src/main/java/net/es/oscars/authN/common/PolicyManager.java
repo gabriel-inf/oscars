@@ -294,7 +294,7 @@ public class PolicyManager {
         // check that any modification to the subjectName does not duplicate another user
         String modCertSub = modifiedUser.getCertSubject();
         if (modCertSub != null && !modCertSub.equals("")) {
-            if (!user.getCertSubject().equals(modCertSub)) {
+            if ((user.getCertSubject() == null) || (!user.getCertSubject().equals(modCertSub))) {
                 User tmpUser = userDAO.fromDN(modCertSub);
                 if (tmpUser != null) {
                     throw new AuthNException("User with DN " + user.getCertSubject() + " already exists.");
