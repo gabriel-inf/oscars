@@ -29,6 +29,9 @@ import net.es.oscars.logging.ModuleName;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.logging.OSCARSNetLoggerize;
 import net.es.oscars.utils.soap.OSCARSFaultUtils;
+import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.soap.ErrorReport;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.svc.ServiceNames;
 
@@ -75,13 +78,24 @@ public class AuthZSoapHandler implements AuthZPortType {
         netLogger.init(ModuleName.AUTHZ, transId);
         String resourceName = checkAccessReqMsg.getResourceName();
         String permissionName = checkAccessReqMsg.getPermissionName();
+        SubjectAttributes samlAttrs =
+                checkAccessReqMsg.getSubjectAttrs();
+        if (resourceName == null || permissionName == null ||  samlAttrs == null ) {
+            ErrorReport errRep = new ErrorReport (ErrorCodes.INVALID_PARAM,
+                                                  "resourceName;" + resourceName +
+                                                  " permissionName:" + permissionName +
+                                                  " SubjectAttributes:" + samlAttrs,
+                                                  ErrorReport.USER);
+            OSCARSServiceException ex = new OSCARSServiceException(errRep);
+            OSCARSFaultUtils.handleError(ex,true,null,LOG,event);
+        }
+
         LOG.info(netLogger.start(event, permissionName + ": " + resourceName));
         CheckAccessReply reply = new CheckAccessReply();
         Session session = core.getSession();
         try {
             session.beginTransaction();
-            SubjectAttributes samlAttrs =
-                checkAccessReqMsg.getSubjectAttrs();
+
             List<Attribute> beanAttrs = this.attributesToBeans(samlAttrs);
             //LOG.debug(netLogger.getMsg(event,"number of attributes is " + beanAttrs.size()));
             reply = mgr.checkAccess(beanAttrs, resourceName, permissionName);
@@ -120,14 +134,24 @@ public class AuthZSoapHandler implements AuthZPortType {
         MultiAccessPerms reply = new MultiAccessPerms();
         AuthZManager mgr = core.getAuthZManager();
         Session session = core.getSession();
+        List<ReqPermType> resourcePermissions =
+                checkMultiAccessReqMsg.getReqPermissions();
+        List<MultiAccessPerm> accessPerms = reply.getAccessPerm();
+        SubjectAttributes samlAttrs =
+                checkMultiAccessReqMsg.getSubjectAttrs();
+        if ((resourcePermissions == null || resourcePermissions.isEmpty()) ||
+                    samlAttrs == null ) {
+            ErrorReport errRep = new ErrorReport (ErrorCodes.INVALID_PARAM,
+                                                  "resourcePermissions;" + resourcePermissions +
+                                                  " SubjectAttributes:" + samlAttrs,
+                                                  ErrorReport.USER);
+            OSCARSServiceException ex = new OSCARSServiceException(errRep);
+            OSCARSFaultUtils.handleError(ex,true,null,LOG,event);
+        }
         try {
             session.beginTransaction();
-            SubjectAttributes samlAttrs =
-                checkMultiAccessReqMsg.getSubjectAttrs();
             List<Attribute> beanAttrs = this.attributesToBeans(samlAttrs);
-            List<ReqPermType> resourcePermissions =
-                checkMultiAccessReqMsg.getReqPermissions();
-            List<MultiAccessPerm> accessPerms = reply.getAccessPerm();
+
             // check access for each combination
             for (ReqPermType rp: resourcePermissions) {
                 // reply types

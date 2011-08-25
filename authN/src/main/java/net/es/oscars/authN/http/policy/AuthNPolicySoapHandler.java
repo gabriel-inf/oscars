@@ -1,6 +1,8 @@
 package net.es.oscars.authN.http.policy;
 
 import java.util.List;
+
+import net.es.oscars.utils.soap.OSCARSServiceException;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
@@ -32,6 +34,8 @@ import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.logging.OSCARSNetLoggerize;
 import net.es.oscars.utils.soap.OSCARSFaultUtils;
 import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.utils.soap.ErrorReport;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
 
 @OSCARSNetLoggerize(moduleName=ModuleName.AUTHNP)
 @javax.jws.WebService(
@@ -134,7 +138,9 @@ public class AuthNPolicySoapHandler implements AuthNPolicyPortType {
             mgr.createUser(user, userDetails.getInstitution(),
                            addUserReqMsg.getNewAttributes());
         } catch (AuthNException ex) {
-            OSCARSFaultUtils.handleError ( ex, true, session, LOG, event);
+            ErrorReport errRep = new ErrorReport(ErrorCodes.INVALID_PARAM,ex.getMessage(),ErrorReport.USER);
+            OSCARSServiceException oex = new OSCARSServiceException(errRep);
+            OSCARSFaultUtils.handleError ( oex, true, session, LOG, event);
         } catch (Exception ex) {
             OSCARSFaultUtils.handleError ( ex, false, session, LOG, event);
         }
@@ -237,7 +243,9 @@ public class AuthNPolicySoapHandler implements AuthNPolicyPortType {
                            userDetails.getInstitution(),
                            modifyUserReqMsg.isPasswordChanged());
         } catch (AuthNException ex) {
-            OSCARSFaultUtils.handleError ( ex, true, session, LOG, event);
+            ErrorReport errRep = new ErrorReport(ErrorCodes.INVALID_PARAM,ex.getMessage(),ErrorReport.USER);
+            OSCARSServiceException oex = new OSCARSServiceException(errRep);
+            OSCARSFaultUtils.handleError ( oex, true, session, LOG, event);
         } catch (Exception ex) {
             OSCARSFaultUtils.handleError ( ex, false, session, LOG, event);
         }
@@ -540,7 +548,7 @@ public class AuthNPolicySoapHandler implements AuthNPolicyPortType {
     /**
      * Builds Hibernate bean, given Axis2 UserDetails class.
      *
-     * @param user An Axis 2 UserDetails instance
+     * @param userDetails An Axis 2 UserDetails instance
      * @return a Hibernate User instance
      */
     private User userReqToUser(UserDetails userDetails) {

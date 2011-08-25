@@ -146,6 +146,12 @@ public class PolicyManager {
         if (currentUser != null) {
             throw new AuthNException("User " + userName + " already exists.");
         }
+        if (user.getCertSubject() != null && !user.getCertSubject().equals("")) {
+            currentUser = userDAO.fromDN(user.getCertSubject());
+            if (currentUser != null){
+                throw new AuthNException("User with DN " + user.getCertSubject() + " already exists." );
+            }
+        }
         InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
         Institution inst = institutionDAO.queryByParam("name", institutionName);
         if (inst == null) {
@@ -155,9 +161,9 @@ public class PolicyManager {
         // encrypt the password before persisting it to the database
         String encryptedPwd = Jcrypt.crypt(this.salt, user.getPassword());
         user.setPassword(encryptedPwd);
-/*TODO check that any input attributes exist */
         userDAO.create(user);
         // add any attributes for this user to the UserAttributes table
+        List<String> unknownAttrs = new ArrayList<String>();
         if (roles != null) {
             UserAttributeDAO uaDAO = new UserAttributeDAO(this.dbname);
             AttributeDAO attrDAO = new AttributeDAO(this.dbname);
@@ -165,8 +171,16 @@ public class PolicyManager {
                 UserAttribute ua = new UserAttribute();
                 ua.setUser(user);
                 Attribute attr = attrDAO.queryByParam("value", attrName);
-                ua.setAttribute(attr);
-                uaDAO.create(ua);
+                if (attr != null) {
+                    ua.setAttribute(attr);
+                    uaDAO.create(ua);
+                } else {
+                    unknownAttrs.add(attrName);
+                }
+            }
+            if (!unknownAttrs.isEmpty()) {
+                throw new AuthNException("The following attributes are not recognized: " +
+                                        unknownAttrs.toString());
             }
         }
         this.log.debug(netLogger.end(event));
@@ -264,7 +278,6 @@ public class PolicyManager {
         UserDAO userDAO = new UserDAO(this.dbname);
         String userName = modifiedUser.getLogin();
 
-        // TODO:  keep next two checks?
         // check whether this person is in the database
         User user = userDAO.query(userName);
         if (user == null) {
@@ -277,6 +290,16 @@ public class PolicyManager {
         if (modifiedInst == null) {
             throw new AuthNException("Institution " + institutionName +
                                    " not found!");
+        }
+        // check that any modification to the subjectName does not duplicate another user
+        String modCertSub = modifiedUser.getCertSubject();
+        if (modCertSub != null && !modCertSub.equals("")) {
+            if (!user.getCertSubject().equals(modCertSub)) {
+                User tmpUser = userDAO.fromDN(modCertSub);
+                if (tmpUser != null) {
+                    throw new AuthNException("User with DN " + user.getCertSubject() + " already exists.");
+                }
+            }
         }
         user.setInstitution(modifiedInst);
         user.setCertIssuer(modifiedUser.getCertIssuer());

@@ -89,19 +89,19 @@
   <tr>
     <!-- unsure at this point what a good regular expression would be;
          various forms -->
-    <td>X.509 subject name</td>
+    <td>X.509 subject name (X.500 format)</td>
     <td>
       <input type="text" name="certSubject" id="certSubject"
              dojoType="dijit.form.ValidationTextBox"
-             promptMessage="Enter the certificate subject" />
+             promptMessage="Enter the certificate subject: e.g. CN=name, OU=orgUnit, O=Organization, C=Country" />
     </td>
   </tr>
   <tr>
-    <td>X.509 issuer name</td>
+    <td>X.509 issuer name (X.500 format)</td>
     <td>
       <input type="text" name="certIssuer" id="certIssuer"
              dojoType="dijit.form.ValidationTextBox"
-             promptMessage="Enter the issuer of the certificate" />
+             promptMessage="Enter the issuer of the certificate: e.g. CN=RAname, OU=orgUnit, O=Organization, C=Country"" />
     </td>
   </tr>
   <tr>

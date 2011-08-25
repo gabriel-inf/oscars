@@ -1,6 +1,8 @@
 package net.es.oscars.api.http;
 
 import net.es.oscars.api.soap.gen.v06.*;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
+import net.es.oscars.utils.soap.ErrorReport;
 import org.apache.log4j.Logger;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSSecurityEngineResult;
@@ -608,10 +610,9 @@ public class OSCARSSoapHandler06 implements OSCARS {
      * AuthNRequester gets the DN from the message and calls the AuthN server to get 
      * the user's attributes if any.
      * 
-     * @return a list of the users attributes of the entity that signed the request. 
-     *    returns null if there are no attributes
+     * @return a list of the users attributes of the entity that signed the request.
      *    if the user is registered, login_id and institution attributes will be returned.
-     * @throws OSCARSServiceException if the user is not registered
+     * @throws OSCARSServiceException if there are no attributes
      */
 
       private static SubjectAttributes AuthNRequester (MessagePropertiesType msgProps,
@@ -643,6 +644,12 @@ public class OSCARSSoapHandler06 implements OSCARS {
           Object[] res = authNClient.invoke("verifyDN",req);
           VerifyReply reply = (VerifyReply)res[0];
           SubjectAttributes subjectAttrs = reply.getSubjectAttributes();
+          if (subjectAttrs == null || subjectAttrs.getSubjectAttribute().isEmpty()){
+              ErrorReport errRep = new ErrorReport (ErrorCodes.ACCESS_DENIED,
+                                                  "no atributes for user " + userDN,
+                                                  ErrorReport.USER);
+              throw new OSCARSServiceException(errRep);
+          }
           return subjectAttrs;
       }
       
