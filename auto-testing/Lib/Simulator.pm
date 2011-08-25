@@ -7,7 +7,7 @@ use Lib::TopologyUtils;
 use fields qw(NAME);
 
 
-my $NAME = "Sumulator";
+my $NAME = "Simulator";
 
 
 
@@ -17,10 +17,13 @@ my $NAME = "Sumulator";
 
 my $tester = new Lib::Tester;
 
+our $COUNT = 100;
+our $DURATION = 20;
+our $INTERVAL = 45;
 
 sub create 
 {
-	_do_test("_create", 30);
+	_do_test("_create", $COUNT);
 }
 
 
@@ -53,12 +56,12 @@ sub _do_test
 		%pDst = $parser->parse_urn(urn => $dst);
 	
 		next if ($src eq $dst);
-		next if ($pSrc{'domain'} ne $pDst{'domain'});
+		#next if ($pSrc{'domain'} ne $pDst{'domain'});
 		next if ($pSrc{'node'} eq '*');
 		next if ($pDst{'node'} eq '*');
 
 		#$endMins = 10 + int(rand(59 - 10));
-		$endMins = 10 + int(rand(15 - 10));
+		$endMins = 10 + int(rand($DURATION));
 		$endTime = "+00:00:" . $endMins;
 
 	    my %testParams = (
@@ -77,8 +80,8 @@ sub _do_test
     	$tester->create(%testParams);
 		$c++;
 		if ($c != $iterations) {
-			#my $sleepTime = 1 + int(rand(15 * 60));
-			my $sleepTime = 1 + int(rand(2 * 60));
+			#my $sleepTime = 1 + int(rand(2 * 45));
+			my $sleepTime = 1 + int(rand($INTERVAL));
 			print "sleeping ...\n";
 			sleep($sleepTime);
 		}

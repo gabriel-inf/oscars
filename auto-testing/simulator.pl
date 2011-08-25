@@ -33,7 +33,6 @@ print "$nowstr\nDone\n";
 
 sub run_simulators
 {
-	print "testing local reservation\n";
 	$simulator->create();
 }
 
