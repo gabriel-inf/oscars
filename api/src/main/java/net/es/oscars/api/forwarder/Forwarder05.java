@@ -109,6 +109,10 @@ public class Forwarder05 extends Forwarder {
             Map soap = (HashMap<String,Object>) apiConfig.get("public");
             if(apiConfig.containsKey("public")){
                 HashMap<String, Object> pubConf = (HashMap<String,Object>) apiConfig.get("public");
+                this.wsnProducer = (String) pubConf.get("publishTo05");
+            }
+            if(this.wsnProducer == null && apiConfig.containsKey("public")){
+                HashMap<String, Object> pubConf = (HashMap<String,Object>) apiConfig.get("public");
                 this.wsnProducer = (String) pubConf.get("publishTo");
             }
             if(this.wsnProducer == null && apiConfig.containsKey("soap")){
@@ -146,6 +150,10 @@ public class Forwarder05 extends Forwarder {
         OSCARSNetLogger netLog = OSCARSNetLogger.getTlogger();
         LOG.info(netLog.start("Forwarder05.notify"));
         synchronized(this){
+           //make sure we have a subscription
+            if(!this.subscribeManager.hasSubscription(this.getDestDomainId())){
+                throw new OSCARSServiceException("Unable to establish a subscription with " + this.getDestDomainId());
+            }
             if(this.wsnClient == null){
                 try {
                     this.wsnClient = WSNBrokerClient.getClient(this.wsnUrl, this.wsnWsdl).getPortType();

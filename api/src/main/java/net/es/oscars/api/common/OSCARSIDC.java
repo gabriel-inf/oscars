@@ -278,29 +278,27 @@ public class OSCARSIDC implements Runnable {
         //Set defaults
         String domainId = PathTools.getLocalDomainId();
         String namespace = "http://oscars.es.net/OSCARS/06";
+        String namespace05 = "http://oscars.es.net/OSCARS";
         String name = "OSCARS IDC";
         String description = "OSCARS IDC";
         GeoLocation geoLocation = new GeoLocation();
         boolean hasGeoLocation = false;
         
-        //verify that we have a valid url to register
+        //verify that we have a valid 0.6 url to register
+        HashMap<String, String> protocolMap = new HashMap<String, String>();
         HashMap<String,String> publicInfo = (HashMap<String,String>) this.IDCMap.get("public");
-        if(!publicInfo.containsKey("publishTo") || publicInfo.get("publishTo") == null){
-            LOG.warn(netLogger.end("registerIDC","Cannot register this IDC to the lookup service: No 'publishTo' property " +
-                "under the 'public' block in the config file"));
+        try{
+            protocolMap.put(namespace, this.getPublicUrl("publishTo", publicInfo));
+        }catch(Exception e){
+            LOG.warn(netLogger.end("registerIDC","Cannot register this IDC to the lookup service: " + e.getMessage()));
             return;
         }
-        String idcUrl = (String) publicInfo.get("publishTo");
-        URL tmpUrl = null;
-        try {
-            tmpUrl = new URL(idcUrl);
-        } catch (MalformedURLException e) {
-            LOG.warn(netLogger.end("registerIDC","Cannot register this IDC to the lookup service: The 'publishTo' property is not a valid URL"));
-            return;
-        }
-        if(tmpUrl.getHost().equals("localhost") || tmpUrl.getHost().equals("127.0.0.1")){
-            LOG.warn(netLogger.end("registerIDC","Cannot register this IDC to the lookup service: The 'publishTo' property cannot be local address"));
-            return;
+        
+        //Check if we have a valid 0.5 ur to register
+        try{
+            protocolMap.put(namespace05, this.getPublicUrl("publishTo05", publicInfo));
+        }catch(Exception e){
+            LOG.warn(netLogger.end("registerIDC","Cannot register 0.5 address to the lookup service: " + e.getMessage()));
         }
         
         //get optional name and description
@@ -388,9 +386,27 @@ public class OSCARSIDC implements Runnable {
         }
         
         LOG.warn(netLogger.end("registerIDC", null, null, publicInfo));
-        client.register (domainId, name, namespace, idcUrl, description, geoLocation);
+        client.register (domainId, name, protocolMap, description, geoLocation);
     }
     
+    private String getPublicUrl(String property, HashMap<String,String> publicInfo){
+        if(!publicInfo.containsKey(property) || publicInfo.get(property) == null){
+            throw new RuntimeException("No " + property + 
+                    " property under the 'public' block in the config file");
+        }
+        String idcUrl = (String) publicInfo.get(property);
+        URL tmpUrl = null;
+        try {
+            tmpUrl = new URL(idcUrl);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("The " + property + " property is not a valid URL");
+        }
+        if(tmpUrl.getHost().equals("localhost") || tmpUrl.getHost().equals("127.0.0.1")){
+            throw new RuntimeException("The " + property + " property cannot be local address");
+        }
+        
+        return idcUrl;
+    }
 
     public void run() {
         try {

@@ -90,19 +90,9 @@
       wsdlLocation="wsdl-location/OSCARSService-0.6.wsdl"
       implementor="net.es.oscars.api.http.OSCARSSoapHandler06">
 
+      <!-- 
       <jaxws:inInterceptors>
-      <!--  TODO: uncomment to enable UsernameToken auth -->
-      <!--
-              <bean class="net.es.oscars.utils.soap.AuthInterceptor" id="UT06">
-                <constructor-arg>
-                        <map>
-                                <entry key="action" value="UsernameToken"/>
-                                <entry key="passwordType" value="PasswordText" />
-                                <entry key="passwordCallbackClass" value="net.es.oscars.utils.soap.ServerPasswordCallback"/>
-                        </map>
-                </constructor-arg>
-              </bean>
-       -->
+
               <bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor" id="Secure_Request06">
                 <constructor-arg>
                         <map>
@@ -114,6 +104,8 @@
 
               <bean id="VersionInInterceptor" class="net.es.oscars.utils.soap.NamespaceInterceptor"/>
       </jaxws:inInterceptors>
+      -->
+      
       <jaxws:properties>
         <entry key="ws-security.signature.username" value="mykey" />
         <entry key="ws-security.callback-handler"
@@ -131,10 +123,11 @@
 
    <jaxws:endpoint id="OSCARS05"
       serviceName="tns05:OSCARSService" endpointName="tns05:OSCARS"
-      address="https://deploy-host/OSCARS"
+      address="https://deploy-host/OSCARS05"
       wsdlLocation="wsdl-location/OSCARSService-0.5.wsdl"
       implementor="net.es.oscars.api.http.OSCARSSoapHandler05">
-
+    
+      <!--
       <jaxws:inInterceptors>
               <bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor" id="Secure_Request05">
                 <constructor-arg>
@@ -146,6 +139,8 @@
               </bean>
               <bean id="VersionInInterceptor05" class="net.es.oscars.utils.soap.NamespaceInterceptor"/>
       </jaxws:inInterceptors>
+      -->
+      
       <jaxws:properties>
         <entry key="ws-security.signature.username" value="mykey" />
         <entry key="ws-security.callback-handler"

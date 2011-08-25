@@ -3,6 +3,7 @@ package net.es.oscars.utils.clients;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import java.util.HashMap;
 import java.util.List;
 
 import net.es.oscars.logging.ModuleName;
@@ -118,16 +119,14 @@ public class LookupClient extends OSCARSSoapService<LookupService, LookupPortTyp
     
     public void register (String domainId,
             String name,
-            String namespace,
-            String location,
+            HashMap<String, String> protocolMap,
             String description) throws OSCARSServiceException {
-        this.register(domainId, name, namespace, location, description, null);
+        this.register(domainId, name,protocolMap, description, null);
     }
     
     public void register (String domainId,
                           String name,
-                          String namespace,
-                          String location,
+                          HashMap<String, String> protocolMap,
                           String description,
                           GeoLocation geoLocation) throws OSCARSServiceException {        
         
@@ -139,9 +138,11 @@ public class LookupClient extends OSCARSSoapService<LookupService, LookupPortTyp
         
         //indicate what protocol it speaks
         Protocol protocol = new Protocol();
-        protocol.setType(namespace);
-        protocol.setLocation(location);
-        request.getProtocol().add(protocol);
+        for(String version : protocolMap.keySet()){
+            protocol.setType(version);
+            protocol.setLocation(protocolMap.get(version));
+            request.getProtocol().add(protocol);
+        }
         
         Relationship rel = new Relationship();
         rel.setType("controls");

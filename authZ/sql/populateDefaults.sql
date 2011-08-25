@@ -489,6 +489,11 @@ INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="Subscriptions"),
      (select id from permissions where name="create"),
      (select id from constraints where name="none"),NULL); 
+INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where value="OSCARS-service"),
+     (select id from resources where name="Subscriptions"),
+     (select id from permissions where name="modify"),
+     (select id from constraints where name="none"),NULL); 
 -- maybe constraint should be "mysite-in-resv"
 INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="OSCARS-service"),

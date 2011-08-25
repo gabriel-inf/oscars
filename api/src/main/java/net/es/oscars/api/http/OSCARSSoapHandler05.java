@@ -260,25 +260,25 @@ public class OSCARSSoapHandler05 implements OSCARS {
                                        forward.getPayloadSender());
 
             forwardReply.setCreateReservation(reply);
-        } if (ForwardTypes.CANCEL_RESERVATION.equals(contentType)) {
+        } else if (ForwardTypes.CANCEL_RESERVATION.equals(contentType)) {
             String reply =
                 this.cancelReservation(forward.getPayload().getCancelReservation(),
                                        forward.getPayloadSender());
 
             forwardReply.setCancelReservation(reply);
-        } if (ForwardTypes.MODIFY_RESERVATION.equals(contentType)) {
+        } else if (ForwardTypes.MODIFY_RESERVATION.equals(contentType)) {
             net.es.oscars.api.soap.gen.v05.ModifyResReply reply =
                 this.modifyReservation(forward.getPayload().getModifyReservation(),
                                        forward.getPayloadSender());
 
             forwardReply.setModifyReservation(reply);
-        } if (ForwardTypes.CREATE_PATH.equals(contentType)) {
+        } else if (ForwardTypes.CREATE_PATH.equals(contentType)) {
             net.es.oscars.api.soap.gen.v05.CreatePathResponseContent reply =
                 this.createPath(forward.getPayload().getCreatePath(),
                                 forward.getPayloadSender());
 
             forwardReply.setCreatePath(reply);
-        } if (ForwardTypes.TEARDOWN_PATH.equals(contentType)) {
+        } else if (ForwardTypes.TEARDOWN_PATH.equals(contentType)) {
             net.es.oscars.api.soap.gen.v05.TeardownPathResponseContent reply =
                 this.teardownPath(forward.getPayload().getTeardownPath(),
                                   forward.getPayloadSender());

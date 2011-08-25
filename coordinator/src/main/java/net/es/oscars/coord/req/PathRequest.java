@@ -547,7 +547,17 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         synchronized (this) {
             if (this.status != null && this.status.equals(PSSConstants.FAIL)) {
                  return; // failure has already been handled
+            } 
+            
+            //handle extraneous interdomain notifications
+            String targetStatus = StateEngineValues.INSETUP;
+            if(this.failedEvent.equals(NotifyRequestTypes.PATH_TEARDOWN_COMPLETED)){
+                targetStatus = StateEngineValues.INTEARDOWN;
             }
+            if(!this.isLocalOnly && !this.checkStatus(targetStatus)){
+                return;
+            }
+            
             this.status = PSSConstants.FAIL;
         }
 
@@ -580,5 +590,38 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         }
         this.notifyError (exception.getMessage(), this.resDetails);
     }
-
+    
+    /**
+     * Method to check status of reservation. Used to see if we should fail the reservation when a 
+     * store action fails. This protects against duplicate notifications (like those from 0.5) 
+     * failing the reservation.
+     * 
+     * @param targetStatus the status the reservation should have
+     * @return true if status matches the given target, false otherwise
+     */
+    private boolean checkStatus(String targetStatus) {
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        LOG.info(netLogger.start("CreateResvCompletedAction.checkStatus"));
+        QueryResContent queryReq = new QueryResContent();
+        queryReq.setMessageProperties(this.getMessageProperties());
+        queryReq.setGlobalReservationId(this.getGRI());
+        QueryReservationRequest qRequest= new QueryReservationRequest("QueryReservation-" + this.getGRI(),
+                                                                       null,
+                                                                       queryReq);
+        qRequest.execute();
+        if (qRequest.getState() == CoordAction.State.FAILED){
+            //can't determine state
+            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false1"));
+            return false;
+        }
+        
+        QueryResReply qReply = qRequest.getResultData();
+        if(qReply.getReservationDetails() != null && 
+                targetStatus.equals(qReply.getReservationDetails().getStatus())){
+            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus -true"));
+            return true;
+        }
+        LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false2"));
+        return false;
+    }
 }

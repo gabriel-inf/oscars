@@ -1,6 +1,8 @@
 package net.es.oscars.coord.req;
 
 
+import java.util.HashMap;
+
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.coord.actions.*;
 import net.es.oscars.coord.runtimepce.PCERuntimeAction;
@@ -332,9 +334,18 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
         
         //if it was a COMPLETED message that failed we need to decide if we actually 
         // need to fail the reservation or if this was a duplicate
-        if(NotifyRequestTypes.RESV_CREATE_COMPLETED.equals(eventType) && 
-                !this.checkStatus(StateEngineValues.INCOMMIT)){
-            LOG.warn(netLogger.error(method,ErrSev.MAJOR,"RESV_CREATE_COMPLETED received in a non-INCOMMIT state. Ignoring message."));
+        HashMap<String, String> validNotifyStates = new HashMap<String, String>();
+        validNotifyStates.put(NotifyRequestTypes.RESV_CREATE_COMPLETED, StateEngineValues.INCOMMIT);
+        validNotifyStates.put(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED, StateEngineValues.INCOMMIT);
+        validNotifyStates.put(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED, StateEngineValues.INSETUP);
+        validNotifyStates.put(NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED, StateEngineValues.INSETUP);
+        validNotifyStates.put(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_CONFIRMED, StateEngineValues.INTEARDOWN);
+        validNotifyStates.put(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_CONFIRMED, StateEngineValues.INTEARDOWN);
+        
+        
+        LOG.info(method + ": eventType=" + eventType + ", " + validNotifyStates.containsKey(eventType));
+        if(validNotifyStates.containsKey(eventType) && !this.checkStatus(validNotifyStates.get(eventType))){
+            LOG.warn(netLogger.error(method,ErrSev.MAJOR,"Ignoring because received " + eventType + " and was not in " + validNotifyStates.get(eventType)));
             return;
         }
         

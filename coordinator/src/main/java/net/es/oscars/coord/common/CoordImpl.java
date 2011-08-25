@@ -947,7 +947,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                     throw new OSCARSServiceException (ErrorCodes.ACCESS_DENIED, "requested duration exceeds allowed limit",
                                                       ErrorReport.USER);
                 }
-            } else if (authCond.getName().equals(AuthZConstants.INT_HOPS_ALLOWED)) {
+            } else if (authCond.getName().equals(AuthZConstants.SPEC_PATH_ELEMS)) {
                 hopsAllowed = true;
             } else if (authCond.getName().equals(AuthZConstants.SPECIFY_GRI)) {
                 griAllowed = true;
