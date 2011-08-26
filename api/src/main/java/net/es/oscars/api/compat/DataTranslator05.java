@@ -944,14 +944,16 @@ public class DataTranslator05 {
         UserRequestConstraintType userConstraint = new UserRequestConstraintType();
         userConstraint.setStartTime(resDetails05.getStartTime());
         userConstraint.setEndTime(resDetails05.getEndTime());
-        userConstraint.setBandwidth(resDetails05.getBandwidth());
+        //divide to handle bug in notifications where bandwidth is in bps
+        userConstraint.setBandwidth(resDetails05.getBandwidth()/1000000);
         userConstraint.setPathInfo(DataTranslator05.translate(resDetails05.getPathInfo()));
         resDetails06.setUserRequestConstraint(userConstraint);
         
         ReservedConstraintType resvConstraint = new ReservedConstraintType();
         resvConstraint.setStartTime(resDetails05.getStartTime());
         resvConstraint.setEndTime(resDetails05.getEndTime());
-        resvConstraint.setBandwidth(resDetails05.getBandwidth());
+        //divide to handle bug in notifications where bandwidth is in bps
+        resvConstraint.setBandwidth(resDetails05.getBandwidth()/1000000);
         resvConstraint.setPathInfo(DataTranslator05.translate(resDetails05.getPathInfo()));
         resDetails06.setReservedConstraint(resvConstraint);
         
