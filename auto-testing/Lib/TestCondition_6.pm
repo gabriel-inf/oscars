@@ -36,6 +36,11 @@ our $ENDTIME = '+00:00:03';
 
 
 # This test must be run manually from testdomain-4.net to testdomain-2.net
+# urn:ogf:network:domain=testdomain-4.net:node=node-2:port=port-10:link=link-1
+# urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-9:link=link-1
+#
+# urn:ogf:network:domain=testdomain-4.net:node=node-1:port=port-1:link=link-1
+# urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-1:link=link-1
 sub single_test_6_1
 {
 	# Test Scenario (6.1)
@@ -63,6 +68,11 @@ sub single_test_6_1
 
 
 # This test must be run manually from testdomain-4.net to testdomain-2.net
+# urn:ogf:network:domain=testdomain-4.net:node=node-2:port=port-10:link=link-1
+# urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-9:link=link-1
+#
+# urn:ogf:network:domain=testdomain-4.net:node=node-1:port=port-1:link=link-1
+# urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-1:link=link-1
 sub single_test_6_2
 {
 	# Test Scenario (6.2)
