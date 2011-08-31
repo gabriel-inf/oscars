@@ -585,7 +585,7 @@
                         <encodingType>ethernet</encodingType>
                         <switchingCapabilitySpecificInfo>
                             <interfaceMTU>9000</interfaceMTU>
-                            <vlanRangeAvailability>2-400</vlanRangeAvailability>
+                            <vlanRangeAvailability>2-4000</vlanRangeAvailability>
                         </switchingCapabilitySpecificInfo>
                     </SwitchingCapabilityDescriptors>
                 </link>
@@ -841,7 +841,7 @@
                         <encodingType>ethernet</encodingType>
                         <switchingCapabilitySpecificInfo>
                             <interfaceMTU>9000</interfaceMTU>
-                            <vlanRangeAvailability>2-400</vlanRangeAvailability>
+                            <vlanRangeAvailability>2-4000</vlanRangeAvailability>
                         </switchingCapabilitySpecificInfo>
                     </SwitchingCapabilityDescriptors>
                 </link>
