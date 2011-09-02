@@ -91,7 +91,7 @@ public class OSCARSIDC implements Runnable {
             throw new OSCARSServiceException (e);
         }
         
-        // Make sure that the Internal API Service e is running
+        // Make sure that the Internal API Service is running
         if (OSCARSIDC.serverThread == null) {
             OSCARSIDC.serverThread = new Thread (this);
             OSCARSIDC.serverThread.start();
@@ -116,7 +116,7 @@ public class OSCARSIDC implements Runnable {
         // Instantiates lookup client
         try {           
             URL lookupWsdl = cc.getWSDLPath(ServiceNames.SVC_LOOKUP,null);
-            LOG.info ("Lookup host= " + this.lookupHost + " WSDL= " + lookupWsdl);
+            LOG.info (netLogger.start(event, "Lookup host= " + this.lookupHost + " WSDL= " + lookupWsdl));
             this.lookupClient = LookupClient.getClient(this.lookupHost,lookupWsdl);
         } catch (MalformedURLException e) {
             throw new OSCARSServiceException (e);
@@ -385,7 +385,7 @@ public class OSCARSIDC implements Runnable {
             geoLocation = null;
         }
         
-        LOG.warn(netLogger.end("registerIDC", null, null, publicInfo));
+        LOG.info(netLogger.end("registerIDC", null, null, publicInfo));
         client.register (domainId, name, protocolMap, description, geoLocation);
     }
     

@@ -6,17 +6,20 @@
 
 package net.es.oscars.api.http;
 
-import java.util.logging.Logger;
+import net.es.oscars.logging.ModuleName;
+import net.es.oscars.logging.OSCARSNetLoggerize;
+import org.apache.log4j.Logger;
 
 import net.es.oscars.api.forwarder.ForwarderFactory;
 import net.es.oscars.api.forwarder.Forwarder;
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
-
+import net.es.oscars.logging.OSCARSNetLogger;
+import net.es.oscars.utils.soap.OSCARSFaultUtils;
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import  net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.utils.svc.ServiceNames;
 
-
+@OSCARSNetLoggerize(moduleName = ModuleName.INTAPI)
 @javax.jws.WebService(
         serviceName = ServiceNames.SVC_API_INTERNAL,
         portName = "OSCARSInternalPortType",
@@ -26,89 +29,172 @@ import  net.es.oscars.utils.svc.ServiceNames;
 public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
 
     private static final Logger LOG = Logger.getLogger(OSCARSInternalPortTypeImpl.class.getName());
+    private static final String moduleName = ModuleName.INTAPI;
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#createPath(net.es.oscars.api.soap.gen.v06.CreatePathContent  createPath ,)java.lang.String  destDomainId )*
+
+    /**
+      *  Forwards a createReservation request to the next domain
+      * @param createReservation
+      * @param destDomainId
+      * @return
+      * @throws OSCARSFaultMessage
+      */
+    public CreateReply createReservation(ResCreateContent createReservation,String destDomainId)
+             throws OSCARSFaultMessage {
+         String event = "createReservation";
+         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+         netLogger.init(moduleName, createReservation.getMessageProperties().getGlobalTransactionId());
+         netLogger.setGRI(createReservation.getGlobalReservationId());
+         LOG.info(netLogger.start(event, createReservation.getGlobalReservationId() +
+                                  " to " + destDomainId));
+         Forwarder forwarder;
+         try {
+             forwarder = ForwarderFactory.getForwarder(destDomainId);
+         } catch (OSCARSServiceException e) {
+             throw new OSCARSFaultMessage (e.toString());
+         }
+
+         if (forwarder == null) {
+             throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
+         }
+
+         try {
+             return forwarder.createReservation(createReservation);
+         } catch (OSCARSServiceException ex) {
+             OSCARSFaultUtils.handleError(ex, true, null, LOG, event);
+         } catch (Exception ex) {
+             OSCARSFaultUtils.handleError( ex, false, null, LOG, event);
+         }
+         LOG.info(netLogger.end(event));
+         return null;
+    }
+         /**
+      * Forwards a modifyReservation request
+      * @param modifyReservation
+      * @param destDomainId
+      * @return
+      * @throws OSCARSFaultMessage
+      */
+    public ModifyResReply modifyReservation(ModifyResContent modifyReservation,String destDomainId)
+             throws OSCARSFaultMessage    {
+         String event = "modifyReservation";
+         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+         netLogger.init(moduleName, modifyReservation.getMessageProperties().getGlobalTransactionId());
+         netLogger.setGRI(modifyReservation.getGlobalReservationId());
+         LOG.info(netLogger.start(event, modifyReservation.getGlobalReservationId() + " to " + destDomainId));
+
+         Forwarder forwarder;
+         try {
+             forwarder = ForwarderFactory.getForwarder(destDomainId);
+         } catch (OSCARSServiceException e) {
+             throw new OSCARSFaultMessage (e.toString());
+         }
+
+         if (forwarder == null) {
+             throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
+         }
+
+         try {
+             return forwarder.modifyReservation (modifyReservation);
+
+         } catch (OSCARSServiceException ex) {
+             OSCARSFaultUtils.handleError(ex, true, null, LOG, event);
+         } catch (Exception ex) {
+             OSCARSFaultUtils.handleError( ex, false, null, LOG, event);
+         }
+         LOG.info(netLogger.end(event));
+         return null;
+     }
+    /**
+     *   Forwards a cancelReservation request to the  next domain
+     * @param cancelReservation
+     * @param destDomainId
+     * @return
+     * @throws OSCARSFaultMessage
      */
-    public CreatePathResponseContent createPath(CreatePathContent createPath,String destDomainId) throws OSCARSFaultMessage    { 
-        LOG.info("Executing operation createPath");
-        System.out.println(createPath);
-        System.out.println(destDomainId);
+    public CancelResReply cancelReservation(CancelResContent cancelReservation,String destDomainId)
+            throws OSCARSFaultMessage    {
+        String event = "cancelReservation";
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        netLogger.init(moduleName, cancelReservation.getMessageProperties().getGlobalTransactionId());
+        netLogger.setGRI(cancelReservation.getGlobalReservationId());
+        LOG.info(netLogger.start(event, cancelReservation.getGlobalReservationId() +
+                                 " to " + destDomainId));
         Forwarder forwarder;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
-        } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString()); 
-        }
-        
-        if (forwarder == null) {
-            throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
-        }
-        
-        try {
-            return forwarder.createPath(createPath);
         } catch (OSCARSServiceException e) {
             throw new OSCARSFaultMessage (e.toString());
         }
-    }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#notify(net.es.oscars.api.soap.gen.v06.EventContent  notify ,)java.lang.String  destDomainId )*
-     */
-    public void interDomainEvent(InterDomainEventContent interDomainEvent,String destDomainId) {
-        LOG.info("Executing operation notify");
-        System.out.println(interDomainEvent);
-        System.out.println(destDomainId);
-        Forwarder forwarder = null;
-        try {
-            forwarder = ForwarderFactory.getForwarder(destDomainId);
-        } catch (OSCARSServiceException e) {
-            LOG.info (e.toString()); 
-        }
-        
-        if (forwarder == null) {
-            LOG.info ("no forwarder for " + destDomainId);
-        }
-      
-        try {
-            forwarder.notify(interDomainEvent);
-        } catch (OSCARSServiceException e) {
-            LOG.info (e.toString());
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#cancelReservation(net.es.oscars.api.soap.gen.v06.GlobalReservationId  cancelReservation ,)java.lang.String  destDomainId )*
-     */
-    public CancelResReply cancelReservation(CancelResContent cancelReservation,String destDomainId) throws OSCARSFaultMessage    { 
-        LOG.info("Executing operation cancelReservation");
-        System.out.println(cancelReservation);
-        System.out.println(destDomainId);
-        Forwarder forwarder;
-        try {
-            forwarder = ForwarderFactory.getForwarder(destDomainId);
-        } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString()); 
-        }
-        
         if (forwarder == null) {
             throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
         }
-        
+
         try {
             return forwarder.cancelReservation (cancelReservation);
+        } catch (OSCARSServiceException ex) {
+            OSCARSFaultUtils.handleError(ex, true, null, LOG, event);
+        } catch (Exception ex) {
+            OSCARSFaultUtils.handleError( ex, false, null, LOG, event);
+        }
+        LOG.info(netLogger.end(event));
+        return null;
+    }
+
+
+    /**
+     *  forwards a createPath request to the next domain
+     * @param createPath
+     * @param destDomainId
+     * @return
+     * @throws OSCARSFaultMessage
+     */
+    public CreatePathResponseContent createPath(CreatePathContent createPath,String destDomainId)
+            throws OSCARSFaultMessage    {
+        String event = "createPath";
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        netLogger.init(moduleName, createPath.getMessageProperties().getGlobalTransactionId());
+        netLogger.setGRI(createPath.getGlobalReservationId());
+        LOG.info(netLogger.start(event, createPath.getGlobalReservationId() + " to " + destDomainId));
+        Forwarder forwarder;
+        try {
+            forwarder = ForwarderFactory.getForwarder(destDomainId);
         } catch (OSCARSServiceException e) {
             throw new OSCARSFaultMessage (e.toString());
         }
+
+        if (forwarder == null) {
+            throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
+        }
+
+        try {
+            return forwarder.createPath(createPath);
+        } catch (OSCARSServiceException ex) {
+            OSCARSFaultUtils.handleError(ex, true, null, LOG, event);
+        } catch (Exception ex) {
+            OSCARSFaultUtils.handleError( ex, false, null, LOG, event);
+        }
+        LOG.info(netLogger.end(event));
+        return null;
     }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#teardownPath(net.es.oscars.api.soap.gen.v06.TeardownPathContent  teardownPath ,)java.lang.String  destDomainId )*
+    /**
+     *  Forwards a teardownPath request to next domain
+     * @param teardownPath
+     * @param destDomainId
+     * @return
+     * @throws OSCARSFaultMessage
      */
-    public TeardownPathResponseContent teardownPath(TeardownPathContent teardownPath,String destDomainId) throws OSCARSFaultMessage    { 
-        LOG.info("Executing operation teardownPath");
-        System.out.println(teardownPath);
-        System.out.println(destDomainId);
+    public TeardownPathResponseContent teardownPath(TeardownPathContent teardownPath,
+                                                    String destDomainId)
+            throws OSCARSFaultMessage    {
+        String event = "teardownPath";
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        netLogger.init(moduleName, teardownPath.getMessageProperties().getGlobalTransactionId());
+        netLogger.setGRI(teardownPath.getGlobalReservationId());
+        LOG.info(netLogger.start(event, teardownPath.getGlobalReservationId() +
+                                 " to " + destDomainId));
         Forwarder forwarder;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
@@ -122,145 +208,114 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
         
         try {
             return forwarder.teardownPath (teardownPath);
-        } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString());
+        } catch (OSCARSServiceException ex) {
+            OSCARSFaultUtils.handleError(ex, true, null, LOG, event);
+        } catch (Exception ex) {
+            OSCARSFaultUtils.handleError( ex, false, null, LOG, event);
         }
+        LOG.info(netLogger.end(event));
+        return null;
     }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#queryReservation(net.es.oscars.api.soap.gen.v06.GlobalReservationId  queryReservation ,)java.lang.String  destDomainId )*
-     */
-    public net.es.oscars.api.soap.gen.v06.QueryResReply queryReservation(QueryResContent queryReservation,java.lang.String destDomainId) throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    { 
-        LOG.info("Executing operation queryReservation");
-        System.out.println(queryReservation);
-        System.out.println(destDomainId);
-        try {
-            net.es.oscars.api.soap.gen.v06.QueryResReply _return = null;
-            return _return;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new net.es.oscars.common.soap.gen.OSCARSFaultMessage("OSCARSFaultMessage...");
-    }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#queryReservation(net.es.oscars.api.soap.gen.v06.GlobalReservationId  queryReservation ,)java.lang.String  destDomainId )*
+    /**
+     * Sends an interDomainEvent to the specified peer IDC
+     * @param interDomainEvent
+     * @param destDomainId
      */
-    public net.es.oscars.api.soap.gen.v06.GetErrorReportResponseContent getErrorReport(GetErrorReportContent getErrorReportReq,
-                                                                                       java.lang.String destDomainId)
-            throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    {
-        LOG.info("Executing operation getErrorReport");
-        System.out.println("getErrorReport");
-        System.out.println(destDomainId);
-        try {
-            GetErrorReportResponseContent _return = null;
-            return _return;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+    public void interDomainEvent(InterDomainEventContent interDomainEvent,String destDomainId) {
+        String event = "interDomainEvent";
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        if (interDomainEvent.getMessageProperties() != null) {
+            netLogger.init(moduleName, interDomainEvent.getMessageProperties().getGlobalTransactionId());
+        } else { // shouldn't happen
+            netLogger.init(moduleName, null);
         }
-        //throw new net.es.oscars.common.soap.gen.OSCARSFaultMessage("OSCARSFaultMessage...");
-    }
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#createReservation(net.es.oscars.api.soap.gen.v06.ResCreateContent  createReservation ,)java.lang.String  destDomainId )*
-     */
-    public CreateReply createReservation(ResCreateContent createReservation,String destDomainId) throws OSCARSFaultMessage { 
-        LOG.info("Executing operation createReservation");
-        System.out.println(createReservation);
-        System.out.println(destDomainId);
-        Forwarder forwarder;
+        String gri = null;
+        if (interDomainEvent.getResDetails() !=  null) {
+            gri = interDomainEvent.getResDetails().getGlobalReservationId();
+            netLogger.setGRI(gri);
+        }
+        LOG.info(netLogger.start(event, interDomainEvent.getType() + " to " + destDomainId));
+        Forwarder forwarder = null;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
         } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString()); 
+            LOG.error(netLogger.end(event,"caught exception " +e.toString()));
         }
-        
+
         if (forwarder == null) {
-            throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
+            LOG.error(netLogger.end(event, "no forwarder for " + destDomainId));
         }
 
         try {
-            return forwarder.createReservation(createReservation);
+            forwarder.notify(interDomainEvent);
         } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString());
+            // IDEs do not reply
+            LOG.error(netLogger.end(event, "caught exception " + e.toString()));
         }
+        LOG.info(netLogger.end(event, interDomainEvent.getType()));
     }
-    
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#listReservations(net.es.oscars.api.soap.gen.v06.ListRequest  listReservations ,)java.lang.String  destDomainId )*
+
+    /*
+     *  QueryReservation is not forwarded
+     */
+    public QueryResReply queryReservation(QueryResContent queryReservation,String destDomainId)
+            throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    {
+        String event = "queryReservation";
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        LOG.error(netLogger.start(event, queryReservation.getGlobalReservationId() +
+                                  " to " + destDomainId));
+        Thread.dumpStack();
+        throw new OSCARSFaultMessage("Attempting to forward a queryReservation Request");
+    }
+
+    /*
+     *  getErrorReport is not forwarded
+     */
+    public GetErrorReportResponseContent getErrorReport(GetErrorReportContent getErrorReportReq,
+                                                        String destDomainId)
+            throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    {
+
+        String event = "getErrorReport";
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        LOG.info(netLogger.start(event, " to " + destDomainId));
+        Thread.dumpStack();
+        throw new OSCARSFaultMessage("Attempting to forward a getErrorReport Request");
+    }
+
+    /*
+     *   listReservations is not forwarded
      */
     public net.es.oscars.api.soap.gen.v06.ListReply listReservations(ListRequest listReservations,java.lang.String destDomainId) throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    { 
         LOG.info("Executing operation listReservations");
         System.out.println(listReservations);
         System.out.println(destDomainId);
-        try {
-            net.es.oscars.api.soap.gen.v06.ListReply _return = null;
-            return _return;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new net.es.oscars.common.soap.gen.OSCARSFaultMessage("OSCARSFaultMessage...");
+        Thread.dumpStack();
+        throw new OSCARSFaultMessage("Attempting to forward a listReservations Request");
     }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#refreshPath(net.es.oscars.api.soap.gen.v06.RefreshPathContent  refreshPath ,)java.lang.String  destDomainId )*
+    /*
+     *  Not implemented
      */
-    public net.es.oscars.api.soap.gen.v06.RefreshPathResponseContent refreshPath(RefreshPathContent refreshPath,java.lang.String destDomainId) throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    { 
-        LOG.info("Executing operation refreshPath");
-        System.out.println(refreshPath);
-        System.out.println(destDomainId);
-        try {
-            net.es.oscars.api.soap.gen.v06.RefreshPathResponseContent _return = null;
-            return _return;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new net.es.oscars.common.soap.gen.OSCARSFaultMessage("OSCARSFaultMessage...");
+    public RefreshPathResponseContent refreshPath(RefreshPathContent refreshPath,String destDomainId)
+            throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    {
+        LOG.info("Executing forward operation refreshPath");
+        Thread.dumpStack();
+        throw new OSCARSFaultMessage("RefreshPath not implemented");
     }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#getNetworkTopology(net.es.oscars.api.soap.gen.v06.GetTopologyContent  getNetworkTopology ,)java.lang.String  destDomainId )*
-     */
-    public net.es.oscars.api.soap.gen.v06.GetTopologyResponseContent getNetworkTopology(GetTopologyContent getNetworkTopology,java.lang.String destDomainId) throws net.es.oscars.common.soap.gen.OSCARSFaultMessage    { 
+    /*
+    *    Not forwarded
+    */
+    public GetTopologyResponseContent getNetworkTopology(GetTopologyContent getNetworkTopology,
+                                                         String destDomainId) throws OSCARSFaultMessage    {
         LOG.info("Executing operation getNetworkTopology");
         System.out.println(getNetworkTopology);
         System.out.println(destDomainId);
-        try {
-            net.es.oscars.api.soap.gen.v06.GetTopologyResponseContent _return = null;
-            return _return;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new net.es.oscars.common.soap.gen.OSCARSFaultMessage("OSCARSFaultMessage...");
+        Thread.dumpStack();
+        throw new OSCARSFaultMessage("Attempting to forward a GetNetworkTopology Request");
     }
 
-    /* (non-Javadoc)
-     * @see net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType#modifyReservation(net.es.oscars.api.soap.gen.v06.ModifyResContent  modifyReservation ,)java.lang.String  destDomainId )*
-     */
-    public ModifyResReply modifyReservation(ModifyResContent modifyReservation,String destDomainId) throws OSCARSFaultMessage    { 
-        LOG.info("Executing operation modifyReservation");
-        System.out.println(modifyReservation);
-        System.out.println(destDomainId);
-        Forwarder forwarder;
-        try {
-            forwarder = ForwarderFactory.getForwarder(destDomainId);
-        } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString()); 
-        }
-        
-        if (forwarder == null) {
-            throw new OSCARSFaultMessage ("no forwarder for " + destDomainId);
-        }
-        
-        try {
-            return forwarder.modifyReservation (modifyReservation);
-        } catch (OSCARSServiceException e) {
-            throw new OSCARSFaultMessage (e.toString());
-        }
-    }
 
 }

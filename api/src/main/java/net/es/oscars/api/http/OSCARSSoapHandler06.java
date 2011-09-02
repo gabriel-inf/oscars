@@ -475,13 +475,22 @@ public class OSCARSSoapHandler06 implements OSCARS {
         OSCARSSoapHandler06.interDomainEvent(eventContent, this.myContext);
     }
     public static void interDomainEvent(InterDomainEventContent eventContent, WebServiceContext context) {
-        String event = "OSCARSSoapHandler06.notify";
+        String event = "OSCARSSoapHandler06.interDomainEvent";
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         MessagePropertiesType msgProps = eventContent.getMessageProperties();
         msgProps = OSCARSSoapHandler06.updateMessageProperties (msgProps, event, null, netLogger);
         netLogger.init(OSCARSSoapHandler06.moduleName, msgProps.getGlobalTransactionId());
-        // TODO: this.netLogger.setGR()
-        LOG.info(netLogger.start(event));
+        String gri = null;
+        if (eventContent.getResDetails() !=  null) {
+            gri = eventContent.getResDetails().getGlobalReservationId();
+            netLogger.setGRI(gri);
+        }
+        /* don't really have the senders identity. getErrorSource only works for errors
+         * and should be the original source of the error.
+         * The principal name could be used once we start assigning different DNs to each domain.
+         */
+        LOG.info(netLogger.start(event, " received " + eventContent.getType() + " for reservation " +
+                                 gri + " from " + eventContent.getErrorSource()));
         try {
             SubjectAttributes subjectAttributes = OSCARSSoapHandler06.AuthNRequester(msgProps, context, netLogger);
             msgProps = OSCARSSoapHandler06.updateMessageProperties (msgProps, event, subjectAttributes, netLogger);
@@ -499,7 +508,8 @@ public class OSCARSSoapHandler06 implements OSCARS {
                                            "interDomainEvent coordinator caused exception " + ex.toString()));
             ex.printStackTrace();
         }
-        LOG.info(netLogger.end(event));
+        LOG.info(netLogger.end(event, eventContent.getType()));
+
     }
 
   
@@ -550,7 +560,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
 
     private static HashMap<String, Principal> getSecurityPrincipals(WebServiceContext context, OSCARSNetLogger netLogger) {
         String event = "getSecurityPrincipals";
-        LOG.debug(netLogger.start(event));
+        //LOG.debug(netLogger.start(event));
         HashMap<String, Principal> result = new HashMap<String, Principal>();
 
         try {
@@ -560,14 +570,10 @@ public class OSCARSSoapHandler06 implements OSCARS {
                 return null;
             }
             Vector results = (Vector) inContext.get(WSHandlerConstants.RECV_RESULTS);
-            //HashMap results = (HashMap) inContext.get(MessageContext.HTTP_REQUEST_HEADERS);
-            //LOG.debug(netLogger.getMsg(event,"results size of RECV_RESULTS is " + results.size()));
-            //System.out.println("results size of HTTP_REQUEST_HEADERS is " + results.size());
-            
             for (int i = 0; results != null && i < results.size(); i++) {
                 WSHandlerResult hResult = (WSHandlerResult) results.get(i);
                 Vector hResults = hResult.getResults();
-                LOG.debug(netLogger.getMsg(event,"handler results size is " + hResults.size()));
+                //LOG.debug(netLogger.getMsg(event,"handler results size is " + hResults.size()));
                 for (int j = 0; j < hResults.size(); j++) {
                     WSSecurityEngineResult eResult = (WSSecurityEngineResult) hResults.get(j);
                     // A timestamp action does not have an
@@ -603,7 +609,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
             e.printStackTrace();
             return null;
         }
-        LOG.debug(netLogger.end(event));
+        //LOG.debug(netLogger.end(event));
         return result;
     }
     /**
@@ -627,7 +633,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
               HashMap<String, Principal> principals = OSCARSSoapHandler06.getSecurityPrincipals(context, netLogger);
               userDN = principals.get("subject").getName();
               issuerDN = principals.get("issuer").getName();
-              LOG.debug(netLogger.getMsg(event,"subject: "+ userDN));
+              LOG.info(netLogger.getMsg(event,"subject: "+ userDN));
               LOG.debug(netLogger.getMsg(event,"issuer: " +  issuerDN));
           } catch (Exception ex ){
               LOG.error(netLogger.error(event,ErrSev.MAJOR, "caught Exception: " + ex.toString()));
