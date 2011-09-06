@@ -145,9 +145,9 @@ public class MXConfigGen implements DeviceConfigGenerator {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         
         EoMPLSIfceAddressResolver iar = ecf.getEomplsIfceAddressResolver();
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
@@ -318,9 +318,9 @@ public class MXConfigGen implements DeviceConfigGenerator {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         
         
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
@@ -435,9 +435,9 @@ public class MXConfigGen implements DeviceConfigGenerator {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         
         
         
@@ -528,9 +528,9 @@ public class MXConfigGen implements DeviceConfigGenerator {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         
         SDNNameGenerator ng = SDNNameGenerator.getInstance();
         String gri = res.getGlobalReservationId();

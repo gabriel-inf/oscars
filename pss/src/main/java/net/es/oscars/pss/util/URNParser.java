@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import net.es.oscars.pss.util.URNParserResult.URNType;
 
 public class URNParser {
-    public static URNParserResult parseTopoIdent(String topoIdent, String localDomainId) {
+    public static URNParserResult parseTopoIdent(String topoIdent) {
         URNParserResult result = new URNParserResult();
         if (topoIdent == null) {
             return null;
@@ -66,41 +66,38 @@ public class URNParser {
         }
 
         String fqti = "urn:ogf:network";
-        String concise = null;
+        String concise = "::";
         if (matched.equals("domain")) {
             fqti += ":domain="+domainId;
+            concise +=  domainId;
             result.setDomainId(domainId);
             result.setFqti(fqti);
+            result.setConcise(concise);
             result.setType(URNType.DOMAIN);
 
         } else if (matched.equals("node")) {
             fqti += ":domain="+domainId+":node="+nodeId;
+            concise +=  domainId+":"+nodeId;
+
             result.setDomainId(domainId);
             result.setNodeId(nodeId);
             result.setFqti(fqti);
+            result.setConcise(concise);
             result.setType(URNType.NODE);
 
         } else if (matched.equals("port")) {
             fqti += ":domain="+domainId+":node="+nodeId+":port="+portId;
+            concise +=  domainId+":"+nodeId+":"+portId;
             result.setDomainId(domainId);
             result.setNodeId(nodeId);
             result.setPortId(portId);
             result.setFqti(fqti);
+            result.setConcise(concise);
             result.setType(URNType.PORT);
 
         } else if (matched.equals("link")) {
             fqti += ":domain="+domainId+":node="+nodeId+":port="+portId+":link="+linkId;
-            concise = "::";
-            if (localDomainId == null) {
-                concise += domainId+":";
-            } else {
-                if (!domainId.equals(localDomainId)) {
-                    concise += domainId+":";
-                } else {
-                    concise += ":";
-                }
-            }
-            concise += nodeId+":"+portId+":"+linkId;
+            concise += domainId+":"+nodeId+":"+portId+":"+linkId;
 
             result.setDomainId(domainId);
             result.setNodeId(nodeId);

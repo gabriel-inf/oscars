@@ -38,9 +38,9 @@ public class EoMPLSUtils {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         String srcDeviceId = srcRes.getNodeId();
         String dstDeviceId = dstRes.getNodeId();
         

@@ -169,9 +169,9 @@ public class EoMPLSVerifier implements Verifier {
         
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
         String ifceName, ifceVlan, lspTargetDeviceId;

@@ -76,6 +76,72 @@ public class URNParserResult {
         this.type = type;
     }
     
+    
+    public boolean equals(Object b) {
+        URNParserResult other;
+        
+        if (!(b instanceof URNParserResult)) {
+            return false;
+        } else {
+            other = (URNParserResult) b;
+        }
+        if (this.type == null || other.getType() == null) {
+            return false;
+        } else if (!this.type.equals(other.getType())) {
+            return false;
+            
+        }
+        if (this.type.equals(URNType.DOMAIN)) {
+            if (this.domainId == null) {
+                return false;
+            } else return this.domainId.equals(other.getDomainId());
+        } else if (this.type.equals(URNType.NODE)) {
+            if (this.domainId == null || this.nodeId == null ) {
+                return false;
+            } else {
+                return ( this.domainId.equals(other.getDomainId()) && 
+                            this.nodeId.equals(other.getNodeId())  
+                          );
+            }
+        } else if (this.type.equals(URNType.PORT)) {
+            if (this.domainId == null || this.nodeId == null || this.portId == null) {
+                return false;
+            } else {
+                return ( this.domainId.equals(other.getDomainId()) && 
+                            this.nodeId.equals(other.getNodeId())  &&
+                            this.portId.equals(other.getPortId())  
+                          );
+            }
+        } else if (this.type.equals(URNType.LINK)) {
+            if (this.domainId == null || this.nodeId == null || this.portId == null || this.linkId == null) {
+                return false;
+            } else {
+                return ( this.domainId.equals(other.getDomainId()) && 
+                            this.nodeId.equals(other.getNodeId())  &&
+                            this.portId.equals(other.getPortId())  && 
+                            this.linkId.equals(other.getLinkId())  
+                          );
+            }
+        } else {
+            return false;
+        } 
+        
+    }
+    public int hashCode() {
+        if (this.getFqti() == null) return 0;
+        int hash = this.getFqti().hashCode();
+        return hash;
+    }
 
+    public String toString() {
+        String result = "";
+        if (type != null) {
+            result = "type = ["+type+"]";
+        } else {
+            result = "type: [NULL]";
+        }
+        result += " fqti: ["+fqti+"] hash:"+this.hashCode();
+        return result;
+    }
 
 }

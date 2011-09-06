@@ -110,9 +110,9 @@ public class IOSConfigGen implements DeviceConfigGenerator {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         
 
         log.debug("source edge device id is: "+srcDeviceId+", config to generate is for "+deviceId);
@@ -197,9 +197,9 @@ public class IOSConfigGen implements DeviceConfigGenerator {
         CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
         
         String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId, null);
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId, null);
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
         
         EoMPLSIfceAddressResolver iar = ecf.getEomplsIfceAddressResolver();
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();

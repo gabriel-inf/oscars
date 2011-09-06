@@ -75,8 +75,9 @@ public class SimpleValidator implements Validator {
             if (hop.getLink() == null) {
                 throw new PSSException("all hops in path must contain a link");
             }
-            URNParserResult parseRes = URNParser.parseTopoIdent(hop.getLink().getId(), localDomainId);
+            URNParserResult parseRes = URNParser.parseTopoIdent(hop.getLink().getId());
             if (!parseRes.getType().equals(URNType.LINK)) {
+                System.out.println("link id: "+hop.getLink().getId()+" does not parse as a link identifier");
                 throw new PSSException("link id: "+hop.getLink().getId()+" does not parse as a link identifier");
             }
             }

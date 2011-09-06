@@ -59,9 +59,9 @@ public class SimRequestGenerator {
             dstEdge = "urn:ogf:network:"+localDomainId+":"+dstEdge+":edge";
             String srcRouter = "";
             String dstRouter = "";
-            URNParserResult parseRes = URNParser.parseTopoIdent(srcEdge, localDomainId);
+            URNParserResult parseRes = URNParser.parseTopoIdent(srcEdge);
             srcRouter = parseRes.getNodeId();
-            parseRes = URNParser.parseTopoIdent(dstEdge, localDomainId);
+            parseRes = URNParser.parseTopoIdent(dstEdge);
             dstRouter = parseRes.getNodeId();
 
 
