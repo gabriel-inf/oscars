@@ -44,7 +44,7 @@ public class DRAGONUtils {
     public static String getDeviceId(ResDetails res, boolean reverse)
             throws PSSException{
         String epUrn = getEndPoint(res, reverse);
-        URNParserResult urnParser = URNParser.parseTopoIdent(epUrn);
+        URNParserResult urnParser = URNParser.parseTopoIdent(epUrn, PathTools.getLocalDomainId());
         return urnParser.getNodeId();
     }
 
