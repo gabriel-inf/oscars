@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import net.es.oscars.utils.config.ConfigDefaults;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -14,7 +16,6 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 public class IDCAddUtil {
-    final static private String defaultUrl = "http://localhost:9014/lookup";
     final static private String defaultType = "IDC";
     final static private String defaultRelType = "controls";
     final static private String defaultProtocolType = "OSCARS6";
@@ -24,7 +25,9 @@ public class IDCAddUtil {
     }
     
     public static void main(String[] args){
-        String url = defaultUrl;
+        String url = null;
+        String context = ConfigDefaults.CTX_PRODUCTION;
+        
         String proto = defaultProtocolType;
         HashMap<String, String> protoMap = new HashMap<String, String>();
         protoMap.put("OSCARS5", "https://oscars.es.net/OSCARS");
@@ -37,6 +40,7 @@ public class IDCAddUtil {
                 acceptsAll(Arrays.asList("d", "domain"), "required. the domain to add").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("l", "location"), "required. the URL of the IDC").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("p", "protocol"), "the protocol spoken by the IDC. May be OSCARS5, OSCARS6, or a namespace URL. Defaults to OSCARS6.").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("c", "context"), "context in which to run the client").withRequiredArg().ofType(String.class);
             }
         };
         try {
@@ -50,6 +54,9 @@ public class IDCAddUtil {
             if(opts.has("u")){
                 url = (String)opts.valueOf("u");
                 new URL(url);
+            }
+            if(opts.has("c")){
+                context = (String)opts.valueOf("c");
             }
             
             if(!opts.has("d")){
@@ -76,7 +83,7 @@ public class IDCAddUtil {
                 domain = "urn:ogf:network:domain=" + domain;
             }
             
-            LookupAdminUtil util = new LookupAdminUtil(url);
+            LookupAdminUtil util = new LookupAdminUtil(url, context);
             util.addCacheEntry(defaultType, false, Arrays.asList(proto + "=" + opts.valueOf("l")), Arrays.asList(defaultRelType+"="+domain));
         } catch (OptionException e) {
             System.out.println(e.getMessage());

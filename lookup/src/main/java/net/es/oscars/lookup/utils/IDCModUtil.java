@@ -9,6 +9,7 @@ import java.util.List;
 
 import net.es.oscars.lookup.soap.gen.Relationship;
 import net.es.oscars.lookup.soap.gen.ServiceType;
+import net.es.oscars.utils.config.ConfigDefaults;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -18,7 +19,6 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 public class IDCModUtil {
-    final static private String defaultUrl = "http://localhost:9014/lookup";
     final static private String defaultType = "IDC";
     final static private String defaultRelType = "controls";
     
@@ -27,7 +27,8 @@ public class IDCModUtil {
     }
     
     public static void main(String[] args){
-        String url = defaultUrl;
+        String url = null;
+        String context = ConfigDefaults.CTX_PRODUCTION;
         HashMap<String, String> protoMap = new HashMap<String, String>();
         protoMap.put("OSCARS5", "https://oscars.es.net/OSCARS");
         //TODO: Make below the correct URL
@@ -40,6 +41,7 @@ public class IDCModUtil {
                 acceptsAll(Arrays.asList("d", "domain"), "required. the domain with the IDC to modify").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("l", "location"), "the URL of the IDC").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("p", "protocol"), "the protocol spoken by the IDC. May be OSCARS5, OSCARS6, or a namespace URL. Defaults to OSCARS6.").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("c", "context"), "context in which to run the client").withRequiredArg().ofType(String.class);
             }
         };
         try {
@@ -54,6 +56,9 @@ public class IDCModUtil {
                 url = (String)opts.valueOf("u");
                 new URL(url);
             }
+            if(opts.has("c")){
+                context = (String)opts.valueOf("c");
+            }
             
             if(!opts.has("d")){
                 System.out.println("A domain must me specified");
@@ -67,7 +72,7 @@ public class IDCModUtil {
             }
             
             //list service and filter out IDCs
-            LookupAdminUtil util = new LookupAdminUtil(url);
+            LookupAdminUtil util = new LookupAdminUtil(url, context);
             List<ServiceType> services = util.viewCache(null, null);
             if(services == null){
                 System.out.println("Unable to find domain '"+domain+"'");

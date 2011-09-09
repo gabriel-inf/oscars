@@ -2,10 +2,14 @@ package net.es.oscars.lookup.utils;
 
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -14,6 +18,10 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import net.es.oscars.utils.clients.LookupClient;
+import net.es.oscars.utils.config.ConfigDefaults;
+import net.es.oscars.utils.config.ConfigException;
+import net.es.oscars.utils.config.ConfigHelper;
+import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.lookup.soap.gen.LookupFaultMessage;
 import net.es.oscars.lookup.soap.gen.LookupPortType;
@@ -22,12 +30,13 @@ import net.es.oscars.lookup.soap.gen.LookupResponseContent;
 import net.es.oscars.lookup.soap.gen.Protocol;
 import net.es.oscars.lookup.soap.gen.Relationship;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.soap.OSCARSSoapService;
+import net.es.oscars.utils.svc.ServiceNames;
 
 public class LookupUtil {
     private LookupPortType client;
     private PrintStream out;
     
-    final static private String defaultUrl = "http://localhost:9014/lookup";
     final static private String defaultType = "IDC";
     final static private String defaultRelType = "controls";
     
@@ -35,8 +44,53 @@ public class LookupUtil {
         Logger.getRootLogger().setLevel(Level.OFF);
     }
     
-    public LookupUtil(String url) throws MalformedURLException, OSCARSServiceException{
-        this.client = LookupClient.getClient(url).getPortType();
+    public LookupUtil(String url, String context) throws MalformedURLException, OSCARSServiceException{
+        //Set the context
+        ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_LOOKUP);
+        cc.setServiceName(ServiceNames.SVC_LOOKUP);
+        cc.setContext(context);
+        
+        //load the manifest
+        try {
+            cc.loadManifest(ServiceNames.SVC_LOOKUP,  ConfigDefaults.MANIFEST);
+        } catch (ConfigException e) {
+            throw new OSCARSServiceException(e.getMessage());
+        }
+        
+        //Set the url of the server
+        if(url == null){
+            try {
+                String configFile = cc.getFilePath(ConfigDefaults.CONFIG);
+                Map config = ConfigHelper.getConfiguration(configFile);
+                if(!config.containsKey("soap") || config.get("soap") == null){
+                    throw new OSCARSServiceException("Unable to determine URL of server. " +
+                        "No soap block in lookup config file");
+                }
+                HashMap<String,Object> soap = (HashMap<String,Object>) config.get("soap");
+                if(!soap.containsKey("publishTo") || soap.get("publishTo") == null){
+                    throw new OSCARSServiceException("Unable to determine URL of server. " +
+                        " No publishTo in lookup config file.");
+                }
+                url = (String) soap.get("publishTo");
+            } catch (ConfigException e) {
+                throw new OSCARSServiceException(e.getMessage());
+            }
+        }
+        
+        //set the wsdl
+        String wsdl = url + "?wsdl";
+        try{
+            wsdl = "file:" + cc.getFilePath(ConfigDefaults.WSDL);
+        }catch(Exception e){}
+        
+        //set the client cxf config file
+        try {
+            OSCARSSoapService.setSSLBusConfiguration(new URL("file:"+ cc.getFilePath(ConfigDefaults.CXF_CLIENT)));
+            this.client = LookupClient.getClient(url, wsdl).getPortType();
+            ClientProxy.getClient(this.client).getRequestContext().put("org.apache.cxf.message.Message.ENDPOINT_ADDRESS", url);
+        } catch (ConfigException e) {
+            throw new OSCARSServiceException(e.getMessage());
+        }
         this.out = new PrintStream(System.out);
     }
     
@@ -89,7 +143,8 @@ public class LookupUtil {
                 "default behavior is equivalenet to '-t IDC -r " +
                 "controls=urn:ogfnetwork:domain=<domain>'.\n\n";
         
-        String url = defaultUrl;
+        String url = null;
+        String context = ConfigDefaults.CTX_PRODUCTION;
         String type = defaultType;
         OptionParser parser = new OptionParser(){
             {
@@ -99,6 +154,7 @@ public class LookupUtil {
                 acceptsAll(Arrays.asList("l", "location"), "the URL of the service to lookup").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("relationship", "r"), "lookup a service with the given relationship" +
                 "Takes form <Type>=<RelativeId>.").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("c", "context"), "context in which to run the client").withRequiredArg().ofType(String.class);
             }
         };
         
@@ -119,12 +175,15 @@ public class LookupUtil {
             if(opts.has("u")){
                 url = (String)opts.valueOf("u");
             }
+            if(opts.has("c")){
+                context = (String)opts.valueOf("c");
+            }
             
             if(opts.has("t")){
                 type = (String) opts.valueOf("t");
             }
             
-            LookupUtil util = new LookupUtil(url);
+            LookupUtil util = new LookupUtil(url, context);
             if(nonOpts.size() == 1){
                 util.lookup(type, defaultRelType + "=urn:ogf:network:domain=" + 
                         nonOpts.get(0), null);

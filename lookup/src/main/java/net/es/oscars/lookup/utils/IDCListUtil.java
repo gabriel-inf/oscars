@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.es.oscars.lookup.soap.gen.ServiceType;
+import net.es.oscars.utils.config.ConfigDefaults;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -16,20 +17,20 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-public class IDCListUtil {
-    final static private String defaultUrl = "http://localhost:9014/lookup";
-    
+public class IDCListUtil {    
     static {
         Logger.getRootLogger().setLevel(Level.OFF);
     }
     
     public static void main(String[] args){
-        String url = defaultUrl;
+        String url = null;
+        String context = ConfigDefaults.CTX_PRODUCTION;
         
         OptionParser parser = new OptionParser(){
             {
                 acceptsAll(Arrays.asList("h", "help"), "prints this help screen");
                 acceptsAll(Arrays.asList("u", "url"), "the URL of the OSCARS lookup module to contact").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("c", "context"), "context in which to run the client").withRequiredArg().ofType(String.class);
             }
         };
         try {
@@ -44,9 +45,12 @@ public class IDCListUtil {
                 url = (String)opts.valueOf("u");
                 new URL(url);
             }
+            if(opts.has("c")){
+                context = (String)opts.valueOf("c");
+            }
             
             //list service and filter out IDCs
-            LookupAdminUtil util = new LookupAdminUtil(url);
+            LookupAdminUtil util = new LookupAdminUtil(url, context);
             List<ServiceType> services = util.viewCache(null, null);
             if(services == null){
                 System.out.println("No IDCs in database.");

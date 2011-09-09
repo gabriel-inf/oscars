@@ -3,12 +3,16 @@ package net.es.oscars.lookup.utils;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -17,6 +21,10 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import net.es.oscars.utils.clients.LookupClient;
+import net.es.oscars.utils.config.ConfigDefaults;
+import net.es.oscars.utils.config.ConfigException;
+import net.es.oscars.utils.config.ConfigHelper;
+import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.lookup.soap.gen.AddCacheEntryRequestType;
 import net.es.oscars.lookup.soap.gen.AddRegistrationRequestType;
@@ -34,6 +42,8 @@ import net.es.oscars.lookup.soap.gen.ServiceType;
 import net.es.oscars.lookup.soap.gen.ViewCacheResponseType;
 import net.es.oscars.lookup.soap.gen.ViewRegistrationsResponseType;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.soap.OSCARSSoapService;
+import net.es.oscars.utils.svc.ServiceNames;
 
 public class LookupAdminUtil {
     private LookupPortType client;
@@ -43,11 +53,54 @@ public class LookupAdminUtil {
         Logger.getRootLogger().setLevel(Level.OFF);
     }
     
-    public static String defaultURL = "http://localhost:9014/lookup";
-    
-    public LookupAdminUtil(String url) throws MalformedURLException, OSCARSServiceException{
-        this.client = LookupClient.getClient(url).getPortType();
+    public LookupAdminUtil(String url, String context) throws MalformedURLException, OSCARSServiceException{
         this.out = System.out;
+        //Set the context
+        ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_LOOKUP);
+        cc.setServiceName(ServiceNames.SVC_LOOKUP);
+        cc.setContext(context);
+        
+        //load the manifest
+        try {
+            cc.loadManifest(ServiceNames.SVC_LOOKUP,  ConfigDefaults.MANIFEST);
+        } catch (ConfigException e) {
+            throw new OSCARSServiceException(e.getMessage());
+        }
+        
+        //Set the url of the server
+        if(url == null){
+            try {
+                String configFile = cc.getFilePath(ConfigDefaults.CONFIG);
+                Map config = ConfigHelper.getConfiguration(configFile);
+                if(!config.containsKey("soap") || config.get("soap") == null){
+                    throw new OSCARSServiceException("Unable to determine URL of server. " +
+                        "No soap block in lookup config file");
+                }
+                HashMap<String,Object> soap = (HashMap<String,Object>) config.get("soap");
+                if(!soap.containsKey("publishTo") || soap.get("publishTo") == null){
+                    throw new OSCARSServiceException("Unable to determine URL of server. " +
+                        " No publishTo in lookup config file.");
+                }
+                url = (String) soap.get("publishTo");
+            } catch (ConfigException e) {
+                throw new OSCARSServiceException(e.getMessage());
+            }
+        }
+        
+        //set the wsdl
+        String wsdl = url + "?wsdl";
+        try{
+            wsdl = "file:" + cc.getFilePath(ConfigDefaults.WSDL);
+        }catch(Exception e){}
+        
+        //set the client cxf config file
+        try {
+            OSCARSSoapService.setSSLBusConfiguration(new URL("file:"+ cc.getFilePath(ConfigDefaults.CXF_CLIENT)));
+            this.client = LookupClient.getClient(url, wsdl).getPortType();
+            ClientProxy.getClient(this.client).getRequestContext().put("org.apache.cxf.message.Message.ENDPOINT_ADDRESS", url);
+        } catch (ConfigException e) {
+            throw new OSCARSServiceException(e.getMessage());
+        }
     }
     
     public List<ServiceType> viewCache(Integer numResults, Integer offset) throws LookupFaultMessage{
@@ -278,10 +331,13 @@ public class LookupAdminUtil {
     }
     
     public static void main(String[] args){
+        String url = null;
+        String context = ConfigDefaults.CTX_PRODUCTION;
         OptionParser parser = new OptionParser(){
             {
                 acceptsAll(Arrays.asList("help", "h"), "prints this help message");
                 acceptsAll(Arrays.asList("url", "u"), "the URL of the OSCARS lookup module to contact").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("c", "context"), "context in which to run the client").withRequiredArg().ofType(String.class);
                 accepts("cache-view", "display services currently in lookup cache");
                 accepts("cache-add", "add an entry to the cache");
                 accepts("cache-mod", "modify an entry in the cache");
@@ -316,7 +372,6 @@ public class LookupAdminUtil {
             }
         };
         
-        LookupAdminUtil util = null;
         try {
             OptionSet opts = parser.parse(args);
             
@@ -329,11 +384,14 @@ public class LookupAdminUtil {
             }
             
             if(opts.has("u")){
-                util = new LookupAdminUtil((String) opts.valueOf("u"));
-            }else{
-                util = new LookupAdminUtil(defaultURL);
+                url = (String) opts.valueOf("u");
             }
             
+            if(opts.has("context")){
+                context = (String)opts.valueOf("c");
+            }
+            
+            LookupAdminUtil util =  new LookupAdminUtil(url, context); 
             if(opts.has("cache-view")){
                 util.printServices(
                         util.viewCache((Integer)opts.valueOf("n"), (Integer)opts.valueOf("o"))
