@@ -142,6 +142,10 @@ public class OpenFlowService implements CircuitService {
         Matcher m = p.matcher(response);
         if (!m.matches() || !response.contains("oscars-reply"))
             throw new PSSException("malformed NoX JSON response message");
+        p = Pattern.compile("\"status\"\\s*:\\s*\"([^\"]+)\""); 
+        m = p.matcher(response);
+        if (m.matches() && !m.group(1).equals("FAILED"))
+            return;
         p = Pattern.compile("\"err_msg\"\\s*:\\s*\"([^\"]+)\""); 
         m = p.matcher(response);
         if (m.matches())

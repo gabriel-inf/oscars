@@ -131,20 +131,24 @@ public class JSONConnector implements Connector {
         String event = "JSONConnector.sendCommand";
         this.log.debug(netLogger.start(event));
         
-        if (socketConn == null || socketConn.isConnected())
-            throw new PSSException("socket connection not ready for sendCommand!");
-
         String deviceCommand = command.getDeviceCommand();
         if (deviceCommand == null) {
             throw new PSSException("null device command");
-        } 
-        log.debug("sendCommand to NOX, cmd="+deviceCommand);
-
+        }
+        log.debug("sendCommand: "+deviceCommand);
+        if (ConfigHolder.getInstance().getBaseConfig().getCircuitService().isStub()) {
+            log.debug("set to stub mode: command will not be sent to NOX.");
+            return "{\"type\":\"oscars-reply\", \"status\":\"ACTIVE\", \"err_msg\":\"\"}";
+        }
+                
         String responseString = "";
         try {
             this.connect();
-            this.log.debug("sending command...");
+            if (socketConn == null || socketConn.isConnected())
+                throw new PSSException("NOX socket connection not ready!");
+            this.log.debug("sending command to NOX...");
             socketOut.print(deviceCommand);
+            socketOut.flush();
             char ch;
             while((ch = (char)socketIn.read()) > 0) {
                 responseString += ch;
