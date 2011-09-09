@@ -4,7 +4,7 @@ soap:
 
 circuitService:
     id:                 'openflow'
-    stub:               false
+    stub:               true
     logRequest:         true
     logResponse:        true
 
@@ -12,44 +12,40 @@ definitions:
     models:             'defs-models.yaml'
     services:           'defs-services.yaml'
 
+# generic impl / params config from here on
 notify:
     impl:               'net.es.oscars.pss.stub.StubNotifier'
     params: 
         coordUrl:       'http://localhost:9003/OSCARS/Coord'
 
-#
-# recommended general configs for OpenFlow PSS
-#
-
-# stub
 deviceConnectorMap:
     impl:               'net.es.oscars.pss.stub.StubDeviceConnectorMap'
 
-# stub
-deviceModelMap:
-    impl:               'net.es.oscars.pss.stub.StubDeviceModelMap'
-
-# this should include the 'openflow-nox' connector params
 connectorDirectory:
     impl:               'net.es.oscars.pss.connect.YAMLConnectorDirectory'
     params:
         configFile:     'config-connector-directory.yaml'
 
-# pss-default for device-ipaddr mappings for openflow switches
+deviceModelMap:
+    impl:               'net.es.oscars.pss.model.YAMLDeviceModelMap'
+    params:
+        configFile:     'config-device-models.yaml'
+
 deviceResolve:            
     impl:               'net.es.oscars.pss.resolve.YAMLDeviceResolver'
     params:
         configFile:     'config-device-addresses.yaml'
 
-# pss-default
+
 workflow:
     impl:               'net.es.oscars.pss.workflow.FifoWF'
 
-# pss-default
 validate:
     impl:               'net.es.oscars.pss.validate.SimpleValidator'
+    params: 
+        localDomainId:  'foo.net'
 
-# pss-default
 verify:
     impl:               'net.es.oscars.pss.stub.StubVerifier'
+
 
