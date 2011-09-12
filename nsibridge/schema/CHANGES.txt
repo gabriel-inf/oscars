@@ -1,0 +1,184 @@
+Version 0.09 Changes to NSI WSDL specification
+Date: August 6, 2011
+Author: John MacAuley
+
+1. Changed all occurrences of Requestor to Requester in the documentation, names, and bindings.
+2. Capitalized enumerated values in DirectionalityType to "Bidirectional" and "Unidirectional".
+3. Set directionality default to "Bidirectional".
+4. Added connectionState to DetailedPathType so each NSA down the tree will provide its view of the state machine.
+5. Modified ReservationConfirmedType to return only summary reservation information and not the detailed path.
+5. Created new QueryOperationType with values "Summary" and "Details" to allow modeling of two separate query operations.  The "Summary" operation matches the behavior of our original query on level deep in the tree, while "Details" performs a recursive query down the tree to build a complete path view from all children.
+6. Modified the QueryFilterType to use QueryOperationType allowing the requester to specify if summary or detailed path results should be returned.
+7. Restructured the QueryConfirmedType to support returning of a choice of summary reservation information or detailed path results.
+8. Created QuerySummaryResultType to hold the query summary results.
+9. Removed DetailedReservationInfoGroup to QueryDetailsResultType to hold the recursive path query results.
+10. Modified QueryConfirmedType to return a choice of reservationSummary or reservationDetails.
+11. Removed AttributeSequenceType and replaced with saml:AttributeStatementType to avoid naming conflicts with AttributeType definition with exists in both namespaces.
+12. Removed SubjectAttributeSequenceType and replaced with equivalent saml:AttributeStatementType.
+
+---------------
+
+Version 0.08 Changes to NSI WSDL specification
+Date: August 2, 2011
+Author: John MacAuley
+
+1. Renamed all <wsdl:output name="acknowledgment"> elements back to a per message specific name such as <wsdl:output name="reservationACK"> to pass WS-I Basic Profile compliance.
+2. Changed all documentation in the WSDL files from <xsd:documentation> to <wsdl:documentation>.
+
+---------------
+
+Version 0.07 Changes to NSI WSDL specification
+Date: July 26, 2011
+Author: John MacAuley
+
+Notes: These are changes requested at OGF 32 working group meeting.
+
+1. Created a QueryFailedType to provide a specific type without revervation specific information.
+2. Renamed transactionId to correlationId and added the correlationId to the SOAP output response (acknowledgment).
+3. Changed globalReservationId to be xsd:anyURI and mandatory but permit it to be nillable. This will allow an OGF URN (reference artifact 6478 "Procedure for Registration of Sub-namespace Identifiers in the URN:OGF Hierarchy") to be used for compatibility with other external systems.
+4. Restructured confirmed and failed parameters.
+5. Renamed GenericResponseType to GenericAcknowledgmentType.
+6. Renamed all WSDL output "Response" messages to "Acknowledgment".
+7. Fixed type issue with ProvisionFailedRequestType.
+8. Removed the versioning information from WSDL port type names and bindings.
+9. Removed connectionState from generic confirmed and reservation confirmed message since the state should be implied.
+10. NSA identifiers are now defined as xsd:anyURI to hold an OGF URN (urn:ogf:network:NSnetwork:<NSnetworkid>).
+11. STP definition is now changed to be a xsd:anyURI to hold an OGF URN (urn:ogf:network:stp:<NSnetworkid>:<localid>).
+12. Removed the query option in QueryFilterType for search based on connection state.
+13. Renamed PathObjectType to PathType.
+14. Removed NetworkIdType, LocalIdType, and ServiceTerminationPointGroup since no longer needed.
+15. Renamed orderedStpList to stpList as requested since "List" implies "Ordered."
+16. Modified the XSD definitions to do local imports and copied the needed external XSD locally to package with NSI definitions.
+17. Lined up naming of operations in XSD with specification and associated types to help avoid type name conflicts (ReservationRequestType and QueryRequestType).
+18. Simplified the interface portType definitions by defining a single acknowledgment message type for output.
+19. Moved directionality of the service into the path object since this is an attribute of the path.
+20. Moved path object out of service parameters to allow for different path definitions between the reservation request and the reservation response/query results.
+21. Added DetailedReservationInfoType and DetailedPathType to allow for connection tree to be return in the reservation response and query response.  This is the groundwork for implementation to provide more detailed connection information and recursive queries (future release).
+22. Segmented service bindings into requestor and provider messages sets to help with code modularity and provided proper endpoint definition for RA and PA.  This required restructuring of the interface file as well, and moving of the portType definitions into the service bindings.
+
+The NSI requestor SOAP endpoint "ConnectionServiceRequestor" contains definitions for:
+
+reservationConfirmed
+reservationFailed
+provisionConfirmed
+provisionFailed
+releaseConfirmed
+releaseFailed
+terminateConfirmed
+terminateFailed
+query
+queryConfirmed
+queryFailed
+forcedEnd
+
+The NSI provider SOAP end point "ConnectionServiceProvider" contains definitions for:
+
+reservation
+provision
+release
+terminate
+query
+queryConfirmed
+queryFailed
+
+Open Issues for after GLIF bake-off in Rio:
+1. Need to add the security policies to the WSDL so we can sign the messages to validate authenticity.  This will not impact the core schema but will impact the WSDL definitions.
+2. Per connection reservation user/security information in a query response.
+
+---------------
+
+Version 0.06 Changes to NSI WSDL specification
+Date: July 6, 2011
+Author: John MacAuley
+
+1. Cosmetic change to operation primitive names:
+
+Request a reservation:
+	reserveRequest changes to reservationRequest and remains rsv.rq in the state machine.
+	reserveConfirmed changes to reservationConfirmed and remains rsv.cf in the state machine.
+	reserveFailed changes to reservationFailed and remains rsv.fl in the state machine.
+
+Terminate a reservation:
+	cancelRequest changes to terminateRequest and changes to term.rq in the state machine.
+	cancelConfirmed changes to terminateConfirmed and changes to term.cf in the state machine.
+	cancelFailed changes to terminateFailed and changes to term.fl in the state machine.
+
+State machine change
+	Canceling state changes to Terminating.
+
+2. Removed the NsaType and changed requestorNSA and providerNSA to be of type anyURI.  This removes the additional per-NSA security attributes.
+
+3. Changed connectionId definition to be an anyURI and stated it must be a Universally Unique Identifier (UUID) URN as per ITU-T Rec. X.667 | ISO/IEC 9834-8:2005 and IETF RFC 4122. 
+
+4. Removed security attributes from confirmed messages.
+
+5. Extended the NsiExceptionType to use an attribute type/value pairs for added flexibility.
+
+6. Added simpleTypes for NsaIdType, GlobalReservationIdType, ConnectionIdType, and uuidType so there is a single location requiring modification if we decided to change the types.
+
+Open Issues:
+
+1. Need to add the security policies to the WSDL so we can sign the messages to validate authenticity.  This will not impact the core schema.
+
+---------------
+
+Version 0.05 Changes to NSI WSDL specification
+Date: July 5, 2011
+Author: John MacAuley
+
+1. Added generic OGF disclaimer to all files.
+
+2. Namespace change based on GWD-C.083 http://www.ogf.org/documents/GFD.84.pdf
+
+	http://schemas.ogf.org/nsi/2011/07/connection/types
+	http://schemas.ogf.org/nsi/2011/07/connection/interface
+	http://schemas.ogf.org/nsi/2011/07/connection/service
+
+3. Shortened the default SOAP end point URL to https://localhost:8443/nsi/ConnectionService_v1_0.  This is typically ignored by all compilers.
+
+4. Modified port names and bindings in service definition to have versioning information (i.e. ConnectionService_v1_0).
+
+5. On or about May 9th we discussed removing the replyTo fields from the interface specification and agreed to use the nsaAddress field to identify the SOAP endpoint.  I did not make this change for two reasons:
+
+a) Jerry's request to keep the XSD file transport protocol free would be violated if we decided to stick a transport specific address in the field.  Many of us had planned on using our NSA's URN within this field anyways.
+b) Jerry has requested we stop using nsaAddress and change it to a more abstract nsaId.
+
+This will allow us to keep the CS payload separate from the Web Services transport.
+
+6.  Added the forcedEnd notification needed as part of the new state machine.
+
+7. Modified all security attributes to use the saml:attribute element as per Mary's security proposal.  Now import http://docs.oasis-open.org/security/saml/v2.0/saml-schema-assertion-2.0.xsd.  Created the SubjectAttributeSequenceType to hold these attributes.
+
+8. Updated state machine states in ConnectionStateType.
+
+9. Added ConnectionStateType to the GenericFailedType to relate current state machine.
+
+10.  Fixed a non UTF-8 character issue with a comment "STP’s".
+
+11. Renamed techSpecAttrs in ServiceParametersType to serviceAttrs.
+
+12. Renamed techSpecAttrs in ServiceTerminationPointType to stpSpecAttrs.
+
+Open Questions:
+1. Should security attributes be removed from confirmed messages?
+
+2. Do we need security attributes in the NsaType as well as the common message body?
+
+3. Do we need to support a connectionId mapping to multiple child component connections for a single reservation?  The Requestor NSA references a reservation using connectionId, however, this can map to multiple Provider NSA connectionId.  Do we care about the children connection?  At one point Jerry indicated he wanted a recursive query operation so that it pulls back all children connections down the tree as well.  Currently, the WSDL assumes a summary model where the queried connectionId represents an aggregation of child states.
+
+4. Can we change the connectionId to a URI and model as a globally unique Universally Unique Identifier (UUID) URN as per ITU-T Rec. X.667 | ISO/IEC 9834-8:2005 and IETF RFC 4122?
+  
+5. Do we make the renaming cosmetic change?
+
+Request a reservation:
+	reserveRequest -> reservationRequest
+	reserveConfirmed -> reservationConfirmed
+	reserveFailed -> reservationFailed
+
+Terminate a reservation:
+	cancelReservationRequest -> terminateReservationRequest
+	cancelReservationConfirmed -> terminateReservationConfirmed
+	cancelReservationFailed -> terminateReservationFailed
+
+State machine change
+	Terminating (Canceling) – a terminateReservationRequest (cancelRequest) has been sent and a cancelation is ongoing

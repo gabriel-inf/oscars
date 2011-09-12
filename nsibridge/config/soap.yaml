@@ -1,0 +1,7 @@
+---
+soap:
+    default:
+        wsdlUrl:            'https://oscars-dev.es.net/axis2/services/OSCARS?wsdl'
+        repoDir:            repo
+        rampConfigFname:    'repo/rampConfig.xml'
+
