@@ -1,0 +1,20 @@
+<ramp:RampartConfig xmlns:ramp="http://ws.apache.org/rampart/policy">
+
+<!-- replace with user key entry alias in the OSCARS.jks keystore -->
+
+  <ramp:user>oscars-dev-service</ramp:user>
+  <ramp:passwordCallbackClass>net.es.oscars.client.improved.PWCallback</ramp:passwordCallbackClass>
+  <ramp:signatureCrypto>
+    <ramp:crypto provider="org.apache.ws.security.components.crypto.Merlin">
+      <ramp:property name="org.apache.ws.security.crypto.merlin.keystore.type">jks</ramp:property>
+
+<!-- replace with keystore filename if needed -->
+      <ramp:property name="org.apache.ws.security.crypto.merlin.file">repo/OSCARS.jks</ramp:property>
+
+<!-- replace with keystore password -->
+      <ramp:property name="org.apache.ws.security.crypto.merlin.keystore.password">password</ramp:property>
+
+
+    </ramp:crypto>
+  </ramp:signatureCrypto>
+</ramp:RampartConfig>
