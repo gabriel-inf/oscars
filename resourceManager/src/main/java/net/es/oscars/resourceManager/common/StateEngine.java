@@ -163,7 +163,6 @@ public class StateEngine {
             }
         } else if (newStatus.equals(StateEngineValues.INTEARDOWN)) {
             if (status.equals(StateEngineValues.ACTIVE) ||
-                    status.equals(StateEngineValues.INCANCEL) ||
                     status.equals(StateEngineValues.FAILED)) { // may have timed out while in a state that requires a teardown
               allowed = true;
             }

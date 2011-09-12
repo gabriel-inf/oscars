@@ -52,7 +52,16 @@ public class CreateResvCompletedAction extends CoordAction <ResDetails,Object> {
                 lastDomain = localDomain.equals(domain);
                 domain = PathTools.getFirstDomain(reservedPath);
             }
-        
+            //get the old reservation details so we don't overwrite the critical non-path info(e.g. login)
+            RMQueryAction rmQueryAction = new RMQueryAction(this.getName() + "-RMStoreAction",
+                    this.getCoordRequest(), this.getCoordRequest().getGRI());
+            rmQueryAction.execute();
+            if (rmQueryAction.getState() == CoordAction.State.FAILED) {
+                throw (OSCARSServiceException) rmQueryAction.getException();
+            }
+            ResDetails origResDetails = rmQueryAction.getResultData().getReservationDetails();
+            resDetails.setLogin(origResDetails.getLogin());
+            
             // Update local reservation to RESERVED
             RMStoreAction rmStoreAction = new RMStoreAction(this.getName() + "-RMStoreAction",
                                                             this.getCoordRequest(),
