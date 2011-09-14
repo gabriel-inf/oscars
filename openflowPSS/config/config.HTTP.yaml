@@ -24,21 +24,18 @@ notify:
 deviceConnectorMap:
     impl:               'net.es.oscars.pss.stub.StubDeviceConnectorMap'
 
+deviceModelMap:
+    impl:               'net.es.oscars.pss.stub.StubDeviceModelMap'
+
 connectorDirectory:
     impl:               'net.es.oscars.pss.connect.YAMLConnectorDirectory'
     params:
         configFile:     'config-connector-directory.yaml'
 
-deviceModelMap:
-    impl:               'net.es.oscars.pss.model.YAMLDeviceModelMap'
-    params:
-        configFile:     'config-device-models.yaml'
-
 deviceResolve:            
     impl:               'net.es.oscars.pss.resolve.YAMLDeviceResolver'
     params:
         configFile:     'config-device-addresses.yaml'
-
 
 workflow:
     impl:               'net.es.oscars.pss.workflow.FifoWF'
