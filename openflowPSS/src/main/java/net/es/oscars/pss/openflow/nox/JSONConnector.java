@@ -82,7 +82,7 @@ public class JSONConnector implements Connector {
             socketConn = new Socket(noxHost, noxPort);
             socketOut = new PrintWriter(socketConn.getOutputStream(), true);
             socketIn = new InputStreamReader(socketConn.getInputStream());
-            this.log.debug("connected to NOX host " + noxHost + " on port " 
+            this.log.info("connected to NOX host " + noxHost + " on port " 
                     + Integer.toString(noxPort));
         } catch (UnknownHostException e) {
             socketConn = null;
@@ -112,7 +112,7 @@ public class JSONConnector implements Connector {
             socketIn = null;
             socketConn.close();
             socketConn = null;
-            this.log.debug("Disconnected from NOX");
+            this.log.info("Disconnected from NOX");
         } catch (IOException e) {
             socketConn = null;
             socketOut = null;
@@ -137,7 +137,7 @@ public class JSONConnector implements Connector {
         }
         log.debug("sendCommand: "+deviceCommand);
         if (ConfigHolder.getInstance().getBaseConfig().getCircuitService().isStub()) {
-            log.debug("set to stub mode: command will not be sent to NOX.");
+            log.info("set to stub mode, the following command will not be sent to NOX:\n"+deviceCommand);
             return "{\"type\":\"oscars-reply\", \"status\":\"ACTIVE\", \"err_msg\":\"\"}";
         }
                 
@@ -146,7 +146,7 @@ public class JSONConnector implements Connector {
             this.connect();
             if (socketConn == null || socketConn.isConnected())
                 throw new PSSException("NOX socket connection not ready!");
-            this.log.debug("sending command to NOX...");
+            this.log.info("sending command to NOX: \n" + deviceCommand);
             socketOut.print(deviceCommand);
             socketOut.flush();
             char ch;

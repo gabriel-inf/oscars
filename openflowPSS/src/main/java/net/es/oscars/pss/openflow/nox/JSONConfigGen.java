@@ -4,6 +4,8 @@ package net.es.oscars.pss.openflow.nox;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import net.es.oscars.logging.*;
+
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 
@@ -19,6 +21,7 @@ import net.es.oscars.pss.util.ConnectorUtils;
 
 public class JSONConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(JSONConfigGen.class);
+    private OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
    
 
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
@@ -48,9 +51,9 @@ public class JSONConfigGen implements DeviceConfigGenerator {
         ResDetails res = action.getRequest().getSetupReq().getReservation();
         String gri = res.getGlobalReservationId();
         int bw = res.getReservedConstraint().getBandwidth();
-        String cmd = "{\"type\" : \"oscars-request\", \"action\" :\"setup\", \"version\": \"1.0\", \n"
-                + "\"gri\":\"" + gri +"\", \"bandwidth\"" + Integer.toString(bw) +"Mbps\", \n"
-                + "\"path\" : [\n";
+        String cmd = "{\"type\":\"oscars-request\", \"action\":\"setup\", \"version\":\"1.0\", \n"
+                + "\"gri\":\"" + gri +"\", \"bandwidth\":\"" + Integer.toString(bw) +"Mbps\", \n"
+                + "\"path\":[\n";
         PathInfo pathInfo = res.getReservedConstraint().getPathInfo();
         List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
         for (int i = 0; i < hops.size(); i++) {
@@ -81,7 +84,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             else
                 cmd += ",\n";
         }
-        cmd += "] }";
+        cmd += "]}";
         log.debug("getSetup end");
         return cmd;
     }
@@ -89,12 +92,12 @@ public class JSONConfigGen implements DeviceConfigGenerator {
     
     private String getTeardown(PSSAction action) throws PSSException {
         log.debug("getTeardown start");
-        ResDetails res = action.getRequest().getSetupReq().getReservation();
+        ResDetails res = action.getRequest().getTeardownReq().getReservation();
         String gri = res.getGlobalReservationId();
         int bw = res.getReservedConstraint().getBandwidth();
-        String cmd = "{\"type\" : \"oscars-request\", \"action\" :\"teardown\", \"version\": \"1.0\", \n"
-                + "\"gri\":\"" + gri +"\", \"bandwidth\"" + Integer.toString(bw) +"Mbps\", \n"
-                + "\"path\" : [\n";
+        String cmd = "{\"type\":\"oscars-request\", \"action\":\"teardown\", \"version\":\"1.0\", \n"
+                + "\"gri\":\"" + gri +"\", \"bandwidth\":\"" + Integer.toString(bw) +"Mbps\", \n"
+                + "\"path\":[\n";
         PathInfo pathInfo = res.getReservedConstraint().getPathInfo();
         List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
         for (int i = 0; i < hops.size(); i++) {
@@ -125,19 +128,19 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             else
                 cmd += ",\n";
         }
-        cmd += "] }";
+        cmd += "]}";
         log.debug("getTeardown end");
         return cmd;
     }
     
     private String getVerify(PSSAction action) throws PSSException {
         log.debug("getVerify start");
-        ResDetails res = action.getRequest().getSetupReq().getReservation();
+        ResDetails res = action.getRequest().getStatusReq().getReservation();
         String gri = res.getGlobalReservationId();
         int bw = res.getReservedConstraint().getBandwidth();
-        String cmd = "{\"type\" : \"oscars-request\", \"action\" :\"verify\", \"version\": \"1.0\", \n"
-                + "\"gri\":\"" + gri +"\", \"bandwidth\"" + Integer.toString(bw) +"Mbps\", \n"
-                + "\"path\" : [\n";
+        String cmd = "{\"type\":\"oscars-request\", \"action\":\"verify\", \"version\":\"1.0\", \n"
+                + "\"gri\":\"" + gri +"\", \"bandwidth\":\"" + Integer.toString(bw) +"Mbps\", \n"
+                + "\"path\":[\n";
         PathInfo pathInfo = res.getReservedConstraint().getPathInfo();
         List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
         for (int i = 0; i < hops.size(); i++) {
@@ -168,7 +171,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             else
                 cmd += ",\n";
         }
-        cmd += "] }";
+        cmd += "]}";
         log.debug("getVerify end");
         return cmd;
     }
