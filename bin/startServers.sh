@@ -24,7 +24,7 @@ printUsage() {
    echo " -v  prints out debugging messages. Must be first arg"
    echo "<context> is one of: PRODUCTION|pro UNITTEST|test DEVELOPMENT|dev SDK|sdk"
    echo "<server> is either ALL or one or more of:"
-   echo "     authN authZ api coord topoBridge rm stubPSS eomplsPSS dragonPSS PSS "
+   echo "     authN authZ api coord topoBridge rm stubPSS eomplsPSS dragonPSS openflowPSS PSS"
    echo "     lookup wbui bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker ionui"
    exit 1
 }
@@ -138,6 +138,7 @@ startnullAgg() {
 startPSS() {
     DRAGONPSS="DRAGON"
     EOMPLSPSS="EOMPLS"
+    OPENFLOWPSS="OPENFLOW"
     #Get PSS choice, but keep stubPSS the default
     whichPSS="STUB"
     Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils Utils $CONTEXT )
@@ -158,6 +159,8 @@ startPSS() {
         startDragonPSS
     elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
         startEomplsPSS
+    elif [ "$whichPSS" == "$OPENFLOWPSS" ]; then
+        startOpenflowPSS
     else
         startStubPSS
     fi
@@ -173,6 +176,10 @@ startDragonPSS(){
 
 startEomplsPSS(){
     startService "PSSService" "PSSService" "eomplsPSS" "eomplsPSS"
+}
+
+startOpenflowPSS(){
+    startService "PSSService" "PSSService" "openflowPSS" "openflowPSS"
 }
 
 startLookup(){
@@ -290,6 +297,7 @@ while [ ! -z $1 ]
     stubPSS) startPSS;; #TBD- remove generic used for testing startStubPSS;;
     dragonPSS)startDragonPSS;;
     eomplsPSS)startEomplsPSS;;
+    openflowPSS)startOpenflowPSS;;
     lookup)   startLookup;;
     wbui)     startWBUI;;
     notifyBridge)     startNotificationBridge;;

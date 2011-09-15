@@ -16,7 +16,6 @@ public class WorkflowInspectorJob implements Job {
     private Logger log = Logger.getLogger(WorkflowInspectorJob.class);
 
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
-        log.debug("starting up");
         Workflow wfAgent = ClassFactory.getInstance().getWorkflow();
         PSSAction next = wfAgent.next();
         if (next != null) {

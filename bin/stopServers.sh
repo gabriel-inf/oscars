@@ -12,8 +12,8 @@ printUsage() {
    echo
    echo "usage stopServers <server>"
    echo "<server> is either ALL or one or more of:"
-   echo "     authN authZ api coord topoBridge rm stubPSS  dragonPSS eomplsPSS PSS lookup wbui"
-   echo "     stubPCE bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker ionui"
+   echo "     authN authZ api coord topoBridge rm stubPSS dragonPSS eomplsPSS openflowPSS PSS"
+   echo "     lookup wbui stubPCE bwPCE connPCE dijPCE vlanPCE nullAgg notifyBridge wsnbroker ionui"
    exit 1
 }
 
@@ -113,7 +113,7 @@ stopstubPSS () {
 ###############################################################################
 stopPSS () {
 	#echo "PSS Type:$1"
-	PSSOptions=( stub dragon eompls )
+	PSSOptions=( stub dragon eompls openflow )
 	if [ ! -z $1 ] ; then
 		PSSType="$1PSS"
 	else
@@ -240,6 +240,7 @@ while [ ! -z $1 ]
   stubPSS)  stopPSS "stub";;
   dragonPSS) stopPSS "dragon";;
   eomplsPSS) stopPSS "eompls";;
+  openflowPSS) stopPSS "openflow";;
   lookup)   stopLookup;;
   wbui)     stopWBUI;;
   notifyBridge)     stopNotificationBridge;;
