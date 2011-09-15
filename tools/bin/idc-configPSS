@@ -1,4 +1,4 @@
-#!/bin/sh
+OPENFLOOPENFLOWW#!/bin/sh
 ##################################################################################
 # Script to help configure PSS
 # Based on user input, call configure dragonPSS/EOMPLSPSS scripts
@@ -53,6 +53,7 @@ toUpper() {
 configPSS() {
 	DRAGONPSS="DRAGON"
 	EOMPLSPSS="EOMPLS"
+	OPENFLOWPSS="OPENFLOW"
 	STUBPSS="STUB"
 	#call subroutine based on selection
 	whichPSS=$1
@@ -63,6 +64,8 @@ configPSS() {
 		(sh $OSCARS_DIST/tools/bin/confDragonPSS $CONTEXT) #confDragonPSS.sh
 	elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
 		sh $OSCARS_DIST/tools/bin/confEomplsPSS	
+	elif [ "$whichPSS" == "$OPENFLOWPSS" ]; then
+		sh $OSCARS_DIST/tools/bin/confOpenflowPSS	
 	elif [ "$whichPSS" == "$STUBPSS" ]; then
 		(sh $OSCARS_DIST/tools/bin/confStubPSS $CONTEXT)
 	fi
@@ -102,6 +105,7 @@ esac
 PSSChoice="PSSChoice"
 #DRAGONPSS="DRAGONPSS"
 #EOMPLSPSS="EOMPLSPSS"
+#OPENFLOWPSS="OPENFLOWPSS"
 #STUBPSS="STUBPSS"
 
 
@@ -122,7 +126,7 @@ while [ $user_choice == 0 ]; do
         read user_choice;
 	user_choice=$(toUpper "$user_choice")
 	#echo "User input =$user_choice"
-        if [ "$user_choice" != "STUB" ] && [ "$user_choice" != "DRAGON" ] && [ "$user_choice" != "EOMPLS" ] ; then
+        if [ "$user_choice" != "STUB" ] && [ "$user_choice" != "DRAGON" ] && [ "$user_choice" != "EOMPLS" ] &&  [ "$user_choice" != "OPENFLOW" ]; then
                 user_choice=0;
         fi
 done
