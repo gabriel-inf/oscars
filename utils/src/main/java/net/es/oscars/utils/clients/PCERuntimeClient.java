@@ -55,7 +55,10 @@ public class PCERuntimeClient extends OSCARSSoapService<PCEService,PCEPortType> 
 
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         ContextConfig cc = ContextConfig.getInstance();
-        PCERuntimeClient.wsdlURL = new URL(proxyEndpoint + "?wsdl");
+	if (PCERuntimeClient.wsdlURL == null) {
+            //PCERuntimeClient.wsdlURL = new URL(proxyEndpoint + "?wsdl");
+            PCERuntimeClient.wsdlURL= cc.getWSDLPath(null);
+        }
         PCERuntimeClient client = null;
         URL proxyEndpointURL = new URL (proxyEndpoint);
         try {
