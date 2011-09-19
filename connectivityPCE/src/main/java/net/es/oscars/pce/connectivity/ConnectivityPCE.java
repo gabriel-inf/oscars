@@ -12,7 +12,10 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneNodeContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePortContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneTopologyContent;
-
+/*@S bhr*/
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintValue;
+/*@E bhr*/
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -24,7 +27,7 @@ import net.es.oscars.topoBridge.soap.gen.GetTopologyResponseType;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.NMWGTopoBuilder;
-import net.es.oscars.utils.topology.PathTools;
+import net.es.oscars.utils.topology.PathTools; 
 
 /**
  * Implementation of a connectivity PCE that looks at the given path and 
@@ -112,6 +115,48 @@ public class ConnectivityPCE {
             this.log.debug(netLogger.error("calculatePath", ErrSev.MINOR, "Received a null path in request"));
             throw new OSCARSServiceException("Received a null path in request");
         }
+        
+        
+        /*@S OSCARS-COMMON-ANYCAST SRS Requirement No. 1.1.1 (Anycast-1-DEV) bhr*/
+        List<OptionalConstraintType> optionalConList = pceData.getOptionalConstraint();
+       // List<Object> anycastDests = null;
+        Object anycastDests = null;
+        String type_of_anycast = null;
+        //set the optional constraints
+          if (optionalConList != null && !optionalConList.isEmpty()) {
+               for (OptionalConstraintType oc: optionalConList) {
+            	   if(oc.getCategory().equals("BASIC_ANYCAST_SERVICE"))
+            	   {
+            		   		OptionalConstraintValue optionalConValue  =  oc.getValue();
+            		   		anycastDests = optionalConValue.getValue();
+            		   		type_of_anycast = "BASIC_ANYCAST_SERVICE";
+            		   		
+            	   }
+               }
+           }
+          
+          if(anycastDests!=null)
+          {
+        	 
+        	  if(type_of_anycast.equals("BASIC_ANYCAST_SERVICE"))
+        	  {
+        		 //Service is BASIC_ANYCAST_SERVICE and Anycast Destinations are provided
+        		  
+        		 /* for (Object any_dest: anycastDests) {
+        			  	System.out.println(any_dest.toString());
+        			  	this.log.debug(netLogger.start("ANYCAST_DESTS_RCVD" + any_dest.toString()));
+        		  }*/
+        		  
+        	     	this.log.debug(netLogger.start("ANYCAST_DESTS_RCVD" + anycastDests.toString()));
+        			System.out.println(anycastDests.toString());
+        		  
+        		 
+        	  }
+        	  
+          }
+          
+          /*@E OSCARS-COMMON-ANYCAST SRS Requirement No. 1.1.1 (Anycast-1-DEV) bhr*/
+
         
         //extract domains
         ArrayList<String> domainStack = PathTools.getDomains(path);
