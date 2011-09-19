@@ -42,6 +42,7 @@ import net.es.oscars.api.soap.gen.v06.Layer2Info;
 import net.es.oscars.api.soap.gen.v06.Layer3Info;
 import net.es.oscars.api.soap.gen.v06.MplsInfo;
 import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintValue;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
@@ -241,12 +242,45 @@ public class WSDLTypeConverter {
     
     public static OptConstraint OptionalConstraintType2OptConstraint(OptionalConstraintType oct) {
         OptConstraint oc = new OptConstraint();
-        oc.setCategory(oct.getCategory());
+ 
+        /*@S bhr*/
+        /*    oc.setCategory(oct.getCategory());
         List<Object> value = oct.getValue().getAny();
         // Assume the value contains 1 String for now
-        oc.setValue(value.get(0).toString());
+        oc.setValue(value.get(0).toString());*/
+        
+        /*@E bhr*/
+        
+        /*@S bhr*/
+        oc.setConstraintType("String");
+        oc.setKeyName(oct.getCategory());
+        Object value = oct.getValue().getValue();
+        oc.setValue(value.toString());       
+        
+        /*@E bhr*/
+        
+        
+        
         return oc;
     }
+    
+    /*@S bhr*/
+    
+    public static OptionalConstraintType OptConstraint2OptionalConstraintType(OptConstraint oc) {
+   
+    	OptionalConstraintType oct = new OptionalConstraintType();
+    	OptionalConstraintValue ocv = new OptionalConstraintValue();
+    	
+    	oct.setCategory(oc.getKeyName());
+    	ocv.setValue(oc.getValue());
+        
+    	oct.setValue(ocv);
+    	
+        return oct;
+    }
+    
+    /*@E bhr*/
+    
     /**
      * Converts an incoming soap PathInfo object into a Hibernate Path object.
      *

@@ -19,13 +19,41 @@
         <generator class="identity" />
     </id>
 
-    <property name="category" />
+  <!-- @S bhr  -->
+   <!--  <property name="category" /> -->
+	
+	<property name="constraintType" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+    </property>
+	 	
+     <property name="keyName" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+    </property>
 
     <property name="value" not-null="true" >
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>
     </property>
+    
+    <property name="seqNumber" not-null="true" insert="false" update="false">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+    </property>
+    
+    
+ <!--    <property name="reservationId" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>
+   </property> --> 
+    
+	<!-- @E bhr -->    
  
 </class>
 </hibernate-mapping>
