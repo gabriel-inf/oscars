@@ -34,7 +34,7 @@ public class JSONConnector implements Connector {
     private Logger log = Logger.getLogger(JSONConnector.class);
     private OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
 
-    private Socket socketConn = null;
+    private HttpURLConnection urlConn = null;
     private PrintWriter socketOut = null;
     private InputStreamReader socketIn = null;
     
@@ -79,19 +79,26 @@ public class JSONConnector implements Connector {
         String event = "JSONConnector.connect";
         this.log.debug(netLogger.start(event));
         try {
-            socketConn = new Socket(noxHost, noxPort);
-            socketOut = new PrintWriter(socketConn.getOutputStream(), true);
-            socketIn = new InputStreamReader(socketConn.getInputStream());
+            URL noxAddress = new URL("http://"+noxHost+":"+noxPort);
+            urlConn = (HttpURLConnection)noxAddress.openConnection();
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            urlConn.setDoInput(true);
+            urlConn.setDoOutput(true);
+            urlConn.setReadTimeout(5000);        
+            urlConn.connect();
+            socketOut = new PrintWriter(urlConn.getOutputStream(), true);
+            socketIn = new InputStreamReader(urlConn.getInputStream());
             this.log.info("connected to NOX host " + noxHost + " on port " 
                     + Integer.toString(noxPort));
         } catch (UnknownHostException e) {
-            socketConn = null;
+            urlConn = null;
             socketOut = null;
             socketIn = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
             throw new PSSException("Unknown NOX host " + noxHost);
         } catch (IOException e) {
-            socketConn = null;
+            urlConn = null;
             socketOut = null;
             socketIn = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
@@ -114,13 +121,13 @@ public class JSONConnector implements Connector {
                 socketIn.close();
                 socketIn = null;
             }
-            if (socketConn != null) {
-                socketConn.close();
-                socketConn = null;
+            if (urlConn != null) {
+                urlConn.disconnect();
+                urlConn = null;
             }
             this.log.info("Disconnected from NOX");
         } catch (IOException e) {
-            socketConn = null;
+            urlConn = null;
             socketOut = null;
             socketIn = null;
             this.log.error("Exception when discconnecting from NOX : " + e.getMessage());
@@ -150,7 +157,7 @@ public class JSONConnector implements Connector {
         String responseString = "";
         try {
             this.connect();
-            if (socketConn == null || !socketConn.isConnected())
+            if (urlConn == null)
                 throw new PSSException("NOX socket connection not ready!");
             this.log.info("sending command to NOX: \n" + deviceCommand);
             socketOut.print(deviceCommand);
