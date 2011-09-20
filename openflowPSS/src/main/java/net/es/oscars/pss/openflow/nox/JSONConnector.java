@@ -34,9 +34,9 @@ public class JSONConnector implements Connector {
     private Logger log = Logger.getLogger(JSONConnector.class);
     private OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
 
-    private HttpURLConnection urlConn = null;
-    private PrintWriter socketOut = null;
-    private InputStreamReader socketIn = null;
+    private HttpURLConnection httpConn = null;
+    private DataOutputStream httpOut = null;
+    private BufferedReader httpIn = null;
     
     // OpenFlow NOX JSON connector configs
     private String noxHost = "localhost";
@@ -80,27 +80,27 @@ public class JSONConnector implements Connector {
         this.log.debug(netLogger.start(event));
         try {
             URL noxAddress = new URL("http://"+noxHost+":"+noxPort);
-            urlConn = (HttpURLConnection)noxAddress.openConnection();
-            urlConn.setRequestMethod("POST");
-            urlConn.setRequestProperty("Content-Type", "application/json");
-            urlConn.setDoInput(true);
-            urlConn.setDoOutput(true);
-            urlConn.setReadTimeout(5000);        
-            urlConn.connect();
-            socketOut = new PrintWriter(urlConn.getOutputStream(), true);
-            socketIn = new InputStreamReader(urlConn.getInputStream());
+            httpConn = (HttpURLConnection)noxAddress.openConnection();
+            httpConn.setRequestMethod("POST");
+            httpConn.setRequestProperty("Content-Type", "application/json");
+            httpConn.setDoInput(true);
+            httpConn.setDoOutput(true);
+            httpConn.setReadTimeout(5000);        
+            //httpConn.connect();
+            httpOut = new DataOutputStream(httpConn.getOutputStream());
+            httpIn = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
             this.log.info("connected to NOX host " + noxHost + " on port " 
                     + Integer.toString(noxPort));
         } catch (UnknownHostException e) {
-            urlConn = null;
-            socketOut = null;
-            socketIn = null;
+            httpConn = null;
+            httpOut = null;
+            httpIn = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
             throw new PSSException("Unknown NOX host " + noxHost);
         } catch (IOException e) {
-            urlConn = null;
-            socketOut = null;
-            socketIn = null;
+            httpConn = null;
+            httpOut = null;
+            httpIn = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
             throw new PSSException("failed to connect NOX "+noxHost+" on port "+Integer.toString(noxPort)+": " + e.getMessage());
         }
@@ -113,23 +113,23 @@ public class JSONConnector implements Connector {
     private void disconnect() {
         String event = "JSONConnector.disconnect";
         try {
-            if (socketOut != null) {
-                socketOut.close();
-                socketOut = null;
+            if (httpOut != null) {
+                httpOut.close();
+                httpOut = null;
             }
-            if (socketIn != null) {
-                socketIn.close();
-                socketIn = null;
+            if (httpIn != null) {
+                httpIn.close();
+                httpIn = null;
             }
-            if (urlConn != null) {
-                urlConn.disconnect();
-                urlConn = null;
+            if (httpConn != null) {
+                httpConn.disconnect();
+                httpConn = null;
             }
             this.log.info("Disconnected from NOX");
         } catch (IOException e) {
-            urlConn = null;
-            socketOut = null;
-            socketIn = null;
+            httpConn = null;
+            httpOut = null;
+            httpIn = null;
             this.log.error("Exception when discconnecting from NOX : " + e.getMessage());
         }
         this.log.debug(netLogger.end(event));
@@ -157,16 +157,14 @@ public class JSONConnector implements Connector {
         String responseString = "";
         try {
             this.connect();
-            if (urlConn == null)
+            if (httpConn == null)
                 throw new PSSException("NOX socket connection not ready!");
             this.log.info("sending command to NOX: \n" + deviceCommand);
-            socketOut.print(deviceCommand);
-            socketOut.flush();
-            char ch;
-            while((ch = (char)socketIn.read()) > 0) {
-                responseString += ch;
-                if (ch == '}')
-                    break;
+            httpOut.writeBytes(deviceCommand);
+            httpOut.flush();
+            String line;
+            while ((line = httpIn.readLine()) != null) {
+                responseString += line;
             }
         } catch (IOException e) {
             log.error("exception when sending command to NOX, msg=" + e.getMessage());
