@@ -79,7 +79,7 @@ public class JSONConnector implements Connector {
         String event = "JSONConnector.connect";
         this.log.debug(netLogger.start(event));
         try {
-            URL noxAddress = new URL("http://"+noxHost+":"+noxPort);
+            URL noxAddress = new URL("http://"+noxHost+":"+noxPort+"/ws.v1/OSCARS");
             httpConn = (HttpURLConnection)noxAddress.openConnection();
             httpConn.setRequestMethod("POST");
             httpConn.setRequestProperty("Content-Type", "application/json");
@@ -166,6 +166,7 @@ public class JSONConnector implements Connector {
             while ((line = httpIn.readLine()) != null) {
                 responseString += line;
             }
+            this.log.info("received response: \n" + responseString);
         } catch (IOException e) {
             log.error("exception when sending command to NOX, msg=" + e.getMessage());
             this.disconnect();
