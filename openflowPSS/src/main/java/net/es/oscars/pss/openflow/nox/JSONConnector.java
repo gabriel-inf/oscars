@@ -106,12 +106,18 @@ public class JSONConnector implements Connector {
     private void disconnect() {
         String event = "JSONConnector.disconnect";
         try {
-            socketOut.close();
-            socketOut = null;
-            socketIn.close();
-            socketIn = null;
-            socketConn.close();
-            socketConn = null;
+            if (socketOut != null) {
+                socketOut.close();
+                socketOut = null;
+            }
+            if (socketIn != null) {
+                socketIn.close();
+                socketIn = null;
+            }
+            if (socketConn != null) {
+                socketConn.close();
+                socketConn = null;
+            }
             this.log.info("Disconnected from NOX");
         } catch (IOException e) {
             socketConn = null;
@@ -144,7 +150,7 @@ public class JSONConnector implements Connector {
         String responseString = "";
         try {
             this.connect();
-            if (socketConn == null || socketConn.isConnected())
+            if (socketConn == null || !socketConn.isConnected())
                 throw new PSSException("NOX socket connection not ready!");
             this.log.info("sending command to NOX: \n" + deviceCommand);
             socketOut.print(deviceCommand);
