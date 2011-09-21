@@ -84,8 +84,8 @@ public class JSONConnector implements Connector {
         } catch (IOException e) {
             httpConn = null;
             httpOut = null;
-            this.log.error("exception when connecting to NOX : " + e.getMessage());
-            throw new PSSException("failed to connect NOX controller at " + noxUrl+" error: " + e.getMessage());
+            this.log.error("exception when connecting to NOX controller at " + noxUrl+", IOException: " + e.getMessage());
+            throw new PSSException("Failed to connect NOX controller at " + noxUrl+", IOException: " + e.getMessage());
         }
         this.log.debug(netLogger.end(event));
     }

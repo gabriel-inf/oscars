@@ -151,6 +151,6 @@ public class OpenFlowService implements CircuitService {
         p = Pattern.compile("^.*\"err_msg\"\\s*:\\s*\"([^\"]+)\".*$"); 
         m = p.matcher(response);
         if (m.matches())
-            throw new PSSException("NOX controller return error: " + m.group(1));
+            throw new PSSException("NOX controller returns error: " + m.group(1));
     }
 }
