@@ -33,7 +33,4 @@
 -   id:                 "openflow-nox"
     impl:               "net.es.oscars.pss.openflow.nox.JSONConnector"
     params:
-        noxHost:            "localhost"
-        noxPort:            11122
-        useSSL:             false
-        messageVersion:     '1.0'
+        noxUrl:            "http://localhost:11122/ws.v1/OSCARS"

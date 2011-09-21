@@ -79,7 +79,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             cmd = cmd + "{\"switch\":\"" + nodeIp +"\", \"add-flows\": "
                 + "[{\"port\":\"" + portId1  + "\", \"vlan_range\":\"" + vlan1 + "\"},"
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
-            if (i == hops.size())
+            if (i == hops.size()-1)
                 cmd += "\n";
             else
                 cmd += ",\n";
@@ -123,7 +123,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             cmd = cmd + "{\"switch\":\"" + nodeIp +"\", \"del-flows\": "
                 + "[{\"port\":\"" + portId1  + "\", \"vlan_range\":\"" + vlan1 + "\"},"
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
-            if (i == hops.size())
+            if (i == hops.size()-1)
                 cmd += "\n";
             else
                 cmd += ",\n";
@@ -166,7 +166,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             cmd = cmd + "{\"switch\":\"" + nodeIp +"\", \"has-flows\": "
                 + "[{\"port\":\"" + portId1  + "\", \"vlan_range\":\"" + vlan1 + "\"},"
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
-            if (i == hops.size())
+            if (i == hops.size()-1)
                 cmd += "\n";
             else
                 cmd += ",\n";

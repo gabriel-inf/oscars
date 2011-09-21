@@ -39,11 +39,7 @@ public class JSONConnector implements Connector {
     private BufferedReader httpIn = null;
     
     // OpenFlow NOX JSON connector configs
-    private String noxHost = "localhost";
-    private int noxPort = 11122;
-    private boolean useSsl = false;
-    private String messageVersion = "1.0";
-
+    private String noxUrl = "http://localhost:11122/ws.v1/OSCARS";
     
     public JSONConnector() {
         netLogger.init(ModuleName.PSS, "0000");
@@ -57,17 +53,8 @@ public class JSONConnector implements Connector {
         }
 
         HashMap<String, Object> params = connectorConfig.getParams();
-        if (params.get("noxHost") != null) {
-            this.noxHost = (String)params.get("noxHost");
-        }
-        if (params.get("noxPort") != null) {
-            this.noxPort = (Integer)params.get("noxPort");
-        }
-        if (params.get("useSSL") != null && ((Boolean)params.get("useSSL"))) {
-            this.useSsl = true;
-        }
-        if (params.get("messageVersion") != null) {
-            this.messageVersion = (String)params.get("messageVersion");
+        if (params.get("noxUrl") != null) {
+            this.noxUrl = (String)params.get("noxUrl");
         }
     }
 
@@ -79,30 +66,26 @@ public class JSONConnector implements Connector {
         String event = "JSONConnector.connect";
         this.log.debug(netLogger.start(event));
         try {
-            URL noxAddress = new URL("http://"+noxHost+":"+noxPort+"/ws.v1/OSCARS");
+            URL noxAddress = new URL(noxUrl);
             httpConn = (HttpURLConnection)noxAddress.openConnection();
             httpConn.setRequestMethod("POST");
             httpConn.setRequestProperty("Content-Type", "application/json");
             httpConn.setDoInput(true);
             httpConn.setDoOutput(true);
-            httpConn.setReadTimeout(5000);        
+            httpConn.setReadTimeout(5000);
             //httpConn.connect();
             httpOut = new DataOutputStream(httpConn.getOutputStream());
-            httpIn = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
-            this.log.info("connected to NOX host " + noxHost + " on port " 
-                    + Integer.toString(noxPort));
+            this.log.info("connected to NOX controller at " + noxUrl);
         } catch (UnknownHostException e) {
             httpConn = null;
             httpOut = null;
-            httpIn = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
-            throw new PSSException("Unknown NOX host " + noxHost);
+            throw new PSSException("Unknown NOX controller at " + noxUrl);
         } catch (IOException e) {
             httpConn = null;
             httpOut = null;
-            httpIn = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
-            throw new PSSException("failed to connect NOX "+noxHost+" on port "+Integer.toString(noxPort)+": " + e.getMessage());
+            throw new PSSException("failed to connect NOX controller at " + noxUrl+" error: " + e.getMessage());
         }
         this.log.debug(netLogger.end(event));
     }
@@ -159,9 +142,10 @@ public class JSONConnector implements Connector {
             this.connect();
             if (httpConn == null)
                 throw new PSSException("NOX socket connection not ready!");
-            this.log.info("sending command to NOX: \n" + deviceCommand);
             httpOut.writeBytes(deviceCommand);
+            this.log.info("sending command to NOX: \n" + httpOut.toString());
             httpOut.flush();
+            httpIn = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
             String line;
             while ((line = httpIn.readLine()) != null) {
                 responseString += line;
