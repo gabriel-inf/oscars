@@ -3,5 +3,3 @@ soap:
     publishTo:  'https://localhost:9010/OSCARS/vlanPCE'
 
 # rmUrl: 'https://localhost:9006/OSCARS/ResourceManager'
-
-mpls: 1
