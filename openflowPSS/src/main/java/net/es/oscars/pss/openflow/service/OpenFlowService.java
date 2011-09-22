@@ -17,6 +17,10 @@ import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.util.ClassFactory;
 import net.es.oscars.pss.openflow.nox.JSONConnector;
 import net.es.oscars.pss.openflow.nox.JSONConfigGen;
+import net.es.oscars.common.soap.gen.OSCARSFaultReport;
+import net.es.oscars.utils.soap.ErrorReport;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
+import net.es.oscars.utils.topology.PathTools;
 
 
 public class OpenFlowService implements CircuitService {
@@ -42,10 +46,16 @@ public class OpenFlowService implements CircuitService {
     public List<PSSAction> setup(List<PSSAction> actions) throws PSSException {
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
         CoordNotifier coordNotify = new CoordNotifier();
+        OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+        faultReport.setDomainId(PathTools.getLocalDomainId());
         for (PSSAction action : actions) {
             JSONConnector conn = (JSONConnector)ClassFactory.getInstance().getConnectorDirectory().getConnector("openflow-nox");
             if (conn == null) {
                 action.setStatus(ActionStatus.FAIL);
+                faultReport.setErrorMsg("unable to load 'openflow-nox' connector");
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+                action.setFaultReport(faultReport);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
                 throw new PSSException("unable to load 'openflow-nox' connector");
@@ -60,6 +70,10 @@ public class OpenFlowService implements CircuitService {
                 action.setStatus(ActionStatus.SUCCESS);
             } catch (PSSException e) {
                 action.setStatus(ActionStatus.FAIL);
+                faultReport.setErrorMsg(e.getMessage());
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+                action.setFaultReport(faultReport);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
                 throw e;
@@ -74,10 +88,16 @@ public class OpenFlowService implements CircuitService {
     public List<PSSAction> teardown(List<PSSAction> actions) throws PSSException {
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
         CoordNotifier coordNotify = new CoordNotifier();
+        OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+        faultReport.setDomainId(PathTools.getLocalDomainId());
         for (PSSAction action : actions) {
             JSONConnector conn = (JSONConnector)ClassFactory.getInstance().getConnectorDirectory().getConnector("openflow-nox");
             if (conn == null) {
                 action.setStatus(ActionStatus.FAIL);
+                faultReport.setErrorMsg("unable to load 'openflow-nox' connector");
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+                action.setFaultReport(faultReport);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
                 throw new PSSException("unable to load 'openflow-nox' connector");
@@ -92,6 +112,10 @@ public class OpenFlowService implements CircuitService {
                 action.setStatus(ActionStatus.SUCCESS);
             } catch (PSSException e) {
                 action.setStatus(ActionStatus.FAIL);
+                faultReport.setErrorMsg(e.getMessage());
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+                action.setFaultReport(faultReport);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
                 throw e;
@@ -107,10 +131,16 @@ public class OpenFlowService implements CircuitService {
     public List<PSSAction> status(List<PSSAction> actions) throws PSSException {
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
         CoordNotifier coordNotify = new CoordNotifier();
+        OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+        faultReport.setDomainId(PathTools.getLocalDomainId());
         for (PSSAction action : actions) {
             JSONConnector conn = (JSONConnector)ClassFactory.getInstance().getConnectorDirectory().getConnector("openflow-nox");
             if (conn == null) {
                 action.setStatus(ActionStatus.FAIL);
+                faultReport.setErrorMsg("unable to load 'openflow-nox' connector");
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+                action.setFaultReport(faultReport);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
                 throw new PSSException("unable to load 'openflow-nox' connector");
@@ -125,6 +155,10 @@ public class OpenFlowService implements CircuitService {
                 action.setStatus(ActionStatus.SUCCESS);
             } catch (PSSException e) {
                 action.setStatus(ActionStatus.FAIL);
+                faultReport.setErrorMsg(e.getMessage());
+                faultReport.setErrorType(ErrorReport.SYSTEM);
+                faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
+                action.setFaultReport(faultReport);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
                 throw e;
