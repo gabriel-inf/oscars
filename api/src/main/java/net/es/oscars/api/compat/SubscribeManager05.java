@@ -26,6 +26,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import net.es.oscars.api.common.OSCARSIDC;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.lookup.soap.gen.LookupRequestContent;
@@ -39,7 +40,6 @@ import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ConfigHelper;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.topology.NMWGParserUtil;
 
 /**
@@ -52,14 +52,9 @@ public class SubscribeManager05 {
     private Logger log = Logger.getLogger(SubscribeManager05.class);
     private HashMap<String, W3CEndpointReference> subscriptionIdMap;
     private HashMap<String, Long> termTimeMap;
-    private LookupClient lookupClient;
     private W3CEndpointReference consumerEpr;
-    private URL lookupUrl;
-    private URL lookupWsdl;
     private URL notify05Wsdl;
     
-    final private String PROP_LOOKUP_URL = "lookupUrl";
-    final private String PROP_LOOKUP_WSDL = "lookupWsdl";
     final private String WS_TOPIC_FULL = "http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full";
     final private String XPATH_URI = "http://www.w3.org/TR/1999/REC-xpath-19991116";
     final private String OSCARS5_IDC_PROTO = "http://oscars.es.net/OSCARS";
@@ -87,38 +82,6 @@ public class SubscribeManager05 {
         }
         //get local URL of API service and add 'Notify05'. Not pretty.
         this.consumerEpr = (new W3CEndpointReferenceBuilder()).address(this.getPublishTo(config) + "Notify05").build();
-
-        //Create lookup client
-        if(config.containsKey(PROP_LOOKUP_URL)){
-            try {
-                this.lookupUrl = new URL((String) config.get(PROP_LOOKUP_URL));
-            } catch (MalformedURLException e) {
-                throw new ConfigException(PROP_LOOKUP_URL + " property is an invalid URL");
-            }
-        }else{
-            String lookupConfigFilename = cc.getFilePath(ServiceNames.SVC_LOOKUP,cc.getContext(),
-                    ConfigDefaults.CONFIG);
-            Map lookupConfig = ConfigHelper.getConfiguration(lookupConfigFilename);
-            HashMap<String,Object> soap = (HashMap<String,Object>) lookupConfig.get("soap");
-            if (soap == null ){
-                throw new ConfigException("soap stanza not found in lookup.yaml");
-            }
-            try{
-                this.lookupUrl = new URL (this.getPublishTo(lookupConfig));
-            } catch (MalformedURLException e) {
-                throw new ConfigException("lookup publishTo property is an invalid URL");
-            }
-        }
-        
-        try{
-            if(config.containsKey(PROP_LOOKUP_WSDL)){
-                this.lookupWsdl = new URL((String) config.get(PROP_LOOKUP_WSDL));
-            }else{
-                this.lookupWsdl = new URL(this.lookupUrl + "?wsdl");
-            }
-        }catch(MalformedURLException e){
-            throw new ConfigException(PROP_LOOKUP_WSDL + " property is an invalid URL");
-        }
         this.subscriptionIdMap = new HashMap<String, W3CEndpointReference>();
         this.termTimeMap = new HashMap<String, Long>();
     }
@@ -299,16 +262,15 @@ public class SubscribeManager05 {
        //lookup NB
         String nbUrl = null;
         String idcUrl = null;
-        if(this.lookupClient == null){
-            try {
-                this.lookupClient = LookupClient.getClient(this.lookupUrl, this.lookupWsdl);
-            } catch(Exception e) {
-                this.log.error(netLog.error("SubscribeManager05.lookupDomainUrls", ErrSev.MAJOR, e.getMessage()));
-                String[] result = new String[2];
-                result[0] = null;
-                result[1] = null;
-                return result;
-            }
+        LookupClient lookupClient = null;
+        try {
+            lookupClient = OSCARSIDC.getInstance().getLookupClient();
+        } catch(Exception e) {
+            this.log.error(netLog.error("SubscribeManager05.lookupDomainUrls", ErrSev.MAJOR, e.getMessage()));
+            String[] result = new String[2];
+            result[0] = null;
+            result[1] = null;
+            return result;
         }
 
         //make sure it's a URN because this is how its stuffed in the perfSONAR LS
@@ -320,7 +282,9 @@ public class SubscribeManager05 {
         rel.setType("controls");
         lookupRequest.setHasRelationship(rel);
         try {
-            LookupResponseContent lookupResult = this.lookupClient.getPortType().lookup(lookupRequest);
+            Object[] req = new Object[] {lookupRequest};
+            Object[] res = lookupClient.invoke("lookup", req);
+            LookupResponseContent lookupResult = (LookupResponseContent) res[0];
             for(Relationship resultRel : lookupResult.getRelationship()){
                 if("publisher".equals(resultRel.getType())){
                     nbUrl = resultRel.getRelatedTo();
