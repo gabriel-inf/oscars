@@ -56,8 +56,9 @@ public class JunoscriptConnector implements Connector {
     private String privkeyfile  = null;
     private String passphrase   = null;
     private String login        = null;
-    
-   
+    private boolean commitsync   = false;
+
+
     public JunoscriptConnector() {
     }
     
@@ -80,6 +81,9 @@ public class JunoscriptConnector implements Connector {
         this.privkeyfile    = (String) params.get("privkeyfile");
         this.login          = (String) params.get("login");
         this.passphrase     = (String) params.get("passphrase");
+        if (params.get("commitsync") != null) {
+            commitsync = (Boolean)params.get("commitsync");
+        }
     }
     
     
@@ -166,6 +170,9 @@ public class JunoscriptConnector implements Connector {
         
         
         String deviceCommand = command.getDeviceCommand();
+        if (commitsync) {
+            deviceCommand = deviceCommand.replaceAll("<commit-configuration />", "<commit-configuration> <synchronize/> </commit-configuration>");
+        }
         String address = command.getDeviceAddress();
         if (deviceCommand == null) {
             throw new PSSException("null device command");

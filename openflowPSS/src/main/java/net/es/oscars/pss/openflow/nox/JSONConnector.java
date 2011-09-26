@@ -72,7 +72,7 @@ public class JSONConnector implements Connector {
             httpConn.setRequestProperty("Content-Type", "application/json");
             httpConn.setDoInput(true);
             httpConn.setDoOutput(true);
-            httpConn.setReadTimeout(5000);
+            httpConn.setReadTimeout(10000);
             //httpConn.connect();
             httpOut = new DataOutputStream(httpConn.getOutputStream());
             this.log.info("connected to NOX controller at " + noxUrl);
@@ -142,8 +142,8 @@ public class JSONConnector implements Connector {
             this.connect();
             if (httpConn == null)
                 throw new PSSException("NOX socket connection not ready!");
+            this.log.info("sending command to NOX: \n" + deviceCommand);
             httpOut.writeBytes(deviceCommand);
-            this.log.info("sending command to NOX: \n" + httpOut.toString());
             httpOut.flush();
             httpIn = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
             String line;
