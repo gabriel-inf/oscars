@@ -87,10 +87,8 @@ public class CreateTest {
         constraint.setPath(path);
         resv.setConstraint(constraint);
         OptConstraint optConstraint = new OptConstraint();
-        /*@S -bhr */
-   //     optConstraint.setCategory(CommonParams.getConstraintCategory());
-    //    optConstraint.setValue("this should be an xml string");
-        /*@E -bhr */
+        optConstraint.setCategory(CommonParams.getConstraintCategory());
+        optConstraint.setValue("this should be an xml string");
         resv.addOptConstraint(optConstraint);
         reservationDAO.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();

@@ -54,14 +54,13 @@ CREATE TABLE IF NOT EXISTS stdConstraints (
 
     --
 -- optional constraint table
--- bhr 
+--
 CREATE TABLE IF NOT EXISTS optConstraints (
     id                  INT NOT NULL AUTO_INCREMENT,
     constraintType      TEXT NOT NULL,
     keyName             TEXT NOT NULL,
     value               TEXT NOT NULL,
     reservationId       INT NOT NULL,  -- foreign key
-	seqNumber           INT NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=MyISAM;
 

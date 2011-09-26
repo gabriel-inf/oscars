@@ -29,11 +29,6 @@ import net.es.oscars.resourceManager.http.WSDLTypeConverter;
 import net.es.oscars.resourceManager.scheduler.RMReservationScheduler;
 import net.es.oscars.resourceManager.scheduler.ReservationScheduler;
 import org.hibernate.Session;
-/*@S Requirement: OptConstraint to be persisted- bhr*/
-import net.es.oscars.resourceManager.dao.OptConstraintDAO;
-import net.es.oscars.resourceManager.beans.OptConstraint;
-/*@E Requirement: OptConstrintDAO to be persisted- bhr*/
-
 
 import static net.es.oscars.resourceManager.common.RMUtils.res2resDetails;
 
@@ -215,10 +210,6 @@ public class ResourceManager {
         this.log.debug(netLogger.start(event));
         String gri = resDetails.getGlobalReservationId();
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        /*@S Requirement: OptConstraint to be persisted- bhr*/
-        OptConstraintDAO optConsDAO = new OptConstraintDAO(this.dbname);
-        /*@E Requirement: OptConstraint to be persisted- bhr*/
-        
         Reservation res = null;
         boolean newRes = false;
         try {
@@ -273,26 +264,13 @@ public class ResourceManager {
                  * times or bandwidth than the userConstraint
                  */
 
-                /*@S bhr*/
-                
-                List<OptConstraint> optConstraintList = new ArrayList<OptConstraint>(); 
-                
                 List <OptionalConstraintType> oclist = resDetails.getOptionalConstraint();
                 if (oclist != null && !oclist.isEmpty()) {
                     for (OptionalConstraintType oc: oclist) {
-                    	OptConstraint optionalCons = WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc);
-                    	
-                    	//optionalCons.setReservationId(Integer.parseInt(resDetails.getGlobalReservationId()));
-                    	System.out.println("*********Category : " + optionalCons.getKeyName() + "value" + optionalCons.getValue() + "***********");
-                    	optConstraintList.add(optionalCons);
-                    	
+                        res.addOptConstraint(WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc));
                     }
-                    
-                    res.setOptConstraintList(optConstraintList);
-                    
                 }
-                /*@E bhr*/
-             }
+            }
             resvDAO.update(res);
 
             // get data updated to database before RMScheduler looks for it.
@@ -387,17 +365,12 @@ public class ResourceManager {
         }
         res.setConstraintMap(conMap);
 
-        /* @S bhr */ 
         List <OptionalConstraintType> oclist = resDetails.getOptionalConstraint();
-         if (oclist != null && !oclist.isEmpty()) {
-             for (OptionalConstraintType oc: oclist) {
-             	OptConstraint optionalCons = WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc);
-             	//optionalCons.setReservationId(Integer.parseInt(resDetails.getGlobalReservationId()));
-                 res.addOptConstraint(optionalCons);
-             }
-         }
-         
-         /*@E bhr */
+        if (oclist != null && !oclist.isEmpty()) {
+            for (OptionalConstraintType oc: oclist) {
+                res.addOptConstraint(WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc));
+            }
+        }
         this.log.debug(netLogger.end(event));
     }
 

@@ -27,10 +27,6 @@ import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.topology.PathTools;
-/*@S bhr*/
-import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
-import net.es.oscars.api.soap.gen.v06.OptionalConstraintValue;
-/*@E bhr*/
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.VlanTag;
@@ -187,47 +183,6 @@ public class CreateReservation extends HttpServlet {
         resv.setDescription(description);
         userCon.setPathInfo( handlePath(request));
         resv.setUserRequestConstraint(userCon);
-        
-        /*@S OSCARS-COMMON-ANYCAST - bhr
-         * Set the optional constraints if a marker on the actual destination is of type == "Specific URN which is unique to identify
-         * whether the service is anycast or otherwise" If true then populate the candidate destinations by 
-         * communicating with an internal/external destination discovery engine*/
-
-       // if(userCon.getPathInfo().getLayer2Info().getDestEndpoint().equals("urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port1:link=ANYCAST"))
-       // {
-            //first constraint 
-        
-            OptionalConstraintType optionalCon = new OptionalConstraintType();
-            optionalCon.setCategory("BASIC_ANYCAST_SERVICE");
-            
-            OptionalConstraintValue optvalue = new OptionalConstraintValue();
-            
-            //this is one of the points where the service discovery engine can be invoked to get service specific data
-            optvalue.setValue("urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port1:link=link2#urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port1:link=link1#urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port2:link=link2");
-            
-            optionalCon.setValue(optvalue);
-            
-            resv.getOptionalConstraint().add(optionalCon);
-            
-            //second constraint
-            
-            optionalCon = new OptionalConstraintType();
-            optionalCon.setCategory("EXTENDED_ANYCAST_SERVICE");
-            
-            optvalue = new OptionalConstraintValue();
-            
-            //this is one of the points where the service discovery engine can be invoked to get service specific data
-            optvalue.setValue("urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port1:link=link1#urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port1:link=link2#urn:ogf:network:domain=testdomain-2:node=node-2-2:port=port2:link=link2");
-            
-            optionalCon.setValue(optvalue);
-            
-            resv.getOptionalConstraint().add(optionalCon);
-
-     
-  //      }
-        /*@E OSCARS-COMMON-ANYCAST -bhr*/
-
-        
         this.log.debug("toReservation:end");
 
         return resv;

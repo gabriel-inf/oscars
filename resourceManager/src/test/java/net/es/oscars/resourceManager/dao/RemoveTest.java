@@ -34,12 +34,8 @@ public class RemoveTest {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv =
             (Reservation) dao.queryByParam("description", "path test");
-        
-        /*@S bhr*/
-   //     if (resv.getOptConstraintSet() != null ) {
-     //   }
-        /*@E bhr*/
-        
+        if (resv.getOptConstraintSet() != null ) {
+        }
         dao.remove(resv);
         // links created in pathCreate were deleted by cascade
         this.sf.getCurrentSession().getTransaction().commit();

@@ -17,7 +17,7 @@ public class Reservation extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4099;
-    
+
     /** persistent field */
     private Long startTime;
 
@@ -55,10 +55,8 @@ public class Reservation extends HibernateBean implements Serializable {
     private Token token;
 
     private Map<String,StdConstraint> constraintMap = new HashMap<String,StdConstraint>();
-   // private Set<OptConstraint> optConstraintSet = new HashSet<OptConstraint>();
+    private Set<OptConstraint> optConstraintSet = new HashSet<OptConstraint>();
 
-    private List<OptConstraint> optConstraintList = new ArrayList<OptConstraint>();
-    
     private List<ErrorReportData> errorReports = new ArrayList<ErrorReportData>();
 
     /** default constructor */
@@ -75,7 +73,7 @@ public class Reservation extends HibernateBean implements Serializable {
     public void setStartTime(Long startTime) {
         this.startTime = startTime;
     }
-  
+
 
     /**
      * @return endTime A Long with the reservation end time
@@ -224,62 +222,27 @@ public class Reservation extends HibernateBean implements Serializable {
         this.constraintMap.put(constraintType, constraint);
     }
 
-    
-    /*@S bhr */ 
-    
     /**
      * @return set of optional constraints in this reservation.
      */
-/*    public Set <OptConstraint> getOptConstraintSet() {
+    public Set <OptConstraint> getOptConstraintSet() {
         return this.optConstraintSet;
-    }*/
+    }
 
     /**
      * @param optConstraints set of new constraints.  NOTE:  Don't use after
      *                  reservation has been made persistent.
      */
-   /* public void setOptConstraintSet(Set<OptConstraint> optConstraints) {
+    public void setOptConstraintSet(Set<OptConstraint> optConstraints) {
         this.optConstraintSet = optConstraints;
-    }*/
+    }
 
     /**
      * @param optConstraint new optConstraint in set, can only be added sequentially.
      */
-    /*public void addOptConstraint( OptConstraint optConstraint) {
+    public void addOptConstraint( OptConstraint optConstraint) {
         this.optConstraintSet.add(optConstraint);
-    }*/
-   
-     
-
-    /**
-     * @return set of errorReports in this reservation.
-     */
-    public List <OptConstraint> getOptConstraintList() {
-         return this.optConstraintList;
     }
-
-   /**
-     * @param errorReports set of new errorReports.  NOTE:  Don't use after
-                         reservation has been made persistent.
-     */
-    public void setOptConstraintList(List<OptConstraint> optConstraintList) {
-          this.optConstraintList =optConstraintList;
-    }
-
-    /**
-      * @param errorReport new errorReport in set, can only be added sequentially.
-      */
-      public void addOptConstraint(OptConstraint optConstraint) {
-          this.optConstraintList.add(optConstraint);
-      }
-
-
-
-    
-    
-    /*@E bhr*/
-    
-    
 
     /**
       * @return set of errorReports in this reservation.
@@ -302,11 +265,6 @@ public class Reservation extends HibernateBean implements Serializable {
        public void addErrorReport(ErrorReportData errorReport) {
            this.errorReports.add(errorReport);
        }
- 
-       
-              
-       
-       
 
     /**
      * getPath - returns the reserved path if it exists, otherwise the requested path

@@ -79,17 +79,10 @@
         <one-to-many class="net.es.oscars.resourceManager.beans.StdConstraint" />
     </map>
 
-    <!--   <set name="optConstraintSet" cascade="all, delete-orphan">
+    <set name="optConstraintSet" cascade="all, delete-orphan">
         <key column="reservationId" not-null="true" />
         <one-to-many class="net.es.oscars.resourceManager.beans.OptConstraint" />
-    </set> -->
-    
-    <list name="optConstraintList" fetch="subselect" cascade="all, delete-orphan">
-        <key column="reservationId" not-null="true" />
-        <list-index column="seqNumber" />
-        <one-to-many class="net.es.oscars.resourceManager.beans.OptConstraint" />
-    </list>
-    
+    </set>
 
     <one-to-one name="token"
         class="net.es.oscars.resourceManager.beans.Token"
