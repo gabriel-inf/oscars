@@ -266,7 +266,7 @@ sub __execList
     my $status = "list.sh Failed";
 	my $found = 0;
 
-    my @output = `$BINPATH/list.sh $MODE`;
+    my @output = `$BINPATH/list.sh -n 1 $MODE`;
     foreach my $line (@output) {
         if ($line =~ /$args{'gri'}/) {
 			$found = 1;

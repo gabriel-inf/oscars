@@ -1,0 +1,12 @@
+USE rm;
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'RESERVED';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'ACCEPTED';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INPATHCALCULATION';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'PATHCALCULATED';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INCOMMIT';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'COMMITTED';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INSETUP';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INTEARDOWN';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INCANCEL';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INMODIFY';
+SELECT COUNT(*) FROM reservations WHERE description LIKE 'SET%';
