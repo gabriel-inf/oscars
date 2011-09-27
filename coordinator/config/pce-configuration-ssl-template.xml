@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-<!-- WARNING: this file currently only contains debuging configuration - lomax@es.net 9/29/2009 -->
 <PCEConfiguration>
-<PCE>
+    <PCE>
         <Bindings>
             <Name>Top Aggregator</Name>
             <Endpoint>https://localhost:10001/OSCARS/PCE/NullAgg</Endpoint>
@@ -28,16 +27,27 @@
                            <ProxyEndpoint>https://localhost:10000/OSCARS/PCERuntimeService</ProxyEndpoint>
                        </Bindings>
                        <Aggregates>
-                           <PCE>
-                               <Bindings>
-                                   <Name>Dijkstra PCE</Name>
-                                   <PathTag>SampleDomain</PathTag>
-                                   <Endpoint>https://localhost:9008/dijkstraPCE</Endpoint>
-                                   <Role>PCE</Role>
-                                   <ProxyEndpoint>https://localhost:10000/OSCARS/PCERuntimeService</ProxyEndpoint>
-                               </Bindings>
-                           </PCE>
-                       </Aggregates>
+                            <PCE>
+                                <Bindings>
+                                    <Name>VLAN PCE</Name>
+                                    <PathTag>SampleDomain</PathTag>
+                                    <Endpoint>https://localhost:9010/OSCARS/vlanPCE</Endpoint>
+                                    <Role>PCE</Role>
+                                    <ProxyEndpoint>https://localhost:10000/OSCARS/PCERuntimeService</ProxyEndpoint>
+                                </Bindings> 
+                                <Aggregates>
+                                    <PCE>
+                                        <Bindings>
+                                            <Name>Dijkstra PCE</Name>
+                                            <PathTag>SampleDomain</PathTag>
+                                            <Endpoint>https://localhost:9008/dijkstraPCE</Endpoint>
+                                            <Role>PCE</Role>
+                                            <ProxyEndpoint>https://localhost:10000/OSCARS/PCERuntimeService</ProxyEndpoint>
+                                        </Bindings>
+                                    </PCE>
+                                </Aggregates>
+                            </PCE>
+                         </Aggregates>
                    </PCE>
                 </Aggregates>
             </PCE>
