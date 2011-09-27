@@ -721,12 +721,9 @@ public class DataTranslator05 {
             throws OSCARSServiceException {
         net.es.oscars.api.soap.gen.v05.VlanTag vlanTag05 = new net.es.oscars.api.soap.gen.v05.VlanTag();
 
-	if (vlanTag06.isTagged()) {
-            vlanTag05.setTagged(vlanTag06.isTagged());
-            vlanTag05.setValue(vlanTag06.getValue());
-        }  else {
-		throw new OSCARSServiceException("Unable to translate v06 VlanTag");
-	}
+        vlanTag05.setTagged(vlanTag06.isTagged());
+        vlanTag05.setValue(vlanTag06.getValue());
+        
         return vlanTag05;
     }
 
