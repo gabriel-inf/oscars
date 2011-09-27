@@ -299,21 +299,30 @@ public class QueryReservation extends HttpServlet {
             throws OSCARSServiceException {
 
         log.debug("in handleVlans");
+        //set defaults
         List<String> vlanTags = new ArrayList<String>();
         String srcVlanTag = "";
+        boolean srcTagged = true;
         String destVlanTag = "";
+        boolean destTagged = true;
+        
+        //parse layer 2 info
         if (layer2Info != null ) {
             if (layer2Info.getSrcVtag() != null) {
                 srcVlanTag = layer2Info.getSrcVtag().getValue();
+                srcTagged = layer2Info.getSrcVtag().isTagged();
             }
             if (layer2Info.getDestVtag() != null ){
                 destVlanTag = layer2Info.getDestVtag().getValue();
+                destTagged = layer2Info.getDestVtag().isTagged();
             }
             log.debug("srcVlanTag:" + srcVlanTag + " destVlanTag:" + destVlanTag);
         }
+        
+        
         if (!srcVlanTag.equals("")) {
-            QueryReservation.outputVlan(srcVlanTag, outputMap, "src");
-            QueryReservation.outputVlan(destVlanTag, outputMap, "dest");
+            QueryReservation.outputVlan(srcVlanTag, srcTagged, outputMap, "src");
+            QueryReservation.outputVlan(destVlanTag, destTagged, outputMap, "dest");
         } else {
             if (status.equals("ACCEPTED") || status.equals("INPATHCALCULATION") ||
                     status.equals("INSETUP")) {
@@ -355,28 +364,22 @@ public class QueryReservation extends HttpServlet {
         }
     }
 
-    public static void outputVlan(String vlanTag, Map<String, Object> outputMap,
+    
+    public static void outputVlan(String vlanTag, boolean tagged, Map<String, Object> outputMap,
                                   String prefix) {
 
-        if (vlanTag != null) {
-            //If its a negative number try converting it
-            //Prior to reservation completing may be a range or "any"
-            int storedVlan = 0;
-            try {
-                storedVlan = Integer.parseInt(vlanTag);
-                if(0 == storedVlan){
-                    vlanTag = "unknown";
-                }else{
-                    vlanTag = Math.abs(storedVlan) + "";
-                }
-            } catch (Exception e) {}
-            outputMap.put(prefix + "VlanReplace", vlanTag);
-            if (storedVlan > 0) {
-                outputMap.put(prefix + "TaggedReplace", "true");
-            } else {
-                outputMap.put(prefix + "TaggedReplace", "false");
-            }
+        if (vlanTag == null) {
+            return;
         }
+        
+        //If its a negative number try converting it
+        //Prior to reservation completing may be a range or "any"
+        try {
+            vlanTag = Math.abs(Integer.parseInt(vlanTag)) + "";
+        } catch (Exception e) {}
+        
+        outputMap.put(prefix + "VlanReplace", vlanTag);
+        outputMap.put(prefix + "TaggedReplace", (tagged ? "true" : "false"));
     }
 
     public static void
@@ -458,9 +461,17 @@ public class QueryReservation extends HttpServlet {
                 vlanRangeAvail = specInfo.getVlanRangeAvailability(); 
             }
         }
-        VlanTag vtag = new VlanTag();
-        vtag.setValue(vlanRangeAvail);
-        layer2Info.setSrcVtag(vtag);
+        VlanTag srcVtag = new VlanTag();
+        srcVtag.setValue(vlanRangeAvail);
+        srcVtag.setTagged(true);
+        try{
+            if(Integer.parseInt(vlanRangeAvail) <= 0){
+                srcVtag.setTagged(false);
+            }
+        }catch(Exception e){}
+        layer2Info.setSrcVtag(srcVtag);
+        
+        VlanTag destVtag = new VlanTag();
         link = hops.get(hops.size()-1).getLink();
         layer2Info.setDestEndpoint(link.getId());
         vlanRangeAvail = "any";
@@ -471,8 +482,14 @@ public class QueryReservation extends HttpServlet {
                 vlanRangeAvail = specInfo.getVlanRangeAvailability(); 
             }
         }
-        vtag.setValue(vlanRangeAvail);
-        layer2Info.setDestVtag(vtag);
+        destVtag.setValue(vlanRangeAvail);
+        destVtag.setTagged(true);
+        try{
+            if(Integer.parseInt(vlanRangeAvail) <= 0){
+                destVtag.setTagged(false);
+            }
+        }catch(Exception e){}
+        layer2Info.setDestVtag(destVtag);
         log.debug("createLayer:end");
         return layer2Info;
 
