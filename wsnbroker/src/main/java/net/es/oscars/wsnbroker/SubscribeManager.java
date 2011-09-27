@@ -636,7 +636,9 @@ public class SubscribeManager {
         checkAccessReq.setPermissionName(pep.getPermissionName());
         CheckAccessReply checkAccessReply = null;
         try{
-            checkAccessReply = authZClient.getPortType().checkAccess(checkAccessReq);
+            Object[] req = new Object[]{checkAccessReq};
+            Object[] res = authZClient.invoke("checkAccess", req);
+            checkAccessReply = (CheckAccessReply)res[0];
         }catch(Exception e){
             this.log.error(netLogger.error("getAuthZPerms",ErrSev.MAJOR, e.getMessage(), 
                     NotificationGlobals.getInstance().getAuthZUrl(), netLogProps));

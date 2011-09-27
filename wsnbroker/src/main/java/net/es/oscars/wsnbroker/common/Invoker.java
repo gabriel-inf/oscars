@@ -48,8 +48,8 @@ public class Invoker {
         OSCARSSoapService.setSSLBusConfiguration(
                 new URL("file:" + cc.getFilePath(ConfigDefaults.CXF_SERVER)));
         
-        WSNBrokerServer server = WSNBrokerServer.getInstance();
-        server.startServer(false);
+        //Initialize WSNBrokerServer
+        WSNBrokerServer.getInstance();
         HashMap<String, String> netLogProps = new HashMap<String,String>();
         netLogProps.put("context", context);
         log.info(netLogger.end("invoker", null, null, netLogProps));

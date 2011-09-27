@@ -51,7 +51,7 @@
         <sec:include>.*_WITH_NULL_.*</sec:include>
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>
-      <sec:clientAuthentication want="true" required="true"/>
+      <sec:clientAuthentication want="false" required="false"/>
     </httpj:tlsServerParameters>
    </httpj:engine>
   </httpj:engine-factory>

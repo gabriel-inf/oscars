@@ -208,7 +208,11 @@ public class NotificationGlobals {
         if(config.containsKey(PROP_AUTHZ_WSDL_URL)){
             this.authZWsdl = (String) config.get(PROP_AUTHZ_WSDL_URL);
         }else if(this.authZUrl != null){
-            this.authZWsdl = this.authZUrl + "?wsdl";
+            try {
+                this.authZWsdl = cc.getWSDLPath(ServiceNames.SVC_AUTHZ,null) + "";
+            } catch (MalformedURLException e) {
+                this.authZWsdl = this.authZUrl + "?wsdl";
+            }
         }else{
             //allow to run without authZ module
             this.authZWsdl = null;

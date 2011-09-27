@@ -369,7 +369,9 @@ public class WSNBrokerSoapHandler implements WSNBrokerPortType {
         checkAccessReq.setPermissionName(permission);
         CheckAccessReply checkAccessReply = null;
         try{
-            checkAccessReply = authZClient.getPortType().checkAccess(checkAccessReq);
+            Object[] req = new Object[]{checkAccessReq};
+            Object[] res = authZClient.invoke("checkAccess", req);
+            checkAccessReply = (CheckAccessReply)res[0];
         }catch(Exception e){
             this.log.error(netLogger.error("authzOp",ErrSev.MAJOR, e.getMessage(), 
                     NotificationGlobals.getInstance().getAuthZUrl(), netLogProps));
