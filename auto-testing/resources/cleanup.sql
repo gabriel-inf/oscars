@@ -1,4 +1,10 @@
 USE rm;
+
+select globalReservationId AS 'GRI', status, srcEndpoint as 'src', destEndpoint as 'dst' 
+from reservations inner join layer2Data 
+on reservations.id = layer2Data.id 
+WHERE status != 'ACTIVE' AND status != 'FINISHED' AND status != 'CANCELLED' AND status != 'FAILED';
+
 UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'RESERVED';
 UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'ACCEPTED';
 UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INPATHCALCULATION';
@@ -9,4 +15,10 @@ UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING C
 UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INTEARDOWN';
 UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INCANCEL';
 UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'INMODIFY';
-SELECT COUNT(*) FROM reservations WHERE description LIKE 'SET%';
+UPDATE reservations SET status = 'FAILED', description = 'SET TO FAILED DURING CLEANUP' WHERE status = 'UNKNOWN';
+
+select globalReservationId AS 'GRI', status, srcEndpoint as 'src', destEndpoint as 'dst' 
+from reservations inner join layer2Data 
+on reservations.id = layer2Data.id 
+WHERE status != 'ACTIVE' AND status != 'FINISHED' AND status != 'CANCELLED' AND status != 'FAILED';
+
