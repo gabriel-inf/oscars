@@ -291,7 +291,7 @@ public abstract class CoordAction <P,R> extends LinkedList <CoordAction> {
                 if (this.getCoordRequest() != null && this.getException() !=  null ) {
                     LOG.debug(netLogger.error(event,ErrSev.MINOR,
                                               "setting coordRequest " + this.getCoordRequest().getName()  +
-                                              "to fail with exception " +
+                                              " to fail with exception " +
                                               this.getException().getMessage()));
                     this.getCoordRequest().fail (this.getException());
                 }
@@ -461,6 +461,7 @@ public abstract class CoordAction <P,R> extends LinkedList <CoordAction> {
         String event = "process";
         if (this.getCoordRequest() != null) {
             netLogger.init(ModuleName.PCERUNTIME,this.getCoordRequest().getTransactionId());
+            netLogger.setGRI(this.getCoordRequest().getGRI());
         } else {
             netLogger.init(ModuleName.PCERUNTIME,"null");
         }

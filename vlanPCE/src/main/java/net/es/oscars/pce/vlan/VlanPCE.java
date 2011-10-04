@@ -52,7 +52,8 @@ public class VlanPCE {
             StateEngineValues.ACTIVE, StateEngineValues.INPATHCALCULATION,
             StateEngineValues.INSETUP, StateEngineValues.INTEARDOWN, 
             StateEngineValues.INMODIFY, StateEngineValues.INCOMMIT, 
-            StateEngineValues.COMMITTED, StateEngineValues.RESERVED
+            StateEngineValues.COMMITTED, StateEngineValues.MODCOMMITTED,
+            StateEngineValues.RESERVED
             };
     
     public VlanPCE(String rmUrl, String rmWsdl, String localDomain, String vlanScope) throws OSCARSServiceException, MalformedURLException{

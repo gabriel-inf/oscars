@@ -10,6 +10,8 @@ import java.net.URL;
 
 import java.lang.ref.WeakReference;
 
+import net.es.oscars.api.soap.gen.v06.InterDomainEventContent;
+import net.es.oscars.coord.req.InterDomainEventRequest;
 import net.es.oscars.utils.sharedConstants.PCERequestTypes;
 import net.es.oscars.utils.soap.OSCARSSoapService;
 import org.apache.log4j.Logger;
@@ -249,12 +251,12 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         String newState = null;
         if (this.requestType.equals(PCERequestTypes.PCE_CREATE)){
             newState = StateEngineValues.INPATHCALCULATION;
-        } else if (this.requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) ||
-                   this.requestType.equals(PCERequestTypes.PCE_MODIFY_COMMIT)){
+        } else if (this.requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT)) {
             newState = StateEngineValues.INCOMMIT;
-        } else if (this.requestType.equals(PCERequestTypes.PCE_CANCEL)){ // has already been done in CancelReservation
+        } else if (this.requestType.equals(PCERequestTypes.PCE_CANCEL)){
             newState = StateEngineValues.INCANCEL;
-        } else if (this.requestType.equals(PCERequestTypes.PCE_MODIFY)){
+        } else if (this.requestType.equals(PCERequestTypes.PCE_MODIFY) ||
+                   this.requestType.equals(PCERequestTypes.PCE_MODIFY_COMMIT)){
             newState = StateEngineValues.INMODIFY;
         }
         LOG.debug(netLogger.getMsg(event,"Calling RMUpdateStatus with state "  + newState));
@@ -478,9 +480,8 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         
         resDetails = pceData2ResDetails( data, srcPce, localRes, firstDomain, lastDomain);
 
-        if (requestType.equals(PCERequestTypes.PCE_CREATE) || requestType.equals(PCERequestTypes.PCE_MODIFY)) {   // ********* PCE CREATE & PCE_MODIFY *********
+        if (requestType.equals(PCERequestTypes.PCE_CREATE) || requestType.equals(PCERequestTypes.PCE_MODIFY)) {
             String event = null;
-            String status;
             if (requestType.equals(PCERequestTypes.PCE_CREATE)) {
                 event = PCERequestTypes.PCE_CREATE_COMMIT;
             } else if (requestType.equals(PCERequestTypes.PCE_MODIFY)) {
@@ -489,6 +490,7 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
             if (localRes || lastDomain ) {
                 LOG.debug(netLogger.getMsg(method,"coordRequest is "+ this.getCoordRequest()));
                 // This path is intra-domain, we can commit now.
+                this.getCoordRequest().setCommitPhase(true);
                 startCommitPhase(resDetails, event);
                 //LOG.debug(netLogger.getMsg(method,"pceruntime action state is "+ pceRuntimeAction.getState()));
 
@@ -520,12 +522,12 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
                 }
             }
 
-        } else if (requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) || requestType.equals(PCERequestTypes.PCE_MODIFY_COMMIT)) { // ********* PCE CREATE COMMIT and PCE MODIFY COMMIT*********
-             // Create, set and invoke the RMStoreAction
-            this.RMStore(resDetails,method);
+        } else if (requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) || requestType.equals(PCERequestTypes.PCE_MODIFY_COMMIT)) {
+            // Store reservation
+            this. RMStore(resDetails,method);
             if (localRes || firstDomain) {
-                 // notify that request is completed
-                 NotifyWorker.getInstance().sendInfo (this.getCoordRequest(),
+                // notify that request is completed
+                NotifyWorker.getInstance().sendInfo (this.getCoordRequest(),
                                                      requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) ?
                                                                         NotifyRequestTypes.RESV_CREATE_COMPLETED :
                                                                         NotifyRequestTypes.RESV_MODIFY_COMPLETED,
@@ -561,7 +563,6 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
                         return;
                     }
                 }
-                // Release the PCE mutex  -- maybe could do this before the Event was sent to next IDC
                 this.releaseMutex (this.getCoordRequest().getGRI());
                     
             } else { // not local, not first Domain
@@ -592,8 +593,6 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
             }
         } else if (requestType.equals(PCERequestTypes.PCE_CANCEL)) {  // ********* PCE CANCEL *********
             CancelRequest cancelRequest = (CancelRequest) srcPce.getCoordRequest();
-            // TODO this may be too soon to release the mutex since the forward have not been done yet
-            //this.releaseMutex (this.getCoordRequest().getGRI());
             cancelRequest.setPCEResultData();
         }
         // Since CoordActions have been added, it is required to re-process.
@@ -602,6 +601,7 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
     }
 
     private void startCommitPhase(ResDetails resDetails, String  event){
+
         PCERuntimeAction pceRuntimeAction = new PCERuntimeAction (this.getName() + "-Commit-PCERuntimeAction",
                                                                           this.getCoordRequest(),
                                                                           null,
@@ -705,21 +705,21 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         if (proxyAction.getRequestType().equals(PCERequestTypes.PCE_CREATE)) {
             resDetails.setStatus(StateEngineValues.PATHCALCULATED);
         } else if (proxyAction.getRequestType().equals(PCERequestTypes.PCE_MODIFY)) {
-            resDetails.setStatus(StateEngineValues.PATHCALCULATED);
+            resDetails.setStatus(StateEngineValues.INMODIFY);
         } else if (proxyAction.getRequestType().equals(PCERequestTypes.PCE_CANCEL)) {
             resDetails.setStatus(StateEngineValues.CANCELLED);          
-        } else if (proxyAction.getRequestType().equals(PCERequestTypes.PCE_CREATE_COMMIT) ||
-                   proxyAction.getRequestType().equals(PCERequestTypes.PCE_MODIFY_COMMIT)) {
-            if (localRes || firstDomain) {   /* This is probably should not be here -mrt
-                NotifyWorker.getInstance().sendInfo (this.getCoordRequest(),
-                                                     requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) ?
-                                                                        NotifyRequestTypes.RESV_CREATE_COMPLETED :
-                                                                        NotifyRequestTypes.RESV_MODIFY_COMPLETED,
-                                                     resDetails);   */
+        } else if (proxyAction.getRequestType().equals(PCERequestTypes.PCE_CREATE_COMMIT)){
+            if (localRes || firstDomain) {
                 resDetails.setStatus(StateEngineValues.RESERVED);
             } else {
                 resDetails.setStatus(StateEngineValues.COMMITTED);
-            }             
+            }
+        } else if (proxyAction.getRequestType().equals(PCERequestTypes.PCE_MODIFY_COMMIT)) {
+            if (localRes || firstDomain) {
+                resDetails.setStatus((String)this.getCoordRequest().getAttribute(CoordRequest.STATE_ATTRIBUTE));
+            } else {
+                resDetails.setStatus(StateEngineValues.MODCOMMITTED);
+            }
         } 
         return resDetails;
     }

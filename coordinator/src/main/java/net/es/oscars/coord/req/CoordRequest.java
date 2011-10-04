@@ -6,11 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
+import net.es.oscars.coord.actions.RMGetStatusAction;
+import net.es.oscars.coord.workers.InternalAPIWorker;
+import net.es.oscars.resourceManager.soap.gen.GetStatusRespContent;
+import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
 
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.quartz.SimpleTrigger;
 import org.quartz.JobDetail;
 
@@ -55,7 +60,7 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
     private Long                    receivedTime;
     private AuthConditions          authConditions;
     private MessagePropertiesType   msgProps;
-    private int                     pendingCounter = 0;
+    private boolean                 isCommitPhase = false; // set to true when pce operations enter commit phase
     private HashMap<String, Object> attributes = new HashMap<String, Object>(); // place to store extra information
     private static final Logger LOG = Logger.getLogger(CoordRequest.class.getName());
 
@@ -132,6 +137,19 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
         return Long.toString(this.localId);
     }
 
+    /**
+      * Called when the pceRuntime for this request starts the commit phase
+      * @param isCommit  should be true
+      */
+     public void setCommitPhase(boolean isCommit){
+         isCommitPhase = isCommit;
+     }
+
+     public boolean inCommitPhase() {
+         return isCommitPhase;
+     }
+
+
     @SuppressWarnings("unchecked")
     private void setInstance (String gTransId, String gri, AuthConditions authConds) {
         synchronized (this) {
@@ -177,8 +195,8 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
      *   passing on has a useful ErrorReport.
      *
      *   Checks to see if the exception contains an errorReport or faultReport. If it doesn't
-     *   it will create  an errorReport. If it finds an errorReport will be sure that the gri, transId and
-     *   module name are set.
+     *   it will create  an errorReport. If it finds an errorReport will be sure that the gri, transId,
+     *   domainId and module name are set.
      * @param method
      * @param errorCode
      * @param ex
@@ -193,20 +211,32 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
             errorRep = ErrorReport.fault2report(((OSCARSFaultMessage)ex).getFaultInfo().getErrorReport());
         } else if (ex.getClass().getName().endsWith("OSCARSServiceException")) {
             errorRep = ((OSCARSServiceException)ex).getErrorReport();
-            if (errorRep != null) {
-                if (errorRep.getGRI() == null) {
-                    errorRep.setGRI(this.getGRI());
-                }
-                if (errorRep.getTransId() == null){
-                    errorRep.setTransId(this.getTransactionId());
-                }
-                if (errorRep.getModuleName() == null) {
-                    errorRep.setModuleName(CoordRequest.moduleName);
-                }
-                if (errorRep.getTimestamp() == null ||
-                        errorRep.getTimestamp() == 0L) {
-                    errorRep.setTimestamp(System.currentTimeMillis()/1000L);
-                }
+        }
+        if (errorRep != null) {
+            if (errorRep.getErrorCode() == null){
+                errorRep.setErrorCode(errorCode);
+            }
+            if (errorRep.getErrorMsg() == null ) {
+                errorRep.setErrorMsg("unknown failure");
+            }
+            if (errorRep.getErrorType() == null) {
+                errorRep.setErrorType(ErrorReport.SYSTEM);
+            }
+            if (errorRep.getGRI() == null) {
+                errorRep.setGRI(this.getGRI());
+            }
+            if (errorRep.getTransId() == null){
+                errorRep.setTransId(this.getTransactionId());
+            }
+            if (errorRep.getModuleName() == null) {
+                errorRep.setModuleName(CoordRequest.moduleName);
+            }
+            if (errorRep.getTimestamp() == null ||
+                    errorRep.getTimestamp() == 0L) {
+                errorRep.setTimestamp(System.currentTimeMillis() / 1000L);
+            }
+            if (errorRep.getDomainId() == null ){
+                errorRep.setDomainId(PathTools.getLocalDomainId());
             }
         }
         if (errorRep == null) {
@@ -310,40 +340,6 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
         }
      }
 
-        /* unnecessary  now that lid is unique - mrt
-        CoordRequest oldRef = null;
-        //Increment recursion counter
-        ++this.pendingCounter;
-        if (pendingCounter > 10) {
-            // Too many recursion, something must be wrong. Safety exit, throw an error
-            throw new RuntimeException ("CoordRequest " + this.getTransactionId() + "/" + this.getName() +
-                                        " already exist. Too many recursions");
-        }
-
-        synchronized (CoordRequest.pendingRequests) {
-            oldRef = CoordRequest.pendingRequests.get(lid);
-            if (oldRef == null) {
-                oldRef = CoordRequest.pendingRequests.put (lid, this);
-                this.pendingCounter = 0;
-                return;
-            }
-        }
-
-        if (oldRef.isFullyCompleted()) {
-            // The CoordRequest that was in the pending queue is completed and is waiting for the watchdog to be removed.
-            // Remove it from the queue now.
-            CoordRequest.forget(lid);
-            // Try again
-            this.addToPending(lid);
-            return;
-
-        } else {
-            // The CoordRequest that was in the pending queue is active. There can not be two active CoordRequest with
-            // the same name in the queue. Throw an error. Put the oldRef back into
-            throw new RuntimeException ("CoordRequest " + this.getTransactionId() + "/" + this.getName() +
-                                        " already exist. Too many recursions");
-        }
-        */
 
 
     static public CoordRequest getCoordRequestById (String lid) {
@@ -409,5 +405,102 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
             }
             return CoordRequest.getCoordRequestById(lid);
         }
+    }
+
+    /**
+     * Should be overridden by requests that are not complete unless all the
+     * domains involved  are also complete.
+     * @return  true if all the PCE actions are finished.
+     */
+    public boolean isRequestComplete() {
+        return super.isFullyCompleted();
+    }
+       /**
+     * Method to check status of reservation.
+     *
+     * @return the reservation status
+     */
+    public String getResvStatus() {
+
+        RMGetStatusAction statusAction = new RMGetStatusAction("GetStatus-" + this.getGRI(),
+                                                               this.getCoordRequest(),
+                                                               this.getGRI());
+        statusAction.execute();
+        if (statusAction.getState() == CoordAction.State.FAILED){
+            //can't determine state
+            return null;
+        }
+        GetStatusRespContent qReply = statusAction.getResultData();
+        return qReply.getStatus();
+    }
+
+    /**
+     * Called when a coordRequest has failed and other domains may need to be informed
+     * Send IDE even if not necessary. Expects targetDomain to ignore any events that it
+     *    has already handled or knows nothing about.
+     * @param eventType  Type of error result
+     * @param isCommitPhase true if error occurred during the commit phase
+     * @param errorReport details about the error
+     * @param path  path for the reservation
+     * @param resDetails details for the reservation , may be null
+     */
+    public void sendErrorEvent(String eventType,
+                               boolean isCommitPhase,
+                               ErrorReport errorReport,
+                               CtrlPlanePathContent path,
+                               ResDetails resDetails ) {
+
+        if (path == null || PathTools.isPathLocalOnly(path)) {
+            return;
+        }
+        OSCARSNetLogger netLogger =  OSCARSNetLogger.getTlogger();
+        String event = "sendErrorEvent";
+        if (resDetails == null ) {
+            resDetails = new ResDetails();
+            resDetails.setGlobalReservationId(this.getGRI());
+        }
+        LOG.debug(netLogger.start(event, eventType));
+
+        try {
+            String localDomain = PathTools.getLocalDomainId();
+            String previousDomain = PathTools.getPreviousDomain(path,localDomain);
+            String nextDomain =  PathTools.getNextDomain(path, localDomain);
+            InternalAPIWorker apiWorker = InternalAPIWorker.getInstance ();
+
+            if (previousDomain != null ) {
+                apiWorker.sendErrorEvent(this.getCoordRequest(),
+                                         eventType,
+                                         errorReport,
+                                         previousDomain);
+                /*
+                apiWorker.sendErrorEvent(this.getCoordRequest(),
+                                         resDetails,
+                                         eventType,
+                                         errorReport.getErrorMsg(),
+                                         errorReport.getDomainId(),
+                                         previousDomain);
+                                         */
+            }
+
+            if (nextDomain != null ) {
+                    if (isCommitPhase || eventType.equals(NotifyRequestTypes.RESV_CANCEL_FAILED)) {
+                        apiWorker.sendErrorEvent(this.getCoordRequest(),
+                                         eventType,
+                                         errorReport,
+                                         nextDomain);
+                   /* apiWorker.sendErrorEvent(this.getCoordRequest(),
+                                             resDetails,
+                                             eventType,
+                                             errorReport.getErrorMsg(),
+                                             errorReport.getDomainId(),
+                                             nextDomain);
+                                             */
+                }
+            }
+        } catch (OSCARSServiceException oEx) {
+            LOG.error(netLogger.end(event, "failed to send IDE. Exception was " +
+                                       oEx.getMessage()));
+        }
+
     }
 }

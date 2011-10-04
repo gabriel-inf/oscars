@@ -10,5 +10,5 @@ case $# in
 1) context=$1;;
 esac
 echo "Starting WS-NotificationBroker service version:$vers context:$context"
-java -Xmx500m -Djava.net.preferIPv4Stack=true -jar $OSCARS_DIST/wsnbroker/target/wsnbroker-$vers.one-jar.jar -c $context  &
+java -Xmx800m -Djava.net.preferIPv4Stack=true -jar $OSCARS_DIST/wsnbroker/target/wsnbroker-$vers.one-jar.jar -c $context  &
 echo $! > $DEFAULT_PID_DIR/wsnbroker.pid

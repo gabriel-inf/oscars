@@ -39,7 +39,8 @@ public class BandwidthPCE {
             StateEngineValues.ACTIVE, StateEngineValues.INPATHCALCULATION,
             StateEngineValues.INSETUP, StateEngineValues.INTEARDOWN, 
             StateEngineValues.INMODIFY, StateEngineValues.INCOMMIT, 
-            StateEngineValues.COMMITTED, StateEngineValues.RESERVED
+            StateEngineValues.COMMITTED, StateEngineValues.MODCOMMITTED,
+            StateEngineValues.RESERVED
             };
     final private double MBPS_DENOM = 1000000.0;
     

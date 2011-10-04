@@ -81,6 +81,8 @@ testService "VlanPCE" "VlanPCE" "vlanPCE" "vlanPCE"
 
 testService "WSNBrokerService" "WSNBrokerService" "wsnbroker" "wsnbroker"
 
+testService "LookupService" "LookupService" "lookup" "lookup"
+
 testService "NotificationBridgeService" "NotificationBridgeService" "notifyBridge" "notificationBridge"
 
 #WBUI service gets its port from jetty.xml

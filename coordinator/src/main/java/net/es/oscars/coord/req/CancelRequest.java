@@ -23,6 +23,8 @@ import net.es.oscars.resourceManager.soap.gen.RMCancelRespContent;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 
+import java.util.HashSet;
+
 
 public class CancelRequest extends CoordRequest <CancelResContent, CancelResReply>{
 
@@ -43,6 +45,7 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
     private String                  previousDomain = null;
     private String                  localDomain = null;
     private OSCARSNetLogger         netLogger = null;
+    private boolean                 hasFailed = false;  // set to true when failed is called
     
     public CancelRequest(String name,
                          AuthConditions authConditions,
@@ -55,10 +58,8 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
         this.setRequestData(cancelResReq);
         this.setMessageProperties(cancelResReq.getMessageProperties());
         this.setCoordRequest(this);
-        this.registerAlias("CancelReservation-" + this.getGRI());
+        this.registerAlias("cancelReservation-" + this.getGRI());
     }
-
-
 
     /**
      * cancelReservation  cancels a reservation
@@ -90,8 +91,7 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
             RMCancelRespContent response = (RMCancelRespContent) res [0];
             this.resDetails = response.getReservation();
             String state = this.resDetails.getStatus();
-            if (state.equals(StateEngineValues.CANCELLED)) { // nothing to do, should we forward to the next domain?
-                return;
+            if (state.equals(StateEngineValues.CANCELLED)) { // assume forward domains already know it has been cancelled                 return;
             }
             if (state.equals(StateEngineValues.ACTIVE) ) {
                 isActive = true;
@@ -107,8 +107,13 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
                 nextDomain = PathTools.getNextDomain (reservedPath,localDomain);
                 previousDomain = PathTools.getPreviousDomain(reservedPath, localDomain);
             }
-
-            // inform all PCEs of the cancel action , done first because it also sets state in RM to INCANCEL
+            LOG.debug(netLogger.getMsg(method,"canceling " +
+                    (isLocalOnly? "local": "interDomain") + " reservation " + this.getGRI() + " in state " + state));
+            if (! isLocalOnly && ! lastDomain) {
+                // Forward immediately, so that any errors that occur will be handled in all the domains.
+                this.forwardRequest(method);
+            }
+            // inform all PCEs of the cancel action , this sets state in RM to INCANCEL
             PCERuntimeAction pceRuntimeAction = new PCERuntimeAction (this.getName() + "-Cancel-PCERuntimeAction",
                                                                       this,
                                                                       null,
@@ -125,8 +130,6 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
             
             this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE,resDetails.getDescription());
             this.setAttribute(CoordRequest.STATE_ATTRIBUTE, state);
-            LOG.debug(netLogger.getMsg(method,"received cancel for reservation in state " + state));
-            
 
             this.executed();
             
@@ -146,30 +149,33 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
         String method = "CancelRequest.setPCEData";
         LOG.debug(netLogger.start(method));
         PCEFinished = true;
-        // when pce is finished, forward the message if necessary
-        if (! isLocalOnly && ! lastDomain) {
-                // Forward CANCEL_RESERVATION  to the next IDC
+        PCERuntimeAction.releaseMutex(this.getGRI());  // no need to wait for other domains
+        checkReservationState("CancelRequest.setPCEData");
+    }
 
-                CancelResContent cancelContent = this.getRequestData();
-                CancelResvForwarder forwarder = new CancelResvForwarder (this.getName() + "-CancelResvForwarder",
-                                                                         this.getCoordRequest(),
-                                                                         nextDomain,
-                                                                         cancelContent);
-                forwarder.execute();
+    /**
+     * Forward CANCEL_RESERVATION  to the next IDC
+     * @param method  used for logging
+     */
+    private void forwardRequest(String method) {
 
-                if (forwarder.getState() == CoordAction.State.FAILED) {
-                    LOG.error(netLogger.error(method,ErrSev.MAJOR,
-                                              "forwardRequest failed in execute " +
-                                              forwarder.getException().getMessage()));
+        CancelResContent cancelContent = this.getRequestData();
+        CancelResvForwarder forwarder = new CancelResvForwarder (this.getName() + "-CancelResvForwarder",
+                                                                 this.getCoordRequest(),
+                                                                 nextDomain,
+                                                                 cancelContent);
+        forwarder.execute();
 
-                    NotifyWorker.getInstance().sendInfo(this.getCoordRequest(),
-                                                        NotifyRequestTypes.RESV_CANCEL_FAILED,
-                                                        this.resDetails);
-                    this.fail(forwarder.getException());
-                    return;
-                }
+        if (forwarder.getState() == CoordAction.State.FAILED) {
+            LOG.error(netLogger.error(method,ErrSev.MAJOR,
+                                      "forwardRequest failed in execute " +
+                                      forwarder.getException().getMessage()));
+
+            NotifyWorker.getInstance().sendInfo(this.getCoordRequest(),
+                                                NotifyRequestTypes.RESV_CANCEL_FAILED,
+                                                this.resDetails);
+            this.fail(forwarder.getException());
         }
-        setReservationState("CancelRequest.setPCEData");
     }
     /**
      * Called by PSSRequestReply when it gets the PSSReply associated with this coordRequest
@@ -192,7 +198,11 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
 
         } else if (status.equals(PSSConstants.SUCCESS)) {
             isActive = false;
-            setReservationState(method);
+            if (hasFailed)  {// an active reservation failed  switch status from UNKNOWN to FAILED
+                updateStatus(method+" for a failed reservation", StateEngineValues.FAILED);
+            } else {
+                checkReservationState(method);
+            }
         } else {
          // This is a safety net test
             LOG.debug(netLogger.error(method, ErrSev.MINOR, "PSS called Coordinator with " + pssReply.getStatus()));
@@ -203,7 +213,7 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
      */
     public void cancelConfirmedReceived() {
         receivedCONFIRMED = true;
-        setReservationState("CancelRequest.confirmedReceived");
+        checkReservationState("CancelRequest.confirmedReceived");
     };
     
     /**
@@ -211,22 +221,19 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
      */
     public void cancelCompletedReceived() {
         receivedCOMPLETED = true;
-        setReservationState("CancelRequest.completedReceived");
+        checkReservationState("CancelRequest.completedReceived");
     }
 
     /**
-     *  Updates the various state variables depending on the method
-     * @param method The method that has been called.
+     * Checks the various state variables and decides what should be done next
+     * @param method The method that has been called. Used for error logging.
      */
-    private void setReservationState(String method) {
+    private void checkReservationState(String method) {
 
-        // should we do a teardown
-        if (PCEFinished && isActive &&
-                (isLocalOnly || lastDomain || receivedCONFIRMED)) {
-            this.startTeardown(method, this.resDetails);
-            return;
+        // is it time to start a teardown
+        if (PCEFinished && isActive) {
+            this.startTeardown(method, resDetails);
         }
-
         // is it time to send a CANCEL_CONFIRMED
         if ( PCEFinished && ! isActive && ! isLocalOnly &&
                 !firstDomain && !sentCONFIRMED &&
@@ -253,7 +260,7 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
                     sentCOMPLETED = true;
                 }
             }
-            PCERuntimeAction.releaseMutex(this.getGRI());
+            this.getCoordRequest().unRegisterAlias("CancelReservation-" + this.getGRI());
             NotifyWorker.getInstance().sendInfo(this.getCoordRequest(),
                     NotifyRequestTypes.RESV_CANCEL_COMPLETED,
                     this.resDetails);
@@ -282,26 +289,27 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
 
     private void startTeardown(String method, ResDetails resDetails){
         try {
-            // Create and execute a PSSTeaddownPathAction
+            // Create and execute a PSSTeardownPathAction
             TeardownReqContent pssReq = new TeardownReqContent();
             Coordinator coordinator = Coordinator.getInstance();
             pssReq.setTransactionId(this.getMessageProperties().getGlobalTransactionId());
             pssReq.setCallbackEndpoint(coordinator.getCallbackEndpoint());
             pssReq.setReservation(resDetails);
             PSSTeardownPathAction pathTeardownAction = new PSSTeardownPathAction (this.getName(),
-                                                                                  null,
+                                                                                  this,
                                                                                   pssReq);
             pathTeardownAction.execute();
             if (pathTeardownAction.getState() == CoordAction.State.FAILED) {
                 throw pathTeardownAction.getException();
             }
          } catch (Exception e) {
-             LOG.error(netLogger.error(method,ErrSev.MAJOR,
-                                       "PSS teardown failed in PCERuntimeAction.setCancelResultData with exception " +
-                                       e.getMessage()));
-             this.fail(e);
-             this.notifyError ("PSS teardown failed in PCERuntimeAction.setCancelResultData with exception " +
-                                e.getMessage(), this.resDetails);
+            LOG.error(netLogger.error(method,ErrSev.MAJOR,
+                                      "PSS teardown failed in PCERuntimeAction.setCancelResultData with exception " +
+                                      e.getMessage()));
+             ErrorReport errRep = this.getCoordRequest().getErrorReport(method,
+                                                             ErrorCodes.PATH_TEARDOWN_FAILED,
+                                                             e);
+             this.fail(new OSCARSServiceException(errRep));
              return;
          }
     }
@@ -316,27 +324,23 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
                                        targetDomain);
         } catch (OSCARSServiceException e) {
             LOG.error(netLogger.error("CancelReservationRequest",ErrSev.MAJOR,
-                                      "IDCeventSend failed in PCERuntimeAction.setResultData with exception " +
+                                      "sendInterDomainEvent failed in CancelRequest with exception " +
                                       e.getMessage()));
             this.fail(e);
-            this.notifyError ("IDCeventSend failed in PCERuntimeAction.setResultData with exception " +
-                              e.getMessage(), this.resDetails);
             return;
         } 
     }
 
-    private void sendFailureEvent (String targetDomain,ErrorReport errorReport) {
-        try {
-            InternalAPIWorker apiWorker = InternalAPIWorker.getInstance ();
-            apiWorker.sendErrorEvent(this.getCoordRequest(),
-                                     this.resDetails,
-                                     NotifyRequestTypes.RESV_CANCEL_FAILED,
-                                     errorReport.getErrorMsg(),
-                                     errorReport.getDomainId(),
-                                     targetDomain);
-        } catch (OSCARSServiceException oEx) {
-
+    /**
+     * Overrides method in coordRequest to be sure that a multi-domain cancelReservation
+     * is not waiting for notification from another domain.
+     * @return
+     */
+    public boolean isRequestComplete() {
+        if (isFullyCompleted() && !StateEngineValues.INCANCEL.equals(getResvStatus())) {
+            return true;
         }
+        return false;
     }
 
      /**
@@ -358,20 +362,24 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
     /**
      * Handle any errors that occur during a CancelRequest.
      * Called from the fail method of this request or a child action such as PSSTeardown or RMUdateStatus
-     * Also colled when a RESV_CANCEL_FAIL  is received.
      * @param exception
      */
     public void failed (Exception exception) {
         String method = "CancelRequest.failed";
         LOG.error(netLogger.error(method, ErrSev.FATAL, " CancelRequest failed with " + exception.getMessage()));
+        if (hasFailed) {
+            return;
+        }
+        hasFailed = true;
         ErrorReport errorRep = this.getCoordRequest().getErrorReport(method,
                                                                      ErrorCodes.RESV_CANCEL_FAILED,
                                                                      exception);
 
-         RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
+        RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
                                                                    this,
                                                                    this.getGRI(),
-                                                                   StateEngineValues.FAILED,
+                                                                   (isActive? StateEngineValues.UNKNOWN:
+                                                                              StateEngineValues.FAILED),
                                                                    errorRep);
         action.execute();
 
@@ -380,25 +388,20 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
                                       action.getException().getMessage()));
         }
 
-        if (!isLocalOnly) { // pass the event to the next
-            if (errorRep.getDomainId().equals(localDomain)) { //error happened in this domain
-                if (!lastDomain){
-                    sendFailureEvent(nextDomain,errorRep);
-                }
-                if (!firstDomain){
-                    sendFailureEvent(previousDomain,errorRep);
-                }
-            }
-            else { // error was passed from another doamain
-                if (errorRep.getDomainId().equals(previousDomain) && !lastDomain) {
-                    sendFailureEvent(nextDomain, errorRep);
-                } if (errorRep.getDomainId().equals(nextDomain) && !firstDomain) {
-                    sendFailureEvent(previousDomain,errorRep);
-                }
-            }
+        if (isActive) {
+            // try to do a teardown. If it fails the reservation state should be left in UNKNOWN
+            this.startTeardown(method,this.resDetails );
+        } else {
+            this.unRegisterAlias(this.getName());
+        }
+        if (!isLocalOnly) { // pass the event to adjacent domains
+             this.getCoordRequest().sendErrorEvent(NotifyRequestTypes.RESV_CANCEL_FAILED,
+                                                   true,
+                                                   errorRep,
+                                                   reservedPath,
+                                                   resDetails);
         }
 
-        // TODO check if we hold mutex
         PCERuntimeAction.releaseMutex(this.getGRI());
                 // send notification of cancelReservation failure
         this.notifyError (errorRep.getErrorCode() + ":" + errorRep.getErrorMsg(),
@@ -406,5 +409,4 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
 
         super.failed(exception);
     }
-
 }

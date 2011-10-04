@@ -7,6 +7,8 @@ import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.coord.actions.*;
 import net.es.oscars.coord.runtimepce.PCERuntimeAction;
 import net.es.oscars.coord.workers.NotifyWorker;
+import net.es.oscars.resourceManager.soap.gen.GetStatusReqContent;
+import net.es.oscars.resourceManager.soap.gen.GetStatusRespContent;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
@@ -23,9 +25,8 @@ import net.es.oscars.utils.sharedConstants.StateEngineValues;
 public class InterDomainEventRequest extends CoordRequest <InterDomainEventContent,Object >{
 
     private static final long       serialVersionUID  = 1L;
-
     private static final Logger     LOG = Logger.getLogger(InterDomainEventRequest.class.getName());
-
+    private CoordRequest            origRequest = null;
     public InterDomainEventRequest(String name, String transId, String gri ) {
         super (name, transId, gri);
 
@@ -37,13 +38,11 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
         super.setRequestData(params);
     }
 
-
     public void execute()  {
 
         String method = "InterDomainEventRequest.execute";
         String transId = this.getTransactionId();
         String gri = this.getGRI();
-        String errorSrc = PathTools.getLocalDomainId(); // Will be modified for FAILURE events
         ErrorReport remoteErrorReport = null;
         ResDetails resDetails;
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
@@ -57,25 +56,20 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                 throw new OSCARSServiceException (method + " Null InterDomainEventContent", "system");
             }
             String eventType = eventContent.getType();
-            LOG.info(netLogger.start(method, "type is " + eventType));
+            LOG.info(netLogger.start(method, "received " + eventType));
 
-            // get local version of resDetails in case the one in eventContent has incomplete local path elements
-            /* The local resDetails does not have the remoteLinkIds
-            resDetails = getResDetails(gri);
-            if (resDetails == null) {
-                LOG.error(netLogger.getMsg(method,"no reservation found for " + gri));
-                ErrorReport errRep = new ErrorReport(ErrorCodes.RESV_NOT_FOUND,
-                                                      "InterDomainEventContent contained invalid GRI",
-                                                       ErrorReport.SYSTEM,
-                                                       gri,
-                                                       this.getMessageProperties().getGlobalTransactionId(),
-                                                       System.currentTimeMillis()/1000L,
-                                                       ModuleName.COORD,
-                                                       eventContent.getErrorSource());
-                OSCARSServiceException oEx = new OSCARSServiceException ( errRep );
-                throw oEx;
-            }
-            */
+            /* need to merge the local version of resDetails which does not have the remote links
+             * with the one in eventContent which might have incomplete local path elements
+             * Get the local resDetails from the CreateReservationRequest
+             *
+             * CreateReservationRequest  request = (CreateReservationRequest)
+             *          CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
+             *
+             * ResDetails localResDetails = pceRuntimeAction.pceData2ResDetails(request.getRequestData());
+             *
+             * ResDetails remResDetails  = eventContent.getResDetails();
+             * now merge the two
+             */
 
             resDetails = eventContent.getResDetails();
             
@@ -87,6 +81,10 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE, resDetails.getDescription());
             
             if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED)) {
+                CreateReservationRequest createRequest = (CreateReservationRequest)
+                                    CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
+                this.origRequest = createRequest;
+                createRequest.setCommitPhase(true);
 
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-CreateCommittedEventAction",
                                                                        this.getCoordRequest(),
@@ -100,8 +98,12 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            ErrorReport.SYSTEM));
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMPLETED)) {
-
-                CreateResvCompletedAction action = new CreateResvCompletedAction(this.getName() + "-CreateResvCompletedAction", this, resDetails);
+                CreateReservationRequest createRequest = (CreateReservationRequest)
+                                    CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
+                this.origRequest = createRequest;
+                CreateResvCompletedAction action = new CreateResvCompletedAction(this.getName() + "-CreateResvCompletedAction",
+                                                                                 this,
+                                                                                 resDetails);
                 this.add (action);
                 action.execute();
                 if (action.getState() == CoordAction.State.FAILED){
@@ -109,9 +111,60 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            method + " " + action.getException().getMessage(),
                                                            ErrorReport.SYSTEM));
                 }
-            } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED)) {
+            } else if (eventType.equals(NotifyRequestTypes.RESV_CREATE_FAILED)) {
+                CreateReservationRequest createRequest = (CreateReservationRequest)
+                        CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
+                if (createRequest == null) {
+                    String status = getResvStatus();
+                    if (status.equals(StateEngineValues.FAILED) ||
+                        status.equals(StateEngineValues.UNKNOWN) ) {
+                   // already handled
+                        this.executed();
+                        return;
+                    }
+                }
+                remoteErrorReport = new ErrorReport(eventType,
+                                                        eventContent.getErrorMessage(),
+                                                        eventContent.getErrorCode(),
+                                                        gri,
+                                                        createRequest.getTransactionId(),
+                                                        System.currentTimeMillis()/1000L,
+                                                        ModuleName.COORD,
+                                                        eventContent.getErrorSource());
+                if (createRequest != null) {
+                    LOG.debug(netLogger.getMsg("Received InterDomainEvent RESV_CREATE_FAILED",
+                        "createRequest name is " + createRequest.getName() +
+                        " errorCode " + eventContent.getErrorCode()));
+                     // use createReservationRequest failed method to fail it
+                    OSCARSServiceException ex = new OSCARSServiceException(remoteErrorReport);
+                    createRequest.fail(ex);
+                }else {
+                    // fail it here - code copied from CreateReservationRequest.failed
+                    // this code fails to send IDE failure events, but it should not be executed
+                    RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
+                                                                  this,
+                                                                  gri,
+                                                                  StateEngineValues.FAILED,
+                                                                  remoteErrorReport);
+                    action.execute();
 
-                ModifyResvCompletedAction action = new ModifyResvCompletedAction(this.getName() + "-ModifyResvCompletedAction", this, resDetails);
+                    if (action.getState() == CoordAction.State.FAILED) {
+                        LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
+                                                  action.getException().getMessage()));
+                    }
+                    this.notifyError (remoteErrorReport.getErrorCode() + ":" + remoteErrorReport.getErrorMsg(),
+                          gri);
+                }
+
+
+            } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED)) {
+                ModifyReservationRequest modifyRequest = (ModifyReservationRequest)
+                                    CoordRequest.getCoordRequestByAlias("modifyReservation-" + gri);
+                this.origRequest=modifyRequest;
+                this.setAttribute(CoordRequest.STATE_ATTRIBUTE,modifyRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
+                ModifyResvCompletedAction action = new ModifyResvCompletedAction(this.getName() + "-ModifyResvCompletedAction",
+                                                                                 this,
+                                                                                 resDetails);
                 this.add (action);
                 action.execute();
                 if (action.getState() == CoordAction.State.FAILED){
@@ -120,17 +173,67 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            ErrorReport.SYSTEM));
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED)) {
-
+                ModifyReservationRequest modifyRequest = (ModifyReservationRequest)
+                                    CoordRequest.getCoordRequestByAlias("modifyReservation-" + gri);
+                modifyRequest.setCommitPhase(true);
+                this.origRequest=modifyRequest;
+                this.setAttribute(CoordRequest.STATE_ATTRIBUTE,modifyRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-ModifyCommittedEventAction",
-                                                                       this.getCoordRequest(),
+                                                                       this,
                                                                        NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED,
                                                                        resDetails);
-                this.add (action);
+                this.add(action);
                 action.execute();
                 if (action.getState() == CoordAction.State.FAILED){
                     throw (new OSCARSServiceException (ErrorCodes.PCE_MODIFY_COMMIT_FAILED,
                                                            method + " " + action.getException().getMessage(),
                                                            ErrorReport.SYSTEM));
+                }
+            } else if (eventType.equals (NotifyRequestTypes.RESV_MODIFY_FAILED)) {
+               ModifyReservationRequest modifyRequest = (ModifyReservationRequest)
+                       CoordRequest.getCoordRequestByAlias("modifyReservation-" + gri);
+                if (modifyRequest == null ) {
+                    String status = getResvStatus();
+                    if (!status.equals(StateEngineValues.INMODIFY) &&
+                        !status.equals(StateEngineValues.MODCOMMITTED)) {
+                        this.executed();
+                        return;
+                    }
+                }
+
+
+                remoteErrorReport = new ErrorReport(eventContent.getErrorCode(),
+                                                        eventContent.getErrorMessage(),
+                                                        eventType,
+                                                        gri,
+                                                        modifyRequest.getTransactionId(),
+                                                        System.currentTimeMillis()/1000L,
+                                                        ModuleName.COORD,
+                                                        eventContent.getErrorSource());
+                if (modifyRequest != null){
+                    // use modifyRequest failed method to handle the failure
+                    LOG.debug(netLogger.getMsg("Received InterDomainEvent.RESV_MODIFY_FAILED",
+                        "modifyRequest name is " + modifyRequest.getName() +
+                        " errorCode " + eventContent.getErrorCode()));
+
+
+                    OSCARSServiceException ex = new OSCARSServiceException(remoteErrorReport);
+                    modifyRequest.fail(ex);
+                } else {
+                    LOG.error(netLogger.error("InterDomainEvent:RESV_MODIFY_FAILED",
+                                               ErrSev.MAJOR,
+                                               "No ModifyReservationRequest found, setting status to UNKNOWN"));
+                    RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
+                                                                              this,
+                                                                              gri,
+                                                                              StateEngineValues.UNKNOWN,
+                                                                              remoteErrorReport);
+                    action.execute();
+
+                    if (action.getState() == CoordAction.State.FAILED) {
+                        LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
+                                                  action.getException().getMessage()));
+                    }
                 }
             } else if ((eventType.equals(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED)) ||
                        (eventType.equals(NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED))) {
@@ -158,20 +261,17 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             } else  if (eventType.equals(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_FAILED) ||
                 eventType.equals(NotifyRequestTypes.PATH_SETUP_UPSTREAM_FAILED)   ) {
 
-                errorSrc = eventContent.getErrorSource();
-                PathRequest request = PathRequest.getPathRequest("CreatePath-" + gri,
-                                                                  this.getMessageProperties(),
-                                                                  resDetails);
-
+                 PathRequest request = PathRequest.getPathRequest(PathRequest.PSS_CREATE_PATH + "-" +gri,
+                                                                 this.getMessageProperties(),
+                                                                 resDetails);
                 request.checkIfExecuted();  // keeps anything else from executing it
                 request.processErrorEvent(eventType, eventContent);
             } else if (eventType.equals(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED) ||
                        eventType.equals(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED)) {
 
-                errorSrc = eventContent.getErrorSource();
-                PathRequest request = PathRequest.getPathRequest("TeardownPath-" + gri,
-                                                                  this.getMessageProperties(),
-                                                                  resDetails);
+                PathRequest request = PathRequest.getPathRequest(PathRequest.PSS_TEARDOWN_PATH + "-" +gri,
+                                                                 this.getMessageProperties(),
+                                                                 resDetails);
                 request.checkIfExecuted(); // keeps anything else from executing it
                 request.processErrorEvent(eventType, eventContent);
 
@@ -179,10 +279,11 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                        eventType.equals(NotifyRequestTypes.RESV_CANCEL_COMPLETED) ||
                        eventType.equals(NotifyRequestTypes.RESV_CANCEL_FAILED)) {
 
-                CancelRequest cancelRequest = (CancelRequest) CoordRequest.getCoordRequestByAlias("CancelReservation-" + gri);
+                CancelRequest cancelRequest = (CancelRequest) CoordRequest.getCoordRequestByAlias("cancelReservation-" + gri);
                 if (cancelRequest == null ) {
-                   throw (new OSCARSServiceException(ErrorCodes.RESV_CANCEL_FAILED,
-                                                          method + " no CancelResvRequest associated with this event",
+                    LOG.error(netLogger.getMsg("InterDomainEvent.CANCEL","No cancelReservation found for gri " + gri));
+                    throw (new OSCARSServiceException(ErrorCodes.RESV_CANCEL_FAILED,
+                                                          method + " no CancelResvRequest associated with event " + eventType,
                                                           ErrorReport.SYSTEM));
                 }
                 if (eventType.equals(NotifyRequestTypes.RESV_CANCEL_CONFIRMED)) {
@@ -205,10 +306,9 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                 } else if (eventType.equals(NotifyRequestTypes.RESV_CANCEL_FAILED)) {
                     LOG.debug(netLogger.getMsg("InterDomainEvent.CANCEL_FAILED",
                                                "CancelRequest name is " + cancelRequest.getName()));
-                    errorSrc = eventContent.getErrorSource();
                     remoteErrorReport = new ErrorReport(eventType,
                                                         eventContent.getErrorMessage(),
-                                                        ErrorReport.UNKNOWN,
+                                                        eventContent.getErrorCode(),
                                                         gri,
                                                         cancelRequest.getTransactionId(),
                                                         System.currentTimeMillis()/1000L,
@@ -216,13 +316,12 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                         eventContent.getErrorSource());
 
                     OSCARSServiceException ex = new OSCARSServiceException(remoteErrorReport);
-                    cancelRequest.failed(ex);
+                    cancelRequest.fail(ex);
                 }
 
             }  else {
-                this.fail (new OSCARSServiceException ("InterDomainEvent FAILED INVALID TYPE " + eventType));
                 LOG.fatal(netLogger.getMsg("InterDomainEvent FAILED", "INVALID TYPE " + eventType));
-
+                this.fail (new OSCARSServiceException ("InterDomainEvent FAILED INVALID TYPE " + eventType));
             }
  
             this.executed();
@@ -235,34 +334,7 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
     }
 
     /**
-     * Gets the ResDetails for this reservation incase they are needed to create
-     * a new PathRequest in getPathRequest. There are resDetails in the IDC but the
-     * path elements maY not be complete for this domain.
-     * @param gri  of the reservation to which this IDC pertains
-     * @return    the local resDetails for this reservation
-     */
-    ResDetails getResDetails (String gri){
-
-        ResDetails resDet = null;
-        QueryResContent queryReq = new QueryResContent();
-        queryReq.setMessageProperties(this.getMessageProperties());
-        queryReq.setGlobalReservationId(gri);
-        /* AuthConditions sent to RM are null
-         */
-        QueryReservationRequest qRequest= new QueryReservationRequest("QueryReservation-" + gri,
-                                                                       null,
-                                                                       queryReq);
-        qRequest.execute();
-        if (qRequest.getState() != CoordAction.State.FAILED){
-            QueryResReply qReply = qRequest.getResultData();
-            resDet = qReply.getReservationDetails();
-        }
-        return resDet;
-    }
-
-    /**
-     * Process an internal error (the local IDC failed to process a query: an internal error
-     * is when something went wrong within the IDC itself.
+     * Process an error that occurred when handling the interDomainEvent
      * CoordRequest implementation are expected to implement it.
      * @param errorMsg
      * @param resDetails
@@ -332,11 +404,13 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
         }
         String eventType = eventContent.getType();
         
-        //if it was a COMPLETED message that failed we need to decide if we actually 
+        //if it was a COMPLETED or CONFIRMED message that failed we need to decide if we actually
         // need to fail the reservation or if this was a duplicate
         HashMap<String, String> validNotifyStates = new HashMap<String, String>();
         validNotifyStates.put(NotifyRequestTypes.RESV_CREATE_COMPLETED, StateEngineValues.INCOMMIT);
         validNotifyStates.put(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED, StateEngineValues.INCOMMIT);
+        validNotifyStates.put(NotifyRequestTypes.RESV_MODIFY_COMPLETED, StateEngineValues.INMODIFY);
+        validNotifyStates.put(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED, StateEngineValues.INMODIFY);
         validNotifyStates.put(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_CONFIRMED, StateEngineValues.INSETUP);
         validNotifyStates.put(NotifyRequestTypes.PATH_SETUP_UPSTREAM_CONFIRMED, StateEngineValues.INSETUP);
         validNotifyStates.put(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_CONFIRMED, StateEngineValues.INTEARDOWN);
@@ -344,75 +418,52 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
         
         
         LOG.info(method + ": eventType=" + eventType + ", " + validNotifyStates.containsKey(eventType));
-        if(validNotifyStates.containsKey(eventType) && !this.checkStatus(validNotifyStates.get(eventType))){
-            LOG.warn(netLogger.error(method,ErrSev.MAJOR,"Ignoring because received " + eventType + " and was not in " + validNotifyStates.get(eventType)));
+        if(validNotifyStates.containsKey(eventType) &&
+                !this.getResvStatus().equals(validNotifyStates.get(eventType))){
+            LOG.warn(netLogger.error(method,ErrSev.MAJOR,"Ignoring because received " +
+                                    eventType + " and was not in " + validNotifyStates.get(eventType)));
             return;
         }
-        
-        
-        // if we failed while processing an event (other than MODIFY)
-        // try to fail the reservation now
-         ErrorReport errRep = this.getCoordRequest().getErrorReport("InterDomainEventRequest.failed",
-                                                                     ErrorCodes.IDE_FAILED,
-                                                                     e);
 
-        if (! eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED) &&
-            ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED) &&
-            ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_CONFIRMED) &&
-            ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_FAILED)) {
+        /* if we failed while processing an event try to fail the reservation*/
+        if (this.origRequest != null) {
+            LOG.debug(netLogger.getMsg(method,"calling fail on origRequest " + this.origRequest.getName()));
+            this.origRequest.fail(e);
 
-            // Set state of the reservation
-            RMUpdateFailureStatus rmAction = new RMUpdateFailureStatus(this.getName() + "-RMUpdateAction",
-                                                                       this,
-                                                                       this.getGRI(),
-                                                                       StateEngineValues.FAILED,
-                                                                       errRep);
-            rmAction.execute();
-            if (rmAction.getState() ==  CoordAction.State.FAILED) {
-                LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
-                                          rmAction.getException().getMessage()));
+        }  else {
+            LOG.debug(netLogger.getMsg(method, "no origReqest found doing local fail"));
+
+            // if we failed while processing an event (other than MODIFY)
+            // if we failed while processing an event (other than MODIFY)
+            // try to fail the reservation now  note: the IDE failure events won't be sent
+             ErrorReport errRep = this.getCoordRequest().getErrorReport("InterDomainEventRequest.failed",
+                                                                         ErrorCodes.IDE_FAILED,
+                                                                         e);
+
+            if (! eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED) &&
+                ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED) &&
+                ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_CONFIRMED) &&
+                ! eventType.equals(NotifyRequestTypes.RESV_MODIFY_FAILED)) {
+
+                // Set state of the reservation
+                RMUpdateFailureStatus rmAction = new RMUpdateFailureStatus(this.getName() + "-RMUpdateAction",
+                                                                           this,
+                                                                           this.getGRI(),
+                                                                           StateEngineValues.FAILED,
+                                                                           errRep);
+                rmAction.execute();
+                if (rmAction.getState() ==  CoordAction.State.FAILED) {
+                    LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
+                                              rmAction.getException().getMessage()));
+                }
             }
-        }
-        /* This may be a failure in a pceCommit which is started by InterDomainEventRequest for
-          interDomain reservations */
-        // TODO check if we hold mutex
-        PCERuntimeAction.releaseMutex(this.getGRI());
-        notifyError(e.getMessage(), eventContent.getResDetails());
 
+            /* This may be a failure in a pceCommit which is started by InterDomainEventRequest for
+              interDomain reservations */
+            // TODO check if we hold mutex
+            PCERuntimeAction.releaseMutex(this.getGRI());
+            notifyError(e.getMessage(), eventContent.getResDetails());
+        }
         super.failed(e);
-    }
-    
-    /**
-     * Method to check status of reservation. Used to see if we should fail the reservation when a 
-     * store action fails. This protects against duplicate notifications (like those from 0.5) 
-     * failing the reservation.
-     * 
-     * @param targetStatus the status the reservation should have
-     * @return true if status matches the given target, false otherwise
-     */
-    private boolean checkStatus(String targetStatus) {
-        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        LOG.info(netLogger.start("CreateResvCompletedAction.checkStatus"));
-        QueryResContent queryReq = new QueryResContent();
-        queryReq.setMessageProperties(this.getMessageProperties());
-        queryReq.setGlobalReservationId(this.getGRI());
-        QueryReservationRequest qRequest= new QueryReservationRequest("QueryReservation-" + this.getGRI(),
-                                                                       null,
-                                                                       queryReq);
-        qRequest.execute();
-        if (qRequest.getState() == CoordAction.State.FAILED){
-            //can't determine state
-            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false1"));
-            return false;
-        }
-        
-        QueryResReply qReply = qRequest.getResultData();
-        if(qReply.getReservationDetails() != null && 
-                targetStatus.equals(qReply.getReservationDetails().getStatus())){
-            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus -true"));
-            return true;
-        }
-        LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false2"));
-        return false;
     }
 }

@@ -486,7 +486,7 @@ public class ResourceManager {
                      }
                  }
              } catch (RMException rmEx) {
-                 throw new OSCARSServiceException( ErrorCodes.RESV_DATABASE_ERROR, rmEx.getMessage(), ErrorReport.SYSTEM);
+                 throw new OSCARSServiceException(ErrorCodes.RESV_DATABASE_ERROR, rmEx.getMessage(), ErrorReport.SYSTEM);
              }
 
              for (ErrorReportData erd : errData){
@@ -539,7 +539,8 @@ public class ResourceManager {
         try {
             if (domains != null ){
                 if (!checkDomains(res,domains,netLogger, event)){
-                    this.log.info(netLogger.getMsg(event,"user " + loginId + " not allowed to cancel this reservation: " + gri));
+                    this.log.info(netLogger.getMsg(event,
+                                                   "user " +loginId+ " not allowed to cancel this reservation: " +gri));
                     throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, "not owm domain", ErrorReport.USER);
                 }
             }
@@ -600,14 +601,15 @@ public class ResourceManager {
                 }
                 if (domains != null ){
                     if (!checkDomains(res,domains,netLogger, event)){
-                        this.log.info(netLogger.getMsg(event,"user " + loginId + " not allowed to modify this reservation: " + gri));
+                        this.log.info(netLogger.getMsg(event,
+                                                       "user "+ loginId +" not allowed to modify this reservation: "+ gri));
                         throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, "not own domain", ErrorReport.USER);
                     }
                 }
                 try {
                     String newStatus = StateEngine.canModifyStatus(res.getStatus(),StateEngineValues.INMODIFY);
                 } catch (OSCARSServiceException rmEx){
-                    throw new OSCARSServiceException(ErrorCodes.RESV_MODIFY_FAILED, rmEx.getMessage(), ErrorReport.SYSTEM);
+                    throw new OSCARSServiceException(ErrorCodes.RESV_MODIFY_FAILED, rmEx.getMessage(), ErrorReport.USER);
                 }
                 resDetails = RMUtils.res2resDetails(res, internalPathAuthorized);
                 ReservationScheduler scheduler = RMReservationScheduler.getInstance();

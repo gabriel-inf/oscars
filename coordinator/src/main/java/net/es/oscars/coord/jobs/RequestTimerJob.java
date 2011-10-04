@@ -1,5 +1,6 @@
 package net.es.oscars.coord.jobs;
 
+import java.util.HashSet;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -81,11 +82,16 @@ public class RequestTimerJob implements Job {
             netLogger.init(ModuleName.COORD,request.getCoordRequest().getTransactionId());
         }
         //LOG.debug(netLogger.getMsg(event,"checking on " + request.getName()));
-        if ( ! request.isFullyCompleted()) {
+
+        if ( ! request.isRequestComplete()) {
             // This request has not yet been completed. Assume an error/problem has occurred. Fail the request
 	        LOG.debug(netLogger.getMsg(event,request.getName() + " not completed, calling fail"));
+            String resStatus = "";
+            if (request.getGRI() != null) {
+                resStatus = request.getResvStatus();
+            }
             ErrorReport errRep = new ErrorReport(ErrorCodes.REQUEST_TIMEOUT,
-                                                 "Watchdog Terminated " + request.getName(),
+                                                 "Watchdog Terminated " + request.getName() + " in status " + resStatus,
                                                   ErrorReport.SYSTEM,
                                                   request.getGRI(),
                                                   request.getTransactionId(),

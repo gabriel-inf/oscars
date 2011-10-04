@@ -282,11 +282,9 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
             oscars.Form.applyParams(responseObject);
         }
     } else if (responseObject.method == "CancelReservation") {
-        if (statusN.innerHTML == "PENDING") {
-            statusN.innerHTML = "CANCELLED";
-        } else {
-            statusN.innerHTML = "INTEARDOWN";
-        }
+        statusN.innerHTML="INCANCEL";
+    } else if (responseObject.method == "ModifyReservation"){
+         statusN.innerHTML="INMODIFY";
     } else if (responseObject.method == "OverrideStatusReservation") {
         var formNode = dijit.byId("reservationDetailsForm").domNode;
         oscars.Form.applyParams(responseObject);

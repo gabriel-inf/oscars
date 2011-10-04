@@ -1,6 +1,6 @@
 package net.es.oscars.coord.req;
 
-import net.es.oscars.api.soap.gen.v06.QueryResReply;
+
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
 import net.es.oscars.common.soap.gen.OSCARSFaultMessage;
 import net.es.oscars.coord.actions.*;
@@ -14,13 +14,16 @@ import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 import net.es.oscars.coord.runtimepce.PCERuntimeAction;
 import net.es.oscars.coord.runtimepce.PCEData;
+import net.es.oscars.coord.runtimepce.ProxyAction;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.sharedConstants.PCERequestTypes;
-import org.mortbay.jetty.security.UserRealm;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+
+import java.util.HashSet;
 
 /**
  * A coordRequest to handle CreateReservation requests. Input parameters are placed in
@@ -34,6 +37,8 @@ import org.mortbay.jetty.security.UserRealm;
 public class CreateReservationRequest extends CoordRequest <ResCreateContent,CreateReservationResults >{
     
     private static final long       serialVersionUID  = 1L;
+    private PCEData pceData =  null;
+    private boolean hasFailed = false;
     private static final Logger LOG = Logger.getLogger(CreateReservationRequest.class.getName());
     private OSCARSNetLogger netLogger = null;
 
@@ -47,6 +52,7 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
     public CreateReservationRequest(String gri, String name, String loginName, ResCreateContent createResvReq) {
         super (name, createResvReq.getMessageProperties().getGlobalTransactionId(), gri);
         this.setRequestData(loginName,createResvReq);
+        this.registerAlias("createReservation-" + gri);
         this.setCoordRequest(this);
         this.setLog();
     }
@@ -91,6 +97,7 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
                     throw rmGenerateGRIAction.getException();
                 }
                 this.setGRI(rmGenerateGRIAction.getResultData());
+                this.registerAlias("createReservation-" + this.getGRI());
             }
             netLogger.setGRI(this.getGRI());
 
@@ -127,7 +134,7 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
                                           this.getTransactionId(),
                                           PCERequestTypes.PCE_CREATE);
 
-            PCEData pceData = new PCEData(createResvReq.getUserRequestConstraint(),
+             pceData = new PCEData(createResvReq.getUserRequestConstraint(),
                                           createResvReq.getReservedConstraint(),
                                           createResvReq.getOptionalConstraint(),
                                           null);
@@ -142,13 +149,27 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
                 message = ex.toString();
             }
             LOG.warn(netLogger.error(method, ErrSev.MINOR, "caught Exception "+ message));
-            /* done in failed
-            this.notifyError ("CreateReservationRequest/rmStoreAction failed with exception" +
-                              ex.getMessage(), this.getGRI());
-             */
             this.fail (new OSCARSServiceException(method + "caught Exception: " + message));
         }
         LOG.debug(netLogger.end(method));
+    }
+
+    /**
+     * Overrides method in coordRequest to be sure that a multi-domain create reservation
+     * is not waiting for notification from another domain.
+     * @return
+     */
+    public boolean isRequestComplete() {
+        HashSet<String> incompleteStatus = new HashSet<String>();
+        incompleteStatus.add(StateEngineValues.ACCEPTED);
+        incompleteStatus.add(StateEngineValues.INPATHCALCULATION);
+        incompleteStatus.add(StateEngineValues.PATHCALCULATED);
+        incompleteStatus.add(StateEngineValues.INCOMMIT);
+        incompleteStatus.add(StateEngineValues.COMMITTED);
+        if (isFullyCompleted() && !incompleteStatus.contains(getResvStatus())) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -174,12 +195,17 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
      *
      *  The resourceManage should be informed of the failure and store an ErrorReport
      *  A  notify message of RESERVATION_CREATE_FAILED should be sent, and if this in an
-     *  interdomain reservation the peerIDCs may need to be sent an InterdomainEvent of  RESERVATION_CREATE_FAILED
+     *  interdomain reservation the peerIDCs will sent an InterdomainEvent of  RESERVATION_CREATE_FAILED
      * @param exception reason for failure
      */
     public void failed (Exception exception) {
         String method = "CreateReservationRequest.failed";
         LOG.error(netLogger.error(method, ErrSev.FATAL, " CreateReservation failed with " + exception.getMessage()));
+
+        if (hasFailed) {
+            return;
+        }
+        hasFailed = true;
 
         if (this.getGRI() == null ) {
             // died trying to get a GRI
@@ -198,10 +224,21 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
             LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
                                       action.getException().getMessage()));
         }
+
+        if (pceData != null) {
+            CtrlPlanePathContent reservedPath = ProxyAction.getPathFromPceData(pceData);
+            if (reservedPath != null) {
+            this.sendErrorEvent(NotifyRequestTypes.RESV_CREATE_FAILED,
+                                this.inCommitPhase(),
+                                errorRep,
+                                reservedPath,
+                                null);
+            }
+        }
         // send notification of createReservation failure
         this.notifyError (errorRep.getErrorCode() + ":" + errorRep.getErrorMsg(),
                           this.getGRI());
-
+        this.unRegisterAlias("createReservation-" + this.getGRI());
         PCERuntimeAction.releaseMutex(this.getGRI());
         super.failed(exception); // this calls coordAction.failed
     }

@@ -181,7 +181,8 @@ public class InternalAPIWorker extends ModuleWorker {
 
         Object[] req = new Object[] {event, destDomain};
         this.getClient().invoke("interDomainEvent", req);
-        LOG.info ("sendErrorEvent:end " + notifyType);
+        LOG.info (OSCARSNetLogger.getTlogger().end("sendErrorEvent",
+                                                   notifyType +" to domain " + destDomain));
     }
 
     @SuppressWarnings("unchecked")

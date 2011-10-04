@@ -116,7 +116,7 @@ public class NotifySender {
             throw new OSCARSServiceException("NotifySender has not been initialized.");
         }
         OSCARSNetLogger netLog = OSCARSNetLogger.getTlogger();
-        log.debug(netLog.start("NotifySender.send"));
+        log.debug(netLog.start("NotifySender.send " + event.getType()));
         
         try{
             instance.getClient().getPortType().notify(event);

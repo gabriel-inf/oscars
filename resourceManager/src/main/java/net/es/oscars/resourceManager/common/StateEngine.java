@@ -22,13 +22,14 @@ public class StateEngine {
      * INPATHCALCULATION -> PATHCACULATED, INCOMMIT, FAILED
      * PATHCALCULATED -> INCOMMIT, INMODIFY, INCANCEL
      * INCOMMIT -> COMMITTED, RESERVED, FAILED
-     * COMMITTED -> RESERVED, INMODIFY, FAILED
+     * COMMITTED -> RESERVED, FAILED
+     * MODCOMMITTED -> RESERVED, ACTIVE, FAILED
      * RESERVED -> INSETUP, INMODIFY, INCANCEL  FAILED
      * INSETUP -> ACTIVE, FAILED
      * ACTIVE -> INTEARDOWN, INMODIFY, INCANCEL. FAILED
      * INTEARDOWN -> RESERVED, FINISHED, FAILED
      * INCANCEL ->  CANCELLED, FAILED
-     * INMODIFY -> RESERVED, ACTIVE
+     * INMODIFY -> MODCOMMITTED, RESERVED, ACTIVE
      * final states: FAILED, FINISHED, CANCELLED
      */
 
@@ -49,6 +50,7 @@ public class StateEngine {
      * @param resv
      * @param newStatus
      * @param isFailure If this is a failure case, any transition is allowed
+     *        e.g inmodify -> previous status if modify failed, also used by forceUpdateStatus
      * @return The new status. It will be newStatus or FINISHED if the end time has been reached and
      *         newStatus is RESERVED
      * @throws RMException from canModifyStatus if the state transition is not allowed
@@ -84,7 +86,7 @@ public class StateEngine {
         }
         else {
             // throws an OSCARSServiceException if transition is not allowed
-            if (! isFailure) { // for now accept anything
+            if (! isFailure) { // accept anything
                 newStatus = StateEngine.canModifyStatus(status, newStatus);
             }
         }
@@ -128,11 +130,11 @@ public class StateEngine {
                 allowed = true;
             }
         } else if (newStatus.equals(StateEngineValues.PATHCALCULATED)) {
-            if (status.equals(StateEngineValues.INMODIFY)  ||
+            if (//status.equals(StateEngineValues.INMODIFY)  ||
                     status.equals(StateEngineValues.INPATHCALCULATION )) {
                 allowed = true;
             }
-        } else if (newStatus.equals(StateEngineValues.INCOMMIT)) {// Probably only PATHCACULATED should be allowed
+        } else if (newStatus.equals(StateEngineValues.INCOMMIT)) {
             if (status.equals(StateEngineValues.PATHCALCULATED) ||
                     status.equals(StateEngineValues.INPATHCALCULATION) ||
                     status.equals(StateEngineValues.INMODIFY)){
@@ -145,20 +147,29 @@ public class StateEngine {
         } else if (newStatus.equals(StateEngineValues.RESERVED)) {
             if (status.equals(StateEngineValues.COMMITTED ) ||
                     status.equals(StateEngineValues.INCOMMIT) ||
+                    status.equals(StateEngineValues.INMODIFY) ||
+                    status.equals(StateEngineValues.MODCOMMITTED) ||
                     status.equals(StateEngineValues.INTEARDOWN)) {
                 allowed = true;
             }
         } else if (newStatus.equals(StateEngineValues.INMODIFY)) {
             if (status.equals(StateEngineValues.RESERVED) ||
-                    status.equals(StateEngineValues.ACTIVE)) {
+                    status.equals(StateEngineValues.ACTIVE) ||
+                    status.equals(StateEngineValues.MODCOMMITTED)) {
                 allowed = true;
+            }
+        } else if ((newStatus.equals(StateEngineValues.MODCOMMITTED))) {
+            if (status.equals(StateEngineValues.INMODIFY)){
+                allowed=true;
             }
         } else if (newStatus.equals(StateEngineValues.INSETUP)) {
             if (status.equals(StateEngineValues.RESERVED)) {
                 allowed = true;
             }
         } else if (newStatus.equals(StateEngineValues.ACTIVE)) {
-            if (status.equals(StateEngineValues.INSETUP)) {
+            if (status.equals(StateEngineValues.INSETUP) ||
+                    status.equals(StateEngineValues.INMODIFY)||
+                    status.equals(StateEngineValues.MODCOMMITTED)) {
                 allowed = true;
             }
         } else if (newStatus.equals(StateEngineValues.INTEARDOWN)) {

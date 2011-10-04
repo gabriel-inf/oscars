@@ -46,6 +46,8 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
         String localDomain = PathTools.getLocalDomainId();
         boolean lastDomain = true;
         ResDetails resDetails = this.getRequestData();
+        LOG.debug(netLogger.getMsg(method, "resDetails status: " + resDetails.getStatus() +
+                            "StateAttribute: " + this.getCoordRequest().getAttribute(CoordRequest.STATE_ATTRIBUTE)));
         CtrlPlanePathContent reservedPath = resDetails.getReservedConstraint().getPathInfo().getPath();
         try {
             if (reservedPath != null) {
@@ -55,16 +57,28 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
                 domain = PathTools.getFirstDomain(reservedPath);
             }
         } catch (OSCARSServiceException e) {
-            LOG.error (netLogger.error(method, ErrSev.MINOR,"Cannot process PCEData " + e));
+            LOG.error (netLogger.error(method, ErrSev.MAJOR,"Cannot process PCEData " +
+                                       this.getCoordRequest().getGRI()));
             this.fail(e);
             return;
         }
-        
-        // Update local status of the reservation to RESERVED
-        RMUpdateStatusAction rmUpdateStatusAction = new RMUpdateStatusAction (this.getName() + "-RMUpdateStatusAction",
-                                                                              this.getCoordRequest(),
-                                                                              this.getCoordRequest().getGRI(),
-                                                                              StateEngineValues.RESERVED);
+          // Update local reservation to with modified value and previous state
+            RMStoreAction rmStoreAction = new RMStoreAction(this.getName() + "-RMStoreAction",
+                                                            this.getCoordRequest(),
+                                                            resDetails);
+            rmStoreAction.execute();
+            if (rmStoreAction.getState() == CoordAction.State.FAILED) {
+                LOG.error(netLogger.error(method,ErrSev.MINOR,"could not store modified changes for " +
+                this.getCoordRequest().getGRI()));
+            this.fail(rmStoreAction.getException());
+            return;
+            }
+        /* Update local status of the reservation to its previous value
+        RMUpdateStatusAction rmUpdateStatusAction =
+                new RMUpdateStatusAction (this.getName() + "-RMUpdateStatusAction",
+                                          this.getCoordRequest(),
+                                          this.getCoordRequest().getGRI(),
+                                          (String)this.getCoordRequest().getAttribute(CoordRequest.STATE_ATTRIBUTE));
         rmUpdateStatusAction.execute();
         
         if (rmUpdateStatusAction.getResultData() != null) {
@@ -72,7 +86,7 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
         } else {
             LOG.error(netLogger.error(method,ErrSev.MINOR, "rmUpdateStatus resultData is null."));
         }
-        
+        */
         if (!localRes && !lastDomain) {
             try {
                 // Send RESV_MODIFY_COMPLETED event to the next IDC

@@ -3,6 +3,8 @@ package net.es.oscars.coord.req;
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.coord.actions.*;
 import net.es.oscars.logging.ModuleName;
+import net.es.oscars.resourceManager.soap.gen.GetStatusReqContent;
+import net.es.oscars.resourceManager.soap.gen.GetStatusRespContent;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.soap.ErrorReport;
 import org.apache.log4j.Logger;
@@ -22,6 +24,8 @@ import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.sharedConstants.PSSConstants;
+
+import java.util.HashSet;
 
 /**
  * CreatePathRequest calls the PSS server to instantiate a path.
@@ -48,6 +52,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     private boolean receivedUpStream = false;   // received an UPSTREAM event
     private boolean receivedDownStream = false; // received a DOWNSTREAM event
     private String status = null;   // null until set by PSSReply or by FAILURE EVENT
+    private boolean isTeardownPending = false; // set when a teardown has been started as the result of an IDE FAILED event
     private String failedEvent = null;
     private String errorCode = null;
     private String completedEvent = null;
@@ -104,6 +109,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                resDetails.getGlobalReservationId());
 
         this.setRequestData(new PathRequestParams(createPathContent));
+        this.setMessageProperties(createPathContent.getMessageProperties());
         this.resDetails = resDetails;
         this.failedEvent = NotifyRequestTypes.PATH_SETUP_FAILED;
         this.errorCode = ErrorCodes.PATH_SETUP_FAILED;
@@ -223,7 +229,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                 if (pathTeardownAction.getState() == CoordAction.State.FAILED) {
                     throw pathTeardownAction.getException();
                 }
-
+                isTeardownPending = true;
                 // If path is remote, send teardownPath to next IDC.
                 if ((! this.isLocalOnly) &&
                     (resDetails.getUserRequestConstraint().getPathInfo().getPathSetupMode().equals("signal-xml"))) {
@@ -289,6 +295,24 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             this.fail (new OSCARSServiceException(errorReport));
 
         } else {    // SUCCESS from PSSReply
+            if (this.status != null && this.status.equals(PSSConstants.FAIL)) {
+                // request has already been failed from another domain,
+                // we just did a local teardown
+                // change status from UNKNOWN to FAILED
+                ErrorReport errorRep = new ErrorReport(errorCode, "local teardown succeeded",
+                                                  ErrorReport.UNKNOWN, this.getGRI(),this.getTransactionId(),
+                                                  System.currentTimeMillis()/1000L, CoordRequest.moduleName,
+                                                  PathTools.getLocalDomainId());
+                RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
+                                                                  this,
+                                                                  this.getGRI(),
+                                                                  StateEngineValues.FAILED,
+                                                                  errorRep);
+                action.execute();
+                this.unRegisterAlias(this.getName());
+                return;
+            }
+
             synchronized (this) {
                 if (this.status == null){
                     this.status = pssReply.getStatus();
@@ -363,6 +387,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     public void processErrorEvent (String event, InterDomainEventContent eventContent) {
 
         String errorCode = event; // overrides default error event
+        boolean isTeardownError = false;
 
         if (event.equals(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_SETUP_DOWNSTREAM_FAILED;
@@ -370,19 +395,42 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             errorCode = ErrorCodes.PATH_SETUP_UPSTREAM_FAILED;
         } else if (event.equals(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_TEARDOWN_DOWNSTREAM_FAILED;
+            isTeardownError = true;
         } else if (event.equals(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_TEARDOWN_UPSTREAM_FAILED;
+            isTeardownError = true;
         }
 
-        ErrorReport errRep = new ErrorReport(errorCode,
-                                             eventContent.getErrorMessage(),
-                                             ErrorReport.SYSTEM,
-                                             this.getGRI(),
-                                             this.getTransactionId(),
-                                             System.currentTimeMillis()/1000L,
-                                             ModuleName.COORD,
-                                             eventContent.getErrorSource());
-        this.fail (new OSCARSServiceException(errRep));
+         if (isTeardownError && getResvStatus().equals(StateEngineValues.ACTIVE)) {
+             // try to do a local path teardown
+             try {
+                 TeardownReqContent pssReq = new TeardownReqContent();
+                 Coordinator coordinator = Coordinator.getInstance();
+                 pssReq.setTransactionId(this.getTransactionId());
+                 pssReq.setCallbackEndpoint(coordinator.getCallbackEndpoint());
+                 pssReq.setReservation(resDetails);
+                 PSSTeardownPathAction pathTeardownAction = new PSSTeardownPathAction (this.getName() + "-PSSTeardownPathAction",
+                                                                                       null,
+                                                                                       pssReq);
+                 pathTeardownAction.execute();
+                 if (pathTeardownAction.getState() == CoordAction.State.FAILED) {
+                    throw pathTeardownAction.getException();
+                 }
+                 isTeardownPending = true;
+             } catch (Exception ex) {
+                 LOG.warn(netLogger.error("ProcessErrorEvent", ErrSev.MINOR, "failed to teardown an ACTIVE circuit"));
+             }
+         }
+
+         ErrorReport errRep = new ErrorReport(errorCode,
+                                              eventContent.getErrorMessage(),
+                                              ErrorReport.SYSTEM,
+                                              this.getGRI(),
+                                              this.getTransactionId(),
+                                              System.currentTimeMillis()/1000L,
+                                              ModuleName.COORD,
+                                              eventContent.getErrorSource());
+         this.fail (new OSCARSServiceException(errRep));
     }
 
     // sends UPSTREAM event to nextIDC (downstream) IDC
@@ -519,6 +567,20 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             this.fail (rmUpdate.getException());
         }        
     }
+    /**
+     * Overrides method in coordRequest to be sure that a multi-domain path request
+     * is not waiting for notification from another domain.
+     * @return
+     */
+    public boolean isRequestComplete() {
+        String resStatus = getResvStatus();
+        if (isFullyCompleted() &&
+            ! resStatus.equals(StateEngineValues.INSETUP) &&
+            ! resStatus.equals(StateEngineValues.INTEARDOWN)) {
+            return true;
+        }
+        return false;
+    }
 
     /**
       * Send notification that this request has failed
@@ -548,16 +610,15 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             if (this.status != null && this.status.equals(PSSConstants.FAIL)) {
                  return; // failure has already been handled
             } 
-            
-            //handle extraneous interdomain notifications
-            String targetStatus = StateEngineValues.INSETUP;
-            if(this.failedEvent.equals(NotifyRequestTypes.PATH_TEARDOWN_COMPLETED)){
-                targetStatus = StateEngineValues.INTEARDOWN;
+            // ignore extraneous interDomain error events
+            if (!isLocalOnly) {
+                String status =  getResvStatus();
+                if (status.equals(StateEngineValues.FAILED) ||
+                        status.equals(StateEngineValues.UNKNOWN)) {
+                    return;
+                }
             }
-            if(!this.isLocalOnly && !this.checkStatus(targetStatus)){
-                return;
-            }
-            
+
             this.status = PSSConstants.FAIL;
         }
 
@@ -565,7 +626,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         // Fill in any missing parts of the errorReport.
         ErrorReport errorRep = this.getCoordRequest().getErrorReport(method, this.failedEvent, ex);
 
-        // update status to FAILED
+        // update status to UNKNOWN
         RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
                                                                   this,
                                                                   this.getGRI(),
@@ -580,48 +641,17 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         // send IDE up and/or downstream
         if ( ! this.isLocalOnly) {
             if (! this.isFirstDomain) {
-                LOG.debug(netLogger.getMsg(method,"calling sendDownStream to " + this.nextIDC));
+                LOG.debug(netLogger.getMsg(method,"sending PATH_TEARDOWN_DOWNSTREAM_FAILED to " + this.previousIDC));
                 this.sendDownStream(errorRep.getErrorMsg());
             }
             if (! this.isLastDomain) {
-                 LOG.debug(netLogger.getMsg(method,"calling sendUpStream to " + this.previousIDC));
+                 LOG.debug(netLogger.getMsg(method,"sending PATH_TEARDOWN_UPSTREAM_FAILED to " + this.nextIDC));
                 this.sendUpStream(errorRep.getErrorMsg());
             }
         }
         this.notifyError (exception.getMessage(), this.resDetails);
-    }
-    
-    /**
-     * Method to check status of reservation. Used to see if we should fail the reservation when a 
-     * store action fails. This protects against duplicate notifications (like those from 0.5) 
-     * failing the reservation.
-     * 
-     * @param targetStatus the status the reservation should have
-     * @return true if status matches the given target, false otherwise
-     */
-    private boolean checkStatus(String targetStatus) {
-        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        LOG.info(netLogger.start("CreateResvCompletedAction.checkStatus"));
-        QueryResContent queryReq = new QueryResContent();
-        queryReq.setMessageProperties(this.getMessageProperties());
-        queryReq.setGlobalReservationId(this.getGRI());
-        QueryReservationRequest qRequest= new QueryReservationRequest("QueryReservation-" + this.getGRI(),
-                                                                       null,
-                                                                       queryReq);
-        qRequest.execute();
-        if (qRequest.getState() == CoordAction.State.FAILED){
-            //can't determine state
-            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false1"));
-            return false;
+        if (!isTeardownPending){
+            this.unRegisterAlias(this.getName());
         }
-        
-        QueryResReply qReply = qRequest.getResultData();
-        if(qReply.getReservationDetails() != null && 
-                targetStatus.equals(qReply.getReservationDetails().getStatus())){
-            LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus -true"));
-            return true;
-        }
-        LOG.info(netLogger.end("CreateResvCompletedAction.checkStatus - false2"));
-        return false;
     }
 }

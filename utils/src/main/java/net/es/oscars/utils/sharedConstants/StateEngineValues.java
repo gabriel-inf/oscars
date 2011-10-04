@@ -15,6 +15,7 @@ public class StateEngineValues {
     public final static String CANCELLED = "CANCELLED";     // complete reservation has been canceled, no circuit
     public final static String FAILED = "FAILED";           // reservation failed at some point, no circuit
     public final static String INMODIFY = "INMODIFY";       // reservation is being modified
+    public final static String MODCOMMITTED = "MODCOMMITTED";  // modifications have been committed
     public final static String INCANCEL = "INCANCEL";       // reservation is being canceled
     public final static String UNKNOWN = "UNKNOWN";         // reservation may be in an inconsistent state due to errors
 

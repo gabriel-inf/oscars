@@ -97,6 +97,7 @@ public class PCEProxyAction extends ProxyAction {
             faultReport.setDomainId(PathTools.getLocalDomainId());
             faultReport.setErrorType(ErrorReport.SYSTEM);
             faultReport.setErrorMsg(ex.getMessage());
+            faultReport.setErrorCode(ErrorCodes.COULD_NOT_CONNECT);
             faultReport.setGri(this.getCoordRequest().getGRI());
             of.setErrorReport(faultReport);
             of.setMsg(this.getRequestType() + " failed with exception " + ex.getMessage());

@@ -308,7 +308,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
     public CreateReply createReservation(SubjectAttributes subjectAttributes,ResCreateContent createResvReq) 
        throws OSCARSFaultMessage    { 
 
-        String method = "createResv";
+        String method = "createReservation";
         String transId = (createResvReq != null ?
                 createResvReq.getMessageProperties().getGlobalTransactionId(): "null");       
         netLogger = OSCARSNetLogger.getTlogger();
@@ -359,7 +359,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             if (gri == null ) {
                 request = new CreateReservationRequest(method, loginName, createResvReq);
             } else {
-                request = new CreateReservationRequest(gri, method, loginName, createResvReq);
+                request = new CreateReservationRequest(gri, method + "-" + gri, loginName, createResvReq);
             }
             request.setRequestData(createResvReq);
             request.setMessageProperties(createResvReq.getMessageProperties());
@@ -454,7 +454,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
      *     the AuthN service
      * @param modifyResvReq contains the GRI, description, userConstraint,and optionally a reservedconstraint and
      *     optional constraints for the reservation
-     * @return the resDetails for the modified reservation
+     * @return the status for the modified reservation
      */
     public ModifyResReply modifyReservation(SubjectAttributes subjectAttributes,ModifyResContent modifyResvReq) 
         throws OSCARSFaultMessage    { 
@@ -548,6 +548,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             }
 
             modifyResvReq.setUserRequestConstraint(modUC);
+            // include information about the current reservation for use in error handling
+            modifyResvReq.setReservedConstraint(resDetails.getReservedConstraint());
 
             checkConditions( authDecision, null, modUC, true);
             loginName = getLoginName (subjectAttributes);
@@ -555,7 +557,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             /* Create a ModifyReservationRequest, set the description, subjectAttributes
              * and state Attributes.
              */
-            ModifyReservationRequest  request = new ModifyReservationRequest(method,
+            ModifyReservationRequest  request = new ModifyReservationRequest(method + "-" + gri,
                                                                              gri,
                                                                              loginName,
                                                                              authDecision.getConditions(),
@@ -567,6 +569,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             }
             // this is the current reservation state, not INMODIFY
             request.setAttribute(CoordRequest.STATE_ATTRIBUTE,resDetails.getStatus());
+            // needed for ide errors
+            request.setResDetails(resDetails);
             request.execute();
             if (request.getState() == CoordAction.State.FAILED) {
                 request.logError();
@@ -809,7 +813,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             LOG.error(netLogger.error(method,ErrSev.MAJOR, "unauthorized interDomainEvent received"));
             return;
         }
- 
+
         InterDomainEventRequest request = 
              new InterDomainEventRequest(method + "-" + eventContent.getType() + "-" + gri,
                                          eventContent.getMessageProperties().getGlobalTransactionId(),
@@ -907,7 +911,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             LOG.error(netLogger.error(method, ErrSev.MINOR, oEx.getMessage()));
             throw oEx;
         }
-        CheckAccessReply authDecision = (CheckAccessReply)checkAccess.getResultData();
+        CheckAccessReply authDecision = checkAccess.getResultData();
         if (authDecision.getPermission().equals(AuthZConstants.ACCESS_DENIED)) {
             String loginName = null;
             List<AttributeType> reqAttrs = subjectAttributes.getSubjectAttribute();
@@ -921,7 +925,6 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             String message = "authorization denied for user "  +  loginName;
             LOG.info(netLogger.getMsg(method,message));
             OSCARSServiceException oEx = new OSCARSServiceException(ErrorCodes.ACCESS_DENIED, message, ErrorReport.USER);
-            oEx.setType("user");
             throw oEx;
         }
         return authDecision;
