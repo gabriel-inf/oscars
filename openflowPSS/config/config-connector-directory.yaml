@@ -33,4 +33,4 @@
 -   id:                 "openflow-nox"
     impl:               "net.es.oscars.pss.openflow.nox.JSONConnector"
     params:
-        noxUrl:            "http://localhost:11122/ws.v1/OSCARS"
+        noxUrl:            "https://localhost:11122/ws.v1/OSCARS"

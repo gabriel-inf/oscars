@@ -3,6 +3,7 @@ package net.es.oscars.pss.openflow.nox;
 
 import java.io.*;
 import java.net.*;
+import javax.net.ssl.HttpsURLConnection;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Random;
@@ -34,12 +35,12 @@ public class JSONConnector implements Connector {
     private Logger log = Logger.getLogger(JSONConnector.class);
     private OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
 
-    private HttpURLConnection httpConn = null;
+    private HttpsURLConnection httpConn = null;
     private DataOutputStream httpOut = null;
     private BufferedReader httpIn = null;
     
     // OpenFlow NOX JSON connector configs
-    private String noxUrl = "http://localhost:11122/ws.v1/OSCARS";
+    private String noxUrl = "https://localhost:11122/ws.v1/OSCARS";
     
     public JSONConnector() {
         netLogger.init(ModuleName.PSS, "0000");
@@ -67,7 +68,7 @@ public class JSONConnector implements Connector {
         this.log.debug(netLogger.start(event));
         try {
             URL noxAddress = new URL(noxUrl);
-            httpConn = (HttpURLConnection)noxAddress.openConnection();
+            httpConn = (HttpsURLConnection)noxAddress.openConnection();
             httpConn.setRequestMethod("POST");
             httpConn.setRequestProperty("Content-Type", "application/json");
             httpConn.setDoInput(true);
