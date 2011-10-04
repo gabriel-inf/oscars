@@ -3,7 +3,10 @@ package net.es.oscars.pss.openflow.nox;
 
 import java.io.*;
 import java.net.*;
-import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.*;
+import java.security.*;
+import java.security.cert.CertificateException;
+
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Random;
@@ -35,7 +38,9 @@ public class JSONConnector implements Connector {
     private Logger log = Logger.getLogger(JSONConnector.class);
     private OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
 
-    private HttpsURLConnection httpConn = null;
+    private HttpsURLConnection httpsConn = null;
+    private String sslTruststoreFile = null;
+    private String sslTruststorePass = null;
     private DataOutputStream httpOut = null;
     private BufferedReader httpIn = null;
     
@@ -57,6 +62,39 @@ public class JSONConnector implements Connector {
         if (params.get("noxUrl") != null) {
             this.noxUrl = (String)params.get("noxUrl");
         }
+        if (params.get("sslTruststoreFile") != null) {
+            this.noxUrl = (String)params.get("sslTruststoreFile");
+        }
+        if (params.get("sslTruststorePass") != null) {
+            this.noxUrl = (String)params.get("sslTruststorePass");
+        }
+    }
+
+    SSLSocketFactory prepareSSLFactory() throws PSSException {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            if (sslTruststoreFile == null || sslTruststorePass == null)
+                throw new PSSException("sslTruststoreFile and sslTruststoreFile must be configured");
+            keyStore.load(new FileInputStream(sslTruststoreFile), sslTruststorePass.toCharArray());
+            TrustManagerFactory tmf = 
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(keyStore);
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, tmf.getTrustManagers(), null);
+            return ctx.getSocketFactory();
+        } catch (KeyStoreException e) {
+            throw new PSSException("KeyStoreException: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new PSSException("NoSuchAlgorithmException for loading sslTrustStore file: " + sslTruststoreFile);
+        } catch (CertificateException e) {
+            throw new PSSException("CertificateException for loading sslTrustStore file: " + sslTruststoreFile);
+        } catch (KeyManagementException e) {
+            throw new PSSException("KeyManagementException for loading sslTrustStore file: " + sslTruststoreFile);
+        } catch (FileNotFoundException e) {
+            throw new PSSException("FileNotFoundException for loading sslTrustStore file: " + sslTruststoreFile);
+        } catch (IOException e) {
+            throw new PSSException("IOException for loading sslTrustStore file: " + sslTruststoreFile);
+        }
     }
 
     /**
@@ -68,22 +106,24 @@ public class JSONConnector implements Connector {
         this.log.debug(netLogger.start(event));
         try {
             URL noxAddress = new URL(noxUrl);
-            httpConn = (HttpsURLConnection)noxAddress.openConnection();
-            httpConn.setRequestMethod("POST");
-            httpConn.setRequestProperty("Content-Type", "application/json");
-            httpConn.setDoInput(true);
-            httpConn.setDoOutput(true);
-            httpConn.setReadTimeout(10000);
-            //httpConn.connect();
-            httpOut = new DataOutputStream(httpConn.getOutputStream());
+            httpsConn = (HttpsURLConnection)noxAddress.openConnection();
+            SSLSocketFactory sslFactory = prepareSSLFactory();
+            httpsConn.setSSLSocketFactory(sslFactory);
+            httpsConn.setRequestMethod("POST");
+            httpsConn.setRequestProperty("Content-Type", "application/json");
+            httpsConn.setDoInput(true);
+            httpsConn.setDoOutput(true);
+            httpsConn.setReadTimeout(10000);
+            //httpsConn.connect();
+            httpOut = new DataOutputStream(httpsConn.getOutputStream());
             this.log.info("connected to NOX controller at " + noxUrl);
         } catch (UnknownHostException e) {
-            httpConn = null;
+            httpsConn = null;
             httpOut = null;
             this.log.error("exception when connecting to NOX : " + e.getMessage());
             throw new PSSException("Unknown NOX controller at " + noxUrl);
         } catch (IOException e) {
-            httpConn = null;
+            httpsConn = null;
             httpOut = null;
             this.log.error("exception when connecting to NOX controller at " + noxUrl+", IOException: " + e.getMessage());
             throw new PSSException("Failed to connect NOX controller at " + noxUrl+", IOException: " + e.getMessage());
@@ -105,13 +145,13 @@ public class JSONConnector implements Connector {
                 httpIn.close();
                 httpIn = null;
             }
-            if (httpConn != null) {
-                httpConn.disconnect();
-                httpConn = null;
+            if (httpsConn != null) {
+                httpsConn.disconnect();
+                httpsConn = null;
             }
             this.log.info("Disconnected from NOX");
         } catch (IOException e) {
-            httpConn = null;
+            httpsConn = null;
             httpOut = null;
             httpIn = null;
             this.log.error("Exception when discconnecting from NOX : " + e.getMessage());
@@ -141,12 +181,12 @@ public class JSONConnector implements Connector {
         String responseString = "";
         try {
             this.connect();
-            if (httpConn == null)
+            if (httpsConn == null)
                 throw new PSSException("NOX socket connection not ready!");
             this.log.info("sending command to NOX: \n" + deviceCommand);
             httpOut.writeBytes(deviceCommand);
             httpOut.flush();
-            httpIn = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
+            httpIn = new BufferedReader(new InputStreamReader(httpsConn.getInputStream()));
             String line;
             while ((line = httpIn.readLine()) != null) {
                 responseString += line;
