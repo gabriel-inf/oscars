@@ -226,7 +226,11 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         // First make sure that there is not another PCERuntimeAction that holds the PCE lock
 
         try {
-            PCERuntimeAction.pceMutex.get(this.getCoordRequest());
+            if(!PCERuntimeAction.pceMutex.get(this)){
+                //lock not available so give up thread. 
+                //Mutex has added this job to the queue.
+                return;
+            }
         } catch (InterruptedException e) {
             LOG.error(netLogger.error(event, ErrSev.MAJOR,"Cannot acquire mutex. GRI= " +
                                       this.getCoordRequest().getGRI() + " requestType= " + requestType));
