@@ -149,7 +149,6 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
         String method = "CancelRequest.setPCEData";
         LOG.debug(netLogger.start(method));
         PCEFinished = true;
-        PCERuntimeAction.releaseMutex(this.getGRI());  // no need to wait for other domains
         checkReservationState("CancelRequest.setPCEData");
     }
 
@@ -261,6 +260,7 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
                 }
             }
             this.getCoordRequest().unRegisterAlias("CancelReservation-" + this.getGRI());
+            PCERuntimeAction.releaseMutex(this.getGRI());
             NotifyWorker.getInstance().sendInfo(this.getCoordRequest(),
                     NotifyRequestTypes.RESV_CANCEL_COMPLETED,
                     this.resDetails);
