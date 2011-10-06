@@ -241,7 +241,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                 PathRequest request = PathRequest.getPathRequest(PathRequest.PSS_CREATE_PATH + "-" +gri,
                                                                  this.getMessageProperties(),
                                                                  resDetails);
-                request.execute(); // may already have been executed, but should be ok
                 request.processEvent(eventType);
                 if (request.getState() == CoordAction.State.FAILED){
                     throw request.getException();
@@ -253,7 +252,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                 PathRequest request = PathRequest.getPathRequest(PathRequest.PSS_TEARDOWN_PATH + "-" +gri,
                                                                  this.getMessageProperties(),
                                                                  resDetails);
-                request.execute(); // may already have been executed, but should be ok
                 request.processEvent (eventType);
                 if (request.getState() == CoordAction.State.FAILED){
                     throw request.getException();
