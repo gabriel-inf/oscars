@@ -5,9 +5,14 @@ import re
 import simplejson
 
 from nox.lib.core import *
-from nox.webapps.webserver import webserver
 from nox.webapps.webservice import webservice
 from nox.lib.netinet import netinet
+
+from nox.webapps.webservice.webservice import json_parse_message_body
+
+from nox.netapps.flow_fetcher.pyflow_fetcher import flow_fetcher_app
+
+from twisted.internet import defer
 
 logger = logging.getLogger('nox.webapps.OSCARS.OSCARS')
 
@@ -24,11 +29,11 @@ def getFactory():
 
 class OSCARS(Component):
     def __init__(self, ctxt):
+        self.current_session = None
+        self.ffa             = None
         Component.__init__(self, ctxt)
 
     def install(self):
-        inst = self
-
 	# The config file contains, among other things, a mapping from IP
 	# address to datapath id. Presumably, this could be figured out
 	# automagically, but for now I'm putting it in a configuration file.
@@ -36,163 +41,252 @@ class OSCARS(Component):
 
         ws = self.resolve(str(webservice.webservice))
         v1 = ws.get_version("1")
-        v1.register_request(lambda request, data: self.handle_request(request, data), "POST", [ webservice.WSPathStaticString("OSCARS") ], "OSCARS JSON Target")
+        v1.register_request(lambda request, data: self.handle_ws_request(request, data), "POST", [ webservice.WSPathStaticString("OSCARS") ], "OSCARS JSON Target")
+
+        self.ffa = self.resolve(flow_fetcher_app)
+        if self.ffa == None:
+            raise ValueError("couldn't find flow_fetcher_app")
 
     def getInterface(self):
         return str(OSCARS)
 
-    def handle_request(self, request, data):
+    def handle_ws_request(self, request, data):
+        if self.current_session != None:
+            return webservice.conflictError(request, "Outstanding request pending. Try again later.")
+
+        oscars_request = None
+
         try:
             json_content = webservice.json_parse_message_body(request)
             if json_content == None:
                 raise ValueError('Invalid JSON request')
-        except Exception as e:
-            lg.error("Invalid request: %s" % e.__str__())
-            return webservice.badRequest(self.raw_request, e.__str__())
 
-        return OSCARSRequestHandler(self, request, json_content).handle()
+            oscars_request = OSCARSRequest(json_content)
 
-class OSCARSRequestHandler:
-    def __init__(self, openflow_class, raw_request, request):
-        self.openflow_class = openflow_class
-        self.raw_request = raw_request
-        self.request = request
-        self.changes_applied = {}
-
-    def handle(self):
-        try:
-            oscars_request = OSCARSRequest(self.request)
-
-            for element in oscars_request.path:
+            for path_element in oscars_request.path:
                 try:
-                    dpid = long(config.get(element["switch"], "datapath_id"), 0)
+                    dpid = long(config.get(path_element["switch"], "datapath_id"), 0)
                 except Exception as e:
                     lg.error("Problem finding 'datapath_id' for '%s': %s" % (element["switch"], e.__str__()))
-                    return webservice.badRequest(self.raw_request, "Unknown switch '%s'" % element["switch"])
+                    raise ValueError("Unknown switch '%s'" % element["switch"])
 
-            error_msg = ""
-            successful = None
-            try:
-                if oscars_request.path:
-                    logger.debug("Request has a path")
-                    for path_element in oscars_request.path:
-                        dpid = long(config.get(path_element["switch"], "datapath_id"), 0)
-
-                        logger.debug("Configuring switch %s: %s" % (path_element["switch"], dpid))
-    
-                        for key in "del-flows", "add-flows":
-    
-                            logger.debug("Handling %s for switch %s/%s" % (key, path_element["switch"], dpid))
-        
-                            if key in path_element:
-                                if len(path_element[key]) != 2:
-                                    raise ValueError("The flow needs to have two elements")
-    
-                                if key == "del-flows":
-                                    action = "delete"
-                                else:
-                                    action = "add"
-                        
-                                logger.debug("Handling %s for switch %s" % (action, path_element["switch"]))
-     
-                                self.modify_flow(action, dpid, path_element[key][0], path_element[key][1]);
-        
-                                self.modify_flow(action, dpid, path_element[key][1], path_element[key][0]);
-
-                    successful = True
-            except Exception as e:
-                error_msg = "Problem configuring switch: %s" % e
-                logger.error(error_msg)
-                successful = False
-
-            if successful == False:
-                try:
-                    self.undo_changes()
-                except Exception as e:
-                    logger.error("Problem undoing changes: %s" % e)
-                    error_msg += ": Problem backing out changes: %s" % e
-
-            status = ""
-            if successful:
-                if oscars_request.action == "setup":
-                    status = "ACTIVE"
-                elif oscars_request.action == "teardown":
-                    status = "FINISHED"
-            else:
-                status = "FAILED"
-
-            response = {
-                "type": "oscars-reply",
-                "version": "1.0",
-                "gri": oscars_request.gri,
-                "action": oscars_request.action,
-                "status": status,
-                "err_msg": error_msg
-            }
-
-            self.raw_request.setResponseCode(200, "Successful")
-            self.raw_request.setHeader("Content-Type", "application/json")
-            self.raw_request.write(simplejson.dumps(response))
-            self.raw_request.finish()
-
-            return webservice.NOT_DONE_YET
-
+                for key in "del-flows", "add-flows":
+                    if key in path_element:
+                        if len(path_element[key]) != 2:
+                            raise ValueError("The flow needs to have two elements")
         except Exception as e:
             lg.error("Invalid request: %s" % e.__str__())
-            return webservice.badRequest(self.raw_request, e.__str__())
+            return webservice.badRequest(request, e.__str__())
+
+        self.current_session = OSCARSSession(request=oscars_request, raw_request=request)
+
+        successful = True
+        error_msg = ""
+        try:
+            if self.current_session.request.path:
+                logger.debug("Request has a path")
+                for path_element in self.current_session.request.path:
+                    dpid = long(config.get(path_element["switch"], "datapath_id"), 0)
+
+                    logger.debug("Configuring switch %s: %s" % (path_element["switch"], dpid))
+
+                    for key in "del-flows", "add-flows":
+
+                        logger.debug("Handling %s for switch %s/%s" % (key, path_element["switch"], dpid))
+    
+                        if key in path_element:
+                            if key == "del-flows":
+                                action = "delete"
+                            else:
+                                action = "add"
+                    
+                            logger.debug("Handling %s for switch %s" % (action, path_element["switch"]))
+ 
+                            self.modify_flow(action, dpid, path_element[key][0], path_element[key][1]);
+    
+                            self.modify_flow(action, dpid, path_element[key][1], path_element[key][0]);
+        except Exception as e:
+            error_msg = "Problem handling request: %s" % e
+            logger.error(error_msg)
+            successful = False
+
+        if successful:
+            # wait 5 seconds and then check that the changes propagated
+            self.post_callback(5, lambda: self.verify_changes(self.verify_changes_timeout_cb))
+        else:
+            self.undo_changes()
+
+        return webservice.NOT_DONE_YET
+
+    def verify_changes(self, callback):
+        logger.debug("verify_changes")
+        self.current_session.changes_to_verify = self.current_session.changes[:]
+
+        # wait 5 seconds and then check that everything verified
+        self.post_callback(5, callback)
+
+        self.post_next_verify()
+
+    def post_next_verify(self):
+        change = None
+        while len(self.current_session.changes_to_verify) > 0:
+            curr_change = self.current_session.changes_to_verify.pop(0)
+            if curr_change.status != "FAILED":
+                change = curr_change
+                break
+
+        if change == None:
+            return
+
+        if (change.element == "flow"):
+            source_port_info = change.parameters["source"]
+            destination_port_info = change.parameters["destination"]
+
+            request = { #'out_port': int(destination_port_info["port"]),
+                        'match': { 'in_port': int(source_port_info["port"]),
+                                   'dl_vlan': int(source_port_info["vlan_range"])
+                        }
+                      }
+
+            dpid = netinet.create_datapathid_from_host(change.switch)
+
+            logger.debug("Fetching %d.%d from %d" % (int(source_port_info["port"]), int(source_port_info["vlan_range"]), change.switch))
+
+            change.ff = self.ffa.fetch(dpid, request, lambda: self.flow_result_cb(change))
+
+        return
+
+    def flow_result_cb(self, change):
+        source_port_info = change.parameters["source"]
+        destination_port_info = change.parameters["destination"]
+        logger.debug("Received result for %d.%d from %d" % (int(source_port_info["port"]), int(source_port_info["vlan_range"]), change.switch))
+
+        status = change.ff.get_status()
+        logger.debug("Status is %d" % status)
+
+        flows = change.ff.get_flows()
+        if len(flows) == 0:
+            logger.debug("Found 0 flows")
+            expected_change = "delete"
+        else:
+            logger.debug("Found %d flows" % len(flows))
+            expected_change = "add"
+
+        for flow in flows:
+            try:
+                logger.debug(flow)
+            except Exception as e:
+                pass
+
+        if expected_change != change.action:
+            change.status="FAILED"
+        else:
+            change.status="SUCCESS"
+
+        self.post_next_verify()
+
+    def verify_changes_timeout_cb(self):
+        successful = True
+        for change in self.current_session.changes:
+            if change.status == "UNKNOWN" or change.status == "FAILED" or change.status == "PENDING":
+                successful = False
+                break
+
+        if successful:
+            return self.finish_ws_request(successful=True)
+        else:
+            return self.undo_changes()
+
+    def undo_changes_timeout_cb(self):
+        successful = True
+        for change in self.current_session.changes:
+            if change.status == "UNKNOWN" or change.status == "FAILED" or change.status == "PENDING":
+                successful = False
+                break
+
+        return self.finish_ws_request(successful=False, undid_changes=successful)
+
+    def finish_ws_request(self, successful=False, undid_changes=False, error_msg=""):
+        status = ""
+        if successful:
+            if self.current_session.request.action == "setup":
+                status = "ACTIVE"
+            elif self.current_session.request.action == "teardown":
+                status = "FINISHED"
+        elif undid_changes:
+            status = "FAILED"
+        else:
+            status = "UNKNOWN"
+
+        response = {
+            "type": "oscars-reply",
+            "version": "1.0",
+            "gri": self.current_session.request.gri,
+            "action": self.current_session.request.action,
+            "status": status,
+            "err_msg": error_msg
+        }
+
+        self.current_session.raw_request.setResponseCode(200, "Successful")
+        self.current_session.raw_request.setHeader("Content-Type", "application/json")
+        self.current_session.raw_request.write(simplejson.dumps(response))
+        self.current_session.raw_request.finish()
+
+        self.current_session = None
+
+        return
+
+    def undo_changes(self):
+        existing_changes = self.current_session.changes
+        self.current_session.changes = []  # reset changes_applied since modify_flow is used and it fills that
+
+        for change in existing_changes:
+            if (change.status == "FAILED"):
+                continue
+
+            undo_action = "delete" if (change.action == "add") else "add"
+
+            if (change.element == "flow"):
+                source_port_info = change.parameters["source"]
+                destination_port_info = change.parameters["destination"]
+
+                self.modify_flow(undo_action, change.switch, source_port_info, destination_port_info)
+            else:
+                logger.error("Unknown element type %s" % element_type)
+
+        self.post_callback(2, lambda: self.verify_changes(self.undo_changes_timeout_cb))
+
+        return
 
     def modify_flow(self, action, dpid, source_port_info, destination_port_info):
         flow = {}
         flow[core.IN_PORT] = int(source_port_info["port"])
         flow[core.DL_VLAN] = int(source_port_info["vlan_range"])
 
-        result = False
-        if action == "add":
-            actions = []
-            actions.append([openflow.OFPAT_SET_VLAN_VID, int(destination_port_info["vlan_range"])])
-            actions.append([openflow.OFPAT_OUTPUT, [0, int(destination_port_info["port"])]])
+        successful = True
+        try:
+            if action == "add":
+                actions = []
+                actions.append([openflow.OFPAT_SET_VLAN_VID, int(destination_port_info["vlan_range"])])
+                actions.append([openflow.OFPAT_OUTPUT, [0, int(destination_port_info["port"])]])
 
-            result = self.openflow_class.install_datapath_flow(dp_id=dpid, attrs=flow, actions=actions, idle_timeout=openflow.OFP_FLOW_PERMANENT, hard_timeout=openflow.OFP_FLOW_PERMANENT)
+                self.install_datapath_flow(dp_id=dpid, attrs=flow, actions=actions, idle_timeout=openflow.OFP_FLOW_PERMANENT, hard_timeout=openflow.OFP_FLOW_PERMANENT)
+            else:
+                self.delete_datapath_flow(dp_id=dpid, attrs=flow)
+        except Exception as e:
+            logger.error("Problem modifying flow: %s" % e)
+            successful = False
+
+        if successful:
+            self.current_session.changes.append(SwitchChange(status="PENDING", switch=dpid, action=action, element="flow", parameters={"source": source_port_info, "destination": destination_port_info}))
         else:
-            result = self.openflow_class.delete_datapath_flow(dp_id=dpid, attrs=flow)
+            self.current_session.changes.append(SwitchChange(status="FAILED", switch=dpid, action=action, element="flow", parameters={"source": source_port_info, "destination": destination_port_info}))
 
-        if result:
-            if not dpid in self.changes_applied:
-                self.changes_applied[dpid] = []
-            self.changes_applied[dpid].append([action, "flow", source_port_info, destination_port_info])
-
-    def undo_changes(self):
-        for switch in self.changes_applied:
-
-            self.changes_applied[switch].reverse()
-
-            for change in self.changes_applied[switch]:
-                undo_action = "delete" if (change[0] == "add") else "add"
-                element_type = change[1]
-
-                if (element_type == "queue"):
-                    port = change[2]
-                    vlan_range = change[3]
-                    bandwidth = change[4]
-
-		    # Have an 'internal' try here so that we can undo as much
-		    # as possible even if we can't undo a specific element
-                    try:
-                        self.modify_queue(undo_action, switch, port, vlan_range, bandwidth)
-                    except Exception as e:
-                        logger.error("Couldn't undo queue change: %s" % e)
-
-                elif (element_type == "flow"):
-                    source_port_info = change[2]
-                    destination_port_info = change[3]
-
-                    try:
-                        self.modify_flow(undo_action, switch, source_port_info, destination_port_info)
-                    except Exception as e:
-                        logger.error("Couldn't undo flow change: %s" % e)
-
-                else:
-                    raise ValueError("Unknown element type %s" % element_type)
+class OSCARSSession:
+    def __init__(self, request=None, raw_request=None):
+        self.request = request
+        self.raw_request = raw_request
+        self.changes = []
 
 class OSCARSRequest:
     def __init__(self, request):
@@ -346,3 +440,12 @@ def convert_bandwidth_to_bps(bandwidth):
         return bandwidth
 
     raise ValueError('Unknown bandwidth value %s' % bandwidth)
+
+class SwitchChange:
+    def __init__(self, switch, element, action, parameters, status="PENDING"):
+        self.switch = switch
+        self.element = element
+        self.action = action
+        self.parameters = parameters
+        self.status = status
+        self.ff = None
