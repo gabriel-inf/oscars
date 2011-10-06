@@ -42,6 +42,7 @@ import net.es.oscars.api.soap.gen.v06.Layer2Info;
 import net.es.oscars.api.soap.gen.v06.Layer3Info;
 import net.es.oscars.api.soap.gen.v06.MplsInfo;
 import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintValue;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
@@ -190,7 +191,7 @@ public class WSDLTypeConverter {
     /**
      * convert from ReservedConstraintType soap class to StdConstraint hibernate bean.
      * 
-     * @param uc UserRequestConstraintType
+     * @param rc UserRequestConstraintType
      * @return StdConstraint object
      * @throws RMException
      */
@@ -211,7 +212,7 @@ public class WSDLTypeConverter {
      * convert from StdConstraint hibernate bean to ReservedConstraintType soap class to 
      * @param sc StdConstraint object
      * @param internalPathAuthorized b true if requester is allowed to see internal hops
-     * @param localDomainName String used to determine local hops
+     * @param domainName String used to determine local hops
      * @return ReservedConstraintType
      * @throws RMException
      */
@@ -241,16 +242,36 @@ public class WSDLTypeConverter {
     
     public static OptConstraint OptionalConstraintType2OptConstraint(OptionalConstraintType oct) {
         OptConstraint oc = new OptConstraint();
-        oc.setCategory(oct.getCategory());
-        List<Object> value = oct.getValue().getAny();
-        // Assume the value contains 1 String for now
-        oc.setValue(value.get(0).toString());
+
+        oc.setConstraintType("String");
+        oc.setKeyName(oct.getCategory());
+        Object value = oct.getValue().getStringValue();
+        oc.setValue(value.toString());
+        
         return oc;
     }
+    
+    /*@S bhr*/
+    
+    public static OptionalConstraintType OptConstraint2OptionalConstraintType(OptConstraint oc) {
+   
+    	OptionalConstraintType oct = new OptionalConstraintType();
+    	OptionalConstraintValue ocv = new OptionalConstraintValue();
+    	
+    	oct.setCategory(oc.getKeyName());
+    	ocv.setStringValue(oc.getValue());
+        
+    	oct.setValue(ocv);
+    	
+        return oct;
+    }
+    
+    /*@E bhr*/
+    
     /**
      * Converts an incoming soap PathInfo object into a Hibernate Path object.
      *
-     * @param requestedPath PathInfo instance (soap type) with filled in info
+     * @param pathInfo PathInfo instance (soap type) with filled in info
      * @return path Path in database format
      */
     public static Path pathInfo2Path(PathInfo pathInfo) throws RMException {
@@ -703,9 +724,13 @@ public class WSDLTypeConverter {
       * Builds all components of soap PathInfo structure, given a
       * Hibernate Reservation bean.
       *
-      * @param resv a Reservation instance
+      * @param constraint
+      * @param path
+      * @param internalPathAuthorized
+      * @param localDomain
       * @return pathInfo a filled in PathInfo soap type
       */
+
      public static PathInfo path2PathInfo(StdConstraint constraint,
                                         Path path,
                                         boolean internalPathAuthorized,
@@ -746,7 +771,7 @@ public class WSDLTypeConverter {
       * are not returned.  If the user is authorized and both the local and
       * interdomain paths exist, the paths are combined and returned.
       *
-      * @param resv a Reservation instance with a set of paths
+      * @param constraint contains the path to be converted to a CtrlPlanePathContent type
       * @param internalPathAuthorized boolean indicating whether internal hops viewable
       * @param localDomain String with id of local domain
       * @return A CtrlPlanePathContent instance

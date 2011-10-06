@@ -264,11 +264,24 @@ public class ResourceManager {
                  * times or bandwidth than the userConstraint
                  */
 
+                List<OptConstraint> optConstraintList = new ArrayList<OptConstraint>();
+
                 List <OptionalConstraintType> oclist = resDetails.getOptionalConstraint();
                 if (oclist != null && !oclist.isEmpty()) {
                     for (OptionalConstraintType oc: oclist) {
-                        res.addOptConstraint(WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc));
+                    	OptConstraint optionalCons = WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc);
+
+                    	//optionalCons.setReservationId(Integer.parseInt(resDetails.getGlobalReservationId()));
+                    	this.log.debug(netLogger.getMsg(event,
+                                                        "entering optional constraint category: " +
+                                                         optionalCons.getKeyName() +
+                                                         "value" + optionalCons.getValue()));
+                    	optConstraintList.add(optionalCons);
+
                     }
+
+                    res.setOptConstraintList(optConstraintList);
+
                 }
             }
             resvDAO.update(res);
@@ -368,7 +381,9 @@ public class ResourceManager {
         List <OptionalConstraintType> oclist = resDetails.getOptionalConstraint();
         if (oclist != null && !oclist.isEmpty()) {
             for (OptionalConstraintType oc: oclist) {
-                res.addOptConstraint(WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc));
+                OptConstraint optionalCons = WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc);
+             	//optionalCons.setReservationId(Integer.parseInt(resDetails.getGlobalReservationId()));
+                 res.addOptConstraint(optionalCons);
             }
         }
         this.log.debug(netLogger.end(event));

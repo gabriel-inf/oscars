@@ -2,6 +2,7 @@ package net.es.oscars.resourceManager.common;
 
 import java.util.*;
 
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
@@ -71,6 +72,19 @@ public class RMUtils {
                     internalPathAuthorized,localDomainName);
             resDetails.setReservedConstraint(rt);
         }
+       /*@S  bhr*/ 
+       	List <OptConstraint> optConsList = res.getOptConstraintList();
+    	
+        if (optConsList != null && !optConsList.isEmpty()) {
+            for (OptConstraint oc: optConsList) {
+            	OptionalConstraintType oct = WSDLTypeConverter.OptConstraint2OptionalConstraintType(oc);
+            	resDetails.getOptionalConstraint().add(oct);     	
+            }  
+        }
+        /*@E bhr*/
+
+        
+        
         return resDetails;
     }
 

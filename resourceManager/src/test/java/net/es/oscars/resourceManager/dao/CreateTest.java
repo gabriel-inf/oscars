@@ -87,7 +87,7 @@ public class CreateTest {
         constraint.setPath(path);
         resv.setConstraint(constraint);
         OptConstraint optConstraint = new OptConstraint();
-        optConstraint.setCategory(CommonParams.getConstraintCategory());
+        optConstraint.setKeyName(CommonParams.getConstraintCategory());
         optConstraint.setValue("this should be an xml string");
         resv.addOptConstraint(optConstraint);
         reservationDAO.create(resv);
@@ -101,7 +101,7 @@ public class CreateTest {
          this.sf.getCurrentSession().beginTransaction();
          OptConstraintDAO constraintDAO = new OptConstraintDAO(this.dbname);
          OptConstraint constraint = (OptConstraint)
-             constraintDAO.queryByParam("category",CommonParams.getConstraintCategory());
+             constraintDAO.queryByParam("keyName",CommonParams.getConstraintCategory());
          this.sf.getCurrentSession().getTransaction().commit();
          // if cascading save worked with Reservation create, this will
          // not be null

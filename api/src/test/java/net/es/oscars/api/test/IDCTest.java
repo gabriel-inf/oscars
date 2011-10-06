@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -145,6 +144,13 @@ public final class IDCTest {
                         LOG.debug("Response: transactionId-" +reply.getMessageProperties().getGlobalTransactionId());
                         ResDetails details = reply.getReservationDetails();
                         printResDetails(details);
+                        List<OptionalConstraintType> ocList = details.getOptionalConstraint();
+                        if (ocList != null && !ocList.isEmpty()) {
+                            System.out.println("optional constraints are: ");
+                            for (OptionalConstraintType oc : ocList){
+                                System.out.println("category: " + oc.getCategory() + " value: " + oc.getValue().getStringValue());
+                            }
+                        }
                         List<OSCARSFaultReport> faultReports = reply.getErrorReport();
                         if (faultReports != null && !faultReports.isEmpty()) {
                             printFaultDetails(faultReports);
@@ -564,6 +570,7 @@ public final class IDCTest {
         ArrayList<String> pathArray = (ArrayList<String>) store.get("path");
         String pathSetupMode = (String) store.get("path-setup-mode");
         String pathType = (String) store.get("path-type");
+        ArrayList<Map> optConArray = (ArrayList<Map>) store.get("optionalConstraint");
 
         if (!layer.equals("2") && !layer.equals("3")) {
             die("Layer must be 2 or 3");
@@ -629,6 +636,20 @@ public final class IDCTest {
                hops.add(cpHop);
             }
             pathInfo.setPath(path);
+        }
+
+        if (optConArray != null && !optConArray.isEmpty()) {
+            for (Map optCon : optConArray) {
+                OptionalConstraintType oc = new OptionalConstraintType();
+                OptionalConstraintValue ocv = new OptionalConstraintValue();
+                oc.setCategory((String)optCon.get("category"));
+                System.out.println("oc category is " + optCon.get("category"));
+                String value = (String) optCon.get("value");
+                System.out.println("oc value is " + optCon.get("value"));
+                ocv.setStringValue(value);
+                oc.setValue(ocv);
+                resContent.getOptionalConstraint().add(oc);
+            }
         }
         uc.setPathInfo(pathInfo);
         resContent.setUserRequestConstraint(uc);

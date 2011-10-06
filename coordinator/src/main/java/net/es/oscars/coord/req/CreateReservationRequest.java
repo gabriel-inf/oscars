@@ -118,6 +118,8 @@ public class CreateReservationRequest extends CoordRequest <ResCreateContent,Cre
             // Set user constraints
             resDetails.setUserRequestConstraint(createResvReq.getUserRequestConstraint());
             resDetails.setReservedConstraint(createResvReq.getReservedConstraint());
+            resDetails.getOptionalConstraint().addAll(createResvReq.getOptionalConstraint());
+
             // Set Status
             resDetails.setStatus(StateEngineValues.ACCEPTED);
             needToUpdateStatus = true;

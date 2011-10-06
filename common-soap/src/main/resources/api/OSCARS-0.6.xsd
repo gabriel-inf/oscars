@@ -385,11 +385,14 @@
         <xsd:attribute name="category" type="xsd:string" use="required"/>
     </xsd:complexType>
         
-    <xsd:complexType name="optionalConstraintValue">
-        <xsd:sequence >
-            <xsd:any maxOccurs="unbounded" namespace="##other" processContents="lax"/>
-         </xsd:sequence>
-    </xsd:complexType>
+    <!-- currently we are only implemented String values, the any is for extensibility -->
+	<xsd:complexType name="optionalConstraintValue">
+		<xsd:sequence>
+			<xsd:element name="stringValue" type="xsd:string" minOccurs="0"	maxOccurs="1" />
+            <xsd:element name="anyValue" type="xsd:anyType" minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+
 
     <xsd:complexType name="userRequestConstraintType">
         <xsd:sequence>

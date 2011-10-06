@@ -34,8 +34,6 @@ public class RemoveTest {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv =
             (Reservation) dao.queryByParam("description", "path test");
-        if (resv.getOptConstraintSet() != null ) {
-        }
         dao.remove(resv);
         // links created in pathCreate were deleted by cascade
         this.sf.getCurrentSession().getTransaction().commit();
@@ -46,7 +44,7 @@ public class RemoveTest {
       this.sf.getCurrentSession().beginTransaction();
       OptConstraintDAO optConstraintDAO = new OptConstraintDAO(this.dbname);
       OptConstraint constraint = (OptConstraint)
-          optConstraintDAO.queryByParam("category", CommonParams.getConstraintCategory());
+          optConstraintDAO.queryByParam("keyName", CommonParams.getConstraintCategory());
       this.sf.getCurrentSession().getTransaction().commit();
       // if cascading delete works with path testRemove, this will
       // be null
