@@ -8,6 +8,8 @@ from nox.lib.core import *
 from nox.webapps.webservice import webservice
 from nox.lib.netinet import netinet
 
+from nox.lib.packet.packet_utils  import mac_to_str
+
 from nox.webapps.webservice.webservice import json_parse_message_body
 
 from nox.netapps.flow_fetcher.pyflow_fetcher import flow_fetcher_app
@@ -32,6 +34,7 @@ class OSCARS(Component):
         self.current_session = None
         self.ffa             = None
         Component.__init__(self, ctxt)
+        self.known_switches  = {}
 
     def install(self):
 	# The config file contains, among other things, a mapping from IP
@@ -47,8 +50,49 @@ class OSCARS(Component):
         if self.ffa == None:
             raise ValueError("couldn't find flow_fetcher_app")
 
+        self.register_for_datapath_join(self.dp_join)
+        self.register_for_datapath_leave(self.dp_leave)
+
     def getInterface(self):
         return str(OSCARS)
+
+    def dp_join(self, dp, stats):
+        if self.known_switches.has_key(dp):
+            lg.err("Received datapath join for a known switch: %s" % hex(dp))
+            del self.known_switches[dp]
+
+        import pprint
+        lg.debug("Received datapath join %s: %s" % (hex(dp), pprint.pformat(stats)))
+
+        stats['dpid']     = dp 
+
+        ip = self.ctxt.get_switch_ip(dp)
+        stats["ip"] = str(create_ipaddr(c_htonl(ip)))
+
+        self.known_switches[dp] = stats
+
+        ports_by_id = {}
+        ports_by_name = {}
+        for port in stats["ports"]:
+          new_mac = mac_to_str(port['hw_addr'])
+          port['hw_addr'] = new_mac 
+
+          ports_by_name[port['name']] = port
+          ports_by_id[port['port_no']] = port
+
+        stats["ports_by_id"] = ports_by_id
+        stats["ports_by_name"] = ports_by_name
+
+        return CONTINUE
+
+    def dp_leave(self, dp): 
+        if self.known_switches.has_key(dp):
+            del self.known_switches[dp]
+        else:
+            lg.info("Unknown switch left network")
+
+        return CONTINUE
+
 
     def handle_ws_request(self, request, data):
         if self.current_session != None:
@@ -64,16 +108,51 @@ class OSCARS(Component):
             oscars_request = OSCARSRequest(json_content)
 
             for path_element in oscars_request.path:
-                try:
-                    dpid = long(config.get(path_element["switch"], "datapath_id"), 0)
-                except Exception as e:
-                    lg.error("Problem finding 'datapath_id' for '%s': %s" % (element["switch"], e.__str__()))
-                    raise ValueError("Unknown switch '%s'" % element["switch"])
+                dpid = None
 
+                lg.debug("Trying to find switch in known_switches")
+                for (dpid, switch) in self.known_switches.items():
+                    if switch["ip"] == path_element["switch"]:
+                        dpid = switch["dpip"]
+                        lg.debug("Found dpid for %s in existing switches" % (path_element["switch"]))
+                        break
+
+                if not dpid:
+                    lg.debug("Trying to find switch in config")
+                    try:
+                        dpid = long(config.get(path_element["switch"], "datapath_id"), 0)
+                    except Exception as e:
+                        lg.error("Problem finding 'datapath_id' for '%s': %s" % (element["switch"], e.__str__()))
+                        raise ValueError("Unknown switch '%s'" % element["switch"])
+
+                curr_switch = None
+                if dpid and self.known_switches.has_key(dpid):
+                    curr_switch = self.known_switches[dpid]
+
+                if not curr_switch:
+                    error_msg = "Switch '%s' is not a known switch" % (path_element["switch"])
+                    lg.error(error_msg)
+                    raise ValueError(error_msg)
+
+                lg.debug("Checking for commands")
                 for key in "del-flows", "add-flows":
                     if key in path_element:
                         if len(path_element[key]) != 2:
                             raise ValueError("The flow needs to have two elements")
+ 
+                        lg.debug("Trying %s" % key)
+                        for i in range(0,1):
+                            lg.debug("Parsing port")
+                            port = int(path_element[key][i]["port"])
+                            lg.debug("Checking ports_by_id")
+                            if port in curr_switch["ports_by_id"]:
+                                continue
+                            lg.debug("Checking ports_by_name")
+                            if str(port) in curr_switch["ports_by_name"]:
+                                path_element[key][i]["port"] = curr_switch["ports_by_name"][str(port)]["port_no"]
+                                continue
+                            raise ValueError("Unknown port: %s in %s" % (path_element[key][i]["port"], hex(dpid)))
+ 
         except Exception as e:
             lg.error("Invalid request: %s" % e.__str__())
             return webservice.badRequest(request, e.__str__())
