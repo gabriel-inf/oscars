@@ -186,11 +186,15 @@ class OSCARS(Component):
         self.post_next_verify()
 
     def verify_changes_timeout_cb(self):
+        for change in self.current_session.changes:
+            if change.ff:
+                change.ff.cancel()
+
         successful = True
         for change in self.current_session.changes:
             if change.status == "UNKNOWN" or change.status == "FAILED" or change.status == "PENDING":
                 successful = False
-                break
+                self.current_session.failed_changes.append(change)
 
         if successful:
             return self.finish_ws_request(successful=True)
@@ -198,11 +202,15 @@ class OSCARS(Component):
             return self.undo_changes()
 
     def undo_changes_timeout_cb(self):
+        for change in self.current_session.changes:
+            if change.ff:
+                change.ff.cancel()
+
         successful = True
         for change in self.current_session.changes:
             if change.status == "UNKNOWN" or change.status == "FAILED" or change.status == "PENDING":
                 successful = False
-                break
+                self.current_session.failed_undone_changes.append(change)
 
         return self.finish_ws_request(successful=False, undid_changes=successful)
 
@@ -217,6 +225,23 @@ class OSCARS(Component):
             status = "FAILED"
         else:
             status = "UNKNOWN"
+
+        for change in self.current_session.failed_changes:
+            if error_msg != "":
+                error_msg += ". "
+            source_port_info = change.parameters["source"]
+
+            error_msg += "Problem configuring switch: %s failed on %s %d.%d" % (change.action, hex(change.switch), int(source_port_info["port"]), int(source_port_info["vlan_range"]))
+
+        for change in self.current_session.failed_undone_changes:
+            if error_msg != "":
+                error_msg += ". "
+            source_port_info = change.parameters["source"]
+
+            undo_action = "delete" if (change.action == "add") else "add"
+
+            error_msg += "Problem undoing switch configuration: %s failed on %s %d.%d" % (undo_action, hex(change.switch), int(source_port_info["port"]), int(source_port_info["vlan_range"]))
+
 
         response = {
             "type": "oscars-reply",
@@ -241,7 +266,7 @@ class OSCARS(Component):
         self.current_session.changes = []  # reset changes_applied since modify_flow is used and it fills that
 
         for change in existing_changes:
-            if (change.status == "FAILED"):
+            if (change.status != "SUCCESS"):
                 continue
 
             undo_action = "delete" if (change.action == "add") else "add"
@@ -287,6 +312,9 @@ class OSCARSSession:
         self.request = request
         self.raw_request = raw_request
         self.changes = []
+        self.changes_to_verify = []
+        self.failed_changes = []
+        self.failed_undone_changes = []
 
 class OSCARSRequest:
     def __init__(self, request):
