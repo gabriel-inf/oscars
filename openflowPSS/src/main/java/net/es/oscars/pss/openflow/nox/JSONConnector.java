@@ -63,10 +63,10 @@ public class JSONConnector implements Connector {
             this.noxUrl = (String)params.get("noxUrl");
         }
         if (params.get("sslTruststoreFile") != null) {
-            this.noxUrl = (String)params.get("sslTruststoreFile");
+            this.sslTruststoreFile = (String)params.get("sslTruststoreFile");
         }
         if (params.get("sslTruststorePass") != null) {
-            this.noxUrl = (String)params.get("sslTruststorePass");
+            this.sslTruststorePass = (String)params.get("sslTruststorePass");
         }
     }
 
@@ -113,7 +113,7 @@ public class JSONConnector implements Connector {
             httpsConn.setRequestProperty("Content-Type", "application/json");
             httpsConn.setDoInput(true);
             httpsConn.setDoOutput(true);
-            httpsConn.setReadTimeout(10000);
+            httpsConn.setReadTimeout(30000);
             //httpsConn.connect();
             httpOut = new DataOutputStream(httpsConn.getOutputStream());
             this.log.info("connected to NOX controller at " + noxUrl);
