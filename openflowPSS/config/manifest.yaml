@@ -73,3 +73,38 @@ Utils:
         config.yaml:    'OSCARS_HOME/Utils/conf/config.yaml'
     PRODUCTION:
         config.yaml:    'OSCARS_HOME/Utils/conf/config.yaml'
+
+CoordService:
+    UNITTEST:
+        templateDir:        'OSCARS_DIST/coordinator/config'
+        config.yaml:        'OSCARS_DIST/coordinator/config/config.HTTP.yaml'
+        server-cxf.xml:     'OSCARS_DIST/coordinator/config/server-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_DIST/coordinator/config/client-cxf-http.xml'
+        log4j.properties:   'OSCARS_DIST/coordinator/config/log4j.INFO.properties'
+        wsdl:               'OSCARS_DIST/common-soap/src/main/resources/coord/coord.wsdl'
+
+    DEVELOPMENT:
+        templateDir:        'OSCARS_HOME/CoordService/conf/'
+        config.yaml:        'OSCARS_HOME/CoordService/conf/config.HTTP.yaml'
+        server-cxf.xml:     'OSCARS_HOME/CoordService/conf/server-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_HOME/CoordService/conf/client-cxf-http.xml'
+        log4j.properties:   'OSCARS_HOME/CoordService/conf/log4j.MESSAGE.properties'
+        wsdl:               'OSCARS_HOME/wsdl/CoordService/CoordService.wsdl'
+
+    SDK:
+        templateDir:        'OSCARS_HOME/CoordService/conf/'
+        config.yaml:        'OSCARS_HOME/CoordService/conf/config.HTTP.yaml'
+        server-cxf.xml:     'OSCARS_HOME/CoordService/conf/server-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_HOME/CoordService/conf/client-cxf-http.xml'
+        log4j.properties:   'OSCARS_HOME/CoordService/conf/log4j.DEBUG.properties'
+        wsdl:               'OSCARS_HOME/wsdl/CoordService/CoordService.wsdl'
+
+    PRODUCTION:
+        templateDir:        'OSCARS_HOME/CoordService/conf/'
+        config.yaml:        'OSCARS_HOME/CoordService/conf/config.SSL.yaml'
+        server-cxf.xml:     'OSCARS_HOME/CoordService/conf/server-cxf-ssl.xml'
+        client-cxf.xml:     'OSCARS_HOME/CoordService/conf/client-cxf-ssl.xml'
+        log4j.properties:   'OSCARS_HOME/CoordService/conf/log4j.INFO.properties'
+        wsdl:               'OSCARS_HOME/wsdl/CoordService/CoordService.wsdl'
+
+
