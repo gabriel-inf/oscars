@@ -15,7 +15,7 @@ definitions:
 notify:
     impl:               'net.es.oscars.pss.stub.StubNotifier'
     params: 
-        coordUrl:       'http://localhost:9003/OSCARS/Coord'
+        coordUrl:       'https://localhost:9003/OSCARS/Coord'
 
 #
 # recommended general configs for DRAGON
