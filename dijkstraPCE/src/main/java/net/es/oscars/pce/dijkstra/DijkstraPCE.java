@@ -86,9 +86,17 @@ public class DijkstraPCE {
         
         //build a map of the nodes in the provided topology
         HashMap<String, CtrlPlaneNodeContent> nodeMap = new HashMap<String, CtrlPlaneNodeContent>();
+        HashMap<String, Boolean> linkExistsMap = new HashMap<String, Boolean>();
         for(CtrlPlaneDomainContent domain : inputTopo.getDomain()){
             for(CtrlPlaneNodeContent node : domain.getNode()){
                 nodeMap.put(NMWGParserUtil.normalizeURN(node.getId()), node);
+                for(CtrlPlanePortContent port : node.getPort()){
+                    for(CtrlPlaneLinkContent link : port.getLink()){
+                        if(link.getId() != null){
+                            linkExistsMap.put(NMWGParserUtil.normalizeURN(link.getId()), true);
+                        }
+                    }
+                }
             }
         }
         
@@ -110,7 +118,7 @@ public class DijkstraPCE {
                 continue;
             }
             //run dijkstra's algorithm
-            bestPath.addAll(this.dijkstra(src, dest, nodeMap, bestPath));
+            bestPath.addAll(this.dijkstra(src, dest, nodeMap, linkExistsMap, bestPath));
             
             //set source to the other end of the last link in the path
             src = NMWGParserUtil.normalizeURN(bestPath.get(bestPath.size() - 1).getRemoteLinkId());
@@ -185,12 +193,13 @@ public class DijkstraPCE {
      * @param src the link ID of the path segments's source
      * @param dest the domain, node, port or link ID of the path segment's destination
      * @param nodeMap HashMap containing all the nodes in the graph indexed by their node ID
+     * @param linkExistsMap 
      * @param excludedLinks links (edges) to exclude from the calculation
      * @return a list of links representing the path from source to destination. 
      *    the links will be only the side outgoing from nodes.
      * @throws OSCARSServiceException
      */
-    private List<CtrlPlaneLinkContent> dijkstra(String src, String dest, HashMap<String, CtrlPlaneNodeContent> nodeMap, ArrayList<CtrlPlaneLinkContent> excludedLinks) throws OSCARSServiceException{
+    private List<CtrlPlaneLinkContent> dijkstra(String src, String dest, HashMap<String, CtrlPlaneNodeContent> nodeMap, HashMap<String, Boolean> linkExistsMap, ArrayList<CtrlPlaneLinkContent> excludedLinks) throws OSCARSServiceException{
         String srcNode = NMWGParserUtil.getURN(src, NMWGParserUtil.NODE_TYPE);
         CtrlPlaneLinkContent srcLink = this.getLink(src, nodeMap);
         HashMap<String, Integer> nodeCostMap = new HashMap<String, Integer>();
@@ -253,6 +262,12 @@ public class DijkstraPCE {
                     if(!nodeMap.containsKey(remoteNode)){
                         continue;
                     }
+                    
+                    //Check that remoteLink is valid
+                    if(!linkExistsMap.containsKey(NMWGParserUtil.normalizeURN(link.getRemoteLinkId()))){
+                        continue;
+                    }
+                    
                     //continue if visited
                     if(visitedNodeMap.containsKey(remoteNode)){
                         continue;
