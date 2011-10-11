@@ -175,7 +175,7 @@ public class JSONConnector implements Connector {
         log.debug("sendCommand: "+deviceCommand);
         if (ConfigHolder.getInstance().getBaseConfig().getCircuitService().isStub()) {
             log.info("set to stub mode, the following command will not be sent to NOX:\n"+deviceCommand);
-            return "{\"type\":\"oscars-reply\", \"status\":\"ACTIVE\", \"err_msg\":\"\"}";
+            return "{\"status\":\"ACTIVE\",\"type\":\"oscars-reply\",\"err_msg\":\"\"}";
         }
                 
         String responseString = "";
