@@ -124,7 +124,7 @@ public class JSONConnector implements Connector {
             httpsConn.setRequestProperty("Content-Type", "application/json");
             httpsConn.setDoInput(true);
             httpsConn.setDoOutput(true);
-            httpsConn.setReadTimeout(30000);
+            httpsConn.setReadTimeout(60000);
             //httpsConn.connect();
             httpOut = new DataOutputStream(httpsConn.getOutputStream());
             this.log.info("connected to NOX controller at " + noxUrl);
