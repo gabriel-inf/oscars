@@ -36,3 +36,4 @@
         noxUrl:            "https://localhost:11122/ws.v1/OSCARS"
         sslTruststoreFile:            "/usr/local/oscars/PSSService/conf/sslKeystore.jks"
         sslTruststorePass:            "oscars"
+        sslTrustAllHosts:             false

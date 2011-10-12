@@ -41,6 +41,7 @@ public class JSONConnector implements Connector {
     private HttpsURLConnection httpsConn = null;
     private String sslTruststoreFile = null;
     private String sslTruststorePass = null;
+    private Boolean sslTrustAllHosts = false;
     private DataOutputStream httpOut = null;
     private BufferedReader httpIn = null;
     
@@ -67,6 +68,9 @@ public class JSONConnector implements Connector {
         }
         if (params.get("sslTruststorePass") != null) {
             this.sslTruststorePass = (String)params.get("sslTruststorePass");
+        }
+        if (params.get("sslTrustAllHosts") != null) {
+            this.sslTrustAllHosts = (Boolean)params.get("sslTrustAllHosts");
         }
     }
 
@@ -109,6 +113,13 @@ public class JSONConnector implements Connector {
             httpsConn = (HttpsURLConnection)noxAddress.openConnection();
             SSLSocketFactory sslFactory = prepareSSLFactory();
             httpsConn.setSSLSocketFactory(sslFactory);
+            if (sslTrustAllHosts) {
+                httpsConn.setHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                });
+            }
             httpsConn.setRequestMethod("POST");
             httpsConn.setRequestProperty("Content-Type", "application/json");
             httpsConn.setDoInput(true);
