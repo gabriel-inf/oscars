@@ -20,6 +20,7 @@ import net.es.oscars.pce.soap.gen.v06.PCEDataContent;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.NMWGTopoBuilder;
+import net.es.oscars.utils.topology.PathTools;
 
 
 /**
@@ -101,6 +102,7 @@ public class DijkstraPCE {
         }
         
         //main loop to iterate through hops from constraints
+        HashMap<String, Boolean> reqElemMap = new HashMap<String, Boolean>();
         ArrayList<CtrlPlaneLinkContent> bestPath = new  ArrayList<CtrlPlaneLinkContent>();
         String src = null;
         String lastDest = null;
@@ -108,10 +110,12 @@ public class DijkstraPCE {
             //handle first hop - NOTE: first hop must be a link
             if(src == null){
                 src = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop, NMWGParserUtil.LINK_TYPE));
+                reqElemMap.put(src, true);
                 continue ;
             }
             //get dest. may be domain, node, port, or link urn.
             String dest = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop));
+            reqElemMap.put(dest, true);
             lastDest = dest;
             //if they are the same because both sides of link specified then continue
             if(src.equals(dest)){
@@ -124,18 +128,33 @@ public class DijkstraPCE {
             src = NMWGParserUtil.normalizeURN(bestPath.get(bestPath.size() - 1).getRemoteLinkId());
         }
         
-        //Build the topology
-        this.addEndpoint(path.getHop().get(0), bestPath.get(0).getId(),
+        //Build the topology, 
+        //All the foundLocal stuff is to make sure the path before the local domain is not modified
+        String localDomain = PathTools.getLocalDomainId();
+        String enpointAdded = this.addEndpoint(path.getHop().get(0), bestPath.get(0).getId(),
                 nodeMap, topoBuilder);
+        boolean foundLocal = this.isLinkLocal(enpointAdded, localDomain);
         for(CtrlPlaneLinkContent link : bestPath){
-            topoBuilder.addLink(link);
+            if(!foundLocal){
+                foundLocal = this.isLinkLocal(link.getId(), localDomain);
+            }
+            if(foundLocal || reqElemMap.containsKey(NMWGParserUtil.normalizeURN(link.getId()))){
+                topoBuilder.addLink(link);
+            }
+            
             //will not need to add the remote link ID in case where dest is an edge port
             if(lastDest.equals(NMWGParserUtil.normalizeURN(link.getId()))){
                 break;
             }
             
             try{
-                topoBuilder.addLink(this.getLink(link.getRemoteLinkId(), nodeMap));
+                if(!foundLocal){
+                    foundLocal = this.isLinkLocal(link.getRemoteLinkId(), localDomain);
+                }
+                if(foundLocal || reqElemMap.containsKey(
+                        NMWGParserUtil.normalizeURN(link.getRemoteLinkId()))){
+                    topoBuilder.addLink(this.getLink(link.getRemoteLinkId(), nodeMap));
+                }
             }catch(Exception e){
                 /* Catch exception about link not existing. This prevents
                  * non-existent remote link-ids from causing problems. At this
@@ -153,7 +172,7 @@ public class DijkstraPCE {
         pceData.setTopology(topoBuilder.getTopology());
         return pceData;
     }
-    
+
     public PCEDataContent commitPath(PCEMessage query) throws OSCARSServiceException{
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         String event = "commitPath";
@@ -402,14 +421,16 @@ public class DijkstraPCE {
      * @param topoBuilder the object used to store the working topology
      * @throws OSCARSServiceException
      */
-    private void addEndpoint(CtrlPlaneHopContent endpoint,
+    private String addEndpoint(CtrlPlaneHopContent endpoint,
             String nextLinkId, HashMap<String, CtrlPlaneNodeContent> nodeMap,
             NMWGTopoBuilder topoBuilder) throws OSCARSServiceException {
         String endpointId = NMWGParserUtil.getURN(endpoint, NMWGParserUtil.LINK_TYPE);
         nextLinkId = NMWGParserUtil.getURN(nextLinkId, NMWGParserUtil.LINK_TYPE);
         if(!endpointId.equals(nextLinkId)){
             topoBuilder.addLink(this.getLink(endpointId, nodeMap));
+            return endpointId;
         }
+        return null;
     }
     
     /**
@@ -529,5 +550,25 @@ public class DijkstraPCE {
      */
     public List<LinkEvaluator> getLinkEvaluators() {
         return this.linkEvaluators;
+    }
+    
+    /**
+     * Checks if a given link belongs to the given domain
+     * 
+     * @param linkId the ID of the link to check
+     * @param localDomain the local domain ID
+     * @return true if link belongs to given domain, false otherwise
+     */
+    private boolean isLinkLocal(String linkId, String localDomain) {
+        if(linkId == null || localDomain == null){
+            return false;
+        }
+        
+        try {
+            return localDomain.equals(NMWGParserUtil.normalizeURN(
+                    NMWGParserUtil.getURN(linkId, NMWGParserUtil.DOMAIN_TYPE)));
+        } catch (OSCARSServiceException e) {
+            return false;
+        }
     }
 }

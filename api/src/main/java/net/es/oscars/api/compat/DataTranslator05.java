@@ -453,8 +453,8 @@ public class DataTranslator05 {
             userConstraints06.setBandwidth(modifyReservation05.getBandwidth());
             userConstraints06.setStartTime(modifyReservation05.getStartTime());
             userConstraints06.setEndTime(modifyReservation05.getEndTime());
-            pathInfo06 = translate(modifyReservation05.getPathInfo());
-            userConstraints06.setPathInfo(pathInfo06);
+           // pathInfo06 = translate(modifyReservation05.getPathInfo());
+           // userConstraints06.setPathInfo(pathInfo06);
             modifyReservation06.setUserRequestConstraint(userConstraints06);
         } catch (Exception e) {
             throw new OSCARSServiceException("Unable to translate v05 ModifyResConstraint");
@@ -500,23 +500,23 @@ public class DataTranslator05 {
         return modifyResContent05;
     }
 
-    public static net.es.oscars.api.soap.gen.v05.ModifyResReply translate(net.es.oscars.api.soap.gen.v06.ModifyResReply modifyResReply06)
+    public static net.es.oscars.api.soap.gen.v05.ModifyResReply translate(net.es.oscars.api.soap.gen.v06.ModifyResReply modifyResReply06,
+            net.es.oscars.api.soap.gen.v05.ModifyResContent modifyResRequest05)
             throws OSCARSServiceException {
         net.es.oscars.api.soap.gen.v05.ModifyResReply modifyResReply05 = new net.es.oscars.api.soap.gen.v05.ModifyResReply();
         ResDetails resDetails = new ResDetails();
 
-        try {   // These elements are required  u 05 but no longer returned by 06
-            /* resDetails.setBandwidth(modifyResReply06.getReservation().getReservedConstraint().getBandwidth());
-            resDetails.setCreateTime(modifyResReply06.getReservation().getCreateTime());
-            resDetails.setDescription(modifyResReply06.getReservation().getDescription());
-            resDetails.setLogin(modifyResReply06.getReservation().getLogin());
-            resDetails.setStartTime(modifyResReply06.getReservation().getReservedConstraint().getStartTime());
-            resDetails.setEndTime(modifyResReply06.getReservation().getReservedConstraint().getEndTime());
-            resDetails.setStatus(modifyResReply06.getReservation().getStatus());
-            resDetails.setPathInfo(translate(modifyResReply06.getReservation().getReservedConstraint().getPathInfo()));
-             */
-            resDetails.setStatus(modifyResReply06.getStatus());
+        try {
             resDetails.setGlobalReservationId(modifyResReply06.getGlobalReservationId());
+            resDetails.setLogin("idc5to6");//just set to placeholder since not used
+            resDetails.setStatus(modifyResReply06.getStatus());
+            resDetails.setStartTime(modifyResRequest05.getStartTime());
+            resDetails.setEndTime(modifyResRequest05.getEndTime());
+            resDetails.setCreateTime(modifyResRequest05.getStartTime());//just set to placeholder since not used
+            resDetails.setBandwidth(modifyResRequest05.getBandwidth());
+            resDetails.setDescription(modifyResRequest05.getDescription());
+            resDetails.setPathInfo(modifyResRequest05.getPathInfo());
+            
             modifyResReply05.setReservation(resDetails);
         } catch (Exception e) {
             throw new OSCARSServiceException("Unable to translate v06 ModifyResReply");

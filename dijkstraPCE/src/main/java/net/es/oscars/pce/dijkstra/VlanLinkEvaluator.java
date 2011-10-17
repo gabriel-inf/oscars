@@ -81,6 +81,7 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         HashMap<String, Boolean> visitedLinkMap = new HashMap<String, Boolean>();
         HashMap<String, CtrlPlaneLinkContent> linkMap = new HashMap<String, CtrlPlaneLinkContent>();
         HashMap<String, List<String>> nodeLinkMap = new HashMap<String, List<String>>();
+        HashMap<String, List<CtrlPlaneLinkContent>> domainMap = new HashMap<String, List<CtrlPlaneLinkContent>>();
         String localDomain = PathTools.getLocalDomainId();
         if(localDomain == null){
             throw new OSCARSServiceException("No local domain ID defined");
@@ -88,6 +89,8 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         
         //build map of all links in topology
         for(CtrlPlaneDomainContent domain : topology.getDomain()){
+            List<CtrlPlaneLinkContent> domainLinks = new ArrayList<CtrlPlaneLinkContent>();
+            domainMap.put(NMWGParserUtil.normalizeURN(domain.getId()), domainLinks);
             for(CtrlPlaneNodeContent node : domain.getNode()){
                 for(CtrlPlanePortContent port :node.getPort()){
                     for(CtrlPlaneLinkContent link : port.getLink()){
@@ -95,6 +98,7 @@ public class VlanLinkEvaluator extends LinkEvaluator {
                         if(!nodeLinkMap.containsKey(NMWGParserUtil.normalizeURN(node.getId()))){
                             nodeLinkMap.put(NMWGParserUtil.normalizeURN(node.getId()), new ArrayList<String>());
                         }
+                        domainLinks.add(link);
                         nodeLinkMap.get(NMWGParserUtil.normalizeURN(node.getId())).add(NMWGParserUtil.normalizeURN(link.getId()));
                     }
                 }
@@ -111,6 +115,7 @@ public class VlanLinkEvaluator extends LinkEvaluator {
                 localLinkId = currLinkId;
                 break;
             }
+            String domainId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(currLinkId, NMWGParserUtil.DOMAIN_TYPE));
             visitedLinkMap.put(currLinkId, true);
             
             /* keep track of vlan info since need to consider last hop seen before
@@ -139,6 +144,16 @@ public class VlanLinkEvaluator extends LinkEvaluator {
             
             //determine the next link to look at 
             currLinkId = this.getNextLinkInPath(currLinkId, nodeId, visitedLinkMap, linkMap, nodeLinkMap);
+            //handle case where previous domain did not provide internal hops
+            if(currLinkId == null && domainMap.containsKey(domainId) && domainMap.get(domainId).size() == 2){
+                for(CtrlPlaneLinkContent link : domainMap.get(domainId)){
+                    String tmpLinkId = NMWGParserUtil.normalizeURN(link.getId());
+                    if(!visitedLinkMap.containsKey(tmpLinkId)){
+                        currLinkId = tmpLinkId;
+                        break;
+                    }
+                }
+            }
         }
         if(localLinkId == null){
             throw new OSCARSServiceException("Unable to find a local link in the path", ErrorReport.USER);
@@ -313,7 +328,8 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         //determine whether to grab link on other side of node or remote link
         if(nodeLinkMap.containsKey(nodeId) && nodeLinkMap.get(nodeId).size() > 0){
            return nodeLinkMap.get(nodeId).get(0);
-        }else if(remoteLinkId != null && !visitedLinkMap.containsKey(remoteLinkId)){
+        }else if(remoteLinkId != null && linkMap.containsKey(remoteLinkId) && 
+                !visitedLinkMap.containsKey(remoteLinkId)){
             return NMWGParserUtil.normalizeURN(remoteLinkId);
         }
         

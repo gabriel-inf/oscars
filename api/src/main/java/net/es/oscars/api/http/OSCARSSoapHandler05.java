@@ -159,7 +159,7 @@ public class OSCARSSoapHandler05 implements OSCARS {
 
         net.es.oscars.api.soap.gen.v05.ModifyResReply modifyReply05 = new net.es.oscars.api.soap.gen.v05.ModifyResReply();
         try {
-            modifyReply05 =  DataTranslator05.translate (modifyReply06);
+            modifyReply05 =  DataTranslator05.translate (modifyReply06, modifyReservation);
         } catch (OSCARSServiceException e) {
             // handle
         }
