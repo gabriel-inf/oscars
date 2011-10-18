@@ -18,7 +18,7 @@ import net.es.oscars.utils.topology.PathTools;
 
 
 /**
- * Process a committed event from another IDC
+ * Process a RESV_MODIFY_COMPLETED event from another IDC
  * 
  * @author lomax
  *
@@ -36,7 +36,7 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
     }
     
     public void execute()  {
-        String method = "execute";
+        String method = "ModifyResvCompletedAction.execute";
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         netLogger.init(ModifyResvCompletedAction.moduleName,this.getCoordRequest().getTransactionId());
         netLogger.setGRI(this.getCoordRequest().getGRI());
@@ -52,28 +52,24 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
                 localRes = PathTools.isPathLocalOnly(reservedPath);
                 String domain = PathTools.getLastDomain(reservedPath);
                 lastDomain = localDomain.equals(domain);
-                domain = PathTools.getFirstDomain(reservedPath);
             }
         } catch (OSCARSServiceException e) {
-            LOG.error (netLogger.error(method, ErrSev.MAJOR,"Cannot process PCEData " +
+            LOG.error (netLogger.error(method, ErrSev.MAJOR,"Cannot process reservedPath " +
                                        this.getCoordRequest().getGRI()));
             this.fail(e);
             return;
         }
-        
-        // Update local status of the reservation to its previous value
-        RMUpdateStatusAction rmUpdateStatusAction =
-                new RMUpdateStatusAction (this.getName() + "-RMUpdateStatusAction",
-                                          this.getCoordRequest(),
-                                          this.getCoordRequest().getGRI(),
-                                          (String)this.getCoordRequest().getAttribute(CoordRequest.STATE_ATTRIBUTE));
-        rmUpdateStatusAction.execute();
-        
-        if (rmUpdateStatusAction.getResultData() != null) {
-            LOG.debug(netLogger.getMsg(method,"State was set to " + rmUpdateStatusAction.getResultData().getStatus()));
-        } else {
-            LOG.error(netLogger.error(method,ErrSev.MINOR, "rmUpdateStatus resultData is null."));
+        // store reservation, previous domain vlans may have changed
+        RMStoreAction rmStoreAction = new RMStoreAction(this.getName() + "-RMStoreAction",
+                                                        this.getCoordRequest(),
+                                                        resDetails);
+        rmStoreAction.execute();
+        if (rmStoreAction.getState() == CoordAction.State.FAILED) {
+            LOG.error(netLogger.error(method,ErrSev.MINOR, "rmStoreAction failed."));
+            this.fail(rmStoreAction.getException());
+            return;
         }
+
         if (!localRes && !lastDomain) {
             try {
                 // Send RESV_MODIFY_COMPLETED event to the next IDC
@@ -99,14 +95,13 @@ public class ModifyResvCompletedAction extends CoordAction <ResDetails,Object> {
                 return;                        
             }
         }
-        if (!localRes && lastDomain) {
-            // notify that request is completed
-                 NotifyWorker.getInstance().sendInfo (this.getCoordRequest(),
-                                                      NotifyRequestTypes.RESV_MODIFY_COMPLETED,
-                                                      resDetails);
-        }
+
         // Release the RuntimePCE global lock
         PCERuntimeAction.releaseMutex(this.getCoordRequest().getGRI());
+        // notify that request is completed
+        NotifyWorker.getInstance().sendInfo (this.getCoordRequest(),
+                                                      NotifyRequestTypes.RESV_MODIFY_COMPLETED,
+                                                      resDetails);
 
         this.setResultData(null);           
         this.executed();

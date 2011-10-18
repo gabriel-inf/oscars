@@ -58,19 +58,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             String eventType = eventContent.getType();
             LOG.info(netLogger.start(method, "received " + eventType));
 
-            /* need to merge the local version of resDetails which does not have the remote links
-             * with the one in eventContent which might have incomplete local path elements
-             * Get the local resDetails from the CreateReservationRequest
-             *
-             * CreateReservationRequest  request = (CreateReservationRequest)
-             *          CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
-             *
-             * ResDetails localResDetails = pceRuntimeAction.pceData2ResDetails(request.getRequestData());
-             *
-             * ResDetails remResDetails  = eventContent.getResDetails();
-             * now merge the two
-             */
-
             resDetails = eventContent.getResDetails();
             
             /* Set login to reservation owner Note that its not the user that sent the event.
@@ -79,12 +66,22 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
              */
             this.setAttribute(CoordRequest.LOGIN_ATTRIBUTE, resDetails.getLogin());
             this.setAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE, resDetails.getDescription());
-            
+
+            if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED) ||
+                    eventType.equals(NotifyRequestTypes.RESV_CREATE_COMPLETED)) {
+                // need to merge resDetails returned by remote domain with the local one
+                this.origRequest = CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
+                resDetails = mergeDetails(origRequest.getResDetails(),resDetails);
+            }
+            if ( eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED) ||
+                    eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED)) {
+                // need to merge resDetails returned by remote domain with the local one
+                this.origRequest = CoordRequest.getCoordRequestByAlias("modifyReservation-" + gri);
+                resDetails = mergeDetails(origRequest.getResDetails(),resDetails);
+            }
+
             if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED)) {
-                CreateReservationRequest createRequest = (CreateReservationRequest)
-                                    CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
-                this.origRequest = createRequest;
-                createRequest.setCommitPhase(true);
+                origRequest.setCommitPhase(true);
 
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-CreateCommittedEventAction",
                                                                        this.getCoordRequest(),
@@ -98,9 +95,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            ErrorReport.SYSTEM));
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMPLETED)) {
-                CreateReservationRequest createRequest = (CreateReservationRequest)
-                                    CoordRequest.getCoordRequestByAlias("createReservation-" + gri);
-                this.origRequest = createRequest;
                 CreateResvCompletedAction action = new CreateResvCompletedAction(this.getName() + "-CreateResvCompletedAction",
                                                                                  this,
                                                                                  resDetails);
@@ -139,8 +133,9 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                     OSCARSServiceException ex = new OSCARSServiceException(remoteErrorReport);
                     createRequest.fail(ex);
                 }else {
-                    // fail it here - code copied from CreateReservationRequest.failed
-                    // this code fails to send IDE failure events, but it should not be executed
+                    // no associated CreateReservationRequest found - shouldn't happen
+                    // do our best to fail it here - code copied from CreateReservationRequest.failed
+                    // this code fails to send IDE failure events
                     RMUpdateFailureStatus action = new RMUpdateFailureStatus (this.getName() + "-RMStoreAction",
                                                                   this,
                                                                   gri,
@@ -155,13 +150,8 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                     this.notifyError (remoteErrorReport.getErrorCode() + ":" + remoteErrorReport.getErrorMsg(),
                           gri);
                 }
-
-
             } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED)) {
-                ModifyReservationRequest modifyRequest = (ModifyReservationRequest)
-                                    CoordRequest.getCoordRequestByAlias("modifyReservation-" + gri);
-                this.origRequest=modifyRequest;
-                this.setAttribute(CoordRequest.STATE_ATTRIBUTE,modifyRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
+                this.setAttribute(CoordRequest.STATE_ATTRIBUTE,origRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
                 ModifyResvCompletedAction action = new ModifyResvCompletedAction(this.getName() + "-ModifyResvCompletedAction",
                                                                                  this,
                                                                                  resDetails);
@@ -173,11 +163,8 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            ErrorReport.SYSTEM));
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED)) {
-                ModifyReservationRequest modifyRequest = (ModifyReservationRequest)
-                                    CoordRequest.getCoordRequestByAlias("modifyReservation-" + gri);
-                modifyRequest.setCommitPhase(true);
-                this.origRequest=modifyRequest;
-                this.setAttribute(CoordRequest.STATE_ATTRIBUTE,modifyRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
+                this.origRequest.setCommitPhase(true);
+                this.setAttribute(CoordRequest.STATE_ATTRIBUTE,origRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-ModifyCommittedEventAction",
                                                                        this,
                                                                        NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED,
@@ -196,12 +183,11 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                     String status = getResvStatus();
                     if (!status.equals(StateEngineValues.INMODIFY) &&
                         !status.equals(StateEngineValues.MODCOMMITTED)) {
+                        // error has probably already been handled
                         this.executed();
                         return;
                     }
                 }
-
-
                 remoteErrorReport = new ErrorReport(eventContent.getErrorCode(),
                                                         eventContent.getErrorMessage(),
                                                         eventType,
@@ -219,7 +205,7 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
 
                     OSCARSServiceException ex = new OSCARSServiceException(remoteErrorReport);
                     modifyRequest.fail(ex);
-                } else {
+                } else { // shouldn't happen
                     LOG.error(netLogger.error("InterDomainEvent:RESV_MODIFY_FAILED",
                                                ErrSev.MAJOR,
                                                "No ModifyReservationRequest found, setting status to UNKNOWN"));
@@ -262,7 +248,7 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                  PathRequest request = PathRequest.getPathRequest(PathRequest.PSS_CREATE_PATH + "-" +gri,
                                                                  this.getMessageProperties(),
                                                                  resDetails);
-                request.checkIfExecuted();  // keeps anything else from executing it
+                request.checkIfExecuted();  // keeps anything else from trying to set up path in local domain
                 request.processErrorEvent(eventType, eventContent);
             } else if (eventType.equals(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED) ||
                        eventType.equals(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED)) {
@@ -270,7 +256,6 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                 PathRequest request = PathRequest.getPathRequest(PathRequest.PSS_TEARDOWN_PATH + "-" +gri,
                                                                  this.getMessageProperties(),
                                                                  resDetails);
-                request.checkIfExecuted(); // keeps anything else from executing it
                 request.processErrorEvent(eventType, eventContent);
 
             } else if (eventType.equals(NotifyRequestTypes.RESV_CANCEL_CONFIRMED) ||
@@ -323,12 +308,32 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             }
  
             this.executed();
-        } catch (Exception ex) {
+        } catch (OSCARSServiceException ex) {
             LOG.warn(netLogger.error(method, ErrSev.MINOR, " failed with OSCARSServiceException " + ex.getMessage()));
             ErrorReport errorReport = this.getCoordRequest().getErrorReport(method, ErrorCodes.IDE_FAILED, ex);
             this.fail(new OSCARSServiceException(errorReport));
+        } catch (Exception ex){
+            LOG.error(netLogger.error(method,ErrSev.MAJOR, "failed with Exception " + ex.toString()));
+            ErrorReport errorReport = new ErrorReport(ErrorCodes.IDE_FAILED,ex.toString(),ErrorReport.SYSTEM);
+            this.fail(new OSCARSServiceException(errorReport));
         }
         LOG.debug(netLogger.end(method));
+    }
+
+    /**
+     * Called after a CREATE_COMMITTED or MODIFY_COMMITTED event is received
+     * need to merge the local version of resDetails which does not have the remote links
+     * with the one in eventContent which might have incomplete local path elements
+     *
+     * @param local  resDetails from the local PCEData
+     * @param remote resDetails as returned from a peer IDC
+     * @return  a merged version of the two that contains all the local path elemnts
+     */
+     // TODO Andy's going to implement this
+    private ResDetails mergeDetails(ResDetails local, ResDetails remote){
+        ResDetails merged = remote;
+        merged.setLogin(local.getLogin());  // replaces code in CreateResvCompletedAction
+        return merged;
     }
 
     /**

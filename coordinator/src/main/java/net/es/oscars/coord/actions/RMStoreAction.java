@@ -57,7 +57,7 @@ public class RMStoreAction extends CoordAction <StoreReqContent, StoreRespConten
             Object[] res = rmClient.invoke("store",req);
      
             if ((res == null) || (res[0] == null)) {
-                throw new OSCARSServiceException (ErrorCodes.RESV_CANCEL_FAILED,
+                throw new OSCARSServiceException (ErrorCodes.RESV_STORE_FAILED,
                                                   "RMStoreAction:No response from ResourceManager",
                                                    ErrorReport.SYSTEM);
             }

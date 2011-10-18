@@ -37,7 +37,6 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
     private static final Logger     LOG = Logger.getLogger(ModifyReservationRequest.class.getName());
     private OSCARSNetLogger         netLogger = null;
     private boolean                 hasFailed = false; // true when the failed method has been called.
-    private ResDetails              resDetails = null;
 
     public ModifyReservationRequest(String name, 
                                     String gri,
@@ -61,10 +60,6 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
         this.setAttribute(CoordRequest.LOGIN_ATTRIBUTE, loginName);
     }
 
-    public void setResDetails(ResDetails details) {
-        resDetails = details;
-    }
- 
     /**
      * Called by CoordImpl to start the execution of a ModifyReservation request. 
      * Synchronous parts of the processing are done and a PCERuntime action is
@@ -115,8 +110,7 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
                                                                       PCERequestTypes.PCE_MODIFY);
 
             PCEData pceData = new PCEData(request.getUserRequestConstraint(),
-                                          null,
-                                          //request.getReservedConstraint(),
+                                          request.getReservedConstraint(),
                                           request.getOptionalConstraint(),
                                           null);
 
@@ -216,8 +210,8 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
         this.getCoordRequest().sendErrorEvent(NotifyRequestTypes.RESV_MODIFY_FAILED,
                                               this.inCommitPhase(),
                                               errorRep,
-                                              resDetails.getReservedConstraint().getPathInfo().getPath(),
-                                              resDetails);
+                                              getResDetails().getReservedConstraint().getPathInfo().getPath(),
+                                              getResDetails());
 
         // send notification of modifyReservation failure
         this.notifyError (errorRep.getErrorCode() + ":" + errorRep.getErrorMsg(),

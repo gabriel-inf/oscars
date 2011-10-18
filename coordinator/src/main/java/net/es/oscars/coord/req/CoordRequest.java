@@ -60,6 +60,7 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
     private Long                    receivedTime;
     private AuthConditions          authConditions;
     private MessagePropertiesType   msgProps;
+    private ResDetails              resDetails = null;  // local version of resDetails saved for interDomain reservations
     private boolean                 isCommitPhase = false; // set to true when pce operations enter commit phase
     private HashMap<String, Object> attributes = new HashMap<String, Object>(); // place to store extra information
     private static final Logger LOG = Logger.getLogger(CoordRequest.class.getName());
@@ -135,6 +136,14 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
     }
     public String getLocalId() {
         return Long.toString(this.localId);
+    }
+
+    public void setResDetails (ResDetails resDetails){
+        this.resDetails = resDetails;
+    }
+
+    public ResDetails getResDetails() {
+        return this.resDetails;
     }
 
     /**

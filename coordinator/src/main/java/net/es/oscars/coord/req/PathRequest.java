@@ -28,7 +28,8 @@ import net.es.oscars.utils.sharedConstants.PSSConstants;
 import java.util.HashSet;
 
 /**
- * CreatePathRequest calls the PSS server to instantiate a path.
+ * Calls the PSS server to either instantiate or teardown a path depending on
+ * the type of the requestData.
  * parameters are set by the constructor. 
  * 
  * @author lomax,mrt
@@ -165,8 +166,8 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
     }
 
     /**
-     *  The reservation state is set to INSETUP, and
-     *  pathCreateAction is executed to call the PSS
+     *  The reservation state is set to INSETUP or INTEARDOWN, and
+     *  a pathCreateAction  or pathTeardownAction is executed to call the PSS
      */
     public void execute()  {
 
@@ -183,8 +184,9 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
             RMUpdateStatusAction rmAction = new RMUpdateStatusAction(this.getName() + "-RMUpdateAction",
                                                                      this,
                                                                      this.getGRI(),
-                                                                     reqType.equals(PathRequestParams.CREATEPATHCONTENT) ? StateEngineValues.INSETUP
-                                                                                                                         : StateEngineValues.INTEARDOWN);
+                                                                     reqType.equals(PathRequestParams.CREATEPATHCONTENT)
+                                                                             ? StateEngineValues.INSETUP
+                                                                             : StateEngineValues.INTEARDOWN);
 
             rmAction.execute();
             if (rmAction.getState() ==  CoordAction.State.FAILED) {

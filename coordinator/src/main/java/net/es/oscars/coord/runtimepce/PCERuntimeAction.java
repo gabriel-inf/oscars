@@ -501,7 +501,9 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
             } else {//  not local, not last domain
                 // We need to forward to the next IDC
                 try {
-                String nextDomain = PathTools.getNextDomain(resDetails.getReservedConstraint().getPathInfo().getPath(),
+                    // save the resDetails for use in the commit phase
+                    this.getCoordRequest().setResDetails(resDetails);
+                    String nextDomain = PathTools.getNextDomain(resDetails.getReservedConstraint().getPathInfo().getPath(),
                                                              PathTools.getLocalDomainId());
 
                     if (requestType.equals(PCERequestTypes.PCE_CREATE)) {
@@ -571,6 +573,8 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
                     
             } else { // not local, not first Domain
                 try {
+                    // will be used when RESV_CREATE|MODIFY_COMPLETED s received
+                    this.getCoordRequest().setResDetails(resDetails);
                     // send a committed IDE to previous IDC confirming the action is completed
                     String previousDomain = PathTools.getPreviousDomain (resDetails.getReservedConstraint().getPathInfo().getPath(),
                                                                          PathTools.getLocalDomainId());

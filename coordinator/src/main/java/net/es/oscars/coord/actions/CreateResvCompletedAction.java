@@ -16,7 +16,7 @@ import net.es.oscars.utils.topology.PathTools;
 
 
 /**
- * Process a committed event from another IDC
+ * Process a RESV_CREATE_COMPLETED event from another IDC
  * 
  * @author lomax
  *
@@ -48,21 +48,10 @@ public class CreateResvCompletedAction extends CoordAction <ResDetails,Object> {
         try {
             if (reservedPath != null) {
                 localRes = PathTools.isPathLocalOnly(reservedPath);
-                String domain = PathTools.getLastDomain(reservedPath);
-                lastDomain = localDomain.equals(domain);
-                domain = PathTools.getFirstDomain(reservedPath);
+                lastDomain = localDomain.equals(PathTools.getLastDomain(reservedPath));
             }
-            //get the old reservation details so we don't overwrite the critical non-path info(e.g. login)
-            RMQueryAction rmQueryAction = new RMQueryAction(this.getName() + "-RMStoreAction",
-                    this.getCoordRequest(), this.getCoordRequest().getGRI());
-            rmQueryAction.execute();
-            if (rmQueryAction.getState() == CoordAction.State.FAILED) {
-                throw (OSCARSServiceException) rmQueryAction.getException();
-            }
-            ResDetails origResDetails = rmQueryAction.getResultData().getReservationDetails();
-            resDetails.setLogin(origResDetails.getLogin());
-            
-            // Update local reservation to RESERVED
+
+            // Store final version of reservation, previous domain vlans are now set
             RMStoreAction rmStoreAction = new RMStoreAction(this.getName() + "-RMStoreAction",
                                                             this.getCoordRequest(),
                                                             resDetails);
