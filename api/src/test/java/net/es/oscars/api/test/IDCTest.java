@@ -723,17 +723,20 @@ public final class IDCTest {
         System.out.println("Status: "
                 + resDetails.getStatus().toString());
         UserRequestConstraintType uConstraint = resDetails.getUserRequestConstraint();
-        System.out.println("startTime: " + new Date(uConstraint.getStartTime()*1000).toString());
-        System.out.println("endTime: " + new Date(uConstraint.getEndTime()*1000).toString());
-        System.out.println("bandwidth: " + Integer.toString(uConstraint.getBandwidth()));
+        ReservedConstraintType rConstraint = resDetails.getReservedConstraint();
         PathInfo pathInfo = null;
         String pathType = null;
-        ReservedConstraintType rConstraint = resDetails.getReservedConstraint();
+
         if (rConstraint !=  null) {
+            System.out.println("startTime: " + new Date(rConstraint.getStartTime()*1000).toString());
+            System.out.println("endTime: " + new Date(rConstraint.getEndTime()*1000).toString());
+            System.out.println("bandwidth: " + Integer.toString(rConstraint.getBandwidth()));
             pathInfo=rConstraint.getPathInfo();
             pathType = "reserved";
         } else {
-            uConstraint = resDetails.getUserRequestConstraint();
+            System.out.println("startTime: " + new Date(uConstraint.getStartTime()*1000).toString());
+            System.out.println("endTime: " + new Date(uConstraint.getEndTime()*1000).toString());
+            System.out.println("bandwidth: " + Integer.toString(uConstraint.getBandwidth()));
             if (uConstraint ==null) {
                 System.out.println("invalid reservation, no reserved or requested path");
                 return;

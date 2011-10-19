@@ -493,6 +493,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             }
             ResDetails resDetails = queryReq.getResultData().getReservationDetails();
             UserRequestConstraintType modUC =  resDetails.getUserRequestConstraint();
+            ReservedConstraintType modRC = resDetails.getReservedConstraint();
             // check that requested modifications are allowed
             String resState = resDetails.getStatus();
             Long curtime = System.currentTimeMillis()/1000L;
@@ -505,6 +506,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                      ErrorReport.USER);
                 }
                 modUC.setBandwidth(inputUC.getBandwidth());
+                modRC.setBandwidth(inputUC.getBandwidth());
             }
             // the WBUI only keeps times in minutes and always inputs time values even if they were not changed
             if ((inputUC.getStartTime() != 0) &&
@@ -521,6 +523,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                     }
                 }
                 modUC.setStartTime(inputUC.getStartTime());
+                modRC.setStartTime(inputUC.getStartTime());
             }
             // the WBUI only keeps times in minutes and always inputs time values even if they were not changed
             if ( (inputUC.getEndTime() != 0) &&
@@ -538,6 +541,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                     }
                 }
                 modUC.setEndTime(inputUC.getEndTime());
+                modRC.setEndTime(inputUC.getEndTime());
             }
 
             if (modUC.getEndTime() <= modUC.getStartTime()) {
@@ -549,7 +553,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
 
             modifyResvReq.setUserRequestConstraint(modUC);
             // include information about the current reservation for use in error handling
-            modifyResvReq.setReservedConstraint(resDetails.getReservedConstraint());
+            modifyResvReq.setReservedConstraint(modRC);
 
             checkConditions( authDecision, null, modUC, true);
             loginName = getLoginName (subjectAttributes);
