@@ -3,12 +3,12 @@ package Lib::TestCondition_8;
 use Carp;
 use Lib::Tester;
 use Lib::TopologyUtils;
+use Lib::Simulator;
 
 use fields qw(NAME);
 
 
 my $NAME = "TestCondition_8";
-
 
 
 =head1
@@ -18,22 +18,14 @@ Three peering domains in linear topology, two configured with EoMPLS network set
 Common VLAN in path with sufficient bandwidth for both intra- and inter-domain links;
 L2SC edge links with VLAN translation enabled and PSC trunk links
 
-
 =cut
+
 
 my $tester = new Lib::Tester;
 
-# Seconds to sleep between checks for state changes
-our $SLEEP = 15;
-
-# Number of times to check for state changes
-our $COUNT = 4;
-
-# Start time can be 'no' or a number of minutes in the future.
-our $STARTTIME = 'now';
-
-# End time is reservation duration.
-our $ENDTIME = '+00:00:03';
+our $COUNT = 100;
+our $DURATION = 10;
+our $INTERVAL = 45;
 
 
 sub multi_test_8_1
@@ -41,7 +33,7 @@ sub multi_test_8_1
 	# Test Scenario (8.1)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : translation and no-translation : intra-domain and inter-domain paths : continue-random-execution-and-monito
 
-	_do_test("_scenario_1", 10);
+	_do_test("_multi_test_8_1", $COUNT);
 }
 
 
@@ -49,61 +41,75 @@ sub multi_test_8_2
 {
 	# Test Scenario (8.2)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : translation and no-translation : intra-domain and inter-domain paths : :schedule-for-ten-thousand-circuits : continue-random-execution-and-monitor  
-	
-	_do_test("_scenario_2", 10);
+
+	_do_test("_multi_test_8_2", $COUNT);
 }
 
 
 sub _do_test
 {
-	my $self = shift;
 	my $t_name = shift;
 	my $iterations = shift;
 
-    my @arr;
 	my $topologyFile = "/usr/local/oscars/TopoBridgeService/conf/testdomain-2.net.xml";
 	my $parser = new Lib::TopologyUtils;
 	my @topology = $parser->parseV6(fileName => $topologyFile);
 	my $n = @topology;
-	my $limit = 4000;
 	my $c = 0;
 	my $src; 
 	my $dst; 
-	my $srcVlan; 
-	my $dstVlan;
+	my %pSrc;
+	my %pDst;
+	my $endMins;
 	my $endTime;
+
+	srand(1000);
 
 	while ($c < $iterations) {
 		my $r = int(rand($n));		
 		$src = $topology[$r]->{'linkId'};
+		%pSrc = $parser->parse_urn(urn => $src); 
+
 		$r = int(rand($n));		
 		$dst = $topology[$r]->{'remoteLinkId'};
-		if ($src eq $dst) {	
-			next;
-		}
-		$srcVlan = int(rand($limit));
-		$dstVlan = int(rand($limit));
-		$endTime = int(rand(25));
+		%pDst = $parser->parse_urn(urn => $dst);
+	
+		next if ($src eq $dst);
+		#next if ($pSrc{'domain'} ne $pDst{'domain'});
+		next if ($pSrc{'node'} eq '*');
+		next if ($pDst{'node'} eq '*');
+
+		next if ($pSrc{'domain'} eq 'testdomain-1.net');
+		next if ($pDst{'domain'} eq 'testdomain-1.net');
+		next if ($pSrc{'domain'} eq 'testdomain-3.net');
+		next if ($pDst{'domain'} eq 'testdomain-3.net');
+
+		#$endMins = 10 + int(rand(59 - 10));
+		$endMins = 10 + int(rand($DURATION));
+		$endTime = "+00:00:" . $endMins;
 
 	    my %testParams = (
         	testName => $NAME . $t_name,
 	        topology => $topologyFile, 
    	    	src => $src,
-        	srcVlan => $srcVlan, 
+        	srcVlan => 'any', 
         	dst => $dst,
-        	dstVlan => $dstVlan,
+        	dstVlan => 'any',
 			endTime => $endTime,	
-            sleep => "$SLEEP",
-            count => "$COUNT",
-            startTime => "$STARTTIME",
-            endTime => "$ENDTIME",
-        	expectedResult => "CANCELLED"
+        	expectedResult => "ACTIVE"
    		);
-    	push @arr, \%testParams_0;
-		$c++;
-	}
+		#print map { "$_ => $testParams{$_}\n" } sort keys %testParams;
+		#print "\n";
 
-    $tester->multi_create(@arr);
+    	$tester->create(%testParams);
+		$c++;
+		if ($c != $iterations) {
+			#my $sleepTime = 1 + int(rand(2 * 45));
+			my $sleepTime = 1 + int(rand($INTERVAL));
+			print "sleeping ...\n";
+			sleep($sleepTime);
+		}
+	}
 }
 
 
