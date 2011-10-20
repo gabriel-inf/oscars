@@ -20,25 +20,23 @@ To build and run all the servers
            - compiles, runs tests but continues after errors and installs
       mvn install - compiles, run tests, installs
 
-4. run $OSCARS_DIST/bin/exportconfig
-
-5. run $OSCARS_DIST/bin/startAllServers.sh
+4.   run $OSCARS_DIST/bin/stopServers.sh [dev|sdk|pro] ALL to start all the servers
         the output from the servers will be piped to $OSCARS_DIST/*.out
 
-6. run $OSCARS_DIST/bin/stopAllServers.sh to kill all the servers.
+5. run $OSCARS_DIST/bin/stopServers.sh ALL to kill all the servers.
 
-start/stopAllServers can be used to start or stop individual servers with the params
-    authN, authZ, api, coord, topoBridge, rm stubPCE, connPCE, dijPCE
+start/stopServers can be used to start or stop individual servers with the params
+    authN, authZ, api, coord, topoBridge, rm, stubPCE, connPCE, dijPCE, vlanPCE, nullAgg, lookup,
+    stubPSS, dragonPSS, eomplsPSS, openflowPSS, PSS, notifyBridge, wnsbroker, wbui, ionui
 
 
 Currently all the tests are passed except for coordinator which requires the
 resource Manager and a PCE to be running.
 
 7. Testing
-    api/bin/testIDC.sh can be called to query, list and create a reservation
-    the wrapper commands query.sh, list.sh and createRes.sh will call testIDC
-    with default args set. createRes.sh uses a default yaml file in
-    src/test/resources/create.yaml to set the values for the reservation.
+    The following command in api/bin can be called to create, modify, query, 
+    list, setup and teardown reservations
+    Use the -h switch to see the required arguments.
 
     The test programs log to their working directories, eg api/api.log.
 
