@@ -23,9 +23,9 @@ L2SC edge links with VLAN translation enabled and PSC trunk links
 
 my $tester = new Lib::Tester;
 
-our $COUNT = 100;
-our $DURATION = 10;
-our $INTERVAL = 45;
+our $COUNT = 0;
+our $DURATION = 4;
+our $INTERVAL = 90;
 
 
 sub multi_test_8_1
@@ -33,6 +33,7 @@ sub multi_test_8_1
 	# Test Scenario (8.1)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : translation and no-translation : intra-domain and inter-domain paths : continue-random-execution-and-monito
 
+	$COUNT = 15;
 	_do_test("_multi_test_8_1", $COUNT);
 }
 
@@ -42,6 +43,7 @@ sub multi_test_8_2
 	# Test Scenario (8.2)
 	# mixed specific_vlan_tag-to-specific_vlan_tag and any_vlan_tag-to-any_vlan_tag : simultaneous-execution-to-saturate : translation and no-translation : intra-domain and inter-domain paths : :schedule-for-ten-thousand-circuits : continue-random-execution-and-monitor  
 
+	$COUNT = 100;
 	_do_test("_multi_test_8_2", $COUNT);
 }
 
@@ -79,13 +81,12 @@ sub _do_test
 		next if ($pSrc{'node'} eq '*');
 		next if ($pDst{'node'} eq '*');
 
-		next if ($pSrc{'domain'} eq 'testdomain-1.net');
 		next if ($pDst{'domain'} eq 'testdomain-1.net');
-		next if ($pSrc{'domain'} eq 'testdomain-3.net');
 		next if ($pDst{'domain'} eq 'testdomain-3.net');
+		next if (($c % 3 == 0) && ($pDst{'domain'} ne 'testdomain-4.net'));
 
 		#$endMins = 10 + int(rand(59 - 10));
-		$endMins = 10 + int(rand($DURATION));
+		$endMins = 4 + int(rand($DURATION));
 		$endTime = "+00:00:" . $endMins;
 
 	    my %testParams = (
