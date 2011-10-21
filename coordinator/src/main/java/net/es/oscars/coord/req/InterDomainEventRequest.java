@@ -2,6 +2,7 @@ package net.es.oscars.coord.req;
 
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.coord.actions.*;
@@ -10,8 +11,11 @@ import net.es.oscars.coord.workers.NotifyWorker;
 import net.es.oscars.resourceManager.soap.gen.GetStatusReqContent;
 import net.es.oscars.resourceManager.soap.gen.GetStatusRespContent;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
+import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -81,7 +85,15 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
             }
 
             if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMMIT_CONFIRMED)) {
-                origRequest.setCommitPhase(true);
+                //make sure this is not a repeat
+                synchronized(this.origRequest){
+                    if(this.origRequest.inCommitPhase()){
+                        this.executed();
+                        LOG.warn(netLogger.end(method, "Ignoring duplicate RESV_CREATE_COMMIT_CONFIRMED message."));
+                        return;
+                    }
+                    origRequest.setCommitPhase(true);
+                }
 
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-CreateCommittedEventAction",
                                                                        this.getCoordRequest(),
@@ -95,6 +107,15 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            ErrorReport.SYSTEM));
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_CREATE_COMPLETED)) {
+                //make sure this is not a repeat
+                synchronized(this.origRequest){
+                    if(this.origRequest == null || this.origRequest.inCompletePhase()){
+                        this.executed();
+                        LOG.warn(netLogger.end(method, "Ignoring duplicate RESV_CREATE_COMPLETED message."));
+                        return;
+                    }
+                    origRequest.setCompletePhase(true);
+                }
                 CreateResvCompletedAction action = new CreateResvCompletedAction(this.getName() + "-CreateResvCompletedAction",
                                                                                  this,
                                                                                  resDetails);
@@ -151,6 +172,15 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                           gri);
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMPLETED)) {
+                //make sure this is not a repeat
+                synchronized(this.origRequest){
+                    if(this.origRequest.inCompletePhase()){
+                        this.executed();
+                        LOG.warn(netLogger.end(method, "Ignoring duplicate RESV_MODIFY_COMPLETED message."));
+                        return;
+                    }
+                    origRequest.setCompletePhase(true);
+                }
                 this.setAttribute(CoordRequest.STATE_ATTRIBUTE,origRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
                 ModifyResvCompletedAction action = new ModifyResvCompletedAction(this.getName() + "-ModifyResvCompletedAction",
                                                                                  this,
@@ -163,7 +193,15 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
                                                            ErrorReport.SYSTEM));
                 }
             } else if (eventType.equals(NotifyRequestTypes.RESV_MODIFY_COMMIT_CONFIRMED)) {
-                this.origRequest.setCommitPhase(true);
+              //make sure this is not a repeat
+                synchronized(this.origRequest){
+                    if(this.origRequest.inCommitPhase()){
+                        this.executed();
+                        LOG.warn(netLogger.end(method, "Ignoring duplicate RESV_MODIFY_COMMIT_CONFIRMED message."));
+                        return;
+                    }
+                    origRequest.setCommitPhase(true);
+                }
                 this.setAttribute(CoordRequest.STATE_ATTRIBUTE,origRequest.getAttribute(CoordRequest.STATE_ATTRIBUTE));
                 CommittedEventAction action = new CommittedEventAction(this.getName() + "-ModifyCommittedEventAction",
                                                                        this,
@@ -328,11 +366,71 @@ public class InterDomainEventRequest extends CoordRequest <InterDomainEventConte
      * @param local  resDetails from the local PCEData
      * @param remote resDetails as returned from a peer IDC
      * @return  a merged version of the two that contains all the local path elemnts
+     * @throws OSCARSServiceException 
      */
-     // TODO Andy's going to implement this
-    private ResDetails mergeDetails(ResDetails local, ResDetails remote){
+    private ResDetails mergeDetails(ResDetails local, ResDetails remote) throws OSCARSServiceException{
         ResDetails merged = remote;
+        if(remote.getReservedConstraint() == null &&
+                remote.getReservedConstraint().getPathInfo() == null &&
+                remote.getReservedConstraint().getPathInfo().getPath() == null){
+            throw new OSCARSServiceException("Remote domain's reservedConstraint does not contain a path");
+        }
+        if(local.getReservedConstraint() == null &&
+                local.getReservedConstraint().getPathInfo() == null &&
+                local.getReservedConstraint().getPathInfo().getPath() == null){
+            throw new OSCARSServiceException("Local domain's reservedConstraint does not contain a path");
+        }
+        
+        CtrlPlanePathContent localPath = local.getReservedConstraint().getPathInfo().getPath();
+        CtrlPlanePathContent remotePath = remote.getReservedConstraint().getPathInfo().getPath();
+        CtrlPlanePathContent mergedPath = new CtrlPlanePathContent();
+        String localDomain = PathTools.getLocalDomainId();
+        boolean localFound = false;
+        int pathIndex = 0;
+        mergedPath.setId(UUID.randomUUID().toString());
+        mergedPath.setDirection(localPath.getDirection());//this will likely always be null
+        mergedPath.setLifetime(localPath.getLifetime());//this will likely always be null
+        //set hops before local domain
+        for(; pathIndex < remotePath.getHop().size() ; pathIndex++){
+            String linkId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(remotePath.getHop().get(pathIndex), NMWGParserUtil.LINK_TYPE));
+            if(!linkId.startsWith(localDomain) && localFound){
+                //we are now past the local domain so break
+                break;
+            }else if(linkId.startsWith(localDomain)){
+                //local domain found but don't add hops, because we'll pull those from local path
+                localFound = true;
+            }else{
+                //not local, and haven;t found local, so add to path
+                mergedPath.getHop().add(remotePath.getHop().get(pathIndex));
+            }
+        }
+        if(!localFound){
+            throw new OSCARSServiceException("Remote domain's path does not contain " +
+                    "any hops in local domain "+ localDomain);
+        }
+        //set local hops
+        localFound = false;
+        for(CtrlPlaneHopContent localHop : localPath.getHop()){
+            String linkId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(localHop, NMWGParserUtil.LINK_TYPE));
+            if(!linkId.startsWith(localDomain) && localFound){
+                //we are now past the local domain so break
+                break;
+            }else if(linkId.startsWith(localDomain)){
+                mergedPath.getHop().add(localHop);
+                localFound = true;
+            }
+        }
+        if(!localFound){
+            throw new OSCARSServiceException("Local domain's path does not contain " +
+                    "any hops in local domain "+ localDomain);
+        }
+        //set hops after local domain
+        for(; pathIndex < remotePath.getHop().size() ; pathIndex++){
+            mergedPath.getHop().add(remotePath.getHop().get(pathIndex));
+        }
+        
         merged.setLogin(local.getLogin());  // replaces code in CreateResvCompletedAction
+        merged.getReservedConstraint().getPathInfo().setPath(mergedPath);
         return merged;
     }
 

@@ -62,6 +62,7 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
     private MessagePropertiesType   msgProps;
     private ResDetails              resDetails = null;  // local version of resDetails saved for interDomain reservations
     private boolean                 isCommitPhase = false; // set to true when pce operations enter commit phase
+    private boolean                 isCompletePhase = false; // set to true when pce operations enter complete phase
     private HashMap<String, Object> attributes = new HashMap<String, Object>(); // place to store extra information
     private static final Logger LOG = Logger.getLogger(CoordRequest.class.getName());
 
@@ -153,9 +154,21 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
      public void setCommitPhase(boolean isCommit){
          isCommitPhase = isCommit;
      }
-
+     
+     /**
+      * Called when the pceRuntime for this request starts the complete phase
+      * @param isCommit  should be true
+      */
+     public void setCompletePhase(boolean isComplete){
+         isCompletePhase = isComplete;
+     }
+     
      public boolean inCommitPhase() {
          return isCommitPhase;
+     }
+     
+     public boolean inCompletePhase() {
+         return isCompletePhase;
      }
 
 

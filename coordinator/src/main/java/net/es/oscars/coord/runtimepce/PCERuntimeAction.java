@@ -538,6 +538,11 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
                                                                         NotifyRequestTypes.RESV_CREATE_COMPLETED :
                                                                         NotifyRequestTypes.RESV_MODIFY_COMPLETED,
                                                      resDetails);
+                CoordRequest origRequest = CoordRequest.getCoordRequestByAlias( (requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) ?
+                                            "createReservation-" : "modifyReservation") + this.getCoordRequest().getGRI());
+                if(origRequest != null){
+                    origRequest.setCompletePhase(true);
+                }
 
                  if (! localRes ) {
                     // firstDomain, not local
