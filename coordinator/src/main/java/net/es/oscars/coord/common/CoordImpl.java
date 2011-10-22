@@ -723,6 +723,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
         LOG.info(netLogger.start(method));
         
         ResDetails resDetails = resDetailsReq;
+        boolean doPSSTeardown = true;
+        String retStatus =StateEngineValues.INTEARDOWN;
         TeardownPathResponseContent response = new TeardownPathResponseContent();
         CheckAccessReply authDecision = null;
 
@@ -755,23 +757,31 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                     throw new OSCARSServiceException("Reservation is timer-automatic, does not allow manual teardown",
                                     "user");
                 }
-                if (!resDetails.getStatus().equals(StateEngineValues.ACTIVE )) {
+                if (resDetails.getStatus().equals(StateEngineValues.FINISHED) ||
+                       resDetails.getStatus().equals(StateEngineValues.RESERVED) ||
+                       resDetails.getStatus().equals(StateEngineValues.INTEARDOWN)) {
+                    doPSSTeardown = false;
+                    retStatus = resDetails.getStatus();
+                } else if (!resDetails.getStatus().equals(StateEngineValues.ACTIVE)) {
                     throw new OSCARSServiceException("Reservation is in state " + resDetails.getStatus() +
                             " teardown path not allowed","user");
                 }
             }
-            gri = resDetails.getGlobalReservationId();
+            if (doPSSTeardown){
+                gri = resDetails.getGlobalReservationId();
 
-            PathRequest request =  PathRequest.getPathRequest(PathRequest.PSS_TEARDOWN_PATH +  "-" + gri,
-                                                              teardownPathReq.getMessageProperties(),
-                                                              resDetails);
-            request.execute();
-            if (request.getState().equals(State.FAILED)) {
-                throw request.getException();
+                PathRequest request =  PathRequest.getPathRequest(PathRequest.PSS_TEARDOWN_PATH +  "-" + gri,
+                                                                  teardownPathReq.getMessageProperties(),
+                                                                  resDetails);
+                request.execute();
+                retStatus = StateEngineValues.INTEARDOWN;
+                if (request.getState().equals(State.FAILED)) {
+                    throw request.getException();
+                }
             }
-            response.setMessageProperties(request.getMessageProperties());
-            response.setGlobalReservationId(request.getGRI().toString());
-            response.setStatus("INTEARDOWN");
+            response.setMessageProperties(teardownPathReq.getMessageProperties());
+            response.setGlobalReservationId(resDetails.getGlobalReservationId());
+            response.setStatus(retStatus);
         } catch (OSCARSServiceException ex) {
             // session = null, no database connected
             OSCARSFaultUtils.handleError ( ex, null, LOG, method);
