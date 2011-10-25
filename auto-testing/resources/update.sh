@@ -4,10 +4,9 @@
 MODE=PRODUCTION
 
 export MAVEN_OPTS='-Xmx512M -XX:MaxPermSize=512M'
-OSCARS_DIST=/usr/local/oscars_dist
+OSCARS_DIST=/usr/local/oscars-0.6
 OSCARS_HOME=/usr/local/oscars
-MVN_HOME=/usr/local/maven
-
+MVN_HOME=/usr/local/apache-maven-2.2.1
 
 # Shutdown all services
 cd $OSCARS_DIST
@@ -46,13 +45,15 @@ svn update
 $MVN_HOME/bin/mvn install 
 
 # Restore config files
-cp -f $OSCARS_DIST/auto-testing/resources/testdomain* $OSCARS_HOME/TopoBridgeService/conf/
-cp -rf $OSCARS_DIST/auto-testing/Lib $OSCARS_DIST/api/
-cp -f $OSCARS_DIST/api/Lib/SimpleTest.pm.bak $OSCARS_DIST/api/Lib/SimpleTest.pm
 cp -f $HOME/TopoBridgeService/* $OSCARS_HOME/TopoBridgeService/conf
 cp -f $HOME/Utils/* $OSCARS_HOME/Utils/conf
 cp -f $HOME/WBUIService/* $OSCARS_HOME/WBUIService/conf
 cp -f $HOME/WSNBrokerService/* $OSCARS_HOME/WSNBrokerService/conf
+# Bring in changes to test suite
+cp -f $OSCARS_DIST/auto-testing/resources/testdomain* $OSCARS_HOME/TopoBridgeService/conf/
+cp -rf $OSCARS_DIST/auto-testing/Lib $OSCARS_DIST/api/
+# Restore site specific files
+cp -f $OSCARS_DIST/api/Lib/SimpleTest.pm.bak $OSCARS_DIST/api/Lib/SimpleTest.pm
 
 # Restart and test servers
 $OSCARS_DIST/bin/startServers.sh $MODE ALL
