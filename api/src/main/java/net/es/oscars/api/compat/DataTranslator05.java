@@ -625,6 +625,22 @@ public class DataTranslator05 {
                 //the 10 is insignificant. just a value to act as placeholder
                 hop06.getLink().setTrafficEngineeringMetric("10");
             }
+            
+            /*
+             * 0.5 is very particular about what the swicthingCapType and will throw an error
+             * Check here if the swicthingCapType is blank...
+             */
+            if(hop06.getLink() != null && 
+                    hop06.getLink().getSwitchingCapabilityDescriptors() != null && 
+                    "".equals(hop06.getLink().getSwitchingCapabilityDescriptors().getSwitchingcapType())){
+                /*...if it is blank AND it has VLAN information then set it to l2sc/ethernet.'
+                   0.5 does something similar when it exports data from mysql. If its not a
+                   link with VLANs then its ok to leave it blank currently */
+                if(hop06.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability() != null){
+                    hop06.getLink().getSwitchingCapabilityDescriptors().setSwitchingcapType("l2sc");
+                    hop06.getLink().getSwitchingCapabilityDescriptors().setEncodingType("ethernet");
+                }
+            }
         }
         //id is required but has no semantic meaning so just generate default if null
         if (pathInfo06.getPath().getId() != null) {
