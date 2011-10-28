@@ -4,9 +4,9 @@
 MODE=PRODUCTION
 
 export MAVEN_OPTS='-Xmx512M -XX:MaxPermSize=512M'
-OSCARS_DIST=/usr/local/oscars-0.6
+OSCARS_DIST=/usr/local/oscars_dist
 OSCARS_HOME=/usr/local/oscars
-MVN_HOME=/usr/local/apache-maven-2.2.1
+MVN_HOME=/usr/local/maven
 
 # Shutdown all services
 cd $OSCARS_DIST
