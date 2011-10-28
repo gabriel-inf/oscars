@@ -6,8 +6,8 @@ create:
 
         layer:          '2'
 
-        src:            ''
-        dst:            ''
+        src:            'urn:ogf:network:domain=testdomain-2.net:node=node-1:port=port-2:link=link-1'
+        dst:            'urn:ogf:network:domain=testdomain-2.net:node=node-2:port=port-2:link=link-1'
 
         bandwidth:      100 
         
@@ -33,4 +33,9 @@ create:
 #        burstLimit:     20
 #        lspClass:       4
 # optional: path, an array of urns. Must be enclosed in single quotes.
+        optionalConstraint:
+            - category:      'test1'
+              value:         'this is a test value'
+            - category:      'test'
+              value:         'this is s second test value'
 

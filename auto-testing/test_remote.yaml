@@ -6,8 +6,8 @@ create:
 
         layer:          '2'
 
-        src:            ''
-        dst:            ''
+        src:            'urn:ogf:network:domain=testdomain-2.net:node=node-5:port=port-2:link=link-1'
+        dst:            'urn:ogf:network:domain=testdomain-4.net:node=node-5:port=port-2:link=link-1'
 
         bandwidth:      100 
         
@@ -16,7 +16,7 @@ create:
 # start time (yyyy-MM-dd HH:mm)
         start-time:     'now'
         #start-time:     '2011-06-08 13:55'
-        end-time:       '+00:00:04'
+        end-time:       '+00:00:10'
 
 # this may be timer-automatic or signal-xml . generally leave at timer-automatic
         path-setup-mode:        'timer-automatic'
@@ -33,4 +33,9 @@ create:
 #        burstLimit:     20
 #        lspClass:       4
 # optional: path, an array of urns. Must be enclosed in single quotes.
+        optionalConstraint:
+            - category:      'test1'
+              value:         'this is a test value'
+            - category:      'test'
+              value:         'this is s second test value'
 
