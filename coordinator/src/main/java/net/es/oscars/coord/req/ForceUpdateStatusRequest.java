@@ -1,18 +1,20 @@
 package net.es.oscars.coord.req;
 
-import net.es.oscars.coord.actions.CoordAction;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.resourceManager.soap.gen.UpdateFailureStatusReqContent;
 import net.es.oscars.resourceManager.soap.gen.UpdateStatusRespContent;
 import net.es.oscars.common.soap.gen.AuthConditions;
-import net.es.oscars.api.soap.gen.v06.QueryResContent;
-import net.es.oscars.api.soap.gen.v06.QueryResReply;
+import net.es.oscars.common.soap.gen.AuthConditionType;
 import net.es.oscars.coord.workers.RMWorker;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.clients.RMClient;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.soap.ErrorReport;
+import net.es.oscars.utils.sharedConstants.AuthZConstants;
+import net.es.oscars.utils.sharedConstants.ErrorCodes;
+
 
 import java.util.FormatterClosedException;
 
@@ -52,19 +54,20 @@ public class ForceUpdateStatusRequest extends CoordRequest <UpdateFailureStatusR
         LOG.debug(netLogger.start(method));
 
         try {
-            // QueryReservation to check the conditions that apply to MODIFY
-            QueryResContent queryResCon = new QueryResContent();
-            UpdateFailureStatusReqContent updateStatusReq = this.getRequestData();
             AuthConditions authConditions = this.getAuthConditions();
-            queryResCon.setMessageProperties(this.getMessageProperties());
-            queryResCon.setGlobalReservationId(updateStatusReq.getGlobalReservationId());
-            QueryReservationRequest queryReq = new QueryReservationRequest(method,
-                                                                          authConditions,
-                                                                          queryResCon);
-            queryReq.execute();
-            if (queryReq.getState() == CoordAction.State.FAILED) {
-                throw queryReq.getException();
+            boolean allowed = false;
+            for (AuthConditionType authCond: authConditions.getAuthCondition()){
+                if (authCond.getName().equals(AuthZConstants.UNSAFE_ALLOWED)) {
+                    if ( authCond.getConditionValue().get(0).equals("true") )
+                        allowed = true;
+                    break;
+                }
             }
+            if (!allowed) {
+                throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED,"no permission to modify reservation status",
+                                                 ErrorReport.USER);
+            }
+
             // Call the ResourceManager to change the status
             UpdateStatusRespContent reply = null;
             Object [] res =  null;
@@ -76,18 +79,17 @@ public class ForceUpdateStatusRequest extends CoordRequest <UpdateFailureStatusR
             this.setResultData(reply);
             this.executed();
         } catch (OSCARSServiceException ex ){
-            this.fail(ex);
-            LOG.debug(netLogger.error(method, ErrSev.MINOR, " catching OSCARSServiceException setting fail  " + 
+            LOG.debug(netLogger.error(method, ErrSev.MINOR, " catching OSCARSServiceException " +
                                        ex.getMessage()));
+            this.fail(ex);
         } catch (Exception ex) {
             String message = ex.getMessage();
             if (message == null){
                 message = ex.toString();
             }
-            this.fail(new OSCARSServiceException(message, "system"));
-            LOG.debug(netLogger.error(method, ErrSev.MINOR, "catching exception setting fail  "  +
+            LOG.debug(netLogger.error(method, ErrSev.MINOR, "catching exception "  +
                                       ex.getMessage()));
-            ex.printStackTrace();
+            this.fail(new OSCARSServiceException(ex.toString(),message, ErrorReport.SYSTEM));
         }
         LOG.debug(netLogger.end(method));
     }

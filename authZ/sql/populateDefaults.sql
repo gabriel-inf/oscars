@@ -94,6 +94,7 @@ INSERT IGNORE INTO constraints VALUES (NULL, "mysite-in-resv", "boolean", "limit
 INSERT IGNORE INTO constraints VALUES (NULL, "specify-path-elements", "boolean", "allows path elements to be specified for reservations");
 INSERT IGNORE INTO constraints VALUES (NULL, "see-all-hops", "boolean", "allows the internal hops to be seen");
 INSERT IGNORE INTO constraints VALUES (NULL, "specify-gri", "boolean", "allows a gri to be specified on path creation");
+INSERT IGNORE INTO constraints VALUES (NULL, "unsafe-allowed", "boolean", "allows arbitrary changes to reservation status, to permit database corrections");
 
 
 -- none constraint
@@ -194,7 +195,7 @@ INSERT IGNORE INTO rpcs VALUES (NULL,
 INSERT IGNORE INTO rpcs VALUES (NULL,
     (select id from resources where name="reservations"),
     (select id from permissions where name="signal"),
-    (select id from constraints where name="all-users"));;
+    (select id from constraints where name="all-users"));
 INSERT IGNORE INTO rpcs VALUES (NULL,
     (select id from resources where name="Subscriptions"),
     (select id from permissions where name="modify"),
@@ -259,6 +260,11 @@ INSERT IGNORE INTO rpcs VALUES (NULL,
     (select id from resources where name="reservations"),
     (select id from permissions where name="create"),
     (select id from constraints where name="specify-gri"));
+-- allow-unsafe
+INSERT IGNORE INTO rpcs VALUES (NULL,
+    (select id from resources where name="reservations"),
+    (select id from permissions where name="modify"),
+    (select id from constraints where name="unsafe-allowed"));
 
 -- populate authorizations table
 -- authorizations for OSCARS-user
@@ -346,7 +352,7 @@ INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="OSCARS-engineer"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
-     (select id from constraints where name="specify-path-elements"), "true");  
+     (select id from constraints where name="specify-path-elements"), "true");
 INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="OSCARS-engineer"),
      (select id from resources where name="reservations"),
@@ -366,7 +372,12 @@ INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="OSCARS-engineer"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
-     (select id from constraints where name="all-users"), "true"); 
+     (select id from constraints where name="all-users"), "true");
+INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where value="OSCARS-engineer"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="modify"),
+     (select id from constraints where name="unsafe-allowed"), "true");
 INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="OSCARS-engineer"),
      (select id from resources where name="domains"),

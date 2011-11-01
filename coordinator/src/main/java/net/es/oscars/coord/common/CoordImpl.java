@@ -273,25 +273,21 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             request.setMessageProperties(msgProps);
             request.execute();
             if (request.getState() == CoordAction.State.FAILED) {
-                request.logError();
                 throw request.getException();
             }
             reply = request.getResultData();
-        } catch (Exception ex) {
-            OSCARSServiceException oEx;
-            if (ex.getClass().getName().equals("net.es.oscars.utils.soap.OSCARSServiceException")){
-                oEx = (OSCARSServiceException) ex;
-                LOG.info(netLogger.error(method, ErrSev.MINOR, oEx.getErrorReport().getErrorMsg(),
+        } catch (OSCARSServiceException oEx) {
+            LOG.info(netLogger.error(method, ErrSev.MINOR, oEx.getErrorReport().getErrorMsg(),
                         oEx.getErrorReport().getErrorCode()));
-            } else {
-                LOG.info(netLogger.error(method, ErrSev.MINOR, ex.getMessage()+ " " + ex.toString()));
-                ErrorReport errRep = new ErrorReport(ErrorCodes.RESV_MODIFY_FAILED , ex.getMessage(),
-                                                     ErrorReport.SYSTEM, gri, transId,
-                                                     System.currentTimeMillis()/1000L, moduleName,
-                                                     PathTools.getLocalDomainId());
-                oEx = new OSCARSServiceException(errRep);
-            }
             OSCARSFaultUtils.handleError ( oEx, null, LOG, method);
+        } catch (Exception ex) {
+            LOG.info(netLogger.error(method, ErrSev.MINOR, ex.getMessage()+ " " + ex.toString()));
+            ErrorReport errRep = new ErrorReport(ErrorCodes.RESV_MODIFY_FAILED , ex.getMessage(),
+                                                 ErrorReport.SYSTEM, gri, transId,
+                                                 System.currentTimeMillis()/1000L, moduleName,
+                                                 PathTools.getLocalDomainId());
+
+            OSCARSFaultUtils.handleError ( new OSCARSServiceException(errRep), null, LOG, method);
         }
         LOG.info(netLogger.end(method));
         return reply;
