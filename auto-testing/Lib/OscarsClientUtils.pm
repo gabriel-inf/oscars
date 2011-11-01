@@ -303,9 +303,11 @@ sub create
 		$status = "execCreate() failed\n";
 		return $status;
 	}
-	print "GRI: $gri - ";
-	print strftime('%T', localtime);
-	print " - Made reservation\n";
+	#print "GRI: $gri - ";
+	print "$gri - ";
+	#print strftime('%T', localtime);
+	#print " - Made reservation\n";
+	print "$args{'src'} => $args{'dst'}\n";
 
 	# Check reservation status 
 	my $count = 0;
