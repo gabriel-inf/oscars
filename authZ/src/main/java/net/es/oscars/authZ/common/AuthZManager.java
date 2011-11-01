@@ -43,6 +43,7 @@ public class AuthZManager {
            put (AuthZConstants.MAX_BANDWIDTH, false);
            put (AuthZConstants.SPECIFY_GRI, true );
            put (AuthZConstants.SPEC_PATH_ELEMS, true);
+           put (AuthZConstants.UNSAFE_ALLOWED, true);
         }} );
 
 

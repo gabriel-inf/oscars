@@ -123,14 +123,23 @@ public class QueryReservation extends HttpServlet {
 
             // check to see if user is allowed to see the buttons allowing
             // reservation modification
-            authVal = ServletUtils.checkPermission(authZClient,
+            CheckAccessReply accessReply = ServletUtils.checkAccess(authZClient,
                                                    userAttributes, 
                                                    AuthZConstants.RESERVATIONS, 
                                                    AuthZConstants.MODIFY);
-            
+            authVal = accessReply.getPermission();
             if (!authVal.equals(AuthZConstants.ACCESS_DENIED)) {
                 outputMap.put("resvModifyDisplay", Boolean.TRUE);
-                outputMap.put("resvCautionDisplay", Boolean.TRUE);
+                Boolean allowed = false;
+                AuthConditions authConditions = accessReply.getConditions();
+                for (AuthConditionType authCond: authConditions.getAuthCondition()){
+                    if (authCond.getName().equals(AuthZConstants.UNSAFE_ALLOWED)) {
+                        if ( authCond.getConditionValue().get(0).equals("true") )
+                            allowed = true;
+                        break;
+                    }
+                }
+                outputMap.put("resvCautionDisplay", allowed);
             } else {
                 outputMap.put("resvModifyDisplay", Boolean.FALSE);
                 outputMap.put("resvCautionDisplay", Boolean.FALSE);
