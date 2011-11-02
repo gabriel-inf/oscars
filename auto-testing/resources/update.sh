@@ -4,9 +4,9 @@
 MODE=PRODUCTION
 
 export MAVEN_OPTS='-Xmx512M -XX:MaxPermSize=512M'
-OSCARS_DIST=/usr/local/oscars_dist
+OSCARS_DIST=/usr/local/oscars-0.6
 OSCARS_HOME=/usr/local/oscars
-MVN_HOME=/usr/local/maven
+MVN_HOME=/usr/local/apache-maven-2.2.1
 
 # Shutdown all services
 cd $OSCARS_DIST
@@ -16,6 +16,7 @@ $OSCARS_DIST/bin/stopServers.sh ALL
 mkdir -p $HOME/TopoBridgeService
 cp -f $OSCARS_HOME/TopoBridgeService/conf/config.HTTP.yaml $HOME/TopoBridgeService
 cp -f $OSCARS_HOME/TopoBridgeService/conf/config.SSL.yaml $HOME/TopoBridgeService
+cp -f $OSCARS_HOME/TopoBridgeService/conf/testdomain-?.net.xml $HOME/TopoBridgeService
 mkdir -p $HOME/Utils
 cp -f $OSCARS_HOME/Utils/conf/config.yaml $HOME/Utils
 mkdir -p $HOME/WBUIService
