@@ -1,0 +1,60 @@
+configure qos sap-ingress "${ingqos.id}" create
+configure qos sap-ingress "${ingqos.id}" description "${ingqos.description}"
+configure qos sap-ingress "${ingqos.id}" queue 2 create
+configure qos sap-ingress "${ingqos.id}" queue 2 no parent
+configure qos sap-ingress "${ingqos.id}" queue 2 adaptation-rule pir closest cir closest
+configure qos sap-ingress "${ingqos.id}" queue 2 rate max cir ${ingqos.bandwidth}
+configure qos sap-ingress "${ingqos.id}" queue 2 mbs default
+configure qos sap-ingress "${ingqos.id}" queue 2 cbs default
+configure qos sap-ingress "${ingqos.id}" queue 2 high-prio-only default
+configure qos sap-ingress "${ingqos.id}" queue 11 multipoint create
+configure qos sap-ingress "${ingqos.id}" fc "ef" create
+configure qos sap-ingress "${ingqos.id}" fc "ef" queue 2
+
+configure qos sap-egress "${egrqos.id}" create
+configure qos sap-egress "${egrqos.id}" description "${egrqos.description}"
+configure qos sap-egress "${egrqos.id}" queue 2 expedited create
+configure qos sap-egress "${egrqos.id}" queue 2 no parent
+configure qos sap-egress "${egrqos.id}" queue 2 adaptation-rule pir closest cir closest
+configure qos sap-egress "${egrqos.id}" queue 2 percent-rate 100 cir 100
+configure qos sap-egress "${egrqos.id}" queue 2 mbs default
+configure qos sap-egress "${egrqos.id}" queue 2 cbs default
+configure qos sap-egress "${egrqos.id}" queue 2 high-prio-only default
+configure qos sap-egress "${egrqos.id}" fc "ef" create
+configure qos sap-egress "${egrqos.id}" fc "ef" queue 2
+
+
+
+# mpls path
+configure router mpls path "${path.name}" shutdown
+<#list path.hops as hop>
+configure router mpls path "${path.name}" hop ${hop.order} ${hop.address} strict
+</#list>
+configure router mpls path "${path.name}" no shutdown
+
+
+# mpls LSP 
+configure router mpls lsp "${lsp.name}" shutdown
+configure router mpls lsp "${lsp.name}" from ${lsp.from} 
+configure router mpls lsp "${lsp.name}" to ${lsp.to} 
+configure router mpls lsp "${lsp.name}" primary "${path.name}"
+configure router mpls lsp "${lsp.name}" primary "${path.name}" priority 4 4
+configure router mpls lsp "${lsp.name}" no shutdown
+
+# service distribution point - forwards packets to the MPLS tunnel
+configure service sdp ${sdp.id} mpls shutdown
+configure service sdp ${sdp.id} description "${sdp.description}"
+configure service sdp ${sdp.id} lsp "${lsp.name}"
+configure service sdp ${sdp.id} far-end ${lsp.to}
+configure service sdp ${sdp.id} keep-alive shutdown
+configure service sdp ${sdp.id} no shutdown
+
+# service access point:
+configure service epipe ${epipe.id} customer 1 create sap ${ifce.name}:${ifce.vlan} create shutdown
+configure service epipe ${epipe.id} description "${epipe.description}"
+configure service epipe ${epipe.id} ingress qos ${ingqos.id}
+configure service epipe ${epipe.id} egress qos ${egrqos.id}
+configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
+configure service epipe ${epipe.id} no shutdown
+
+ 

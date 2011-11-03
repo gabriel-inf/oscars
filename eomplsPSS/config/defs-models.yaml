@@ -16,3 +16,11 @@
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
             
 
+- id: "alu-sr"
+  services: 
+    - id:               eompls
+      configGenerator:  "net.es.oscars.pss.eompls.alu.SRConfigGen"
+    
+    - id:               stub
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+

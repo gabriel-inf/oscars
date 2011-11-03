@@ -122,6 +122,7 @@ public class EoMPLSService implements CircuitService {
         try {
             res = ActionUtils.getReservation(action);
         } catch (PSSException e) {
+            log.error(e);
             errorMessage = "Could not locate ResDetails for device "+deviceId+"\n"+e.getMessage();
             action.setStatus(ActionStatus.FAIL);
             faultReport.setErrorMsg(errorMessage);
@@ -137,6 +138,7 @@ public class EoMPLSService implements CircuitService {
         try {
             cg = ConnectorUtils.getDeviceConfigGenerator(deviceId, SVC_ID);
         } catch (PSSException e) {
+            log.error(e);
             errorMessage = "Could not locate config generator for device "+deviceId+"\n"+e.getMessage();
             action.setStatus(ActionStatus.FAIL);
             faultReport.setErrorMsg(errorMessage);
@@ -165,7 +167,7 @@ public class EoMPLSService implements CircuitService {
         try {
             conn.sendCommand(comm);
         } catch (PSSException e) {
-            log.error(e);
+            log.error(e.getMessage());
             action.setStatus(ActionStatus.FAIL);
             faultReport.setErrorMsg(errorMessage);
             faultReport.setGri(res.getGlobalReservationId());
@@ -186,11 +188,12 @@ public class EoMPLSService implements CircuitService {
             coordNotify.process(action);
             throw e;
         }
-        
+        System.out.println("sent command!");
         Verifier vf = ClassFactory.getInstance().getVerifier();
         
         
         PSSAction verifiedAction = vf.verify(action, deviceId);
+        System.out.println("verified action!");
         ClassFactory.getInstance().getWorkflow().update(verifiedAction);
         coordNotify.process(verifiedAction);
         return verifiedAction;

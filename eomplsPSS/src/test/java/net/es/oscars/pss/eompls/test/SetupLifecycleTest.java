@@ -4,6 +4,7 @@ package net.es.oscars.pss.eompls.test;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 
+import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
@@ -63,23 +64,36 @@ public class SetupLifecycleTest {
             ex.printStackTrace();
         }
         
-        PSSSoapHandler soap = new PSSSoapHandler();
         
         
-        SetupReqContent setupReq            = new SetupReqContent();
 
+        
+        // same device
         ResDetails resDet = RequestFactory.getSameDevice();
-        setupReq.setReservation(resDet);
-
-        soap.setup(setupReq);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+        
+        this.testBoth(resDet);
+        
+        // two hops 
         resDet = RequestFactory.getTwoHop();
+        this.testBoth(resDet);
+        
+        
+        
+        // A->B single hop
+        resDet = RequestFactory.getAB();
+        this.testBoth(resDet);
+        
+
+        log.debug("simulation.run.end");
+        PSSScheduler.getInstance().stop();
+    }
+    private void testBoth(ResDetails resDet) {
+        PSSSoapHandler soap = new PSSSoapHandler();
+
+        SetupReqContent     setupReq    = new SetupReqContent();
+        TeardownReqContent  tdReq       = new TeardownReqContent();
         setupReq.setReservation(resDet);
+        tdReq.setReservation(resDet);
         soap.setup(setupReq);
         
         try {
@@ -88,32 +102,29 @@ public class SetupLifecycleTest {
             e.printStackTrace();
         }
         
-        TeardownReqContent tdReq = new TeardownReqContent();
-        tdReq.setReservation(resDet);
         soap.teardown(tdReq);
-        
 
-        
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         boolean done = false;
         while (!done) {
             try {
                 Thread.sleep(1000);
                 if (!ClassFactory.getInstance().getWorkflow().hasOutstanding()) {
                     done = true;
+                } else {
+                    for (PSSAction act : ClassFactory.getInstance().getWorkflow().getOutstanding()) {
+                        System.out.println(act.getRequest().getId()+" "+act.getStatus()+" "+act.getActionType());
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        log.debug("simulation.run.end");
-        PSSScheduler.getInstance().stop();
     }
-    /*
-    public class PSSkipException extends SkipException {
-        PSSkipException ( ) {
-            new Exception()  ()
-        }
-
-    } */
 
 }
