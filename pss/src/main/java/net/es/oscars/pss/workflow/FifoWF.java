@@ -50,6 +50,7 @@ public class FifoWF implements Workflow {
             running = outstanding.remove();
             return running;
         } else {
+            System.out.println(running.getRequest().getRequestType());
             // If something is already running we have to wait for it to complete
             return null;
         }
@@ -114,6 +115,11 @@ public class FifoWF implements Workflow {
         if (!outstanding.isEmpty()) return true;
         if (running != null) return true;
         return false;
+    }
+    public List<PSSAction> getOutstanding() {
+        ArrayList<PSSAction> result = new ArrayList<PSSAction>();
+        result.addAll(this.outstanding);
+        return result;
     }
 
     public synchronized void process(List<PSSAction> actions) throws PSSException {

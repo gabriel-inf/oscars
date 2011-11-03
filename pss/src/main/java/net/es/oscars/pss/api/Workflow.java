@@ -67,4 +67,10 @@ public interface Workflow {
      * @return
      */
     public boolean hasOutstanding();
+    
+    /**
+     * return the outstanding actions 
+     * @return
+     */
+    public List<PSSAction> getOutstanding();
 }

@@ -15,6 +15,7 @@ import net.es.oscars.pss.beans.PSSCommand;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.CircuitServiceConfig;
 import net.es.oscars.pss.beans.config.GenericConfig;
+import net.es.oscars.pss.config.ConfigHolder;
 
 public class RancidConnector implements Connector {
     
@@ -45,8 +46,12 @@ public class RancidConnector implements Connector {
         if (executable.length() == 0) {
             throw new PSSException("no value set for executable");
         } else if (!executable.startsWith(File.separator)) {
-            throw new PSSException("must set absolute path for rancid executable: ["+executable+"]");
+            String err = "must set absolute path for rancid executable: ["+executable+"]";
+            System.out.println(err);
+            throw new PSSException(err);
         }
+        circuitServiceConfig = ConfigHolder.getInstance().getBaseConfig().getCircuitService();
+
     }
 
     
@@ -68,46 +73,52 @@ public class RancidConnector implements Connector {
         } else if (address == null) {
             throw new PSSException("null device address");
         }
-        log.debug("sendCommand deviceCommand "+deviceCommand);
+        log.debug("sendCommand deviceCommand:\n"+deviceCommand);
         log.debug("sendCommand address "+address);
-
-        if (circuitServiceConfig.isLogRequest()) {
-            log.info("SENDING to "+address+" :\n\n"+command);
-        }
-        
-        String response = "";
-        try {
-            // a temp file 
-            File tmpFile = File.createTempFile("oscars-rancid", "txt");
-            String path = tmpFile.getAbsolutePath();
-            BufferedWriter outputStream = new BufferedWriter(new FileWriter(tmpFile));
-            // write command to temporary file
-            outputStream.write(deviceCommand);
-            outputStream.close();
-            
-
-            
-            log.info(executable+" -x " + path + " " + address);
-            
-            String cmd[] = { executable, "-x", path, address };
-            BufferedReader cmdOutput;
-            cmdOutput = this.runCommand(cmd);
-            String outputLine = null;
-            StringBuilder sb = new StringBuilder();
-            while ((outputLine = cmdOutput.readLine()) != null) {
-                sb.append(outputLine + "\n");
+        log.debug("deciding stub mode");
+        if (circuitServiceConfig.isStub()) {
+            log.debug("not sending command because in stub mode");
+            return "";
+        } else {
+            log.debug("initiating command send");
+            if (circuitServiceConfig.isLogRequest()) {
+                log.info("SENDING to "+address+" :\n\n"+command);
             }
-            response = sb.toString();
-            cmdOutput.close();
-            tmpFile.delete();
-        } catch (IOException ex) {
-            throw new PSSException(ex.getMessage());
+            
+            String response = "";
+            try {
+                // a temp file 
+                File tmpFile = File.createTempFile("oscars-rancid", "txt");
+                String path = tmpFile.getAbsolutePath();
+                BufferedWriter outputStream = new BufferedWriter(new FileWriter(tmpFile));
+                // write command to temporary file
+                outputStream.write(deviceCommand);
+                outputStream.close();
+                
+    
+                
+                log.info(executable+" -x " + path + " " + address);
+                
+                String cmd[] = { executable, "-x", path, address };
+                BufferedReader cmdOutput;
+                cmdOutput = this.runCommand(cmd);
+                String outputLine = null;
+                StringBuilder sb = new StringBuilder();
+                while ((outputLine = cmdOutput.readLine()) != null) {
+                    sb.append(outputLine + "\n");
+                }
+                response = sb.toString();
+                cmdOutput.close();
+                tmpFile.delete();
+            } catch (IOException ex) {
+                throw new PSSException(ex.getMessage());
+            }
+            if (circuitServiceConfig.isLogResponse()) {
+                log.info("RESPONSE from "+address+" :\n\n"+response);
+            }
+            log.info("sendCommand.finish to "+address);
+            return response;
         }
-        if (circuitServiceConfig.isLogResponse()) {
-            log.info("RESPONSE from "+address+" :\n\n"+response);
-        }
-        log.info("sendCommand.finish to "+address);
-        return response;
     }
 
     /**
