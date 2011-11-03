@@ -6,7 +6,7 @@ configure qos sap-ingress "${ingqos.id}" queue 2 create
 exit all
 configure qos sap-ingress "${ingqos.id}" queue 2 no parent
 configure qos sap-ingress "${ingqos.id}" queue 2 adaptation-rule pir closest cir closest
-configure qos sap-ingress "${ingqos.id}" queue 2 rate max cir ${ingqos.bandwidth}
+configure qos sap-ingress "${ingqos.id}" queue 2 rate max cir ${ingqos.bandwidth?string.computer}
 configure qos sap-ingress "${ingqos.id}" queue 2 mbs default
 configure qos sap-ingress "${ingqos.id}" queue 2 cbs default
 configure qos sap-ingress "${ingqos.id}" queue 2 high-prio-only default

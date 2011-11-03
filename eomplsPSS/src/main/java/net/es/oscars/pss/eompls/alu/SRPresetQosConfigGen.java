@@ -3,6 +3,7 @@ package net.es.oscars.pss.eompls.alu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -19,13 +20,14 @@ import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.api.EoMPLSIfceAddressResolver;
+import net.es.oscars.pss.eompls.junos.SDNNameGenerator;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 
-public class SRConfigGen implements DeviceConfigGenerator {
-    private Logger log = Logger.getLogger(SRConfigGen.class);
+public class SRPresetQosConfigGen implements DeviceConfigGenerator {
+    private Logger log = Logger.getLogger(SRPresetQosConfigGen.class);
    
 
     
@@ -83,16 +85,11 @@ public class SRConfigGen implements DeviceConfigGenerator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private String getLSPTeardown(ResDetails res, String deviceId) throws PSSException {
-        String templateFile = "alu-epipe-teardown.txt";
+        String templateFile = "alu-epipe-presetqos-teardown.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         
-        String ingQosId;
-        String egrQosId;
         String epipeId;
-        String sdpId;
-        String pathName;
-        String lspName;
         String ifceName;
         String ifceVlan;
         
@@ -100,12 +97,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         String gri = res.getGlobalReservationId();
         ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
-
-        pathName                = ng.getPathName(gri);
-        lspName                 = ng.getLSPName(gri);
-        ingQosId                = ng.getQosId(gri);
-        egrQosId                = ng.getQosId(gri);
-        sdpId                   = ng.getSdpId(gri);
         epipeId                 = ng.getEpipeId(gri);
         
         ReservedConstraintType rc = res.getReservedConstraint();
@@ -134,34 +125,19 @@ public class SRConfigGen implements DeviceConfigGenerator {
         }
 
         Map root = new HashMap();
-        Map lsp = new HashMap();
-        Map path = new HashMap();
         Map ifce = new HashMap();
         Map epipe = new HashMap();
-        Map sdp = new HashMap();
-        Map ingqos = new HashMap();
-        Map egrqos = new HashMap();
 
         // set up data model structure
-        root.put("path", path);
-        root.put("lsp", lsp);
         root.put("ifce", ifce);
         root.put("epipe", epipe);
-        root.put("sdp", sdp);
-        root.put("ingqos", ingqos);
-        root.put("egrqos", egrqos);
 
         // fill in scalars
         
         ifce.put("name", ifceName);
         ifce.put("vlan", ifceVlan);
         
-        path.put("name", pathName);
-        lsp.put("name", lspName);
-        ingqos.put("id", ingQosId);
-        egrqos.put("id", egrQosId);
         epipe.put("id", epipeId);
-        sdp.put("id", sdpId);
         
         
         
@@ -174,7 +150,7 @@ public class SRConfigGen implements DeviceConfigGenerator {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private String getLSPSetup(ResDetails res, String deviceId) throws PSSException  {
 
-        String templateFile = "alu-epipe-setup.txt";
+        String templateFile = "alu-epipe-presetqos-setup.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -186,13 +162,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         String lspName;
         String lspFrom;
         String lspTo;
-        
-        String ingQosId;
-        String ingQosDesc;
-        Long ingQosBandwidth;
-        
-        String egrQosId;
-        String egrQosDesc;
         
         String epipeId;
         String epipeDesc;
@@ -230,9 +199,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         
 
         
-        // bandwidth in Mbps 
-        ingQosBandwidth = 1L*bw;
-        
         String lspTargetDeviceId, lspOriginDeviceId;
         boolean reverse = false;
         log.debug("source edge device id is: "+srcDeviceId+", config to generate is for "+deviceId);
@@ -258,15 +224,11 @@ public class SRConfigGen implements DeviceConfigGenerator {
         LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
 
     
-        ingQosId                = ng.getQosId(gri);
-        egrQosId                = ng.getQosId(gri);
         sdpId                   = ng.getSdpId(gri);
         epipeId                 = ng.getEpipeId(gri);
 
         pathName                = ng.getPathName(gri);
         lspName                 = ng.getLSPName(gri);
-        ingQosDesc              = gri;
-        egrQosDesc              = gri;
         sdpDesc                 = gri;
         epipeDesc               = gri;
 
@@ -276,8 +238,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         Map ifce = new HashMap();
         Map epipe = new HashMap();
         Map sdp = new HashMap();
-        Map ingqos = new HashMap();
-        Map egrqos = new HashMap();
         ArrayList hops = new ArrayList();
 
         // set up data model structure
@@ -286,8 +246,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         root.put("ifce", ifce);
         root.put("epipe", epipe);
         root.put("sdp", sdp);
-        root.put("ingqos", ingqos);
-        root.put("egrqos", egrqos);
 
         // fill in scalars
         
@@ -308,13 +266,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         lsp.put("name", lspName);
         lsp.put("from", lspFrom);
         lsp.put("to", lspTo);
-        
-        
-        ingqos.put("id", ingQosId);
-        ingqos.put("description", ingQosDesc);
-        ingqos.put("bandwidth", ingQosBandwidth);
-        egrqos.put("id", egrQosId);
-        egrqos.put("description", egrQosDesc);
 
         epipe.put("id", epipeId);
         epipe.put("description", epipeDesc);

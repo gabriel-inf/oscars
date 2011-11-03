@@ -83,6 +83,9 @@ public class SetupLifecycleTest {
         resDet = RequestFactory.getAB();
         this.testBoth(resDet);
         
+        // C->D single hop
+        resDet = RequestFactory.getCD();
+        this.testBoth(resDet);
 
         log.debug("simulation.run.end");
         PSSScheduler.getInstance().stop();

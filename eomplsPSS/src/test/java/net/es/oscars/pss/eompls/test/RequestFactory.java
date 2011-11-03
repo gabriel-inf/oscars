@@ -121,6 +121,60 @@ public class RequestFactory {
         path.getHop().add(dstHop);
         return resDet;
     }
+    
+    public static ResDetails getCD() {
+        String gri = "oneHopCD-311";
+        String srcEdge = "urn:ogf:network:foo.net:beta:1/1/3:edge";
+        String hop1    = "urn:ogf:network:foo.net:beta:3/1/1:delta";
+        String hop2    = "urn:ogf:network:foo.net:delta:1/1/1:beta";
+        String dstEdge = "urn:ogf:network:foo.net:delta:3/1/1:edge";
+
+        ResDetails resDet = new ResDetails();
+        ReservedConstraintType rc = new ReservedConstraintType();
+        PathInfo pathInfo                   = new PathInfo();
+        Layer2Info l2Info                   = new Layer2Info();
+        VlanTag srcVlan                     = new VlanTag();
+        VlanTag dstVlan                     = new VlanTag();
+        srcVlan.setTagged(true);
+        srcVlan.setValue("999");
+        dstVlan.setTagged(true);
+        dstVlan.setValue("999");
+        rc.setBandwidth(1000);
+
+        
+        pathInfo.setLayer2Info(l2Info);
+        l2Info.setSrcEndpoint(srcEdge);
+        l2Info.setDestEndpoint(dstEdge);
+        l2Info.setSrcVtag(srcVlan);
+        l2Info.setDestVtag(dstVlan);
+        CtrlPlanePathContent path           = new CtrlPlanePathContent();
+
+        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "999");
+        
+        CtrlPlaneHopContent cpHop1          = RequestFactory.makeInternalHop(hop1);
+        CtrlPlaneHopContent cpHop2          = RequestFactory.makeInternalHop(hop2);
+        
+        
+        
+
+        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "999");
+        
+
+        resDet.setGlobalReservationId(gri);
+        resDet.setReservedConstraint(rc);
+        
+        
+
+        rc.setPathInfo(pathInfo);
+        pathInfo.setPath(path);
+        path.getHop().add(srcHop);
+        path.getHop().add(cpHop1);
+        path.getHop().add(cpHop2);
+        path.getHop().add(dstHop);
+        return resDet;
+    }
+    
+    
     public static ResDetails getSameDevice() {
         String gri = "sameDev-333";
         String srcEdge = "urn:ogf:network:foo.net:alpha:xe-1/1/0:edge";
