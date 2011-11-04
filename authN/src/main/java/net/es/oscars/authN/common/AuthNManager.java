@@ -46,9 +46,21 @@ public class AuthNManager {
         List<AttributeType> attributes = new ArrayList<AttributeType>();
         UserDAO userDAO = new UserDAO(this.dbname);
         User user = userDAO.fromDN(subjectDN);
-        if (user == null) { return attributes; }
+        if (user == null) {
+            // try the reverse of the elements in the DN
+            String reverseDN = reverseElements(subjectDN);
+            this.log.debug(netLogger.getMsg(event, "checkUser reverse DN: " + reverseDN));
+            user = userDAO.fromDN(reverseDN);
+            if (user == null){
+                return attributes;
+            }
+        }
         if (!user.getCertIssuer().equals(issuerDN)) {
-            return attributes;
+            String reverseDN = reverseElements(issuerDN);
+            this.log.debug(netLogger.getMsg(event, "checkUser issuer reverse DN: " + reverseDN));
+            if (!user.getCertIssuer().equals(reverseDN)) {
+                return attributes;
+            }
         }
         String login = user.getLogin();
         attributes = this.authNUtils.getAttributesForUser(user.getLogin());
@@ -95,5 +107,20 @@ public class AuthNManager {
         userDAO.update(user);
         this.log.info(netLogger.end(event,"verified login for " + userName));
         return attributes;
+    }
+
+    /**
+     * reverse the elements in a DN
+     * @param dn
+     * @return
+     */
+    private String reverseElements(String dn){
+        String[] dnElems = dn.split(",");
+        String reverseDN = " " + dnElems[0];
+        for (int i = 1; i < dnElems.length; i++) {
+            reverseDN = dnElems[i] + "," + reverseDN;
+        }
+        reverseDN = reverseDN.substring(1);
+        return reverseDN;
     }
 }

@@ -114,9 +114,12 @@ public final class AuthNTest {
                 parser.printHelpOn( System.out );
                 System.exit(0);
             }
-            DNType verifyDNReq = new DNType();
-            verifyDNReq.setSubjectDN(subject);
-            verifyDNReq.setIssuerDN(issuer);
+            VerifyDNReqType verifyDNReq = new VerifyDNReqType();
+            DNType DNReq = new DNType();
+            DNReq.setSubjectDN(subject);
+            DNReq.setIssuerDN(issuer);
+            verifyDNReq.setTransactionId("123");
+            verifyDNReq.setDN(DNReq);
             Object[] req = new Object[]{verifyDNReq};
             try {
                Object[] res = client.invoke("verifyDN",req);
