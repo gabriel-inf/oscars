@@ -18,3 +18,5 @@ configure router mpls no lsp "${lsp.name}"
 configure router mpls path "${path.name}" shutdown
 configure router mpls no path "${path.name}" 
 
+admin rollback save
+admin save

@@ -19,6 +19,7 @@ import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.utils.topology.PathTools;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +33,7 @@ public class SetupLifecycleTest {
     private Logger log = Logger.getLogger(SetupLifecycleTest.class);
     @Test(groups = { "lifecycle" })
     public void testSetup() throws ConfigException, PSSException {
+        PathTools.setLocalDomainId("foo.net");
         
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         cc.loadManifest(new File("src/test/resources/"+ConfigDefaults.MANIFEST));
@@ -39,15 +41,15 @@ public class SetupLifecycleTest {
         cc.setServiceName(ServiceNames.SVC_PSS);
 
         try {
-        String configFn = cc.getFilePath("config.yaml");
-        ConfigHolder.loadConfig(configFn);
-        ClassFactory.getInstance().configure();
+            String configFn = cc.getFilePath("config.yaml");
+            ConfigHolder.loadConfig(configFn);
+            ClassFactory.getInstance().configure();
         
         
         
-        String eoMPLSConfigFilePath = cc.getFilePath("config-eompls.yaml");
-        EoMPLSConfigHolder.loadConfig(eoMPLSConfigFilePath);
-        EoMPLSClassFactory.getInstance().configure();
+            String eoMPLSConfigFilePath = cc.getFilePath("config-eompls.yaml");
+                EoMPLSConfigHolder.loadConfig(eoMPLSConfigFilePath);
+                EoMPLSClassFactory.getInstance().configure();
         } catch (ConfigException ex ) {
             ex.printStackTrace();
             log.debug ("skipping Tests, eompls is  not configured");

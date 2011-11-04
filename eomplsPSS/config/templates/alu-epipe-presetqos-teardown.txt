@@ -2,3 +2,5 @@
 
 configure service epipe ${epipe.id} sap ${ifce.name}:${ifce.vlan} ingress qos "INGRESS_QOS_ID"
 configure service epipe ${epipe.id} sap ${ifce.name}:${ifce.vlan} egress qos "EGRESS_QOS_ID"
+admin rollback save
+admin save

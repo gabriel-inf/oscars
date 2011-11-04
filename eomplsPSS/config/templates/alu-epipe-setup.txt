@@ -16,6 +16,8 @@ configure qos sap-ingress "${ingqos.id}" fc "ef" create
 exit all
 configure qos sap-ingress "${ingqos.id}" fc "ef" queue 2
 exit all
+configure qos sap-ingress "${ingqos.id}" default-fc ef
+configure qos sap-ingress "${ingqos.id}" default-priority high
 
 configure qos sap-egress "${egrqos.id}" create
 exit all
@@ -71,3 +73,5 @@ configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} create
 exit all 
 configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
 configure service epipe ${epipe.id} no shutdown
+admin rollback save
+admin save

@@ -19,6 +19,9 @@ configure qos sap-ingress "SAP_INGRESS_ID" fc "ef" create
 exit all
 configure qos sap-ingress "SAP_INGRESS_ID" fc "ef" queue 2
 exit all
+configure qos sap-ingress "SAP_INGRESS_ID" default-fc "ef"
+configure qos sap-ingress "SAP_INGRESS_ID" default-priority high
+
 
 configure qos sap-egress "SAP_EGRESS_ID" create
 exit all
@@ -39,4 +42,6 @@ exit all
 # deleting it
 configure qos no sap-ingress "SAP_INGRESS_ID"
 configure qos no sap-egress "SAP_EGRESS_ID"
+admin rollback save
+admin save
 

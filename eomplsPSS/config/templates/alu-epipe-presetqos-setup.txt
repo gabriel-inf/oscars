@@ -38,3 +38,5 @@ configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} create
 exit all 
 configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
 configure service epipe ${epipe.id} no shutdown
+admin rollback save
+admin save
