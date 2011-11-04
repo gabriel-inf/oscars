@@ -234,7 +234,8 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                 isTeardownPending = true;
                 // If path is remote, send teardownPath to next IDC.
                 if ((! this.isLocalOnly) &&
-                    (resDetails.getUserRequestConstraint().getPathInfo().getPathSetupMode().equals("signal-xml"))) {
+                    (resDetails.getUserRequestConstraint().getPathInfo().getPathSetupMode().equals("signal-xml")) &&
+                    (resDetails.getUserRequestConstraint().getEndTime()*1000 > System.currentTimeMillis())) {
 
                     TeardownPathForwarder forwarder = new TeardownPathForwarder (this.getName() + "-Forwarder",
                                                                                  this,
