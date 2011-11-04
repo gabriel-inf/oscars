@@ -12,7 +12,8 @@ import org.ogf.schema.network.topology.ctrlplane.*;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;
-import net.es.oscars.utils.topology.PathTools;
+import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.topology.*;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
@@ -190,6 +191,13 @@ public class DRAGONUtils {
 
         List<CtrlPlaneHopContent> hops = path.getHop();
         for (CtrlPlaneHopContent hop: hops) {
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    continue;
+                }
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop.getId());
+            }
             CtrlPlaneLinkContent link = hop.getLink();
             if(link == null){ continue; }
             if(link.getSwitchingCapabilityDescriptors().getSwitchingcapType().equalsIgnoreCase("tdm")){
@@ -217,6 +225,13 @@ public class DRAGONUtils {
         // don't care about the last edge hop
         while (ctr < hops.size()-1) {
             CtrlPlaneHopContent hop = hops.get(ctr);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    continue;
+                }
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop.getId());
+            }
             CtrlPlaneLinkContent link = hop.getLink();
             CtrlPlanePortContent port = hop.getPort();
             String portId = getUrnField(link.getId(), "port");

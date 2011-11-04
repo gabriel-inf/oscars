@@ -26,6 +26,8 @@ import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.dragon.util.DRAGONUtils;
 
 import edu.internet2.hopi.dragon.*;
+import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.topology.PathTools;
 import org.ogf.schema.network.topology.ctrlplane.*;
 /**
  * a connector for DRAGON VLSR using CLI
@@ -283,9 +285,18 @@ public class VLSRConnector implements Connector {
         }
         ArrayList<String> ero = null;
         ArrayList<String> subnetEro = null;
-        CtrlPlaneLinkContent ingressLink = path.getHop().get(0).getLink();
-        CtrlPlaneLinkContent egressLink = path.getHop().get(path.getHop().size()-1).getLink();
-
+        CtrlPlaneLinkContent ingressLink;
+        CtrlPlaneLinkContent egressLink;
+        try {
+            ingressLink = PathTools.getIngressLink(PathTools.getLocalDomainId(), path);
+        } catch (OSCARSServiceException e) {
+            throw (new PSSException("PathTools.getIngressLink caught: " + e.getMessage()));
+        }
+        try {
+            egressLink = PathTools.getIngressLink(PathTools.getLocalDomainId(), path);
+        } catch (OSCARSServiceException e) {
+            throw (new PSSException("PathTools.getIngressLink caught: " + e.getMessage()));
+        }
         int ingressLinkDescr = this.getLinkDescr(ingressLink);
         int egressLinkDescr = this.getLinkDescr(egressLink);
 

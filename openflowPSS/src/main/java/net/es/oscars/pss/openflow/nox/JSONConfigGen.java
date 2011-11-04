@@ -18,6 +18,8 @@ import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.pss.util.ConnectorUtils;
+import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.topology.*;
 
 public class JSONConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(JSONConfigGen.class);
@@ -58,10 +60,24 @@ public class JSONConfigGen implements DeviceConfigGenerator {
         List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
         for (int i = 0; i < hops.size(); i++) {
             CtrlPlaneHopContent hop1 = hops.get(i);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop1, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    continue;
+                }
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+            }
             i++;
             if (i == hops.size())
                 throw new PSSException("Odd number of hops in Path object");
             CtrlPlaneHopContent hop2 = hops.get(i);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop2, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    throw new PSSException("Malformed path object: odd number of local hops");
+                }                
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+            }
             CtrlPlaneLinkContent link1 = hop1.getLink();
             CtrlPlaneLinkContent link2 = hop2.getLink();
             if (link1 == null || link2 == null)
@@ -75,7 +91,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
             String vlan1 = link1.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
             String vlan2 = link2.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
             if (!nodeIp.equals(nodeIp2))
-                throw new PSSException("Malformed path object: hops not paird up");
+                throw new PSSException("Malformed path object: hops not paird up on back-to-back order");
             cmd = cmd + "{\"switch\":\"" + nodeIp +"\", \"add-flows\": "
                 + "[{\"port\":\"" + portId1  + "\", \"vlan_range\":\"" + vlan1 + "\"},"
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
@@ -102,10 +118,24 @@ public class JSONConfigGen implements DeviceConfigGenerator {
         List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
         for (int i = 0; i < hops.size(); i++) {
             CtrlPlaneHopContent hop1 = hops.get(i);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop1, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    continue;
+                }
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+            }
             i++;
             if (i == hops.size())
                 throw new PSSException("Odd number of hops in Path object");
             CtrlPlaneHopContent hop2 = hops.get(i);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop2, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    throw new PSSException("Malformed path object: odd number of local hops");
+                }                
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+            }
             CtrlPlaneLinkContent link1 = hop1.getLink();
             CtrlPlaneLinkContent link2 = hop2.getLink();
             if (link1 == null || link2 == null)
@@ -145,10 +175,24 @@ public class JSONConfigGen implements DeviceConfigGenerator {
         List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
         for (int i = 0; i < hops.size(); i++) {
             CtrlPlaneHopContent hop1 = hops.get(i);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop1, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    continue;
+                }
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+            }
             i++;
             if (i == hops.size())
                 throw new PSSException("Odd number of hops in Path object");
             CtrlPlaneHopContent hop2 = hops.get(i);
+            try {
+                if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop2, NMWGParserUtil.DOMAIN_TYPE)))) {
+                    throw new PSSException("Malformed path object: odd number of local hops");
+                }                
+            } catch (OSCARSServiceException e) {
+                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+            }
             CtrlPlaneLinkContent link1 = hop1.getLink();
             CtrlPlaneLinkContent link2 = hop2.getLink();
             if (link1 == null || link2 == null)
