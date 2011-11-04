@@ -2,6 +2,7 @@ package net.es.oscars.utils.topology;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
@@ -147,6 +148,14 @@ public class PathTools {
     }
     
     /**
+     * Sets the identifier of the local domain (use for unit testing etc)
+     * 
+     */
+    public static void setLocalDomainId(String domainId) {
+        PathTools.localDomainID = domainId;
+    }
+
+    /**
      * Returns the identifier of the local domain.
      * 
      * @return the identifier of the local domain
@@ -233,4 +242,26 @@ public class PathTools {
         return egressLink;
     }
     
+    /**
+     * returns just the part of the hops in a path that match the domainId passed
+     * 
+     * @param path
+     * @param domainId
+     * @return the local part of the hops
+     * @throws OSCARSServiceException
+     */
+    
+    public static List<CtrlPlaneHopContent> getLocalHops(CtrlPlanePathContent path, String domainId) throws OSCARSServiceException {
+        List<CtrlPlaneHopContent> localHops = new ArrayList<CtrlPlaneHopContent>();
+        List<CtrlPlaneHopContent> hops = path.getHop();
+        for (int i = 0; i < hops.size(); i++) {
+            if (!domainId.equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hops.get(i), NMWGParserUtil.DOMAIN_TYPE)))) {
+                continue;
+            }
+            localHops.add(hops.get(i));
+        }
+        return localHops;
+
+        
+    }
 }
