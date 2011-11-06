@@ -76,7 +76,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
                     throw new PSSException("Malformed path object: odd number of local hops");
                 }                
             } catch (OSCARSServiceException e) {
-                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+                throw new PSSException("Malformed path hop object: id=" + hop2.getId());
             }
             CtrlPlaneLinkContent link1 = hop1.getLink();
             CtrlPlaneLinkContent link2 = hop2.getLink();
@@ -97,8 +97,18 @@ public class JSONConfigGen implements DeviceConfigGenerator {
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
             if (i == hops.size()-1)
                 cmd += "\n";
-            else
+            else {
+                CtrlPlaneHopContent hop3 = hops.get(i+1);
+                try {
+                    if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop3, NMWGParserUtil.DOMAIN_TYPE)))) {
+                        cmd += "\n";
+                        break;
+                    }
+                } catch (OSCARSServiceException e) {
+                    throw new PSSException("Malformed path hop object: id=" + hop3.getId());
+                }
                 cmd += ",\n";
+            }
         }
         cmd += "]}";
         log.debug("getSetup end");
@@ -134,7 +144,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
                     throw new PSSException("Malformed path object: odd number of local hops");
                 }                
             } catch (OSCARSServiceException e) {
-                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+                throw new PSSException("Malformed path hop object: id=" + hop2.getId());
             }
             CtrlPlaneLinkContent link1 = hop1.getLink();
             CtrlPlaneLinkContent link2 = hop2.getLink();
@@ -155,8 +165,18 @@ public class JSONConfigGen implements DeviceConfigGenerator {
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
             if (i == hops.size()-1)
                 cmd += "\n";
-            else
+            else {
+                CtrlPlaneHopContent hop3 = hops.get(i+1);
+                try {
+                    if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop3, NMWGParserUtil.DOMAIN_TYPE)))) {
+                        cmd += "\n";
+                        break;
+                    }
+                } catch (OSCARSServiceException e) {
+                    throw new PSSException("Malformed path hop object: id=" + hop3.getId());
+                }
                 cmd += ",\n";
+            }
         }
         cmd += "]}";
         log.debug("getTeardown end");
@@ -191,7 +211,7 @@ public class JSONConfigGen implements DeviceConfigGenerator {
                     throw new PSSException("Malformed path object: odd number of local hops");
                 }                
             } catch (OSCARSServiceException e) {
-                throw new PSSException("Malformed path hop object: id=" + hop1.getId());
+                throw new PSSException("Malformed path hop object: id=" + hop2.getId());
             }
             CtrlPlaneLinkContent link1 = hop1.getLink();
             CtrlPlaneLinkContent link2 = hop2.getLink();
@@ -212,8 +232,18 @@ public class JSONConfigGen implements DeviceConfigGenerator {
                 + " {\"port\":\"" + portId2 + "\", \"vlan_range\":\"" + vlan2 + "\"}]}";
             if (i == hops.size()-1)
                 cmd += "\n";
-            else
+            else {
+                CtrlPlaneHopContent hop3 = hops.get(i+1);
+                try {
+                    if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop3, NMWGParserUtil.DOMAIN_TYPE)))) {
+                        cmd += "\n";
+                        break;
+                    }
+                } catch (OSCARSServiceException e) {
+                    throw new PSSException("Malformed path hop object: id=" + hop3.getId());
+                }
                 cmd += ",\n";
+            }
         }
         cmd += "]}";
         log.debug("getVerify end");

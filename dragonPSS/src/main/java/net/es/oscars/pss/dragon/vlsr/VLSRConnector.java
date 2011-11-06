@@ -293,9 +293,9 @@ public class VLSRConnector implements Connector {
             throw (new PSSException("PathTools.getIngressLink caught: " + e.getMessage()));
         }
         try {
-            egressLink = PathTools.getIngressLink(PathTools.getLocalDomainId(), path);
+            egressLink = PathTools.getEgressLink(PathTools.getLocalDomainId(), path);
         } catch (OSCARSServiceException e) {
-            throw (new PSSException("PathTools.getIngressLink caught: " + e.getMessage()));
+            throw (new PSSException("PathTools.getEgressLink caught: " + e.getMessage()));
         }
         int ingressLinkDescr = this.getLinkDescr(ingressLink);
         int egressLinkDescr = this.getLinkDescr(egressLink);
