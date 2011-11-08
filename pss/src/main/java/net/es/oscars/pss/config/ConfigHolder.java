@@ -137,7 +137,10 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
         }
         holder.setDeviceModelDefs(mdhm);
         
-        
+        if (mds.length == 0) {
+            throw new ConfigException("no device models defined");
+        }
+
         
         
         String servicesDefFile = configuration.getDefinitions().getServices();
@@ -170,7 +173,9 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
             System.exit(1);
         }
 
-        
+        if (cds.length == 0) {
+            throw new ConfigException("no circuit services defined");
+        }
         
         HashMap<String, CircuitServiceDefinition> cdhm = new HashMap<String, CircuitServiceDefinition>();
         for (CircuitServiceDefinition cd : cds) {
