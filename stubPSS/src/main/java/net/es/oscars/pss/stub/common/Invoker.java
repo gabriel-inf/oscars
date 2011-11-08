@@ -37,8 +37,8 @@ public class Invoker {
             System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
             cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
             String configFilePath = cc.getFilePath(ConfigDefaults.CONFIG);
-            ConfigHolder.loadConfig(configFilePath);
             cc.setLog4j();
+            ConfigHolder.loadConfig(configFilePath);
             // need to do this after the log4j.properties file has been set
             LOG = Logger.getLogger(Invoker.class);
         } catch (ConfigException ex) {

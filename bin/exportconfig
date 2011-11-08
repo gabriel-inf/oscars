@@ -53,7 +53,7 @@ EOMPLSPSS="EOMPLS"
 CONTEXT="DEVELOPMENT"
 #Get PSS choice, but keep stubPSS the default
 whichPSS="STUB"
-Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils $CONTEXT utils)
+Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils utils $CONTEXT)
 Service=$(echo $Config | awk -F/ '$1~//{print $2}')
 Conf=$(echo $Config | awk -F/ '$1~//{print $3}')
 Yaml=$(echo $Config | awk -F/ '$1~//{print $4}' | sed "s/'//g")

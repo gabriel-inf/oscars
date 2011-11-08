@@ -41,10 +41,10 @@ public class Invoker {
             cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
             String configFilePath = cc.getFilePath(ConfigDefaults.CONFIG);
             System.out.println("loading config from "+configFilePath);
-            ConfigHolder.loadConfig(configFilePath);
-            
             cc.setLog4j();
             // need to do this after the log4j.properties file has been set
+            ConfigHolder.loadConfig(configFilePath);
+
             LOG = Logger.getLogger(Invoker.class);
             
             String eoMPLSConfigFilePath = cc.getFilePath("config-eompls.yaml");
