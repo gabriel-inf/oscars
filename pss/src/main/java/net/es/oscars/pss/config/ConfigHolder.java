@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.ho.yaml.Yaml;
 
 import net.es.oscars.pss.api.ConfigurationStore;
@@ -20,6 +21,7 @@ import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.svc.ServiceNames;
 
 public class ConfigHolder implements DefinitionStore, ConfigurationStore {
+    private static Logger log = Logger.getLogger(ConfigHolder.class);
     private static ConfigHolder instance;
     private BaseConfig baseConfig;
     private HashMap<String, CircuitServiceDefinition> circuitServiceDefs = new HashMap<String, CircuitServiceDefinition>();
@@ -111,12 +113,13 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
             try {
                 propFile = new FileInputStream(new File(modelsDefFullPath));
                 mds = (DeviceModelDefinition[]) Yaml.loadType(propFile, DeviceModelDefinition[].class);
+ 
             } catch (FileNotFoundException e) {
                 System.out.println("ConfigHelper: configuration file: "+ modelsDefFullPath + " not found");
                 e.printStackTrace();
                 System.exit(1);
             }
-        } catch (FileNotFoundException e) {
+       } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         try {
@@ -129,6 +132,7 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
         
         HashMap<String, DeviceModelDefinition> mdhm = new HashMap<String, DeviceModelDefinition>();
         for (DeviceModelDefinition md : mds) {
+            log.info("loaded model definition: "+md.getId()+" "+md);
             mdhm.put(md.getId(), md);
         }
         holder.setDeviceModelDefs(mdhm);
@@ -140,7 +144,7 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
         
         String servicesDefFullPath = ContextConfig.getInstance(ServiceNames.SVC_PSS).getFilePath(servicesDefFile);
         
-        System.err.println("models defined at: "+servicesDefFile+" full path: "+servicesDefFullPath);
+        System.err.println("services defined at: "+servicesDefFile+" full path: "+servicesDefFullPath);
 
         propFile = ConfigHolder.class.getClassLoader().getSystemResourceAsStream(servicesDefFullPath);
         CircuitServiceDefinition[] cds = null;
@@ -166,8 +170,11 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
             System.exit(1);
         }
 
+        
+        
         HashMap<String, CircuitServiceDefinition> cdhm = new HashMap<String, CircuitServiceDefinition>();
         for (CircuitServiceDefinition cd : cds) {
+            log.info("loaded service definition: "+cd.getId()+" "+cd.getImpl());
             cdhm.put(cd.getId(), cd);
         }
         holder.setCircuitServiceDefs(cdhm);
