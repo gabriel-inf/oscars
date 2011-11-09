@@ -26,7 +26,7 @@ verify:
         cleanupOnFail:      true
 
 notify:
-    impl:               'net.es.oscars.pss.stub.StubNotifier'
+    impl:               'net.es.oscars.pss.notify.CoordNotifier'
     params: 
         coordUrl:       'http://localhost:9003/OSCARS/Coord'
 
