@@ -54,7 +54,7 @@ public class Invoker {
             System.exit(-1);
         }
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        String event = "StubPSSinit";
+        String event = "BridgePSSinit";
         netLogger.init(ModuleName.PSS, "0000");
         LOG.debug("CXF config at: "+cc.getFilePath(ConfigDefaults.CXF_SERVER));
         BridgePSSSoapServer.setSSLBusConfiguration(
