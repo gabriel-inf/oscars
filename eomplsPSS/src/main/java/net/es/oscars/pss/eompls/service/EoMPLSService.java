@@ -10,6 +10,7 @@ import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 import net.es.oscars.pss.api.CircuitService;
 import net.es.oscars.pss.api.Connector;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
+import net.es.oscars.pss.api.Notifier;
 import net.es.oscars.pss.api.Verifier;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSCommand;
@@ -113,7 +114,7 @@ public class EoMPLSService implements CircuitService {
     
     
     private PSSAction processActionForDevice(PSSAction action, String deviceId) throws PSSException {
-        CoordNotifier coordNotify = new CoordNotifier();
+        Notifier notifier = ClassFactory.getInstance().getNotifier();
         String errorMessage = null;
         OSCARSFaultReport faultReport = new OSCARSFaultReport ();
         faultReport.setDomainId(PathTools.getLocalDomainId());
@@ -130,7 +131,7 @@ public class EoMPLSService implements CircuitService {
             faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
             action.setFaultReport(faultReport);
             ClassFactory.getInstance().getWorkflow().update(action);
-            coordNotify.process(action);
+            notifier.process(action);
             throw new PSSException(e);
         }
         
@@ -147,7 +148,7 @@ public class EoMPLSService implements CircuitService {
             faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
             action.setFaultReport(faultReport);
             ClassFactory.getInstance().getWorkflow().update(action);
-            coordNotify.process(action);
+            notifier.process(action);
             throw new PSSException(e);
         }
         
@@ -185,7 +186,7 @@ public class EoMPLSService implements CircuitService {
             action.setFaultReport(faultReport);
             
             ClassFactory.getInstance().getWorkflow().update(action);
-            coordNotify.process(action);
+            notifier.process(action);
             throw e;
         }
         System.out.println("sent command!");
@@ -195,7 +196,7 @@ public class EoMPLSService implements CircuitService {
         PSSAction verifiedAction = vf.verify(action, deviceId);
         System.out.println("verified action!");
         ClassFactory.getInstance().getWorkflow().update(verifiedAction);
-        coordNotify.process(verifiedAction);
+        notifier.process(verifiedAction);
         return verifiedAction;
     }
     
