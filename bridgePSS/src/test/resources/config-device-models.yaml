@@ -1,0 +1,8 @@
+---
+#    "edge-1":    "juniper-t1600"
+    "edge-1":    "alu-sr"
+    "edge-2":    "alu-sr"
+#    "core-1":    "brocade-mlx"
+    "core-1":    "alu-sr"
+    "core-2":    "alu-sr"
+        
