@@ -98,15 +98,6 @@ public class SRConfigGen implements DeviceConfigGenerator {
         
         
         String gri = res.getGlobalReservationId();
-        ALUNameGenerator ng = ALUNameGenerator.getInstance();
-
-
-        pathName                = ng.getPathName(gri);
-        lspName                 = ng.getLSPName(gri);
-        ingQosId                = ng.getQosId(gri);
-        egrQosId                = ng.getQosId(gri);
-        sdpId                   = ng.getSdpId(gri);
-        epipeId                 = ng.getEpipeId(gri);
         
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
@@ -132,6 +123,17 @@ public class SRConfigGen implements DeviceConfigGenerator {
             ifceName = dstRes.getPortId();
             ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
         }
+        
+        ALUNameGenerator ng = ALUNameGenerator.getInstance();
+
+
+        pathName                = ng.getPathName(ifceVlan);
+        lspName                 = ng.getLSPName(ifceVlan);
+        ingQosId                = ng.getQosId(ifceVlan);
+        egrQosId                = ng.getQosId(ifceVlan);
+        sdpId                   = ng.getSdpId(ifceVlan);
+        epipeId                 = ng.getEpipeId(ifceVlan);
+
 
         Map root = new HashMap();
         Map lsp = new HashMap();
@@ -258,13 +260,14 @@ public class SRConfigGen implements DeviceConfigGenerator {
         LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
 
     
-        ingQosId                = ng.getQosId(gri);
-        egrQosId                = ng.getQosId(gri);
-        sdpId                   = ng.getSdpId(gri);
-        epipeId                 = ng.getEpipeId(gri);
-
-        pathName                = ng.getPathName(gri);
-        lspName                 = ng.getLSPName(gri);
+        ingQosId                = ng.getQosId(ifceVlan);
+        egrQosId                = ng.getQosId(ifceVlan);
+        sdpId                   = ng.getSdpId(ifceVlan);
+        epipeId                 = ng.getEpipeId(ifceVlan);
+        pathName                = ng.getPathName(ifceVlan);
+        lspName                 = ng.getLSPName(ifceVlan);
+        
+        
         ingQosDesc              = gri;
         egrQosDesc              = gri;
         sdpDesc                 = gri;
