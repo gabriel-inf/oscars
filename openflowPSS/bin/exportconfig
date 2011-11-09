@@ -7,7 +7,7 @@
 #
 
 SERVICE=PSSService
-MODULE=openflowPSS
+MODULE=bridgePSS
 
 source $OSCARS_DIST/utils/bin/configLib.sh
 
@@ -73,6 +73,15 @@ fi
 if [ ! -f $DST_DIR/config-device-addresses.yaml ] ; then
     cp $SRC_DIR/config-device-addresses.yaml  $DST_DIR/config-device-addresses.yaml
 fi
+
+if [ ! -f $DST_DIR/config-device-connectors.yaml ] ; then
+    cp $SRC_DIR/config-device-connectors.yaml  $DST_DIR/config-device-connectors.yaml
+fi
+
+if [ ! -f $DST_DIR/config-device-models.yaml ] ; then
+    cp $SRC_DIR/config-device-models.yaml  $DST_DIR/config-device-models.yaml
+fi
+
 
 # manifest
 if [ ! -f $DST_DIR/manifest.yaml ] ; then
