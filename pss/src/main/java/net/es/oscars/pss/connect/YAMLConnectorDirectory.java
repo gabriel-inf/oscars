@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.ho.yaml.Yaml;
 
 import net.es.oscars.pss.api.Connector;
@@ -18,7 +19,7 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 public class YAMLConnectorDirectory implements ConnectorDirectory {
     private HashMap<String, GenericConfig> connectorDirEntries;
-
+    private static Logger log = Logger.getLogger(YAMLConnectorDirectory.class);
     public void setConfig(GenericConfig config) throws PSSException {
         if (config == null) {
             throw new PSSException("null config");
@@ -41,7 +42,7 @@ public class YAMLConnectorDirectory implements ConnectorDirectory {
             connectorDirEntries = new HashMap<String, GenericConfig>();
             for (GenericConfig entry : entries) {
                 connectorDirEntries.put(entry.getId(), entry);
-                System.out.println("loaded connector definition: "+entry.getId());
+                log.debug("loaded connector definition: "+entry.getId());
             }
         } catch (ConfigException e) {
             throw new PSSException(e);

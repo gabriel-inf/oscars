@@ -71,6 +71,7 @@ public class ClassFactory {
         } else if (workflow == null) {
             throw new PSSException("workflow not set");
         }
+        log.debug("healthy ClassFactory");
     }
 
 
@@ -172,10 +173,13 @@ public class ClassFactory {
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            throw new PSSException(e);
         } catch (InstantiationException e) {
             e.printStackTrace();
+            throw new PSSException(e);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
+            throw new PSSException(e);
         }
         
     }

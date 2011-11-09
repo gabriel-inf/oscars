@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.ho.yaml.Yaml;
 
 import net.es.oscars.pss.api.Connector;
@@ -21,6 +22,7 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 public class YAMLDeviceConnectorMap implements DeviceConnectorMap {
     private HashMap<String, String> deviceConnectors;
+    private static Logger log = Logger.getLogger(YAMLDeviceConnectorMap.class);
 
     public Connector getDeviceConnector(String deviceId) throws PSSException {
         if (deviceConnectors == null) {
@@ -64,6 +66,10 @@ public class YAMLDeviceConnectorMap implements DeviceConnectorMap {
 
             deviceConnectors = new HashMap<String, String>();
             deviceConnectors.putAll(entries);
+            for (String device : deviceConnectors.keySet()) {
+                log.debug("defined device "+device+" connector: "+deviceConnectors.get(device));
+            }
+            
         } catch (ConfigException e) {
             throw new PSSException(e);
         } catch (FileNotFoundException e) {

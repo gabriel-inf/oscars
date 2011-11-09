@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.ho.yaml.Yaml;
 
 import net.es.oscars.pss.api.DeviceModelMap;
@@ -17,6 +18,7 @@ import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.svc.ServiceNames;
 
 public class YAMLDeviceModelMap implements DeviceModelMap {
+    private static Logger log = Logger.getLogger(YAMLDeviceModelMap.class);
     private HashMap<String, String> deviceModels;
     public YAMLDeviceModelMap() {
         
@@ -49,6 +51,10 @@ public class YAMLDeviceModelMap implements DeviceModelMap {
             Map entries = (Map) Yaml.load(propFile);
             deviceModels = new HashMap<String, String>();
             deviceModels.putAll(entries);
+            for (String device : deviceModels.keySet()) {
+                log.debug("added device "+device+" with model "+deviceModels.get(device));
+            }
+            
         } catch (ConfigException e) {
             throw new PSSException(e);
         } catch (FileNotFoundException e) {

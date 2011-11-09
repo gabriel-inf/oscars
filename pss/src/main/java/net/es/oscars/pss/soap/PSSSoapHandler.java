@@ -45,6 +45,7 @@ public class PSSSoapHandler implements PSSPortType {
         
         try {
             ClassFactory.getInstance().configure();
+            ClassFactory.getInstance().health();
         } catch (PSSException e) {
             log.error(e);
             return;
@@ -93,6 +94,7 @@ public class PSSSoapHandler implements PSSPortType {
         PSSAction act = new PSSAction();
         try {
             ClassFactory.getInstance().configure();
+            ClassFactory.getInstance().health();
         } catch (PSSException e) {
             log.error(e);
             return;

@@ -132,7 +132,7 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
         
         HashMap<String, DeviceModelDefinition> mdhm = new HashMap<String, DeviceModelDefinition>();
         for (DeviceModelDefinition md : mds) {
-            log.info("loaded model definition: "+md.getId()+" "+md);
+            System.out.println("loaded model definition: "+md.getId()+" "+md);
             mdhm.put(md.getId(), md);
         }
         holder.setDeviceModelDefs(mdhm);
@@ -179,7 +179,7 @@ public class ConfigHolder implements DefinitionStore, ConfigurationStore {
         
         HashMap<String, CircuitServiceDefinition> cdhm = new HashMap<String, CircuitServiceDefinition>();
         for (CircuitServiceDefinition cd : cds) {
-            log.info("loaded service definition: "+cd.getId()+" "+cd.getImpl());
+            System.out.println("loaded service definition: "+cd.getId()+" "+cd.getImpl());
             cdhm.put(cd.getId(), cd);
         }
         holder.setCircuitServiceDefs(cdhm);
