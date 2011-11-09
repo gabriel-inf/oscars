@@ -10,7 +10,6 @@ import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 import net.es.oscars.pss.api.CircuitService;
 import net.es.oscars.pss.api.Connector;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
-import net.es.oscars.pss.api.Notifier;
 import net.es.oscars.pss.api.Verifier;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSCommand;
@@ -20,7 +19,6 @@ import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
-import net.es.oscars.pss.notify.CoordNotifier;
 import net.es.oscars.pss.util.ActionUtils;
 import net.es.oscars.pss.util.ClassFactory;
 import net.es.oscars.pss.util.ConnectorUtils;
@@ -37,19 +35,16 @@ public class EoMPLSService implements CircuitService {
      * @throws PSSException 
      */
     public List<PSSAction> modify(List<PSSAction> actions) throws PSSException {
-        CoordNotifier coordNotify = new CoordNotifier();
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
         for (PSSAction action : actions) {
             action.setStatus(ActionStatus.FAIL);
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
-            coordNotify.process(action);
         }
         return results;
     }
     
     public List<PSSAction> setup(List<PSSAction> actions) throws PSSException {
-        Notifier notifier = ClassFactory.getInstance().getNotifier();
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
 
         for (PSSAction action : actions) {
@@ -73,13 +68,11 @@ public class EoMPLSService implements CircuitService {
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
             
-            notifier.process(action);
         }
         return results;
     }
     
     public List<PSSAction> teardown(List<PSSAction> actions) throws PSSException {
-        Notifier notifier = ClassFactory.getInstance().getNotifier();
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
 
         for (PSSAction action : actions) {
@@ -104,7 +97,6 @@ public class EoMPLSService implements CircuitService {
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
             
-            notifier.process(action);
         }
         return results;
     }
@@ -123,7 +115,6 @@ public class EoMPLSService implements CircuitService {
     
     
     private PSSAction processActionForDevice(PSSAction action, String deviceId) throws PSSException {
-        Notifier notifier = ClassFactory.getInstance().getNotifier();
         String errorMessage = null;
         OSCARSFaultReport faultReport = new OSCARSFaultReport ();
         faultReport.setDomainId(PathTools.getLocalDomainId());
@@ -140,7 +131,6 @@ public class EoMPLSService implements CircuitService {
             faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
             action.setFaultReport(faultReport);
             ClassFactory.getInstance().getWorkflow().update(action);
-            notifier.process(action);
             throw new PSSException(e);
         }
         
@@ -157,7 +147,6 @@ public class EoMPLSService implements CircuitService {
             faultReport.setErrorCode(ErrorCodes.CONFIG_ERROR);
             action.setFaultReport(faultReport);
             ClassFactory.getInstance().getWorkflow().update(action);
-            notifier.process(action);
             throw new PSSException(e);
         }
         
@@ -195,7 +184,6 @@ public class EoMPLSService implements CircuitService {
             action.setFaultReport(faultReport);
             
             ClassFactory.getInstance().getWorkflow().update(action);
-            notifier.process(action);
             throw e;
         }
         System.out.println("sent command!");
