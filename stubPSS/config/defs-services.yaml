@@ -1,8 +1,5 @@
 ---
 
--   id:     "stub"
-    impl:   "net.es.oscars.pss.stub.StubCircuitService"
 
-
--   id:     "eompls"
-    impl:   "net.es.oscars.pss.eompls.EoMPLSService"
+-   id:     "bridge"
+    impl:   "net.es.oscars.pss.bridge.service.BridgeService"

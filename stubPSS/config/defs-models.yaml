@@ -1,9 +1,17 @@
 ---
-- id: "juniper-mx"
+- id: "juniper-t1600"
   services: 
-    - id:               eompls
-      configGenerator:  "net.es.oscars.pss.eompls.junos.MXConfigGen"
+    - id:               bridge
+      configGenerator:  "net.es.oscars.pss.bridge.junos.T1600ConfigGen"
     
-    - id:               stub
-      "configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
-            
+- id: "brocade-mlx"
+  services: 
+    - id:               bridge
+      configGenerator:  "net.es.oscars.pss.bridge.brocade.MLXConfigGen"
+
+- id: "alu-sr"
+  services: 
+    - id:               bridge
+      configGenerator:  "net.es.oscars.pss.bridge.alu.SRConfigGen"
+    
+
