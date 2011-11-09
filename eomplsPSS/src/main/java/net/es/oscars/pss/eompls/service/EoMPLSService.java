@@ -49,6 +49,7 @@ public class EoMPLSService implements CircuitService {
     }
     
     public List<PSSAction> setup(List<PSSAction> actions) throws PSSException {
+        Notifier notifier = ClassFactory.getInstance().getNotifier();
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
 
         for (PSSAction action : actions) {
@@ -68,13 +69,17 @@ public class EoMPLSService implements CircuitService {
                 action = this.processActionForDevice(action, dstDeviceId);
                 
             }
-                
+            action.setStatus(ActionStatus.SUCCESS);
             results.add(action);
+            ClassFactory.getInstance().getWorkflow().update(action);
+            
+            notifier.process(action);
         }
         return results;
     }
     
     public List<PSSAction> teardown(List<PSSAction> actions) throws PSSException {
+        Notifier notifier = ClassFactory.getInstance().getNotifier();
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
 
         for (PSSAction action : actions) {
@@ -95,7 +100,11 @@ public class EoMPLSService implements CircuitService {
                 
             }
                 
-            results.add(action);        
+            action.setStatus(ActionStatus.SUCCESS);
+            results.add(action);
+            ClassFactory.getInstance().getWorkflow().update(action);
+            
+            notifier.process(action);
         }
         return results;
     }
@@ -190,14 +199,7 @@ public class EoMPLSService implements CircuitService {
             throw e;
         }
         System.out.println("sent command!");
-        Verifier vf = ClassFactory.getInstance().getVerifier();
-        
-        
-        PSSAction verifiedAction = vf.verify(action, deviceId);
-        System.out.println("verified action!");
-        ClassFactory.getInstance().getWorkflow().update(verifiedAction);
-        notifier.process(verifiedAction);
-        return verifiedAction;
+        return action;
     }
     
     public void setConfig(CircuitServiceConfig config) {
