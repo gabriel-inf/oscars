@@ -6,9 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
-import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
@@ -61,7 +59,7 @@ public class MLXConfigGen implements DeviceConfigGenerator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private String getLSPTeardown(ResDetails res, String deviceId) throws PSSException {
-        String templateFile = "alu-bridge-teardown.txt";
+        String templateFile = "brocade-bridge-teardown.txt";
 
         
         String portA;
@@ -73,7 +71,7 @@ public class MLXConfigGen implements DeviceConfigGenerator {
         portA = db.getPortA();
         portZ = db.getPortZ();
         ifceVlan = db.getVlanA();
-        if (ifceVlan.equals(db.getVlanZ())) {
+        if (!ifceVlan.equals(db.getVlanZ())) {
             throw new PSSException("different VLANs not supported");
         }
        
@@ -93,7 +91,7 @@ public class MLXConfigGen implements DeviceConfigGenerator {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private String getLSPSetup(ResDetails res, String deviceId) throws PSSException  {
 
-        String templateFile = "alu-bridge-setup.txt";
+        String templateFile = "brocade-bridge-setup.txt";
 
         String portA;
         String portZ;
@@ -104,7 +102,7 @@ public class MLXConfigGen implements DeviceConfigGenerator {
         portA = db.getPortA();
         portZ = db.getPortZ();
         ifceVlan = db.getVlanA();
-        if (ifceVlan.equals(db.getVlanZ())) {
+        if (!ifceVlan.equals(db.getVlanZ())) {
             throw new PSSException("different VLANs not supported");
         }
        

@@ -61,7 +61,7 @@ public class T1600ConfigGen implements DeviceConfigGenerator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private String getLSPTeardown(ResDetails res, String deviceId) throws PSSException {
-        String templateFile = "alu-bridge-teardown.txt";
+        String templateFile = "junos-t1600-bridge-teardown.txt";
 
         
         String portA;
@@ -73,7 +73,7 @@ public class T1600ConfigGen implements DeviceConfigGenerator {
         portA = db.getPortA();
         portZ = db.getPortZ();
         ifceVlan = db.getVlanA();
-        if (ifceVlan.equals(db.getVlanZ())) {
+        if (!ifceVlan.equals(db.getVlanZ())) {
             throw new PSSException("different VLANs not supported");
         }
        
@@ -93,7 +93,7 @@ public class T1600ConfigGen implements DeviceConfigGenerator {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private String getLSPSetup(ResDetails res, String deviceId) throws PSSException  {
 
-        String templateFile = "alu-bridge-setup.txt";
+        String templateFile = "junos-t1600-bridge-setup.txt";
 
         String portA;
         String portZ;
@@ -104,7 +104,7 @@ public class T1600ConfigGen implements DeviceConfigGenerator {
         portA = db.getPortA();
         portZ = db.getPortZ();
         ifceVlan = db.getVlanA();
-        if (ifceVlan.equals(db.getVlanZ())) {
+        if (!ifceVlan.equals(db.getVlanZ())) {
             throw new PSSException("different VLANs not supported");
         }
        
