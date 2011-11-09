@@ -1,4 +1,0 @@
-configure terminal
-no vlan ${vlan}
-exit
-

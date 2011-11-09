@@ -1,10 +1,10 @@
 
-configure service epipe ${epipe.id} shutdown
-configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} shutdown
-configure service epipe ${epipe.id} no spoke-sdp ${sdp.id}:${epipe.id} 
-configure service epipe ${epipe.id} sap ${ifce.name}:${ifce.vlan} shutdown
-configure service epipe ${epipe.id} no sap ${ifce.name}:${ifce.vlan} 
-configure service no epipe ${epipe.id} 
+configure service vpls ${epipe.id} shutdown
+configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} shutdown
+configure service vpls ${epipe.id} no spoke-sdp ${sdp.id}:${epipe.id} 
+configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} shutdown
+configure service vpls ${epipe.id} no sap ${ifce.name}:${ifce.vlan} 
+configure service no vpls ${epipe.id} 
 
 configure service sdp ${sdp.id} shutdown
 configure service no sdp ${sdp.id} 

@@ -63,15 +63,16 @@ configure service sdp ${sdp.id} keep-alive shutdown
 configure service sdp ${sdp.id} no shutdown
 
 # service access point:
-configure service epipe ${epipe.id} customer 1 create sap ${ifce.name}:${ifce.vlan} create 
+configure service vpls ${epipe.id} customer 1 create sap ${ifce.name}:${ifce.vlan} create 
 exit all
-configure service epipe ${epipe.id}  sap ${ifce.name}:${ifce.vlan} shutdown
-configure service epipe ${epipe.id} description "${epipe.description}"
-configure service epipe ${epipe.id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
-configure service epipe ${epipe.id} sap ${ifce.name}:${ifce.vlan} egress qos ${egrqos.id}
-configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} create
+configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} shutdown
+configure service vpls ${epipe.id} description "${epipe.description}"
+configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
+configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} egress qos ${egrqos.id}
+configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} no shutdown
+configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} create
 exit all 
-configure service epipe ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
-configure service epipe ${epipe.id} no shutdown
+configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
+configure service vpls ${epipe.id} no shutdown
 admin rollback save
 admin save
