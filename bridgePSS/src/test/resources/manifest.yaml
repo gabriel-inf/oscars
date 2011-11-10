@@ -10,6 +10,8 @@ PSSService:
         defs-models.yaml:   'OSCARS_DIST/bridgePSS/src/test/resources/defs-models.yaml'
         defs-services.yaml: 'OSCARS_DIST/bridgePSS/src/test/resources/defs-services.yaml'
         
+        config-ifce-aliases.yaml:   'OSCARS_DIST/bridgePSS/src/test/resources/config-ifce-aliases.yaml'
+
         config-connector-directory.yaml:        'OSCARS_DIST/bridgePSS/src/test/resources/config-connector-directory.yaml'
         config-device-addresses.yaml:           'OSCARS_DIST/bridgePSS/src/test/resources/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_DIST/bridgePSS/src/test/resources/config-device-connectors.yaml'

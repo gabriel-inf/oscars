@@ -2,7 +2,6 @@
 PSSService:
     UNITTEST:
         config.yaml:        'OSCARS_DIST/bridgePSS/config/config.HTTP.yaml'
-        config-eompls.yaml: 'OSCARS_DIST/bridgePSS/config/config-eompls.yaml'
         templateDir:        'OSCARS_DIST/bridgePSS/config/templates'
         
         server-cxf.xml:     'OSCARS_DIST/bridgePSS/config/server-cxf-http.xml'
@@ -14,12 +13,14 @@ PSSService:
         CoordService.wsdl:  'OSCARS_DIST/common-soap/src/main/resources/coord/coord.wsdl'
         defs-models.yaml:   'OSCARS_DIST/bridgePSS/config/defs-models.yaml'
         defs-services.yaml: 'OSCARS_DIST/bridgePSS/config/defs-services.yaml'
+
         
         config-connector-directory.yaml:        'OSCARS_DIST/bridgePSS/config/config-connector-directory.yaml'
         config-device-addresses.yaml:           'OSCARS_DIST/bridgePSS/config/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_DIST/bridgePSS/config/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_DIST/bridgePSS/config/config-device-models.yaml'
         config-device-models.yaml:              'OSCARS_DIST/bridgePSS/config/config-device-models.yaml'
+        config-ifce-aliases.yaml:               'OSCARS_DIST/bridgePSS/config/config-ifce-aliases.yaml'
 
     DEVELOPMENT:
         config.yaml:        'OSCARS_HOME/PSSService/conf/config.HTTP.yaml'
@@ -40,6 +41,7 @@ PSSService:
         config-device-connectors.yaml:          'OSCARS_HOME/PSSService/conf/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
+        config-ifce-aliases.yaml:               'OSCARS_HOME/PSSService/conf/config-ifce-aliases.yaml'
 
 
     SDK:
@@ -60,6 +62,7 @@ PSSService:
         config-device-connectors.yaml:          'OSCARS_HOME/PSSService/conf/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
+        config-ifce-aliases.yaml:               'OSCARS_HOME/PSSService/conf/config-ifce-aliases.yaml'
         
     PRODUCTION:
         config.yaml:        'OSCARS_HOME/PSSService/conf/config.SSL.yaml'
@@ -79,6 +82,7 @@ PSSService:
         config-device-connectors.yaml:          'OSCARS_HOME/PSSService/conf/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
+        config-ifce-aliases.yaml:               'OSCARS_HOME/PSSService/conf/config-ifce-aliases.yaml'
         
         
 

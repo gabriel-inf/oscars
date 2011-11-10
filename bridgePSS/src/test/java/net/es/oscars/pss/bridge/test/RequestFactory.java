@@ -19,8 +19,8 @@ public class RequestFactory {
         String hop1    = "urn:ogf:network:sc11.org:edge-1:xe-2/0/0:edge-2";
         String hop2    = "urn:ogf:network:sc11.org:edge-2:1/1/1:edge-1";
         String hop3    = "urn:ogf:network:sc11.org:edge-2:2/1/1:core-1";
-        String hop4    = "urn:ogf:network:sc11.org:core-1:10/1/1:edge-2";
-        String dstEdge = "urn:ogf:network:sc11.org:core-1:20/1/1:edge";
+        String hop4    = "urn:ogf:network:sc11.org:core-1:core-2:core-2";
+        String dstEdge = "urn:ogf:network:sc11.org:core-1:l2-1214:edge";
 
         ResDetails resDet = new ResDetails();
         ReservedConstraintType rc = new ReservedConstraintType();
