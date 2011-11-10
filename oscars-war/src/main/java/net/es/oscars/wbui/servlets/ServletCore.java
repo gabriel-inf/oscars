@@ -74,7 +74,7 @@ public class ServletCore {
         // not thread-safe, only call in one init method
         netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_WBUI,"0000");
-        OSCARSNetLogger.setTlogger(netLogger); 
+        OSCARSNetLogger.setTlogger(netLogger);
         String event = "getInstance";
         if (ServletCore.instance == null) {
             // only can call once
@@ -86,7 +86,7 @@ public class ServletCore {
             try {
                 cc = ContextConfig.getInstance(ServiceNames.SVC_WBUI);
                 if (cc.getContext() == null){
-                    LOG.debug (netLogger.getMsg(event,"setting cc Context to " + System.getProperty("context")));
+                    LOG.info (netLogger.start(event,"starting wbui in context " + System.getProperty("context")));
                     cc.setContext(System.getProperty("context"));
                     cc.setServiceName(ServiceNames.SVC_WBUI);
                     cc.loadManifest(ServiceNames.SVC_WBUI,  ConfigDefaults.MANIFEST); // manifest.yaml
@@ -102,6 +102,7 @@ public class ServletCore {
                 throw new RuntimeException(e);
             }
         }
+        LOG.info(netLogger.end("wbui started in context " + System.getProperty("context")));
         return ServletCore.instance;
     }
 
