@@ -99,7 +99,7 @@ fi
 
 # convert PEM into DER
 openssl pkcs8 -topk8 -nocrypt -in $KEY_FILE -inform PEM -out $KEY_FILE.der -outform DER -passin pass:$PEM_PASS
-openssl x509 -in $CERT_FILE -inform PEM -out $CERT.der -outform DER
+openssl x509 -in $CERT_FILE -inform PEM -out $CERT_FILE.der -outform DER
 
 # make keychain
 #openssl x509 -in intermediateCA_cer.pem -inform PEM -out intermediateCA_cer.der -outform DER
