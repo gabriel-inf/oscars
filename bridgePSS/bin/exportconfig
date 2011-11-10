@@ -82,8 +82,8 @@ if [ ! -f $DST_DIR/config-device-models.yaml ] ; then
     cp $SRC_DIR/config-device-models.yaml  $DST_DIR/config-device-models.yaml
 fi
 
-if [ ! -f $DST_DIR/config-brocade-lags.yaml ] ; then
-    cp $SRC_DIR/config-brocade-lags.yaml  $DST_DIR/config-brocade-lags.yaml
+if [ ! -f $DST_DIR/config-ifce-aliases.yaml ] ; then
+    cp $SRC_DIR/config-ifce-aliases.yaml  $DST_DIR/config-ifce-aliases.yaml
 fi
 
 # manifest
