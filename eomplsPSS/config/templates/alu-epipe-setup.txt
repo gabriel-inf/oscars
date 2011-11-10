@@ -72,7 +72,11 @@ configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} egress qos ${eg
 configure service vpls ${epipe.id} sap ${ifce.name}:${ifce.vlan} no shutdown
 configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} create
 exit all 
+configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} hash-label
+exit all 
 configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
+
+configure service vpls ${epipe.id} fdb-table-size 4096
 configure service vpls ${epipe.id} no shutdown
 admin rollback save
 admin save
