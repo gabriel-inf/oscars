@@ -11,5 +11,5 @@ case $# in
 1) context=$1;;
 esac 
 echo "Starting bridgePSS version:$vers context:$context"
-java   -Xmx256m -Djava.net.preferIPv4Stack=true -jar $OSCARS_DIST/openflowPSS/target/bridgePSS-$vers.one-jar.jar -c $context  &
+java   -Xmx256m -Djava.net.preferIPv4Stack=true -jar $OSCARS_DIST/bridgePSS/target/bridgePSS-$vers.one-jar.jar -c $context  &
 echo $! > $DEFAULT_PID_DIR/bridgePSS.pid
