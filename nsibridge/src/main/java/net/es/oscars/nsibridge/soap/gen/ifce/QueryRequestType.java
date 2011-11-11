@@ -38,9 +38,9 @@ import org.ogf.nsi.schema.connectionTypes.QueryType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
  *         &lt;element name="replyTo" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
- *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}query"/>
+ *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}query"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -62,7 +62,7 @@ public class QueryRequestType {
     @XmlElement(required = true)
     @XmlSchemaType(name = "anyURI")
     protected String replyTo;
-    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", required = true)
+    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", required = true)
     protected QueryType query;
 
     /**

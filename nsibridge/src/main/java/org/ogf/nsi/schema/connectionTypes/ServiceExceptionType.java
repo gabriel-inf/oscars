@@ -10,13 +10,13 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
 
 /**
  * 
- *                 Common NSI exception used for both SOAP faults and the protocol Failed
- *                 message.
+ *                 Common service exception used for both SOAP faults and the
+ *                 protocol Failed message.
  * 
  *                 Elements:
  * 
- *                 messageId - Message identifier uniquely identifying each known fault
- *                 within the protocol.
+ *                 errorId - Error identifier uniquely identifying each known
+ *                 fault within the protocol.
  * 
  *                 text - User friendly message text describing the error.
  * 
@@ -24,16 +24,16 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
  *                 information relating to the error.
  *             
  * 
- * <p>Java class for NsiExceptionType complex type.
+ * <p>Java class for ServiceExceptionType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="NsiExceptionType">
+ * &lt;complexType name="ServiceExceptionType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="messageId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="errorId" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="text" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="variables" type="{urn:oasis:names:tc:SAML:2.0:assertion}AttributeStatementType" minOccurs="0"/>
  *       &lt;/sequence>
@@ -45,41 +45,41 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "NsiExceptionType", propOrder = {
-    "messageId",
+@XmlType(name = "ServiceExceptionType", propOrder = {
+    "errorId",
     "text",
     "variables"
 })
-public class NsiExceptionType {
+public class ServiceExceptionType {
 
     @XmlElement(required = true)
-    protected String messageId;
+    protected String errorId;
     @XmlElement(required = true)
     protected String text;
     protected AttributeStatementType variables;
 
     /**
-     * Gets the value of the messageId property.
+     * Gets the value of the errorId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getMessageId() {
-        return messageId;
+    public String getErrorId() {
+        return errorId;
     }
 
     /**
-     * Sets the value of the messageId property.
+     * Sets the value of the errorId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setMessageId(String value) {
-        this.messageId = value;
+    public void setErrorId(String value) {
+        this.errorId = value;
     }
 
     /**

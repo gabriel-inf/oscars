@@ -15,10 +15,10 @@ import net.es.oscars.nsibridge.bridge.SimpleNSA;
 import net.es.oscars.nsibridge.common.JettyContainer;
 import net.es.oscars.nsibridge.provider.ConnectionProviderImpl;
 import net.es.oscars.nsibridge.requester.ConnectionRequesterImpl;
-import net.es.oscars.nsibridge.soap.gen.ifce.NSIServiceException;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateRequestType;
 import net.es.oscars.nsibridge.soap.gen.provider.ConnectionProviderPort;
 import net.es.oscars.nsibridge.util.NSAList;
@@ -36,7 +36,7 @@ public class LifecycleTest {
 
     /*
     @Test
-    public void testGlambdaRequest() throws MalformedURLException, NSIServiceException, InterruptedException {
+    public void testGlambdaRequest() throws MalformedURLException, ServiceException, InterruptedException {
         setupJettyInstances();
         setupNSAs();
         NSAInfo nsaD = NSAList.getInstance().getNSAByAbbrv("dominica");
@@ -80,7 +80,7 @@ public class LifecycleTest {
         }
     }
     */
-    public void testSubmitRequest() throws NSIServiceException, MalformedURLException, InterruptedException {
+    public void testSubmitRequest() throws ServiceException, MalformedURLException, InterruptedException {
         setupJettyInstances(false);
         setupNSAs(false);
         NSAInfo nsaA = NSAList.getInstance().getNSAByAbbrv("alpha");
@@ -106,9 +106,9 @@ public class LifecycleTest {
         ServiceParametersType spt = RequestBuilder.makeServiceParametersType(1000, st);
         
         
-        ReservationRequestType rrt = RequestBuilder.makeReservationRequestType(nsaB, nsaA, connId, corrId, gri, desc, pt, spt);
+        ReserveRequestType rrt = RequestBuilder.makeReserveRequestType(nsaB, nsaA, connId, corrId, gri, desc, pt, spt);
         NSAFactory.getInstance().getNSA(nsaB.getNsaId()).initiateResvRequest(rrt);
-        prvAPort.reservation(rrt);
+        prvAPort.reserve(rrt);
         
         boolean pendingRequests = true;
         while (pendingRequests) {

@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="Provisioned"/>
  *     &lt;enumeration value="Releasing"/>
  *     &lt;enumeration value="Cleaning"/>
- *     &lt;enumeration value="Terminateing"/>
+ *     &lt;enumeration value="Terminating"/>
  *     &lt;enumeration value="Terminated"/>
  *     &lt;enumeration value="Unknown"/>
  *   &lt;/restriction>
@@ -53,8 +53,8 @@ public enum ConnectionStateType {
     RELEASING("Releasing"),
     @XmlEnumValue("Cleaning")
     CLEANING("Cleaning"),
-    @XmlEnumValue("Terminateing")
-    TERMINATEING("Terminateing"),
+    @XmlEnumValue("Terminating")
+    TERMINATING("Terminating"),
     @XmlEnumValue("Terminated")
     TERMINATED("Terminated"),
     @XmlEnumValue("Unknown")

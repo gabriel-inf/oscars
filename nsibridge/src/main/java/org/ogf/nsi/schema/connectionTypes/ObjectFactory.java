@@ -24,28 +24,52 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Provision_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "provision");
-    private final static QName _ReservationConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "reservationConfirmed");
-    private final static QName _QueryFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "queryFailed");
-    private final static QName _Terminate_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "terminate");
-    private final static QName _ReservationFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "reservationFailed");
-    private final static QName _ReleaseFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "releaseFailed");
-    private final static QName _Release_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "release");
-    private final static QName _ProvisionConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "provisionConfirmed");
-    private final static QName _TerminateConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "terminateConfirmed");
-    private final static QName _ReleaseConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "releaseConfirmed");
-    private final static QName _Query_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "query");
-    private final static QName _Reservation_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "reservation");
-    private final static QName _ProvisionFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "provisionFailed");
-    private final static QName _TerminateFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "terminateFailed");
-    private final static QName _ForcedEnd_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "forcedEnd");
-    private final static QName _QueryConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/07/connection/types", "queryConfirmed");
+    private final static QName _QueryConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "queryConfirmed");
+    private final static QName _ForcedEnd_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "forcedEnd");
+    private final static QName _TerminateFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "terminateFailed");
+    private final static QName _ProvisionFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "provisionFailed");
+    private final static QName _Reserve_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "reserve");
+    private final static QName _ReserveConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "reserveConfirmed");
+    private final static QName _Query_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "query");
+    private final static QName _TerminateConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "terminateConfirmed");
+    private final static QName _ReleaseConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "releaseConfirmed");
+    private final static QName _ProvisionConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "provisionConfirmed");
+    private final static QName _Release_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "release");
+    private final static QName _ReleaseFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "releaseFailed");
+    private final static QName _Terminate_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "terminate");
+    private final static QName _QueryFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "queryFailed");
+    private final static QName _ReserveFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "reserveFailed");
+    private final static QName _Provision_QNAME = new QName("http://schemas.ogf.org/nsi/2011/10/connection/types", "provision");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ogf.nsi.schema.connectionTypes
      * 
      */
     public ObjectFactory() {
+    }
+
+    /**
+     * Create an instance of {@link QueryDetailsResultType }
+     * 
+     */
+    public QueryDetailsResultType createQueryDetailsResultType() {
+        return new QueryDetailsResultType();
+    }
+
+    /**
+     * Create an instance of {@link GenericFailedType }
+     * 
+     */
+    public GenericFailedType createGenericFailedType() {
+        return new GenericFailedType();
+    }
+
+    /**
+     * Create an instance of {@link DetailedPathType }
+     * 
+     */
+    public DetailedPathType createDetailedPathType() {
+        return new DetailedPathType();
     }
 
     /**
@@ -57,59 +81,51 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ReservationType }
+     * Create an instance of {@link ReserveType }
      * 
      */
-    public ReservationType createReservationType() {
-        return new ReservationType();
+    public ReserveType createReserveType() {
+        return new ReserveType();
     }
 
     /**
-     * Create an instance of {@link ReservationConfirmedType }
+     * Create an instance of {@link ScheduleType }
      * 
      */
-    public ReservationConfirmedType createReservationConfirmedType() {
-        return new ReservationConfirmedType();
+    public ScheduleType createScheduleType() {
+        return new ScheduleType();
     }
 
     /**
-     * Create an instance of {@link BandwidthType }
+     * Create an instance of {@link QuerySummaryResultType }
      * 
      */
-    public BandwidthType createBandwidthType() {
-        return new BandwidthType();
+    public QuerySummaryResultType createQuerySummaryResultType() {
+        return new QuerySummaryResultType();
     }
 
     /**
-     * Create an instance of {@link QueryType }
+     * Create an instance of {@link ReserveConfirmedType }
      * 
      */
-    public QueryType createQueryType() {
-        return new QueryType();
+    public ReserveConfirmedType createReserveConfirmedType() {
+        return new ReserveConfirmedType();
     }
 
     /**
-     * Create an instance of {@link OrderedServiceTerminationPointType }
+     * Create an instance of {@link GenericRequestType }
      * 
      */
-    public OrderedServiceTerminationPointType createOrderedServiceTerminationPointType() {
-        return new OrderedServiceTerminationPointType();
+    public GenericRequestType createGenericRequestType() {
+        return new GenericRequestType();
     }
 
     /**
-     * Create an instance of {@link ServiceParametersType }
+     * Create an instance of {@link QueryFailedType }
      * 
      */
-    public ServiceParametersType createServiceParametersType() {
-        return new ServiceParametersType();
-    }
-
-    /**
-     * Create an instance of {@link NsiExceptionType }
-     * 
-     */
-    public NsiExceptionType createNsiExceptionType() {
-        return new NsiExceptionType();
+    public QueryFailedType createQueryFailedType() {
+        return new QueryFailedType();
     }
 
     /**
@@ -121,6 +137,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link OrderedServiceTerminationPointType }
+     * 
+     */
+    public OrderedServiceTerminationPointType createOrderedServiceTerminationPointType() {
+        return new OrderedServiceTerminationPointType();
+    }
+
+    /**
      * Create an instance of {@link ServiceTerminationPointType }
      * 
      */
@@ -129,11 +153,51 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link ChildListType }
+     * 
+     */
+    public ChildListType createChildListType() {
+        return new ChildListType();
+    }
+
+    /**
+     * Create an instance of {@link ServiceParametersType }
+     * 
+     */
+    public ServiceParametersType createServiceParametersType() {
+        return new ServiceParametersType();
+    }
+
+    /**
+     * Create an instance of {@link BandwidthType }
+     * 
+     */
+    public BandwidthType createBandwidthType() {
+        return new BandwidthType();
+    }
+
+    /**
      * Create an instance of {@link PathType }
      * 
      */
     public PathType createPathType() {
         return new PathType();
+    }
+
+    /**
+     * Create an instance of {@link GenericConfirmedType }
+     * 
+     */
+    public GenericConfirmedType createGenericConfirmedType() {
+        return new GenericConfirmedType();
+    }
+
+    /**
+     * Create an instance of {@link QueryFilterType }
+     * 
+     */
+    public QueryFilterType createQueryFilterType() {
+        return new QueryFilterType();
     }
 
     /**
@@ -153,67 +217,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ScheduleType }
+     * Create an instance of {@link ServiceExceptionType }
      * 
      */
-    public ScheduleType createScheduleType() {
-        return new ScheduleType();
-    }
-
-    /**
-     * Create an instance of {@link QueryDetailsResultType }
-     * 
-     */
-    public QueryDetailsResultType createQueryDetailsResultType() {
-        return new QueryDetailsResultType();
-    }
-
-    /**
-     * Create an instance of {@link QueryFilterType }
-     * 
-     */
-    public QueryFilterType createQueryFilterType() {
-        return new QueryFilterType();
-    }
-
-    /**
-     * Create an instance of {@link PathListType }
-     * 
-     */
-    public PathListType createPathListType() {
-        return new PathListType();
-    }
-
-    /**
-     * Create an instance of {@link QueryFailedType }
-     * 
-     */
-    public QueryFailedType createQueryFailedType() {
-        return new QueryFailedType();
-    }
-
-    /**
-     * Create an instance of {@link GenericConfirmedType }
-     * 
-     */
-    public GenericConfirmedType createGenericConfirmedType() {
-        return new GenericConfirmedType();
-    }
-
-    /**
-     * Create an instance of {@link ChildListType }
-     * 
-     */
-    public ChildListType createChildListType() {
-        return new ChildListType();
-    }
-
-    /**
-     * Create an instance of {@link DetailedPathType }
-     * 
-     */
-    public DetailedPathType createDetailedPathType() {
-        return new DetailedPathType();
+    public ServiceExceptionType createServiceExceptionType() {
+        return new ServiceExceptionType();
     }
 
     /**
@@ -225,106 +233,89 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GenericFailedType }
+     * Create an instance of {@link QueryType }
      * 
      */
-    public GenericFailedType createGenericFailedType() {
-        return new GenericFailedType();
+    public QueryType createQueryType() {
+        return new QueryType();
     }
 
     /**
-     * Create an instance of {@link QuerySummaryResultType }
+     * Create an instance of {@link PathListType }
      * 
      */
-    public QuerySummaryResultType createQuerySummaryResultType() {
-        return new QuerySummaryResultType();
+    public PathListType createPathListType() {
+        return new PathListType();
     }
 
     /**
-     * Create an instance of {@link GenericRequestType }
+     * Create an instance of {@link JAXBElement }{@code <}{@link QueryConfirmedType }{@code >}}
      * 
      */
-    public GenericRequestType createGenericRequestType() {
-        return new GenericRequestType();
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "provision")
-    public JAXBElement<GenericRequestType> createProvision(GenericRequestType value) {
-        return new JAXBElement<GenericRequestType>(_Provision_QNAME, GenericRequestType.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ReservationConfirmedType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "reservationConfirmed")
-    public JAXBElement<ReservationConfirmedType> createReservationConfirmed(ReservationConfirmedType value) {
-        return new JAXBElement<ReservationConfirmedType>(_ReservationConfirmed_QNAME, ReservationConfirmedType.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link QueryFailedType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "queryFailed")
-    public JAXBElement<QueryFailedType> createQueryFailed(QueryFailedType value) {
-        return new JAXBElement<QueryFailedType>(_QueryFailed_QNAME, QueryFailedType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "queryConfirmed")
+    public JAXBElement<QueryConfirmedType> createQueryConfirmed(QueryConfirmedType value) {
+        return new JAXBElement<QueryConfirmedType>(_QueryConfirmed_QNAME, QueryConfirmedType.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "terminate")
-    public JAXBElement<GenericRequestType> createTerminate(GenericRequestType value) {
-        return new JAXBElement<GenericRequestType>(_Terminate_QNAME, GenericRequestType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "forcedEnd")
+    public JAXBElement<GenericRequestType> createForcedEnd(GenericRequestType value) {
+        return new JAXBElement<GenericRequestType>(_ForcedEnd_QNAME, GenericRequestType.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericFailedType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "reservationFailed")
-    public JAXBElement<GenericFailedType> createReservationFailed(GenericFailedType value) {
-        return new JAXBElement<GenericFailedType>(_ReservationFailed_QNAME, GenericFailedType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "terminateFailed")
+    public JAXBElement<GenericFailedType> createTerminateFailed(GenericFailedType value) {
+        return new JAXBElement<GenericFailedType>(_TerminateFailed_QNAME, GenericFailedType.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericFailedType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "releaseFailed")
-    public JAXBElement<GenericFailedType> createReleaseFailed(GenericFailedType value) {
-        return new JAXBElement<GenericFailedType>(_ReleaseFailed_QNAME, GenericFailedType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "provisionFailed")
+    public JAXBElement<GenericFailedType> createProvisionFailed(GenericFailedType value) {
+        return new JAXBElement<GenericFailedType>(_ProvisionFailed_QNAME, GenericFailedType.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link ReserveType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "release")
-    public JAXBElement<GenericRequestType> createRelease(GenericRequestType value) {
-        return new JAXBElement<GenericRequestType>(_Release_QNAME, GenericRequestType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "reserve")
+    public JAXBElement<ReserveType> createReserve(ReserveType value) {
+        return new JAXBElement<ReserveType>(_Reserve_QNAME, ReserveType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ReserveConfirmedType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "reserveConfirmed")
+    public JAXBElement<ReserveConfirmedType> createReserveConfirmed(ReserveConfirmedType value) {
+        return new JAXBElement<ReserveConfirmedType>(_ReserveConfirmed_QNAME, ReserveConfirmedType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link QueryType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "query")
+    public JAXBElement<QueryType> createQuery(QueryType value) {
+        return new JAXBElement<QueryType>(_Query_QNAME, QueryType.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericConfirmedType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "provisionConfirmed")
-    public JAXBElement<GenericConfirmedType> createProvisionConfirmed(GenericConfirmedType value) {
-        return new JAXBElement<GenericConfirmedType>(_ProvisionConfirmed_QNAME, GenericConfirmedType.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericConfirmedType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "terminateConfirmed")
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "terminateConfirmed")
     public JAXBElement<GenericConfirmedType> createTerminateConfirmed(GenericConfirmedType value) {
         return new JAXBElement<GenericConfirmedType>(_TerminateConfirmed_QNAME, GenericConfirmedType.class, null, value);
     }
@@ -333,63 +324,72 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericConfirmedType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "releaseConfirmed")
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "releaseConfirmed")
     public JAXBElement<GenericConfirmedType> createReleaseConfirmed(GenericConfirmedType value) {
         return new JAXBElement<GenericConfirmedType>(_ReleaseConfirmed_QNAME, GenericConfirmedType.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link QueryType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericConfirmedType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "query")
-    public JAXBElement<QueryType> createQuery(QueryType value) {
-        return new JAXBElement<QueryType>(_Query_QNAME, QueryType.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ReservationType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "reservation")
-    public JAXBElement<ReservationType> createReservation(ReservationType value) {
-        return new JAXBElement<ReservationType>(_Reservation_QNAME, ReservationType.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericFailedType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "provisionFailed")
-    public JAXBElement<GenericFailedType> createProvisionFailed(GenericFailedType value) {
-        return new JAXBElement<GenericFailedType>(_ProvisionFailed_QNAME, GenericFailedType.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericFailedType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "terminateFailed")
-    public JAXBElement<GenericFailedType> createTerminateFailed(GenericFailedType value) {
-        return new JAXBElement<GenericFailedType>(_TerminateFailed_QNAME, GenericFailedType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "provisionConfirmed")
+    public JAXBElement<GenericConfirmedType> createProvisionConfirmed(GenericConfirmedType value) {
+        return new JAXBElement<GenericConfirmedType>(_ProvisionConfirmed_QNAME, GenericConfirmedType.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "forcedEnd")
-    public JAXBElement<GenericRequestType> createForcedEnd(GenericRequestType value) {
-        return new JAXBElement<GenericRequestType>(_ForcedEnd_QNAME, GenericRequestType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "release")
+    public JAXBElement<GenericRequestType> createRelease(GenericRequestType value) {
+        return new JAXBElement<GenericRequestType>(_Release_QNAME, GenericRequestType.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link QueryConfirmedType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericFailedType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", name = "queryConfirmed")
-    public JAXBElement<QueryConfirmedType> createQueryConfirmed(QueryConfirmedType value) {
-        return new JAXBElement<QueryConfirmedType>(_QueryConfirmed_QNAME, QueryConfirmedType.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "releaseFailed")
+    public JAXBElement<GenericFailedType> createReleaseFailed(GenericFailedType value) {
+        return new JAXBElement<GenericFailedType>(_ReleaseFailed_QNAME, GenericFailedType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "terminate")
+    public JAXBElement<GenericRequestType> createTerminate(GenericRequestType value) {
+        return new JAXBElement<GenericRequestType>(_Terminate_QNAME, GenericRequestType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link QueryFailedType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "queryFailed")
+    public JAXBElement<QueryFailedType> createQueryFailed(QueryFailedType value) {
+        return new JAXBElement<QueryFailedType>(_QueryFailed_QNAME, QueryFailedType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericFailedType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "reserveFailed")
+    public JAXBElement<GenericFailedType> createReserveFailed(GenericFailedType value) {
+        return new JAXBElement<GenericFailedType>(_ReserveFailed_QNAME, GenericFailedType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", name = "provision")
+    public JAXBElement<GenericRequestType> createProvision(GenericRequestType value) {
+        return new JAXBElement<GenericRequestType>(_Provision_QNAME, GenericRequestType.class, null, value);
     }
 
 }

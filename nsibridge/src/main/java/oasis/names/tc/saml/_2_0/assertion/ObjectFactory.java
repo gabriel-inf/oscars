@@ -76,107 +76,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SubjectConfirmationType }
+     * Create an instance of {@link NameIDType }
      * 
      */
-    public SubjectConfirmationType createSubjectConfirmationType() {
-        return new SubjectConfirmationType();
-    }
-
-    /**
-     * Create an instance of {@link ActionType }
-     * 
-     */
-    public ActionType createActionType() {
-        return new ActionType();
-    }
-
-    /**
-     * Create an instance of {@link SubjectConfirmationDataType }
-     * 
-     */
-    public SubjectConfirmationDataType createSubjectConfirmationDataType() {
-        return new SubjectConfirmationDataType();
-    }
-
-    /**
-     * Create an instance of {@link AudienceRestrictionType }
-     * 
-     */
-    public AudienceRestrictionType createAudienceRestrictionType() {
-        return new AudienceRestrictionType();
-    }
-
-    /**
-     * Create an instance of {@link KeyInfoConfirmationDataType }
-     * 
-     */
-    public KeyInfoConfirmationDataType createKeyInfoConfirmationDataType() {
-        return new KeyInfoConfirmationDataType();
-    }
-
-    /**
-     * Create an instance of {@link EncryptedElementType }
-     * 
-     */
-    public EncryptedElementType createEncryptedElementType() {
-        return new EncryptedElementType();
-    }
-
-    /**
-     * Create an instance of {@link AssertionType }
-     * 
-     */
-    public AssertionType createAssertionType() {
-        return new AssertionType();
-    }
-
-    /**
-     * Create an instance of {@link SubjectType }
-     * 
-     */
-    public SubjectType createSubjectType() {
-        return new SubjectType();
-    }
-
-    /**
-     * Create an instance of {@link OneTimeUseType }
-     * 
-     */
-    public OneTimeUseType createOneTimeUseType() {
-        return new OneTimeUseType();
-    }
-
-    /**
-     * Create an instance of {@link ConditionsType }
-     * 
-     */
-    public ConditionsType createConditionsType() {
-        return new ConditionsType();
-    }
-
-    /**
-     * Create an instance of {@link EvidenceType }
-     * 
-     */
-    public EvidenceType createEvidenceType() {
-        return new EvidenceType();
-    }
-
-    /**
-     * Create an instance of {@link ProxyRestrictionType }
-     * 
-     */
-    public ProxyRestrictionType createProxyRestrictionType() {
-        return new ProxyRestrictionType();
-    }
-
-    /**
-     * Create an instance of {@link AuthnStatementType }
-     * 
-     */
-    public AuthnStatementType createAuthnStatementType() {
-        return new AuthnStatementType();
+    public NameIDType createNameIDType() {
+        return new NameIDType();
     }
 
     /**
@@ -188,19 +92,59 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AttributeStatementType }
+     * Create an instance of {@link KeyInfoConfirmationDataType }
      * 
      */
-    public AttributeStatementType createAttributeStatementType() {
-        return new AttributeStatementType();
+    public KeyInfoConfirmationDataType createKeyInfoConfirmationDataType() {
+        return new KeyInfoConfirmationDataType();
     }
 
     /**
-     * Create an instance of {@link AttributeType }
+     * Create an instance of {@link OneTimeUseType }
      * 
      */
-    public AttributeType createAttributeType() {
-        return new AttributeType();
+    public OneTimeUseType createOneTimeUseType() {
+        return new OneTimeUseType();
+    }
+
+    /**
+     * Create an instance of {@link AudienceRestrictionType }
+     * 
+     */
+    public AudienceRestrictionType createAudienceRestrictionType() {
+        return new AudienceRestrictionType();
+    }
+
+    /**
+     * Create an instance of {@link EncryptedElementType }
+     * 
+     */
+    public EncryptedElementType createEncryptedElementType() {
+        return new EncryptedElementType();
+    }
+
+    /**
+     * Create an instance of {@link SubjectType }
+     * 
+     */
+    public SubjectType createSubjectType() {
+        return new SubjectType();
+    }
+
+    /**
+     * Create an instance of {@link AuthnStatementType }
+     * 
+     */
+    public AuthnStatementType createAuthnStatementType() {
+        return new AuthnStatementType();
+    }
+
+    /**
+     * Create an instance of {@link SubjectConfirmationType }
+     * 
+     */
+    public SubjectConfirmationType createSubjectConfirmationType() {
+        return new SubjectConfirmationType();
     }
 
     /**
@@ -212,11 +156,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link NameIDType }
+     * Create an instance of {@link SubjectConfirmationDataType }
      * 
      */
-    public NameIDType createNameIDType() {
-        return new NameIDType();
+    public SubjectConfirmationDataType createSubjectConfirmationDataType() {
+        return new SubjectConfirmationDataType();
+    }
+
+    /**
+     * Create an instance of {@link AttributeStatementType }
+     * 
+     */
+    public AttributeStatementType createAttributeStatementType() {
+        return new AttributeStatementType();
     }
 
     /**
@@ -225,6 +177,54 @@ public class ObjectFactory {
      */
     public SubjectLocalityType createSubjectLocalityType() {
         return new SubjectLocalityType();
+    }
+
+    /**
+     * Create an instance of {@link EvidenceType }
+     * 
+     */
+    public EvidenceType createEvidenceType() {
+        return new EvidenceType();
+    }
+
+    /**
+     * Create an instance of {@link ConditionsType }
+     * 
+     */
+    public ConditionsType createConditionsType() {
+        return new ConditionsType();
+    }
+
+    /**
+     * Create an instance of {@link AssertionType }
+     * 
+     */
+    public AssertionType createAssertionType() {
+        return new AssertionType();
+    }
+
+    /**
+     * Create an instance of {@link AttributeType }
+     * 
+     */
+    public AttributeType createAttributeType() {
+        return new AttributeType();
+    }
+
+    /**
+     * Create an instance of {@link ProxyRestrictionType }
+     * 
+     */
+    public ProxyRestrictionType createProxyRestrictionType() {
+        return new ProxyRestrictionType();
+    }
+
+    /**
+     * Create an instance of {@link ActionType }
+     * 
+     */
+    public ActionType createActionType() {
+        return new ActionType();
     }
 
     /**

@@ -38,10 +38,10 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
  *         &lt;element name="sessionSecurityAttr" type="{urn:oasis:names:tc:SAML:2.0:assertion}AttributeStatementType" minOccurs="0"/>
- *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionIdType"/>
+ *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionIdType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

@@ -31,8 +31,8 @@ import org.ogf.nsi.schema.connectionTypes.QueryConfirmedType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
- *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}queryConfirmed"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
+ *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}queryConfirmed"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -50,7 +50,7 @@ public class QueryConfirmedRequestType {
 
     @XmlElement(required = true)
     protected String correlationId;
-    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", required = true)
+    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", required = true)
     protected QueryConfirmedType queryConfirmed;
 
     /**

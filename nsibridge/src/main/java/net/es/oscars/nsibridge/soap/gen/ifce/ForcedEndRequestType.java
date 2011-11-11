@@ -16,15 +16,11 @@ import org.ogf.nsi.schema.connectionTypes.GenericRequestType;
  *                         
  *                         Elements:
  *                         correlationId - An identifier provided by the requesting
- *                         NSA used to correlate an acknowledgement.  There will be
- *                         no asynchronous response for this request. It is
- *                         recommended that a Universally Unique Identifier (UUID)
- *                         URN as per IETF RFC 4122 be used as a globally unique
- *                         value.
- *                         
- *                         replyTo - The Requester NSA's SOAP endpoint address to
- *                         which the asynchronous Confirmed or Failed message
- *                         associated with this request will be delivered.
+ *                         NSA used to correlate to the corresponding
+ *                         acknowledgment.  There will be no asynchronous
+ *                         response for this request. It is recommended that a
+ *                         Universally Unique Identifier (UUID) URN as per IETF
+ *                         RFC 4122 be used as a globally unique value.
  *                         
  *                         forcedEnd - forcedEnd message specific parameters.
  *                     
@@ -38,8 +34,8 @@ import org.ogf.nsi.schema.connectionTypes.GenericRequestType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
- *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}forcedEnd"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
+ *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}forcedEnd"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -57,7 +53,7 @@ public class ForcedEndRequestType {
 
     @XmlElement(required = true)
     protected String correlationId;
-    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", required = true)
+    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", required = true)
     protected GenericRequestType forcedEnd;
 
     /**

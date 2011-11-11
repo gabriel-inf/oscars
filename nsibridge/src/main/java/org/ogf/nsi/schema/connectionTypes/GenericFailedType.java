@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *                 operation (Provider Agent).
  * 
  *                 globalReservationId - An optional global reservation id that was
- *                 originally provided in the reservation request.
+ *                 originally provided in the reserve request.
  * 
  *                 connectionId - The locally unique identifier for a connection that
  *                 is known between a Requesting and Provider NSA pair.
@@ -42,12 +42,12 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="globalReservationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}GlobalReservationIdType" minOccurs="0"/>
- *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionIdType"/>
- *         &lt;element name="connectionState" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionStateType"/>
- *         &lt;element name="ServiceException" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsiExceptionType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="globalReservationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}GlobalReservationIdType" minOccurs="0"/>
+ *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionIdType"/>
+ *         &lt;element name="connectionState" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionStateType"/>
+ *         &lt;element name="serviceException" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ServiceExceptionType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -76,8 +76,8 @@ public class GenericFailedType {
     protected String connectionId;
     @XmlElement(required = true)
     protected ConnectionStateType connectionState;
-    @XmlElement(name = "ServiceException", required = true)
-    protected NsiExceptionType serviceException;
+    @XmlElement(required = true)
+    protected ServiceExceptionType serviceException;
 
     /**
      * Gets the value of the requesterNSA property.
@@ -204,10 +204,10 @@ public class GenericFailedType {
      * 
      * @return
      *     possible object is
-     *     {@link NsiExceptionType }
+     *     {@link ServiceExceptionType }
      *     
      */
-    public NsiExceptionType getServiceException() {
+    public ServiceExceptionType getServiceException() {
         return serviceException;
     }
 
@@ -216,10 +216,10 @@ public class GenericFailedType {
      * 
      * @param value
      *     allowed object is
-     *     {@link NsiExceptionType }
+     *     {@link ServiceExceptionType }
      *     
      */
-    public void setServiceException(NsiExceptionType value) {
+    public void setServiceException(ServiceExceptionType value) {
         this.serviceException = value;
     }
 

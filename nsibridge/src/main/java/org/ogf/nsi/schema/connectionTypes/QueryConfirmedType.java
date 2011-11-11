@@ -45,11 +45,11 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
  *         &lt;choice>
- *           &lt;element name="reservationSummary" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}QuerySummaryResultType" maxOccurs="unbounded" minOccurs="0"/>
- *           &lt;element name="reservationDetails" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}QueryDetailsResultType" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="reservationSummary" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}QuerySummaryResultType" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="reservationDetails" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}QueryDetailsResultType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;/choice>
  *       &lt;/sequence>
  *     &lt;/restriction>

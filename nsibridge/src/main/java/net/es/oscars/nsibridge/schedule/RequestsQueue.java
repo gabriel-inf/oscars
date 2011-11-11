@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateRequestType;
 
 public class RequestsQueue {
-    ArrayList<ReservationRequestType> pendingResvReqs = new ArrayList<ReservationRequestType>();
+    ArrayList<ReserveRequestType> pendingResvReqs = new ArrayList<ReserveRequestType>();
     ArrayList<ProvisionRequestType> pendingProvReqs = new ArrayList<ProvisionRequestType>();
     ArrayList<TerminateRequestType> pendingTermReqs = new ArrayList<TerminateRequestType>();
     ArrayList<ReleaseRequestType> pendingRelReqs = new ArrayList<ReleaseRequestType>();
@@ -21,10 +21,10 @@ public class RequestsQueue {
     public void setPendingQueryReqs(ArrayList<QueryRequestType> pendingQueryReqs) {
         this.pendingQueryReqs = pendingQueryReqs;
     }
-    public ArrayList<ReservationRequestType> getPendingResvReqs() {
+    public ArrayList<ReserveRequestType> getPendingResvReqs() {
         return pendingResvReqs;
     }
-    public void setPendingResvReqs(ArrayList<ReservationRequestType> pendingResvReqs) {
+    public void setPendingResvReqs(ArrayList<ReserveRequestType> pendingResvReqs) {
         this.pendingResvReqs = pendingResvReqs;
     }
     public ArrayList<ProvisionRequestType> getPendingProvReqs() {

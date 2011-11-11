@@ -33,8 +33,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;group ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}ReservationInfoGroup"/>
- *         &lt;element name="detailedPath" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}DetailedPathType"/>
+ *         &lt;group ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}ReservationInfoGroup"/>
+ *         &lt;element name="detailedPath" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}DetailedPathType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

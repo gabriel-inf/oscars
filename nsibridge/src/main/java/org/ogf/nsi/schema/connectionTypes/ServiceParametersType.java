@@ -28,9 +28,9 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="schedule" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ScheduleType"/>
- *         &lt;element name="bandwidth" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}BandwidthType"/>
- *         &lt;element name="serviceAttributes" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}TechnologySpecificAttributesType" minOccurs="0"/>
+ *         &lt;element name="schedule" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ScheduleType"/>
+ *         &lt;element name="bandwidth" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}BandwidthType"/>
+ *         &lt;element name="serviceAttributes" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}TechnologySpecificAttributesType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

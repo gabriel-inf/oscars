@@ -28,8 +28,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="stpId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}StpIdType"/>
- *         &lt;element name="stpSpecAttrs" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}TechnologySpecificAttributesType" minOccurs="0"/>
+ *         &lt;element name="stpId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}StpIdType"/>
+ *         &lt;element name="stpSpecAttrs" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}TechnologySpecificAttributesType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

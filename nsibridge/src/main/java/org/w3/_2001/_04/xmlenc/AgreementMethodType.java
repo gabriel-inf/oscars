@@ -46,9 +46,9 @@ import org.w3._2000._09.xmldsig.KeyInfoType;
 public class AgreementMethodType {
 
     @XmlElementRefs({
+        @XmlElementRef(name = "KA-Nonce", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class),
         @XmlElementRef(name = "OriginatorKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class),
-        @XmlElementRef(name = "RecipientKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class),
-        @XmlElementRef(name = "KA-Nonce", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class)
+        @XmlElementRef(name = "RecipientKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class)
     })
     @XmlMixed
     @XmlAnyElement(lax = true)
@@ -75,11 +75,11 @@ public class AgreementMethodType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link KeyInfoType }{@code >}
-     * {@link JAXBElement }{@code <}{@link KeyInfoType }{@code >}
-     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
-     * {@link Object }
      * {@link String }
+     * {@link Object }
+     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     * {@link JAXBElement }{@code <}{@link KeyInfoType }{@code >}
+     * {@link JAXBElement }{@code <}{@link KeyInfoType }{@code >}
      * 
      * 
      */

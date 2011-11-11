@@ -29,8 +29,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice>
- *           &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionIdType" maxOccurs="unbounded" minOccurs="0"/>
- *           &lt;element name="globalReservationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}GlobalReservationIdType" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionIdType" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="globalReservationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}GlobalReservationIdType" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;/choice>
  *       &lt;/sequence>
  *     &lt;/restriction>

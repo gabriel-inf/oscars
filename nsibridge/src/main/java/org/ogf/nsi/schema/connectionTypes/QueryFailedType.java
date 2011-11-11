@@ -35,9 +35,9 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="ServiceException" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsiExceptionType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="serviceException" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ServiceExceptionType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -58,8 +58,8 @@ public class QueryFailedType {
     protected String requesterNSA;
     @XmlElement(required = true)
     protected String providerNSA;
-    @XmlElement(name = "ServiceException", required = true)
-    protected NsiExceptionType serviceException;
+    @XmlElement(required = true)
+    protected ServiceExceptionType serviceException;
 
     /**
      * Gets the value of the requesterNSA property.
@@ -114,10 +114,10 @@ public class QueryFailedType {
      * 
      * @return
      *     possible object is
-     *     {@link NsiExceptionType }
+     *     {@link ServiceExceptionType }
      *     
      */
-    public NsiExceptionType getServiceException() {
+    public ServiceExceptionType getServiceException() {
         return serviceException;
     }
 
@@ -126,10 +126,10 @@ public class QueryFailedType {
      * 
      * @param value
      *     allowed object is
-     *     {@link NsiExceptionType }
+     *     {@link ServiceExceptionType }
      *     
      */
-    public void setServiceException(NsiExceptionType value) {
+    public void setServiceException(ServiceExceptionType value) {
         this.serviceException = value;
     }
 

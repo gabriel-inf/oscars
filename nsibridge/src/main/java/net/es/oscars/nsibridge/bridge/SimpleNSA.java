@@ -10,11 +10,12 @@ import org.ogf.nsi.schema.connectionTypes.QuerySummaryResultType;
 import net.es.oscars.nsibridge.beans.NSAConnection;
 import net.es.oscars.nsibridge.beans.NSAInfo;
 import net.es.oscars.nsibridge.schedule.RequestsQueue;
-import net.es.oscars.nsibridge.soap.gen.ifce.NSIServiceException;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateRequestType;
 import net.es.oscars.nsibridge.soap.gen.requester.ConnectionRequesterPort;
 import net.es.oscars.nsibridge.util.NSAList;
@@ -47,7 +48,7 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
      *            *
      *************/
 
-    public boolean localReservation(ReservationRequestType rrt) throws NSIServiceException {
+    public boolean localReservation(ReserveRequestType rrt) throws ServiceException {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -56,7 +57,7 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
         return true;
     }
     
-    public boolean localProvision(ProvisionRequestType prt) throws NSIServiceException {
+    public boolean localProvision(ProvisionRequestType prt) throws ServiceException {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -64,7 +65,7 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
         }
         return true;
     }
-    public boolean localRelease(ReleaseRequestType rrt) throws NSIServiceException {
+    public boolean localRelease(ReleaseRequestType rrt) throws ServiceException {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -72,7 +73,7 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
         }
         return true;
     }
-    public boolean localTerminate(TerminateRequestType trt) throws NSIServiceException {
+    public boolean localTerminate(TerminateRequestType trt) throws ServiceException {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -88,7 +89,7 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
      *               *
      *****************/
     
-    public void addReservationRequest(ReservationRequestType rrt) {
+    public void addReservationRequest(ReserveRequestType rrt) {
         System.out.println(nsaId+" received reservation request [PROV]:" + RequestPrinter.printResvReq(rrt));
         this.isWorking = true;
         rq.getPendingResvReqs().add(rrt);
@@ -125,15 +126,15 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
      * PA TICK *
      ***********/
     
-    public synchronized void tick() throws NSIServiceException {
+    public synchronized void tick() throws ServiceException {
         for (QueryRequestType qrt : rq.getPendingQueryReqs()) {
             this.processQuery(qrt);
         }
         
         
-        for (ReservationRequestType rrt : rq.getPendingResvReqs()) {
+        for (ReserveRequestType rrt : rq.getPendingResvReqs()) {
             this.connectionHolder.pe_Reservation(rrt);
-            String reqNSA = rrt.getReservation().getRequesterNSA();
+            String reqNSA = rrt.getReserve().getRequesterNSA();
             System.out.println("Starting to process a reservation requested by: "+reqNSA);
             NSAInfo nsa = NSAList.getInstance().getNSAByNSAId(reqNSA);
             if (nsa == null) {
@@ -142,8 +143,10 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
             try {
                 this.localReservation(rrt);
                 ConnectionRequesterPort reqPort = RequestBuilder.getRequesterClient(rrt.getReplyTo());
-                reqPort.reservationConfirmed(RequestBuilder.makeReservationConfirmedRequestType(rrt));
+                reqPort.reserveConfirmed(RequestBuilder.makeReservationConfirmedRequestType(rrt));
             } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (ServiceException e) {
                 e.printStackTrace();
             }
             
@@ -163,6 +166,8 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
                 ConnectionRequesterPort reqPort = RequestBuilder.getRequesterClient(prt.getReplyTo());
                 reqPort.provisionConfirmed(RequestBuilder.makeProvisionConfirmedRequestType(prt));
             } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (ServiceException e) {
                 e.printStackTrace();
             }
         }
@@ -275,7 +280,7 @@ public class SimpleNSA extends SimpleRequesterNSA implements ProviderAPI, Reques
             reqPort.queryConfirmed(RequestBuilder.makeQueryConfirmedRequestType(qrt, qdrts, qsrts));
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        } catch (NSIServiceException e) {
+        } catch (ServiceException e) {
             e.printStackTrace();
         }
     }

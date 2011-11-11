@@ -9,8 +9,8 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * 
- *                 Type definition for the reservationConfirmed message. A Provider NSA
- *                 sends this positive reservationRequest response to the Requester NSA
+ *                 Type definition for the reserveConfirmed message. A Provider NSA
+ *                 sends this positive reserveRequest response to the Requester NSA
  *                 that issued the original request message.
  * 
  *                 Elements:
@@ -24,18 +24,18 @@ import javax.xml.bind.annotation.XmlType;
  *                 reservation - Parameters chosen for the connection reservation.
  *             
  * 
- * <p>Java class for ReservationConfirmedType complex type.
+ * <p>Java class for ReserveConfirmedType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="ReservationConfirmedType">
+ * &lt;complexType name="ReserveConfirmedType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="reservation" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ReservationInfoType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="reservation" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ReservationInfoType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -45,12 +45,12 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ReservationConfirmedType", propOrder = {
+@XmlType(name = "ReserveConfirmedType", propOrder = {
     "requesterNSA",
     "providerNSA",
     "reservation"
 })
-public class ReservationConfirmedType {
+public class ReserveConfirmedType {
 
     @XmlElement(required = true)
     protected String requesterNSA;

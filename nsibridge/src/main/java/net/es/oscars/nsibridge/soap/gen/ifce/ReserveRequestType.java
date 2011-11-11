@@ -6,12 +6,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-import org.ogf.nsi.schema.connectionTypes.ReservationType;
+import org.ogf.nsi.schema.connectionTypes.ReserveType;
 
 
 /**
  * 
- *                         Provides transport envelope for the reservation request
+ *                         Provides transport envelope for the reserve request
  *                         message.  Will map to a WSDL request (input) message
  *                         type in support of the NSI CS protocol.
  *                         
@@ -26,21 +26,21 @@ import org.ogf.nsi.schema.connectionTypes.ReservationType;
  *                         which the asynchronous Confirmed or Failed message
  *                         associated with this request will be delivered.
  *                         
- *                         reservation - reservation specific message parameters.
+ *                         reserve - reservation specific message parameters.
  *                     
  * 
- * <p>Java class for ReservationRequestType complex type.
+ * <p>Java class for ReserveRequestType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="ReservationRequestType">
+ * &lt;complexType name="ReserveRequestType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
  *         &lt;element name="replyTo" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
- *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}reservation"/>
+ *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}reserve"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -50,20 +50,20 @@ import org.ogf.nsi.schema.connectionTypes.ReservationType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ReservationRequestType", propOrder = {
+@XmlType(name = "ReserveRequestType", propOrder = {
     "correlationId",
     "replyTo",
-    "reservation"
+    "reserve"
 })
-public class ReservationRequestType {
+public class ReserveRequestType {
 
     @XmlElement(required = true)
     protected String correlationId;
     @XmlElement(required = true)
     @XmlSchemaType(name = "anyURI")
     protected String replyTo;
-    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", required = true)
-    protected ReservationType reservation;
+    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", required = true)
+    protected ReserveType reserve;
 
     /**
      * Gets the value of the correlationId property.
@@ -114,27 +114,27 @@ public class ReservationRequestType {
     }
 
     /**
-     * Gets the value of the reservation property.
+     * Gets the value of the reserve property.
      * 
      * @return
      *     possible object is
-     *     {@link ReservationType }
+     *     {@link ReserveType }
      *     
      */
-    public ReservationType getReservation() {
-        return reservation;
+    public ReserveType getReserve() {
+        return reserve;
     }
 
     /**
-     * Sets the value of the reservation property.
+     * Sets the value of the reserve property.
      * 
      * @param value
      *     allowed object is
-     *     {@link ReservationType }
+     *     {@link ReserveType }
      *     
      */
-    public void setReservation(ReservationType value) {
-        this.reservation = value;
+    public void setReserve(ReserveType value) {
+        this.reserve = value;
     }
 
 }

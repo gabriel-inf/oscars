@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
  *                 operation (Provider Agent).
  * 
  *                 globalReservationId - An optional global reservation id that was
- *                 originally provided in the reservation request.
+ *                 originally provided in the reserve request.
  * 
  *                 connectionId - The unique identifier for a connection that is known
  *                 between a Requesting and Provider NSA pair.
@@ -37,10 +37,10 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="globalReservationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}GlobalReservationIdType"/>
- *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionIdType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="globalReservationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}GlobalReservationIdType"/>
+ *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionIdType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

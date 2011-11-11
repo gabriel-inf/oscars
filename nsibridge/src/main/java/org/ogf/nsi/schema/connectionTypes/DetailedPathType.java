@@ -1,7 +1,6 @@
 
 package org.ogf.nsi.schema.connectionTypes;
 
-import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -46,12 +45,12 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionIdType"/>
- *         &lt;element name="connectionState" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ConnectionStateType"/>
- *         &lt;element name="pathList" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}PathListType" minOccurs="0"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="connectionId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionIdType"/>
+ *         &lt;element name="connectionState" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ConnectionStateType"/>
+ *         &lt;element name="pathList" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}PathListType" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="order" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *       &lt;attribute name="order" type="{http://www.w3.org/2001/XMLSchema}int" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -76,7 +75,7 @@ public class DetailedPathType {
     protected ConnectionStateType connectionState;
     protected PathListType pathList;
     @XmlAttribute(name = "order")
-    protected BigInteger order;
+    protected Integer order;
 
     /**
      * Gets the value of the providerNSA property.
@@ -179,10 +178,10 @@ public class DetailedPathType {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link Integer }
      *     
      */
-    public BigInteger getOrder() {
+    public Integer getOrder() {
         return order;
     }
 
@@ -191,10 +190,10 @@ public class DetailedPathType {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link Integer }
      *     
      */
-    public void setOrder(BigInteger value) {
+    public void setOrder(Integer value) {
         this.order = value;
     }
 

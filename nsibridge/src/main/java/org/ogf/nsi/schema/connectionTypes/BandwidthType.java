@@ -1,10 +1,8 @@
 
 package org.ogf.nsi.schema.connectionTypes;
 
-import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -32,9 +30,9 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="desired" type="{http://www.w3.org/2001/XMLSchema}integer"/>
- *         &lt;element name="minimum" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
- *         &lt;element name="maximum" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *         &lt;element name="desired" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="minimum" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
+ *         &lt;element name="maximum" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -51,32 +49,23 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class BandwidthType {
 
-    @XmlElement(required = true)
-    protected BigInteger desired;
-    protected BigInteger minimum;
-    protected BigInteger maximum;
+    protected int desired;
+    protected Integer minimum;
+    protected Integer maximum;
 
     /**
      * Gets the value of the desired property.
      * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
      */
-    public BigInteger getDesired() {
+    public int getDesired() {
         return desired;
     }
 
     /**
      * Sets the value of the desired property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
      */
-    public void setDesired(BigInteger value) {
+    public void setDesired(int value) {
         this.desired = value;
     }
 
@@ -85,10 +74,10 @@ public class BandwidthType {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link Integer }
      *     
      */
-    public BigInteger getMinimum() {
+    public Integer getMinimum() {
         return minimum;
     }
 
@@ -97,10 +86,10 @@ public class BandwidthType {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link Integer }
      *     
      */
-    public void setMinimum(BigInteger value) {
+    public void setMinimum(Integer value) {
         this.minimum = value;
     }
 
@@ -109,10 +98,10 @@ public class BandwidthType {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link Integer }
      *     
      */
-    public BigInteger getMaximum() {
+    public Integer getMaximum() {
         return maximum;
     }
 
@@ -121,10 +110,10 @@ public class BandwidthType {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link Integer }
      *     
      */
-    public void setMaximum(BigInteger value) {
+    public void setMaximum(Integer value) {
         this.maximum = value;
     }
 

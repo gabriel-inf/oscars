@@ -12,7 +12,8 @@ import org.apache.log4j.Logger;
 import net.es.oscars.nsibridge.bridge.NSAFactory;
 import net.es.oscars.nsibridge.soap.gen.ifce.ForcedEndRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.GenericAcknowledgmentType;
-import net.es.oscars.nsibridge.soap.gen.ifce.NSIServiceException;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveFailedRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionFailedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryConfirmedRequestType;
@@ -20,8 +21,8 @@ import net.es.oscars.nsibridge.soap.gen.ifce.QueryFailedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseFailedRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationConfirmedRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationFailedRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveConfirmedRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateFailedRequestType;
 import net.es.oscars.nsibridge.soap.gen.requester.ConnectionRequesterPort;
@@ -33,7 +34,7 @@ import net.es.oscars.nsibridge.soap.gen.requester.ConnectionRequesterPort;
  * 
  */
 
-@SuppressWarnings({ "unused", "restriction" })
+@SuppressWarnings({ "unused" })
 @javax.jws.WebService(
                       serviceName = "ConnectionServiceRequester",
                       portName = "ConnectionServiceRequesterPort",
@@ -46,11 +47,11 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
     private static final Logger LOG = Logger.getLogger(ConnectionRequesterImpl.class);
     
     
-    public GenericAcknowledgmentType reservationConfirmed(ReservationConfirmedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType reserveConfirmed(ReserveConfirmedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation reservationConfirmed");
         try {
-            String nsaId = parameters.getReservationConfirmed().getRequesterNSA();
-            NSAFactory.getInstance().getNSA(nsaId).reservationConfirmed(parameters);
+            String nsaId = parameters.getReserveConfirmed().getRequesterNSA();
+            NSAFactory.getInstance().getNSA(nsaId).reserveConfirmed(parameters);
             
             GenericAcknowledgmentType _return = new GenericAcknowledgmentType();
             _return.setCorrelationId(parameters.getCorrelationId());
@@ -61,11 +62,11 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
             throw new RuntimeException(ex);
         }
     }
-    public GenericAcknowledgmentType reservationFailed(ReservationFailedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType reserveFailed(ReserveFailedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation reservationFailed");
         try {
-            String nsaId = parameters.getReservationFailed().getRequesterNSA();
-            NSAFactory.getInstance().getNSA(nsaId).reservationFailed(parameters);
+            String nsaId = parameters.getReserveFailed().getRequesterNSA();
+            NSAFactory.getInstance().getNSA(nsaId).reserveFailed(parameters);
             
             GenericAcknowledgmentType _return = new GenericAcknowledgmentType();
             _return.setCorrelationId(parameters.getCorrelationId());
@@ -77,7 +78,7 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
     }
 
 
-    public GenericAcknowledgmentType provisionConfirmed(ProvisionConfirmedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType provisionConfirmed(ProvisionConfirmedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation provisionConfirmed");
         try {
             String nsaId = parameters.getProvisionConfirmed().getRequesterNSA();
@@ -92,7 +93,7 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }
     }
 
-    public GenericAcknowledgmentType provisionFailed(ProvisionFailedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType provisionFailed(ProvisionFailedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation provisionFailed");
         System.out.println(parameters);
         try {
@@ -108,7 +109,7 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }
     }
 
-    public GenericAcknowledgmentType releaseConfirmed(ReleaseConfirmedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType releaseConfirmed(ReleaseConfirmedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation releaseConfirmed");
         try {
             String nsaId = parameters.getReleaseConfirmed().getRequesterNSA();
@@ -124,7 +125,7 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
     }
 
 
-    public GenericAcknowledgmentType releaseFailed(ReleaseFailedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType releaseFailed(ReleaseFailedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation releaseFailed");
         try {
             String nsaId = parameters.getReleaseFailed().getRequesterNSA();
@@ -140,7 +141,7 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
     }
 
 
-    public GenericAcknowledgmentType terminateConfirmed(TerminateConfirmedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType terminateConfirmed(TerminateConfirmedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation terminateConfirmed");
         try {
             String nsaId = parameters.getTerminateConfirmed().getRequesterNSA();
@@ -155,7 +156,7 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }
     }
 
-    public GenericAcknowledgmentType terminateFailed(TerminateFailedRequestType parameters) throws NSIServiceException    { 
+    public GenericAcknowledgmentType terminateFailed(TerminateFailedRequestType parameters) throws ServiceException    { 
         LOG.info("Executing operation terminateFailed");
         try {
             String nsaId = parameters.getTerminateFailed().getRequesterNSA();
@@ -170,8 +171,8 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }
     }
 
-    public GenericAcknowledgmentType queryConfirmed(QueryConfirmedRequestType parameters) throws NSIServiceException    { 
-        throw new NSIServiceException("operation not supported");
+    public GenericAcknowledgmentType queryConfirmed(QueryConfirmedRequestType parameters) throws ServiceException    { 
+        throw new ServiceException("operation not supported");
         /*
         LOG.info("Executing operation queryConfirmed");
         try {
@@ -187,8 +188,8 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }*/
     }
 
-    public GenericAcknowledgmentType query(QueryRequestType parameters) throws NSIServiceException    { 
-        throw new NSIServiceException("operation not supported");
+    public GenericAcknowledgmentType query(QueryRequestType parameters) throws ServiceException    { 
+        throw new ServiceException("operation not supported");
         /*
         LOG.info("Executing operation query");
         try {
@@ -200,8 +201,8 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }
         */
     }
-    public GenericAcknowledgmentType queryFailed(QueryFailedRequestType parameters) throws NSIServiceException    { 
-        throw new NSIServiceException("operation not supported");
+    public GenericAcknowledgmentType queryFailed(QueryFailedRequestType parameters) throws ServiceException    { 
+        throw new ServiceException("operation not supported");
         /*
         LOG.info("Executing operation queryFailed");
         try {
@@ -217,8 +218,8 @@ public class ConnectionRequesterImpl implements ConnectionRequesterPort {
         }*/
     }
     
-    public GenericAcknowledgmentType forcedEnd(ForcedEndRequestType parameters) throws NSIServiceException    { 
-        throw new NSIServiceException("operation not supported");
+    public GenericAcknowledgmentType forcedEnd(ForcedEndRequestType parameters) throws ServiceException    { 
+        throw new ServiceException("operation not supported");
         /*
         LOG.info("Executing operation forcedEnd");
         System.out.println(parameters);

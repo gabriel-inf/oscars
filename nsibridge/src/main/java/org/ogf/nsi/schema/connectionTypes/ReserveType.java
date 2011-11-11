@@ -10,9 +10,9 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
 
 /**
  * 
- *                 Type definition for the reservation message to reserve
- *                 network resources for a connection between two STP's
- *                 constrained by a certain service parameters.
+ *                 Type definition for the reserve message that allows a
+ *                 Requester NSA to reserve network resources for a connection
+ *                 between two STP's constrained by a certain service parameters.
  * 
  *                 Elements:
  * 
@@ -30,19 +30,19 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
  *                 connection reservation.
  *             
  * 
- * <p>Java class for ReservationType complex type.
+ * <p>Java class for ReserveType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="ReservationType">
+ * &lt;complexType name="ReserveType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
- *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}NsaIdType"/>
+ *         &lt;element name="requesterNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
+ *         &lt;element name="providerNSA" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}NsaIdType"/>
  *         &lt;element name="sessionSecurityAttr" type="{urn:oasis:names:tc:SAML:2.0:assertion}AttributeStatementType" minOccurs="0"/>
- *         &lt;element name="reservation" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}ReservationInfoType"/>
+ *         &lt;element name="reservation" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}ReservationInfoType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -52,13 +52,13 @@ import oasis.names.tc.saml._2_0.assertion.AttributeStatementType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ReservationType", propOrder = {
+@XmlType(name = "ReserveType", propOrder = {
     "requesterNSA",
     "providerNSA",
     "sessionSecurityAttr",
     "reservation"
 })
-public class ReservationType {
+public class ReserveType {
 
     @XmlElement(required = true)
     protected String requesterNSA;

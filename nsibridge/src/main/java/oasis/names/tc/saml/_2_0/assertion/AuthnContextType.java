@@ -51,9 +51,9 @@ public class AuthnContextType {
 
     @XmlElementRefs({
         @XmlElementRef(name = "AuthnContextDecl", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
-        @XmlElementRef(name = "AuthnContextClassRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
         @XmlElementRef(name = "AuthnContextDeclRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
-        @XmlElementRef(name = "AuthenticatingAuthority", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class)
+        @XmlElementRef(name = "AuthenticatingAuthority", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
+        @XmlElementRef(name = "AuthnContextClassRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> content;
 
@@ -63,8 +63,8 @@ public class AuthnContextType {
      * <p>
      * You are getting this "catch-all" property because of the following reason: 
      * The field name "AuthnContextDecl" is used by two different parts of a schema. See: 
-     * line 212 of file:/Users/haniotak/helios/fenius/nsibridge/schema/saml-schema-assertion-2.0.xsd
-     * line 207 of file:/Users/haniotak/helios/fenius/nsibridge/schema/saml-schema-assertion-2.0.xsd
+     * line 212 of file:/Users/haniotak/helios/oscars_0_6/0_5_nsibridge/schema/saml-schema-assertion-2.0.xsd
+     * line 207 of file:/Users/haniotak/helios/oscars_0_6/0_5_nsibridge/schema/saml-schema-assertion-2.0.xsd
      * <p>
      * To get rid of this property, apply a property customization to one 
      * of both of the following declarations to change their names: 

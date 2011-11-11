@@ -14,7 +14,22 @@ import javax.xml.bind.annotation.XmlType;
  *  
  *                         Elements:
  *                         correlationId - The identifier provided in the original
- *                         query request.
+ *                         request operation.
+ *                         
+ *                         Notes on acknowledgment:
+ *                         Depending on NSA implementation and thread timing an
+ *                         acknowledgment to a request operation may be returned
+ *                         after the confirm/fail for the request has been returned
+ *                         to the Requesting NSA.
+ *                         
+ *                         The following guidelines for acknowledgment handling are
+ *                         proposed:
+ *                         
+ *                         1. For protocol robustness, Requesting NSA should be
+ *                         able to accept confirm/fail before acknowledgment.
+ *                         
+ *                         2. Acknowledgment should be sent by Provider NSA before
+ *                         the confirm/fail.
  *                    
  * 
  * <p>Java class for GenericAcknowledgmentType complex type.
@@ -26,7 +41,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

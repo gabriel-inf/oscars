@@ -1,29 +1,29 @@
 package net.es.oscars.nsibridge.bridge;
 
-import net.es.oscars.nsibridge.soap.gen.ifce.NSIServiceException;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionFailedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryFailedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseFailedRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationConfirmedRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationFailedRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveConfirmedRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveFailedRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateFailedRequestType;
 
 public interface RequesterAPI {
-    public void initiateResvRequest(ReservationRequestType rrt) throws NSIServiceException;
+    public void initiateResvRequest(ReserveRequestType rrt) throws ServiceException;
     
-    public void queryConfirmed(QueryConfirmedRequestType qcrt) throws NSIServiceException;
-    public void queryFailed(QueryFailedRequestType qcrt) throws NSIServiceException; 
-    public void reservationConfirmed(ReservationConfirmedRequestType rcrt) throws NSIServiceException;
-    public void reservationFailed(ReservationFailedRequestType rfrt) throws NSIServiceException;
-    public void provisionConfirmed(ProvisionConfirmedRequestType pcrt) throws NSIServiceException;
-    public void provisionFailed(ProvisionFailedRequestType pfrt) throws NSIServiceException;
-    public void releaseConfirmed(ReleaseConfirmedRequestType rcrt) throws NSIServiceException;
-    public void releaseFailed(ReleaseFailedRequestType parameters) throws NSIServiceException;
-    public void terminateConfirmed(TerminateConfirmedRequestType tcrt) throws NSIServiceException;
-    public void terminateFailed(TerminateFailedRequestType tfrt) throws NSIServiceException;
+    public void queryConfirmed(QueryConfirmedRequestType qcrt) throws ServiceException;
+    public void queryFailed(QueryFailedRequestType qcrt) throws ServiceException; 
+    public void reserveConfirmed(ReserveConfirmedRequestType rcrt) throws ServiceException;
+    public void reserveFailed(ReserveFailedRequestType rfrt) throws ServiceException;
+    public void provisionConfirmed(ProvisionConfirmedRequestType pcrt) throws ServiceException;
+    public void provisionFailed(ProvisionFailedRequestType pfrt) throws ServiceException;
+    public void releaseConfirmed(ReleaseConfirmedRequestType rcrt) throws ServiceException;
+    public void releaseFailed(ReleaseFailedRequestType parameters) throws ServiceException;
+    public void terminateConfirmed(TerminateConfirmedRequestType tcrt) throws ServiceException;
+    public void terminateFailed(TerminateFailedRequestType tfrt) throws ServiceException;
 }

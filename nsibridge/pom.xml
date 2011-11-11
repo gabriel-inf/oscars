@@ -14,7 +14,7 @@
         <java.version>1.6</java.version>
         <axis2.version>1.5.1</axis2.version>
         <rampart.version>1.5</rampart.version>
-        <build.rootdir>/Users/haniotak/helios/fenius/nsibridge</build.rootdir>
+        <build.rootdir>/Users/haniotak/helios/oscars_0_6/0_5_nsibridge</build.rootdir>
     </properties>
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
@@ -290,7 +290,7 @@
     </dependencies>
     <build>
         <plugins>
-            <!-- uncomment to regenerate SOAP generated file
+            <!-- uncomment to regenerate SOAP generated file -->
             <plugin>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-codegen-plugin</artifactId>
@@ -307,9 +307,9 @@
                                         <extraarg>-impl</extraarg>
                                         <extraarg>-autoNameResolution</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/07/connection/interface=net.es.oscars.nsibridge.soap.gen.ifce</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/interface=net.es.oscars.nsibridge.soap.gen.ifce</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/07/connection/provider=net.es.oscars.nsibridge.soap.gen.provider</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/provider=net.es.oscars.nsibridge.soap.gen.provider</extraarg>
                                     </extraargs>
                                     <wsdl>${basedir}/schema/ogf_nsi_connection_provider_v1_0.wsdl</wsdl>
                                     <bindingFiles>
@@ -322,6 +322,7 @@
                             <goal>wsdl2java</goal>
                         </goals>
                     </execution>
+                    <!-- 
                     <execution>
                         <id>generate-requester-sources</id>
                         <phase>generate-sources</phase>
@@ -333,9 +334,9 @@
                                         <extraarg>-impl</extraarg>
                                         <extraarg>-autoNameResolution</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/07/connection/interface=net.es.oscars.nsibridge.soap.gen.ifce</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/interface=net.es.oscars.nsibridge.soap.gen.ifce</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/07/connection/requester=net.es.oscars.nsibridge.soap.gen.requester</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/requester=net.es.oscars.nsibridge.soap.gen.requester</extraarg>
                                     </extraargs>
                                     <wsdl>${basedir}/schema/ogf_nsi_connection_requester_v1_0.wsdl</wsdl>
                                     <bindingFiles>
@@ -348,10 +349,10 @@
                             <goal>wsdl2java</goal>
                         </goals>
                     </execution>
-
+ -->
                 </executions>
             </plugin>
-            end SOAP gen section -->
+            <!-- end SOAP gen section -->
             <!-- puts all code & libraries in one jar -->
             <plugin>
                 <groupId>org.dstovall</groupId>
@@ -389,6 +390,41 @@
             </plugin>
 
         </plugins>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>
+        									org.apache.cxf
+        								</groupId>
+        								<artifactId>
+        									cxf-codegen-plugin
+        								</artifactId>
+        								<versionRange>
+        									[2.4.2,)
+        								</versionRange>
+        								<goals>
+        									<goal>wsdl2java</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<ignore></ignore>
+        							</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
     </build>
 
 

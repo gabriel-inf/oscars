@@ -30,8 +30,8 @@ import org.ogf.nsi.schema.connectionTypes.GenericConfirmedType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
- *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}provisionConfirmed"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
+ *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}provisionConfirmed"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -49,7 +49,7 @@ public class ProvisionConfirmedRequestType {
 
     @XmlElement(required = true)
     protected String correlationId;
-    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", required = true)
+    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", required = true)
     protected GenericConfirmedType provisionConfirmed;
 
     /**

@@ -12,10 +12,10 @@ import net.es.oscars.client.improved.cancel.CancelClient;
 import net.es.oscars.client.improved.create.CreateClient;
 import net.es.oscars.client.improved.create.CreateRequestParams;
 import net.es.oscars.client.improved.query.QueryClient;
-import net.es.oscars.nsibridge.soap.gen.ifce.NSIServiceException;
+import net.es.oscars.nsibridge.soap.gen.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.ifce.ProvisionRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateRequestType;
 import net.es.oscars.wsdlTypes.CreateReply;
 import net.es.oscars.wsdlTypes.ResCreateContent;
@@ -34,7 +34,7 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
     private HashMap<String, String> idcGriToConnId = new HashMap<String, String>();
     private HashMap<String, String> connIdToIdcGri = new HashMap<String, String>();
     
-    private Integer getVlan(String stp) throws NSIServiceException {
+    private Integer getVlan(String stp) throws ServiceException {
         if (stp.equals("urn:ogf:network:stp:Dominica:D1")) {
             return 1001;
         } else if (stp.equals("urn:ogf:network:stp:Dominica:D2")) {
@@ -44,9 +44,9 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
         } else if (stp.equals("urn:ogf:network:stp:Dominica:D4")) {
             return 1001;
         }
-        throw new NSIServiceException("cannot find VLAN for stp: "+stp);
+        throw new ServiceException("cannot find VLAN for stp: "+stp);
     }
-    private String getUrn(String stp) throws NSIServiceException {
+    private String getUrn(String stp) throws ServiceException {
         if (stp.equals("urn:ogf:network:stp:Dominica:D1")) {
             return "urn:ogf:network:domain=dev.es.net:node=aofa-sdn1:port=xe-2/1/0:link=*";
         } else if (stp.equals("urn:ogf:network:stp:Dominica:D2")) {
@@ -57,7 +57,7 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
             return "urn:ogf:network:domain=dev.es.net:node=bnl-mr3:port=xe-7/2/0:link=*";
         }
         
-        throw new NSIServiceException("cannot find OSCARS URN for stp: "+stp);
+        throw new ServiceException("cannot find OSCARS URN for stp: "+stp);
 
     }
     
@@ -68,16 +68,16 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
      *            *
      *************/
 
-    public boolean localReservation(ReservationRequestType rrt) throws NSIServiceException {
-        String connId = rrt.getReservation().getReservation().getConnectionId();
+    public boolean localReservation(ReserveRequestType rrt) throws ServiceException {
+        String connId = rrt.getReserve().getReservation().getConnectionId();
 
         
-        int bandwidth = rrt.getReservation().getReservation().getServiceParameters().getBandwidth().getDesired().intValue();
-        String desc = rrt.getReservation().getReservation().getDescription();
-        String srcStp = rrt.getReservation().getReservation().getPath().getSourceSTP().getStpId();
-        String destStp = rrt.getReservation().getReservation().getPath().getDestSTP().getStpId();
-        XMLGregorianCalendar xgcStart = rrt.getReservation().getReservation().getServiceParameters().getSchedule().getStartTime();
-        XMLGregorianCalendar xgcEnd = rrt.getReservation().getReservation().getServiceParameters().getSchedule().getEndTime();
+        int bandwidth = rrt.getReserve().getReservation().getServiceParameters().getBandwidth().getDesired();
+        String desc = rrt.getReserve().getReservation().getDescription();
+        String srcStp = rrt.getReserve().getReservation().getPath().getSourceSTP().getStpId();
+        String destStp = rrt.getReserve().getReservation().getPath().getDestSTP().getStpId();
+        XMLGregorianCalendar xgcStart = rrt.getReserve().getReservation().getServiceParameters().getSchedule().getStartTime();
+        XMLGregorianCalendar xgcEnd = rrt.getReserve().getReservation().getServiceParameters().getSchedule().getEndTime();
         long startTime = xgcStart.toGregorianCalendar().getTimeInMillis()/1000;
         long endTime = xgcEnd.toGregorianCalendar().getTimeInMillis()/1000;
         
@@ -108,7 +108,7 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
 
-            NSIServiceException ni = new NSIServiceException(ex.getMessage());
+            ServiceException ni = new ServiceException(ex.getMessage());
             throw ni;
         }
 
@@ -121,7 +121,7 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
                 this.connIdToIdcGri.put(connId, gri);
             } catch (Exception e) {
                 e.printStackTrace(System.err);
-                throw new NSIServiceException(e.getMessage());
+                throw new ServiceException(e.getMessage());
             }
         }
         
@@ -133,7 +133,7 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
     }
     
     
-    private String getIDCResvStatus(String gri) throws NSIServiceException {
+    private String getIDCResvStatus(String gri) throws ServiceException {
         QueryClient qcl = new QueryClient();
         qcl.configureSoap();
         ResDetails rd = null;
@@ -145,11 +145,11 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
             log.error(e);
             log.error("Error getting status: ");
             e.printStackTrace();
-            throw new NSIServiceException(e.getMessage());
+            throw new ServiceException(e.getMessage());
         }
     }
     
-    public boolean localProvision(ProvisionRequestType prt) throws NSIServiceException {
+    public boolean localProvision(ProvisionRequestType prt) throws ServiceException {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -157,7 +157,7 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
         }
         return true;
     }
-    public boolean localRelease(ReleaseRequestType rrt) throws NSIServiceException {
+    public boolean localRelease(ReleaseRequestType rrt) throws ServiceException {
         String connId = rrt.getRelease().getConnectionId();
         CancelClient cl = new CancelClient();
         cl.configureSoap();
@@ -169,12 +169,12 @@ public class OSCARS_0_5_NSA extends SimpleNSA implements ProviderAPI, RequesterA
             cl.cancel(gri);
         } catch (ClientException e) {
             e.printStackTrace();
-            throw new NSIServiceException(e.getMessage());
+            throw new ServiceException(e.getMessage());
         }
         
         return true;
     }
-    public boolean localTerminate(TerminateRequestType trt) throws NSIServiceException {
+    public boolean localTerminate(TerminateRequestType trt) throws ServiceException {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {

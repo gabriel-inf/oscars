@@ -1,6 +1,5 @@
 package net.es.oscars.nsibridge.util;
 
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -17,8 +16,8 @@ import net.es.oscars.nsibridge.soap.gen.ifce.QueryConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.QueryRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.ReleaseRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationConfirmedRequestType;
-import net.es.oscars.nsibridge.soap.gen.ifce.ReservationRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveConfirmedRequestType;
+import net.es.oscars.nsibridge.soap.gen.ifce.ReserveRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateConfirmedRequestType;
 import net.es.oscars.nsibridge.soap.gen.ifce.TerminateRequestType;
 import net.es.oscars.nsibridge.soap.gen.provider.ConnectionProviderPort;
@@ -34,9 +33,9 @@ import org.ogf.nsi.schema.connectionTypes.PathType;
 import org.ogf.nsi.schema.connectionTypes.QueryConfirmedType;
 import org.ogf.nsi.schema.connectionTypes.QueryDetailsResultType;
 import org.ogf.nsi.schema.connectionTypes.QuerySummaryResultType;
-import org.ogf.nsi.schema.connectionTypes.ReservationConfirmedType;
 import org.ogf.nsi.schema.connectionTypes.ReservationInfoType;
-import org.ogf.nsi.schema.connectionTypes.ReservationType;
+import org.ogf.nsi.schema.connectionTypes.ReserveConfirmedType;
+import org.ogf.nsi.schema.connectionTypes.ReserveType;
 import org.ogf.nsi.schema.connectionTypes.ScheduleType;
 import org.ogf.nsi.schema.connectionTypes.ServiceParametersType;
 import org.ogf.nsi.schema.connectionTypes.ServiceTerminationPointType;
@@ -97,8 +96,7 @@ public class RequestBuilder {
     public static ServiceParametersType makeServiceParametersType(int bw, ScheduleType st) {
         ServiceParametersType spt = new ServiceParametersType();
         BandwidthType bpt = new BandwidthType();
-        BigInteger bi = BigInteger.valueOf(bw);
-        bpt.setDesired(bi);
+        bpt.setDesired(bw);
         spt.setBandwidth(bpt);
         spt.setSchedule(st);
         return spt;
@@ -144,14 +142,14 @@ public class RequestBuilder {
         return prt;
     }
     
-    public static ReservationRequestType makeReservationRequestType(NSAInfo reqNSA, NSAInfo provNSA, String connId, String corrId, String gri, String description, PathType pt, ServiceParametersType spt) {
-        ReservationRequestType rrt = new ReservationRequestType();
+    public static ReserveRequestType makeReserveRequestType(NSAInfo reqNSA, NSAInfo provNSA, String connId, String corrId, String gri, String description, PathType pt, ServiceParametersType spt) {
+        ReserveRequestType rrt = new ReserveRequestType();
             
             
         rrt.setReplyTo(reqNSA.getRequesterUrl());
         rrt.setCorrelationId(corrId);
-        ReservationType rt = new ReservationType();
-        rrt.setReservation(rt);
+        ReserveType rt = new ReserveType();
+        rrt.setReserve(rt);
         rt.setProviderNSA(provNSA.getNsaId());
         rt.setRequesterNSA(reqNSA.getNsaId());
         
@@ -166,13 +164,13 @@ public class RequestBuilder {
         return rrt;
     }
 
-    public static ReservationConfirmedRequestType makeReservationConfirmedRequestType(ReservationRequestType rrt) {
-        ReservationConfirmedRequestType rcrt = new ReservationConfirmedRequestType();
-        ReservationConfirmedType rct = new ReservationConfirmedType();
-        rct.setProviderNSA(rrt.getReservation().getProviderNSA());
-        rct.setRequesterNSA(rrt.getReservation().getRequesterNSA());
-        rct.setReservation(rrt.getReservation().getReservation());
-        rcrt.setReservationConfirmed(rct);
+    public static ReserveConfirmedRequestType makeReservationConfirmedRequestType(ReserveRequestType rrt) {
+        ReserveConfirmedRequestType rcrt = new ReserveConfirmedRequestType();
+        ReserveConfirmedType rct = new ReserveConfirmedType();
+        rct.setProviderNSA(rrt.getReserve().getProviderNSA());
+        rct.setRequesterNSA(rrt.getReserve().getRequesterNSA());
+        rct.setReservation(rrt.getReserve().getReservation());
+        rcrt.setReserveConfirmed(rct);
         rcrt.setCorrelationId(rrt.getCorrelationId());
         return rcrt;
     }

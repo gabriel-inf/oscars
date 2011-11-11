@@ -10,28 +10,28 @@ import org.ogf.nsi.schema.connectionTypes.GenericFailedType;
 
 /**
  * 
- *                         Provides transport envelope for the reservation failed
+ *                         Provides transport envelope for the reserve failed
  *                         message.  Will map to a WSDL request (input) message type
  *                         in support of the NSI CS protocol.
  *                         
  *                         Elements:
  *                         correlationId - The identifier provided in the original
- *                         reservation request.
+ *                         reserve request.
  *                         
- *                         reservationFailed - negative reservation result.
+ *                         reserveFailed - negative reserve result.
  *                     
  * 
- * <p>Java class for ReservationFailedRequestType complex type.
+ * <p>Java class for ReserveFailedRequestType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="ReservationFailedRequestType">
+ * &lt;complexType name="ReserveFailedRequestType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/07/connection/types}uuidType"/>
- *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/07/connection/types}reservationFailed"/>
+ *         &lt;element name="correlationId" type="{http://schemas.ogf.org/nsi/2011/10/connection/types}uuidType"/>
+ *         &lt;element ref="{http://schemas.ogf.org/nsi/2011/10/connection/types}reserveFailed"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -41,16 +41,16 @@ import org.ogf.nsi.schema.connectionTypes.GenericFailedType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ReservationFailedRequestType", propOrder = {
+@XmlType(name = "ReserveFailedRequestType", propOrder = {
     "correlationId",
-    "reservationFailed"
+    "reserveFailed"
 })
-public class ReservationFailedRequestType {
+public class ReserveFailedRequestType {
 
     @XmlElement(required = true)
     protected String correlationId;
-    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/07/connection/types", required = true)
-    protected GenericFailedType reservationFailed;
+    @XmlElement(namespace = "http://schemas.ogf.org/nsi/2011/10/connection/types", required = true)
+    protected GenericFailedType reserveFailed;
 
     /**
      * Gets the value of the correlationId property.
@@ -77,27 +77,27 @@ public class ReservationFailedRequestType {
     }
 
     /**
-     * Gets the value of the reservationFailed property.
+     * Gets the value of the reserveFailed property.
      * 
      * @return
      *     possible object is
      *     {@link GenericFailedType }
      *     
      */
-    public GenericFailedType getReservationFailed() {
-        return reservationFailed;
+    public GenericFailedType getReserveFailed() {
+        return reserveFailed;
     }
 
     /**
-     * Sets the value of the reservationFailed property.
+     * Sets the value of the reserveFailed property.
      * 
      * @param value
      *     allowed object is
      *     {@link GenericFailedType }
      *     
      */
-    public void setReservationFailed(GenericFailedType value) {
-        this.reservationFailed = value;
+    public void setReserveFailed(GenericFailedType value) {
+        this.reserveFailed = value;
     }
 
 }
