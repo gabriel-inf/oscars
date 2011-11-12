@@ -57,7 +57,7 @@ configure router mpls no path "${path.name}"
 
 <#list vlans as vlan> 
 <#list ifces as ifceName> 
-configure service vpls ${epipe.id} sap ${ifceName}:${vlan} ingress qos "${ingqosid}"
+configure service vpls ${vlan} sap ${ifceName}:${vlan} ingress qos "${ingqosid}"
 </#list>
 </#list>
 
