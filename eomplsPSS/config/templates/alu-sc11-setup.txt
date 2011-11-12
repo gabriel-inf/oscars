@@ -74,7 +74,7 @@ configure service sdp ${sdp.id} no shutdown
 <#list ifces as ifceName> 
 configure service vpls ${vlan} customer 1 create sap ${ifceName}:${vlan} create 
 exit all
-configure service vpls ${vlan} service-mtu 9194
+configure service vpls ${vlan} service-mtu 9114
 configure service vpls ${vlan} sap ${ifceName}:${vlan} shutdown
 configure service vpls ${vlan} description "${epipe.description}"
 configure service vpls ${vlan} sap ${ifceName}:${vlan} ingress qos "${ingqos.id}"
