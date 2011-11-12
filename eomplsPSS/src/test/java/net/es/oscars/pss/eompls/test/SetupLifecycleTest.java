@@ -71,13 +71,15 @@ public class SetupLifecycleTest {
 
         
         // same device
-        ResDetails resDet = RequestFactory.getSameDevice();
+        ResDetails resDet;
         
-        this.testBoth(resDet);
+        // resDet = RequestFactory.getSameDevice();
+        
+        // this.testBoth(resDet);
         
         // two hops 
-        resDet = RequestFactory.getTwoHop();
-        this.testBoth(resDet);
+        // resDet = RequestFactory.getABC();
+        // this.testBoth(resDet);
         
         
         

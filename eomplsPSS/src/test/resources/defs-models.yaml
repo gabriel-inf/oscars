@@ -23,10 +23,10 @@
     - id:               stub
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
 
-- id: "alu-sr-presetqos"
+- id: "alu-sr-sc11"
   services: 
     - id:               eompls
-      configGenerator:  "net.es.oscars.pss.eompls.alu.SRPresetQosConfigGen"
+      configGenerator:  "net.es.oscars.pss.eompls.alu.SC11_SRConfigGen"
     
     - id:               stub
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
