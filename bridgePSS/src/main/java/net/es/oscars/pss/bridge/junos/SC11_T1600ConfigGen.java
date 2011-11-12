@@ -64,7 +64,7 @@ public class SC11_T1600ConfigGen implements DeviceConfigGenerator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private String getLSPTeardown(ResDetails res, String deviceId) throws PSSException {
-        String templateFile = "junos-t1600-bridge-teardown.txt";
+        String templateFile = "junos-t1600-sc11-teardown.txt";
 
         
         String portA;
@@ -105,7 +105,7 @@ public class SC11_T1600ConfigGen implements DeviceConfigGenerator {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private String getLSPSetup(ResDetails res, String deviceId) throws PSSException  {
 
-        String templateFile = "junos-t1600-bridge-setup.txt";
+        String templateFile = "junos-t1600-sc11-setup.txt";
 
         String portA;
         String portZ;

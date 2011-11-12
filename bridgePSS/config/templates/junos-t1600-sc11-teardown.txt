@@ -1,8 +1,28 @@
 configure private
+<#assign all_vlans = "">
+
 <#list vlans as vlan> 
-delete interfaces ${portA} unit ${vlan} 
-delete interfaces ${portZ} unit ${vlan} 
-delete protocols l2circuit local-switching interface ${portA}.${vlan} 
+
+<#assign vlan_no = vlan?number>
+<#assign all_vlans = all_vlans+" "+vlan>
+<#assign mod = vlan_no % 2>
+
+<#if portA = "et-0/0/0" || portA = "et-1/0/0" || portA = "et-2/0/0">
+<#assign newPortA = portA + ":" + mod>
+<#else>
+<#assign newPortA = portA>
+</#if>
+
+<#if portZ = "et-0/0/0" || portZ = "et-1/0/0" || portZ = "et-2/0/0">
+<#assign newPortZ = portZ + ":" + mod>
+<#else>
+<#assign newPortZ = portZ>
+</#if>
+
+delete interfaces ${newPortA} unit ${vlan} 
+delete interfaces ${newPortZ} unit ${vlan} 
+delete protocols l2circuit local-switching interface ${newPortA}.${vlan} 
 </#list>
-commit and-quit synchronize comment "IDC removed local-switching: ${portA}.${vlan} ,  ${portZ}.${vlan}"
+
+commit and-quit synchronize comment "IDC removed local-switching: ${newPortA} ,  ${newPortZ} vlan(s): ${all_vlans}"
 

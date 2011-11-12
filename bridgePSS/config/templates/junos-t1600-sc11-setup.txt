@@ -1,14 +1,32 @@
 configure private
+<#assign all_vlans = "">
+
 <#list vlans as vlan> 
-set interfaces ${portA} unit ${vlan} encapsulation vlan-ccc
-set interfaces ${portA} unit ${vlan} vlan-id ${vlan}
-set interfaces ${portA} unit ${vlan} description "IDC vlan ${vlan} -> ${portZ}"
-set interfaces ${portZ} unit ${vlan} encapsulation vlan-ccc
-set interfaces ${portZ} unit ${vlan} vlan-id ${vlan}
-set interfaces ${portZ} unit ${vlan} description "IDC vlan ${vlan} -> ${portA}"
-set protocols l2circuit local-switching interface ${portA}.${vlan} end-interface interface ${portZ}.${vlan}
-set protocols l2circuit local-switching interface ${portA}.${vlan} ignore-mtu-mismatch
+<#assign vlan_no = vlan?number>
+<#assign all_vlans = all_vlans+" "+vlan>
+<#assign mod = vlan_no % 2>
+
+<#if portA = "et-0/0/0" || portA = "et-1/0/0" || portA = "et-2/0/0">
+<#assign newPortA = portA + ":" + mod>
+<#else>
+<#assign newPortA = portA>
+</#if>
+
+<#if portZ = "et-0/0/0" || portZ = "et-1/0/0" || portZ = "et-2/0/0">
+<#assign newPortZ = portZ + ":" + mod>
+<#else>
+<#assign newPortZ = portZ>
+</#if>
+
+set interfaces ${newPortA} unit ${vlan} encapsulation vlan-ccc
+set interfaces ${newPortA} unit ${vlan} vlan-id ${vlan}
+set interfaces ${newPortA} unit ${vlan} description "IDC vlan ${vlan} -> ${newPortZ}"
+set interfaces ${newPortZ} unit ${vlan} encapsulation vlan-ccc
+set interfaces ${newPortZ} unit ${vlan} vlan-id ${vlan}
+set interfaces ${newPortZ} unit ${vlan} description "IDC vlan ${vlan} -> ${newPortA}"
+set protocols l2circuit local-switching interface ${newPortA}.${vlan} end-interface interface ${newPortZ}.${vlan}
+set protocols l2circuit local-switching interface ${newPortA}.${vlan} ignore-mtu-mismatch
 </#list>
 
-commit and-quit synchronize comment "IDC local-switched: ${portA}.${vlan} ,  ${portZ}.${vlan}"
+commit and-quit synchronize comment "IDC local-switched: ${newPortA} ,  ${newPortZ}, vlan(s) ${all_vlans}"
 
