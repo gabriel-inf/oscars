@@ -41,10 +41,18 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
         String[] v830 = {"830", "831", "832", "833", "834", "835"};
         vlansHack.put("830", v830);
+
+        String[] v265 = {"265", "266", "267", "268", "269", "270"};
+        vlansHack.put("265", v265);
         
-        String[] v654 = {"654", "1811"};
+        String[] v654 = {"654", "655"};
         vlansHack.put("654", v654);
-//        String[] v999 = {"900", "901"};
+
+        String[] v310 = {"310", "311"};
+        vlansHack.put("310", v310);
+
+        
+        //        String[] v999 = {"900", "901"};
 //        vlansHack.put("999", v999);
 
         String[] nersc = {"9/1/1", "9/1/2", "9/1/3", "9/1/4", "10/1/3", "10/1/4", "10/1/5", "10/1/6", "10/1/7", "10/1/8", "10/1/9", "10/1/10", "10/1/11"};
