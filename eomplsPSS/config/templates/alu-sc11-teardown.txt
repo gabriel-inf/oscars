@@ -25,6 +25,37 @@ configure router mpls path "${path.name}" shutdown
 configure router mpls no path "${path.name}" 
 
 <#else>
+# configure service vpls ${epipe.id} shutdown
+# configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} shutdown
+# configure service vpls ${epipe.id} no spoke-sdp ${sdp.id}:${epipe.id} 
+
+<#list vlans as vlan> 
+<#list ifces as ifceName> 
+# configure service vpls ${epipe.id} sap ${ifceName}:${vlan} shutdown
+# configure service vpls ${epipe.id} no sap ${ifceName}:${vlan} 
+</#list>
+</#list>
+
+# configure service no vpls ${epipe.id} 
+
+# configure service sdp ${sdp.id} shutdown
+# configure service no sdp ${sdp.id} 
+
+
+# configure qos no sap-ingress "${ingqos.id}"
+# configure qos no sap-egress "${egrqos.id}"
+
+# configure router mpls lsp "${lsp.name}" shutdown
+# configure router mpls no lsp "${lsp.name}" 
+# configure router mpls path "${path.name}" shutdown
+# configure router mpls no path "${path.name}" 
+
+
+
+
+
+
+
 
 <#list vlans as vlan> 
 <#list ifces as ifceName> 
