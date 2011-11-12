@@ -79,6 +79,7 @@ configure service vpls ${epipe.id} sap ${ifceName}:${vlan} shutdown
 configure service vpls ${epipe.id} description "${epipe.description}"
 configure service vpls ${epipe.id} sap ${ifceName}:${vlan} ingress qos "${ingqos.id}"
 configure service vpls ${epipe.id} sap ${ifceName}:${vlan} egress qos "3000"
+configure service vpls ${epipe.id} sap ${ifceName}:${vlan} no shutdown 
 </#list>
 </#list>
 
