@@ -84,6 +84,7 @@ configure service vpls ${epipe.id} sap ${ifceName}:${vlan} no shutdown
 </#list>
 
 configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} create
+configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} hash-label
 exit all 
 configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
 configure service vpls ${epipe.id} no shutdown
