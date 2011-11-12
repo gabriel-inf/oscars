@@ -30,14 +30,15 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private HashMap<String, String[]> vlansHack = new HashMap<String, String[]>();
     private HashMap<String, String[]> multipointHacks = new HashMap<String, String[]>();
     private HashMap<String, String> qosSetupHacks = new HashMap<String, String>();
-    private HashMap<String, String> qosTeardownHacks = new HashMap<String, String>();
-    
+    private HashMap<String, String> teardownHacks = new HashMap<String, String>();
+    private ArrayList<String> setupHacks = new ArrayList<String>();
+
     
     
     public SC11_SRConfigGen() {
         String[] v817 = {"817", "818", "819", "820", "821", "822", "823", "824", "825", "826", "827", "828", "829"};
         vlansHack.put("817", v817);
-        String[] v830 = {"830", "832", "833", "834", "835"};
+        String[] v830 = {"830", "831", "832", "833", "834", "835"};
         vlansHack.put("830", v830);
         
 //        String[] v999 = {"900", "901"};
@@ -54,7 +55,8 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         qosSetupHacks.put("SC11-100G", "3100");
         qosSetupHacks.put("SC11-40G", "3040");
         qosSetupHacks.put("SC11-60G", "3060");
-        qosTeardownHacks.put("SC11", "3001");
+        teardownHacks.put("SC11", "3001");
+        setupHacks.add("NOSETUP");
     }
    
 
@@ -174,10 +176,10 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         boolean teardownqos = true;
 
         String description = res.getDescription();
-        for (String hack : qosTeardownHacks.keySet()) {
+        for (String hack : teardownHacks.keySet()) {
             if (description.contains(hack)) {
                 teardownqos = false;
-                ingQosId = qosTeardownHacks.get(hack);
+                ingQosId = teardownHacks.get(hack);
             }
         }
         root.put("teardownqos", teardownqos);
@@ -336,12 +338,20 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         String description = res.getDescription();
         for (String hack : qosSetupHacks.keySet()) {
             if (description.contains(hack)) {
-                log.debug("hck: "+hack);
                 createqos = false;
                 ingQosId = qosSetupHacks.get(hack);
             }
         }
         root.put("createqos", createqos);
+        
+        boolean createpath = true;
+        for (String hack : setupHacks) {
+            if (description.contains(hack)) {
+                createpath = false;
+            }
+            
+        }
+        root.put("createpath", createpath);
 
 
         if (vlansHack.keySet().contains(resvVlan) ) {

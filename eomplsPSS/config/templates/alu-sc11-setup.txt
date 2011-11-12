@@ -20,9 +20,30 @@ exit all
 configure qos sap-ingress "${ingqos.id}" default-fc ef
 configure qos sap-ingress "${ingqos.id}" default-priority high
 exit all
-
+<#else>
+#exit all
+#configure qos sap-ingress "${ingqos.id}" create
+#exit all
+#configure qos sap-ingress "${ingqos.id}" description "${ingqos.description}"
+#configure qos sap-ingress "${ingqos.id}" queue 2 create
+#exit all
+#configure qos sap-ingress "${ingqos.id}" queue 2 no parent
+#configure qos sap-ingress "${ingqos.id}" queue 2 adaptation-rule pir closest cir closest
+#configure qos sap-ingress "${ingqos.id}" queue 2 rate max cir ${ingqos.bandwidth?string.computer}000
+#configure qos sap-ingress "${ingqos.id}" queue 2 mbs default
+#configure qos sap-ingress "${ingqos.id}" queue 2 cbs default
+#configure qos sap-ingress "${ingqos.id}" queue 2 high-prio-only default
+#configure qos sap-ingress "${ingqos.id}" queue 11 multipoint create
+#exit all
+#configure qos sap-ingress "${ingqos.id}" fc "ef" create
+#exit all
+#configure qos sap-ingress "${ingqos.id}" fc "ef" queue 2
+#exit all
+#configure qos sap-ingress "${ingqos.id}" default-fc ef
+#configure qos sap-ingress "${ingqos.id}" default-priority high
 </#if>
 
+<#if createpath>
 # mpls path
 configure router mpls path "${path.name}" shutdown
 <#list path.hops as hop>
@@ -66,3 +87,14 @@ exit all
 configure service vpls ${epipe.id} spoke-sdp ${sdp.id}:${epipe.id} no shutdown
 configure service vpls ${epipe.id} no shutdown
 exit all
+<#else>
+
+<#list vlans as vlan> 
+<#list ifces as ifceName> 
+configure service vpls ${epipe.id} sap ${ifceName}:${vlan} ingress qos "${ingqos.id}"
+</#list>
+</#list>
+
+
+</#if>
+
