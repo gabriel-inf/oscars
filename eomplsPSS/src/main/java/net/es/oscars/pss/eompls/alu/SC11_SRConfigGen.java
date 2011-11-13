@@ -42,7 +42,10 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
         String[] nersc = {"9/1/1", "9/1/2", "9/1/3", "9/1/4", "10/1/3", "10/1/4", "10/1/5", "10/1/6", "10/1/7", "10/1/8", "10/1/9", "10/1/10", "10/1/11"};
         multipointHacks.put("nersc-ani:10ges", nersc);
-        
+
+        String[] star = {"10/1/1", "10/1/2",  "10/1/3", "10/1/4", "10/1/5", "10/1/6", "10/1/7", "10/1/8", "10/1/9", "10/1/10", "10/1/11", "10/1/12"};
+        multipointHacks.put("star-ani:10ges", star);
+
         qosSetupHacks.put("SC11-SHARED", "3010");
         qosSetupHacks.put("SC11-100G", "3100");
         qosSetupHacks.put("SC11-40G", "3040");
