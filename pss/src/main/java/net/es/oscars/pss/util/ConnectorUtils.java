@@ -17,6 +17,10 @@ public class ConnectorUtils {
     private static Logger log = Logger.getLogger(ConnectorUtils.class);
     public static DeviceConfigGenerator getDeviceConfigGenerator(String deviceId, String serviceId) throws PSSException {
         String modelId = ClassFactory.getInstance().getDeviceModelMap().getDeviceModel(deviceId);
+        if (modelId == null) {
+            throw new PSSException("no model defined for devic "+deviceId);
+
+        }
         DeviceModelDefinition dmd = ConfigHolder.getInstance().getDeviceModelDefinition(modelId);
         if (dmd == null) { 
             throw new PSSException("no device model definition for model "+modelId);
