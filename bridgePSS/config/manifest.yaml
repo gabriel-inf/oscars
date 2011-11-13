@@ -41,9 +41,8 @@ PSSService:
         config-device-addresses.yaml:           'OSCARS_HOME/PSSService/conf/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_HOME/PSSService/conf/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
-        config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
         config-ifce-aliases.yaml:               'OSCARS_HOME/PSSService/conf/config-ifce-aliases.yaml'
-        config-vlan-groups.yaml:                'OSCARS_DIST/PSSService/conf/config-vlan-groups.yaml'
+        config-vlan-groups.yaml:                'OSCARS_HOME/PSSService/conf/config-vlan-groups.yaml'
 
 
     SDK:
@@ -63,9 +62,8 @@ PSSService:
         config-device-addresses.yaml:           'OSCARS_HOME/PSSService/conf/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_HOME/PSSService/conf/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
-        config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
         config-ifce-aliases.yaml:               'OSCARS_HOME/PSSService/conf/config-ifce-aliases.yaml'
-        config-vlan-groups.yaml:                'OSCARS_DIST/PSSService/conf/config-vlan-groups.yaml'
+        config-vlan-groups.yaml:                'OSCARS_HOME/PSSService/conf/config-vlan-groups.yaml'
         
     PRODUCTION:
         config.yaml:        'OSCARS_HOME/PSSService/conf/config.SSL.yaml'
@@ -84,9 +82,8 @@ PSSService:
         config-device-addresses.yaml:           'OSCARS_HOME/PSSService/conf/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_HOME/PSSService/conf/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
-        config-device-models.yaml:              'OSCARS_HOME/PSSService/conf/config-device-models.yaml'
         config-ifce-aliases.yaml:               'OSCARS_HOME/PSSService/conf/config-ifce-aliases.yaml'
-        config-vlan-groups.yaml:                'OSCARS_DIST/PSSService/conf/config-vlan-groups.yaml'
+        config-vlan-groups.yaml:                'OSCARS_HOME/PSSService/conf/config-vlan-groups.yaml'
         
         
 

@@ -10,14 +10,13 @@ PSSService:
         defs-models.yaml:   'OSCARS_DIST/bridgePSS/src/test/resources/defs-models.yaml'
         defs-services.yaml: 'OSCARS_DIST/bridgePSS/src/test/resources/defs-services.yaml'
         
-        config-ifce-aliases.yaml:   'OSCARS_DIST/bridgePSS/src/test/resources/config-ifce-aliases.yaml'
+        config-ifce-aliases.yaml:               'OSCARS_DIST/bridgePSS/config/config-ifce-aliases.yaml'
+        config-vlan-groups.yaml:                'OSCARS_DIST/bridgePSS/config/config-vlan-groups.yaml'
 
         config-connector-directory.yaml:        'OSCARS_DIST/bridgePSS/src/test/resources/config-connector-directory.yaml'
         config-device-addresses.yaml:           'OSCARS_DIST/bridgePSS/src/test/resources/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_DIST/bridgePSS/src/test/resources/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_DIST/bridgePSS/src/test/resources/config-device-models.yaml'
-        config-device-models.yaml:              'OSCARS_DIST/bridgePSS/src/test/resources/config-device-models.yaml'
-        config-vlan-groups.yaml:                'OSCARS_DIST/bridgePSS/src/test/resources/config-vlan-groups.yaml'
 
         PSSService.xsd:     'OSCARS_DIST/common-soap/src/main/resources/pss/pss.xsd'
         PSSService.wsdl:    'OSCARS_DIST/common-soap/src/main/resources/pss/pss.wsdl'
