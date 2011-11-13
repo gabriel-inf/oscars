@@ -20,10 +20,8 @@ import net.es.oscars.pss.util.VlanGroupConfig;
 
 public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_SRConfigGen.class);
-    private static VlanGroupConfig vcg;
 
     
-    @SuppressWarnings("unchecked")
     public SC11_SRConfigGen() throws PSSException {
         VlanGroupConfig.configure();
     }

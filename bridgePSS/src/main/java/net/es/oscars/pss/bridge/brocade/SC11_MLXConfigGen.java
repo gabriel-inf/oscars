@@ -1,17 +1,11 @@
 package net.es.oscars.pss.bridge.brocade;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ho.yaml.Yaml;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
@@ -24,14 +18,10 @@ import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.util.IfceAliasConfig;
 import net.es.oscars.pss.util.TemplateUtils;
 import net.es.oscars.pss.util.VlanGroupConfig;
-import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
-import net.es.oscars.utils.config.ContextConfig;
-import net.es.oscars.utils.svc.ServiceNames;
 
 public class SC11_MLXConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_MLXConfigGen.class);
-    @SuppressWarnings("unchecked")
     public SC11_MLXConfigGen() throws ConfigException, PSSException {
 
         VlanGroupConfig.configure();
