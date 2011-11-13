@@ -15,8 +15,8 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpe
 public class RequestFactory {
     public static ResDetails getTwoHop() {
         String gri = "twoHop-768";
-        String srcEdge = "urn:ogf:network:sc11.org:edge-1:1/1/0:edge";
-        String hop1    = "urn:ogf:network:sc11.org:edge-1:xe-2/0/0:edge-2";
+        String srcEdge = "urn:ogf:network:sc11.org:edge-1:et-0/0/0:edge";
+        String hop1    = "urn:ogf:network:sc11.org:edge-1:et-2/0/0:edge-2";
         String hop2    = "urn:ogf:network:sc11.org:edge-2:1/1/1:edge-1";
         String hop3    = "urn:ogf:network:sc11.org:edge-2:2/1/1:core-1";
         String hop4    = "urn:ogf:network:sc11.org:core-1:core-2:core-2";
@@ -29,9 +29,9 @@ public class RequestFactory {
         VlanTag srcVlan                     = new VlanTag();
         VlanTag dstVlan                     = new VlanTag();
         srcVlan.setTagged(true);
-        srcVlan.setValue("999");
+        srcVlan.setValue("998");
         dstVlan.setTagged(true);
-        dstVlan.setValue("999");
+        dstVlan.setValue("998");
         rc.setBandwidth(1000);
 
         
@@ -42,17 +42,17 @@ public class RequestFactory {
         l2Info.setDestVtag(dstVlan);
         CtrlPlanePathContent path           = new CtrlPlanePathContent();
 
-        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "999");
+        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "998");
         
-        CtrlPlaneHopContent cpHop1          = RequestFactory.makeEdgeHop(hop1, "999");
-        CtrlPlaneHopContent cpHop2          = RequestFactory.makeEdgeHop(hop2, "999");
-        CtrlPlaneHopContent cpHop3          = RequestFactory.makeEdgeHop(hop3, "999");
-        CtrlPlaneHopContent cpHop4          = RequestFactory.makeEdgeHop(hop4, "999");
+        CtrlPlaneHopContent cpHop1          = RequestFactory.makeEdgeHop(hop1, "998");
+        CtrlPlaneHopContent cpHop2          = RequestFactory.makeEdgeHop(hop2, "998");
+        CtrlPlaneHopContent cpHop3          = RequestFactory.makeEdgeHop(hop3, "998");
+        CtrlPlaneHopContent cpHop4          = RequestFactory.makeEdgeHop(hop4, "998");
         
         
         
 
-        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "999");
+        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "998");
         
 
         resDet.setGlobalReservationId(gri);
@@ -84,9 +84,9 @@ public class RequestFactory {
         VlanTag srcVlan                     = new VlanTag();
         VlanTag dstVlan                     = new VlanTag();
         srcVlan.setTagged(true);
-        srcVlan.setValue("999");
+        srcVlan.setValue("998");
         dstVlan.setTagged(true);
-        dstVlan.setValue("999");
+        dstVlan.setValue("998");
         rc.setBandwidth(1000);
 
         
@@ -97,15 +97,15 @@ public class RequestFactory {
         l2Info.setDestVtag(dstVlan);
         CtrlPlanePathContent path           = new CtrlPlanePathContent();
 
-        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "999");
+        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "998");
         
-        CtrlPlaneHopContent cpHop1          = RequestFactory.makeEdgeHop(hop1, "999");
-        CtrlPlaneHopContent cpHop2          = RequestFactory.makeEdgeHop(hop2, "999");
+        CtrlPlaneHopContent cpHop1          = RequestFactory.makeEdgeHop(hop1, "998");
+        CtrlPlaneHopContent cpHop2          = RequestFactory.makeEdgeHop(hop2, "998");
         
         
         
 
-        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "999");
+        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "998");
         
 
         resDet.setGlobalReservationId(gri);
@@ -136,9 +136,9 @@ public class RequestFactory {
         VlanTag srcVlan                     = new VlanTag();
         VlanTag dstVlan                     = new VlanTag();
         srcVlan.setTagged(true);
-        srcVlan.setValue("999");
+        srcVlan.setValue("998");
         dstVlan.setTagged(true);
-        dstVlan.setValue("999");
+        dstVlan.setValue("998");
         rc.setBandwidth(1000);
 
         
@@ -149,15 +149,15 @@ public class RequestFactory {
         l2Info.setDestVtag(dstVlan);
         CtrlPlanePathContent path           = new CtrlPlanePathContent();
 
-        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "999");
+        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "998");
         
-        CtrlPlaneHopContent cpHop1          = RequestFactory.makeEdgeHop(hop1, "999");
-        CtrlPlaneHopContent cpHop2          = RequestFactory.makeEdgeHop(hop2, "999");
+        CtrlPlaneHopContent cpHop1          = RequestFactory.makeEdgeHop(hop1, "998");
+        CtrlPlaneHopContent cpHop2          = RequestFactory.makeEdgeHop(hop2, "998");
         
         
         
 
-        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "999");
+        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "998");
         
 
         resDet.setGlobalReservationId(gri);
@@ -187,9 +187,9 @@ public class RequestFactory {
         VlanTag srcVlan                     = new VlanTag();
         VlanTag dstVlan                     = new VlanTag();
         srcVlan.setTagged(true);
-        srcVlan.setValue("999");
+        srcVlan.setValue("998");
         dstVlan.setTagged(true);
-        dstVlan.setValue("999");
+        dstVlan.setValue("998");
         rc.setBandwidth(1000);
         
         
@@ -201,8 +201,8 @@ public class RequestFactory {
         
         CtrlPlanePathContent path           = new CtrlPlanePathContent();
 
-        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "999");
-        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "999");
+        CtrlPlaneHopContent srcHop          = RequestFactory.makeEdgeHop(srcEdge, "998");
+        CtrlPlaneHopContent dstHop          = RequestFactory.makeEdgeHop(dstEdge, "998");
         
         
         resDet.setGlobalReservationId(gri);
@@ -238,8 +238,8 @@ public class RequestFactory {
         
         hop.setLinkIdRef(linkId);
         link.setId(linkId);
-        ssi.setSuggestedVLANRange("999");
-        ssi.setVlanRangeAvailability("999");
+        ssi.setSuggestedVLANRange("998");
+        ssi.setVlanRangeAvailability("998");
         scp.setSwitchingCapabilitySpecificInfo(ssi);
         link.setSwitchingCapabilityDescriptors(scp);
         hop.setLink(link);

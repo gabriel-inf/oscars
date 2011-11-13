@@ -20,9 +20,10 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.bridge.beans.DeviceBridge;
 import net.es.oscars.pss.bridge.util.BridgeUtils;
-import net.es.oscars.pss.bridge.util.VlanGroupConfig;
 import net.es.oscars.pss.enums.ActionStatus;
+import net.es.oscars.pss.util.IfceAliasConfig;
 import net.es.oscars.pss.util.TemplateUtils;
+import net.es.oscars.pss.util.VlanGroupConfig;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
@@ -30,36 +31,11 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 public class SC11_MLXConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_MLXConfigGen.class);
-    private HashMap<String, String> ifceAliases;
-    private static VlanGroupConfig vcg;
     @SuppressWarnings("unchecked")
     public SC11_MLXConfigGen() throws ConfigException, PSSException {
-        ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
-        cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
-        String configFilePath = cc.getFilePath("config-ifce-aliases.yaml");
-        System.out.println("loading ifce aliases from "+configFilePath);
-        SC11_MLXConfigGen.class.getClassLoader();
-        try {
-            InputStream propFile = new FileInputStream(new File(configFilePath));
-            ifceAliases = (HashMap<String, String>) Yaml.load(propFile);
-            try {
-                propFile.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        } catch (FileNotFoundException e) {
-            System.err.println("ifce aliases file: "+ configFilePath + " not found");
-            e.printStackTrace();
-            System.exit(1);
-        }
 
-        
-        for (String alias : ifceAliases.keySet()) {
-            log.debug("alias "+alias+" maps to "+ifceAliases.get(alias));
-        }
-        vcg.configure();
-
+        VlanGroupConfig.configure();
+        IfceAliasConfig.configure();
 
     }
     
@@ -112,12 +88,8 @@ public class SC11_MLXConfigGen implements DeviceConfigGenerator {
         DeviceBridge db = BridgeUtils.getDeviceBridge(deviceId, res);
         portA = db.getPortA();
         portZ = db.getPortZ();
-        if (this.ifceAliases.keySet().contains(portA)) {
-            portA = this.ifceAliases.get(portA);
-        }
-        if (this.ifceAliases.keySet().contains(portZ)) {
-            portZ = this.ifceAliases.get(portZ);
-        }
+        portA = IfceAliasConfig.getIfce(deviceId, portA);
+        portZ = IfceAliasConfig.getIfce(deviceId, portZ);
         
         ifceVlan = db.getVlanA();
         if (!ifceVlan.equals(db.getVlanZ())) {
@@ -125,13 +97,7 @@ public class SC11_MLXConfigGen implements DeviceConfigGenerator {
         }
        
 
-        ArrayList<String> vlans;
-        if (vcg.vlanGroups.containsKey(ifceVlan)) {
-            vlans = vcg.vlanGroups.get(ifceVlan);
-        } else {
-            vlans = new ArrayList<String>();
-            vlans.add(ifceVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
 
 
         Map root = new HashMap();
@@ -159,12 +125,8 @@ public class SC11_MLXConfigGen implements DeviceConfigGenerator {
         DeviceBridge db = BridgeUtils.getDeviceBridge(deviceId, res);
         portA = db.getPortA();
         portZ = db.getPortZ();
-        if (this.ifceAliases.keySet().contains(portA)) {
-            portA = this.ifceAliases.get(portA);
-        }
-        if (this.ifceAliases.keySet().contains(portZ)) {
-            portZ = this.ifceAliases.get(portZ);
-        }
+        portA = IfceAliasConfig.getIfce(deviceId, portA);
+        portZ = IfceAliasConfig.getIfce(deviceId, portZ);
 
         ifceVlan = db.getVlanA();
         if (!ifceVlan.equals(db.getVlanZ())) {
@@ -172,13 +134,7 @@ public class SC11_MLXConfigGen implements DeviceConfigGenerator {
         }
        
 
-        ArrayList<String> vlans;
-        if (vcg.vlanGroups.containsKey(ifceVlan)) {
-            vlans = vcg.vlanGroups.get(ifceVlan);
-        } else {
-            vlans = new ArrayList<String>();
-            vlans.add(ifceVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
 
 
         Map root = new HashMap();

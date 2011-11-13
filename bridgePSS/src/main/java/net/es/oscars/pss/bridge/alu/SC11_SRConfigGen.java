@@ -14,9 +14,9 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.bridge.beans.DeviceBridge;
 import net.es.oscars.pss.bridge.util.BridgeUtils;
-import net.es.oscars.pss.bridge.util.VlanGroupConfig;
 import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.util.TemplateUtils;
+import net.es.oscars.pss.util.VlanGroupConfig;
 
 public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_SRConfigGen.class);
@@ -25,7 +25,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
     
     @SuppressWarnings("unchecked")
     public SC11_SRConfigGen() throws PSSException {
-        vcg.configure();
+        VlanGroupConfig.configure();
     }
 
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
@@ -85,13 +85,8 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
         Map root = new HashMap();
         
-        ArrayList<String> vlans;
-        if (vcg.vlanGroups.containsKey(ifceVlan)) {
-            vlans = vcg.vlanGroups.get(ifceVlan);
-        } else {
-            vlans = new ArrayList<String>();
-            vlans.add(ifceVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
+        
 
         root.put("vlans", vlans);
         root.put("portA", portA);
@@ -121,13 +116,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
             throw new PSSException("different VLANs not supported");
         }
        
-        ArrayList<String> vlans;
-        if (vcg.vlanGroups.containsKey(ifceVlan)) {
-            vlans = vcg.vlanGroups.get(ifceVlan);
-        } else {
-            vlans = new ArrayList<String>();
-            vlans.add(ifceVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
 
 
         Map root = new HashMap();

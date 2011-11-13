@@ -14,16 +14,15 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.bridge.beans.DeviceBridge;
 import net.es.oscars.pss.bridge.util.BridgeUtils;
-import net.es.oscars.pss.bridge.util.VlanGroupConfig;
 import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.util.TemplateUtils;
+import net.es.oscars.pss.util.VlanGroupConfig;
 
 public class SC11_T1600ConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_T1600ConfigGen.class);
    
-    private static VlanGroupConfig vcg;
     public SC11_T1600ConfigGen() throws PSSException {
-        vcg.configure();
+        VlanGroupConfig.configure();
     }
     
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
@@ -81,13 +80,7 @@ public class SC11_T1600ConfigGen implements DeviceConfigGenerator {
         }
        
 
-        ArrayList<String> vlans;
-        if (vcg.vlanGroups.containsKey(ifceVlan)) {
-            vlans = vcg.vlanGroups.get(ifceVlan);
-        } else {
-            vlans = new ArrayList<String>();
-            vlans.add(ifceVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
 
 
         Map root = new HashMap();
@@ -121,13 +114,7 @@ public class SC11_T1600ConfigGen implements DeviceConfigGenerator {
         }
        
 
-        ArrayList<String> vlans;
-        if (vcg.vlanGroups.containsKey(ifceVlan)) {
-            vlans = vcg.vlanGroups.get(ifceVlan);
-        } else {
-            vlans = new ArrayList<String>();
-            vlans.add(ifceVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
 
 
         Map root = new HashMap();
