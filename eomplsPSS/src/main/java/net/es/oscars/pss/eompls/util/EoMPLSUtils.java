@@ -105,7 +105,9 @@ public class EoMPLSUtils {
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         String templateDir;
         try {
+            String context = cc.getContext();
             templateDir = cc.getFilePath("templateDir");
+            log.debug("templates for context "+context+" at:"+templateDir);
         } catch (ConfigException e) {
             throw new PSSException(e);
         }

@@ -14,7 +14,9 @@ PSSService:
         config-device-addresses.yaml:           'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-addresses.yaml'
         config-device-connectors.yaml:          'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-connectors.yaml'
         config-device-models.yaml:              'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-models.yaml'
-        config-device-models.yaml:              'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-models.yaml'
+
+        config-ifce-aliases.yaml:               'OSCARS_DIST/eomplsPSS/config/config-ifce-aliases.yaml'
+        config-vlan-groups.yaml:                'OSCARS_DIST/eomplsPSS/config/config-vlan-groups.yaml'
 
         config-eompls.yaml:                     'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls.yaml'
         config-eompls-device-addresses.yaml:    'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls-device-addresses.yaml'

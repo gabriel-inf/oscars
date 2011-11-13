@@ -23,11 +23,11 @@ import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
+import net.es.oscars.pss.util.VlanGroupConfig;
 
 public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_SRConfigGen.class);
     
-    private HashMap<String, String[]> vlansHack = new HashMap<String, String[]>();
     private HashMap<String, String[]> multipointHacks = new HashMap<String, String[]>();
     private HashMap<String, String> qosSetupHacks = new HashMap<String, String>();
     private HashMap<String, String> teardownHacks = new HashMap<String, String>();
@@ -35,32 +35,13 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
     
     
-    public SC11_SRConfigGen() {
-        String[] v817 = {"817", "818", "819", "820", "821", "822", "823", "824", "825", "826", "827", "828", "829"};
-        vlansHack.put("817", v817);
+    public SC11_SRConfigGen() throws PSSException {
 
-        String[] v830 = {"830", "831", "832", "833", "834", "835"};
-        vlansHack.put("830", v830);
+        VlanGroupConfig.configure();
 
-        String[] v265 = {"265", "266", "267", "268", "269", "270"};
-        vlansHack.put("265", v265);
-        
-        String[] v654 = {"654", "655"};
-        vlansHack.put("654", v654);
-
-        String[] v310 = {"310", "311"};
-        vlansHack.put("310", v310);
-
-        
-        //        String[] v999 = {"900", "901"};
-//        vlansHack.put("999", v999);
 
         String[] nersc = {"9/1/1", "9/1/2", "9/1/3", "9/1/4", "10/1/3", "10/1/4", "10/1/5", "10/1/6", "10/1/7", "10/1/8", "10/1/9", "10/1/10", "10/1/11"};
         multipointHacks.put("nersc-ani:10ges", nersc);
-        
-        
-//        String[] test = {"9/1/1", "9/1/2"};
-//        multipointHacks.put("beta:1/1/3", test);
         
         qosSetupHacks.put("SC11-SHARED", "3010");
         qosSetupHacks.put("SC11-100G", "3100");
@@ -125,7 +106,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private String getLSPTeardown(ResDetails res, String deviceId) throws PSSException {
-        String templateFile = "alu-sc11-teardown.txt";
+        String templateFile = "alu-vpls-sc11-teardown.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         
@@ -180,7 +161,6 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         Map epipe = new HashMap();
         Map sdp = new HashMap();
 
-        ArrayList vlans = new ArrayList();
         ArrayList ifces = new ArrayList();
             
         
@@ -195,14 +175,8 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         }
         root.put("teardownqos", teardownqos);
 
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, ifceName, resvVlan);
 
-        if (vlansHack.keySet().contains(resvVlan) ) {
-            for (String vlan: vlansHack.get(resvVlan)) {
-                vlans.add(vlan);
-            }
-        } else {
-            vlans.add(resvVlan);
-        }
         
         String devIfce = deviceId+":"+ifceName;
         if (multipointHacks.keySet().contains(devIfce)) {
@@ -239,7 +213,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private String getLSPSetup(ResDetails res, String deviceId) throws PSSException  {
 
-        String templateFile = "alu-sc11-setup.txt";
+        String templateFile = "alu-vpls-sc11-setup.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -340,7 +314,6 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         Map sdp = new HashMap();
         Map ingqos = new HashMap();
         ArrayList hops = new ArrayList();
-        ArrayList vlans = new ArrayList();
         ArrayList ifces = new ArrayList();
             
         
@@ -363,15 +336,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
             
         }
         root.put("createpath", createpath);
-
-
-        if (vlansHack.keySet().contains(resvVlan) ) {
-            for (String vlan: vlansHack.get(resvVlan)) {
-                vlans.add(vlan);
-            }
-        } else {
-            vlans.add(resvVlan);
-        }
+        ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, ifceName, resvVlan);
         
         String devIfce = deviceId+":"+ifceName;
         if (multipointHacks.keySet().contains(devIfce)) {

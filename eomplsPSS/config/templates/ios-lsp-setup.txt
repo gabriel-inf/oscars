@@ -3,7 +3,7 @@ configure terminal
 <#-- a policy-map to soft-police at the reservation bandwidth -->
 policy-map ${policy.name}
   class class-default
-   police cir ${lsp.bandwidth}
+   police cir ${lsp.bandwidth?string.computer}
      conform-action set-mpls-exp-topmost-transmit 4
      exceed-action policed-dscp-transmit
      violate-action policed-dscp-transmit
