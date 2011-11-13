@@ -35,15 +35,11 @@ Utils:
         templateDir:        'OSCARS_DIST/utils/config'
         config.yaml:        'OSCARS_DIST/utils/config/config.yaml'
 
-    DEVELOPMENT:
-        templateDir:        'OSCARS_HOME/Utils/conf/'
-        config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
-
-    SDK:
-        templateDir:        'OSCARS_HOME/Utils/conf/'
-        config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
-
-    PRODUCTION:
-        templateDir:        'OSCARS_HOME/Utils/conf/'
-        config.yaml:        'OSCARS_HOME/Utils/conf/config.yaml'
-        
+CoordService:
+    UNITTEST:
+        templateDir:        'OSCARS_DIST/coordinator/config'
+        config.yaml:        'OSCARS_DIST/coordinator/config/config.HTTP.yaml'
+        server-cxf.xml:     'OSCARS_DIST/coordinator/config/server-cxf-http.xml'
+        client-cxf.xml:     'OSCARS_DIST/coordinator/config/client-cxf-http.xml'
+        log4j.properties:   'OSCARS_DIST/coordinator/config/log4j.INFO.properties'
+        wsdl:               'OSCARS_DIST/common-soap/src/main/resources/coord/coord.wsdl'
