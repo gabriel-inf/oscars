@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ public class IfceAliasConfig {
         try {
             cc.loadManifest(ServiceNames.SVC_PSS,  ConfigDefaults.MANIFEST); // manifest.yaml
             String configFilePath = cc.getFilePath("config-ifce-aliases.yaml");
+            log.debug("loading ifce aliases from "+configFilePath);
             InputStream propFile = new FileInputStream(new File(configFilePath));
             ifceAliasConfig = (Map<String, Map<String, String>>) Yaml.load(propFile);
         } catch (ConfigException e) {
@@ -47,32 +47,32 @@ public class IfceAliasConfig {
 
         }
 
+        String out ="";
         for (String device : ifceAliases.keySet()) {
-            String out = "ifce aliases for:" +device+ ": ";
+            out  += "device: [" +device+ "] \n";
             HashMap<String, String> deviceIfceAliases = ifceAliases.get(device);
-            for (String alias : deviceIfceAliases.keySet()) {
-                String ifce = deviceIfceAliases.get(alias);
-                out += alias+"=> "+ifce;
+            for (String key : deviceIfceAliases.keySet()) {
+                String ifce = deviceIfceAliases.get(key);
+                out += "    ["+key+"] => ["+ifce+"]\n";
             }
-            log.debug("ifce aliases: \n"+out);
-
         }
+        log.debug("configured these ifce aliases: \n"+out);
     }
     public static String getIfce(String deviceId, String alias) {
-        String ifce;
-        HashMap<String, String> deviceIfceAliases;
-
-        if (!ifceAliases.containsKey(deviceId)) {
-            deviceIfceAliases = ifceAliases.get(deviceId);
-        } else if (ifceAliases.containsKey("global")) {
-            deviceIfceAliases = ifceAliases.get("global");
-        } else {
-            return alias;
-        }
+        
+        log.debug("looking for alias ["+alias+"] on device ["+deviceId+"]");
+        HashMap<String, String> deviceIfceAliases = ifceAliases.get(deviceId);
         if (deviceIfceAliases == null) {
-            return alias;
+            log.debug("no aliases defined for "+deviceId+" trying global");
+            deviceIfceAliases = ifceAliases.get("global");
+            if (deviceIfceAliases == null) {
+                log.debug("no global aliases defined");
+                return alias;
+            }
         }
+        
         if (deviceIfceAliases.containsKey(alias)) {
+            log.debug("alias "+alias+" for "+deviceIfceAliases.get(alias)+" found at device "+deviceId);
             return deviceIfceAliases.get(alias);
         } else {
             return alias;
