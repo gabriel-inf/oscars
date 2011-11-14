@@ -86,6 +86,7 @@ configure service vpls ${vlan} spoke-sdp ${sdp.id}:${vlan} hash-label
 exit all 
 configure service vpls ${vlan} spoke-sdp ${sdp.id}:${vlan} no shutdown
 configure service vpls ${vlan} fdb-table-size 4096
+configure service vpls ${vlan} per-service-hashing
 configure service vpls ${vlan} no shutdown
 exit all
 
