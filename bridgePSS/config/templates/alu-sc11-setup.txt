@@ -1,7 +1,25 @@
 <#list vlans as vlan> 
 exit all
-configure service vpls ${vlan} customer 1 create sap ${portA}:${vlan} create no shutdown
-configure service vpls ${vlan} customer 1 create sap ${portZ}:${vlan} create no shutdown
+
+<#if vlan = "277" >
+<#assign hackedVlan = "0"> 
+
+<#else if vlan = "278">
+<#assign hackedVlan = "0"> 
+<#if portZ = "6/1/1">
+<#assign portZ = "6/1/2"> 
+</#if>
+
+<#if portA = "6/1/1">
+<#assign portA = "6/1/2"> 
+</#if>
+
+<#else>
+<#assign hackedVlan = vlan> 
+</#if>
+
+configure service vpls ${vlan} customer 1 create sap ${portA}:${hackedVlan} create no shutdown
+configure service vpls ${vlan} customer 1 create sap ${portZ}:${hackedVlan} create no shutdown
 configure service vpls ${vlan} customer 1 service-mtu 9194
 configure service vpls ${vlan} customer 1 stp no shutdown
 configure service vpls ${vlan} customer 1 igmp-snooping no shutdown
