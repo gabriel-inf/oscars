@@ -57,6 +57,7 @@ configure router mpls no path "${path.name}"
 
 <#list vlans as vlan> 
 <#list ifces as ifceName> 
+configure service vpls ${vlan} per-service-hashing
 configure service vpls ${vlan} sap ${ifceName}:${vlan} ingress qos "${ingqosid}"
 </#list>
 </#list>
