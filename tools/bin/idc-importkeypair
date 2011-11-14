@@ -98,7 +98,11 @@ if [ "$CERT_FILE" == "" ]; then
 fi
 
 # convert PEM into DER
-openssl pkcs8 -topk8 -nocrypt -in $KEY_FILE -inform PEM -out $KEY_FILE.der -outform DER -passin pass:$PEM_PASS
+if [ "$PEM_PASS" == "" ] || [ "$PEM_PASS" == "none" ]; then
+    openssl pkcs8 -topk8 -nocrypt -in $KEY_FILE -inform PEM -out $KEY_FILE.der -outform DER 
+else
+    openssl pkcs8 -topk8 -nocrypt -in $KEY_FILE -inform PEM -out $KEY_FILE.der -outform DER -passin pass:$PEM_PASS
+fi
 openssl x509 -in $CERT_FILE -inform PEM -out $CERT_FILE.der -outform DER
 
 # make keychain
