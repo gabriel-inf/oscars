@@ -21,8 +21,10 @@ configure private
 
 delete interfaces ${newPortA} unit ${vlan} 
 delete interfaces ${newPortZ} unit ${vlan} 
-delete protocols l2circuit local-switching interface ${newPortA}.${vlan} 
+
+delete routing-instances vlan${vlan}
+
 </#list>
 
-commit and-quit synchronize comment "IDC removed local-switching: ${newPortA} ,  ${newPortZ} vlan(s): ${all_vlans}"
+commit and-quit synchronize comment "IDC removed vpls: ${newPortA} ,  ${newPortZ} vlan(s): ${all_vlans}"
 

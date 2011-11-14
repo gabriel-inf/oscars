@@ -18,15 +18,27 @@ configure private
 <#assign newPortZ = portZ>
 </#if>
 
-set interfaces ${newPortA} unit ${vlan} encapsulation vlan-ccc
-set interfaces ${newPortA} unit ${vlan} vlan-id ${vlan}
-set interfaces ${newPortA} unit ${vlan} description "IDC vlan ${vlan} -> ${newPortZ}"
-set interfaces ${newPortZ} unit ${vlan} encapsulation vlan-ccc
-set interfaces ${newPortZ} unit ${vlan} vlan-id ${vlan}
-set interfaces ${newPortZ} unit ${vlan} description "IDC vlan ${vlan} -> ${newPortA}"
-set protocols l2circuit local-switching interface ${newPortA}.${vlan} end-interface interface ${newPortZ}.${vlan}
-set protocols l2circuit local-switching interface ${newPortA}.${vlan} ignore-mtu-mismatch
+
+delete interfaces ${newPortA} unit ${vlan} 
+delete interfaces ${newPortZ} unit ${vlan} 
+
+delete protocols l2circuit local-switching interface ${newPortA}.${vlan} 
+
+
+set routing-instances vlan${vlan} instance-type vpls
+set routing-instances vlan${vlan} protocols vpls
+
+set routing-instances vlan${vlan} interface ${newPortA}.${vlan}
+set routing-instances vlan${vlan} interface ${newPortZ}.${vlan}
+set routing-instances vlan${vlan} interface ${newPortA}.${vlan}
+
+set routing-instances vlan${vlan} route-distinguisher 140.221.251.243:${vlan}
+set routing-instances  vrf-target target:14031:${vlan};
+
+
+
+
 </#list>
 
-commit and-quit synchronize comment "IDC local-switched: ${newPortA} ,  ${newPortZ}, vlan(s) ${all_vlans}"
+commit and-quit synchronize comment "IDC vpls: ${newPortA} ,  ${newPortZ}, vlan(s) ${all_vlans}"
 
