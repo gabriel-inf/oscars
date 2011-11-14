@@ -26,7 +26,8 @@
 </#if>
 
 <#else>
-<#assign hackedVlan = vlan> 
+<#assign hackedVlanA = vlan> 
+<#assign hackedVlanZ = vlan> 
 </#if>
 
 configure service vpls ${vlan} customer 1 create sap ${portA}:${hackedVlanA} create no shutdown

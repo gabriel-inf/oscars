@@ -28,7 +28,8 @@
 
 
 <#else>
-<#assign hackedVlan = vlan> 
+<#assign hackedVlanA = vlan> 
+<#assign hackedVlanZ = vlan> 
 </#if>
 
 exit all
