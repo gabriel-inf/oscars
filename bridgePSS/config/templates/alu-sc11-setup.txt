@@ -30,13 +30,17 @@
 <#assign hackedVlanZ = vlan> 
 </#if>
 
-configure service vpls ${vlan} customer 1 create sap ${portA}:${hackedVlanA} create no shutdown
-configure service vpls ${vlan} customer 1 create sap ${portZ}:${hackedVlanZ} create no shutdown
-configure service vpls ${vlan} customer 1 service-mtu 9194
-configure service vpls ${vlan} customer 1 stp no shutdown
-configure service vpls ${vlan} customer 1 igmp-snooping no shutdown
-configure service vpls ${vlan} customer 1 pim-snooping no shutdown
+configure service vpls ${vlan} customer 1 create 
+
+
+configure service vpls ${vlan} sap ${portA}:${hackedVlanA} create no shutdown
+configure service vpls ${vlan} sap ${portZ}:${hackedVlanZ} create no shutdown
+configure service vpls ${vlan} service-mtu 9194
+configure service vpls ${vlan} stp no shutdown
+configure service vpls ${vlan} igmp-snooping no shutdown
+configure service vpls ${vlan} pim-snooping no shutdown
 configure service vpls ${vlan} fdb-table-size 4096
+configure service vpls ${vlan} per-service-hashing
 configure service vpls ${vlan} no shutdown
 </#list>
 
