@@ -2,7 +2,7 @@
 <#if vlan = "277" >
 <#assign hackedVlan = "0"> 
 
-<#else if vlan = "278">
+<#elseif vlan = "278">
 <#assign hackedVlan = "0"> 
 <#if portZ = "6/1/1">
 <#assign portZ = "6/1/2"> 
