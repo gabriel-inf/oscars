@@ -97,6 +97,7 @@ exit all
 
 <#list vlans as vlan> 
 <#list ifces as ifceName> 
+configure service vpls ${vlan} per-service-hashing
 configure service vpls ${epipe.id} sap ${ifceName}:${vlan} ingress qos "${ingqos.id}"
 </#list>
 </#list>
