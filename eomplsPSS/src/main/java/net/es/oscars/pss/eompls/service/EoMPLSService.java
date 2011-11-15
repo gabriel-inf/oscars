@@ -23,6 +23,7 @@ import net.es.oscars.pss.util.ActionUtils;
 import net.es.oscars.pss.util.ClassFactory;
 import net.es.oscars.pss.util.ConnectorUtils;
 import net.es.oscars.utils.soap.ErrorReport;
+import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.topology.PathTools;
 
@@ -80,8 +81,7 @@ public class EoMPLSService implements CircuitService {
             
             String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
             String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-            boolean sameDevice = srcDeviceId.equals(dstDeviceId);
-            
+            boolean sameDevice = srcDeviceId.equals(dstDeviceId);            
             if (!sameDevice) {
                 log.debug("source edge device id is: "+srcDeviceId+", starting teardown..");
                 action = this.processActionForDevice(action, srcDeviceId);

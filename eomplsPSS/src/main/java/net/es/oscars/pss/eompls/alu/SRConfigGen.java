@@ -23,6 +23,7 @@ import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
+import net.es.oscars.utils.soap.OSCARSServiceException;
 
 public class SRConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SRConfigGen.class);
@@ -71,8 +72,7 @@ public class SRConfigGen implements DeviceConfigGenerator {
         
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-        boolean sameDevice = srcDeviceId.equals(dstDeviceId);
-        
+        boolean sameDevice = srcDeviceId.equals(dstDeviceId);        
         if (sameDevice) {
             throw new PSSException("Same device crossconnects not supported on IOS");
         } else {
@@ -86,6 +86,7 @@ public class SRConfigGen implements DeviceConfigGenerator {
         String templateFile = "alu-epipe-teardown.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
         
         String ingQosId;
         String egrQosId;
@@ -179,6 +180,7 @@ public class SRConfigGen implements DeviceConfigGenerator {
         String templateFile = "alu-epipe-setup.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
 
         String ifceName;
         String ifceVlan;

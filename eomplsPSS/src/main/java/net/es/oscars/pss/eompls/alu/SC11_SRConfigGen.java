@@ -24,6 +24,7 @@ import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.pss.util.VlanGroupConfig;
+import net.es.oscars.utils.soap.OSCARSServiceException;
 
 public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_SRConfigGen.class);
@@ -112,7 +113,8 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         String templateFile = "alu-vpls-sc11-teardown.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-        
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+       
         String ingQosId;
         String epipeId;
         String sdpId;
@@ -219,6 +221,8 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         String templateFile = "alu-vpls-sc11-setup.txt";
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+        
 
         String ifceName;
         
