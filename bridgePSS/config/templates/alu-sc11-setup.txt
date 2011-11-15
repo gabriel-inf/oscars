@@ -6,10 +6,11 @@ exit all
 <#list ifces as ifceName> 
 
 
+<#assign hackedIfce = ifceName> 
 <#assign hackedVlan = vlan> 
 <#if device = "edge-2">
   <#if ifceName = "6/1/1" && vlan = "278">
-    <#assign ifceName = "6/1/2"> 
+    <#assign hackedIfce = "6/1/2"> 
     <#assign hackedVlan = "0"> 
   </#if>
   <#if ifceName = "6/1/1" && vlan = "277">
@@ -18,8 +19,8 @@ exit all
 </#if>
 
 
-configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} create no shutdown
-configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} ingress qos "3100"
+configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} create no shutdown
+configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} ingress qos "3100"
 </#list> 
 
 
