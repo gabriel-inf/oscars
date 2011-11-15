@@ -2,10 +2,12 @@ package net.es.oscars.pss.eompls.junos;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 
 import net.es.oscars.api.soap.gen.v06.PathInfo;
@@ -22,6 +24,8 @@ import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
+import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.topology.PathTools;
 
 public class MXConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(MXConfigGen.class);
@@ -141,9 +145,16 @@ public class MXConfigGen implements DeviceConfigGenerator {
         Integer bw = rc.getBandwidth();
         PathInfo pi = rc.getPathInfo();
        
-        CtrlPlaneLinkContent ingressLink = pi.getPath().getHop().get(0).getLink();
-        CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
+        List<CtrlPlaneHopContent> localHops;
+        try {
+            localHops = PathTools.getLocalHops(pi.getPath(), PathTools.getLocalDomainId());
+        } catch (OSCARSServiceException e) {
+            throw new PSSException(e);
+        }
         
+        CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
+        CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
+                
         String srcLinkId = ingressLink.getId();
         URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
@@ -314,9 +325,16 @@ public class MXConfigGen implements DeviceConfigGenerator {
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
         
-        CtrlPlaneLinkContent ingressLink = pi.getPath().getHop().get(0).getLink();
-        CtrlPlaneLinkContent egressLink = pi.getPath().getHop().get(pi.getPath().getHop().size()-1).getLink();
+        List<CtrlPlaneHopContent> localHops;
+        try {
+            localHops = PathTools.getLocalHops(pi.getPath(), PathTools.getLocalDomainId());
+        } catch (OSCARSServiceException e) {
+            throw new PSSException(e);
+        }
         
+        CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
+        CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
+                
         String srcLinkId = ingressLink.getId();
         URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
         String dstLinkId = egressLink.getId();
