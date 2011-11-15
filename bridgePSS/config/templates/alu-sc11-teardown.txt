@@ -1,13 +1,19 @@
 <#list vlans as vlan> 
 exit all
+
 <#list ifces as ifceName> 
-<#if vlan = "277" || vlan = "278" >
-  <#if ifceName = "6/1/1" || ifceName = "6/1/1" >
+
+<#assign hackedVlan = vlan> 
+<#if device = "edge-2">
+  <#if ifceName = "6/1/1" && vlan = "278">
+    <#assign ifceName = "6/1/2"> 
     <#assign hackedVlan = "0"> 
   </#if>
-<#else>
-  <#assign hackedVlan = vlan> 
+  <#if ifceName = "6/1/1" && vlan = "277">
+    <#assign hackedVlan = "0"> 
+  </#if>
 </#if>
+
 <#if device = "edge-2">
 configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} ingress qos "3001"
 # configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} shutdown
@@ -17,6 +23,7 @@ configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} shutdown
 configure service vpls ${vlan} no sap ${ifceName}:${hackedVlan} 
 </#if>
 </#list> 
+
 <#if device = "edge-2">
 # configure service vpls ${vlan} no pim-snooping 
 # configure service vpls ${vlan} shutdown
