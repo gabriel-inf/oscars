@@ -41,7 +41,9 @@ configure service vpls ${vlan} stp no shutdown
 configure service vpls ${vlan} igmp-snooping no shutdown
 configure service vpls ${vlan} pim-snooping no shutdown
 configure service vpls ${vlan} fdb-table-size 4096
+<#if device = "edge-2">
 configure service vpls ${vlan} per-service-hashing
+</#if>
 configure service vpls ${vlan} no shutdown
 </#if>
 
