@@ -30,6 +30,8 @@ public class VlanLinkEvaluator extends LinkEvaluator {
             ArrayList<CtrlPlaneLinkContent> currentBestPath) {
         
         CtrlPlaneSwcapContent swcap = link.getSwitchingCapabilityDescriptors();
+        String linkId = NMWGParserUtil.normalizeURN(link.getId());
+        String localDomain = PathTools.getLocalDomainId();
         
         //skip this link if no vlan info to analyze
         if(!this.hasVlanInfo(swcap)){
@@ -63,10 +65,20 @@ public class VlanLinkEvaluator extends LinkEvaluator {
                 return false;
             }
             
+            //this hop is local and we set the vlanRange of local links, so don't need to go any further
+            if(localDomain != null && NMWGParserUtil.normalizeURN(bestPathLink.getId()).startsWith(localDomain)){
+                break;
+            }
+            
             //if has translation then we don't need to look any further
             if(swcapInfo.isVlanTranslation() != null && swcapInfo.isVlanTranslation()){
-                return true;
+                break;
             }
+        }
+        
+        //set the vlan range if its a local link so constrained range is passed to next domain
+        if(localDomain != null && linkId.startsWith(localDomain)){
+            link.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().setVlanRangeAvailability(vlanRange.toString());
         }
         
         return true;
