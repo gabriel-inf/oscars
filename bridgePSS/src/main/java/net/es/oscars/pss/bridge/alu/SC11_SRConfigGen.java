@@ -86,6 +86,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
         
 
+        root.put("device", deviceId);
         root.put("vlans", vlans);
         root.put("portA", portA);
         root.put("portZ", portZ);
@@ -119,6 +120,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
         Map root = new HashMap();
 
+        root.put("device", deviceId);
         root.put("vlans", vlans);
         root.put("portA", portA);
         root.put("portZ", portZ);

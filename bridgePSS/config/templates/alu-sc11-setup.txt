@@ -35,6 +35,10 @@ exit all
 
 configure service vpls ${vlan} sap ${portA}:${hackedVlanA} create no shutdown
 configure service vpls ${vlan} sap ${portZ}:${hackedVlanZ} create no shutdown
+configure service vpls ${vlan} sap ${portA}:${hackedVlanA} ingress qos "3100"
+configure service vpls ${vlan} sap ${portZ}:${hackedVlanZ} ingress qos "3100"
+
+
 configure service vpls ${vlan} service-mtu 9194
 configure service vpls ${vlan} stp no shutdown
 configure service vpls ${vlan} igmp-snooping no shutdown
