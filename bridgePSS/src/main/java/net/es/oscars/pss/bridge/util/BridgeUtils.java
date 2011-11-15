@@ -14,6 +14,7 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.bridge.beans.DeviceBridge;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
+import net.es.oscars.utils.topology.PathTools;
 
 public class BridgeUtils {
     private static Logger log = Logger.getLogger(BridgeUtils.class);
@@ -28,8 +29,11 @@ public class BridgeUtils {
             String linkId = link.getId();
 
             URNParserResult res = URNParser.parseTopoIdent(linkId);
-            if (!result.contains(res.getNodeId())) {
-                result.add(res.getNodeId());
+            if (res.getDomainId().equals(PathTools.getLocalDomainId())) {
+                if (!result.contains(res.getNodeId())) {
+                    result.add(res.getNodeId());
+                }
+            
             }
         }
         
