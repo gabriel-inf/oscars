@@ -91,7 +91,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         
         String[] ifceNames = new String[2];
         ifceNames[0] = portA;
-        ifceNames[0] = portZ;
+        ifceNames[1] = portZ;
         
         ArrayList ifces = new ArrayList();
 
@@ -146,7 +146,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         root.put("vlans", vlans);
         String[] ifceNames = new String[2];
         ifceNames[0] = portA;
-        ifceNames[0] = portZ;
+        ifceNames[1] = portZ;
         
         ArrayList ifces = new ArrayList();
 
