@@ -8,6 +8,9 @@ exit all
 <#if vlan = "277" || vlan = "278" >
   <#if ifceName = "6/1/1" || ifceName = "6/1/1" >
     <#assign hackedVlan = "0"> 
+  </#if> 
+  <#else>
+    <#assign hackedVlan = vlan> 
   </#if>
 <#else>
   <#assign hackedVlan = vlan> 
