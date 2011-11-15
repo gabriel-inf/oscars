@@ -24,7 +24,7 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private HashMap<String, String[]> multipointHacks = new HashMap<String, String[]>();
 
     public SC11_SRConfigGen() throws PSSException {
-        String[] nasaIcair = {"9/1/1", "7/1/1:817"};
+        String[] nasaIcair = {"9/1/1", "7/1/1"};
         multipointHacks.put("edge-2:9/1/1", nasaIcair);
         VlanGroupConfig.configure();
     }
