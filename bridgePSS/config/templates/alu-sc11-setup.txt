@@ -1,42 +1,22 @@
 <#list vlans as vlan> 
-<#if vlan = "277" >
-
-<#if portA = "6/1/1">
-<#assign hackedVlanA = "0"> 
-<#assign hackedVlanZ = vlan> 
-</#if>
-
-<#if portZ = "6/1/1">
-<#assign hackedVlanA = vlan> 
-<#assign hackedVlanZ = "0"> 
-</#if>
-
-<#elseif vlan = "278">
-
-<#if portA = "6/1/1">
-<#assign portA = "6/1/2"> 
-<#assign hackedVlanA = "0"> 
-<#assign hackedVlanZ = vlan> 
-</#if>
-
-<#if portZ = "6/1/1">
-<#assign portZ = "6/1/2"> 
-<#assign hackedVlanA = vlan> 
-<#assign hackedVlanZ = "0"> 
-</#if>
-
-<#else>
-<#assign hackedVlanA = vlan> 
-<#assign hackedVlanZ = vlan> 
-</#if>
 
 configure service vpls ${vlan} customer 1 create 
 exit all 
 
-configure service vpls ${vlan} sap ${portA}:${hackedVlanA} create no shutdown
-configure service vpls ${vlan} sap ${portZ}:${hackedVlanZ} create no shutdown
-configure service vpls ${vlan} sap ${portA}:${hackedVlanA} ingress qos "3100"
-configure service vpls ${vlan} sap ${portZ}:${hackedVlanZ} ingress qos "3100"
+<#list ifces as ifceName> 
+
+<#if vlan = "277" || vlan = "278" >
+  <#if ifceName = "6/1/1" || ifceName = "6/1/1" >
+    <#assign hackedVlan = "0"> 
+  </#if>
+<#else>
+  <#assign hackedVlan = vlan> 
+</#if>
+
+
+configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} create no shutdown
+configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} ingress qos "3100"
+</#list> 
 
 
 configure service vpls ${vlan} service-mtu 9194

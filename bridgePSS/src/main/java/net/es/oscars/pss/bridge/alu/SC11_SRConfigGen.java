@@ -21,8 +21,11 @@ import net.es.oscars.pss.util.VlanGroupConfig;
 public class SC11_SRConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SC11_SRConfigGen.class);
 
-    
+    private HashMap<String, String[]> multipointHacks = new HashMap<String, String[]>();
+
     public SC11_SRConfigGen() throws PSSException {
+        String[] nasaIcair = {"9/1/1", "7/1/1:817"};
+        multipointHacks.put("edge-2:9/1/1", nasaIcair);
         VlanGroupConfig.configure();
     }
 
@@ -79,17 +82,36 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
         if (!ifceVlan.equals(db.getVlanZ())) {
             throw new PSSException("different VLANs not supported");
         }
-        
 
         Map root = new HashMap();
         
         ArrayList<String> vlans = VlanGroupConfig.getVlans(deviceId, portA, ifceVlan);
+
+        
+        
+        String[] ifceNames = new String[2];
+        ifceNames[0] = portA;
+        ifceNames[0] = portZ;
+        
+        ArrayList ifces = new ArrayList();
+
+        for (String ifceName : ifceNames) {
+            String devIfce = deviceId+":"+ifceName;
+            if (multipointHacks.keySet().contains(devIfce)) {
+                for (String port : multipointHacks.get(devIfce)) {
+                    ifces.add(port);
+                }
+            } else {
+                ifces.add(ifceName);
+            }
+        }
+        root.put("ifces", ifces);
+
         
 
         root.put("device", deviceId);
         root.put("vlans", vlans);
-        root.put("portA", portA);
-        root.put("portZ", portZ);
+        
         
         String config       = TemplateUtils.generateConfig(root, templateFile);
         log.debug("getLSPTeardown done");
@@ -122,8 +144,23 @@ public class SC11_SRConfigGen implements DeviceConfigGenerator {
 
         root.put("device", deviceId);
         root.put("vlans", vlans);
-        root.put("portA", portA);
-        root.put("portZ", portZ);
+        String[] ifceNames = new String[2];
+        ifceNames[0] = portA;
+        ifceNames[0] = portZ;
+        
+        ArrayList ifces = new ArrayList();
+
+        for (String ifceName : ifceNames) {
+            String devIfce = deviceId+":"+ifceName;
+            if (multipointHacks.keySet().contains(devIfce)) {
+                for (String port : multipointHacks.get(devIfce)) {
+                    ifces.add(port);
+                }
+            } else {
+                ifces.add(ifceName);
+            }
+        }
+        root.put("ifces", ifces);
         
         String config       = TemplateUtils.generateConfig(root, templateFile);
         log.debug("getLSPSetup done");
