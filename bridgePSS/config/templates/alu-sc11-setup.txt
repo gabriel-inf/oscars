@@ -31,7 +31,7 @@
 </#if>
 
 configure service vpls ${vlan} customer 1 create 
-
+exit all 
 
 configure service vpls ${vlan} sap ${portA}:${hackedVlanA} create no shutdown
 configure service vpls ${vlan} sap ${portZ}:${hackedVlanZ} create no shutdown
