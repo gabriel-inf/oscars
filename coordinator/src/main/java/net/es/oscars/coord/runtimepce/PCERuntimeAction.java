@@ -578,8 +578,13 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
                     
             } else { // not local, not first Domain
                 try {
-                    // will be used when RESV_CREATE|MODIFY_COMPLETED s received
+                    // will be used when RESV_CREATE|MODIFY_COMPLETED is received
                     this.getCoordRequest().setResDetails(resDetails);
+                    CoordRequest origRequest = CoordRequest.getCoordRequestByAlias( (requestType.equals(PCERequestTypes.PCE_CREATE_COMMIT) ?
+                            "createReservation-" : "modifyReservation") + this.getCoordRequest().getGRI());
+                    if(origRequest != null){
+                        origRequest.setResDetails(resDetails);
+                    }
                     // send a committed IDE to previous IDC confirming the action is completed
                     String previousDomain = PathTools.getPreviousDomain (resDetails.getReservedConstraint().getPathInfo().getPath(),
                                                                          PathTools.getLocalDomainId());
