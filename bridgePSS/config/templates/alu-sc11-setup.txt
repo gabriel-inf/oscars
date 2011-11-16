@@ -30,7 +30,7 @@ configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} ingress qos "3100
 
 <#if device = "edge-2">
 # configure service vpls ${vlan} service-mtu 9194
-# configure service vpls ${vlan} stp no shutdown
+# configure service vpls ${vlan} stp shutdown
 # configure service vpls ${vlan} igmp-snooping no shutdown
 # configure service vpls ${vlan} pim-snooping no shutdown
 # configure service vpls ${vlan} fdb-table-size 4096
@@ -40,7 +40,7 @@ configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} ingress qos "3100
 
 <#else>
 configure service vpls ${vlan} service-mtu 9194
-configure service vpls ${vlan} stp no shutdown
+configure service vpls ${vlan} stp shutdown
 configure service vpls ${vlan} igmp-snooping no shutdown
 configure service vpls ${vlan} pim-snooping no shutdown
 configure service vpls ${vlan} fdb-table-size 4096
