@@ -19,10 +19,10 @@ configure private
 </#if>
 
 
-delete interfaces ${newPortA} unit ${vlan} 
-delete interfaces ${newPortZ} unit ${vlan} 
+# delete interfaces ${newPortA} unit ${vlan} 
+# delete interfaces ${newPortZ} unit ${vlan} 
 
-delete protocols l2circuit local-switching interface ${newPortA}.${vlan} 
+# delete protocols l2circuit local-switching interface ${newPortA}.${vlan} 
 
 
 set routing-instances vlan${vlan} instance-type vpls
@@ -33,6 +33,8 @@ set routing-instances vlan${vlan} interface ${newPortZ}.${vlan}
 
 set routing-instances vlan${vlan} route-distinguisher 140.221.251.243:${vlan}
 set routing-instances vlan${vlan} vrf-target target:14031:${vlan};
+
+set routing-instances vlan${vlan} forwarding-options family vpls flood input CONTROL-FLOODING
 
 
 set interfaces ${newPortA} unit ${vlan} vlan-id ${vlan}
