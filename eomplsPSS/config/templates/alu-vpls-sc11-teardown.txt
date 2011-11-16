@@ -55,12 +55,20 @@ configure router mpls no path "${path.name}"
 
 
 
+
 <#list vlans as vlan> 
 <#list ifces as ifceName> 
-configure service vpls ${vlan} per-service-hashing
-configure service vpls ${vlan} sap ${ifceName}:${vlan} ingress qos "${ingqosid}"
+
+<#assign hackedIfce = ifceName>
+<#if ifceName = "7/1/2">
+  <#if vlan = "278">
+    <#assign hackedIfce = "7/1/3">
+  </#if>
+</#if>
+configure service vpls ${vlan} sap ${hackedIfce}:${vlan} ingress qos "${ingqos.id}"
 </#list>
 </#list>
+
 
 </#if>
 
