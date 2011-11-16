@@ -99,9 +99,9 @@ exit all
 <#list ifces as ifceName> 
 
 <#assign hackedIfce = ifceName>
-<#if ifceName = "7/1/2">
+<#if ifceName = r"7/1/2">
   <#if vlan = "278">
-    <#assign hackedIfce = "7/1/3">
+    <#assign hackedIfce = r"7/1/3">
   </#if>
 </#if>
 configure service vpls ${vlan} sap ${hackedIfce}:${vlan} ingress qos "${ingqos.id}"
