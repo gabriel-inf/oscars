@@ -22,12 +22,12 @@ exit all
 
 
 <#if device = "edge-2">
-configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} ingress qos "3001"
-# configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} shutdown
-# configure service vpls ${vlan} no sap ${ifceName}:${hackedVlan} 
+configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} ingress qos "3001"
+# configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} shutdown
+# configure service vpls ${vlan} no sap ${hackedIfce}:${hackedVlan} 
 <#else>
-configure service vpls ${vlan} sap ${ifceName}:${hackedVlan} shutdown
-configure service vpls ${vlan} no sap ${ifceName}:${hackedVlan} 
+configure service vpls ${vlan} sap ${hackedIfce}:${hackedVlan} shutdown
+configure service vpls ${vlan} no sap ${hackedIfce}:${hackedVlan} 
 </#if>
 </#list> 
 
