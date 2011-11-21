@@ -25,6 +25,7 @@ import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.PathTools;
 
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
@@ -618,8 +619,20 @@ public class DataTranslator05 {
                 "The path must contain at least two hops.");
         }
         //path is not null and we have hops so populate the list
+        String currentDomain = null;
+        CtrlPlaneHopContent lastHop = null;
         for(CtrlPlaneHopContent hop06 : pathInfo06.getPath().getHop()){
-            ctrlPlanePathContent.getHop().add(hop06);
+            String hopDomain = NMWGParserUtil.getURN(hop06, NMWGParserUtil.DOMAIN_TYPE);
+            if(currentDomain == null){
+                ctrlPlanePathContent.getHop().add(hop06);
+                currentDomain = hopDomain;
+            }else if(!currentDomain.equals(hopDomain)){
+                currentDomain = hopDomain;
+                ctrlPlanePathContent.getHop().add(lastHop);
+                ctrlPlanePathContent.getHop().add(hop06);
+            }
+            lastHop = hop06;
+            
             if(hop06.getLink() != null && hop06.getLink().getTrafficEngineeringMetric() == null){
                 //set the trafficEngineeringMetric because its required by the schema
                 //the 10 is insignificant. just a value to act as placeholder
@@ -642,6 +655,8 @@ public class DataTranslator05 {
                 }
             }
         }
+        ctrlPlanePathContent.getHop().add(lastHop);
+        
         //id is required but has no semantic meaning so just generate default if null
         if (pathInfo06.getPath().getId() != null) {
             ctrlPlanePathContent.setId(pathInfo06.getPath().getId());

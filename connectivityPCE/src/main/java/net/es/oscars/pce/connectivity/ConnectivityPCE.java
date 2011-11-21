@@ -309,6 +309,10 @@ public class ConnectivityPCE {
                 hop.getLink().setRemoteLinkId(NMWGParserUtil.getURN(prevLink.getId(), NMWGParserUtil.LINK_TYPE));
             }else if(prevLink != null && prevLink.getRemoteLinkId() == null){
                 prevLink.setRemoteLinkId("urn:ogf:network:*:*:*:*");
+            }else if(prevLink != null && prevLink.getRemoteLinkId() != null && 
+                    hop.getLink().getRemoteLinkId() == null && 
+                    NMWGParserUtil.normalizeURN(prevLink.getRemoteLinkId()).equals(NMWGParserUtil.normalizeURN(hop.getLink().getId()))){
+                hop.getLink().setRemoteLinkId(NMWGParserUtil.getURN(prevLink.getId(), NMWGParserUtil.LINK_TYPE));
             }
             topoBuilder.addLink(hop.getLink());
             prevNodeId = currNodeId;
