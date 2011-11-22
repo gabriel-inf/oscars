@@ -202,11 +202,7 @@ public class InternalAPIWorker extends ModuleWorker {
             // Optional constraints may not be defined.
             query.getOptionalConstraint().addAll(resDetails.getOptionalConstraint());
         }
-        
-        MessagePropertiesType messageProperties = new MessagePropertiesType ();
-        messageProperties.setOriginator((SubjectAttributes) request.getAttribute(CoordRequest.SUBJECT_ATTRIBUTES)); 
-        
-        query.setMessageProperties(messageProperties);
+        query.setMessageProperties(request.getMessageProperties());
         
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("createReservation", req);
@@ -229,11 +225,7 @@ public class InternalAPIWorker extends ModuleWorker {
             // Optional constraints may not be defined.
             query.getOptionalConstraint().addAll(resDetails.getOptionalConstraint());
         }
-
-        MessagePropertiesType messageProperties = new MessagePropertiesType ();
-        messageProperties.setOriginator((SubjectAttributes) request.getAttribute(CoordRequest.SUBJECT_ATTRIBUTES));
-
-        query.setMessageProperties(messageProperties);
+        query.setMessageProperties(request.getMessageProperties());
 
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("modifyReservation", req);
