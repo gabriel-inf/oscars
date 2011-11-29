@@ -77,7 +77,7 @@ public class LSP {
                 lspLinkIds.add(linkId);
                 log.debug("local lsp hop: "+linkId);
             }
-            yLinkId = localHops.get(localHops.size() - 2).getLink().getId();
+            yLinkId = localHops.get(1).getLink().getId();
         } else {
             log.debug("forward lsp hops:");
             for (int i = 2; i < localHops.size(); i += 2) {
@@ -85,7 +85,7 @@ public class LSP {
                 lspLinkIds.add(linkId);
                 log.debug("local lsp hop: "+linkId);
             }
-            yLinkId = localHops.get(1).getLink().getId();
+            yLinkId = localHops.get(localHops.size() - 2).getLink().getId();
         }
         log.debug("alinkId: "+aLinkId);
         log.debug("ylinkId: "+yLinkId);
