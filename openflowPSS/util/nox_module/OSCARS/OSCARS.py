@@ -111,7 +111,7 @@ class OSCARS(Component):
                 dpid = None
 
                 lg.debug("Trying to find switch in known_switches")
-                for (dpid, switch) in self.known_switches.items():
+                for (curr_dpid, switch) in self.known_switches.items():
                     if switch["ip"] == path_element["switch"]:
                         dpid = switch["dpip"]
                         lg.debug("Found dpid for %s in existing switches" % (path_element["switch"]))
