@@ -124,7 +124,6 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
         
         super (name, request, data);
         LOG = Logger.getLogger(PCERuntimeAction.class.getName());
-        // I think this is only needed by the execute method  -- mrt
         this.netLogger = new OSCARSNetLogger(moduleName, transactionId);
         this.netLogger.setGRI(request.getGRI());
         OSCARSNetLogger.setTlogger(this.netLogger);

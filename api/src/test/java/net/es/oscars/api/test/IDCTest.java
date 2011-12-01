@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.List;
 import java.util.Date;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
 import net.es.oscars.api.soap.gen.v06.*;
+import net.es.oscars.logging.ModuleName;
+import net.es.oscars.logging.OSCARSNetLogger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
@@ -72,14 +75,15 @@ public final class IDCTest {
             cc.setContext(context);
             cc.setServiceName(ServiceNames.SVC_API);
             try {
-                System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
-                cc.loadManifest(ServiceNames.SVC_API,  ConfigDefaults.MANIFEST); // manifest.yaml
+                cc.loadManifest(new File("./config/IDCTestManifest.yaml"));
                 cc.setLog4j();
             } catch (ConfigException ex) {
                 System.out.println("caught ConfigurationException " + ex.getMessage());
                 System.exit(-1);
             }
-            LOG =  Logger.getLogger(IDCTest.class); 
+            LOG =  Logger.getLogger(IDCTest.class);
+            OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+            netLogger.init("IDCTest", "0000");
             String configFile =cc.getFilePath(ConfigDefaults.CONFIG);
             Map config = ConfigHelper.getConfiguration(configFile);
             assert config != null : "No configuration";

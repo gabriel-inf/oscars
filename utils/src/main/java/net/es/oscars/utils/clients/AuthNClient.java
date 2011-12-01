@@ -28,6 +28,7 @@ import net.es.oscars.authN.soap.gen.AuthNService;
         serviceName = ServiceNames.SVC_AUTHN
 )
 public class AuthNClient extends OSCARSSoapService<AuthNService, AuthNPortType> {
+    static private Logger LOG = Logger.getLogger(AuthNClient.class);
 
     private AuthNClient (URL host, URL wsdlFile) throws OSCARSServiceException {
         super (host, wsdlFile, AuthNPortType.class);
@@ -46,24 +47,13 @@ public class AuthNClient extends OSCARSSoapService<AuthNService, AuthNPortType> 
             throws MalformedURLException, OSCARSServiceException {
         ContextConfig cc = ContextConfig.getInstance();
         String event = "authNGetClient";
-        Logger LOG = Logger.getLogger(AuthNClient.class);
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        if (netLogger.getGUID() == null) {
-           netLogger.init(ModuleName.AUTHN,"0000");
-        }
         try {
             if (cc.getContext() != null ) {  // use new configuration method
                 String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-                LOG.debug(netLogger.start(event,"setting BusConfiguration from " + cxfClientPath));
                 OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
-            } else { // deprecated
-                String protocol = host.getProtocol();
-                String clientCxf = "client-cxf-http.xml";
-                if (protocol.equals("https")){
-                    clientCxf = "client-cxf-ssl.xml";
-                }
-                OSCARSSoapService.setSSLBusConfiguration((
-                        new URL("file:" + (new SharedConfig (ServiceNames.SVC_AUTHN)).getFilePath(clientCxf))));
+            } else {
+                throw new ConfigException("ContextConfig not initialized");
             }
         } catch (ConfigException e) {
              LOG.error(netLogger.error(event,ErrSev.MAJOR, " caughtException: " + e.getMessage()));

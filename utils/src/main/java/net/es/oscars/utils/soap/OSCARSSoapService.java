@@ -56,7 +56,7 @@ public class OSCARSSoapService <S,P> {
     static public void setSSLBusConfiguration (URL keyStoreConf) {
         LOG=Logger.getLogger(OSCARSSoapService.class);
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        LOG.info(netLogger.start("setSSLBusConfiguration", " using " + keyStoreConf.toString()));
+        LOG.debug(netLogger.start("setSSLBusConfiguration", " using " + keyStoreConf.toString()));
          // The following prevents the default Java default cacerts from being added
         System.setProperty("javax.net.ssl.trustStore","DoNotUsecacerts");
         if (keyStoreConf != null) {
@@ -127,7 +127,7 @@ public class OSCARSSoapService <S,P> {
      * @param implementor
      * @param configFile
      * @throws OSCARSServiceException
-     */
+
     public OSCARSSoapService (URL host,
                               URL wsdlFile,
                               Class<P> portTypeClass,
@@ -157,7 +157,7 @@ public class OSCARSSoapService <S,P> {
         } catch (Exception e) {
             throw new OSCARSServiceException (e);
         }
-    }
+    } */
 
     /**
      * getOSCARSNetLogger
@@ -380,7 +380,7 @@ public class OSCARSSoapService <S,P> {
             if (op == null) {
                 throw new OSCARSServiceException (operation + " operation is not defined in service's WSDL");
             }
-            LOG.debug(netLogger.start(event,operation,this.host.toString()));
+            LOG.info(netLogger.start(event,operation,this.host.toString()));
             Object[] res = this.clientProxy.invoke(op, params, context);
             LOG.debug(netLogger.end(event,operation, this.host.toString()));
             return res;

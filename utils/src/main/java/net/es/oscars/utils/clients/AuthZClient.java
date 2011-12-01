@@ -28,6 +28,7 @@ import net.es.oscars.authZ.soap.gen.AuthZService;
 )
 public class AuthZClient extends OSCARSSoapService<AuthZService, AuthZPortType> {
 
+    static private Logger LOG = Logger.getLogger(AuthZClient.class);
     private AuthZClient (URL host, URL wsdlFile) throws OSCARSServiceException {
     	super (host, wsdlFile, AuthZPortType.class);
     }
@@ -37,30 +38,17 @@ public class AuthZClient extends OSCARSSoapService<AuthZService, AuthZPortType> 
         ContextConfig cc = ContextConfig.getInstance();
         boolean loggingInit = false;
         String event = "authZGetClient";
-        Logger LOG = Logger.getLogger(AuthNClient.class);
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        if (netLogger.getGUID() != null) {
-            loggingInit = true;
-        }
         try {
             if (cc.getContext() != null) {
                 String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-                if (loggingInit ) {
-                    LOG.debug(netLogger.start(event,"setting BusConfiguration from " + cxfClientPath));
-                } else {
-                    System.out.println("AuthZClient setting BusConfiguration from " + cxfClientPath);
-                }
                 OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
             } else {
                 throw new ConfigException("ContextConfig not initialized");
             }
         } catch (ConfigException e) {
-            if (loggingInit) {
-                LOG.error(netLogger.error(event,ErrSev.MAJOR, " caughtException: " + e.getMessage()));
-            } else {
-                System.out.println("AuthZClient caught ConfigException");
-                e.printStackTrace();
-            }
+            LOG.error(netLogger.error(event,ErrSev.MAJOR, " caughtException: " + e.getMessage()));
+            e.printStackTrace();
             throw new OSCARSServiceException(e.getMessage());
         }
         AuthZClient client = new AuthZClient (host, wsdl);

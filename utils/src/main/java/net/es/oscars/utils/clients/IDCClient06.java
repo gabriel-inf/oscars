@@ -49,7 +49,7 @@ public class IDCClient06 extends OSCARSSoapService<net.es.oscars.api.soap.gen.v0
         LOG = Logger.getLogger(IDCClient06.class);
         String event = "IDCGetClient";
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        if (netLogger.getGUID() == null) {
+        if (netLogger.getModuleName() == null) {
             netLogger.init(ModuleName.API,"0000");
         }
         if (connType.equals("UT")) {

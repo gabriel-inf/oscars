@@ -29,6 +29,7 @@ import net.es.oscars.coord.soap.gen.CoordService;
         serviceName = ServiceNames.SVC_COORD
 )
 public class CoordClient extends OSCARSSoapService<CoordService, CoordPortType> {
+    static private Logger LOG = Logger.getLogger(CoordClient.class);
 
     private CoordClient (URL host, URL wsdlFile) throws OSCARSServiceException {
     	super (host, wsdlFile, CoordPortType.class);
@@ -38,36 +39,21 @@ public class CoordClient extends OSCARSSoapService<CoordService, CoordPortType> 
         ContextConfig cc = ContextConfig.getInstance();
         boolean loggingInit = false;
         String event = "coordGetClient";
-        Logger LOG = Logger.getLogger(CoordClient.class);
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        if (netLogger.getGUID() != null) {
-            loggingInit = true;
+        if (netLogger.getModuleName() == null) {
+            netLogger.init("UNKNOWN","0000");
         }
         try {
             if (cc.getContext() != null) {
                 String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-                if (loggingInit ) {
-                    LOG.debug(netLogger.start(event,"setting BusConfiguration from " + cxfClientPath));
-                } else {
-                    System.out.println("CoordClient setting BusConfiguration from " + cxfClientPath);
-                }
+                LOG.debug(netLogger.start(event,"setting BusConfiguration from " + cxfClientPath));
                 OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
-            } else { // deprecated 
-                String protocol = host.getProtocol();
-                String clientCxf = "client-cxf-http.xml";
-                if (protocol.equals("https")){
-                    clientCxf = "client-cxf-ssl.xml";
-                }
-                OSCARSSoapService.setSSLBusConfiguration((
-                        new URL("file:" + (new SharedConfig ("CoordService")).getFilePath(clientCxf))));
+            } else {
+                throw new ConfigException("ContextConfig not initialized");
             }
         } catch (ConfigException e) {
-            if (loggingInit) {
-                LOG.error(netLogger.error(event,ErrSev.MAJOR, " caughtException: " + e.getMessage()));
-            } else {
-                System.out.println("CoordClient caught ConfigException");
-                e.printStackTrace();
-            }
+            LOG.error(netLogger.error(event,ErrSev.MAJOR, " caughtException: " + e.getMessage()));
+            e.printStackTrace();
             throw new OSCARSServiceException(e.getMessage());
         }
         if (wsdl.getProtocol().equals("https")) {

@@ -3,7 +3,9 @@ package net.es.oscars.utils.clients;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.ModuleName;
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.logging.OSCARSNetLoggerize;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
@@ -14,6 +16,7 @@ import net.es.oscars.utils.soap.OSCARSSoapService;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.wsnbroker.soap.gen.WSNBrokerPortType;
 import net.es.oscars.wsnbroker.soap.gen.WSNBrokerService;
+import org.apache.log4j.Logger;
 
 @OSCARSNetLoggerize(moduleName = ModuleName.WSNBROKER)
 @OSCARSService (
@@ -22,7 +25,9 @@ import net.es.oscars.wsnbroker.soap.gen.WSNBrokerService;
         serviceName = ServiceNames.SVC_WSNBROKER
 )
 public class WSNBrokerClient extends OSCARSSoapService<WSNBrokerService, WSNBrokerPortType>{
-    
+
+    static private Logger LOG = Logger.getLogger(WSNBrokerClient.class);
+
     /**
      * Constructor. 
      * 
@@ -46,18 +51,19 @@ public class WSNBrokerClient extends OSCARSSoapService<WSNBrokerService, WSNBrok
      */
     static public WSNBrokerClient getClient(String host, String wsdl) throws OSCARSServiceException, MalformedURLException{
         ContextConfig cc = ContextConfig.getInstance();
+        OSCARSNetLogger  netLogger = OSCARSNetLogger.getTlogger();
         try {
             cc.setLog4j();
         } catch (ConfigException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
-        System.out.println("WSNBrokerClient.getClient");
         try {
             String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-            System.out.println("cxfClientPath=" + cxfClientPath);
             OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
         } catch (ConfigException e) {
+            LOG.error(netLogger.error("WSNBrokerClient.getClient", ErrSev.MAJOR,
+                                      " caughtException: " + e.getMessage()));
             e.printStackTrace();
             throw new OSCARSServiceException(e.getMessage());
         }

@@ -208,6 +208,13 @@ public class OSCARSSoapHandler06 implements OSCARS {
         return response;
     }
 
+    /**
+     *  Gets any error reports for a specified transaction
+     *
+     * @param getErrorReportReq  contains the transactionId for which errors are wanted.
+     * @return   contains any error reports for the transaction that was input
+     * @throws OSCARSFaultMessage
+     */
     public GetErrorReportResponseContent getErrorReport(GetErrorReportContent getErrorReportReq) throws OSCARSFaultMessage    {
             return OSCARSSoapHandler06.getErrorReport(getErrorReportReq,this.myContext);
         }
@@ -219,7 +226,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
             msgProps = OSCARSSoapHandler06.updateMessageProperties (msgProps, event, null, netLogger);
 
             netLogger.init(OSCARSSoapHandler06.moduleName, msgProps.getGlobalTransactionId());
-            LOG.info(netLogger.start(event));
+            LOG.info(netLogger.start(event, "for the transaction: " + getErrorReportReq.getTransactionId()));
             GetErrorReportResponseContent response = null;
 
             try {
@@ -265,7 +272,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
 
         netLogger.init(OSCARSSoapHandler06.moduleName, msgProps.getGlobalTransactionId());
         netLogger.setGRI(cancelReservation.getGlobalReservationId());
-        LOG.info(netLogger.start(event));
+        LOG.info(netLogger.start(event, "reservation:" + cancelReservation.getGlobalReservationId()));
         CancelResReply response = null;
         try {
             SubjectAttributes subjectAttributes = OSCARSSoapHandler06.AuthNRequester(msgProps, context, netLogger);
@@ -485,12 +492,11 @@ public class OSCARSSoapHandler06 implements OSCARS {
             gri = eventContent.getResDetails().getGlobalReservationId();
             netLogger.setGRI(gri);
         }
-        /* don't really have the senders identity. getErrorSource only works for errors
-         * and should be the original source of the error.
-         * The principal name could be used once we start assigning different DNs to each domain.
-         */
-        LOG.info(netLogger.start(event, " received " + eventContent.getType() + " for reservation " +
-                                 gri + " from " + eventContent.getErrorSource()));
+        HashMap<String,Principal> principals = getSecurityPrincipals(context,netLogger);
+        // IDCs should use a DN that contains  their domain/host name.
+        String reqDN = principals.get("subject").getName();
+        LOG.info(netLogger.start(event, "received " + eventContent.getType() + " for reservation " +
+                                 gri + " from " + reqDN));
         try {
             SubjectAttributes subjectAttributes = OSCARSSoapHandler06.AuthNRequester(msgProps, context, netLogger);
             msgProps = OSCARSSoapHandler06.updateMessageProperties (msgProps, event, subjectAttributes, netLogger);

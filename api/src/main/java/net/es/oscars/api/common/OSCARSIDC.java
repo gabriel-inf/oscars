@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.net.MalformedURLException;
 
+import net.es.oscars.logging.ModuleName;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.log4j.Logger;
 
@@ -70,6 +71,7 @@ public class OSCARSIDC implements Runnable {
         
         LOG = Logger.getLogger(OSCARSIDC.class.getName());
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        netLogger.init(ModuleName.API,"0001");
         String event = "OSCARSIDC";
         cc = ContextConfig.getInstance(ServiceNames.SVC_API);
         // Load configuration file

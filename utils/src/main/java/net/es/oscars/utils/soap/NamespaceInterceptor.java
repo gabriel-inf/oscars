@@ -39,7 +39,8 @@ public class NamespaceInterceptor  extends AbstractEndpointSelectionInterceptor 
             for (Endpoint ep : eps) {   
                 //LOG.info("ProtocolVersion " + ep.get("ProtocolVersion"));
                 if (ns.equals(ep.get("ProtocolVersion"))) {
-                	LOG.info("selectEndpoint returns " + ep.getEndpointInfo().getName().getNamespaceURI());
+                	LOG.info(netLogger.getMsg( "NamespaceInterceptor.selectEndpoint",  "returns " +
+                             ep.getEndpointInfo().getName().getNamespaceURI()));
                     return ep;
                 } 
             }

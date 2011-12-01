@@ -100,8 +100,8 @@ public class InternalAPIWorker extends ModuleWorker {
 
         Object[] req = new Object[] {event, destDomain};
         this.getClient().invoke("interDomainEvent", req);
-        LOG.info (OSCARSNetLogger.getTlogger().end( "sendEventContent ", event.getType() +
-                                                    " to domain " + destDomain));
+        LOG.info (OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendEvent", "sending " +
+                                                   event.getType() + " to domain " + destDomain));
     }
 
     /**
@@ -153,7 +153,7 @@ public class InternalAPIWorker extends ModuleWorker {
 
        Object[] req = new Object[] {event, destDomain};
        this.getClient().invoke("interDomainEvent", req);
-       LOG.info (OSCARSNetLogger.getTlogger().end("sendErrorEvent ",
+       LOG.info (OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendErrorEvent ",  "sending error event " +
                                                    event.getType() + " to domain " + destDomain));
        }
 
@@ -169,6 +169,8 @@ public class InternalAPIWorker extends ModuleWorker {
                                ErrorReport errorReport,
                                String destDomain ) throws OSCARSServiceException {
 
+        LOG.info (OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendErrorEvent",
+                                                   notifyType + " to domain " + destDomain));
         InterDomainEventContent event = new InterDomainEventContent();
         ResDetails resDetails = new ResDetails();
         resDetails.setGlobalReservationId(errorReport.getGRI());
@@ -181,7 +183,7 @@ public class InternalAPIWorker extends ModuleWorker {
 
         Object[] req = new Object[] {event, destDomain};
         this.getClient().invoke("interDomainEvent", req);
-        LOG.info (OSCARSNetLogger.getTlogger().end("sendErrorEvent",
+        LOG.info (OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendErrorEvent",  "sending " +
                                                    notifyType +" to domain " + destDomain));
     }
 
@@ -189,7 +191,9 @@ public class InternalAPIWorker extends ModuleWorker {
     public void sendResCreateContent (CoordRequest request,
                                       ResDetails resDetails,
                                       String destDomain) throws OSCARSServiceException {
-        
+
+        LOG.info(OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendResCreateContent ","forwarding " +
+                                                     request.getName()) + " to " + destDomain);
         ResCreateContent query = new ResCreateContent();
         String desc = (String) request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE);
         query.setDescription (desc);
@@ -206,13 +210,15 @@ public class InternalAPIWorker extends ModuleWorker {
         
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("createReservation", req);
-        LOG.info ("sendResCreateContent:end " + request.getName());
+        LOG.info(OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendResCreateContent", request.getName()));
     }
 
      public void sendResModifyContent (CoordRequest request,
                                        ResDetails resDetails,
                                        String destDomain) throws OSCARSServiceException {
 
+         LOG.info(OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendResModifyContent ","forwarding " +
+                                                     request.getName()) + " to " + destDomain);
         ModifyResContent query = new ModifyResContent();
         String desc = (String) request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE);
         query.setDescription (desc);
@@ -229,17 +235,18 @@ public class InternalAPIWorker extends ModuleWorker {
 
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("modifyReservation", req);
-        LOG.info ("sendResModifyContent:end " + request.getName());
+        LOG.info(OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendResModifyContent",request.getName()));
     }
     
     @SuppressWarnings("unchecked")
     public void sendCreatePath (CoordRequest request,
                                 CreatePathContent query,
                                 String destDomain) throws OSCARSServiceException {
-  
+        LOG.info(OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendCreatePath", "forwarding " +
+                                                    request.getName() + " to " + destDomain));
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("createPath", req);
-        LOG.info ("sendCreatePath:end " + request.getName());
+        LOG.info(OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendCreatePath", request.getName()));
     }
     
     
@@ -247,22 +254,25 @@ public class InternalAPIWorker extends ModuleWorker {
     public void sendTeardownPath (CoordRequest request,
                                   TeardownPathContent query,
                                   String destDomain) throws OSCARSServiceException {
-  
+
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        LOG.info (OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendTeardownPath", "forwarding " +
+                                                     request.getName() + " to " + destDomain));
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("teardownPath", req);
-        LOG.info ("sendTeardownPath:end " + request.getName());
+        LOG.info (OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendTeardownPath", request.getName()));
     }
     
     @SuppressWarnings("unchecked")
     public void sendCancelReservation (CoordRequest request,
                                 CancelResContent query,
                                 String destDomain) throws OSCARSServiceException {
-        
-        OSCARSNetLogger netLogger = new OSCARSNetLogger(ModuleName.PCERUNTIME, 
-                        query.getMessageProperties().getGlobalTransactionId());
+
+        LOG.info (OSCARSNetLogger.getTlogger().start("InternalAPIWorker.sendCancelReservation", "forwarding " +
+                                                     request.getName() + " to " + destDomain));
         Object[] req = new Object[] {query, destDomain};
         this.getClient().invoke("cancelReservation", req);
-        LOG.info (netLogger.end("sendCancelReservation", request.getName()));
+        LOG.info (OSCARSNetLogger.getTlogger().end("InternalAPIWorker.sendCancelReservation", request.getName()));
     }
 
 }

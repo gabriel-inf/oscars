@@ -3,6 +3,8 @@ package net.es.oscars.utils.clients;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import net.es.oscars.logging.ErrSev;
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.soap.ErrorReport;
 import org.apache.log4j.Logger;
@@ -35,16 +37,17 @@ public class InternalAPIClient extends OSCARSSoapService<OSCARSInternalService, 
     }
     
     static public InternalAPIClient getClient (URL host, URL wsdl) throws MalformedURLException, OSCARSServiceException {
+         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         try {
             if (cc.getContext() != null ) {  // use new configuration method
                 String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-                LOG.debug("APIInternalClient setting BusConfiguration from " + cxfClientPath);
                 OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
             } else {
                 throw new ConfigException("ContextConfig not set");
             }
         } catch  (ConfigException e) {
-            LOG.error("APIInternalClient caught ConfigException");
+            LOG.error(netLogger.error("InternalAPIClient.getClient", ErrSev.MAJOR,
+                                      " caughtException: " + e.getMessage()));
             throw new OSCARSServiceException(ErrorCodes.CONFIG_ERROR,e.getMessage(), ErrorReport.SYSTEM);
         }
 

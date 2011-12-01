@@ -3,6 +3,8 @@ package net.es.oscars.utils.clients;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import net.es.oscars.logging.ErrSev;
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
@@ -14,6 +16,7 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 import net.es.oscars.authN.soap.gen.policy.AuthNPolicyPortType;
 import net.es.oscars.authN.soap.gen.policy.AuthNPolicyService;
+import org.apache.log4j.Logger;
 
 
 @OSCARSService (
@@ -22,6 +25,7 @@ import net.es.oscars.authN.soap.gen.policy.AuthNPolicyService;
         serviceName = "AuthNPolicyService"
 )
 public class AuthNPolicyClient extends OSCARSSoapService<AuthNPolicyService, AuthNPolicyPortType> {
+    static private Logger LOG = Logger.getLogger(AuthNPolicyClient.class);
 
     private AuthNPolicyClient (URL host, URL wsdlFile) throws OSCARSServiceException {
     	super (host, wsdlFile, AuthNPolicyPortType.class);
@@ -30,22 +34,17 @@ public class AuthNPolicyClient extends OSCARSSoapService<AuthNPolicyService, Aut
     static public AuthNPolicyClient getClient (URL host, URL wsdl)
             throws MalformedURLException, OSCARSServiceException {
         ContextConfig cc = ContextConfig.getInstance();
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         try {
             if (cc.getContext() != null ) {  // use new configuration method
                 String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-                System.out.println("AuthNPolicyClient setting BusConfiguration from " + cxfClientPath);
                 OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
-            } else { // deprecated
-                String protocol = host.getProtocol();
-                String clientCxf = "client-cxf-http.xml";
-                if (protocol.equals("https")){
-                    clientCxf = "client-cxf-ssl.xml";
-                }
-                OSCARSSoapService.setSSLBusConfiguration((
-                        new URL("file:" + (new SharedConfig (ServiceNames.SVC_AUTHN_POLICY)).getFilePath(clientCxf))));
+            } else {
+                throw new ConfigException("ContextConfig not initialized");
             }
         } catch (ConfigException e) {
-            System.out.println("AuthNPolicyClient caught ConfigException");
+            LOG.error(netLogger.error("AuthNPolicyClient.getClient", ErrSev.MAJOR,
+                    " caughtException: " + e.getMessage()));
             e.printStackTrace();
             throw new OSCARSServiceException(e.getMessage());
         }

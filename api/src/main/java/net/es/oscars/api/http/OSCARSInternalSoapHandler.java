@@ -26,6 +26,13 @@ import net.es.oscars.utils.svc.ServiceNames;
         targetNamespace = "http://oscars.es.net/OSCARS/06",
         endpointInterface = "net.es.oscars.api.soap.gen.v06.OSCARSInternalPortType")
 @javax.xml.ws.BindingType(value = "http://www.w3.org/2003/05/soap/bindings/HTTP/")
+
+/* Handles the forwarding of messages for interdomain reservations. Receives messages
+ * from the Coordinator:InternalAPIWorker  and forwards them to the next domain.
+ * The ForwarderFactory class determines what protocol the next domain is using and returns
+ * a Forwarder that will do dataTranslation if required.
+ */
+
 public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
 
     private static final Logger LOG = Logger.getLogger(OSCARSInternalPortTypeImpl.class.getName());
@@ -45,7 +52,8 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
          OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
          netLogger.init(moduleName, createReservation.getMessageProperties().getGlobalTransactionId());
          netLogger.setGRI(createReservation.getGlobalReservationId());
-         LOG.info(netLogger.start(event, createReservation.getGlobalReservationId() +
+         LOG.info(netLogger.start(event, "FORWARD " + event + " " +
+                                  createReservation.getGlobalReservationId() +
                                   " to " + destDomainId));
          Forwarder forwarder;
          try {
@@ -81,7 +89,9 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
          OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
          netLogger.init(moduleName, modifyReservation.getMessageProperties().getGlobalTransactionId());
          netLogger.setGRI(modifyReservation.getGlobalReservationId());
-         LOG.info(netLogger.start(event, modifyReservation.getGlobalReservationId() + " to " + destDomainId));
+         LOG.info(netLogger.start(event, "FORWARD " + event + " " +
+                                         modifyReservation.getGlobalReservationId() +
+                                         "  to " + destDomainId));
 
          Forwarder forwarder;
          try {
@@ -118,8 +128,9 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         netLogger.init(moduleName, cancelReservation.getMessageProperties().getGlobalTransactionId());
         netLogger.setGRI(cancelReservation.getGlobalReservationId());
-        LOG.info(netLogger.start(event, cancelReservation.getGlobalReservationId() +
-                                 " to " + destDomainId));
+        LOG.info(netLogger.start(event, "FORWARD " + event + " " +
+                                         cancelReservation.getGlobalReservationId() +
+                                        " to " + destDomainId));
         Forwarder forwarder;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
@@ -156,7 +167,9 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         netLogger.init(moduleName, createPath.getMessageProperties().getGlobalTransactionId());
         netLogger.setGRI(createPath.getGlobalReservationId());
-        LOG.info(netLogger.start(event, createPath.getGlobalReservationId() + " to " + destDomainId));
+        LOG.info(netLogger.start(event, "FORWARD " + event + " " +
+                                         createPath.getGlobalReservationId() +
+                                         " to " + destDomainId));
         Forwarder forwarder;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
@@ -193,8 +206,9 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         netLogger.init(moduleName, teardownPath.getMessageProperties().getGlobalTransactionId());
         netLogger.setGRI(teardownPath.getGlobalReservationId());
-        LOG.info(netLogger.start(event, teardownPath.getGlobalReservationId() +
-                                 " to " + destDomainId));
+        LOG.info(netLogger.start(event, "FORWARD " + event + " " +
+                                         teardownPath.getGlobalReservationId() +
+                                        " to " + destDomainId));
         Forwarder forwarder;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
@@ -236,7 +250,7 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
             gri = interDomainEvent.getResDetails().getGlobalReservationId();
             netLogger.setGRI(gri);
         }
-        LOG.info(netLogger.start(event, interDomainEvent.getType() + " to " + destDomainId));
+        LOG.info(netLogger.start(event, "send " + interDomainEvent.getType() + " to " + destDomainId));
         Forwarder forwarder = null;
         try {
             forwarder = ForwarderFactory.getForwarder(destDomainId);
@@ -254,7 +268,7 @@ public class OSCARSInternalSoapHandler implements OSCARSInternalPortType {
             // IDEs do not reply
             LOG.error(netLogger.end(event, "caught exception " + e.toString()));
         }
-        LOG.info(netLogger.end(event, interDomainEvent.getType()));
+        LOG.info(netLogger.end(event, "sent " + interDomainEvent.getType()) + " to " + destDomainId);
     }
 
     /*

@@ -3,7 +3,9 @@ package net.es.oscars.utils.clients;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.ModuleName;
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.logging.OSCARSNetLoggerize;
 import net.es.oscars.topoBridge.soap.gen.TopoBridgePortType;
 import net.es.oscars.topoBridge.soap.gen.TopoBridgeService;
@@ -14,6 +16,7 @@ import net.es.oscars.utils.soap.OSCARSService;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.soap.OSCARSSoapService;
 import net.es.oscars.utils.svc.ServiceNames;
+import org.apache.log4j.Logger;
 
 /**
  * A helper class for generating clients that talk to the Topology Bridge Service. 
@@ -25,7 +28,8 @@ import net.es.oscars.utils.svc.ServiceNames;
         serviceName = ServiceNames.SVC_TOPO
 )
 public class TopoBridgeClient extends OSCARSSoapService<TopoBridgeService, TopoBridgePortType>{
-    
+
+    static private Logger LOG = Logger.getLogger(TopoBridgeClient.class);
     /**
      * Constructor. 
      * 
@@ -49,12 +53,13 @@ public class TopoBridgeClient extends OSCARSSoapService<TopoBridgeService, TopoB
      */
     static public TopoBridgeClient getClient(String host, String wsdl) throws OSCARSServiceException, MalformedURLException{
         ContextConfig cc = ContextConfig.getInstance();
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         try {
             String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-            System.out.println("TopoBridgeClient setting BusConfiguration from " + cxfClientPath);
             OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
         } catch (ConfigException e) {
-            System.out.println("TopoBridgeClient caught ConfigException");
+            LOG.error(netLogger.error("TopoBridgeClient.getClient", ErrSev.MAJOR,
+                    " caughtException: " + e.getMessage()));
             e.printStackTrace();
             throw new OSCARSServiceException(e.getMessage());
         }

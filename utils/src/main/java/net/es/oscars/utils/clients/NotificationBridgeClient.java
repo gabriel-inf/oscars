@@ -91,7 +91,6 @@ public class NotificationBridgeClient extends OSCARSSoapService<NotificationBrid
         ContextConfig cc = ContextConfig.getInstance();
         try {
             String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-            log.debug(netLogger.start(event, "NotificationBridgeClient setting BusConfiguration from " + cxfClientPath));
             OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
         } catch (ConfigException e) {
             log.error(netLogger.error(event,ErrSev.MAJOR, "NotificationBridgeClient caught ConfigException"));

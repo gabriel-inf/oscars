@@ -3,6 +3,8 @@ package net.es.oscars.utils.clients;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import net.es.oscars.logging.ErrSev;
+import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
@@ -15,6 +17,7 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 import net.es.oscars.authZ.soap.gen.policy.AuthZPolicyPortType;
 import net.es.oscars.authZ.soap.gen.policy.AuthZPolicyService;
+import org.apache.log4j.Logger;
 
 
 @OSCARSService (
@@ -24,6 +27,8 @@ import net.es.oscars.authZ.soap.gen.policy.AuthZPolicyService;
 )
 public class AuthZPolicyClient extends OSCARSSoapService<AuthZPolicyService, AuthZPolicyPortType> {
 
+    static private Logger LOG = Logger.getLogger(AuthZPolicyClient.class);
+
     private AuthZPolicyClient (URL host, URL wsdlFile) throws OSCARSServiceException {
     	super (host, wsdlFile, AuthZPolicyPortType.class);
     }
@@ -31,22 +36,17 @@ public class AuthZPolicyClient extends OSCARSSoapService<AuthZPolicyService, Aut
     static public AuthZPolicyClient getClient (URL host, URL wsdl)
             throws MalformedURLException, OSCARSServiceException {
         ContextConfig cc = ContextConfig.getInstance();
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         try {
             if (cc.getContext() != null) {
                 String cxfClientPath = cc.getFilePath(cc.getServiceName(), ConfigDefaults.CXF_CLIENT);
-                System.out.println("AuthZPolicyClient setting BusConfiguration from " + cxfClientPath);
                 OSCARSSoapService.setSSLBusConfiguration(new URL("file:" + cxfClientPath));
-            } else { // deprecated 
-                String protocol = host.getProtocol();
-                String clientCxf = "client-cxf-http.xml";
-                if (protocol.equals("https")){
-                    clientCxf = "client-cxf-ssl.xml";
-                }
-                OSCARSSoapService.setSSLBusConfiguration((
-                        new URL("file:" + (new SharedConfig ("AuthZPolicyService")).getFilePath(clientCxf))));
+            } else {
+                throw new ConfigException("ContextConfig not initialized");
             }
         } catch (ConfigException e) {
-            System.out.println("AuthZPolicyClient caught ConfigException");
+            LOG.error(netLogger.error("AuthZPolicyClient.getClient", ErrSev.MAJOR,
+                    " caughtException: " + e.getMessage()));
             e.printStackTrace();
             throw new OSCARSServiceException(e.getMessage());
         }
