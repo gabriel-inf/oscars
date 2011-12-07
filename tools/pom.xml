@@ -47,6 +47,13 @@
             <version>${oscars.version}</version>
         </dependency>
 
+        <!--  authZ -->
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>authZ</artifactId>
+            <version>${oscars.version}</version>
+        </dependency>
+        
         <!-- Hibernate -->
         <dependency>
             <groupId>org.hibernate</groupId>
