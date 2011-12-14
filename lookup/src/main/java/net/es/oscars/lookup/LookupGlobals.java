@@ -40,6 +40,7 @@ public class LookupGlobals {
     private Scheduler scheduler;
     private ReadWriteLock dbLock;
     private Integer dataTTL;
+    private Integer disableRegister;
     private String cacheCleanSched;
     
     final public static String JDBC_URL = "jdbc:derby:lookupCache";
@@ -48,6 +49,7 @@ public class LookupGlobals {
     final private String PROP_GLOBAL_LOOKUP_SERVICES = "globalLookupServices";
     final private String PROP_HOME_LOOKUP_SERVICES = "homeLookupServices";
     final private String PROP_CACHE_CLEAN_SCHED = "cacheCleanSchedule";
+    final private String PROP_DISABLE_REGISTER = "disableRegister";
     
     final private int DEFAULT_TTL = 3600; //1 hour
     final private String DEFAULT_CACHE_CLEAN_SCHED = "0 0/5 * * * ?"; //5 minutes
@@ -181,6 +183,13 @@ public class LookupGlobals {
         }
         
         Map perfsonar = (Map) config.get("perfsonar");
+        if(perfsonar.containsKey(PROP_DISABLE_REGISTER)){
+            this.disableRegister = (Integer) perfsonar.get(PROP_DISABLE_REGISTER);
+        }else{
+            this.disableRegister = 0;
+        }
+        logFieldMap.put("disableRegister", this.disableRegister+"");
+        
         if(perfsonar.containsKey(PROP_DATA_TTL)){
             this.dataTTL = (Integer) perfsonar.get(PROP_DATA_TTL);
         }else{
@@ -250,6 +259,9 @@ public class LookupGlobals {
     
     public long getTTL(){
         return this.dataTTL;
+    }
+    public long getDisableRegister(){
+        return this.disableRegister;
     }
     
     public ReadWriteLock getDbLock(){

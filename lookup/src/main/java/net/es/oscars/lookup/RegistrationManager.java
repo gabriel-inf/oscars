@@ -37,7 +37,7 @@ public class RegistrationManager {
     public void register(RegisterRequestContent registerRequest, Connection conn) throws LookupException {
         OSCARSNetLogger netLog = OSCARSNetLogger.getTlogger();
         //make sure perfSONAR configured
-        if(this.globals.getPerfsonarClient() == null){
+        if(this.globals.getPerfsonarClient() == null || this.globals.getDisableRegister() == 1){
             //if not configured silently do nothing
             return;
         }
