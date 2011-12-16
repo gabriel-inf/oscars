@@ -91,6 +91,9 @@ echo "   Generating certificates..."
 result=`$SSHCMD "keytool -genkey \
     -dname \"CN=localhost, OU=OSCARS, O=${ORGANIZATION}, C=US\" \
     -keystore $OSCARS_HOME/sampleDomain/certs/localhost.jks -keyalg RSA -storetype jks -storepass changeit -keypass changeit"`;
+result=`$SSHCMD "keytool -export -keystore $OSCARS_HOME/sampleDomain/certs/localhost.jks -alias mykey -storepass changeit -file $OSCARS_HOME/sampleDomain/certs/localhost.cer"`
+result=`$SSHCMD "keytool -import -keystore $OSCARS_HOME/sampleDomain/certs/template.jks -noprompt -alias localhost -storepass changeit -file $OSCARS_HOME/sampleDomain/certs/localhost.cer"`
+result=`$SSHCMD "rm $OSCARS_HOME/sampleDomain/certs/localhost.cer"`
 result=`$SSHCMD "keytool -genkey \
     -dname \"CN=${IDC_HOST}, OU=OSCARS, O=${ORGANIZATION}, C=US\" \
     -keystore $OSCARS_HOME/sampleDomain/certs/template.jks -keyalg RSA -storetype jks -storepass changeit -keypass changeit"`;
