@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to setup OSCARS for DYNES IDC
+# Script to setup OSCARS for OSCARS IDC
 #
 # Xi Yang xyang@isi.edu November 20, 2011
 # Andy Lake andy@es.net December 7, 2011

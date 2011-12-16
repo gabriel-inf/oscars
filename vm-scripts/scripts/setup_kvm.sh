@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to setup virtual machine for DYNES IDC
+# Script to setup virtual machine for OSCARS IDC
 #
 # Xi Yang xyang@isi.edu November 15, 2011
 # Andy Lake andy@es.net December 7, 2011
