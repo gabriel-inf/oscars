@@ -108,6 +108,3 @@ result=`$SSHCMD sudo sed -i \"s/NETWORK=.*/NETWORK=$NETWORK/g\" /etc/sysconfig/n
 HWADDR=`${SRCDIR}/get_netaddr.pl randmac`;
 result=`$SSHCMD sudo sed -i \"s/HWADDR=.*/HWADDR=$HWADDR/g\" /etc/sysconfig/network-scripts/ifcfg-eth0`
 sed  -i "s/mac address='[^']*/mac address='$HWADDR/g" /etc/libvirt/qemu/$VM_NAME.xml
-
-#setup DNS
-result=`$SSHCMD sudo sed -i "s/###/nameserver\ $IDC_DNS/" /etc/resolv.conf`

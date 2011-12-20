@@ -12,7 +12,7 @@
 #    HOST_VM_COMM_IF: The private interface used for communicating with the VM
 ############################################################################################
 export VM_SRC_IMG="/var/lib/libvirt/images/OSCARS_VM.img"
-export VM_IMG_URL="http://hpn.east.isi.edu/OSCARS_VM_0.6_RC1.gz"
+export VM_IMG_URL="https://www.es.net/assets/ESnet-Research/OSCARS/OSCARS_VM-0.6-rc1.img.gz"
 export VM_NAME="OSCARS_VM"
 export BRIDGE_INTERFACE="virbr0"
 export HOST_VM_COMM_IF="virbr0:1"

@@ -84,6 +84,8 @@ echo "Finalizing: preparing VM for reboot."
 # Make sure OSCARS boots on start-up
 $SSHCMD sudo sed -i "s/###//g" /etc/rc.local
 $SSHCMD sudo sed -i "s/###//g" /etc/rc.d/rc.local
+#setup DNS
+$SSHCMD sudo sed -i "s/###/nameserver\ $IDC_DNS/" /etc/resolv.conf
 # Remove public key used for config
 $SSHCMD rm /home/oscars/.ssh/authorized_keys
 
