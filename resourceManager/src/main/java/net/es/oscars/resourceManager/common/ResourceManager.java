@@ -342,7 +342,7 @@ public class ResourceManager {
                 WSDLTypeConverter.updateStdConstraint (constraint, userConstraint, this.dbname);
                 // update duplicated values in reservation in case  they were changed
                 Long mbps = userConstraint.getBandwidth() * 1000000L;
-                if ((mbps != null) || (mbps != 0)) {
+                if (mbps != null && mbps != 0) {
                     res.setBandwidth(mbps);
                 }
                 if ((longInput=userConstraint.getStartTime()) != 0 ){
@@ -363,7 +363,7 @@ public class ResourceManager {
                 }
                 // update duplicated values in reservation in case  they were changed
                 Long mbps = reservedConstraint.getBandwidth() * 1000000L;
-                if (mbps !=  null || mbps != 0) {
+                if (mbps !=  null && mbps != 0) {
                     res.setBandwidth(mbps);
                 }
                 if ((longInput=reservedConstraint.getStartTime()) != 0 ){
