@@ -357,6 +357,12 @@ public class ResourceManager {
                 constraint = conMap.get(ConstraintType.RESERVED);
                 if (constraint == null) {
                     constraint = WSDLTypeConverter.reserved2StdConstraint(reservedConstraint);
+                    
+                	if(constraint.getBandwidth() == 0 || constraint.getBandwidth() == null)
+                	{                		                			
+                		constraint.setBandwidth(res.getBandwidth());
+                	}
+                	
                     conMap.put(ConstraintType.RESERVED,constraint);
                 } else {
                     WSDLTypeConverter.updateStdConstraint(constraint, reservedConstraint, this.dbname);
