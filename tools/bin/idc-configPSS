@@ -1,7 +1,7 @@
-OPENFLOOPENFLOWW#!/bin/sh
+#!/bin/sh
 ##################################################################################
 # Script to help configure PSS
-# Based on user input, call configure dragonPSS/EOMPLSPSS scripts
+# Based on user input, call dragonPSS/Stub/OpenFlow(/EOMPLSPSS) configuration scripts
 ##################################################################################
 
 #######################################################################
@@ -62,8 +62,9 @@ configPSS() {
 		#TBD: Run from OSCARS_HOME?
 		#Also, the configurePSS itself could be placed anywhere (inside dragonPSS or in tools/bin)
 		(sh $OSCARS_DIST/tools/bin/confDragonPSS $CONTEXT) #confDragonPSS.sh
-	elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
-		sh $OSCARS_DIST/tools/bin/confEomplsPSS	
+        # Comment out call to configure EomplsPSS
+	#elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
+	#	sh $OSCARS_DIST/tools/bin/confEomplsPSS	
 	elif [ "$whichPSS" == "$OPENFLOWPSS" ]; then
 		sh $OSCARS_DIST/tools/bin/confOpenflowPSS	
 	elif [ "$whichPSS" == "$STUBPSS" ]; then
@@ -120,13 +121,17 @@ fi
 #echo "The config file location is $Config2"
 
 #prompt user for new domain
-printf "Enter the PSS (Path setup subsystem) you would like to use: Stub/Dragon/EoMPLS? ";
+# Deleting prompt for EoMPLS; adding prompt for OPENFLOW
+# printf "Enter the PSS (Path setup subsystem) you would like to use: Stub/Dragon/EoMPLS? ";
+printf "Enter the PSS (Path setup subsystem) you would like to use: Stub/Dragon/OpenFlow? ";
 user_choice=0;
 while [ $user_choice == 0 ]; do
         read user_choice;
 	user_choice=$(toUpper "$user_choice")
 	#echo "User input =$user_choice"
-        if [ "$user_choice" != "STUB" ] && [ "$user_choice" != "DRAGON" ] && [ "$user_choice" != "EOMPLS" ] &&  [ "$user_choice" != "OPENFLOW" ]; then
+	# Deleting check for EoMPLS 
+        #if [ "$user_choice" != "STUB" ] && [ "$user_choice" != "DRAGON" ] && [ "$user_choice" != "EOMPLS" ] &&  [ "$user_choice" != "OPENFLOW" ]; then
+        if [ "$user_choice" != "STUB" ] && [ "$user_choice" != "DRAGON" ] &&  [ "$user_choice" != "OPENFLOW" ]; then
                 user_choice=0;
         fi
 done
