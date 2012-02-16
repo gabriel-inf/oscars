@@ -1,6 +1,6 @@
 ---
 soap:
-    publishTo:  'http://localhost:9050/OSCARS/PSSService'
+    publishTo:  'https://localhost:9050/OSCARS/PSSService'
 
 circuitService:
     id:                 'dragon'
