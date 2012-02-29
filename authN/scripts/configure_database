@@ -1,0 +1,31 @@
+#!/bin/bash
+
+SQL_DIR=$1
+if [ -z "$SQL_DIR" ]; then
+    echo "Usage: $0 <sql-script-directory>"
+    exit 1
+fi
+
+#make sure mysql is running
+status=`/etc/init.d/mysqld status | awk '{ print $NF }'`
+if [ "$status" == "stopped" ]; then
+    /etc/init.d/mysqld start
+fi
+
+#Grant privileges and create tables
+mysql -u root < $SQL_DIR/grantPrivs.sql
+if [ $? -ne 0 ]; then
+    echo "Unable to create oscars user"
+    exit 1
+fi
+mysql -u root < $SQL_DIR/createTables.sql
+if [ $? -ne 0 ]; then
+   echo "Unable to create tables"
+   exit 1 
+fi
+mysql -u root < $SQL_DIR/populateAttrs.sql
+if [ $? -ne 0 ]; then
+   echo "Unable to populate table with default values"
+   exit 1
+fi
+

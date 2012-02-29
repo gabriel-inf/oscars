@@ -5,6 +5,8 @@ import java.util.Scanner;
 
 import org.hibernate.Session;
 
+import org.apache.log4j.*;
+
 import net.es.oscars.authN.beans.Institution;
 import net.es.oscars.authN.common.AuthNCore;
 import net.es.oscars.authZ.beans.Site;
@@ -116,9 +118,8 @@ public class IDCSiteUtil extends IDCCmdUtil{
         authNCC.setServiceName(ServiceNames.SVC_AUTHN);
         try {
             cc.loadManifest(ServiceNames.SVC_AUTHZ, ConfigDefaults.MANIFEST); // manifest.yaml
-            cc.setLog4j();
             authNCC.loadManifest(ServiceNames.SVC_AUTHN, ConfigDefaults.MANIFEST); // manifest.yaml
-            authNCC.setLog4j();
+            Logger.getRootLogger().setLevel(Level.OFF);
         } catch (ConfigException ex) {
             System.out.println("caught ConfigurationException " + ex.getMessage());
             System.exit(-1);

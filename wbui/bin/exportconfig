@@ -8,14 +8,13 @@
 
 OSCARS_DIST=$1
 OSCARS_HOME=$2
+DST_LOGDIR=$3
+BUILD_ROOT=$4
 
 SERVICE=WBUIService
 MODULE=wbui
 
 source $OSCARS_DIST/utils/bin/configLib.sh
-
-OSCARS_DIST=$1
-OSCARS_HOME=$2
 
 vers=`cat $OSCARS_DIST/VERSION`
 localhost=`hostname`
@@ -24,7 +23,13 @@ verifySvcName $SERVICE
 
 SRC_DIR=$OSCARS_DIST/$MODULE/config/
 DST_DIR=$OSCARS_HOME/$SERVICE/conf
-DST_LOGDIR=$OSCARS_HOME/logs
+if [ -n "$BUILD_ROOT" ]; then
+    DST_DIR=${BUILD_ROOT}/${DST_DIR}
+fi
+if [ -z "$DST_LOGDIR" ]; then
+    DST_LOGDIR=${OSCARS_HOME}/logs
+fi
+
 JETTY_CONFIG_SSL=jetty.SSL.xml
 JETTY_CONFIG_HTTP=jetty.HTTP.xml
 
@@ -66,7 +71,9 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
 fi
 
 # TODO: better solution later
-sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
-sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
+if [ -z "$BUILD_ROOT" ]; then
+    sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
+    sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
+    cp $OSCARS_DIST/oscars-war/target/oscars-war-$vers.war $OSCARS_HOME/$SERVICE/
+fi
 
-cp $OSCARS_DIST/oscars-war/target/oscars-war-$vers.war $OSCARS_HOME/$SERVICE/

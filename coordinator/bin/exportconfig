@@ -12,10 +12,12 @@ SERVICE=CoordService
 PCESERVICE=PCEService
 MODULE=coordinator
 
-source $OSCARS_DIST/utils/bin/configLib.sh
-
 OSCARS_DIST=$1
 OSCARS_HOME=$2
+DST_LOGDIR=$3
+BUILD_ROOT=$4
+
+source $OSCARS_DIST/utils/bin/configLib.sh
 
 verifyArgs $OSCARS_DIST $OSCARS_HOME
 verifySvcName $SERVICE
@@ -23,14 +25,17 @@ verifySvcName $SERVICE
 SRC_DIR=$OSCARS_DIST/$MODULE/config
 DST_DIR=$OSCARS_HOME/$SERVICE/conf
 DST_DIR_PCE=$OSCARS_HOME/$PCESERVICE/conf
-DST_LOGDIR=$OSCARS_HOME/logs
+if [ -n "$BUILD_ROOT" ]; then
+    DST_DIR=${BUILD_ROOT}/${DST_DIR}
+    DST_DIR_PCE=${BUILD_ROOT}/${DST_DIR_PCE}
+fi
+if [ -z "$DST_LOGDIR" ]; then
+    DST_LOGDIR=$OSCARS_HOME/logs
+fi
 
 mkdir -p $DST_LOGDIR
 mkdir -p $DST_DIR
 mkdir -p $DST_DIR_PCE
-
-OSCARS_DIST=$1
-OSCARS_HOME=$2
 
 if [ ! -f $DST_DIR/$MANIFEST ] ; then
     cp $SRC_DIR/$MANIFEST  $DST_DIR/$MANIFEST 
@@ -73,7 +78,6 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
     sed s,$MODULE.log,$DST_LOGDIR/$SERVICE.log, <  $SRC_DIR/$LOG4J_PROPS_MESSAGE > $DST_DIR/$LOG4J_PROPS_MESSAGE
 fi
 # Copy the PCERuntime configuration files
-mkdir -p $OSCARS_HOME/PCEService/conf
 cp $SRC_DIR/pce-configuration-http.xml $DST_DIR_PCE/pce-configuration-http.xml
 cp $SRC_DIR/pce-configuration-ssl.xml $DST_DIR_PCE/pce-configuration-ssl.xml
 

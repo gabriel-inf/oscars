@@ -10,17 +10,26 @@ SERVICE=WSNBrokerService
 MODULE=wsnbroker
 PORT=9013
 
-source $OSCARS_DIST/utils/bin/configLib.sh
-
 OSCARS_DIST=$1
 OSCARS_HOME=$2
+DST_LOGDIR=$3
+BUILD_ROOT=$4
+
+source $OSCARS_DIST/utils/bin/configLib.sh
 
 verifyArgs $OSCARS_DIST $OSCARS_HOME
 verifySvcName $SERVICE
 
 SRC_DIR=$OSCARS_DIST/$MODULE/config/
 DST_DIR=$OSCARS_HOME/$SERVICE/conf
-DST_LOGDIR=$OSCARS_HOME/logs
+DST_DATA_DIR=$OSCARS_HOME/$SERVICE/data
+if [ -n "$BUILD_ROOT" ]; then
+    DST_DIR=${BUILD_ROOT}/${DST_DIR}
+    DST_DATA_DIR=${BUILD_ROOT}/$DST_DATA_DIR
+fi
+if [ -z "$DST_LOGDIR" ]; then
+    DST_LOGDIR=${OSCARS_HOME}/logs
+fi
 
 mkdir -p $DST_LOGDIR
 mkdir -p $DST_DIR
@@ -74,8 +83,8 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
 fi
 
 #Derby
-mkdir -p $OSCARS_HOME/$SERVICE/data
-if [ ! -d "$OSCARS_HOME/$SERVICE/data/notifyDb" ]; then
-    cp -r $SRC_DIR/notifyDb $OSCARS_HOME/$SERVICE/data/notifyDb
+mkdir -p $DST_DATA_DIR
+if [ ! -d "$DST_DATA_DIR/notifyDb" ]; then
+    cp -r $SRC_DIR/notifyDb $DST_DATA_DIR/notifyDb
 fi
 

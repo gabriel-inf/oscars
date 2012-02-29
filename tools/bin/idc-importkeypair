@@ -111,6 +111,5 @@ openssl x509 -in $CERT_FILE -inform PEM -out $CERT_FILE.der -outform DER
 #mv -f $CERT_all.der $CERT.der
 
 # import key+crt
-test -d target/tmp || . bin/expandOneJar.sh
-. bin/setclasspath.sh
-java net.es.oscars.tools.utils.IDCImportKeyPair  -s $KEYSTORE -k $KEY_FILE.der -c $CERT_FILE.der -a $ALIAS -p $KEY_PASS $OVERRIDE
+vers=`cat $OSCARS_DIST/VERSION`
+java -Done-jar.main.class=net.es.oscars.tools.utils.IDCImportKeyPair -jar $OSCARS_DIST/tools/target/tools-$vers.one-jar.jar -s $KEYSTORE -k $KEY_FILE.der -c $CERT_FILE.der -a $ALIAS -p $KEY_PASS $OVERRIDE

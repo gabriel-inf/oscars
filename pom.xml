@@ -36,6 +36,7 @@
         <module>dragonPSS</module>
         <module>openflowPSS</module>
         <module>eomplsPSS</module>
+        <module>bridgePSS</module>
         <module>notificationBridge</module>
         <module>wsnbroker</module>
         <module>tools</module>

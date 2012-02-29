@@ -1,15 +1,29 @@
 #!/bin/sh
-# -Djavax.net.debug=all will dump all ssl information
-vers=`cat $OSCARS_DIST/VERSION`
-DEFAULT_PID_DIR="${OSCARS_HOME-.}/run"
-if [ ! -d "$DEFAULT_PID_DIR" ]; then
-    mkdir "$DEFAULT_PID_DIR"
+
+context=$1
+pidfile=$2
+jarfile=$3
+shortname=authZ
+
+#set context 
+if [ -z "$context" ]; then
+    context="DEVELOPMENT"
 fi
-case $# in
-0) context="DEVELOPMENT";;
-1) context=$1;;
-esac 
-echo "Starting AuthZ with version:$vers context:$context"
-java -jar $OSCARS_DIST/authZ/target/authZ-$vers.one-jar.jar -c $context &
-echo $! > $DEFAULT_PID_DIR/authZ.pid
+
+if [ -z "$pidfile" ]; then
+    DEFAULT_PID_DIR="${OSCARS_HOME-.}/run"
+    if [ ! -d "$DEFAULT_PID_DIR" ]; then
+        mkdir "$DEFAULT_PID_DIR"
+    fi
+    pidfile=$DEFAULT_PID_DIR/${shortname}.pid
+fi
+
+if [ -z "$jarfile" ]; then
+    vers=`cat $OSCARS_DIST/VERSION`
+    jarfile=$OSCARS_DIST/${shortname}/target/${shortname}-$vers.one-jar.jar
+    echo "Starting ${shortname} with version:$vers context:$context"
+fi
+
+java -Djava.net.preferIPv4Stack=true  -jar $jarfile  -c $context &
+echo $! > $pidfile
 
