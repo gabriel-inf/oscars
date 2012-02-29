@@ -86,7 +86,7 @@ public class IDCUserUtil extends IDCCmdUtil{
             }
         }else { input = ""; }
         user.setCertIssuer(input);
-        user.setInstitution(this.selectInstitution(in, "user's organization"));
+        user.setInstitution(this.selectInstitution(in, "user's organization", session));
         userAttrs = this.selectRoles(in);
         user.setDescription(this.readInput(in, "Personal Description", "", false));
         user.setEmailPrimary(this.readInput(in, "Email(Primary)", "", true));
@@ -263,7 +263,7 @@ public class IDCUserUtil extends IDCCmdUtil{
        try {
            // System.out.println("loading manifest from ./config/"+ConfigDefaults.MANIFEST);
            cc.loadManifest(ServiceNames.SVC_AUTHN,  ConfigDefaults.MANIFEST); // manifest.yaml
-           cc.setLog4j();
+           Logger.getRootLogger().setLevel(Level.OFF);
        } catch (ConfigException ex) {
            System.out.println("caught ConfigurationException " + ex.getMessage());
            System.exit(-1);

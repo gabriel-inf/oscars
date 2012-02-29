@@ -34,7 +34,7 @@ public class IDCSiteUtil extends IDCCmdUtil{
         //Get institution;
         Session authnSession = this.authnCore.getSession();
         authnSession.beginTransaction();
-        Institution institution = this.selectInstitution(in, "organization");
+        Institution institution = this.selectInstitution(in, "organization", authnSession);
         authnSession.getTransaction().commit();
         
         //get domain

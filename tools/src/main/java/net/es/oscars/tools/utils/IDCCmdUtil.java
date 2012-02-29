@@ -3,6 +3,8 @@ package net.es.oscars.tools.utils;
 import java.util.*;
 import java.io.*;
 
+import org.hibernate.Session;
+
 import net.es.oscars.authN.beans.Institution;
 import net.es.oscars.authN.dao.InstitutionDAO;
 /*import net.es.oscars.database.*;
@@ -55,12 +57,14 @@ public class IDCCmdUtil{
      * @param in the Scanner to use for accepting input
      * @return the selected Institution
      */
-    protected Institution selectInstitution(Scanner in, String label){
+    protected Institution selectInstitution(Scanner in, String label, Session session){
         InstitutionDAO instDAO = new InstitutionDAO(this.dbname);
         List<Institution> institutions = instDAO.list();
         int i = 1;
         
         System.out.println();
+        System.out.println(i + ". Add new organization...");
+        i++;
         for(Institution inst : institutions){
             System.out.println(i + ". " + inst.getName());
             i++;
@@ -70,11 +74,21 @@ public class IDCCmdUtil{
         int n = in.nextInt();
         in.nextLine();
         
-        if(n <= 0 || n > institutions.size()){
+        if(n <= 0 || n > institutions.size() + 1){
             System.err.println("Invalid organization number '" +n + "' entered");
             System.exit(0);
         }
+        if(n != 1){
+            return institutions.get(n-2);
+        }
         
-        return institutions.get(n-1);
+        //add new institution
+        Institution inst = new Institution();
+        System.out.print("Enter the new organization name: ");
+        String newInstName = in.nextLine();
+        inst.setName(newInstName.trim());
+        session.save(inst);
+        
+        return inst;
     }
 }
