@@ -173,8 +173,9 @@ public class QueryReservationStatus extends HttpServlet {
         Layer2Info layer2Info = null;
         if (pathInfo != null) {
             path = pathInfo.getPath();
-            // no layer2Info create one from path -- hack to make rest of code work
-            if (layer2Info == null  && path != null) {
+            layer2Info = pathInfo.getLayer2Info();
+            // no layer2Info or later3Info create one from path -- hack to make rest of code work
+            if (layer2Info == null && pathInfo.getLayer3Info() == null  && path != null) {
                 layer2Info = QueryReservation.createLayer2(path);
             }
         }

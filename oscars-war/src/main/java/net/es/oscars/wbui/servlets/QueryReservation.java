@@ -352,15 +352,17 @@ public class QueryReservation extends HttpServlet {
         if (hops.size() > 0) {
             for (CtrlPlaneHopContent hop: hops){
                 CtrlPlaneLinkContent link = hop.getLink();
-                String vlanRangeAvail = "0";
-                CtrlPlaneSwcapContent swcap= link.getSwitchingCapabilityDescriptors();
-                if (swcap != null) {
-                    CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = swcap.getSwitchingCapabilitySpecificInfo();
-                    if (specInfo != null) {
-                        if (specInfo.getVlanRangeAvailability() == null) {
-                            vlanTags.add(vlanRangeAvail);
-                        } else {
-                            vlanTags.add(specInfo.getVlanRangeAvailability());
+                if(link != null){
+                    String vlanRangeAvail = "0";
+                    CtrlPlaneSwcapContent swcap= link.getSwitchingCapabilityDescriptors();
+                    if (swcap != null) {
+                        CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = swcap.getSwitchingCapabilitySpecificInfo();
+                        if (specInfo != null) {
+                            if (specInfo.getVlanRangeAvailability() == null) {
+                                vlanTags.add(vlanRangeAvail);
+                            } else {
+                                vlanTags.add(specInfo.getVlanRangeAvailability());
+                            }
                         }
                     }
                 }

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-<!-- WARNING: this file currently only contains debuging configuration - lomax@es.net 9/29/2009 -->
 <PCEConfiguration>
     <PCE>
         <Bindings>
@@ -39,12 +38,23 @@
                                 <Aggregates>
                                     <PCE>
                                         <Bindings>
-                                            <Name>Dijkstra PCE</Name>
+                                            <Name>Layer 3 MPLS PCE</Name>
                                             <PathTag>SampleDomain</PathTag>
-                                            <Endpoint>http://localhost:9008/dijkstraPCE</Endpoint>
+                                            <Endpoint>http://localhost:9015/OSCARS/l3mplsPCE</Endpoint>
                                             <Role>PCE</Role>
                                             <ProxyEndpoint>http://localhost:10000/OSCARS/PCERuntimeService</ProxyEndpoint>
-                                        </Bindings>
+                                        </Bindings> 
+                                        <Aggregates>
+                                            <PCE>
+                                                <Bindings>
+                                                    <Name>Dijkstra PCE</Name>
+                                                    <PathTag>SampleDomain</PathTag>
+                                                    <Endpoint>http://localhost:9008/dijkstraPCE</Endpoint>
+                                                    <Role>PCE</Role>
+                                                    <ProxyEndpoint>http://localhost:10000/OSCARS/PCERuntimeService</ProxyEndpoint>
+                                                </Bindings>
+                                            </PCE>
+                                        </Aggregates>
                                     </PCE>
                                 </Aggregates>
                             </PCE>

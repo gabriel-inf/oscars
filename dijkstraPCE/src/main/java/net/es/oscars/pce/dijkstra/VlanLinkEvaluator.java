@@ -118,7 +118,7 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         }
         
         //get source
-        String currLinkId = NMWGParserUtil.normalizeURN(pathConstraints.getHop().get(0).getLink().getId());
+        String currLinkId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(pathConstraints.getHop().get(0), NMWGParserUtil.LINK_TYPE));
         String localLinkId = null;
         VlanRange prevDomainSuggested = new VlanRange(VlanRange.ANY_RANGE);//default to any
         VlanRange prevDomainVlanAvail = new VlanRange(VlanRange.ANY_RANGE);//default to any
@@ -177,7 +177,7 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         ArrayList<Integer> translationStack = new ArrayList<Integer>();
         currLinkId = localLinkId;
         String dest = NMWGParserUtil.normalizeURN(
-                pathConstraints.getHop().get(pathConstraints.getHop().size() - 1).getLink().getId());
+                NMWGParserUtil.getURN(pathConstraints.getHop().get(pathConstraints.getHop().size() - 1), NMWGParserUtil.LINK_TYPE));
         boolean foundNextDomainHop = false;
         while(currLinkId != null && !foundNextDomainHop){
             if(!currLinkId.startsWith(localDomain)){

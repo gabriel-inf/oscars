@@ -31,6 +31,7 @@ import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.VlanTag;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
+import net.es.oscars.api.soap.gen.v06.Layer3Info;
 import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.UserRequestConstraintType;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
@@ -203,8 +204,13 @@ public class CreateReservation extends HttpServlet {
         //PropHandler propHandler = new PropHandler("oscars.properties");
         //Properties props = propHandler.getPropertyGroup("wbui", true);
         //String defaultLayer = props.getProperty("defaultLayer");
-        String defaultLayer = "2";  // that's all we are implementing for now
-
+        String defaultLayer = "layer2";  // that's all we are implementing for now
+        String layer = request.getParameter("layer");
+        if(layer == null || "".equals(layer.trim())){
+            layer = defaultLayer;
+        }
+        layer = layer.trim();
+        
         PathInfo requestedPath = new PathInfo();
         String[] inHops = {};
         requestedPath.setPathType("loose");
@@ -243,23 +249,26 @@ public class CreateReservation extends HttpServlet {
                    cpHop.setLinkIdRef(hop);
                    pathHops.add(cpHop);
                 }
-                requestedPath.setPath(path);
             }
+        }else{
+            CtrlPlaneHopContent cpSourceHop = new CtrlPlaneHopContent();
+            cpSourceHop.setLinkIdRef(source);
+            pathHops.add(cpSourceHop);
+            
+            CtrlPlaneHopContent cpDestHop = new CtrlPlaneHopContent();
+            cpDestHop.setLinkIdRef(destination);
+            pathHops.add(cpDestHop);
         }
+        requestedPath.setPath(path);
+        
         String srcVlan = "";
         strParam = request.getParameter("srcVlan");
         if (strParam != null && !strParam.trim().equals("")) {
             srcVlan = strParam.trim();
         }
 
-        boolean layer2 = false;
-        // TODO: support VLAN translation
-
-        if (!srcVlan.equals("") ||
-              (defaultLayer !=  null && defaultLayer.equals("2"))) {
-            layer2 = true;
+        if (layer.equals("layer2")) {
             this.log.debug("handlePath. in layer2 processing");
-
             Layer2Info layer2Info = new Layer2Info();
             VlanTag srcVtag = new VlanTag();
             VlanTag destVtag = new VlanTag();
@@ -301,40 +310,40 @@ public class CreateReservation extends HttpServlet {
                 destHop.setLinkIdRef(destination);
                 pathHops.add(destHop);
             }
-        }
-        if (!layer2) {
-            return null;
-            /* not implemented yet
-            Layer3Data layer3Data = new Layer3Data();
-            // VLAN id wasn't supplied with layer 2 id
-            if (source.startsWith("urn:ogf:network")) {
-                throw new OSCARSServiceException("VLAN tag not supplied for layer 2 reservation");
+        }else if(layer.equals("layer3")) {
+            Layer3Info layer3Info = new Layer3Info();
+            
+            strParam = request.getParameter("srcIP");
+            if ((strParam != null) && !strParam.trim().equals("")) {
+                layer3Info.setSrcHost(strParam.trim());
             }
-            layer3Data.setSrcHost(source);
-            layer3Data.setDestHost(destination);
+            
+            strParam = request.getParameter("destIP");
+            if ((strParam != null) && !strParam.trim().equals("")) {
+                layer3Info.setDestHost(strParam.trim());
+            }
 
             strParam = request.getParameter("srcPort");
             if ((strParam != null) && !strParam.trim().equals("")) {
-                layer3Data.setSrcIpPort(Integer.valueOf(strParam.trim()));
-            } else {
-                layer3Data.setSrcIpPort(0);
+                layer3Info.setSrcIpPort(Integer.valueOf(strParam.trim()));
             }
+            
             strParam = request.getParameter("destPort");
             if ((strParam != null) && !strParam.trim().equals("")) {
-                layer3Data.setDestIpPort(Integer.valueOf(strParam.trim()));
-            } else {
-                layer3Data.setDestIpPort(0);
+                layer3Info.setDestIpPort(Integer.valueOf(strParam.trim()));
             }
+            
             strParam = request.getParameter("protocol");
             if ((strParam != null) && !strParam.trim().equals("")) {
-                layer3Data.setProtocol(strParam.trim());
+                layer3Info.setProtocol(strParam.trim());
             }
             strParam = request.getParameter("dscp");
             if ((strParam != null) && !strParam.trim().equals("")) {
-                layer3Data.setDscp(strParam.trim());
+                layer3Info.setDscp(strParam.trim());
             }
-            requestedPath.setLayer3Data(layer3Data);
-            */
+            requestedPath.setLayer3Info(layer3Info);
+        }else {
+            throw new OSCARSServiceException("error:  Invalid layer provided " + layer);
         }
         this.log.debug("handlePath:end");
         return requestedPath;

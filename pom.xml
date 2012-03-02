@@ -30,6 +30,7 @@
         <module>connectivityPCE</module>
         <module>dijkstraPCE</module>
         <module>bandwidthPCE</module>
+        <module>l3mplsPCE</module>
         <module>vlanPCE</module>
         <module>pss</module>
         <module>stubPSS</module>

@@ -352,16 +352,19 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
     var n = dojo.byId("srcVlanReplace");
     var layer2Nodes = dojo.query(".layer2Replace");
     var layer3Nodes = dojo.query(".layer3Replace");
+    
+    // blank tables if not present in new reservation
+    if (!responseObject.interPathReplace) {
+        tableN = dojo.byId("interPathReplace");
+        tableN.innerHTML = "";
+    }
+    if (!responseObject.vlanInterPathReplace) {
+        tableN = dojo.byId("vlanInterPathReplace");
+        tableN.innerHTML = "";
+    }
+    
+    //display layer 2 or layer 3 parameters
     if (!oscars.Utils.isBlank(n.innerHTML)) {
-        // blank tables if not present in new reservation
-        if (!responseObject.interPathReplace) {
-            tableN = dojo.byId("interPathReplace");
-            tableN.innerHTML = "";
-        }
-        if (!responseObject.vlanInterPathReplace) {
-            tableN = dojo.byId("vlanInterPathReplace");
-            tableN.innerHTML = "";
-        }
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "";
         }
@@ -369,10 +372,6 @@ oscars.ReservationDetails.layerParams = function (responseObject) {
             layer3Nodes[i].style.display = "none";
         }
     } else {
-        if (!responseObject.interPath3Replace) {
-            tableN = dojo.byId("interPath3Replace");
-            tableN.innerHTML = "";
-        }
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none";
         }

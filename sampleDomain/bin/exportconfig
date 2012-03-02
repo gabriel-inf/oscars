@@ -188,6 +188,17 @@ sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jk
 cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG
 rm -f $tmpFile
 
+# l3mplsPCE
+#
+SERVICE=$SVC_PCE_L3MPLS
+tmpFile=/tmp/tmpconf.$$
+sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-ssl\.jks,$OSCARS_HOME/sampleDomain/certs/localhost.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_SERVER_SSL_CFG > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_SERVER_SSL_CFG
+rm -f $tmpfile
+sed -e "s,keystore-truststore\.jks,$OSCARS_HOME/sampleDomain/certs/truststore.jks," -e "s,keystore-ssl\.jks,$OSCARS_HOME/sampleDomain/certs/localhost.jks," < $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG > $tmpFile
+cp $tmpFile $OSCARS_HOME/$SERVICE/conf/$CXF_CLIENT_SSL_CFG
+rm -f $tmpFile
+
 # null Aggregator
 #
 SERVICE=$SVC_PCE

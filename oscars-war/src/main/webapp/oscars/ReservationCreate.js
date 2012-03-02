@@ -109,6 +109,7 @@ oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
     var i;
     var layer2Nodes = dojo.query(".layer2");
     var layer3Nodes = dojo.query(".layer3");
+    var destVlan = dojo.query(".destVlan");
     if (id == "layer2") {
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = ""; 
@@ -116,6 +117,7 @@ oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
         for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = "none"; 
         }
+        oscars.ReservationCreate.toggleDestDisplay();
     } else if (id == "layer3") {
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none"; 
@@ -123,6 +125,7 @@ oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
         for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = ""; 
         }
+        destVlan[0].style.display = "none";
     }
 };
 
@@ -145,8 +148,8 @@ oscars.ReservationCreate.checkDateTimes = function () {
     var startSeconds =
         oscars.DigitalClock.convertDateTime(currentDate, "startDate",
                                             "startTime", true);
-    // default is 4 minutes in the future
-    var endDate = new Date(startSeconds*1000 + 60*4*1000);
+    // default is 15 minutes in the future
+    var endDate = new Date(startSeconds*1000 + 60*15*1000);
     var endSeconds =
             oscars.DigitalClock.convertDateTime(endDate, "endDate", "endTime",
                                                 true);

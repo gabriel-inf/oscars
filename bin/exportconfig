@@ -31,6 +31,7 @@ $SH $OSCARS_DIST/connectivityPCE/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 $SH $OSCARS_DIST/dijkstraPCE/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 $SH $OSCARS_DIST/bandwidthPCE/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 $SH $OSCARS_DIST/vlanPCE/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
+$SH $OSCARS_DIST/l3mplsPCE/bin/exportconfig $OSCARS_DIST $OSCARS_HOME
 
 # TopoBridge
 $SH $OSCARS_DIST/topoBridge/bin/exportconfig $OSCARS_DIST $OSCARS_HOME

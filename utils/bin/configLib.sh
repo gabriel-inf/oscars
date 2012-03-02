@@ -20,6 +20,7 @@ SVC_PCE_BW=BandwidthPCE
 SVC_PCE_CONN=ConnectivityPCE
 SVC_PCE_DIJ=DijkstraPCE
 SVC_PCE_VLAN=VlanPCE
+SVC_PCE_L3MPLS=L3MplsPCE
 SVC_UTILS=Utils
 SVC_ION=IONUIService #Added for ION
 
@@ -86,6 +87,8 @@ verifySvcName () {
         $SVC_PCE_DIJ)
             ;;
         $SVC_PCE_VLAN)
+            ;;
+        $SVC_PCE_L3MPLS)
             ;;
         $SVC_UTILS)
             ;;

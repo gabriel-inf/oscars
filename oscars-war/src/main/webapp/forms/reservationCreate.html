@@ -13,19 +13,18 @@
 <input type="hidden" name="endSeconds" id="hiddenEndSeconds" />
 
 <p>Required inputs are bordered in green.
-The source and destination can be topology identifiers, host names,
-or IP addresses, depending on the layer used.
+The source and destination can be URN topology identifers or a registered friendly name.
 Click on the boxes associated with the start and end dates to bring
 up a calendar widget.  The reservation time slot defaults to
-now, and now + 4 minutes, respectively, if you leave the dates and
+now, and now + 15 minutes, respectively, if you leave the dates and
 times empty.</p>
 
 <!-- NOTE:  there will be flicker if user is authorized.  Would need to
             create everything programmatically to avoid. -->
 <div id="authorizedWarningDisplay" style="display:none">
 <p>WARNING: Entering a series of hops in the Path field may alter
-routing behavior for the selected flow.  Hops can be topology identifiers,
-host names, or IP addresses, depending on the layer used.
+routing behavior for the selected flow.  Hops can be URN topology identifiers or
+registered friendly names. 
 Note that the path field will expand
 to the number of lines occurring in the hops list.
 </p>
@@ -151,11 +150,11 @@ to the number of lines occurring in the hops list.
              value="layer3" type="radio"
              onClick="oscars.ReservationCreate.layerChooser" />
       <label for="layer3">Use layer 3 parameters</label>
-      &lt; -- &gt;
-      <input dojoType="dijit.form.CheckBox" id="sameVlan"
+      <span class="layer2">&lt; -- &gt;</span>
+      <input dojoType="dijit.form.CheckBox" id="sameVlan" class="layer2"
           name="sameVlan" type="checkbox" checked="checked"
           onClick="oscars.ReservationCreate.toggleDestDisplay" />
-      <label for="sameVlan">Same VLAN on source and destination</label>
+      <label for="sameVlan" class="layer2">Same VLAN on source and destination</label>
     </td>
   </td></tr>
 
@@ -190,6 +189,16 @@ to the number of lines occurring in the hops list.
   </tr>
 
   <!-- layer 3 parameters -->
+  <tr class="layer3" style="display:none"><td>Source IP</td>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="srcIP"
+               id="srcIP" />
+    </td>
+    <td>(IP address)</td></tr>
+  <tr class="layer3" style="display:none"><td>Destination IP</td>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="destIP"
+               id="destIP" />
+    </td>
+    <td>(IP address)</td></tr>
   <tr class="layer3" style="display:none"><td>Source port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="srcPort"
                id="srcPort" maxlength="5" />

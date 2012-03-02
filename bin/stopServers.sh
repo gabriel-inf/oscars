@@ -98,6 +98,12 @@ stopVlanPCE () {
     stopService
 }
 
+stopL3MplsPCE () {
+    Service="L3MplsPCE"
+    ShortName="l3mplsPCE"
+    stopService
+}
+
 stopstubPSS () {
     Service="StubPSS"
     ShortName="stubPSS"
@@ -212,6 +218,7 @@ while [ ! -z $1 ]
     stopBWPCE
     stopDijPCE
     stopVlanPCE
+    stopL3MplsPCE
 #    stopstubPSS
     stopPSS #Stops whichever PID is present
 #    stopnullPCE

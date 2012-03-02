@@ -125,6 +125,10 @@ startVlanPCE () {
     startService "VlanPCE" "VlanPCE" "vlanPCE" "vlanPCE"
 }
 
+startL3MplsPCE () {
+    startService "L3MplsPCE" "L3MplsPCE" "l3mplsPCE" "l3mplsPCE"
+}
+
 startnullPCE () {
     startService "PCEService" "PCEService" "nullpce" "pce"
 
@@ -275,6 +279,7 @@ while [ ! -z $1 ]
       startConnPCE
       startBandwidthPCE
       startVlanPCE
+      startL3MplsPCE
       startPSS
       startNotificationBridge
       startWSNBroker

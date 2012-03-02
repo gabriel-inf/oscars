@@ -46,8 +46,8 @@ oscars.DigitalClock.updateClocks = function (clock) {
     startTimeDefault.innerHTML = formattedTime;
     var endDateDefault = dojo.byId('endDateDefault');
     var endTimeDefault = dojo.byId('endTimeDefault');
-    // get default end time (4 minutes in future)
-    var endDate = new Date(ms + 60*4*1000);
+    // get default end time (15 minutes in future)
+    var endDate = new Date(ms + 60*15*1000);
     month = endDate.getMonth();
     formattedDt = month + 1 + "/" + endDate.getDate() + "/" +
                   endDate.getFullYear();

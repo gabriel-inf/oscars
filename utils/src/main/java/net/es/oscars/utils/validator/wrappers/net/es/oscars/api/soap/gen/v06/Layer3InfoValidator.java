@@ -11,23 +11,12 @@ public class Layer3InfoValidator {
      */
     public static void validator (Layer3Info obj) throws RuntimeException {
         
-        if ((obj.getDestHost() == null) || (obj.getDestHost() == "")) {
+        if ((obj.getDestHost() == null) || ("".equals(obj.getDestHost().trim()))) {
             throw new RuntimeException ("destination host is null");
         }
-        if (obj.getDestIpPort() == 0) {
-            throw new RuntimeException ("destination IP is null");
-        }
-        if ((obj.getDscp() == null) || (obj.getDscp() == "")) {
-            throw new RuntimeException ("getDscp returns null");
-        }
-        if ((obj.getProtocol() == null) || (obj.getProtocol() == "")) {
-            throw new RuntimeException ("protocol is null");
-        }
-        if ((obj.getSrcHost() == null) || (obj.getSrcHost() == "")) {
+
+        if ((obj.getSrcHost() == null) ||("".equals(obj.getSrcHost().trim()))) {
             throw new RuntimeException ("source host is null");
-        }
-        if (obj.getSrcIpPort() == 0) {
-            throw new RuntimeException ("source IP is null");
         }
     }
 }

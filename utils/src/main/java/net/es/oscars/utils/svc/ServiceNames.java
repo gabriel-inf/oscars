@@ -20,6 +20,7 @@ public class ServiceNames {
     public static final String SVC_PCE_CONN     = "ConnectivityPCE";
     public static final String SVC_PCE_DIJ      = "DijkstraPCE";
     public static final String SVC_PCE_VLAN     = "VlanPCE";
+    public static final String SVC_PCE_L3MPLS     = "L3MplsPCE";
     public static final String SVC_PCE_NULLPCE  = "NullPCE";
     public static final String SVC_PCE_NULLAGG  = "NullAggregator";
     public static final String SVC_UTILS        = "Utils";
