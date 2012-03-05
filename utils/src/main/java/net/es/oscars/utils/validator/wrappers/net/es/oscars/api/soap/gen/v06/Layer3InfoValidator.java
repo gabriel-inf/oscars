@@ -11,12 +11,22 @@ public class Layer3InfoValidator {
      */
     public static void validator (Layer3Info obj) throws RuntimeException {
         
-        if ((obj.getDestHost() == null) || ("".equals(obj.getDestHost().trim()))) {
-            throw new RuntimeException ("destination host is null");
-        }
+        obj.setSrcHost(normalizeIPList(obj.getSrcHost()));
+        obj.setDestHost(normalizeIPList(obj.getDestHost()));
+       
+        
+    }
 
-        if ((obj.getSrcHost() == null) ||("".equals(obj.getSrcHost().trim()))) {
-            throw new RuntimeException ("source host is null");
+    private static String normalizeIPList(String hostList) {
+        if(hostList == null){
+            return hostList;
         }
+        
+        //normalize
+        hostList = hostList.trim();
+        hostList = hostList.replaceAll(",", " ");
+        hostList = hostList.replaceAll("\\s+", ",");
+        
+        return hostList;
     }
 }

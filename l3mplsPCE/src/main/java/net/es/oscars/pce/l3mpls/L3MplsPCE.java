@@ -34,11 +34,12 @@ import net.es.oscars.utils.topology.PathTools;
 
 /*
 TODO:
- 1. IPV6 Support
- 2. Test multiple prefixes and normalize whitesspace/commas
+ X 1. IPV6 Support
+ X 2. Test multiple prefixes and normalize whitesspace/commas
  3. WBUI: make sure list displays source and dest correctly
  4. WBUI: make sure query displays source, dest and other parameters correctly
  5. WBUI: make layer 3 clone work
+ 6. WBUI: Null source displays localhost
 */
 public class L3MplsPCE {
     private static Logger LOG = Logger.getLogger(L3MplsPCE.class);
@@ -284,6 +285,11 @@ public class L3MplsPCE {
             return true;
         }
         
+        //normailize
+        ips1 = ips1.trim();
+        ips1 = ips1.replaceAll("\\s+", ",");
+        ips2 = ips2.trim();
+        ips2 = ips2.replaceAll("\\s+", ",");
         //split-up list
         String[] ip1List = ips1.split(",");
         String[] ip2List = ips2.split(",");
@@ -300,18 +306,21 @@ public class L3MplsPCE {
                 if(ip1.prefixLength < ip2.prefixLength){
                     //ip1 is more general
                     System.out.println("ip1 is more general");
-                    if((ip1.mask & ip2.address) == ip1.address){
+                    //if((ip1.mask & ip2.address) == ip1.address){
+                    if(ip1.compareMasked(ip2.address)){
                         return true;
                     }
                 }else if(ip1.prefixLength > ip2.prefixLength){
                     System.out.println("ip2 is more general");
-                    if((ip2.mask & ip1.address) == ip2.address){
+                    //if((ip2.mask & ip1.address) == ip2.address){
+                    if(ip2.compareMasked(ip1.address)){
                         return true;
                     }
                 }else{
                     //they are equals
                     System.out.println("lengths are equal");
-                    if(ip1.address == ip2.address){
+                    //if(ip1.address == ip2.address){
+                    if(ip1.equals(ip2.address)){
                         return true;
                     }
                 }
@@ -328,7 +337,7 @@ public class L3MplsPCE {
         }
         
         //compare values
-        if(str1.equals(str2)){
+        if(str1.toLowerCase().equals(str2)){
             return true;
         }
         
@@ -382,12 +391,13 @@ public class L3MplsPCE {
     }
     
     private class MaskedIP {
-        private int address;
+        private byte[] address;
+        private byte[] mask;
         private int prefixLength;
-        private int mask;
         
         public MaskedIP(String ipString) throws OSCARSServiceException{
             //split-up string
+            ipString = ipString.trim();
             String[] ipParts = ipString.split("/");
             if(ipParts.length < 1 || ipParts.length > 2){
                 throw new OSCARSServiceException(ipString + " must be an [IP] or [IP]/[PREFIX-LENGTH]>");
@@ -402,11 +412,9 @@ public class L3MplsPCE {
                 throw new OSCARSServiceException("Invalid IP " + ipAddr + ": " + e.getMessage());
             }
             byte[] byteIp = inet.getAddress();
-            int intIp = ((byteIp[0] & 0xFF) << 24) | ((byteIp[1] & 0xFF) << 16) |
-                        ((byteIp[2]& 0xFF) << 8) | ((byteIp[3]& 0xFF) << 0);
             
             //verify prefix length
-            int ipPrefix = 32;
+            int ipPrefix = byteIp.length * 8;
             if(ipParts.length == 2){
                 try{
                     ipPrefix = Integer.parseInt(ipParts[1]);
@@ -416,20 +424,59 @@ public class L3MplsPCE {
                 }
             }
             this.prefixLength = ipPrefix;
-            this.mask = ~((1 << (32 - ipPrefix)) - 1);
+            
+            byte[] tmpMask = new byte[byteIp.length];
+            for(int b = 0, l = ipPrefix; b < tmpMask.length && l > 0; b++, l-= 8){
+                tmpMask[b] = (byte) ((0xFF << (8 - (l >= 8 ? 8 : l))));
+            }
+            this.mask = tmpMask;
             
             //combine
-            this.address = (intIp & this.mask);
+            this.address = new byte[byteIp.length];
+            for(int i = 0; i < byteIp.length; i++){
+                this.address[i] = (byte) ((byteIp[i] & 0xFF) & (this.mask[i] & 0xFF));
+            }
             
+            System.out.println("ADDRESSBYTES=" + byteIp.length);
             System.out.println("PREFIXLENGTH=" + this.prefixLength);
             System.out.println("MASK=" + mask);
-            System.out.println("MASK=" + mask);
-            System.out.println("MASKBITS=" + Integer.toBinaryString(mask));
-            System.out.println("INT IP=" + intIp);
-            System.out.println("INT IP BITS=" + Integer.toBinaryString(intIp));
-            System.out.println("ADDR=" + this.address);
-            System.out.println("ADDR BITS=" + Integer.toBinaryString(this.address));
+            System.out.println("MASKBITS=");
+            for(int i = 0; i < this.mask.length; i++){
+                System.out.println("    " + this.mask[i]);
+            }
 
+            System.out.println("ADDR=" + this.address);
+            System.out.println("ADDR BITS=");
+            for(int i = 0; i < this.address.length; i++){
+                System.out.println("    " + this.address[i]);
+            }
+        }
+        
+        public boolean compareMasked(byte[] addr2){
+            if(this.mask.length != addr2.length){
+                return false;
+            }
+            
+            byte[] maskedAddr = new byte[addr2.length];
+            for(int i = 0; i < this.mask.length; i++){
+                maskedAddr[i] = (byte) ((addr2[i] & 0xFF) & (this.mask[i] & 0xFF));
+            }
+            
+            return this.equals(maskedAddr);
+        }
+        
+        public boolean equals(byte[] addr2){
+            if(this.address.length != addr2.length){
+                return false;
+            }
+            
+            for(int i = 0; i < this.address.length; i++){
+                if(this.address[i] != addr2[i]){
+                    return false;
+                }
+            }
+            
+            return true;
         }
     }
 }

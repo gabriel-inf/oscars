@@ -293,8 +293,8 @@
     <!-- Layer 3 elements -->
     <xsd:complexType name="layer3Info">
         <xsd:sequence>
-            <xsd:element name="srcHost" type="xsd:string" />
-            <xsd:element name="destHost" type="xsd:string" />
+            <xsd:element name="srcHost" type="xsd:string" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="destHost" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="protocol" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="srcIpPort" type="xsd:int" maxOccurs="1" minOccurs="0" />
             <xsd:element name="destIpPort" type="xsd:int" maxOccurs="1" minOccurs="0" />

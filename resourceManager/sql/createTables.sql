@@ -121,9 +121,9 @@ CREATE TABLE IF NOT EXISTS layer2Data (
 CREATE TABLE IF NOT EXISTS layer3Data (
     id                  INT NOT NULL AUTO_INCREMENT,
     pathId              INT NOT NULL UNIQUE, -- foreign key
-    srcHost             TEXT NOT NULL,
-    destHost            TEXT NOT NULL,
-      -- the following are optional fields
+    -- the following are optional fields
+    srcHost             TEXT,
+    destHost            TEXT,
         -- source and destination ports
     srcIpPort           SMALLINT UNSIGNED,
     destIpPort          SMALLINT UNSIGNED,

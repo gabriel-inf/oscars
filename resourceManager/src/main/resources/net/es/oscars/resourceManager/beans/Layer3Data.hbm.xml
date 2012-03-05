@@ -20,17 +20,9 @@
         <generator class="identity" />
     </id>
 
-    <property name="srcHost" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>
-    </property>
+    <property name="srcHost" />
 
-    <property name="destHost" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>
-    </property>
+    <property name="destHost" />
 
     <property name="srcIpPort" />
 
