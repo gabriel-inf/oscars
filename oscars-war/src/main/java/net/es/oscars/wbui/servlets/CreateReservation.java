@@ -250,16 +250,9 @@ public class CreateReservation extends HttpServlet {
                    pathHops.add(cpHop);
                 }
             }
-        }else{
-            CtrlPlaneHopContent cpSourceHop = new CtrlPlaneHopContent();
-            cpSourceHop.setLinkIdRef(source);
-            pathHops.add(cpSourceHop);
-            
-            CtrlPlaneHopContent cpDestHop = new CtrlPlaneHopContent();
-            cpDestHop.setLinkIdRef(destination);
-            pathHops.add(cpDestHop);
+            requestedPath.setPath(path);
         }
-        requestedPath.setPath(path);
+        
         
         String srcVlan = "";
         strParam = request.getParameter("srcVlan");
@@ -300,16 +293,6 @@ public class CreateReservation extends HttpServlet {
             layer2Info.setSrcVtag(srcVtag);
             layer2Info.setDestVtag(destVtag);
             requestedPath.setLayer2Info(layer2Info);
-
-            // If no explicit path for layer 2, we must fill this in
-            if (pathHops.isEmpty()) {
-                    CtrlPlaneHopContent sourceHop = new CtrlPlaneHopContent();
-                sourceHop.setLinkIdRef(source);
-                pathHops.add(sourceHop);
-                CtrlPlaneHopContent destHop = new CtrlPlaneHopContent();
-                destHop.setLinkIdRef(destination);
-                pathHops.add(destHop);
-            }
         }else if(layer.equals("layer3")) {
             Layer3Info layer3Info = new Layer3Info();
             
@@ -342,6 +325,19 @@ public class CreateReservation extends HttpServlet {
                 layer3Info.setDscp(strParam.trim());
             }
             requestedPath.setLayer3Info(layer3Info);
+            
+            //set path
+            if (pathHops.isEmpty()) {
+                CtrlPlaneHopContent cpSourceHop = new CtrlPlaneHopContent();
+                cpSourceHop.setLinkIdRef(source);
+                pathHops.add(cpSourceHop);
+            
+                CtrlPlaneHopContent cpDestHop = new CtrlPlaneHopContent();
+                cpDestHop.setLinkIdRef(destination);
+                pathHops.add(cpDestHop);
+                requestedPath.setPath(path);
+            }
+            
         }else {
             throw new OSCARSServiceException("error:  Invalid layer provided " + layer);
         }
