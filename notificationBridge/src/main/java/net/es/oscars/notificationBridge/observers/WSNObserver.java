@@ -101,7 +101,8 @@ public class WSNObserver implements Observer{
                     (new W3CEndpointReferenceBuilder()).address(this.producerUrl).build());
             notifyRequest.getNotificationMessage().add(notifyMsgHolder);
             //send request
-            this.client.getPortType().notify(notifyRequest);
+            Object[] req = new Object[] {notifyRequest};
+            this.client.invoke("Notify", req);
         }catch(Exception e){
             e.printStackTrace();
             this.log.info(netLog.error("WSNObserver.update", ErrSev.CRITICAL, e.getMessage()));
@@ -147,7 +148,7 @@ public class WSNObserver implements Observer{
                 this.brokerWsdl = (String) config.get(PROP_BROKER_WSDL_URL);
             }else {
                 //default to service URL plus ?wsdl since thats the cxf default
-                this.brokerWsdl = this.brokerUrl + "?wsdl";
+                this.brokerWsdl = cc.getWSDLPath(ServiceNames.SVC_WSNBROKER, null) + "";
             }
             netLogProps.put("wsdl", this.brokerWsdl);
             

@@ -119,7 +119,8 @@ public class NotifySender {
         log.debug(netLog.start("NotifySender.send " + event.getType()));
         
         try{
-            instance.getClient().getPortType().notify(event);
+            Object[] req = new Object[] {event};
+            instance.getClient().invoke("Notify", req);
         }catch(Exception e){
             log.error(netLog.error("NotifySender.send", ErrSev.CRITICAL, e.getMessage(), instance.getUrl()));
             e.printStackTrace();
