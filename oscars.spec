@@ -23,6 +23,7 @@ Requires:       oscars-notificationBridge
 Requires:       oscars-pce-bandwidth
 Requires:       oscars-pce-connectivity
 Requires:       oscars-pce-dijkstra
+Requires:       oscars-pce-l3mpls
 Requires:       oscars-pce-nullagg
 Requires:       oscars-pce-vlan
 Requires:       oscars-resourceManager

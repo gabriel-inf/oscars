@@ -57,6 +57,10 @@ cp %{package_name}/target/*.jar %{buildroot}/%{install_base}/target/
 install -m 755 %{package_name}/bin/startServer.sh %{buildroot}/%{install_base}/bin/
 install -m 755 %{package_name}/scripts/oscars-%{package_name} %{buildroot}/etc/init.d/oscars-%{package_name}
 
+#Make sure pce config files are copied
+cp %{package_name}/config/pce-configuration-http-template.xml %{package_name}/config/pce-configuration-http.xml
+cp %{package_name}/config/pce-configuration-ssl-template.xml %{package_name}/config/pce-configuration-ssl.xml
+
 #Run exportconfig
 %{package_name}/bin/exportconfig ./ %{oscars_home} %{log_dir} %{buildroot}
 
