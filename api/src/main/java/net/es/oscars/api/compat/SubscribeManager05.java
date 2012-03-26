@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,7 +60,7 @@ public class SubscribeManager05 {
     final private String XPATH_URI = "http://www.w3.org/TR/1999/REC-xpath-19991116";
     final private String OSCARS5_IDC_PROTO = "http://oscars.es.net/OSCARS";
     final private double DEFAULT_TERM_TIME_WINDOW = .2;
-    
+    final private long DEFAULT_RENEW_INTERVAL = 60000 * 30; //30 minutes
 
     static public SubscribeManager05 getInstance() throws ConfigException{
         if(instance == null){
@@ -152,7 +153,11 @@ public class SubscribeManager05 {
             filterType.getProducerProperties().add(producer);
             subscribeRequest.setFilter(filterType);
             SubscribeResponse subResp = nbClient.getPortType().subscribe(subscribeRequest);
-            Long termTime = this.calcNextRenewTime(subResp.getTerminationTime().toGregorianCalendar().getTimeInMillis());
+            XMLGregorianCalendar subRespTermTime = subResp.getTerminationTime();
+            Long termTime = System.currentTimeMillis() + DEFAULT_RENEW_INTERVAL;
+            if(subRespTermTime != null){
+                termTime = this.calcNextRenewTime(subRespTermTime.toGregorianCalendar().getTimeInMillis());
+            }
             this.updateSubscriptionMaps(domainId,subResp.getSubscriptionReference(), termTime);
         } catch (MalformedURLException e) {
             this.log.error(netLog.error("SubscribeManager05.getSubscription", ErrSev.MAJOR, 
