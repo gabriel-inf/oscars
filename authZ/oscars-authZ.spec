@@ -98,6 +98,8 @@ chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
 
 #Configure service to start when machine boots
 /sbin/chkconfig --add oscars-%{package_name}
+#enable mysql on boot
+/sbin/chkconfig mysqld on
 
 %files
 %defattr(-,oscars,oscars,-)

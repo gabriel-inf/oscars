@@ -2,7 +2,7 @@
 #
 # Init file for OSCARS Lookup Bridge
 #
-# chkconfig: 2345 65 20
+# chkconfig: 2345 68 20
 # description: OSCARS Lookup Bridge
 #
 

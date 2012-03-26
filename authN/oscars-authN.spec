@@ -78,6 +78,8 @@ chown oscars:oscars %{oscars_home}/modules
 ln -s /etc/init.d/oscars-%{package_name} %{oscars_home}/modules/oscars-%{package_name}.enabled
 chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
 /sbin/chkconfig --add oscars-%{package_name}
+#enable mysql on boot
+/sbin/chkconfig mysqld on
 
 %files
 %defattr(-,oscars,oscars,-)

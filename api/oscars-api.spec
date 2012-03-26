@@ -85,8 +85,8 @@ chown oscars:oscars %{install_base}/target/%{package_name}.jar
 #Add symbolic link to modules directory so can be started by oscars init.d script
 mkdir -p %{oscars_home}/modules
 chown oscars:oscars %{oscars_home}/modules
-ln -s /etc/init.d/oscars-%{package_name} %{oscars_home}/modules/oscars-%{package_name}.enabled
-chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
+ln -s /etc/init.d/oscars-%{package_name} %{oscars_home}/modules/z.oscars-%{package_name}.enabled
+chown oscars:oscars %{oscars_home}/modules/z.oscars-%{package_name}.enabled
 
 #Configure service to start when machine boots
 /sbin/chkconfig --add oscars-%{package_name}
@@ -105,5 +105,5 @@ if [ $1 -eq 0 ]; then
     /sbin/service oscars-%{package_name} stop
     unlink %{install_base}/target/%{package_name}.one-jar.jar
     unlink %{install_base}/target/%{package_name}.jar
-    unlink %{oscars_home}/modules/oscars-%{package_name}.enabled
+    unlink %{oscars_home}/modules/z.oscars-%{package_name}.enabled
 fi
