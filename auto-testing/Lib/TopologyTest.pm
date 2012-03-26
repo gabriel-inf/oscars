@@ -16,7 +16,7 @@ sub topology_test
 {
 	my $topology = "";
 
-	my $hostname = `hostname`;
+	my $hostname = `hostname -f`;
 	chomp($hostname);
 	if ($hostname eq "odev-vm-16.es.net") {
 		$topology = "testdomain-1.net.xml";

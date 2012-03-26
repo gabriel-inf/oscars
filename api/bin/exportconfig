@@ -46,7 +46,7 @@ if [ ! -f $DST_DIR/$MANIFEST ] ; then
 fi
 
 # copy and edit the config.yaml files so the public API's endpoint is the set to the hostname
-localhost=`hostname`
+localhost=`hostname -f`
 if [ ! -f $DST_DIR/$CONFIG_HTTP ] ; then
     sed s,localhost,$localhost, < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
 fi

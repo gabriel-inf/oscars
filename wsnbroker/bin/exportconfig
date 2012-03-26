@@ -45,7 +45,7 @@ if [ ! -f $DST_DIR/$CONFIG_SSL  ] ; then
 fi
 
 # Path config file so the public API's endpoint is the set to the hostname
-localhost=`hostname`
+localhost=`hostname -f`
 
 # cxf configuration files
 

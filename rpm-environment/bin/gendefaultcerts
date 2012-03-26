@@ -46,7 +46,7 @@ BUILDDIR=$1
 CERTSUBJECT=$2
 
 if [ -z "$CERTSUBJECT" ]; then
-    HOSTNAME=`hostname`
+    HOSTNAME=`hostname -f`
     if [ $? -ne 0 ]; then
        HOSTNAME="oscars-default"
     fi

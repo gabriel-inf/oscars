@@ -256,7 +256,7 @@ fi
 
 #   Generate a keystore for this host
     rm -f oscarsidc.jks
-    localhost=`hostname`
+    localhost=`hostname -f`
     echo "Generating a keystore for CN=$localhost"
     keytool -genkey \
     -dname "CN=$localhost, OU=NOT FOR PRODUCTION, O=ESNET, ST=CA, C=US" \

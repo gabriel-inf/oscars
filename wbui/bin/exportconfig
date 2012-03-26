@@ -17,7 +17,7 @@ MODULE=wbui
 source $OSCARS_DIST/utils/bin/configLib.sh
 
 vers=`cat $OSCARS_DIST/VERSION`
-localhost=`hostname`
+localhost=`hostname -f`
 verifyArgs $OSCARS_DIST $OSCARS_HOME
 verifySvcName $SERVICE
 

@@ -60,7 +60,7 @@ viewWebUIPort(){
 		#change the current "host name", mostly "localhost" to the current system_name. 
 		# This will be enough to allow access from outside to this host
 		#get hostname
-        	hostname=`hostname`
+        	hostname=`hostname -f`
         	#echo "Allow: Hostname obtained: $hostname"
 	else
 		if [ "$action" == "$DENY" ]; then
