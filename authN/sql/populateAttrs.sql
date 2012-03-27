@@ -1,6 +1,6 @@
 -- Populate the AuthN tables with default values 
 
-USE authn;
+USE authnupgrade;
 
 -- populate attributes table
 -- ordinary OSCARS user

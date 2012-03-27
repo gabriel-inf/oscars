@@ -2,10 +2,10 @@
 -- After this script has been run, use populateDefaults to add default values
 -- NOTE:  This needs to be run as mysql -u root -p < createTables.sql.
 
-CREATE DATABASE IF NOT EXISTS authn;
-GRANT select, insert, update, delete ON `authn`.* TO 'oscars'@'localhost';
+CREATE DATABASE IF NOT EXISTS authnupgrade;
+GRANT select, insert, update, delete ON `authnupgrade`.* TO 'oscars'@'localhost';
 
-USE authn;
+USE authnupgrade;
 
 -- AUTHN tables ------------------------------------------------------
 
