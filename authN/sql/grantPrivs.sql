@@ -1,2 +1,2 @@
-GRANT ALL ON authnupgrade.* TO 'oscars'@'localhost' IDENTIFIED BY 'mypass';
+GRANT ALL ON authn.* TO 'oscars'@'localhost' IDENTIFIED BY 'mypass';
 

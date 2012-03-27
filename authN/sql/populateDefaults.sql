@@ -1,7 +1,7 @@
 -- Populate the AuthN tables with default values 
 -- The institutions values need to match the sites table in authz
 
-USE authnupgrade;
+USE authn;
 
 -- populate institutions table     
 INSERT IGNORE INTO institutions VALUES(1, "Energy Sciences Network");
