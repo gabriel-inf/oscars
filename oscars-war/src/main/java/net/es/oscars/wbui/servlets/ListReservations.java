@@ -292,15 +292,14 @@ public class ListReservations extends HttpServlet {
             if (path == null) {
                 this.log.debug("path is null");
             }
-            String pathStr = path2String(path,intHopsAllowed);
-            String localSrc = null;
-            String localDest = null;
-            if (pathStr != null && !pathStr.equals("")) {
-               // this.log.debug(pathStr);
-                String[] hops = pathStr.trim().split("\n");
-                localSrc = hops[0];
-                localDest = hops[hops.length-1];
+            List<CtrlPlaneHopContent> localHops = PathTools.getLocalHops(path, PathTools.getLocalDomainId());
+            String localSrc = "n/a";
+            String localDest = "n/a";
+            if(localHops != null && !localHops.isEmpty()){
+                localSrc = NMWGParserUtil.getURN(localHops.get(0));
+                localDest = NMWGParserUtil.getURN(localHops.get(localHops.size() - 1));
             }
+           
             gri = resv.getGlobalReservationId();
             Layer3Info layer3Info = null;
             Layer2Info layer2Info = null;
@@ -388,39 +387,5 @@ public class ListReservations extends HttpServlet {
         }
         log.debug("got " + ctr + " reservations");
         outputMap.put("resvData", resvList);
-    }
-
-    private String path2String(CtrlPlanePathContent path, boolean intHopsAllowed) {
-        String pathStr = null;
-        ArrayList<CtrlPlaneHopContent> hops = (ArrayList<CtrlPlaneHopContent>) path.getHop();
-        if (hops.size() > 0) {
-            if (intHopsAllowed) {
-                StringBuilder sb = new StringBuilder();
-                for ( CtrlPlaneHopContent ctrlHop : hops ) {
-                    CtrlPlaneLinkContent link = ctrlHop.getLink();
-                    if (link != null ) {
-                        sb.append(" " + link.getId()+ ":");
-                    } else {
-                        String id = ctrlHop.getLinkIdRef();
-                        sb.append(" " + id+ ":");
-                    }
-                }
-                pathStr = sb.toString();
-            } else { // don't allow non-authorized user to see internal hops
-                CtrlPlaneHopContent [] endHops = { hops.get(0), hops.get(hops.size()-1) };
-                StringBuilder sb = new StringBuilder();
-                for (CtrlPlaneHopContent ctrlHop : endHops) {
-                    CtrlPlaneLinkContent link = ctrlHop.getLink();
-                    if (link != null ) {
-                        sb.append(" " + link.getId()+ ":");
-                    } else {
-                        String id = ctrlHop.getLinkIdRef();
-                        sb.append(" " + id+ ":");
-                    }
-                }
-                pathStr = sb.toString();
-            }
-        }  // end hops.size > 0
-        return pathStr;
     }
 }

@@ -277,6 +277,11 @@ INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from constraints where name="none"),NULL);
 INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where value="OSCARS-user"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="query"),
+     (select id from constraints where name="see-all-hops"), "true");
+INSERT IGNORE INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where value="OSCARS-user"),
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
      (select id from constraints where name="none"),NULL);
