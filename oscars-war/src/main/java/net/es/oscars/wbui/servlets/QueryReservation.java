@@ -28,6 +28,7 @@ import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
 import net.es.oscars.api.soap.gen.v06.Layer3Info;
@@ -251,6 +252,13 @@ public class QueryReservation extends HttpServlet {
             outputMap.put("destinationReplace", layer2Info.getDestEndpoint());
             QueryReservation.handleVlans(path, status, layer2Info, outputMap);
         } else if (layer3Info != null) {
+            if(path == null || path.getHop() == null || path.getHop().isEmpty()){
+                outputMap.put("sourceReplace", "none");
+                outputMap.put("destinationReplace", "none");
+            }else{
+                outputMap.put("sourceReplace", NMWGParserUtil.getURN(path.getHop().get(0)));
+                outputMap.put("destinationReplace", NMWGParserUtil.getURN(path.getHop().get(path.getHop().size() - 1)));
+            }
             strParam = layer3Info.getSrcHost();
             try {
                 inetAddress = InetAddress.getByName(strParam);
@@ -258,7 +266,7 @@ public class QueryReservation extends HttpServlet {
             } catch (UnknownHostException e) {
                 hostName = strParam;
             }
-            outputMap.put("sourceReplace", hostName);
+            outputMap.put("sourceIPReplace", hostName);
             strParam = layer3Info.getDestHost();
             try {
                 inetAddress = InetAddress.getByName(strParam);
@@ -266,7 +274,7 @@ public class QueryReservation extends HttpServlet {
             } catch (UnknownHostException e) {
                 hostName = strParam;
             }
-            outputMap.put("destinationReplace", hostName);
+            outputMap.put("destinationIPReplace", hostName);
             intParam = layer3Info.getSrcIpPort();
             if ((intParam != null) && (intParam != 0)) {
                 outputMap.put("sourcePortReplace", intParam);

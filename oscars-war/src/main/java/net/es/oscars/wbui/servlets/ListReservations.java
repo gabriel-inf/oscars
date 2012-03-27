@@ -23,6 +23,7 @@ import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
+import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
@@ -325,13 +326,10 @@ public class ListReservations extends HttpServlet {
             if (layer2Info != null) {
                 resvMap.put("source", layer2Info.getSrcEndpoint());
             } else if (layer3Info != null) {
-                source = layer3Info.getSrcHost();
-                try {
-                    inetAddress = InetAddress.getByName(source);
-                    hostName = inetAddress.getHostName();
-                    resvMap.put("source", hostName);
-                } catch (UnknownHostException e) {
-                    resvMap.put("source", source);
+                if(path == null || path.getHop() == null || path.getHop().isEmpty()){
+                    resvMap.put("source", "none");
+                }else{
+                    resvMap.put("source", NMWGParserUtil.getURN(path.getHop().get(0)));
                 }
             }
             if (localSrc != null) {
@@ -369,13 +367,10 @@ public class ListReservations extends HttpServlet {
             if (layer2Info != null) {
                 resvMap.put("destination", layer2Info.getDestEndpoint());
             } else if (layer3Info != null) {
-                destination = layer3Info.getDestHost();
-                try {
-                    inetAddress = InetAddress.getByName(destination);
-                    hostName = inetAddress.getHostName();
-                    resvMap.put("destination", hostName);
-                } catch (UnknownHostException e) {
-                    resvMap.put("destination", destination);
+                if(path == null || path.getHop() == null || path.getHop().isEmpty()){
+                    resvMap.put("destination", "none");
+                }else{
+                    resvMap.put("destination", NMWGParserUtil.getURN(path.getHop().get(path.getHop().size() - 1)));
                 }
             }
             if (localDest != null) {

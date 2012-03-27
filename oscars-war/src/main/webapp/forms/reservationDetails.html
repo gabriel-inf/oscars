@@ -177,29 +177,35 @@
     <td><table class="layer2Replace" id="vlanInterPathReplace"></table></td>
     <td><table id="interPathReplace"></table></td>
   </tr>
-  <tr class="layer2Replace"><td>Source VLAN</td><td colspan="2" id="srcVlanReplace" /></tr>
-  <tr class="layer2Replace"><td>Tagged</td><td colspan="2" id="srcTaggedReplace" /></tr>
-  <tr class="layer2Replace"><td>Destination VLAN</td><td colspan="2" id="destVlanReplace" /></tr>
-  <tr class="layer2Replace"><td>Tagged</td><td colspan="2" id="destTaggedReplace" /></tr>
+  <tr class="layer2Replace"><td>Source VLAN</td><td colspan="2" id="srcVlanReplace" class="layerFields" /></tr>
+  <tr class="layer2Replace"><td>Tagged</td><td colspan="2" id="srcTaggedReplace" class="layerFields"/></tr>
+  <tr class="layer2Replace"><td>Destination VLAN</td><td colspan="2" id="destVlanReplace" class="layerFields"/></tr>
+  <tr class="layer2Replace"><td>Tagged</td><td colspan="2" id="destTaggedReplace" class="layerFields"/></tr>
+  
+  <tr class="layer3Replace" style="display: none">
+    <td>Source IP</td><td colspan="2" id="sourceIPReplace" class="layerFields" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Destination IP</td><td colspan="2" id="destinationIPReplace" class="layerFields" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Source port</td><td colspan="2" id="sourcePortReplace" class="layerFields" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Destination port</td><td colspan="2" id="destinationPortReplace" class="layerFields" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>Protocol</td><td colspan="2" id="protocolReplace" class="layerFields" />
+  </tr>
+  <tr class="layer3Replace" style="display: none">
+    <td>DSCP</td><td colspan="2" id="dscpReplace" class="layerFields" />
+  </tr>
 
   <tr class="layer3Replace" style="display: none">
-    <td>Source port</td><td colspan="2" id="sourcePortReplace" />
+    <td>Burst limit</td><td colspan="2" id="burstLimitReplace" class="layerFields"/>
   </tr>
   <tr class="layer3Replace" style="display: none">
-    <td>Destination port</td><td colspan="2" id="destinationPortReplace" />
-  </tr>
-  <tr class="layer3Replace" style="display: none">
-    <td>Protocol</td><td colspan="2" id="protocolReplace" />
-  </tr>
-  <tr class="layer3Replace" style="display: none">
-    <td>DSCP</td><td colspan="2" id="dscpReplace" />
-  </tr>
-
-  <tr class="layer3Replace" style="display: none">
-    <td>Burst limit</td><td colspan="2" id="burstLimitReplace" />
-  </tr>
-  <tr class="layer3Replace" style="display: none">
-      <td>LSP</td><td colspan="2" id="lspClassReplace" />
+      <td>LSP</td><td colspan="2" id="lspClassReplace" class="layerFields"/>
   </tr>
 
   <tr style="color:#FF0000">

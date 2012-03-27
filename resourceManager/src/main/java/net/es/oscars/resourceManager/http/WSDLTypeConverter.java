@@ -1017,6 +1017,9 @@ public class WSDLTypeConverter {
          if (layer3Data.getDestIpPort() != null) {
              layer3Info.setDestIpPort(layer3Data.getDestIpPort());
          }
+         if (layer3Data.getDscp() != null) {
+             layer3Info.setDscp(layer3Data.getDscp());
+         }
          //log.debug("pathToLayer3Info.end");
 
          return layer3Info;

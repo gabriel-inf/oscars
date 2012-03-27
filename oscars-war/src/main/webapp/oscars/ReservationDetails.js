@@ -228,6 +228,10 @@ oscars.ReservationDetails.cloneReservation = function () {
         radioWidget.setValue(true);
         // show layer 3 parameters
         oscars.ReservationCreate.toggleLayer("layer3");
+        node = dojo.byId("sourceIPReplace");
+        dijit.byId("srcIP").setValue(node.innerHTML);
+        node = dojo.byId("destinationIPReplace");
+        dijit.byId("destIP").setValue(node.innerHTML);
         node = dojo.byId("sourcePortReplace");
         dijit.byId("srcPort").setValue(node.innerHTML);
         node = dojo.byId("destinationPortReplace");
@@ -256,8 +260,10 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
     if (responseObject.method == "QueryReservation") {
         // reset node which indicates whether layer 2 or layer 3 before
         // applying results of query
-        var node = dojo.byId("srcVlanReplace");
-        node.innerHTML = "";
+        var layerNodes = dojo.query(".layerFields");
+        for (var i = 0; i < layerNodes.length; i++) {
+            layerNodes[i].innerHTML = "";
+        }
         // reset node which indicates there is an errorReport
         var node1 = dojo.byId("errorReportReplace");
         node1.innerHTML = "";
