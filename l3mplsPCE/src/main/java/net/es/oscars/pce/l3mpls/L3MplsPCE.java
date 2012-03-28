@@ -198,7 +198,6 @@ public class L3MplsPCE {
         for(ResDetails resv : listResponse.getResDetails()){
             //don't double-count current reservation
             if(resv.getGlobalReservationId().equals(query.getGri())){
-                System.out.println("Skipping because same gri");
                 continue;
             }
             //skip reservations with no path or that are non-layer 3
@@ -207,7 +206,6 @@ public class L3MplsPCE {
                     resv.getReservedConstraint().getPathInfo().getPath() == null ||
                     resv.getReservedConstraint().getPathInfo().getPath().getHop() == null ||
                     resv.getReservedConstraint().getPathInfo().getLayer3Info() == null){
-                System.out.println("Skipping because path or layer3info is null");
                 continue;
             }
             //get ingress and egress
@@ -216,22 +214,21 @@ public class L3MplsPCE {
             
             //if no ingress or egress then skip path
             if(ingressLink == null || egressLink == null){
-                System.out.println("Skipping because no ingress or egress");
                 continue;
             }
             
             //Check if reservations share an edge port
             String ingressNodeId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(ingressLink.getId(), NMWGParserUtil.NODE_TYPE));
             String egressNodeId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(egressLink.getId(), NMWGParserUtil.NODE_TYPE));
-            System.out.println("ingressNodeId=" + ingressNodeId);
-            System.out.println("egressNodeId=" + egressNodeId);
-            System.out.println("reqIngressNodeId=" + reqIngressNodeId);
-            System.out.println("reqEgressNodeId=" + reqEgressNodeId);
+            //System.out.println("ingressNodeId=" + ingressNodeId);
+            //System.out.println("egressNodeId=" + egressNodeId);
+            //System.out.println("reqIngressNodeId=" + reqIngressNodeId);
+            //System.out.println("reqEgressNodeId=" + reqEgressNodeId);
             if(!ingressNodeId.equals(reqIngressNodeId) && 
                     !ingressNodeId.equals(reqEgressNodeId) && 
                     !egressNodeId.equals(reqIngressNodeId) && 
                     !egressNodeId.equals(reqEgressNodeId)){
-                System.out.println("Skipping because no overlapping ingress and egress");
+                //System.out.println("Skipping because no overlapping ingress and egress");
                 continue;
             }
             
@@ -239,40 +236,40 @@ public class L3MplsPCE {
             Layer3Info l3Info = resv.getReservedConstraint().getPathInfo().getLayer3Info();
             
             if(!this.checkIpOverlap(l3Info.getSrcHost(), reqLayer3Info.getSrcHost())){
-                System.out.println("Src IPs do not overlap");
+                //System.out.println("Src IPs do not overlap");
                 continue;
             }
-            System.out.println("Src IPs overlap");
+            //System.out.println("Src IPs overlap");
             
             if(!this.checkIpOverlap(l3Info.getDestHost(), reqLayer3Info.getDestHost())){
-                System.out.println("Dest IPs do not overlap");
+                //System.out.println("Dest IPs do not overlap");
                 continue;
             }
-            System.out.println("Dest IPs overlap");
+            //System.out.println("Dest IPs overlap");
             
             if(!this.checkPortOverlap(l3Info.getSrcIpPort(), reqLayer3Info.getSrcIpPort())){
-                System.out.println("src Ports do not overlap");
+                //System.out.println("src Ports do not overlap");
                 continue;
             }
-            System.out.println("src Ports overlap");
+            //System.out.println("src Ports overlap");
             
             if(!this.checkPortOverlap(l3Info.getDestIpPort(), reqLayer3Info.getDestIpPort())){
-                System.out.println("dest Ports do not overlap");
+                //System.out.println("dest Ports do not overlap");
                 continue;
             }
-            System.out.println("dest Ports overlap");
+            //System.out.println("dest Ports overlap");
             
             if(!this.checkStringOverlap(l3Info.getProtocol(), reqLayer3Info.getProtocol())){
-                System.out.println(" proto does not overlap");
+                //System.out.println(" proto does not overlap");
                 continue;
             }
-            System.out.println("proto overlap");
+            //System.out.println("proto overlap");
             
             if(!this.checkStringOverlap(l3Info.getDscp(), reqLayer3Info.getDscp())){
-                System.out.println("dscp does not overlap");
+                //System.out.println("dscp does not overlap");
                 continue;
             }
-            System.out.println("dscp overlap");
+            //System.out.println("dscp overlap");
             
             throw new OSCARSServiceException("Layer 3 flowspec conflicts with reservation " + resv.getGlobalReservationId());
         }
@@ -296,29 +293,29 @@ public class L3MplsPCE {
         
         //convert to IP
         for(String ip1String : ip1List){
-            System.out.println("ip1String=" + ip1String);
+            //System.out.println("ip1String=" + ip1String);
             MaskedIP ip1 = new MaskedIP(ip1String);
-            System.out.println();
+            //System.out.println();
             
             for(String ip2String : ip2List){
-                System.out.println("ip2String=" + ip2String);
+                //System.out.println("ip2String=" + ip2String);
                 MaskedIP ip2 = new MaskedIP(ip2String);
                 if(ip1.prefixLength < ip2.prefixLength){
                     //ip1 is more general
-                    System.out.println("ip1 is more general");
+                    //System.out.println("ip1 is more general");
                     //if((ip1.mask & ip2.address) == ip1.address){
                     if(ip1.compareMasked(ip2.address)){
                         return true;
                     }
                 }else if(ip1.prefixLength > ip2.prefixLength){
-                    System.out.println("ip2 is more general");
+                    //System.out.println("ip2 is more general");
                     //if((ip2.mask & ip1.address) == ip2.address){
                     if(ip2.compareMasked(ip1.address)){
                         return true;
                     }
                 }else{
                     //they are equals
-                    System.out.println("lengths are equal");
+                    //System.out.println("lengths are equal");
                     //if(ip1.address == ip2.address){
                     if(ip1.equals(ip2.address)){
                         return true;
@@ -437,19 +434,19 @@ public class L3MplsPCE {
                 this.address[i] = (byte) ((byteIp[i] & 0xFF) & (this.mask[i] & 0xFF));
             }
             
-            System.out.println("ADDRESSBYTES=" + byteIp.length);
-            System.out.println("PREFIXLENGTH=" + this.prefixLength);
-            System.out.println("MASK=" + mask);
-            System.out.println("MASKBITS=");
-            for(int i = 0; i < this.mask.length; i++){
-                System.out.println("    " + this.mask[i]);
-            }
+            //System.out.println("ADDRESSBYTES=" + byteIp.length);
+            //System.out.println("PREFIXLENGTH=" + this.prefixLength);
+            //System.out.println("MASK=" + mask);
+            //System.out.println("MASKBITS=");
+            //for(int i = 0; i < this.mask.length; i++){
+            //    System.out.println("    " + this.mask[i]);
+            //}
 
-            System.out.println("ADDR=" + this.address);
-            System.out.println("ADDR BITS=");
-            for(int i = 0; i < this.address.length; i++){
-                System.out.println("    " + this.address[i]);
-            }
+            //System.out.println("ADDR=" + this.address);
+            //System.out.println("ADDR BITS=");
+            //for(int i = 0; i < this.address.length; i++){
+            //   System.out.println("    " + this.address[i]);
+            //}
         }
         
         public boolean compareMasked(byte[] addr2){
