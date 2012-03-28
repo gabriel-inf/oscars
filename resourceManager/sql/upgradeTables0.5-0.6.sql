@@ -5,9 +5,6 @@
 CREATE DATABASE IF NOT EXISTS rm;
 CREATE DATABASE IF NOT EXISTS testrm;
 
-GRANT select, insert, update, delete ON `rm`.* TO 'oscars'@'localhost';
-GRANT select, insert, update, delete, create, drop, alter on `testrm`.* TO 'oscars'@'localhost';
-
 USE rm;
 
 --

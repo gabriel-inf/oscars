@@ -6,9 +6,6 @@
 CREATE DATABASE IF NOT EXISTS authz;
 CREATE DATABASE IF NOT EXISTS testauthz;
 
-GRANT select, insert, update, delete ON `authz`.* TO 'oscars'@'localhost';
-GRANT select, insert, update, delete, create, drop, alter on `testauthz`.* TO 'oscars'@'localhost';
-
 USE authz;
 
 CREATE TABLE authorizations LIKE aaa.authorizations;

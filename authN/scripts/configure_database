@@ -62,13 +62,13 @@ elif [ $DB05 -eq 1 ]; then
     #Grant privileges and create tables
     mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/grantPrivs.sql
     if [ $? -ne 0 ]; then
-        echo "WARN: Unable to create oscars user in mysql"
+        echo "WARN: Unable to create oscars user in mysql for authn"
         echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
         exit 1
     fi
     mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/upgradeTables0.5-0.6.sql
     if [ $? -ne 0 ]; then
-       echo "WARN: Unable to upgrade mysql tables from 0.5"
+       echo "WARN: Unable to upgrade mysql tables from 0.5 for authn"
        echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
        exit 1 
     fi
@@ -77,19 +77,19 @@ else
     #Grant privileges and create tables
     mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/grantPrivs.sql
     if [ $? -ne 0 ]; then
-        echo "WARN: Unable to create oscars user in mysql"
+        echo "WARN: Unable to create oscars user in mysql for authn"
         echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
         exit 1
     fi
     mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/createTables.sql
     if [ $? -ne 0 ]; then
-       echo "WARN: Unable to create mysql tables"
+       echo "WARN: Unable to create mysql authn tables"
        echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
        exit 1 
     fi
     mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/populateAttrs.sql
     if [ $? -ne 0 ]; then
-       echo "WARN: Unable to populate mysql tables with default values"
+       echo "WARN: Unable to populate mysql authn tables with default values"
        echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
        exit 1
     fi
