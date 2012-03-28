@@ -17,8 +17,8 @@ do    case "$o" in
           p) printf "Enter MySQL password: "
              stty -echo
              read MYSQL_PASSWORD
-             stty echo;;
-             MYSQL_PASSWORD="-p${MYSQL_PASSWORD}"
+             stty echo
+             MYSQL_PASSWORD="-p${MYSQL_PASSWORD}";;
           h) print_usage
              exit 1;;
         [?]) print_usage
@@ -59,7 +59,7 @@ fi
 if [ $DB06 -eq 1 ]; then
     ###tables already exist - nothing to do
     exit 0;
-else if [ $DB05 -eq 1 ]; then
+elif [ $DB05 -eq 1 ]; then
     ###upgrade tables from 0.5
     #Grant privileges and create tables
     mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/grantPrivs.sql
