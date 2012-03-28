@@ -6,9 +6,6 @@
 CREATE DATABASE IF NOT EXISTS authn;
 CREATE DATABASE IF NOT EXISTS testauthn;
 
-GRANT select, insert, update, delete ON `authn`.* TO 'oscars'@'localhost';
-GRANT select, insert, update, delete, create, drop, alter on `testauthn`.* TO 'oscars'@'localhost';
-
 USE authn;
 
 CREATE TABLE IF NOT EXISTS users LIKE aaa.users;
