@@ -87,10 +87,4 @@ else
        echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
        exit 1 
     fi
-    mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/populateAttrs.sql
-    if [ $? -ne 0 ]; then
-       echo "WARN: Unable to populate mysql rm tables with default values"
-       echo "WARN: Manually run $0 -u <mysql-root-user> -p $SQL_DIR to correct"
-       exit 1
-    fi
 fi
