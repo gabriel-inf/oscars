@@ -171,7 +171,7 @@ public class MXConfigGen implements DeviceConfigGenerator {
 
         
         // bandwidth in Mbps 
-        lspBandwidth = 1000L*bw;
+        lspBandwidth = 1000000L*bw;
         
         policerBandwidthLimit = lspBandwidth;
         policerBurstSizeLimit = lspBandwidth / 10;
@@ -471,7 +471,7 @@ public class MXConfigGen implements DeviceConfigGenerator {
 
         
         
-        Long bandwidth = 1000L*bw;
+        Long bandwidth = 1000000L*bw;
         
         policerBandwidthLimit = bandwidth;
         policerBurstSizeLimit = bandwidth / 10;
