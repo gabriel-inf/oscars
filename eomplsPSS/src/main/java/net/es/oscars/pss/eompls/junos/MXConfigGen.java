@@ -109,8 +109,10 @@ public class MXConfigGen implements DeviceConfigGenerator {
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
         String ifceName;
+        String srcIfceName;
         String ifceDescription;
         String ifceVlan;
+        String srcIfceVlan;
         String egressVlan;
         
         String policyName;
@@ -181,15 +183,19 @@ public class MXConfigGen implements DeviceConfigGenerator {
             // forward direction
             log.debug("forward");
             ifceName = srcRes.getPortId();
+            srcIfceName = ifceName;
             ifceVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+            srcIfceVlan = ifceVlan;
             egressVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
             lspTargetDeviceId = dstRes.getNodeId();
         } else {
             // reverse direction
             log.debug("reverse");
             ifceName = dstRes.getPortId();
+            srcIfceName = srcRes.getPortId();
             ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
-            egressVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+            srcIfceVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+            egressVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
             lspTargetDeviceId = srcRes.getNodeId();
             reverse = true;
         }
@@ -212,7 +218,7 @@ public class MXConfigGen implements DeviceConfigGenerator {
         lspName                 = ng.getLSPName(gri);
         l2circuitDescription    = ng.getL2CircuitDescription(gri);
         l2circuitEgress         = dar.getDeviceAddress(lspTargetDeviceId);
-        l2circuitVCID           = EoMPLSUtils.genJunosVCId(ifceName, ifceVlan);
+        l2circuitVCID           = EoMPLSUtils.genJunosVCId(srcIfceName, srcIfceVlan);
 
         // community is 30000 - 65500
         String oscarsCommunity;
