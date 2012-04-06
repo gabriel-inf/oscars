@@ -42,9 +42,9 @@ SELECT login,
   loginTime,
   cookieHash,
   institutionId 
-	FROM aaa.users
-	 WHERE NOT EXISTS (SELECT login FROM users users_tbl WHERE users_tbl.login=aaa.users.login);
-#For new rows not existing in 0.6. The above would retain current 0.6DB data for duplicate "login" names, but will ensure all non-duplicate data is imported 
+	FROM aaa.users;
+	# WHERE NOT EXISTS (SELECT login FROM users users_tbl WHERE users_tbl.login=aaa.users.login);
+#For new rows not existing in 0.6. The above commented-line would retain current 0.6DB data for duplicate "login" names, but will ensure all non-duplicate data is imported 
 
 
 CREATE TABLE IF NOT EXISTS userAttributes LIKE aaa.userAttributes;
