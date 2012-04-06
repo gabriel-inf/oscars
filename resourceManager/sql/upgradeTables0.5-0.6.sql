@@ -65,7 +65,7 @@ DROP TABLE IF EXISTS layer2Data;
 CREATE TABLE layer2Data LIKE bss.layer2Data;
 INSERT INTO layer2Data SELECT * from bss.layer2Data;
 
-DROP TABLE IF EXISTS layer3data;
+DROP TABLE IF EXISTS layer3Data;
 CREATE TABLE  layer3Data LIKE bss.layer3Data;
 INSERT INTO layer3Data SELECT * from bss.layer3Data;
 
