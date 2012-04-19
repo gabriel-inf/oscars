@@ -44,6 +44,8 @@ change_oscars_file_pswd ()
         $OSCARS_HOME/AuthZService/conf/authZ.SSL.yaml
         $OSCARS_HOME/ResourceManagerService/conf/config.SSL.yaml
         $OSCARS_HOME/ResourceManagerService/conf/config.HTTP.yaml
+        $OSCARS_HOME/IONUIService/conf/config.SSL.yaml
+        $OSCARS_HOME/IONUIService/conf/config.HTTP.yaml
         )
 
         #NEW_PWD= "$1";

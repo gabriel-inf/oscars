@@ -1,14 +1,29 @@
-#!/bin/sh 
-#-Djavax.net.debug=ssl:handshake will dump all the ssl messages
-vers=`cat $OSCARS_DIST/VERSION`
-DEFAULT_PID_DIR="${OSCARS_HOME-.}/run"
-if [ ! -d "$DEFAULT_PID_DIR" ]; then
-    mkdir "$DEFAULT_PID_DIR"
+#!/bin/sh
+
+context=$1
+pidfile=$2
+jarfile=$3
+shortname=ionui
+
+#set context 
+if [ -z "$context" ]; then
+    context="DEVELOPMENT"
 fi
-case $# in
-0) context="DEVELOPMENT";;
-1) context=$1;;
-esac
-echo "Starting ion web interface version:$vers context:$context"
-java  -Xmx256m -Djetty.logs=$OSCARS_HOME/logs -Djava.net.preferIPv4Stack=true -jar $OSCARS_DIST/ionui/target/ionui-$vers.one-jar.jar -c $context  &
-echo $! > $DEFAULT_PID_DIR/ionui.pid
+
+if [ -z "$pidfile" ]; then
+    DEFAULT_PID_DIR="${OSCARS_HOME-.}/run"
+    if [ ! -d "$DEFAULT_PID_DIR" ]; then
+        mkdir "$DEFAULT_PID_DIR"
+    fi
+    pidfile=$DEFAULT_PID_DIR/${shortname}.pid
+fi
+
+if [ -z "$jarfile" ]; then
+    vers=`cat $OSCARS_DIST/VERSION`
+    jarfile=$OSCARS_DIST/${shortname}/target/${shortname}-$vers.one-jar.jar
+    echo "Starting ${shortname} with version:$vers context:$context"
+fi
+
+java -Djava.net.preferIPv4Stack=true  -jar $jarfile  -c $context &
+echo $! > $pidfile
+

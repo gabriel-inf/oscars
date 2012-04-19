@@ -30,7 +30,7 @@ CREATE UNIQUE INDEX loginGRIIndex ON favorites(login, gri);
 #    destination VARCHAR(150)
 #);
 #CREATE UNIQUE INDEX griIndex ON endpoints (gri);
-CREATE TABLE endpoints (
+CREATE TABLE IF NOT EXISTS endpoints (
 	id 		INT NOT NULL AUTO_INCREMENT,
 	gri 	VARCHAR(100) NOT NULL,
 	source 	VARCHAR(150),
@@ -47,7 +47,7 @@ CREATE UNIQUE INDEX griIndex ON endpoints (gri);
 #);
 #CREATE INDEX organizationIndex ON adminOrganizationUsers(organization);
 
-CREATE TABLE adminOrganizationUsers (
+CREATE TABLE IF NOT EXISTS adminOrganizationUsers (
 	id 		INT NOT NULL AUTO_INCREMENT,
 	organization 	VARCHAR(100) NOT NULL,
 	username 	VARCHAR(100),
