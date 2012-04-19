@@ -553,7 +553,15 @@ public class IONListReservations extends HttpServlet {
                     }
                 }
             }
+	    //kk
+            if (reservations.size() == 0)
+                is_final=true;
+            //end kk
         }
+        //kk
+        else if (reservations == null) {
+           is_final = true;
+        } //end kk
 
         //NOTE: This value is not accurate when sorting by favorites
         outputMap.put("totalRowsReplace", "Total rows: " + printCount);
