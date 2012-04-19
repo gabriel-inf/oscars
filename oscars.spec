@@ -1,5 +1,5 @@
 %define install_base /opt/oscars
-%define relnum 1
+%define relnum 2 
 
 Name:           oscars
 Version:        0.6
