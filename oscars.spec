@@ -28,6 +28,7 @@ Requires:       oscars-pce-nullagg
 Requires:       oscars-pce-vlan
 Requires:       oscars-resourceManager
 Requires:       oscars-servlets
+Requires:       oscars-tools
 Requires:       oscars-topoBridge
 Requires:       oscars-wbui
 Requires:       oscars-wsnbroker
