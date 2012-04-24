@@ -152,7 +152,7 @@ done<$Config2
 #got line number and localDomain. Replace now
 echo "--Replacing your current local domain from $localDomain to $user_choice"; 
 #sed -i ""$lineNum"s/$localDomain/$user_choice/" $Config2
-sed -i ""$lineNum"s/id:.*\'$localDomain\'/id: \'$user_choice\'/" $Config2
+sed -i ""$lineNum"s/id:.*'$localDomain'/id: \'$user_choice\'/" $Config2
 if [ $? != 0 ]; then
 	echo "-- Sed returned an error when updating $Config2. Please manually change the localDomain identifier in this file";
 else
