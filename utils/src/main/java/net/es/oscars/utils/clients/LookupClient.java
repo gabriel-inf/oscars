@@ -113,7 +113,7 @@ public class LookupClient extends OSCARSSoapService<LookupService, LookupPortTyp
         }
         
         LookupResponseContent result = (LookupResponseContent) res[0];
-        
+ 
         return result.getProtocol();
     }
     
@@ -137,13 +137,13 @@ public class LookupClient extends OSCARSSoapService<LookupService, LookupPortTyp
         request.setGeoLocation(geoLocation);
         
         //indicate what protocol it speaks
-        Protocol protocol = new Protocol();
+	//        Protocol protocol = new Protocol(); //comment out decl to include inside loop. issue 324
         for(String version : protocolMap.keySet()){
+	    Protocol protocol = new Protocol(); //for issue 324
             protocol.setType(version);
             protocol.setLocation(protocolMap.get(version));
             request.getProtocol().add(protocol);
         }
-        
         Relationship rel = new Relationship();
         rel.setType("controls");
         rel.setRelatedTo(domainId);
