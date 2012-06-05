@@ -90,6 +90,8 @@ import net.es.oscars.servlets.UserSession;
 */
 import net.sf.json.JSONObject;
 
+import net.es.oscars.utils.validator.DataValidator; // add for endpoints
+
 public class IONCreateReservation extends HttpServlet{
 //public class IONCreateReservation extends CreateReservation {
     private Logger log = Logger.getLogger(IONCreateReservation.class);
@@ -100,6 +102,15 @@ public class IONCreateReservation extends HttpServlet{
             return;
         }
         log.debug("JDBC driver loaded");
+
+	// LS-translation
+	try {
+		IONUIUtils.initPSHostLookup();
+		log.debug("***PSHOMELOOKUP called");
+	} catch (Exception oscarsServiceExcep) {
+		log.error("Exception trying to initialise PS Host lookup" + oscarsServiceExcep);
+	}
+	// end check for LS
     }
     
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -185,6 +196,8 @@ public class IONCreateReservation extends HttpServlet{
             createReq = this.toReservation(userName, request);
             createReq.setMessageProperties(msgProps);
             // Send a createReservation request
+	    DataValidator.validate(createReq, false); // add line to get endpoints 
+	    this.log.debug("DataValidator called");
             Object[] req = new Object[]{subjectAttrs,createReq};
             Object[] res = coordClient.invoke("createReservation",req);
             CreateReply coordResponse = (CreateReply) res[0];

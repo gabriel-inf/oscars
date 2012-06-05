@@ -30,6 +30,7 @@ import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ConfigHelper;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.topology.PathTools;
+import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.logging.OSCARSNetLogger;
 import net.es.oscars.logging.ErrSev;
 
@@ -39,7 +40,9 @@ import org.ogf.schema.network.topology.ctrlplane.*;
 import net.es.oscars.coord.common.URNParser;
 import net.es.oscars.coord.common.URNParserResult;
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
-
+// for LS.kk
+import net.es.oscars.utils.validator.EndpointValidator;
+//end LS
 public class IONUIUtils {
 	private static Logger log =  Logger.getLogger(IONUIUtils.class);
 	public static String ION_TOPOLOGY_FILE = "ion_topology.yaml";
@@ -303,5 +306,59 @@ public class IONUIUtils {
 		return roles;
 	} //end method
 	*/
+
+	public static void initPSHostLookup() throws OSCARSServiceException {
+	
+	HashMap<String,Object> lookupMap          = null;
+ 	String configFilename= null;
+	ContextConfig          cc                 = null;
+	cc = ContextConfig.getInstance(ServiceNames.SVC_IONUI);
+
+	try {
+ 		configFilename = cc.getFilePath(ServiceNames.SVC_LOOKUP,cc.getContext(),
+                    ConfigDefaults.CONFIG);
+	} catch (ConfigException e) {
+            throw new OSCARSServiceException (e);
+        }
+
+        lookupMap = (HashMap<String,Object>)ConfigHelper.getConfiguration(configFilename);
+        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+        log.debug(netLogger.start("IONUIUtils: initPSHostLookup"));
+
+        //get perfSONAR lookup settings from lookup module
+        Map perfsonar = (Map) lookupMap.get("perfsonar");
+        if(perfsonar == null){
+            //no host lookup, so server only accepts URNs
+            log.debug(netLogger.end("initPSHostLookup"));
+            return;
+        }
+        HashMap<String, String> logFieldMap = new HashMap<String, String>();
+        String hintsFile = null;
+        List<String> globalLookupServices = null;
+        List<String> homeLookupServices = null;
+
+        if(perfsonar.containsKey("globalHintsFile")){
+            hintsFile = (String) perfsonar.get("globalHintsFile");
+            logFieldMap.put("hints", hintsFile);
+        }
+
+        if(perfsonar.containsKey("globalLookupServices")){
+            globalLookupServices = (List<String>) perfsonar.get("globalLookupServices");
+            logFieldMap.put("gLS", OSCARSNetLogger.serializeList(globalLookupServices));
+        }
+
+        if(perfsonar.containsKey("homeLookupServices")){
+            homeLookupServices = (List<String>) perfsonar.get("homeLookupServices");
+            logFieldMap.put("hLS", OSCARSNetLogger.serializeList(homeLookupServices));
+	}
+	try {
+           EndpointValidator.init(hintsFile, globalLookupServices, homeLookupServices);
+        } catch (Exception e) {
+            log.debug(netLogger.error("initPSHostLookup",ErrSev.CRITICAL, e.getMessage(), null, logFieldMap));
+            throw new OSCARSServiceException (e);
+        }
+
+   	}
+	
 
 }

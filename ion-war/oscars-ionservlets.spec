@@ -1,6 +1,6 @@
 %define package_name ionservlets
 %define service_name IONUIService
-%define mvn_project_list common-libs,common-logging,common-soap,utils,database,authN,authZ,oscars-war,resourceManager,coordinator,ion-war
+%define mvn_project_list common-libs,common-logging,common-soap,utils,database,authN,authZ,resourceManager,coordinator,lookup,api,oscars-war,ion-war
 %define install_base /opt/oscars/%{package_name}
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars

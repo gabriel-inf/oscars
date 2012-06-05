@@ -42,6 +42,12 @@
             <version>${oscars.version}</version>
             <type>jar</type>
         </dependency>
+	<dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>api</artifactId>
+            <version>${oscars.version}</version>
+            <type>jar</type>
+        </dependency>
 
 	<!-- servlets -->
 	<dependency>
