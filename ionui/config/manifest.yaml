@@ -98,6 +98,20 @@ CoordService:
         config.yaml:        'OSCARS_HOME/CoordService/conf/config.SSL.yaml'
         wsdl:               'OSCARS_HOME/wsdl/CoordService/CoordService.wsdl'
 
+LookupService:
+    UNITTEST:
+        config.yaml:        'OSCARS_DIST/lookup/config/config.HTTP.yaml'
+        wsdl:               'OSCARS_DIST/common-soap/src/main/resources/lookup/lookup.wsdl'
+    DEVELOPMENT:
+        config.yaml:        'OSCARS_HOME/LookupService/conf/config.HTTP.yaml'
+        wsdl:               'OSCARS_HOME/wsdl/LookupService/LookupService.wsdl'
+    SDK:
+        config.yaml:        'OSCARS_HOME/LookupService/conf/config.HTTP.yaml'
+        wsdl:               'OSCARS_HOME/wsdl/LookupService/LookupService.wsdl'
+    PRODUCTION:
+        config.yaml:        'OSCARS_HOME/LookupService/conf/config.SSL.yaml'
+        wsdl:               'OSCARS_HOME/wsdl/LookupService/LookupService.wsdl'
+
 Utils:
     UNITTEST:
         templateDir:        'OSCARS_DIST/Utils/config'
