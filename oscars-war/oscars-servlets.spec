@@ -1,6 +1,6 @@
 %define package_name servlets
 %define service_name WBUIService
-%define mvn_project_list common-libs,common-logging,common-soap,utils,authN,authZ,oscars-war
+%define mvn_project_list common-libs,common-logging,common-soap,utils,authN,authZ,database,oscars-war
 %define install_base /opt/oscars/%{package_name}
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
