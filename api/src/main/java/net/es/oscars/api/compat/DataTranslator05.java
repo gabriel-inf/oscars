@@ -1004,18 +1004,23 @@ public class DataTranslator05 {
         topicExpressionType.setDialect("http://docs.oasis-open.org/wsn/t-1/TopicExpression/Full");
         notificationMessageHolder.setTopic(topicExpressionType);
         
-        try {
-            resDetails.setPathInfo(translate(eventContent06.getResDetails().getReservedConstraint().getPathInfo()));
-        } catch (Exception e) {
-            throw new OSCARSServiceException("Unable to translate v06 InterDomainEventContent");
-        }
-        
+	if (eventContent06.getResDetails().getReservedConstraint() != null) {
+	    try {
+		resDetails.setPathInfo(translate(eventContent06.getResDetails().getReservedConstraint().getPathInfo()));
+	    } catch (Exception e) {
+		throw new OSCARSServiceException("Unable to translate v06 InterDomainEventContent: " + e.toString());
+	    }
+              
+	    resDetails.setStartTime(eventContent06.getResDetails().getReservedConstraint().getStartTime());
+	    resDetails.setEndTime(eventContent06.getResDetails().getReservedConstraint().getEndTime());
+
+	    resDetails.setBandwidth(eventContent06.getResDetails().getReservedConstraint().getBandwidth());
+	}
+
         if (eventContent06.getResDetails().getDescription() != null) {
             resDetails.setDescription(eventContent06.getResDetails().getDescription());
         }
-        
-        resDetails.setStartTime(eventContent06.getResDetails().getReservedConstraint().getStartTime());
-        resDetails.setEndTime(eventContent06.getResDetails().getReservedConstraint().getEndTime());
+
         if (eventContent06.getResDetails().getLogin() != null) {
             resDetails.setLogin(eventContent06.getResDetails().getLogin());
         }
@@ -1026,8 +1031,6 @@ public class DataTranslator05 {
                 resDetails.setStatus(eventContent06.getResDetails().getStatus());
             }
         }
-        
-        resDetails.setBandwidth(eventContent06.getResDetails().getReservedConstraint().getBandwidth());
         
         if (eventContent06.getResDetails().getGlobalReservationId() != null) {
             resDetails.setGlobalReservationId(eventContent06.getResDetails().getGlobalReservationId());
