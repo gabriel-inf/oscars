@@ -61,7 +61,7 @@ install -m 755 %{package_name}/scripts/oscars-%{package_name} %{buildroot}/etc/i
 %{package_name}/bin/exportconfig ./ %{oscars_home} %{log_dir} %{buildroot}
 
 #Update CXF config files with paths to keystores
-%{package_name}/scripts/configure_keystores %{buildroot}/%{oscars_home}/%{service_name}/conf %{oscars_home}/keystores/oscars.jks %{oscars_home}/keystores/localhost.jks  %{oscars_home}/keystores/oscars.jks
+%{package_name}/scripts/configure_keystores %{buildroot}/%{oscars_home}/%{service_name}/conf %{oscars_home}/keystores/oscars.jks %{oscars_home}/keystores/oscars.jks  %{oscars_home}/keystores/oscars.jks
 
 #Update scrips in bin to point to default one-jar
 perl -e 's/^vers=/#vers=/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
