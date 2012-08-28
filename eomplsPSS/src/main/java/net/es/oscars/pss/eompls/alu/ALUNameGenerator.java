@@ -33,6 +33,11 @@ public class ALUNameGenerator {
         return numbers(gri);
     }
 
+    public String getVplsId(String gri) {
+        return numbers(gri);
+    }
+
+
     public String getQosId(String gri) {
         return numbers(gri);
     }
