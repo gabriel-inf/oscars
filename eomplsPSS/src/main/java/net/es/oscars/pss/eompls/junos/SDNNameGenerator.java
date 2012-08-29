@@ -87,6 +87,9 @@ public class SDNNameGenerator {
     public String getCommunityName(String gri) {
         return oscarsName(gri);
     }
+    public String getVplsName(String gri) {
+        return oscarsName(gri);
+    }
 
 
     private String oscarsName(String gri) {

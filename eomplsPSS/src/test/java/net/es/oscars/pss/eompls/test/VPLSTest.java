@@ -6,6 +6,7 @@ import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.eompls.alu.SR_VPLS_ConfigGen;
 
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
+import net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.util.ClassFactory;
 import net.es.oscars.utils.config.ConfigDefaults;
@@ -48,7 +49,7 @@ public class VPLSTest {
 
     }
 
-    @Test(groups = { "vpls" })
+    @Test(groups = { "alu-vpls", "vpls" })
     private void testALUVPLS() throws ConfigException, PSSException{
         this.configure();
         SR_VPLS_ConfigGen cg = new SR_VPLS_ConfigGen();
@@ -152,6 +153,116 @@ public class VPLSTest {
 
     }
 
+
+    @Test(groups = { "junos-vpls", "vpls" })
+    private void testJunosVPLS() throws ConfigException, PSSException{
+        this.configure();
+        MX_VPLS_ConfigGen cg = new MX_VPLS_ConfigGen();
+
+        /*
+        setup:
+        1. policy (string)
+        2. community: name, id
+        3. filters: stats, policing
+        4. policer: name, bandwidth_limit, burst_size_limit
+        5. vpls: name, id
+
+        6. ifces: list_of <name, vlan, description>
+        7. paths: list_of <name, hops>
+                                 hops: list of string >
+        8. lsps: list_of <name, from, to, path, neighbor, bandwidth>
+        */
+
+
+        /*
+        teardown:
+        1. policy (string)
+        2. community: name
+        3. filters: stats, policing
+        4. policer: name
+        5. vpls: name
+
+        6. ifces: list_of <name, vlan>
+        7. paths: list_of <name>
+        8. lsps: list_of <name>
+        */
+
+        cg.setPolicy("test_policy");
+
+        cg.getCommunity().put("name", "test_community");
+        cg.getCommunity().put("id", "3306");
+
+        cg.getFilters().put("stats", "test_stats");
+        cg.getFilters().put("policing", "test_policing");
+
+        cg.getPolicer().put("name", "test_policer");
+        cg.getPolicer().put("bandwidth_limit", 500);
+        cg.getPolicer().put("burst_size_limit", 50);
+
+        cg.getVpls().put("name", "test_vpls");
+        cg.getVpls().put("id", "3006");
+
+
+
+        HashMap ifceA = new HashMap();
+        ifceA.put("name", "xe-11/2/0");
+        ifceA.put("vlan", "3003");
+        ifceA.put("description", "ifceA");
+        cg.getIfces().add(ifceA);
+
+        HashMap ifceB = new HashMap();
+        ifceB.put("name", "xe-11/2/0");
+        ifceB.put("vlan", "3005");
+        ifceB.put("description", "ifceB");
+        cg.getIfces().add(ifceB);
+
+
+
+        HashMap pathA = new HashMap();
+        pathA.put("name", "pathA");
+        ArrayList hopsA = new ArrayList();
+        pathA.put("hops", hopsA);
+        hopsA.add("10.32.0.61");
+        hopsA.add("10.32.0.18");
+        cg.getPaths().add(pathA);
+
+        HashMap pathB = new HashMap();
+        pathB.put("name", "pathB");
+        ArrayList hopsB = new ArrayList();
+        pathB.put("hops", hopsB);
+        hopsB.add("10.32.0.70");
+        cg.getPaths().add(pathB);
+
+
+        HashMap lspA = new HashMap();
+        lspA.put("name", "lspA");
+        lspA.put("from", "10.96.0.2");
+        lspA.put("to", "10.32.0.18");
+        lspA.put("neighbor", "10.96.0.4");
+        lspA.put("path", "pathA");
+        lspA.put("bandwidth", 500);
+        cg.getLsps().add(lspA);
+
+        HashMap lspB = new HashMap();
+        lspB.put("name", "lspB");
+        lspB.put("from", "10.96.0.2");
+        lspB.put("to", "10.32.0.70");
+        lspB.put("neighbor", "10.96.0.8");
+        lspB.put("path", "pathB");
+        lspB.put("bandwidth", 500);
+        cg.getLsps().add(lspB);
+
+
+
+
+
+
+        String setup = cg.gen_VPLS_setup(null, null);
+        System.out.println(setup);
+        String teardown= cg.gen_VPLS_teardown(null, null);
+        System.out.println(teardown);
+
+    }
 
 
 }
