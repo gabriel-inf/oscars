@@ -1089,4 +1089,45 @@ public class DataTranslator05 {
 
         return notify;
     }
+
+	public static ResDetails translate(QueryResReply reply06) throws OSCARSServiceException {
+		ResDetails resDetails05 = new ResDetails();
+		
+		//convert parameters ouside of constraints
+		resDetails05.setCreateTime(reply06.getReservationDetails().getCreateTime());
+		resDetails05.setDescription(reply06.getReservationDetails().getDescription());
+		resDetails05.setGlobalReservationId(reply06.getReservationDetails().getGlobalReservationId());
+		resDetails05.setLogin(reply06.getReservationDetails().getLogin());
+		resDetails05.setStatus(reply06.getReservationDetails().getStatus());
+		
+		//convert parameters inside of constraints
+		if(reply06.getReservationDetails() != null){
+			resDetails05.setBandwidth(reply06.getReservationDetails().getReservedConstraint().getBandwidth());
+			resDetails05.setStartTime(reply06.getReservationDetails().getReservedConstraint().getStartTime());
+			resDetails05.setEndTime(reply06.getReservationDetails().getReservedConstraint().getEndTime());
+			resDetails05.setPathInfo(DataTranslator05.translate(reply06.getReservationDetails().getReservedConstraint().getPathInfo()));
+		}else{
+			resDetails05.setBandwidth(reply06.getReservationDetails().getUserRequestConstraint().getBandwidth());
+			resDetails05.setStartTime(reply06.getReservationDetails().getUserRequestConstraint().getStartTime());
+			resDetails05.setEndTime(reply06.getReservationDetails().getUserRequestConstraint().getEndTime());
+			resDetails05.setPathInfo(DataTranslator05.translate(reply06.getReservationDetails().getUserRequestConstraint().getPathInfo()));
+		}
+		
+		//make sure VLAN hops are labeled in a way 0.5 clients understand
+		if(resDetails05.getPathInfo() != null && resDetails05.getPathInfo().getPath() != null && resDetails05.getPathInfo().getPath().getHop() != null){
+			for(CtrlPlaneHopContent hop : resDetails05.getPathInfo().getPath().getHop()){
+				if(hop.getLink() == null || hop.getLink().getSwitchingCapabilityDescriptors() == null || 
+							hop.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo() == null ||
+							hop.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability() == null){
+					continue;
+				}
+				hop.getLink().getSwitchingCapabilityDescriptors().setSwitchingcapType("l2sc");
+				hop.getLink().getSwitchingCapabilityDescriptors().setEncodingType("ethernet");
+			}
+		}
+		
+		
+		
+		return resDetails05;
+	}
 }
