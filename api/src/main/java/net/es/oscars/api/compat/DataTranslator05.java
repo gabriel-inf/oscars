@@ -15,7 +15,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
+import net.es.oscars.api.soap.gen.v05.ListRequest;
 import net.es.oscars.api.soap.gen.v05.ResDetails;
+import net.es.oscars.api.soap.gen.v05.VlanTag;
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.authN.beans.Attribute;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
@@ -1091,26 +1093,72 @@ public class DataTranslator05 {
     }
 
 	public static ResDetails translate(QueryResReply reply06) throws OSCARSServiceException {
+		return DataTranslator05.translate(reply06.getReservationDetails());
+	}
+
+	public static net.es.oscars.api.soap.gen.v06.ListRequest translate(
+			ListRequest listRequest05) throws OSCARSServiceException {
+		net.es.oscars.api.soap.gen.v06.ListRequest listRequest06 = new net.es.oscars.api.soap.gen.v06.ListRequest();
+		
+		//set single values
+		listRequest06.setDescription(listRequest05.getDescription());
+		listRequest06.setStartTime(listRequest05.getStartTime());
+		listRequest06.setEndTime(listRequest05.getEndTime());
+		listRequest06.setResOffset(listRequest05.getResOffset());
+		listRequest06.setResRequested(listRequest05.getResRequested());
+		
+		//set list values (note: cxf creates empty list on first call to get method)
+		for(String linkId : listRequest05.getLinkId()){
+			listRequest06.getLinkId().add(linkId);
+		}
+		for(String resStatus : listRequest05.getResStatus()){
+			listRequest06.getResStatus().add(resStatus);
+		}
+		for(VlanTag vlanTag : listRequest05.getVlanTag()){
+			listRequest06.getVlanTag().add(DataTranslator05.translate(vlanTag));
+		}
+		
+		return listRequest06;
+	}
+
+	public static net.es.oscars.api.soap.gen.v05.ListReply translate(
+			ListReply listReply06) throws OSCARSServiceException {
+		net.es.oscars.api.soap.gen.v05.ListReply listReply05 = new net.es.oscars.api.soap.gen.v05.ListReply();
+		
+		//set single values
+		listReply05.setTotalResults(listReply06.getTotalResults());
+		
+		//set list values
+		for( net.es.oscars.api.soap.gen.v06.ResDetails resDetails06 : listReply06.getResDetails()){
+			listReply05.getResDetails().add(DataTranslator05.translate(resDetails06));
+		}
+		
+		return listReply05;
+	}
+
+	private static ResDetails translate(
+			net.es.oscars.api.soap.gen.v06.ResDetails resDetails06) throws OSCARSServiceException {
+		
 		ResDetails resDetails05 = new ResDetails();
 		
 		//convert parameters ouside of constraints
-		resDetails05.setCreateTime(reply06.getReservationDetails().getCreateTime());
-		resDetails05.setDescription(reply06.getReservationDetails().getDescription());
-		resDetails05.setGlobalReservationId(reply06.getReservationDetails().getGlobalReservationId());
-		resDetails05.setLogin(reply06.getReservationDetails().getLogin());
-		resDetails05.setStatus(reply06.getReservationDetails().getStatus());
+		resDetails05.setCreateTime(resDetails06.getCreateTime());
+		resDetails05.setDescription(resDetails06.getDescription());
+		resDetails05.setGlobalReservationId(resDetails06.getGlobalReservationId());
+		resDetails05.setLogin(resDetails06.getLogin());
+		resDetails05.setStatus(resDetails06.getStatus());
 		
 		//convert parameters inside of constraints
-		if(reply06.getReservationDetails() != null){
-			resDetails05.setBandwidth(reply06.getReservationDetails().getReservedConstraint().getBandwidth());
-			resDetails05.setStartTime(reply06.getReservationDetails().getReservedConstraint().getStartTime());
-			resDetails05.setEndTime(reply06.getReservationDetails().getReservedConstraint().getEndTime());
-			resDetails05.setPathInfo(DataTranslator05.translate(reply06.getReservationDetails().getReservedConstraint().getPathInfo()));
+		if(resDetails06.getReservedConstraint() != null){
+			resDetails05.setBandwidth(resDetails06.getReservedConstraint().getBandwidth());
+			resDetails05.setStartTime(resDetails06.getReservedConstraint().getStartTime());
+			resDetails05.setEndTime(resDetails06.getReservedConstraint().getEndTime());
+			resDetails05.setPathInfo(DataTranslator05.translate(resDetails06.getReservedConstraint().getPathInfo()));
 		}else{
-			resDetails05.setBandwidth(reply06.getReservationDetails().getUserRequestConstraint().getBandwidth());
-			resDetails05.setStartTime(reply06.getReservationDetails().getUserRequestConstraint().getStartTime());
-			resDetails05.setEndTime(reply06.getReservationDetails().getUserRequestConstraint().getEndTime());
-			resDetails05.setPathInfo(DataTranslator05.translate(reply06.getReservationDetails().getUserRequestConstraint().getPathInfo()));
+			resDetails05.setBandwidth(resDetails06.getUserRequestConstraint().getBandwidth());
+			resDetails05.setStartTime(resDetails06.getUserRequestConstraint().getStartTime());
+			resDetails05.setEndTime(resDetails06.getUserRequestConstraint().getEndTime());
+			resDetails05.setPathInfo(DataTranslator05.translate(resDetails06.getUserRequestConstraint().getPathInfo()));
 		}
 		
 		//make sure VLAN hops are labeled in a way 0.5 clients understand
@@ -1125,8 +1173,6 @@ public class DataTranslator05 {
 				hop.getLink().getSwitchingCapabilityDescriptors().setEncodingType("ethernet");
 			}
 		}
-		
-		
 		
 		return resDetails05;
 	}

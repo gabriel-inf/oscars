@@ -3,6 +3,7 @@ package net.es.oscars.api.http;
 import java.util.UUID;
 
 import net.es.oscars.api.soap.gen.v05.*;
+import net.es.oscars.api.soap.gen.v06.ListReply;
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
 
@@ -191,17 +192,26 @@ public class OSCARSSoapHandler05 implements OSCARS {
 	 * @see net.es.oscars.api.soap.gen.v05.OSCARS#listReservations(net.es.oscars.api.soap.gen.v05.ListRequest  listReservations )*
 	 */
 	public net.es.oscars.api.soap.gen.v05.ListReply listReservations(ListRequest listReservations) throws BSSFaultMessage , AAAFaultMessage    { 
-		LOG.info("Executing operation listReservations");
-		System.out.println(listReservations);
+		String event = "listReservations05";
+		OSCARSNetLogger netLogger = new OSCARSNetLogger();
+		LOG.info(netLogger.start(event));
 		try {
-			net.es.oscars.api.soap.gen.v05.ListReply _return = null;
-			return _return;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw new RuntimeException(ex);
-		}
-		//throw new BSSFaultMessage("BSSFaultMessage...");
-		//throw new AAAFaultMessage("AAAFaultMessage...");
+			net.es.oscars.api.soap.gen.v06.ListRequest listRequest06 = DataTranslator05.translate(listReservations);
+			ListReply listReply06 = OSCARSSoapHandler06.listReservations(listRequest06, this.myContext);
+			net.es.oscars.api.soap.gen.v05.ListReply listReply05 = DataTranslator05.translate(listReply06);
+			LOG.info(netLogger.end(event));
+			return listReply05;
+		} catch (OSCARSFaultMessage fault06) {
+			fault06.printStackTrace();
+			LOG.error(netLogger.error(event, ErrSev.MAJOR, fault06.getMessage()));
+			BSSFaultMessage fault05 = new BSSFaultMessage(fault06.getMessage());
+			throw fault05;
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOG.error(netLogger.error(event, ErrSev.MAJOR, e.getMessage()));
+			BSSFaultMessage fault05 = new BSSFaultMessage(e.getMessage());
+			throw fault05;
+		}   
 	}
 
 	/* (non-Javadoc)
