@@ -54,6 +54,10 @@ mkdir -p %{buildroot}/%{install_base}/target
 cp oscars-war/target/*.war %{buildroot}/%{install_base}/target/
 
 %post
+if [ "$1" = "2" ]; then
+  unlink %{install_base}/target/%{package_name}.war
+fi
+
 #Create symbolic links to latest version of jar files
 ln -s %{install_base}/target/oscars-war-%{version}-%{relnum}.war %{install_base}/target/%{package_name}.war
 chown oscars:oscars %{install_base}/target/%{package_name}.war

@@ -68,6 +68,13 @@ perl -e 's/oscarsidc\.jks/oscars.jks/g' -pi $(find %{buildroot}/%{install_base}/
 perl -e 's/\$OSCARS_DIST\/bin\/parseManifest\.sh/\$OSCARS_DIST\/%{package_name}\/bin\/parseManifest.sh/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 
 %post
+
+#clear out old symbolic links
+if [ "$1" = "2" ]; then
+  unlink %{install_base}/target/%{package_name}.one-jar.jar
+  unlink %{install_base}/target/%{package_name}.jar
+fi
+
 #Create symbolic links to latest version of jar files
 ln -s %{install_base}/target/%{package_name}-%{version}-%{relnum}.one-jar.jar %{install_base}/target/%{package_name}.one-jar.jar
 chown oscars:oscars %{install_base}/target/%{package_name}.one-jar.jar

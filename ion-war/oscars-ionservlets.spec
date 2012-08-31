@@ -60,6 +60,11 @@ install -m 755 ion-war/scripts/configure_database %{buildroot}/%{install_base}/s
 #Setup database
 %{install_base}/sql/configure_database %{install_base}/sql
 
+#clear out old symbolic links
+if [ "$1" = "2" ]; then
+  unlink %{install_base}/target/%{package_name}.war
+fi
+
 #Create symbolic links to latest version of jar files
 ln -s %{install_base}/target/ion-war-%{version}-%{relnum}.war %{install_base}/target/%{package_name}.war
 chown oscars:oscars %{install_base}/target/%{package_name}.war

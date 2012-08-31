@@ -59,6 +59,14 @@ mkdir -p %{run_dir}
 chown oscars:oscars %{run_dir}
 mkdir -p %{log_dir}
 chown oscars:oscars %{log_dir}
+
+#clear out old symbolic links
+if [ "$1" = "2" ]; then
+  unlink %{install_base}/target/%{package_name}.one-jar.jar
+  unlink %{install_base}/target/%{package_name}.jar
+  unlink %{oscars_home}/modules/oscars-%{package_name}.enabled
+fi
+
 ln -s %{install_base}/target/%{package_name}-%{version}-%{relnum}.one-jar.jar %{install_base}/target/%{package_name}.one-jar.jar
 chown oscars:oscars %{install_base}/target/%{package_name}.one-jar.jar
 ln -s %{install_base}/target/%{package_name}-%{version}-%{relnum}.jar %{install_base}/target/%{package_name}.jar
