@@ -23,11 +23,22 @@
     - id:               stub
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
 
-- id: "alu-sr-sc11"
-  services: 
+
+- id: "alu-sr-vpls"
+  services:
     - id:               eompls
-      configGenerator:  "net.es.oscars.pss.eompls.alu.SC11_SRConfigGen"
-    
+      configGenerator:  "net.es.oscars.pss.eompls.alu.SR_VPLS_ConfigGen"
+
     - id:               stub
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
-            
+
+
+- id: "jumiper-mx-vpls"
+  services:
+    - id:               eompls
+      configGenerator:  "net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen"
+
+    - id:               stub
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+
+

@@ -9,6 +9,7 @@ public class EoMPLSBaseConfig {
     
     private GenericConfig eomplsDeviceAddressResolve;
     private GenericConfig eomplsIfceAddressResolve;
+    private DatabaseConfig database;
     
     public GenericConfig getEomplsDeviceAddressResolve() {
         return eomplsDeviceAddressResolve;
@@ -23,5 +24,13 @@ public class EoMPLSBaseConfig {
     public void setEomplsIfceAddressResolve(GenericConfig eomplsIfceAddressResolve) {
         this.eomplsIfceAddressResolve = eomplsIfceAddressResolve;
     }
-    
+
+    public DatabaseConfig getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(DatabaseConfig database) {
+        this.database = database;
+    }
+
 }

@@ -4,6 +4,7 @@ package net.es.oscars.pss.eompls.alu;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
+import net.es.oscars.database.hibernate.HibernateUtil;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
@@ -11,7 +12,10 @@ import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.api.EoMPLSIfceAddressResolver;
+import net.es.oscars.pss.eompls.beans.GeneratedConfig;
 import net.es.oscars.pss.eompls.beans.LSP;
+import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
+import net.es.oscars.pss.eompls.dao.GeneratedConfigDAO;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.util.URNParser;
@@ -19,6 +23,7 @@ import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 
@@ -97,10 +102,42 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
     public String gen_VPLS_teardown(ResDetails res, String deviceId) throws PSSException {
         String templateFile = "alu-vpls-teardown.txt";
         Map root = new HashMap();
+        String teardownConfig = null;
+
 
         if (res != null) {
-            this.populateTeardownFromResDetails(res, deviceId);
+            String gri = res.getGlobalReservationId();
+            String dbname = EoMPLSConfigHolder.getInstance().getEomplsBaseConfig().getDatabase().getDbname();
+            SessionFactory sf = HibernateUtil.getSessionFactory(dbname);
+            sf.getCurrentSession().beginTransaction();
+            GeneratedConfigDAO gcDAO =  new GeneratedConfigDAO(dbname);
+
+
+
+            List<GeneratedConfig> gcs= gcDAO.getGC("TEARDOWN", gri, deviceId);
+            if (gcs.isEmpty()) {
+                log.error("could not find saved generated config for gri "+gri+" device "+deviceId+" TEARDOWN ");
+            } else if (gcs.size() > 1) {
+
+                log.error("found multiple generated configs for gri "+gri+" device "+deviceId+" for TEARDOWN ");
+            } else {
+                log.debug("found a saved config for gri "+gri+" device "+deviceId+" for TEARDOWN");
+                teardownConfig = gcs.get(0).getConfig();
+            }
+
+            if (teardownConfig == null) {
+                this.populateTeardownFromResDetails(res, deviceId);
+            } else {
+                ALUNameGenerator ng = ALUNameGenerator.getInstance();
+
+                List<Integer> ids = ng.releaseVplsIds(deviceId, gri);
+                ids = ng.releaseQosIds(deviceId, gri);
+                ids = ng.releaseSdpIds(deviceId, gri);
+                return teardownConfig;
+            }
         }
+
+
         root.put("vpls", vpls);
         root.put("ingqos", ingqos);
         root.put("ifces", ifces);
@@ -110,6 +147,9 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         String config       = EoMPLSUtils.generateConfig(root, templateFile);
         log.debug("get_VPLS_teardown done");
+
+
+
         return config;
 
     }
@@ -119,9 +159,11 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         String templateFile = "alu-vpls-setup.txt";
         Map root = new HashMap();
 
+
         if (res != null) {
             this.populateSetupFromResDetails(res, deviceId);
         }
+
         root.put("vpls", vpls);
         root.put("ingqos", ingqos);
         root.put("ifces", ifces);
@@ -129,30 +171,62 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         root.put("sdps", sdps);
         root.put("lsps", lsps);
 
+        String setupConfig       = EoMPLSUtils.generateConfig(root, templateFile);
 
-        String config       = EoMPLSUtils.generateConfig(root, templateFile);
+
+
+        if (res != null) {
+            String dbname = EoMPLSConfigHolder.getInstance().getEomplsBaseConfig().getDatabase().getDbname();
+            SessionFactory sf = HibernateUtil.getSessionFactory(dbname);
+            sf.getCurrentSession().beginTransaction();
+            GeneratedConfigDAO gcDAO =  new GeneratedConfigDAO(dbname);
+            GeneratedConfig setupGC = new GeneratedConfig();
+            setupGC.setConfig(setupConfig);
+            setupGC.setDeviceId(deviceId);
+            setupGC.setGri(res.getGlobalReservationId());
+            setupGC.setPhase("SETUP");
+            gcDAO.update(setupGC);
+            log.debug("saved setup config");
+
+
+            String teardownConfig = this.gen_VPLS_teardown(res, deviceId);
+
+            GeneratedConfig teardownGC = new GeneratedConfig();
+            teardownGC.setConfig(teardownConfig);
+            teardownGC.setDeviceId(deviceId);
+            teardownGC.setGri(res.getGlobalReservationId());
+            teardownGC.setPhase("TEARDOWN");
+            gcDAO.update(teardownGC);
+            log.debug("saved teardown config");
+
+        }
 
         log.debug("get_VPLS_setup done");
-        return config;
+        return setupConfig;
     }
 
 
     private void populateTeardownFromResDetails(ResDetails res, String deviceId) throws PSSException  {
+        ifces = new ArrayList();
+        paths = new ArrayList();
+        lsps = new ArrayList();
+        sdps = new ArrayList();
+        vpls = new HashMap();
+        ingqos = new HashMap();
+
+
         // TODO: fix when multipoint is designed
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+        String gri = res.getGlobalReservationId();
+        ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
-        String ingQosId;
-        String vplsId;
-        String sdpId;
         String pathName;
         String lspName;
         String ifceName;
         String ifceVlan;
 
 
-        String gri = res.getGlobalReservationId();
 
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
@@ -186,14 +260,53 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
             ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
         }
 
-        ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
 
         pathName                = ng.getPathName(ifceVlan);
         lspName                 = ng.getLSPName(ifceVlan);
-        ingQosId                = ng.getQosId(ifceVlan);
-        sdpId                   = ng.getSdpId(ifceVlan);
-        vplsId                  = ng.getVplsId(ifceVlan);
+        String vplsId;
+        String qosId;
+        String sdpId;
+
+        String error = "";
+        List<Integer> ids = ng.releaseVplsIds(deviceId, gri);
+        if (ids.isEmpty()) {
+            error = "Could not find saved VPLS id for gri "+gri+" at device"+deviceId;
+            log.error(error);
+            throw new PSSException(error);
+        } else if (ids.size() > 1) {
+            error = "DB error: more than one saved VPLS id for gri "+gri+" at device"+deviceId;
+            log.error(error);
+            throw new PSSException(error);
+        } else {
+            vplsId = ids.get(0).toString();
+        }
+
+        ids = ng.releaseQosIds(deviceId, gri);
+        if (ids.isEmpty()) {
+            error = "Could not find saved QoS id for gri "+gri+" at device"+deviceId;
+            log.error(error);
+            throw new PSSException(error);
+        } else if (ids.size() > 1) {
+            error = "DB error: more than one saved QoS id for gri "+gri+" at device"+deviceId;
+            log.error(error);
+            throw new PSSException(error);
+        } else {
+            qosId = ids.get(0).toString();
+        }
+        ids = ng.releaseSdpIds(deviceId, gri);
+        if (ids.isEmpty()) {
+            error = "Could not find saved SDP id for gri "+gri+" at device"+deviceId;
+            log.error(error);
+            throw new PSSException(error);
+        } else if (ids.size() > 1) {
+            error = "DB error: more than one saved SDP id for gri "+gri+" at device"+deviceId;
+            log.error(error);
+            throw new PSSException(error);
+        } else {
+            sdpId = ids.get(0).toString();
+        }
+
 
 
         Map lsp = new HashMap();
@@ -223,19 +336,29 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         lsps.add(lsp);
         sdps.add(sdp);
 
-        ingqos.put("id", ingQosId);
+        ingqos.put("id", qosId);
         vpls.put("id", vplsId);
 
 
 
     }
     private void populateSetupFromResDetails(ResDetails res, String deviceId) throws PSSException  {
+
+        ifces = new ArrayList();
+        paths = new ArrayList();
+        lsps = new ArrayList();
+        sdps = new ArrayList();
+        vpls = new HashMap();
+        ingqos = new HashMap();
+
         // TODO: fix when multipoint is designed
+        String gri = res.getGlobalReservationId();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+        System.out.println("gri: "+gri+" src device: " + srcDeviceId + " this one: " + deviceId);
 
 
-        String gri = res.getGlobalReservationId();
         ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
         EoMPLSClassFactory ecf = EoMPLSClassFactory.getInstance();
@@ -312,10 +435,14 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
               and the sdp.far_end for that should correspond to the lsp.to
         */
 
-        vpls.put("id", ng.getVplsId(gri));
+        String vplsId = ng.getVplsId(deviceId, null, gri);
+        String qosId  = ng.getQosId(deviceId, Integer.getInteger(vplsId), gri);
+        String sdpId  = ng.getSdpId(deviceId, Integer.getInteger(vplsId), gri);
+
+        vpls.put("id", vplsId);
         vpls.put("description", gri);
 
-        ingqos.put("id", ng.getQosId(gri));
+        ingqos.put("id", qosId);
         ingqos.put("description", gri);
         ingqos.put("bandwidth", ingQosBandwidth);
 
@@ -358,7 +485,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
 
 
         HashMap sdp = new HashMap();
-        sdp.put("id", ng.getSdpId(gri));
+        sdp.put("id", sdpId);
         sdp.put("description", gri);
         sdp.put("far_end", lspTo);
         sdp.put("lsp_name", ng.getLSPName(gri));

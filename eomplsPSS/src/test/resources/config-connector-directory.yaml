@@ -16,4 +16,9 @@
     impl:               "net.es.oscars.pss.connect.RancidConnector"
     params:
         "executable":   "/opt/rancid/alulogin"
-        
+
+
+-   id:                 "jlogin"
+    impl:               "net.es.oscars.pss.connect.RancidConnector"
+    params:
+        "executable":   "/opt/rancid/jlogin"

@@ -16,15 +16,36 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 public class RequestFactory {
-    public static ResDetails getABC() {
+    /*
+     "alpha":    "juniper-mx-vpls"
+     "beta":     "alu-sr-vpls"
+     "gamma":    "juniper-mx-vpls"
+     "delta":    "alu-sr-vpls"
+     */
+
+    /*
+    "urn:ogf:network:foo.net:alpha:xe-2/0/0:beta":                  "10.1.0.1"
+    "urn:ogf:network:foo.net:beta:1/1/1:alpha":                     "10.1.0.2"
+
+    "urn:ogf:network:foo.net:alpha:xe-3/0/0:gamma":                 "10.2.0.1"
+    "urn:ogf:network:foo.net:gamma:xe-3/0/2:alpha":                 "10.2.0.2"
+
+    "urn:ogf:network:foo.net:beta:2/1/1:gamma":                     "10.3.0.1"
+    "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta":                  "10.3.0.2"
+
+    "urn:ogf:network:foo.net:beta:3/1/1:delta":                     "10.4.0.1"
+    "urn:ogf:network:foo.net:delta:1/1/1:beta":                     "10.4.0.2"
+     */
+
+    public static ResDetails getMX_MX() {
         String gri = "twoHop-768";
         String srcEdge      = "urn:ogf:network:foo.net:alpha:xe-1/1/0:edge";
         String hop1Edge     = "urn:ogf:network:foo.net:alpha:xe-2/0/0:beta";
         String hop2Edge     = "urn:ogf:network:foo.net:beta:1/1/1:alpha";
         String hop3Edge     = "urn:ogf:network:foo.net:beta:2/1/1:gamma";
-        String hop4Edge     = "urn:ogf:network:foo.net:gamma:TenGigabitEthernet0/1:beta";
-        String dstEdge      = "urn:ogf:network:foo.net:gamma:TenGigabitEthernet3/0:edge";
-        String description = "SC11-SCHEDULED: foo.bar 123";
+        String hop4Edge     = "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta";
+        String dstEdge      = "urn:ogf:network:foo.net:gamma:xe-7/0/0:edge";
+        String description = "Description: foo.bar 123";
 
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
@@ -55,13 +76,13 @@ public class RequestFactory {
 
         return makeResDetails(gri, description , hops, 100);   
     }
-    public static ResDetails getAB() {
+    public static ResDetails getALU_MX() {
         String gri = "oneHop-311";
         String srcEdge      = "urn:ogf:network:foo.net:beta:1/1/3:edge";
         String hop1Edge     = "urn:ogf:network:foo.net:beta:2/1/1:gamma";
-        String hop2Edge     = "urn:ogf:network:foo.net:gamma:TenGigabitEthernet0/1:beta";
-        String dstEdge      = "urn:ogf:network:foo.net:gamma:TenGigabitEthernet3/0:edge";
-        String description = "SC11-SCHEDULED: foo.bar 123";
+        String hop2Edge     = "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta";
+        String dstEdge      = "urn:ogf:network:foo.net:gamma:xe-7/1/0:edge";
+        String description = "oneHop-311";
         
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
@@ -85,27 +106,26 @@ public class RequestFactory {
         return makeResDetails(gri, description , hops, 100);   
     }
     
-    public static ResDetails getCD() {
-        String gri = "oneHopCD-311";
+    public static ResDetails getALU_ALU() {
+        String gri = "oneHopBD-311";
         String srcEdge  = "urn:ogf:network:foo.net:beta:1/1/3:edge";
         String hop1Edge = "urn:ogf:network:foo.net:beta:3/1/1:delta";
         String hop2Edge = "urn:ogf:network:foo.net:delta:1/1/1:beta";
         String dstEdge  = "urn:ogf:network:foo.net:delta:3/1/1:edge";
-        String description = "SC11-SHARED: foo.bar 123";
-
+        String description = "onehop_BD";
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
         srcHop.put("urn", srcEdge);
-        srcHop.put("vlan", "999");
+        srcHop.put("vlan", "1234");
         HashMap<String, String> dstHop = new HashMap<String, String>();
         dstHop.put("urn", dstEdge);
-        dstHop.put("vlan", "999");
+        dstHop.put("vlan", "1234");
         HashMap<String, String> hop1 = new HashMap<String, String>();
         hop1.put("urn", hop1Edge);
-        hop1.put("vlan", "999");
+        hop1.put("vlan", "1234");
         HashMap<String, String> hop2 = new HashMap<String, String>();
         hop2.put("urn", hop2Edge);
-        hop2.put("vlan", "999");
+        hop2.put("vlan", "1234");
         
         hops.add(srcHop);
         hops.add(hop1);
@@ -118,7 +138,7 @@ public class RequestFactory {
     
     
     
-    public static ResDetails getSameDevice() {
+    public static ResDetails getSameMX() {
         String gri = "sameDev-333";
         String srcEdge = "urn:ogf:network:foo.net:alpha:xe-1/1/0:edge";
         String dstEdge = "urn:ogf:network:foo.net:alpha:xe-2/1/0:edge";
@@ -134,8 +154,25 @@ public class RequestFactory {
         String description = "same device";
         return makeResDetails(gri, description , hops, 100);
     }
-    
-    
+
+    public static ResDetails getSameALU() {
+        String gri = "sameDev-333";
+        String srcEdge = "urn:ogf:network:foo.net:beta:1/1/3:edge";
+        String dstEdge = "urn:ogf:network:foo.net:beta:3/2:edge";
+        ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
+        HashMap<String, String> srcHop = new HashMap<String, String>();
+        srcHop.put("urn", srcEdge);
+        srcHop.put("vlan", "999");
+        HashMap<String, String> dstHop = new HashMap<String, String>();
+        dstHop.put("urn", dstEdge);
+        dstHop.put("vlan", "999");
+        hops.add(srcHop);
+        hops.add(dstHop);
+        String description = "same device";
+        return makeResDetails(gri, description , hops, 100);
+    }
+
+
     public static ResDetails makeResDetails(String gri, String description, ArrayList<HashMap<String, String>> hops, int bandwidth) {
 
         String aEdge = hops.get(0).get("urn");

@@ -28,7 +28,7 @@ public class LSP {
         ArrayList<String> lspLinkIds = new  ArrayList<String>();
         
         String localDomainId = PathTools.getLocalDomainId();
-        log.info("lcoal domain: "+localDomainId);
+        log.info("local domain: "+localDomainId);
         CtrlPlaneLinkContent ingressLink;
         CtrlPlaneLinkContent egressLink;
         log.info("before links");

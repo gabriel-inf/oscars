@@ -87,12 +87,13 @@ public class SDNNameGenerator {
     public String getCommunityName(String gri) {
         return oscarsName(gri);
     }
+
     public String getVplsName(String gri) {
         return oscarsName(gri);
     }
 
 
-    private String oscarsName(String gri) {
+    public static String oscarsName(String gri) {
         String header = "oscars_";
 
         String circuitStr = gri;
@@ -142,9 +143,16 @@ public class SDNNameGenerator {
         return instance;
     }
 
-    public Integer getOscarsCommunity(String gri) {
+    public static Integer getOscarsCommunity(String gri) {
         // return OSCARS
         return 672277;
     }
-    
+    public static String numbers(String gri) {
+
+        String circuitStr = gri;
+        circuitStr = circuitStr.replaceAll("[^0-9]+", "");
+
+        return circuitStr;
+    }
+
 }

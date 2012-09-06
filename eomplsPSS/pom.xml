@@ -48,6 +48,13 @@
             <classifier>jdk15</classifier>
         </dependency>
 
+        <!-- database (from local repository) -->
+        <dependency>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>database</artifactId>
+            <version>${oscars.version}</version>
+        </dependency>
+
         <!--  issue 93 -->
         <dependency>
             <groupId>xerces</groupId>
@@ -66,9 +73,16 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.9</version>
+            <version>1.2.14</version>
         </dependency>
 
+        <!-- database for unit tests -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.10</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- command-line parsing -->
         <dependency>

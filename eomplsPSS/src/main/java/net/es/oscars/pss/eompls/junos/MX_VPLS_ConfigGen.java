@@ -151,6 +151,13 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
 
     private void populateSetupFromResDetails(ResDetails res, String deviceId) throws PSSException  {
+        community = new HashMap();
+        filters = new HashMap();
+        policer = new HashMap();
+        vpls = new HashMap();
+        ifces = new ArrayList();
+        paths = new ArrayList();
+        lsps = new ArrayList();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -307,6 +314,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         lsp.put("to", lspBean.getTo());
         lsp.put("neighbor", lspNeighbor);
         lsp.put("bandwidth", lspBandwidth);
+        lsp.put("path", pathName);
 
         lsps.add(lsp);
 
@@ -314,6 +322,13 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
     }
 
     private void populateTeardownFromResDetails(ResDetails res, String deviceId) throws PSSException  {
+        community = new HashMap();
+        filters = new HashMap();
+        policer = new HashMap();
+        vpls = new HashMap();
+        ifces = new ArrayList();
+        paths = new ArrayList();
+        lsps = new ArrayList();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -414,8 +429,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         path.put("name", pathName);
         paths.add(path);
 
-        ArrayList lsp = new ArrayList();
-        lsp.add(lspName);
+        Map lsp = new HashMap();
+        lsp.put("name", lspName);
         lsps.add(lsp);
     }
 

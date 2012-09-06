@@ -1,6 +1,6 @@
 ---
-    "alpha":    "juniper-mx"
-    "beta":     "alu-sr-sc11"
-    "gamma":    "cisco-ios"
-    "delta":    "alu-sr-sc11"
+    "alpha":    "juniper-mx-vpls"
+    "beta":     "alu-sr-vpls"
+    "gamma":    "juniper-mx-vpls"
+    "delta":    "alu-sr-vpls"
         

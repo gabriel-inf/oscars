@@ -9,6 +9,7 @@ PSSService:
         log4j.properties:   'OSCARS_DIST/eomplsPSS/src/test/resources/log4j.properties'
         defs-models.yaml:   'OSCARS_DIST/eomplsPSS/src/test/resources/defs-models.yaml'
         defs-services.yaml: 'OSCARS_DIST/eomplsPSS/src/test/resources/defs-services.yaml'
+
         config-connector-directory.yaml:        'OSCARS_DIST/eomplsPSS/src/test/resources/config-connector-directory.yaml'
 
         config-device-addresses.yaml:           'OSCARS_DIST/eomplsPSS/src/test/resources/config-device-addresses.yaml'
@@ -21,7 +22,8 @@ PSSService:
         config-eompls.yaml:                     'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls.yaml'
         config-eompls-device-addresses.yaml:    'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls-device-addresses.yaml'
         config-eompls-ifce-addresses.yaml:      'OSCARS_DIST/eomplsPSS/src/test/resources/config-eompls-ifce-addresses.yaml'
-        
+        testeomplspss.cfg.xml:                  'OSCARS_DIST/eomplspSS/src/test/resources/testeomplspss.cfg.xml'
+
         
         
         PSSService.xsd:     'OSCARS_DIST/common-soap/src/main/resources/pss/pss.xsd'

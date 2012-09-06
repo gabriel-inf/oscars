@@ -90,7 +90,7 @@ top
 <#list lsps as lsp>
 edit routing-instances ${vpls.name} protocols vpls neighbor ${lsp.neighbor}
 set psn-tunnel-endpoint ${lsp.to}
-set community ${community.id}
+set community ${community.name}
 set encapsulation-type ethernet-vlan
 top
 
