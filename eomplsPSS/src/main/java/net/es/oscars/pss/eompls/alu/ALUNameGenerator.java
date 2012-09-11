@@ -111,5 +111,24 @@ public class ALUNameGenerator {
         return numbers(gri);
     }
 
-    
+    /**
+     * @deprecated
+     * @param gri
+     * @return
+     */
+
+    public String getSdpId(String gri) {
+        return numbers(gri);
+    }
+
+    /**
+     * @deprecated
+     * @param gri
+     * @return
+     */
+
+    public String getQosId(String gri) {
+        return numbers(gri);
+    }
+
 }
