@@ -81,6 +81,10 @@ if [ ! -f $DST_DIR/templates ] ; then
     cp $SRC_DIR/templates/* $DST_DIR/templates
 fi
 
+#db
+if [ ! -f $DST_DIR/eomplspss.cfg.xml ]; then
+    cp $SRC_DIR/eomplspss.cfg.xml $DST_DIR/eomplspss.cfg.xml
+fi
 
 # sample config files
 if [ ! -f $DST_DIR/config-eompls.yaml ] ; then
