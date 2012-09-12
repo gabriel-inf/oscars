@@ -33,7 +33,7 @@
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
 
 
-- id: "jumiper-mx-vpls"
+- id: "juniper-mx-vpls"
   services:
     - id:               eompls
       configGenerator:  "net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen"
