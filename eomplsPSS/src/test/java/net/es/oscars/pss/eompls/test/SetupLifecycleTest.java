@@ -84,11 +84,11 @@ public class SetupLifecycleTest {
         
         
         // A->B single hop
-        resDet = RequestFactory.getAB();
+        resDet = RequestFactory.getALU_MX();
         this.testBoth(resDet);
         
         // C->D single hop
-        resDet = RequestFactory.getCD();
+        resDet = RequestFactory.getALU_ALU();
         this.testBoth(resDet);
 
         log.debug("simulation.run.end");
