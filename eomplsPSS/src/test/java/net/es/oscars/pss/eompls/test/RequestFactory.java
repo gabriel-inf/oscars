@@ -76,13 +76,12 @@ public class RequestFactory {
 
         return makeResDetails(gri, description , hops, 100);   
     }
-    public static ResDetails getALU_MX() {
-        String gri = "oneHop-311";
+    public static ResDetails getALU_MX(String gri) {
         String srcEdge      = "urn:ogf:network:foo.net:beta:1/1/3:edge";
         String hop1Edge     = "urn:ogf:network:foo.net:beta:2/1/1:gamma";
         String hop2Edge     = "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta";
         String dstEdge      = "urn:ogf:network:foo.net:gamma:xe-7/1/0:edge";
-        String description = "oneHop-311";
+        String description = gri;
         
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
@@ -106,8 +105,7 @@ public class RequestFactory {
         return makeResDetails(gri, description , hops, 100);   
     }
     
-    public static ResDetails getALU_ALU() {
-        String gri = "oneHopBD-311";
+    public static ResDetails getALU_ALU(String gri) {
         String srcEdge  = "urn:ogf:network:foo.net:beta:1/1/3:edge";
         String hop1Edge = "urn:ogf:network:foo.net:beta:3/1/1:delta";
         String hop2Edge = "urn:ogf:network:foo.net:delta:1/1/1:beta";
@@ -156,7 +154,7 @@ public class RequestFactory {
     }
 
     public static ResDetails getSameALU() {
-        String gri = "sameDev-333";
+        String gri = "sameDev-3334";
         String srcEdge = "urn:ogf:network:foo.net:beta:1/1/3:edge";
         String dstEdge = "urn:ogf:network:foo.net:beta:3/2:edge";
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();

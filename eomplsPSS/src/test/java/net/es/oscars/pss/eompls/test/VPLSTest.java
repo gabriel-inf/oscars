@@ -178,7 +178,7 @@ public class VPLSTest {
     }
 
 
-    @Test(groups = { "mx-vpls", "vpls" })
+    @Test(groups = { "mx-vpls-template" })
     private void testJunosVPLSTemplate() throws PSSException{
         MX_VPLS_ConfigGen cg = new MX_VPLS_ConfigGen();
 
@@ -283,34 +283,40 @@ public class VPLSTest {
 
     }
 
-    @Test(groups = { "alu-vpls", "vpls" })
+    @Test(groups = { "vpls" })
 
     public void testWithResDetails() throws PSSException {
-        ResDetails rd = RequestFactory.getALU_ALU();
+        ResDetails rd = RequestFactory.getALU_ALU("foo.net-771");
 
         SR_VPLS_ConfigGen cg = new SR_VPLS_ConfigGen();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(rd, true);
-        String srcSetup = cg.gen_VPLS_setup(rd, srcDeviceId);
+        log.debug("setting up src for ALU-ALU");
+        String srcSetup     = cg.gen_VPLS_setup(rd, srcDeviceId);
+        log.debug("done setting up src for ALU-ALU");
         System.out.println(srcSetup);
-        String srcTeardown = cg.gen_VPLS_teardown(rd, srcDeviceId);
+
+
+        log.debug("starting teardown for ALU-ALU");
+        String srcTeardown  = cg.gen_VPLS_teardown(rd, srcDeviceId);
         System.out.println(srcTeardown);
+        log.debug("done with teardown for ALU-ALU");
 
 
-        rd = RequestFactory.getALU_MX();
+        rd = RequestFactory.getALU_MX("foo.net-2212");
         srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
         dstDeviceId = EoMPLSUtils.getDeviceId(rd, true);
 
-        srcSetup = cg.gen_VPLS_setup(rd, srcDeviceId);
+        srcSetup    = cg.gen_VPLS_setup(rd, srcDeviceId);
         System.out.println(srcSetup);
         srcTeardown = cg.gen_VPLS_teardown(rd, srcDeviceId);
         System.out.println(srcTeardown);
 
         MX_VPLS_ConfigGen mcg = new MX_VPLS_ConfigGen();
-        String dstSetup = mcg.gen_VPLS_setup(rd, dstDeviceId);
+        String dstSetup     = mcg.gen_VPLS_setup(rd, dstDeviceId);
         System.out.println(dstSetup);
-        String dstTeardown = mcg.gen_VPLS_teardown(rd, dstDeviceId);
+        String dstTeardown  = mcg.gen_VPLS_teardown(rd, dstDeviceId);
         System.out.println(dstTeardown);
     }
 

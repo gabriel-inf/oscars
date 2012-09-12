@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@Test(groups={ "db", "init", "vpls", "alu-vpls" })
+@Test(groups={ "db", "init", "vpls", "alu-vpls", "lifecycle" })
 public class InitTest {
     private static ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
     private static String context = ConfigDefaults.CTX_TESTING;

@@ -84,11 +84,11 @@ public class SetupLifecycleTest {
         
         
         // A->B single hop
-        resDet = RequestFactory.getALU_MX();
+        resDet = RequestFactory.getALU_MX("foo.net-1991");
         this.testBoth(resDet);
         
         // C->D single hop
-        resDet = RequestFactory.getALU_ALU();
+        resDet = RequestFactory.getALU_ALU("foo.net-12");
         this.testBoth(resDet);
 
         log.debug("simulation.run.end");
