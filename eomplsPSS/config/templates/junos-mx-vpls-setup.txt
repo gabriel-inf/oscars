@@ -64,7 +64,7 @@ set term oscars then count oscars_counter
 set term oscars then accept
 top
 edit firewall family any filter ${filters.policing} term oscars
-set policer ${policer.name}
+set then policer ${policer.name}
 set then count oscars
 set then forwarding-class expedited-forwarding
 set then accept

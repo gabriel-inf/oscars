@@ -8,7 +8,7 @@ delete interfaces ${ifce.name} unit ${ifce.vlan}
 
 
 # routing
-delete routing-options forwarding-table export [ ${policy} ]
+delete routing-options forwarding-table export ${policy}
 
 
 # lsps
