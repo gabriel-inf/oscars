@@ -8,11 +8,14 @@ import net.es.oscars.pss.api.DeviceConfigGenerator;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.GenericConfig;
+import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.api.EoMPLSIfceAddressResolver;
 import net.es.oscars.pss.eompls.beans.LSP;
+import net.es.oscars.pss.eompls.dao.GCUtils;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
+import net.es.oscars.pss.eompls.util.VPLS_DomainIdentifiers;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.utils.soap.OSCARSServiceException;
@@ -26,18 +29,6 @@ import java.util.*;
 
 public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(MX_VPLS_ConfigGen.class);
-
-    protected String policy = "";
-
-
-
-    protected HashMap community = new HashMap();
-    protected HashMap filters = new HashMap();
-    protected HashMap policer = new HashMap();
-    protected HashMap vpls = new HashMap();
-    protected ArrayList ifces = new ArrayList();
-    protected ArrayList paths = new ArrayList();
-    protected ArrayList lsps = new ArrayList();
 
 
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
@@ -67,7 +58,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         }
         
     }
-    private String getSetup(PSSAction action, String deviceId) throws PSSException {
+    public String getSetup(PSSAction action, String deviceId) throws PSSException {
         log.debug("getSetup start");
         
         ResDetails res = action.getRequest().getSetupReq().getReservation();
@@ -78,15 +69,15 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         
         if (sameDevice) {
             // TODO: not null!
-            return null;
+            throw new PSSException("Same device crossconnects not supported with VPLS");
 
         } else {
-            return this.gen_VPLS_setup(res, deviceId);
+            return this.onSetup(action, deviceId);
         }
     }
     
     
-    private String getTeardown(PSSAction action, String deviceId) throws PSSException {
+    public String getTeardown(PSSAction action, String deviceId) throws PSSException {
         log.debug("getTeardown start");
         
         ResDetails res = action.getRequest().getTeardownReq().getReservation();
@@ -97,13 +88,12 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         
         if (sameDevice) {
             // TODO: not null!
-            return null;
+            throw new PSSException("Same device crossconnects not supported with VPLS");
         } else {
-            return this.gen_VPLS_teardown(res, deviceId);
+            return this.onTeardown(action, deviceId);
         }
     }
     
-    @SuppressWarnings("rawtypes")
     private String getLSPStatus(PSSAction action, String deviceId)  throws PSSException {
         String templateFile = "junos-mx-lsp-status.txt";
         Map root = new HashMap();
@@ -111,53 +101,85 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         return config;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public String gen_VPLS_setup(ResDetails res, String deviceId) throws PSSException  {
+
+    private String onSetup(PSSAction action, String deviceId) throws PSSException {
+
+        ResDetails res = action.getRequest().getSetupReq().getReservation();
+        String gri = res.getGlobalReservationId();
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+
+        String[] deviceIds =  { srcDeviceId, dstDeviceId };
+
         /*
-        setup:
-        1. policy (string)
-        2. community: name, id
-        3. filters: stats, policing
-        4. policer: name, bandwidth_limit, burst_size_limit
-        5. vpls: name, id
+        for both devices:
+        - check if identifiers exist
+        - generate identifiers as needed
+        - generate setup and teardown config (unless it has been already generated)
+         */
 
-        6. ifces: list_of <name, vlan, description>
-        7. paths: list_of <name, hops>
-                                 hops: list of string >
-        8. lsps: list_of <name, from, to, path, neighbor, bandwidth>
-        */
+        VPLS_DomainIdentifiers gids = VPLS_DomainIdentifiers.reserve(gri);
 
-        log.debug("gen_VPLS_setup start");
-        if (res != null) {
-            this.populateSetupFromResDetails(res, deviceId);
+        String devSetupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);
+        if (devSetupConfig == null) {
+            log.info("no saved setup config found for gri: "+gri+" device: "+deviceId+", generating now");
+            MX_VPLS_TemplateParams params = this.getSetupTemplateParams(res, deviceId, gids);
+            devSetupConfig= this.generateConfig(params, ActionType.SETUP);
+            GCUtils.storeDeviceConfig(gri, deviceId, ActionType.SETUP, devSetupConfig);
         }
-        Map root = new HashMap();
-        root.put("ifces", ifces);
-        root.put("paths", paths);
-        root.put("lsps", lsps);
-        root.put("filters", filters);
-        root.put("policy", policy);
-        root.put("policer", policer);
-        root.put("vpls", vpls);
-        root.put("community", community);
 
+        String devTeardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
+        if (devTeardownConfig == null) {
+            log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
+            MX_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids);
+            devTeardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
+            GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, devTeardownConfig);
+        }
 
-        String templateFile = "junos-mx-vpls-setup.txt";
-        String config       = EoMPLSUtils.generateConfig(root, templateFile);
+        String setupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);
+        if (setupConfig == null) {
+            this.onError("could not retrieve setup device config for gri: "+gri+" device: "+deviceId);
+        }
 
-        log.debug("gen_VPLS_setup done");
-        return config;
+        return setupConfig;
     }
 
 
-    private void populateSetupFromResDetails(ResDetails res, String deviceId) throws PSSException  {
-        community = new HashMap();
-        filters = new HashMap();
-        policer = new HashMap();
-        vpls = new HashMap();
-        ifces = new ArrayList();
-        paths = new ArrayList();
-        lsps = new ArrayList();
+    private String onTeardown(PSSAction action, String deviceId) throws PSSException {
+
+        /*
+       for this device:
+       - release identifiers
+       - generate teardown config (unless it has been already generated)
+        */
+        ResDetails res = action.getRequest().getTeardownReq().getReservation();
+        String gri = res.getGlobalReservationId();
+
+        VPLS_DomainIdentifiers gids = VPLS_DomainIdentifiers.release(gri);
+
+        String teardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
+        if (teardownConfig == null) {
+            log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
+            MX_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids);
+            teardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
+            GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, teardownConfig);
+        }
+
+
+        return teardownConfig;
+
+    }
+
+
+    private MX_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers ids) throws PSSException  {
+        String policy = "";
+        HashMap community = new HashMap();
+        HashMap filters = new HashMap();
+        HashMap policer = new HashMap();
+        HashMap vpls = new HashMap();
+        ArrayList ifces = new ArrayList();
+        ArrayList paths = new ArrayList();
+        ArrayList lsps = new ArrayList();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -254,21 +276,19 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         lspName                 = ng.getLSPName(gri);
         vplsName                = ng.getVplsName(gri);
 
+        String vplsId = ids.getVplsId().toString();
 
         // community is 30000 - 65500
         String oscarsCommunity;
-        Random rand = new Random();
-        Integer randInt = 30000 + rand.nextInt(35500);
         if (ng.getOscarsCommunity(gri) > 65535) {
             oscarsCommunity  = ng.getOscarsCommunity(gri)+"L";
         } else {
             oscarsCommunity  = ng.getOscarsCommunity(gri).toString();
         }
         
-        communityMembers    = "65000:"+oscarsCommunity+":"+randInt;
+        communityMembers    = "65000:"+oscarsCommunity+":"+vplsId;
 
-        // TODO: not this
-        String vplsId = randInt.toString();
+
 
         /*
         setup:
@@ -283,6 +303,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
                                  hops: list of string >
         8. lsps: list_of <name, from, to, path, neighbor, bandwidth>
         */
+
         policy = policyName;
         community.put("name", communityName);
         community.put("members", communityMembers);
@@ -318,17 +339,29 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         lsps.add(lsp);
 
-        return ;
+        MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
+        params.setCommunity(community);
+        params.setFilters(filters);
+        params.setIfces(ifces);
+        params.setLsps(lsps);
+        params.setPaths(paths);
+        params.setPolicer(policer);
+        params.setPolicy(policy);
+        params.setVpls(vpls);
+
+        return params;
     }
 
-    private void populateTeardownFromResDetails(ResDetails res, String deviceId) throws PSSException  {
-        community = new HashMap();
-        filters = new HashMap();
-        policer = new HashMap();
-        vpls = new HashMap();
-        ifces = new ArrayList();
-        paths = new ArrayList();
-        lsps = new ArrayList();
+    private MX_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers ids) throws PSSException  {
+        String policy = "";
+        HashMap community = new HashMap();
+        HashMap filters = new HashMap();
+        HashMap policer = new HashMap();
+        HashMap vpls = new HashMap();
+        ArrayList ifces = new ArrayList();
+        ArrayList paths = new ArrayList();
+        ArrayList lsps = new ArrayList();
+
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
@@ -367,7 +400,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
 
 
-        EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
 
         SDNNameGenerator ng = SDNNameGenerator.getInstance();
         String gri = res.getGlobalReservationId();
@@ -382,15 +414,19 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             // forward direction
             log.debug("forward");
             ifceName = srcRes.getPortId();
-            ifceVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
-            lspTargetDeviceId = dstRes.getNodeId();
+            ifceVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
         } else {
             // reverse direction
             log.debug("reverse");
             ifceName = dstRes.getPortId();
-            ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
-            lspTargetDeviceId = srcRes.getNodeId();
+            ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
         }
+        log.debug("srcLinkId: "+srcLinkId);
+        log.debug("dstLinkId: "+dstLinkId);
+        log.debug("ifceName: "+ifceName);
+        log.debug("ifceVlan: "+ifceVlan);
+
+
         policingFilterName      = ng.getFilterName(gri, "policing");
         statsFilterName         = ng.getFilterName(gri, "stats");
         communityName           = ng.getCommunityName(gri);
@@ -432,84 +468,54 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         Map lsp = new HashMap();
         lsp.put("name", lspName);
         lsps.add(lsp);
+
+        MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
+        params.setCommunity(community);
+        params.setFilters(filters);
+        params.setIfces(ifces);
+        params.setLsps(lsps);
+        params.setPaths(paths);
+        params.setPolicer(policer);
+        params.setPolicy(policy);
+        params.setVpls(vpls);
+        return params;
+
+
     }
 
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public String gen_VPLS_teardown(ResDetails res, String deviceId) throws PSSException {
-        /*
-        teardown:
-        1. policy (string)
-        2. community: name
-        3. filters: stats, policing
-        4. policer: name
-        5. vpls: name
 
-        6. ifces: list_of <name, vlan>
-        7. paths: list_of <name>
-        8. lsps: list_of <name>
-        */
-        log.debug("gen_VPLS_teardown start");
-        if (res != null) {
-            this.populateTeardownFromResDetails(res, deviceId);
+    public String generateConfig(MX_VPLS_TemplateParams params, ActionType phase)  throws PSSException {
+        String templateFile = null;
+
+        if (phase.equals(ActionType.SETUP)) {
+            templateFile = "junos-mx-vpls-setup.txt";
+        } else if (phase.equals(ActionType.TEARDOWN)) {
+            templateFile = "junos-mx-vpls-teardown.txt";
+        } else {
+            this.onError("invalid phase");
         }
         Map root = new HashMap();
-        root.put("ifces", ifces);
-        root.put("paths", paths);
-        root.put("lsps", lsps);
-        root.put("filters", filters);
-        root.put("policy", policy);
-        root.put("policer", policer);
-        root.put("vpls", vpls);
-        root.put("community", community);
+        root.put("ifces", params.getIfces());
+        root.put("paths", params.getPaths());
+        root.put("lsps", params.getLsps());
+        root.put("filters", params.getFilters());
+        root.put("policy", params.getPolicy());
+        root.put("policer", params.getPolicer());
+        root.put("vpls", params.getVpls());
+        root.put("community", params.getCommunity());
 
-
-        String templateFile = "junos-mx-vpls-teardown.txt";
-        String config       = EoMPLSUtils.generateConfig(root, templateFile);
-
-        log.debug("gen_VPLS_teardown done");
+        String config = EoMPLSUtils.generateConfig(root, templateFile);
         return config;
     }
+    private void onError(String errStr) throws PSSException {
+        log.error(errStr);
+        throw new PSSException(errStr);
+    }
 
 
-    
     public void setConfig(GenericConfig config) throws PSSException {
         // TODO Auto-generated method stub
-    }
-
-    public String getPolicy() {
-        return policy;
-    }
-    public void setPolicy(String p) {
-        this.policy = p;
-    }
-
-    public HashMap getCommunity() {
-        return community;
-    }
-
-    public HashMap getFilters() {
-        return filters;
-    }
-
-    public HashMap getPolicer() {
-        return policer;
-    }
-
-    public HashMap getVpls() {
-        return vpls;
-    }
-
-    public ArrayList getIfces() {
-        return ifces;
-    }
-
-    public ArrayList getPaths() {
-        return paths;
-    }
-
-    public ArrayList getLsps() {
-        return lsps;
     }
 
 }

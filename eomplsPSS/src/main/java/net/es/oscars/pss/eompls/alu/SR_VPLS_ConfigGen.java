@@ -4,26 +4,24 @@ package net.es.oscars.pss.eompls.alu;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
-import net.es.oscars.database.hibernate.HibernateUtil;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.enums.ActionStatus;
+import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.api.EoMPLSIfceAddressResolver;
-import net.es.oscars.pss.eompls.beans.GeneratedConfig;
 import net.es.oscars.pss.eompls.beans.LSP;
-import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
-import net.es.oscars.pss.eompls.dao.GeneratedConfigDAO;
+import net.es.oscars.pss.eompls.dao.GCUtils;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
+import net.es.oscars.pss.eompls.util.VPLS_DomainIdentifiers;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 
@@ -35,14 +33,6 @@ import java.util.Map;
 
 public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SR_VPLS_ConfigGen.class);
-
-
-    protected ArrayList ifces = new ArrayList();
-    protected ArrayList paths = new ArrayList();
-    protected ArrayList lsps = new ArrayList();
-    protected ArrayList sdps = new ArrayList();
-    protected HashMap vpls = new HashMap();
-    protected HashMap ingqos = new HashMap();
 
 
 
@@ -65,7 +55,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         action.setStatus(ActionStatus.SUCCESS);
         return "";
     }
-    private String getSetup(PSSAction action, String deviceId) throws PSSException {
+    public String getSetup(PSSAction action, String deviceId) throws PSSException {
         log.debug("getSetup start");
         
         ResDetails res = action.getRequest().getSetupReq().getReservation();
@@ -75,150 +65,159 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         boolean sameDevice = srcDeviceId.equals(dstDeviceId);
 
         if (sameDevice) {
+            // TODO: new templates for this
+
             throw new PSSException("Same device crossconnects not supported with VPLS ");
         } else {
-            return this.gen_VPLS_setup(res, deviceId);
+            return this.onSetup(action, deviceId);
         }
     }
-    
-    
-    private String getTeardown(PSSAction action, String deviceId) throws PSSException {
+
+    public String getTeardown(PSSAction action, String deviceId) throws PSSException {
         log.debug("getTeardown start");
-        
+
         ResDetails res = action.getRequest().getTeardownReq().getReservation();
-        
+
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-        boolean sameDevice = srcDeviceId.equals(dstDeviceId);        
+        boolean sameDevice = srcDeviceId.equals(dstDeviceId);
         if (sameDevice) {
+            // TODO: new templates for this
             throw new PSSException("Same device crossconnects not supported with VPLS");
         } else {
-            return this.gen_VPLS_teardown(res, deviceId);
+            return this.onTeardown(action, deviceId);
         }
     }
-    
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public String gen_VPLS_teardown(ResDetails res, String deviceId) throws PSSException {
-        String templateFile = "alu-vpls-teardown.txt";
-        Map root = new HashMap();
-        String teardownConfig = null;
+    private String onSetup(PSSAction action, String deviceId) throws PSSException {
 
+        ResDetails res = action.getRequest().getSetupReq().getReservation();
+        String gri = res.getGlobalReservationId();
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
 
-        if (res != null) {
-            String gri = res.getGlobalReservationId();
-            String dbname = EoMPLSConfigHolder.getInstance().getEomplsBaseConfig().getDatabase().getDbname();
-            SessionFactory sf = HibernateUtil.getSessionFactory(dbname);
-            sf.getCurrentSession().beginTransaction();
-            GeneratedConfigDAO gcDAO =  new GeneratedConfigDAO(dbname);
+        String[] deviceIds =  { srcDeviceId, dstDeviceId };
 
 
 
-            List<GeneratedConfig> gcs= gcDAO.getGC("TEARDOWN", gri, deviceId);
-            if (gcs.isEmpty()) {
-                log.error("could not find saved generated config for gri "+gri+" device "+deviceId+" TEARDOWN ");
-            } else if (gcs.size() > 1) {
 
-                log.error("found multiple generated configs for gri "+gri+" device "+deviceId+" for TEARDOWN ");
-            } else {
-                log.debug("found a saved config for gri "+gri+" device "+deviceId+" for TEARDOWN");
-                teardownConfig = gcs.get(0).getConfig();
-            }
+        // TODO: just one SDP for now; fix for multipoint.
+        Integer numSdps = 1;
 
-            if (teardownConfig == null) {
-                this.populateTeardownFromResDetails(res, deviceId);
-            } else {
-                ALUNameGenerator ng = ALUNameGenerator.getInstance();
+        /*
+        for both devices:
+        - check if identifiers exist
+        - generate identifiers as needed
+        - generate setup and teardown config (unless it has been already generated)
+         */
 
-                List<Integer> ids = ng.releaseVplsIds(deviceId, gri);
-                ids = ng.releaseQosIds(deviceId, gri);
-                ids = ng.releaseSdpIds(deviceId, gri);
-                return teardownConfig;
-            }
+        VPLS_DomainIdentifiers gids = VPLS_DomainIdentifiers.reserve(gri);
+
+        SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.retrieve(gri, deviceId);
+        if (ids == null) {
+            log.info("no saved device identifiers found for gri: "+gri+" device: "+deviceId+", generating now");
+            ids = SR_VPLS_DeviceIdentifiers.reserve(gri, deviceId, gids.getVplsId(), numSdps);
         }
 
-
-        root.put("vpls", vpls);
-        root.put("ingqos", ingqos);
-        root.put("ifces", ifces);
-        root.put("paths", paths);
-        root.put("sdps", sdps);
-        root.put("lsps", lsps);
-
-        String config       = EoMPLSUtils.generateConfig(root, templateFile);
-        log.debug("get_VPLS_teardown done");
-
-
-
-        return config;
-
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public String gen_VPLS_setup(ResDetails res, String deviceId) throws PSSException  {
-        String templateFile = "alu-vpls-setup.txt";
-        Map root = new HashMap();
-
-
-        if (res != null) {
-            this.populateSetupFromResDetails(res, deviceId);
+        String devSetupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);
+        if (devSetupConfig == null) {
+            log.info("no saved setup config found for gri: "+gri+" device: "+deviceId+", generating now");
+            SR_VPLS_TemplateParams params = this.getSetupTemplateParams(res, deviceId, gids, ids);
+            devSetupConfig= this.generateConfig(params, ActionType.SETUP);
+            GCUtils.storeDeviceConfig(gri, deviceId, ActionType.SETUP, devSetupConfig);
         }
 
-        root.put("vpls", vpls);
-        root.put("ingqos", ingqos);
-        root.put("ifces", ifces);
-        root.put("paths", paths);
-        root.put("sdps", sdps);
-        root.put("lsps", lsps);
-
-        String setupConfig       = EoMPLSUtils.generateConfig(root, templateFile);
-
-
-
-        if (res != null) {
-            String dbname = EoMPLSConfigHolder.getInstance().getEomplsBaseConfig().getDatabase().getDbname();
-            SessionFactory sf = HibernateUtil.getSessionFactory(dbname);
-            sf.getCurrentSession().beginTransaction();
-            GeneratedConfigDAO gcDAO =  new GeneratedConfigDAO(dbname);
-            GeneratedConfig setupGC = new GeneratedConfig();
-            setupGC.setConfig(setupConfig);
-            setupGC.setDeviceId(deviceId);
-            setupGC.setGri(res.getGlobalReservationId());
-            setupGC.setPhase("SETUP");
-            gcDAO.update(setupGC);
-            log.debug("saved setup config");
-
-
-            String teardownConfig = this.gen_VPLS_teardown(res, deviceId);
-
-            GeneratedConfig teardownGC = new GeneratedConfig();
-            teardownGC.setConfig(teardownConfig);
-            teardownGC.setDeviceId(deviceId);
-            teardownGC.setGri(res.getGlobalReservationId());
-            teardownGC.setPhase("TEARDOWN");
-            gcDAO.update(teardownGC);
-            log.debug("saved teardown config");
-
+        String devTeardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
+        if (devTeardownConfig == null) {
+            log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
+            SR_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids, ids);
+            devTeardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
+            GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, devTeardownConfig);
         }
 
-        log.debug("get_VPLS_setup done");
+        String setupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);
+        if (setupConfig == null) {
+            this.onError("could not retrieve setup device config for gri: "+gri+" device: "+deviceId);
+        }
+
         return setupConfig;
     }
 
+    private String onTeardown(PSSAction action, String deviceId) throws PSSException {
 
-    private void populateTeardownFromResDetails(ResDetails res, String deviceId) throws PSSException  {
-        ifces = new ArrayList();
-        paths = new ArrayList();
-        lsps = new ArrayList();
-        sdps = new ArrayList();
-        vpls = new HashMap();
-        ingqos = new HashMap();
+        /*
+       for this device:
+       - check if identifiers exist
+       - throw error if not
+       - generate teardown config (unless it has been already generated)
+       - release identifiers
+        */
+        ResDetails res = action.getRequest().getTeardownReq().getReservation();
+        String gri = res.getGlobalReservationId();
+
+        VPLS_DomainIdentifiers gids = VPLS_DomainIdentifiers.release(gri);
+
+
+        SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.retrieve(gri, deviceId);
+        if (ids == null) {
+            this.onError("no saved identifiers found for gri: "+gri+" device: "+deviceId);
+        }
+
+        String teardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
+        if (teardownConfig == null) {
+            log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
+            SR_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids, ids);
+            teardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
+            GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, teardownConfig);
+        }
+
+        SR_VPLS_DeviceIdentifiers.release(gri, deviceId);
+        return teardownConfig;
+
+    }
+
+    private void onError(String errStr) throws PSSException {
+        log.error(errStr);
+        throw new PSSException(errStr);
+    }
+
+    public String generateConfig(SR_VPLS_TemplateParams params, ActionType phase)  throws PSSException {
+        String templateFile = null;
+
+        if (phase.equals(ActionType.SETUP)) {
+            templateFile = "alu-vpls-setup.txt";
+        } else if (phase.equals(ActionType.TEARDOWN)) {
+            templateFile = "alu-vpls-teardown.txt";
+        } else {
+            this.onError("invalid phase");
+        }
+        Map root = new HashMap();
+
+        root.put("vpls", params.getVpls());
+        root.put("ingqos", params.getIngqos());
+        root.put("ifces", params.getIfces());
+        root.put("paths", params.getPaths());
+        root.put("sdps", params.getSdps());
+        root.put("lsps", params.getLsps());
+
+        String config = EoMPLSUtils.generateConfig(root, templateFile);
+        return config;
+    }
+
+
+    private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers gids, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
+
+        ArrayList ifces = new ArrayList();
+        ArrayList paths = new ArrayList();
+        ArrayList lsps = new ArrayList();
+        ArrayList sdps = new ArrayList();
+        HashMap vpls = new HashMap();
+        HashMap ingqos = new HashMap();
 
 
         // TODO: fix when multipoint is designed
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-        String gri = res.getGlobalReservationId();
         ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
         String pathName;
@@ -261,58 +260,13 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         }
 
 
-
         pathName                = ng.getPathName(ifceVlan);
         lspName                 = ng.getLSPName(ifceVlan);
-        String vplsId;
-        String qosId;
-        String sdpId;
-
-        String error = "";
-        List<Integer> ids = ng.releaseVplsIds(deviceId, gri);
-        if (ids.isEmpty()) {
-            error = "Could not find saved VPLS id for gri "+gri+" at device"+deviceId;
-            log.error(error);
-            throw new PSSException(error);
-        } else if (ids.size() > 1) {
-            error = "DB error: more than one saved VPLS id for gri "+gri+" at device"+deviceId;
-            log.error(error);
-            throw new PSSException(error);
-        } else {
-            vplsId = ids.get(0).toString();
-        }
-
-        ids = ng.releaseQosIds(deviceId, gri);
-        if (ids.isEmpty()) {
-            error = "Could not find saved QoS id for gri "+gri+" at device"+deviceId;
-            log.error(error);
-            throw new PSSException(error);
-        } else if (ids.size() > 1) {
-            error = "DB error: more than one saved QoS id for gri "+gri+" at device"+deviceId;
-            log.error(error);
-            throw new PSSException(error);
-        } else {
-            qosId = ids.get(0).toString();
-        }
-        ids = ng.releaseSdpIds(deviceId, gri);
-        if (ids.isEmpty()) {
-            error = "Could not find saved SDP id for gri "+gri+" at device"+deviceId;
-            log.error(error);
-            throw new PSSException(error);
-        } else if (ids.size() > 1) {
-            error = "DB error: more than one saved SDP id for gri "+gri+" at device"+deviceId;
-            log.error(error);
-            throw new PSSException(error);
-        } else {
-            sdpId = ids.get(0).toString();
-        }
-
 
 
         Map lsp = new HashMap();
         Map path = new HashMap();
         Map ifce = new HashMap();
-        Map sdp = new HashMap();
 
 
         // fill in scalars
@@ -329,27 +283,39 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         path.put("name", pathName);
         lsp.put("name", lspName);
-        sdp.put("id", sdpId);
 
         ifces.add(ifce);
         paths.add(path);
         lsps.add(lsp);
-        sdps.add(sdp);
+        for (Integer sdpId : ids.getSdpIds()) {
+            Map sdp = new HashMap();
+            sdp.put("id", sdpId.toString());
+            sdps.add(sdp);
+        }
 
-        ingqos.put("id", qosId);
-        vpls.put("id", vplsId);
+        ingqos.put("id", ids.getQosId().toString());
+        vpls.put("id", gids.getVplsId().toString());
 
+        SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
+        params.setIfces(ifces);
+        params.setIngqos(ingqos);
+        params.setLsps(lsps);
+        params.setPaths(paths);
+        params.setSdps(sdps);
+        params.setVpls(vpls);
 
+        return params;
 
     }
-    private void populateSetupFromResDetails(ResDetails res, String deviceId) throws PSSException  {
+    private SR_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers gids, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
 
-        ifces = new ArrayList();
-        paths = new ArrayList();
-        lsps = new ArrayList();
-        sdps = new ArrayList();
-        vpls = new HashMap();
-        ingqos = new HashMap();
+        ArrayList ifces = new ArrayList();
+        ArrayList paths = new ArrayList();
+        ArrayList lsps = new ArrayList();
+        ArrayList sdps = new ArrayList();
+        HashMap vpls = new HashMap();
+        HashMap ingqos = new HashMap();
+
 
         // TODO: fix when multipoint is designed
         String gri = res.getGlobalReservationId();
@@ -435,13 +401,12 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
               and the sdp.far_end for that should correspond to the lsp.to
         */
 
-        String vplsId = ng.getVplsId(deviceId, null, gri);
-        String qosId  = ng.getQosId(deviceId, Integer.getInteger(vplsId), gri);
-        String sdpId  = ng.getSdpId(deviceId, Integer.getInteger(vplsId), gri);
-
+        String vplsId = gids.getVplsId().toString();
         vpls.put("id", vplsId);
         vpls.put("description", gri);
 
+
+        String qosId  = ids.getQosId().toString();
         ingqos.put("id", qosId);
         ingqos.put("description", gri);
         ingqos.put("bandwidth", ingQosBandwidth);
@@ -483,43 +448,30 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         lsps.add(lsp);
 
 
+        for (Integer sdpId : ids.getSdpIds()) {
+            HashMap sdp = new HashMap();
+            sdp.put("id", sdpId.toString());
+            sdp.put("description", gri);
+            sdp.put("far_end", lspTo);
+            sdp.put("lsp_name", ng.getLSPName(gri));
+            sdps.add(sdp);
+        }
 
-        HashMap sdp = new HashMap();
-        sdp.put("id", sdpId);
-        sdp.put("description", gri);
-        sdp.put("far_end", lspTo);
-        sdp.put("lsp_name", ng.getLSPName(gri));
-        sdps.add(sdp);
 
+
+        SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
+        params.setIfces(ifces);
+        params.setIngqos(ingqos);
+        params.setLsps(lsps);
+        params.setPaths(paths);
+        params.setSdps(sdps);
+        params.setVpls(vpls);
+        return params;
 
     }
     
     public void setConfig(GenericConfig config) throws PSSException {
         // TODO Auto-generated method stub
-    }
-
-    public ArrayList getIfces() {
-        return ifces;
-    }
-
-    public ArrayList getPaths() {
-        return paths;
-    }
-
-    public ArrayList getLsps() {
-        return lsps;
-    }
-
-    public ArrayList getSdps() {
-        return sdps;
-    }
-
-    public HashMap getVpls() {
-        return vpls;
-    }
-
-    public HashMap getIngqos() {
-        return ingqos;
     }
 
 

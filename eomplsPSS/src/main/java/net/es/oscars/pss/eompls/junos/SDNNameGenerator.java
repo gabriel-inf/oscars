@@ -1,12 +1,13 @@
 package net.es.oscars.pss.eompls.junos;
 
+
 /**
  * creates ESNet SDN-style names
  * @author haniotak
  *
  */
 public class SDNNameGenerator {
-    
+
     public String getFilterName(String gri, String type) {
 
         String base = oscarsName(gri);
@@ -18,47 +19,13 @@ public class SDNNameGenerator {
             return base;
         }
     }
-    public String getInetFilterMarker(String gri) {
-        return "oscars-filters-start";
-    }
-    public String getRoutingInstanceName(String gri) {
-        String base = oscarsName(gri);
-        return base;
-    }
-    
-    public String getRoutingInstanceRibName(String gri) {
-        String base = oscarsName(gri);
-        return base+".inet.0";
-    }
-    
-    public String[] getLayer3Filters() {
-        String[] filters = { 
-                "internal-interface-inbound-inet.0-filter", 
-                "external-interface-inbound-inet.0-filter", 
-                "test-interface-inbound-inet.0-filter" };
 
-        return filters;
-    }
-    
-    public String getFilterTerm(String gri, String type) {
-        String base = oscarsName(gri);
-        return base;
-    }
-    
     public String getIswitchTerm(String gri) {
         String base = oscarsName(gri);
         return base;
     }
     
-    public String getPrefixListName(String gri, boolean src) {
-        String base = oscarsName(gri);
-        if (src) {
-             return base+"_src";
-        } else {
-            return base+"_dst";
-        }
-    }
-    
+
     public String getInterfaceDescription(String gri, Long bandwidth) {
         String base = oscarsName(gri);
         return base + ":"+bandwidth+":oscars-l2circuit:show:circuit-intercloud";
