@@ -3,9 +3,6 @@ configure private
 # interfaces
 <#list ifces as ifce>
 edit interfaces ${ifce.name}
-set flexible-vlan-tagging
-set mtu 9192
-set encapsulation flexible-ethernet-services
 edit unit ${ifce.vlan}
 set description ${ifce.description}
 set encapsulation vlan-vpls
