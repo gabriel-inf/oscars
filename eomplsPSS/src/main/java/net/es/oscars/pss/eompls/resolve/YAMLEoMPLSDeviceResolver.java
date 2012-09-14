@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.HashMap;
+
 
 import org.ho.yaml.Yaml;
 
@@ -18,7 +20,10 @@ import net.es.oscars.utils.svc.ServiceNames;
 public class YAMLEoMPLSDeviceResolver implements EoMPLSDeviceAddressResolver{
     private GenericConfig config = null;
     private HashMap<String, String> routerAddresses = null;
-    
+    private String yamlFilename = null;
+    private Long lastUpdated = null;
+
+
     public YAMLEoMPLSDeviceResolver() {
         
     }
@@ -26,8 +31,11 @@ public class YAMLEoMPLSDeviceResolver implements EoMPLSDeviceAddressResolver{
     public String getDeviceAddress(String deviceId) throws PSSException {
         if (this.config == null) {
             throw new PSSException("null config");
+        } else if (this.yamlFilename == null) {
+            throw new PSSException("null yaml filename");
         }
-        
+        this.checkIfConfigUpdated();
+
         if (routerAddresses == null) {
             throw new PSSException("empty config for routerAddresses");
         } else {
@@ -40,6 +48,26 @@ public class YAMLEoMPLSDeviceResolver implements EoMPLSDeviceAddressResolver{
         }
         
     }
+
+
+    private void checkIfConfigUpdated() throws PSSException {
+        File yamlFile = new File(yamlFilename);
+        if (lastUpdated == null || yamlFile.lastModified() > lastUpdated) {
+            this.loadYaml();
+        }
+    }
+
+    private void loadYaml() throws PSSException {
+        try {
+            InputStream propFile =  new FileInputStream(new File(yamlFilename));
+            routerAddresses = (HashMap<String, String>) Yaml.load(propFile);
+
+        } catch (FileNotFoundException e) {
+            throw new PSSException(e);
+        }
+        lastUpdated = new Date().getTime();
+    }
+
 
     @SuppressWarnings({ "unchecked", "static-access" })
     public void setConfig(GenericConfig config) throws PSSException {
@@ -56,12 +84,8 @@ public class YAMLEoMPLSDeviceResolver implements EoMPLSDeviceAddressResolver{
         }
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         try {
-            String configFilePath = cc.getFilePath(configFileName);
-            InputStream propFile =  new FileInputStream(new File(configFilePath));
-            routerAddresses = (HashMap<String, String>) Yaml.load(propFile);
+            yamlFilename = cc.getFilePath(configFileName);
         } catch (ConfigException e) {
-            throw new PSSException(e);
-        } catch (FileNotFoundException e) {
             throw new PSSException(e);
         }
 
