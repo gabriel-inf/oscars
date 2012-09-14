@@ -1,5 +1,4 @@
-configure
-top
+configure private
 
 # interfaces
 <#list ifces as ifce>
@@ -96,3 +95,4 @@ top
 
 </#list>
 
+commit and-quit

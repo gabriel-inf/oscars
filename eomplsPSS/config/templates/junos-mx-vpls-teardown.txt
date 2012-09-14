@@ -1,5 +1,4 @@
-configure
-top
+configure private
 
 # interfaces
 <#list ifces as ifce>
@@ -34,5 +33,4 @@ delete firewall policer ${policer.name}
 delete routing-instances ${vpls.name}
 
 
-
-
+commit and-quit
