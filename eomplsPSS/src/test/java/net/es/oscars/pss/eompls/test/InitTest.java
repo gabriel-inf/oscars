@@ -2,7 +2,11 @@ package net.es.oscars.pss.eompls.test;
 
 import net.es.oscars.database.hibernate.HibernateUtil;
 import net.es.oscars.database.hibernate.Initializer;
+import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.config.ConfigHolder;
+import net.es.oscars.pss.eompls.common.EoMPLSPSSCore;
+import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
+import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ConfigHelper;
@@ -29,12 +33,10 @@ public class InitTest {
     private static String username = null;
     private static String password = null;
     private static String dbname = null;
-    private static String monitor = null;
     private static Logger log = null;
-    public static SessionFactory sf;
 
     @BeforeSuite
-    public void setUpTests() {
+    public void setUpTests() throws PSSException {
       System.out.println("starting pss tests");
       cc.setContext(context);
       cc.setServiceName(ServiceNames.SVC_PSS);
@@ -45,23 +47,16 @@ public class InitTest {
           log = Logger.getLogger(InitTest.class);
           log.debug("starting tests");
 
-          String configFile =cc.getFilePath("config-eompls.yaml");
-          log.debug("eompls config file for tests: "+configFile);
-          Map config = ConfigHelper.getConfiguration(configFile);
-          assert config != null : "No configuration";
-          Map database = (Map) config.get("database");
-          assert database != null : "No database stanza in configuration";
-          username = (String) database.get("username");
-          assert username != null : "No user name in configuration";
-          password = (String) database.get("password");
-          assert password != null : "No password in configuration";
-          dbname = (String) database.get("dbname");
-          assert dbname != null: "No dbname in configuration";
-          monitor = (String) database.get("monitor");
+
+          String eoMPLSConfigFilePath = cc.getFilePath("config-eompls.yaml");
+          log.debug("eompls config file for tests: "+eoMPLSConfigFilePath);
+          EoMPLSConfigHolder.loadConfig(eoMPLSConfigFilePath);
+          EoMPLSClassFactory.getInstance().configure();
+
           log.debug("dbname: ["+dbname+"]");
 
 
-          configFile = cc.getFilePath(ConfigDefaults.CONFIG);
+          String configFile = cc.getFilePath(ConfigDefaults.CONFIG);
           log.debug("general config file for tests: "+configFile);
           ConfigHolder.loadConfig(configFile);
           PathTools.setLocalDomainId("foo.net");
@@ -71,11 +66,7 @@ public class InitTest {
           System.out.println("caught ConfigurationException " + ex.getMessage());
           System.exit(-1);
       }
-      Initializer initializer = new Initializer();
-      List<String> dbnames = new ArrayList<String>();
-      dbnames.add(dbname);
-      initializer.initDatabase(dbnames, username, password, monitor, ServiceNames.SVC_PSS);
-      sf = HibernateUtil.getSessionFactory(dbname);
+      EoMPLSPSSCore.getInstance().initDatabase();
 
     }
 

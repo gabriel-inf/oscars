@@ -1,7 +1,6 @@
 package net.es.oscars.pss.eompls.alu;
 
 
-import org.apache.log4j.Logger;
 
 public class ALUNameGenerator {
     private static ALUNameGenerator instance;

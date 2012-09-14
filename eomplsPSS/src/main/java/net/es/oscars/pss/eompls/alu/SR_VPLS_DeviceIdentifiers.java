@@ -2,7 +2,6 @@ package net.es.oscars.pss.eompls.alu;
 
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.eompls.dao.SRLUtils;
-import net.es.oscars.utils.topology.PathTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 

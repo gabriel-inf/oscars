@@ -25,6 +25,7 @@ public class VPLS_DomainIdentifiers {
 
 
     public static VPLS_DomainIdentifiers reserve(String gri) throws PSSException {
+
         VPLS_DomainIdentifiers srids = new VPLS_DomainIdentifiers();
 
         String vplsScope = PathTools.getLocalDomainId() + ":vpls";

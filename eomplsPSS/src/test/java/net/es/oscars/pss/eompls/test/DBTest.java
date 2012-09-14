@@ -8,6 +8,7 @@ import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.eompls.alu.ALUNameGenerator;
 import net.es.oscars.pss.eompls.alu.SR_VPLS_ConfigGen;
 import net.es.oscars.pss.eompls.beans.ScopedResourceLock;
+import net.es.oscars.pss.eompls.common.EoMPLSPSSCore;
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
 import net.es.oscars.pss.eompls.dao.ScopedResourceLockDAO;
 import net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen;
@@ -35,14 +36,10 @@ public class DBTest {
 
     @Test (groups = {"db"})
     public void testSRL() throws Exception {
-        SessionFactory sf = InitTest.sf;
-        if (sf == null) {
-            String error = "no session factory!";
-            LOG.error(error);
-            throw new Exception(error);
-        }
+        EoMPLSPSSCore core = EoMPLSPSSCore.getInstance();
 
-        sf.getCurrentSession().beginTransaction();
+
+        core.getSession().beginTransaction();
         ScopedResourceLockDAO srlDAO = new ScopedResourceLockDAO(dbname);
         for (Integer i = 1; i < 20; i++) {
             ScopedResourceLock srl = new ScopedResourceLock();
@@ -80,6 +77,7 @@ public class DBTest {
         for (ScopedResourceLock srl : srls) {
             System.out.println(srl.toString());
         }
+        srlDAO.flush();
 
 
     }

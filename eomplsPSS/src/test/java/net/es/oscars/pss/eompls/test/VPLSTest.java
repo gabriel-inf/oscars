@@ -12,6 +12,7 @@ import net.es.oscars.pss.eompls.alu.SR_VPLS_DeviceIdentifiers;
 import net.es.oscars.pss.eompls.alu.SR_VPLS_ConfigGen;
 
 import net.es.oscars.pss.eompls.alu.SR_VPLS_TemplateParams;
+import net.es.oscars.pss.eompls.common.EoMPLSPSSCore;
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
 import net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen;
 import net.es.oscars.pss.eompls.junos.MX_VPLS_TemplateParams;
@@ -61,7 +62,7 @@ public class VPLSTest {
             throw new SkipException("skipping Tests, eompls is  not configured");
         }
 
-        log.debug("db: "+EoMPLSConfigHolder.getInstance().getEomplsBaseConfig().getDatabase().getDbname());
+        log.debug("db: "+ EoMPLSPSSCore.getInstance().getDbname());
 
     }
 

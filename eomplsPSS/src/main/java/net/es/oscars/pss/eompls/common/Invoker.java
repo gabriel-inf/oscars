@@ -59,7 +59,7 @@ public class Invoker {
             System.exit(-1);
         }
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        String event = "StubPSSinit";
+        String event = "EoMPLSPSSinit";
         netLogger.init(ModuleName.PSS, "0000");
         LOG.debug("CXF config at: "+cc.getFilePath(ConfigDefaults.CXF_SERVER));
         EoMPLSPSSSoapServer.setSSLBusConfiguration(
@@ -69,6 +69,8 @@ public class Invoker {
             ClassFactory fac = ClassFactory.getInstance();
             fac.configure();
             try {
+                EoMPLSPSSCore.getInstance().initDatabase();
+
                 LOG.info(netLogger.start(event));
                 EoMPLSPSSSoapServer server = EoMPLSPSSSoapServer.getInstance();
                 server.startServer(false);
