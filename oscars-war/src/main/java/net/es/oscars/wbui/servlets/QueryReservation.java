@@ -323,6 +323,39 @@ public class QueryReservation extends HttpServlet {
         String destVlanTag = "";
         boolean destTagged = true;
         
+        ArrayList<CtrlPlaneHopContent> hops = (ArrayList<CtrlPlaneHopContent>) path.getHop();
+        if (hops.size() > 0) {
+        	int hopCount = 0;
+            for (CtrlPlaneHopContent hop: hops){
+                CtrlPlaneLinkContent link = hop.getLink();
+                if(link != null){
+                    String vlanRangeAvail = "0";
+                    CtrlPlaneSwcapContent swcap= link.getSwitchingCapabilityDescriptors();
+                    if (swcap != null) {
+                        CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = swcap.getSwitchingCapabilitySpecificInfo();
+                        if (specInfo != null) {
+                            if (specInfo.getVlanRangeAvailability() == null) {
+                                vlanTags.add(vlanRangeAvail);
+                            } else {
+                                vlanTags.add(specInfo.getVlanRangeAvailability());
+                                if(hopCount == 0){
+                                	srcVlanTag = specInfo.getVlanRangeAvailability();
+                                }else if(hopCount == (hops.size() - 1)){
+                                	destVlanTag = specInfo.getVlanRangeAvailability();
+                                }
+                            }
+                        }
+                    }
+                }
+                hopCount++;
+            }
+        }
+        
+        if (!vlanTags.isEmpty()) {
+            QueryReservation.outputVlanTable(vlanTags, "vlanInterPathReplace",
+                                             outputMap);
+        }
+        
         //parse layer 2 info
         if (layer2Info != null ) {
             if (layer2Info.getSrcVtag() != null) {
@@ -336,50 +369,26 @@ public class QueryReservation extends HttpServlet {
             log.debug("srcVlanTag:" + srcVlanTag + " destVlanTag:" + destVlanTag);
         }
         
-        
-        if (!srcVlanTag.equals("")) {
-            QueryReservation.outputVlan(srcVlanTag, srcTagged, outputMap, "src");
-            QueryReservation.outputVlan(destVlanTag, destTagged, outputMap, "dest");
+        //finally outpur vlans
+        if (status.equals("ACCEPTED") || status.equals("INPATHCALCULATION")) {
+            outputMap.put("srcVlanReplace", "VLAN setup in progress");
+            outputMap.put("destVlanReplace", "VLAN setup in progress");
+            outputMap.put("srcTaggedReplace", "");
+            outputMap.put("destTaggedReplace", "");
         } else {
-            if (status.equals("ACCEPTED") || status.equals("INPATHCALCULATION") ||
-                    status.equals("INSETUP")) {
-                outputMap.put("srcVlanReplace", "VLAN setup in progress");
-                outputMap.put("destVlanReplace", "VLAN setup in progress");
-                outputMap.put("srcTaggedReplace", "");
-                outputMap.put("destTaggedReplace", "");
-            } else {
-                outputMap.put("srcVlanReplace",
-                              "No VLAN tag was ever set up");
-                outputMap.put("destVlanReplace",
-                              "No VLAN tag was ever set up");
-                outputMap.put("srcTaggedReplace", "");
-                outputMap.put("destTaggedReplace", "");
+        	if (!"".equals(srcVlanTag)) {
+                QueryReservation.outputVlan(srcVlanTag, srcTagged, outputMap, "src");
+            }else{
+            	outputMap.put("srcVlanReplace", "No VLAN tag was ever set up");
+            	outputMap.put("srcTaggedReplace", "");
             }
-        }
-        ArrayList<CtrlPlaneHopContent> hops = (ArrayList<CtrlPlaneHopContent>) path.getHop();
-        if (hops.size() > 0) {
-            for (CtrlPlaneHopContent hop: hops){
-                CtrlPlaneLinkContent link = hop.getLink();
-                if(link != null){
-                    String vlanRangeAvail = "0";
-                    CtrlPlaneSwcapContent swcap= link.getSwitchingCapabilityDescriptors();
-                    if (swcap != null) {
-                        CtrlPlaneSwitchingCapabilitySpecificInfo specInfo = swcap.getSwitchingCapabilitySpecificInfo();
-                        if (specInfo != null) {
-                            if (specInfo.getVlanRangeAvailability() == null) {
-                                vlanTags.add(vlanRangeAvail);
-                            } else {
-                                vlanTags.add(specInfo.getVlanRangeAvailability());
-                            }
-                        }
-                    }
-                }
+        	
+        	if (!"".equals(destVlanTag)) {
+                QueryReservation.outputVlan(destVlanTag, destTagged, outputMap, "dest");
+            }else{
+            	outputMap.put("destVlanReplace", "No VLAN tag was ever set up");
+            	outputMap.put("destTaggedReplace", "");
             }
-        }
-        
-        if (!vlanTags.isEmpty()) {
-            QueryReservation.outputVlanTable(vlanTags, "vlanInterPathReplace",
-                                             outputMap);
         }
     }
 
