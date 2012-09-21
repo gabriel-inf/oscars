@@ -72,8 +72,9 @@ fi
 
 # TODO: better solution later
 if [ -z "$BUILD_ROOT" ]; then
-    sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
-    sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
+    mkdir -p $OSCARS_HOME/$SERVICE/tmp
+    sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ -e  s,/oscars-temp-dir,$OSCARS_HOME/$SERVICE/tmp, < $SRC_DIR/$CONFIG_HTTP > $DST_DIR/$CONFIG_HTTP
+    sed -e s,/oscars-war,$OSCARS_HOME/$SERVICE, -e s/OSCARS_VERSION/$vers/ -e  s,/oscars-temp-dir,$OSCARS_HOME/$SERVICE/tmp, < $SRC_DIR/$CONFIG_SSL > $DST_DIR/$CONFIG_SSL
     cp $OSCARS_DIST/oscars-war/target/oscars-war-$vers.war $OSCARS_HOME/$SERVICE/
 fi
 

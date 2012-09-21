@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 1
+%define relnum 2
 
 Name:           oscars-%{package_name}
 Version:        0.6
@@ -52,6 +52,7 @@ mvn -DskipTests --projects %{mvn_project_list} install
 mkdir -p %{buildroot}/%{install_base}/target
 mkdir -p %{buildroot}/%{install_base}/bin
 mkdir -p %{buildroot}/etc/init.d
+mkdir -p %{buildroot}/var/lib/oscars/wbui/war-tmp
 
 #Copy jar files and scripts
 cp %{package_name}/target/*.jar %{buildroot}/%{install_base}/target/
@@ -111,6 +112,7 @@ chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
 %{install_base}/target/*
 %{install_base}/bin/*
 /etc/init.d/oscars-%{package_name}
+/var/lib/oscars/wbui/*
 
 %preun
 if [ $1 -eq 0 ]; then
