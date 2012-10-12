@@ -1,5 +1,6 @@
 package net.es.oscars.pss.connect;
 
+import org.apache.commons.io.IOUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -8,12 +9,8 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.StringReader;
+import java.io.*;
+import java.security.PrivateKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -44,6 +41,21 @@ import net.es.oscars.pss.config.ConfigHolder;
  */
 
 public class JunoscriptConnector implements Connector {
+    /*
+    logger wrapper for JSch
+     */
+    private class JschLogger implements com.jcraft.jsch.Logger {
+        private Logger log = Logger.getLogger(JschLogger.class);
+
+        public boolean isEnabled(int arg0) {
+            return true;
+        }
+
+        public void log(int arg0, String arg1) {
+            log.debug(String.format("[SFTP/SSH -&gt; %s]", arg1));
+        }
+    }
+
     private Logger log = Logger.getLogger(JunoscriptConnector.class);
     // private OSCARSNetLogger netLogger =  OSCARSNetLogger.getTlogger();
 
@@ -95,11 +107,15 @@ public class JunoscriptConnector implements Connector {
     private void connect(String address) throws IOException, PSSException {
 
         this.log.debug("connect.start");
-        
-        
+
+
         JSch jsch = new JSch();
+        JSch.setLogger(new JschLogger());
         try {
-            jsch.addIdentity(privkeyfile, passphrase);
+            jsch.addIdentity(login,
+                    IOUtils.toByteArray(new FileInputStream(privkeyfile)),
+                    null,
+                    passphrase.getBytes());
             this.session = jsch.getSession(login, address, 22);
             
             Properties config = new Properties();
@@ -143,7 +159,7 @@ public class JunoscriptConnector implements Connector {
 
     /**
      * Sends the XML command to the server.
-     * @param doc XML document with Junoscript commands
+     * @param command XML document with Junoscript commands
      * @throws IOException
      * @throws JDOMException
      * @throws PSSException
