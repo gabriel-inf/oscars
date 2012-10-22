@@ -52,6 +52,9 @@ public class LookupGlobals {
     final private String PROP_DISABLE_REGISTER = "disableRegister";
     
     final private int DEFAULT_TTL = 3600; //1 hour
+    final private int DEFAULT_DB_POOL_SIZE = 50;
+    final private String C3P0_TEST_QUERY = "SELECT id FROM services";
+    final private int C3P0_IDLE_TEST_PERIOD = 600;//10 minutes
     final private String DEFAULT_CACHE_CLEAN_SCHED = "0 0/5 * * * ?"; //5 minutes
     private String hintsFile;
     private List<String> globalLookupServices;
@@ -86,6 +89,17 @@ public class LookupGlobals {
             this.log.debug(netLog.start("initJDBC"));
             this.dataSource.setDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
             this.dataSource.setJdbcUrl(JDBC_URL);
+            this.dataSource.setMaxPoolSize(DEFAULT_DB_POOL_SIZE);
+            this.dataSource.setIdleConnectionTestPeriod(C3P0_IDLE_TEST_PERIOD);
+            this.dataSource.setPreferredTestQuery(C3P0_TEST_QUERY);
+            this.dataSource.setConnectionCustomizerClassName(LookupDBConnectionCustomizer.class.getName());
+            
+            /*
+             * dataSource.setIdleConnectionTestPeriod(C3P0_IDLE_TEST_PERIOD);
+            //set query used to test stale connection
+            dataSource.setPreferredTestQuery(C3P0_TEST_QUERY);
+             */
+            
             this.log.debug(netLog.end("initJDBC"));
         } catch (Exception e) {
             this.log.debug(netLog.end("initJDBC", ErrSev.CRITICAL, e.getMessage()));
