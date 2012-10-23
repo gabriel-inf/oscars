@@ -38,7 +38,6 @@ public class LookupGlobals {
     private Logger log = Logger.getLogger(LookupGlobals.class);
     private ComboPooledDataSource dataSource;
     private Scheduler scheduler;
-    private ReadWriteLock dbLock;
     private Integer dataTTL;
     private Integer disableRegister;
     private String cacheCleanSched;
@@ -79,9 +78,6 @@ public class LookupGlobals {
             throw new LookupException("Error creating perfSONAR client: " + e.getMessage());
         }
         this.dataSource = new ComboPooledDataSource();
-        
-        //init lock
-        this.dbLock = new ReentrantReadWriteLock();
         
         //init DB
         try {
@@ -276,10 +272,6 @@ public class LookupGlobals {
     }
     public long getDisableRegister(){
         return this.disableRegister;
-    }
-    
-    public ReadWriteLock getDbLock(){
-        return this.dbLock;
     }
     
     public DCNLookupClient getPerfsonarClient(){

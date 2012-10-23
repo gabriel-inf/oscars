@@ -65,18 +65,14 @@ public class LookupManager {
         }
         
         //query local database
-        this.globals.getDbLock().readLock().lock();
         try {
             this.log.debug(netLog.start("lookup.databaseLookup", null, LookupGlobals.JDBC_URL));
             response = this.databaseLookup(query, sqlParams, conn);
             this.log.debug(netLog.end("lookup.databaseLookup", null, LookupGlobals.JDBC_URL));
         } catch (Exception e) {
-            this.globals.getDbLock().readLock().unlock();
             this.log.debug(netLog.error("lookup.databaseLookup", 
                     ErrSev.CRITICAL, e.getMessage(), LookupGlobals.JDBC_URL));
             throw new LookupException("Error querying lookup database");
-        }finally{
-            this.globals.getDbLock().readLock().unlock();
         }
 
         //query perfSONAR LS if not in DB
@@ -94,7 +90,6 @@ public class LookupManager {
             this.log.debug(netLog.end("lookup.perfsonarLookup"));
             
             try{
-                this.globals.getDbLock().writeLock().lock();
                 this.log.debug(netLog.start("lookup.storeResponse"));
                 this.storeResponse(response, conn);
                 this.log.debug(netLog.end("lookup.storeResponse"));
@@ -102,8 +97,6 @@ public class LookupManager {
                 this.log.debug(netLog.end("lookup.storeResponse", ErrSev.MAJOR, 
                         "Error storing PS LS response in DB: " + e.getMessage()));
                 //continue anyways because still found the service, it just wasn't cached
-            }finally{
-                this.globals.getDbLock().writeLock().unlock();
             }
         }
 

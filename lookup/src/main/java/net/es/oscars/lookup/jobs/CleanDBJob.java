@@ -38,7 +38,6 @@ public class CleanDBJob implements Job{
         
         long expTime = System.currentTimeMillis()/1000 - globals.getTTL();
         try {
-            globals.getDbLock().writeLock().lock();
             //delete protocol entries
             PreparedStatement protoStmt = conn.prepareStatement("DELETE FROM protocols " +
                     "WHERE serviceId IN (SELECT id FROM services WHERE " +
@@ -64,13 +63,10 @@ public class CleanDBJob implements Job{
         } catch (Exception e) {
             this.log.debug(netLog.error("CleanDBJob", ErrSev.MAJOR, 
                     "Error cleaning lookup tables: " + e.getMessage()));
-            error = true;
-        } finally{
-            globals.getDbLock().writeLock().unlock();
-        }
+            return;
+        } 
         
-        if(!error){
-            this.log.debug(netLog.end("CleanDBJob"));
-        }
+
+        this.log.debug(netLog.end("CleanDBJob"));
     }
 }
