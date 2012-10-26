@@ -2,6 +2,7 @@ package net.es.oscars.lookup.jobs;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.UUID;
 
 import net.es.oscars.logging.ErrSev;
@@ -60,11 +61,19 @@ public class CleanDBJob implements Job{
             serviceStmt.setLong(1, expTime);
             serviceStmt.execute();
             serviceStmt.close();
+            globals.releaseDbConnection(conn);
         } catch (Exception e) {
+        	if(conn != null){
+        		try {
+					conn.close();
+				} catch (SQLException e1) {}
+        	}
             this.log.debug(netLog.error("CleanDBJob", ErrSev.MAJOR, 
                     "Error cleaning lookup tables: " + e.getMessage()));
             return;
-        } 
+        } finally {
+        	globals.releaseDbConnection(conn);
+        }
         
 
         this.log.debug(netLog.end("CleanDBJob"));
