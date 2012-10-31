@@ -206,6 +206,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
 
 
     private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers gids, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
+        String gri = res.getGlobalReservationId();
 
         ArrayList ifces = new ArrayList();
         ArrayList paths = new ArrayList();
@@ -260,8 +261,8 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         }
 
 
-        pathName                = ng.getPathName(ifceVlan);
-        lspName                 = ng.getLSPName(ifceVlan);
+        pathName                = ng.getPathName(gri);
+        lspName                 = ng.getLSPName(gri);
 
 
         Map lsp = new HashMap();
