@@ -1,10 +1,8 @@
 package net.es.oscars.nsibridge.beans;
 
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.ConnectionStateType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.DetailedPathType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.PathType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.ServiceParametersType;
 
 public class NSAConnection {
     private String connectionId;
@@ -12,7 +10,9 @@ public class NSAConnection {
     private String providerNSA;
     private String requesterNSA;
     private String description;
-    private ServiceParametersType serviceParams;
+    private DetailedPathType detailedPath;
+    private PathType path;
+
     public String getConnectionId() {
         return connectionId;
     }
@@ -43,12 +43,6 @@ public class NSAConnection {
     public void setDescription(String description) {
         this.description = description;
     }
-    public ServiceParametersType getServiceParams() {
-        return serviceParams;
-    }
-    public void setServiceParams(ServiceParametersType serviceParams) {
-        this.serviceParams = serviceParams;
-    }
     public DetailedPathType getDetailedPath() {
         return detailedPath;
     }
@@ -61,15 +55,6 @@ public class NSAConnection {
     public void setPath(PathType path) {
         this.path = path;
     }
-    public ConnectionStateType getState() {
-        return state;
-    }
-    public void setState(ConnectionStateType state) {
-        this.state = state;
-    }
-    private DetailedPathType detailedPath;
-    private PathType path;
-    private ConnectionStateType state;
-    
+
     
 }
