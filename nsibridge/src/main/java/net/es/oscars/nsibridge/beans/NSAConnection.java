@@ -1,9 +1,10 @@
 package net.es.oscars.nsibridge.beans;
 
-import org.ogf.nsi.schema.connectionTypes.ConnectionStateType;
-import org.ogf.nsi.schema.connectionTypes.DetailedPathType;
-import org.ogf.nsi.schema.connectionTypes.PathType;
-import org.ogf.nsi.schema.connectionTypes.ServiceParametersType;
+
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.ConnectionStateType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.DetailedPathType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.PathType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.ServiceParametersType;
 
 public class NSAConnection {
     private String connectionId;

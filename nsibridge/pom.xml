@@ -10,11 +10,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <cxf.version>2.4.2</cxf.version>
+        <cxf.version>2.6.1</cxf.version>
+        <spring.version>3.1.2.RELEASE</spring.version>
         <java.version>1.6</java.version>
-        <axis2.version>1.5.1</axis2.version>
-        <rampart.version>1.5</rampart.version>
-        <build.rootdir>/Users/haniotak/helios/oscars_0_6/0_5_nsibridge</build.rootdir>
+        <build.rootdir>/Users/haniotak/ij/0_6_trunk/nsibridge</build.rootdir>
     </properties>
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
@@ -35,232 +34,52 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>shibboleth-release</id>
-            <url>http://shibboleth.internet2.edu/downloads/maven2/</url>
-            <name>Internet2 Releases</name>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
      </repositories>
 
 
 
 
     <dependencies>
-
-        <!-- OSCARS 0.5 client stuff -->
-        <dependency>
-            <groupId>net.es.oscars.client</groupId>
-            <artifactId>client-api</artifactId>
-            <version>0.5</version>
-            <scope>system</scope>
-            <systemPath>${build.rootdir}/lib/OSCARS-client-api.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>net.es.oscars.client</groupId>
-            <artifactId>improved</artifactId>
-            <version>0.5</version>
-            <scope>system</scope>
-            <systemPath>${build.rootdir}/lib/improvedJavaClients.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rampart</groupId>
-            <artifactId>rampart-core</artifactId>
-            <version>${rampart.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>opensaml</groupId>
-                    <artifactId>opensaml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rampart</groupId>
-            <artifactId>rampart-policy</artifactId>
-            <version>${rampart.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>opensaml</groupId>
-                    <artifactId>opensaml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.rampart</groupId>
-            <artifactId>rampart-trust</artifactId>
-            <version>${rampart.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>opensaml</groupId>
-                    <artifactId>opensaml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-kernel</artifactId>
-            <version>${axis2.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.ws.commons.schema</groupId>
-                    <artifactId>XmlSchema</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-adb-codegen</artifactId>
-            <version>${axis2.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.ws.commons.schema</groupId>
-                    <artifactId>XmlSchema</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-transport-tcp</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-transport-local</artifactId>
-            <version>${axis2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-transport-http</artifactId>
-            <version>${axis2.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.opensaml</groupId>
-            <artifactId>opensaml</artifactId>
-            <version>2.3.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>log4j-over-slf4</artifactId>
-                </exclusion>
-            </exclusions>
-         </dependency>
-         
-
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15</artifactId>
-            <version>1.45</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.security</groupId>
-            <artifactId>wss4j</artifactId>
-            <version>1.5.4</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.santuario</groupId>
-            <artifactId>xmlsec</artifactId>
-            <version>1.4.3</version>
-        </dependency>
-        <!--  end of OSCARS 0.5 stuff -->
-        
-                <!-- testing -->
+        <!-- testing -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>5.8</version>
+            <version>6.7</version>
             <scope>test</scope>
-            <classifier>jdk15</classifier>
         </dependency>
         
         <!-- command-line parsing -->
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
             <artifactId>jopt-simple</artifactId>
-            <version>3.0.1</version>
+            <version>4.3</version>
         </dependency>
 
         <!-- database for persistence -->
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>1.8.0.10</version>
+            <version>2.2.8</version>
         </dependency>
         
         <!-- logging -->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
+            <version>1.2.17</version>
         </dependency>
     
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.6.2</version>
+            <version>1.6.6</version>
         </dependency>
 
         <!-- scheduling -->
         <dependency>
-            <groupId>org.opensymphony.quartz</groupId>
+            <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>1.6.1</version>
+            <version>2.1.5</version>
         </dependency>
 
 
@@ -271,6 +90,7 @@
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
             <version>${cxf.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
@@ -281,6 +101,15 @@
             <artifactId>cxf-rt-transports-http-jetty</artifactId>
             <version>${cxf.version}</version>
         </dependency>
+
+        <!-- spring -->
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
         <!-- configuration -->
         <dependency>
             <groupId>org.jyaml</groupId>
@@ -307,11 +136,25 @@
                                         <extraarg>-impl</extraarg>
                                         <extraarg>-autoNameResolution</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/interface=net.es.oscars.nsibridge.soap.gen.ifce</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2012/03/framework/types=net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.types</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/provider=net.es.oscars.nsibridge.soap.gen.provider</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2012/03/framework/headers=net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.headers</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2012/03/connection/interface=net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.ifce</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2012/03/connection/types=net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://schemas.ogf.org/nsi/2012/03/connection/provider=net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.provider</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>urn:oasis:names:tc:SAML:2.0:assertion=net.es.oscars.nsibridge.soap.gen.saml.assertion</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://www.w3.org/2000/09/xmldsig#=net.es.oscars.nsibridge.soap.gen.xmldsig</extraarg>
+                                        <extraarg>-p</extraarg>
+                                        <extraarg>http://www.w3.org/2001/04/xmlenc#=net.es.oscars.nsibridge.soap.gen.xmlenc</extraarg>
+
                                     </extraargs>
-                                    <wsdl>${basedir}/schema/ogf_nsi_connection_provider_v1_0.wsdl</wsdl>
+
+                                    <wsdl>${basedir}/schema/nsi-2_0/ogf_nsi_connection_provider_v2_0.wsdl</wsdl>
                                     <bindingFiles>
                                         <bindingFile>${basedir}/schema/NSI_ConnectionTypesBinding.xml</bindingFile>
                                     </bindingFiles>
@@ -322,34 +165,6 @@
                             <goal>wsdl2java</goal>
                         </goals>
                     </execution>
-                    <!-- 
-                    <execution>
-                        <id>generate-requester-sources</id>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <sourceRoot>${basedir}/src/main/java</sourceRoot>
-                            <wsdlOptions>
-                                <wsdlOption>
-                                    <extraargs>
-                                        <extraarg>-impl</extraarg>
-                                        <extraarg>-autoNameResolution</extraarg>
-                                        <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/interface=net.es.oscars.nsibridge.soap.gen.ifce</extraarg>
-                                        <extraarg>-p</extraarg>
-                                        <extraarg>http://schemas.ogf.org/nsi/2011/10/connection/requester=net.es.oscars.nsibridge.soap.gen.requester</extraarg>
-                                    </extraargs>
-                                    <wsdl>${basedir}/schema/ogf_nsi_connection_requester_v1_0.wsdl</wsdl>
-                                    <bindingFiles>
-                                        <bindingFile>${basedir}/schema/NSI_ConnectionTypesBinding.xml</bindingFile>
-                                    </bindingFiles>
-                                </wsdlOption>
-                            </wsdlOptions>
-                        </configuration>
-                        <goals>
-                            <goal>wsdl2java</goal>
-                        </goals>
-                    </execution>
- -->
                 </executions>
             </plugin>
             <!-- end SOAP gen section -->
@@ -382,7 +197,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>2.5.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -390,41 +205,7 @@
             </plugin>
 
         </plugins>
-        <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>
-        									org.apache.cxf
-        								</groupId>
-        								<artifactId>
-        									cxf-codegen-plugin
-        								</artifactId>
-        								<versionRange>
-        									[2.4.2,)
-        								</versionRange>
-        								<goals>
-        									<goal>wsdl2java</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
-        </pluginManagement>
+
     </build>
 
 

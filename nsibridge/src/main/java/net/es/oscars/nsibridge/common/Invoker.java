@@ -7,11 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.es.oscars.nsibridge.beans.NSAInfo;
-import net.es.oscars.nsibridge.bridge.NSAAPI;
-import net.es.oscars.nsibridge.bridge.NSAFactory;
-import net.es.oscars.nsibridge.bridge.OSCARS_0_5_NSA;
-import net.es.oscars.nsibridge.bridge.SimpleNSA;
-import net.es.oscars.nsibridge.util.NSAList;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -87,11 +82,12 @@ public class Invoker {
         setupNSAs();
         
         while (true) {
+            /*
             for (NSAAPI nsa : NSAFactory.getInstance().getNSAs()) {
                 nsa.tick();
             }
             Thread.sleep(500);
-
+              */
         }
     }
     
@@ -101,13 +97,13 @@ public class Invoker {
         nsaD.setNsaId("urn:ogf:network:nsa:Dominica-OSCARS");
         nsaD.setProviderWsdl("http://jupiter.es.net:8088/ConnectionProvider?wsdl");
         nsaD.setRequesterUrl("http://jupiter.es.net:8088/ConnectionRequester");
-        NSAList.getInstance().addNSA("dominica", nsaD);
-        NSAFactory.getInstance().addNSA(nsaD.getNsaId(), new OSCARS_0_5_NSA(nsaD.getNsaId()));
+        //NSAList.getInstance().addNSA("dominica", nsaD);
+        //NSAFactory.getInstance().addNSA(nsaD.getNsaId(), new OSCARS_0_5_NSA(nsaD.getNsaId()));
         
         NSAInfo nsaG = new NSAInfo();
         nsaG.setNsaId("urn:ogf:network:nsa:Grenada-GLAMBDA-AIST");
         nsaG.setProviderWsdl("http://163.220.30.174:8090/nsi_gl_proxy/services/ConnectionServiceProvider?wsdl");
-        NSAList.getInstance().addNSA("grenada", nsaG);
+        //NSAList.getInstance().addNSA("grenada", nsaG);
 
     }
     
