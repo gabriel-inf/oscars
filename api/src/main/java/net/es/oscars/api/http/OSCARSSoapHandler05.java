@@ -150,7 +150,7 @@ public class OSCARSSoapHandler05 implements OSCARS {
 	 * @see net.es.oscars.api.soap.gen.v05.OSCARS#modifyReservation(net.es.oscars.api.soap.gen.v05.ModifyResContent  modifyReservation )*
 	 */
 	public net.es.oscars.api.soap.gen.v05.ModifyResReply modifyReservation(ModifyResContent modifyReservation) throws BSSFaultMessage , AAAFaultMessage {
-		return this.modifyReservation(modifyReservation);
+		return this.modifyReservation(modifyReservation, null);
 	}
 
 	public net.es.oscars.api.soap.gen.v05.ModifyResReply modifyReservation(ModifyResContent modifyReservation, String src)
@@ -219,7 +219,7 @@ public class OSCARSSoapHandler05 implements OSCARS {
 	 */
 	public net.es.oscars.api.soap.gen.v05.TeardownPathResponseContent teardownPath(TeardownPathContent teardownPath)
 			throws BSSFaultMessage , AAAFaultMessage {
-		return this.teardownPath(teardownPath);
+		return this.teardownPath(teardownPath, null);
 	}
 	public net.es.oscars.api.soap.gen.v05.TeardownPathResponseContent teardownPath(TeardownPathContent teardownPath, String src)
 			throws BSSFaultMessage , AAAFaultMessage {
@@ -340,7 +340,7 @@ public class OSCARSSoapHandler05 implements OSCARS {
 	 * @see net.es.oscars.api.soap.gen.v05.OSCARS#cancelReservation(net.es.oscars.api.soap.gen.v05.GlobalReservationId  cancelReservation )*
 	 */
 	public java.lang.String cancelReservation(GlobalReservationId cancelReservation) throws BSSFaultMessage , AAAFaultMessage {
-		return this.cancelReservation(cancelReservation);
+		return this.cancelReservation(cancelReservation, null);
 	}
 	public java.lang.String cancelReservation(GlobalReservationId cancelReservation, String src) throws BSSFaultMessage , AAAFaultMessage {
 		String event = "cancelReservation05";
