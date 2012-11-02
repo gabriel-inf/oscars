@@ -744,8 +744,8 @@ public class DataTranslator05 {
         if (layer2Info06.getSrcVtag() != null) {
             layer2Info05.setSrcVtag(translate(layer2Info06.getSrcVtag()));
         }
-        if (layer2Info06.getSrcVtag() != null) {
-            layer2Info05.setDestVtag(translate(layer2Info06.getSrcVtag()));
+        if (layer2Info06.getDestVtag() != null) {
+            layer2Info05.setDestVtag(translate(layer2Info06.getDestVtag()));
         }
         return layer2Info05;
     }
