@@ -63,17 +63,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         
         ResDetails res = action.getRequest().getSetupReq().getReservation();
         
-        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-        boolean sameDevice = srcDeviceId.equals(dstDeviceId);
-        
-        if (sameDevice) {
-            // TODO: not null!
-            throw new PSSException("Same device crossconnects not supported with VPLS");
 
-        } else {
-            return this.onSetup(action, deviceId);
-        }
+        return this.onSetup(action, deviceId);
     }
     
     
@@ -82,16 +73,9 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         
         ResDetails res = action.getRequest().getTeardownReq().getReservation();
         
-        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-        boolean sameDevice = srcDeviceId.equals(dstDeviceId);
-        
-        if (sameDevice) {
-            // TODO: not null!
-            throw new PSSException("Same device crossconnects not supported with VPLS");
-        } else {
-            return this.onTeardown(action, deviceId);
-        }
+
+
+        return this.onTeardown(action, deviceId);
     }
     
     private String getLSPStatus(PSSAction action, String deviceId)  throws PSSException {
@@ -106,17 +90,14 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         ResDetails res = action.getRequest().getSetupReq().getReservation();
         String gri = res.getGlobalReservationId();
-        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
 
-        String[] deviceIds =  { srcDeviceId, dstDeviceId };
 
         /*
-        for both devices:
-        - check if identifiers exist
-        - generate identifiers as needed
-        - generate setup and teardown config (unless it has been already generated)
-         */
+       for both devices:
+       - check if identifiers exist
+       - generate identifiers as needed
+       - generate setup and teardown config (unless it has been already generated)
+        */
 
         VPLS_DomainIdentifiers gids = VPLS_DomainIdentifiers.reserve(gri);
 
@@ -172,6 +153,12 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
 
     private MX_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers ids) throws PSSException  {
+
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+
+        boolean sameDevice = srcDeviceId.equals(dstDeviceId);
+
         String policy = "";
         HashMap community = new HashMap();
         HashMap filters = new HashMap();
@@ -181,11 +168,10 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         ArrayList paths = new ArrayList();
         ArrayList lsps = new ArrayList();
 
-        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
-        String ifceName;
-        String ifceDescription;
-        String ifceVlan;
+
+
+
 
         String policyName;
         String communityName;
@@ -203,39 +189,19 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         String policingFilterName;
 
         
-        EoMPLSClassFactory ecf = EoMPLSClassFactory.getInstance();
         /* *********************** */
         /* BEGIN POPULATING VALUES */
         /* *********************** */
-        
 
-        ReservedConstraintType rc = res.getReservedConstraint();
-        Integer bw = rc.getBandwidth();
-        PathInfo pi = rc.getPathInfo();
-       
-        List<CtrlPlaneHopContent> localHops;
-        try {
-            localHops = PathTools.getLocalHops(pi.getPath(), PathTools.getLocalDomainId());
-        } catch (OSCARSServiceException e) {
-            throw new PSSException(e);
-        }
-        
-        CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
-        CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
-                
-        String srcLinkId = ingressLink.getId();
-        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
-        String dstLinkId = egressLink.getId();
-        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
-        
-        EoMPLSIfceAddressResolver iar = ecf.getEomplsIfceAddressResolver();
-        EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
         
         SDNNameGenerator ng = SDNNameGenerator.getInstance();
         String gri = res.getGlobalReservationId();
-        
 
-        
+        ReservedConstraintType rc = res.getReservedConstraint();
+
+        Integer bw = rc.getBandwidth();
+        PathInfo pi = rc.getPathInfo();
+
         // bandwidth in Mbps 
         lspBandwidth = 1000000L*bw;
         
@@ -244,28 +210,14 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         String lspTargetDeviceId;
         boolean reverse = false;
-        log.debug("source edge device id is: "+srcDeviceId+", config to generate is for "+deviceId);
-        if (srcDeviceId.equals(deviceId)) {
-            // forward direction
-            log.debug("forward");
-            ifceName = srcRes.getPortId();
-            ifceVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
-            lspTargetDeviceId = dstRes.getNodeId();
-        } else {
-            // reverse direction
-            log.debug("reverse");
-            ifceName = dstRes.getPortId();
-            ifceVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
-            lspTargetDeviceId = srcRes.getNodeId();
-            reverse = true;
-        }
 
-        lspNeighbor         = dar.getDeviceAddress(lspTargetDeviceId);
+        EoMPLSClassFactory ecf = EoMPLSClassFactory.getInstance();
 
-        LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
+        EoMPLSIfceAddressResolver iar = ecf.getEomplsIfceAddressResolver();
+        EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
+
 
     
-        ifceDescription = ng.getInterfaceDescription(gri, lspBandwidth);
 
         policingFilterName      = ng.getFilterName(gri, "policing");
         statsFilterName         = ng.getFilterName(gri, "stats");
@@ -316,35 +268,87 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         vpls.put("id", vplsId);
 
 
-        Map ifce = new HashMap();
-        ifce.put("name", ifceName);
-        ifce.put("vlan", ifceVlan);
-        ifce.put("description", ifceDescription);
-        ifces.add(ifce);
 
-        Map path = new HashMap();
-        path.put("name", pathName);
-        ArrayList hops = lspBean.getPathAddresses();
-        path.put("hops", hops);
-        paths.add(path);
+        HashMap<String, ArrayList<MXIfceInfo>> allIfceInfos = this.getDeviceIfceInfo(res, lspBandwidth);
+        if (allIfceInfos == null) {
+            throw new PSSException("no ifce infos found!");
+        }
 
+        ArrayList<MXIfceInfo> deviceIfceInfos = allIfceInfos.get(deviceId);
+        if (deviceIfceInfos == null) {
+            throw new PSSException("no ifce infos found for: "+deviceId);
+        }
 
-        Map lsp = new HashMap();
-        lsp.put("name", lspName);
-        lsp.put("from", lspBean.getFrom());
-        lsp.put("to", lspBean.getTo());
-        lsp.put("neighbor", lspNeighbor);
-        lsp.put("bandwidth", lspBandwidth);
-        lsp.put("path", pathName);
-
-        lsps.add(lsp);
+        for (MXIfceInfo ifceInfo : deviceIfceInfos) {
+            Map ifce = new HashMap();
+            ifce.put("name", ifceInfo.getName());
+            ifce.put("vlan", ifceInfo.getVlan());
+            ifce.put("description", ifceInfo.getDescription());
+            ifces.add(ifce);
+        }
 
         MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
+
+        // only if different devices
+        if (!sameDevice) {
+            log.debug("different devices, setting up LSPs and paths");
+            List<CtrlPlaneHopContent> localHops;
+            try {
+                localHops = PathTools.getLocalHops(pi.getPath(), PathTools.getLocalDomainId());
+            } catch (OSCARSServiceException e) {
+                throw new PSSException(e);
+            }
+
+            CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
+            CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
+
+            String srcLinkId = ingressLink.getId();
+            URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
+            String dstLinkId = egressLink.getId();
+            URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
+
+            if (deviceId.equals(srcDeviceId)) {
+                lspTargetDeviceId = srcRes.getNodeId();
+
+            } else {
+                lspTargetDeviceId = dstRes.getNodeId();
+
+            }
+            lspNeighbor         = dar.getDeviceAddress(lspTargetDeviceId);
+            LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
+
+            Map path = new HashMap();
+            Map lsp = new HashMap();
+
+            path.put("name", pathName);
+            ArrayList hops = lspBean.getPathAddresses();
+            path.put("hops", hops);
+            paths.add(path);
+
+
+            lsp.put("name", lspName);
+            lsp.put("from", lspBean.getFrom());
+            lsp.put("to", lspBean.getTo());
+            lsp.put("neighbor", lspNeighbor);
+            lsp.put("bandwidth", lspBandwidth);
+            lsp.put("path", pathName);
+
+            lsps.add(lsp);
+
+            params.setLsps(lsps);
+            params.setPaths(paths);
+        } else {
+            params.setLsps(null);
+            params.setPaths(null);
+        }
+
+
+
+
+
         params.setCommunity(community);
         params.setFilters(filters);
         params.setIfces(ifces);
-        params.setLsps(lsps);
-        params.setPaths(paths);
         params.setPolicer(policer);
         params.setPolicy(policy);
         params.setVpls(vpls);
@@ -353,6 +357,13 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
     }
 
     private MX_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers ids) throws PSSException  {
+
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+
+        boolean sameDevice = srcDeviceId.equals(dstDeviceId);
+
+
         String policy = "";
         HashMap community = new HashMap();
         HashMap filters = new HashMap();
@@ -362,8 +373,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         ArrayList paths = new ArrayList();
         ArrayList lsps = new ArrayList();
 
-
-        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
 
         String ifceName;
         String ifceVlan;
@@ -383,6 +392,9 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
+        Integer bw = rc.getBandwidth();
+        // bandwidth in Mbps
+        Long lspBandwidth = 1000000L*bw;
 
         List<CtrlPlaneHopContent> localHops;
         try {
@@ -406,6 +418,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         /* *********************** */
         /* BEGIN POPULATING VALUES */
         /* *********************** */
+
 
 
         String lspTargetDeviceId;
@@ -455,26 +468,36 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         policer.put("name", policerName);
         vpls.put("name", vplsName);
 
+        HashMap<String, ArrayList<MXIfceInfo>> allIfceInfos = this.getDeviceIfceInfo(res, lspBandwidth);
+        ArrayList<MXIfceInfo> deviceIfceInfos = allIfceInfos.get(deviceId);
+        for (MXIfceInfo ifceInfo : deviceIfceInfos) {
+            Map ifce = new HashMap();
+            ifce.put("name", ifceInfo.getName());
+            ifce.put("vlan", ifceInfo.getVlan());
+            ifces.add(ifce);
+        }
 
-        Map ifce = new HashMap();
-        ifce.put("name", ifceName);
-        ifce.put("vlan", ifceVlan);
-        ifces.add(ifce);
-
-        Map path = new HashMap();
-        path.put("name", pathName);
-        paths.add(path);
-
-        Map lsp = new HashMap();
-        lsp.put("name", lspName);
-        lsps.add(lsp);
 
         MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
+        if (!sameDevice) {
+            Map path = new HashMap();
+            path.put("name", pathName);
+            paths.add(path);
+
+            Map lsp = new HashMap();
+            lsp.put("name", lspName);
+            lsps.add(lsp);
+
+            params.setLsps(lsps);
+            params.setPaths(paths);
+        } else {
+            params.setLsps(null);
+            params.setPaths(null);
+        }
+
         params.setCommunity(community);
         params.setFilters(filters);
         params.setIfces(ifces);
-        params.setLsps(lsps);
-        params.setPaths(paths);
         params.setPolicer(policer);
         params.setPolicy(policy);
         params.setVpls(vpls);
@@ -482,7 +505,51 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
 
     }
+    private HashMap<String, ArrayList<MXIfceInfo>> getDeviceIfceInfo(ResDetails res, Long lspBandwidth) throws PSSException {
+        String gri = res.getGlobalReservationId();
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
 
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+
+        ReservedConstraintType rc = res.getReservedConstraint();
+
+        PathInfo pi = rc.getPathInfo();
+
+        List<CtrlPlaneHopContent> localHops;
+        try {
+            localHops = PathTools.getLocalHops(pi.getPath(), PathTools.getLocalDomainId());
+        } catch (OSCARSServiceException e) {
+            throw new PSSException(e);
+        }
+
+        CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
+        CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
+
+        String srcLinkId = ingressLink.getId();
+        URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
+        String dstLinkId = egressLink.getId();
+        URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
+
+
+        HashMap<String, ArrayList<MXIfceInfo>> deviceIfceInfo = new HashMap<String, ArrayList<MXIfceInfo>>();
+        deviceIfceInfo.put(srcDeviceId, new ArrayList<MXIfceInfo>());
+        deviceIfceInfo.put(dstDeviceId, new ArrayList<MXIfceInfo>());
+        MXIfceInfo aIfceInfo = new MXIfceInfo();
+        aIfceInfo.setDescription(ng.getInterfaceDescription(gri, lspBandwidth));
+        aIfceInfo.setName(srcRes.getPortId());
+        aIfceInfo.setVlan(ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange());
+        log.debug("setting "+srcDeviceId+" : "+aIfceInfo.getName());
+        deviceIfceInfo.get(srcDeviceId).add(aIfceInfo);
+
+        MXIfceInfo zIfceInfo = new MXIfceInfo();
+        zIfceInfo.setDescription(ng.getInterfaceDescription(gri, lspBandwidth));
+        zIfceInfo.setName(dstRes.getPortId());
+        zIfceInfo.setVlan(egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange());
+        log.debug("setting "+dstDeviceId+" : "+zIfceInfo.getName());
+        deviceIfceInfo.get(dstDeviceId).add(zIfceInfo);
+        return deviceIfceInfo;
+    }
 
 
     public String generateConfig(MX_VPLS_TemplateParams params, ActionType phase)  throws PSSException {

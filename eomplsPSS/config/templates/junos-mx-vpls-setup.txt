@@ -14,13 +14,10 @@ top
 </#list>
 
 
-# routing
-edit routing-options
-set forwarding-table export [ ${policy} ]
-set forwarding-table indirect-next-hop
-top
 
 
+<#if lsps??>
+# not for same-device
 # lsps
 <#list lsps as lsp>
 edit protocols mpls label-switched-path ${lsp.name}
@@ -33,7 +30,20 @@ set primary ${lsp.path}
 set policing filter ${filters.policing}
 top
 </#list>
+</#if>
 
+
+<#if lsps??>
+# not for same-device
+# routing
+edit routing-options
+set forwarding-table export [ ${policy} ]
+top
+</#if>
+
+
+<#if paths??>
+# not for same-device
 # paths
 <#list paths as path>
 edit protocols mpls path ${path.name}
@@ -42,8 +52,11 @@ set ${hop} strict
 </#list>
 top
 </#list>
+</#if>
 
 
+<#if lsps??>
+# not for same-device
 # policy
 edit policy-options policy-statement ${policy} term oscars
 set from community ${community.name}
@@ -52,6 +65,7 @@ set then accept
 top
 set policy-options community ${community.name} members ${community.members}
 top
+</#if>
 
 # firewall
 edit firewall family vpls filter ${filters.stats}
@@ -83,13 +97,16 @@ set vpls-id ${vpls.id}
 set mtu 9100
 top
 
+<#if lsps??>
+# not for same-device
 <#list lsps as lsp>
 edit routing-instances ${vpls.name} protocols vpls neighbor ${lsp.neighbor}
 set psn-tunnel-endpoint ${lsp.to}
 set community ${community.name}
 set encapsulation-type ethernet-vlan
 top
-
 </#list>
+</#if>
+
 
 commit and-quit

@@ -19,7 +19,7 @@ configure qos sap-ingress ${ingqos.id} default-priority high
 exit all
 
 
-
+<#if paths??>
 # mpls path
 <#list paths as path>
 configure router mpls path "${path.name}" shutdown
@@ -28,9 +28,12 @@ configure router mpls path "${path.name}" hop ${hop.order} ${hop.address} strict
 </#list>
 configure router mpls path "${path.name}" no shutdown
 </#list>
+</#if>
 
 
-# mpls LSP 
+
+<#if lsps??>
+# mpls LSP
 <#list lsps as lsp>
 configure router mpls lsp "${lsp.name}" shutdown
 configure router mpls lsp "${lsp.name}" from ${lsp.from} 
@@ -38,7 +41,9 @@ configure router mpls lsp "${lsp.name}" to ${lsp.to}
 configure router mpls lsp "${lsp.name}" primary "${lsp.path}" priority 4 4
 configure router mpls lsp "${lsp.name}" no shutdown
 </#list>
+</#if>
 
+<#if sdps??>
 <#list sdps as sdp>
 # service distribution point - forwards packets to the MPLS tunnel
 configure service sdp ${sdp.id} mpls create
@@ -51,6 +56,7 @@ configure service sdp ${sdp.id} keep-alive shutdown
 configure service sdp ${sdp.id} no shutdown
 exit all
 </#list>
+</#if>
 
 
 # vpls service
@@ -68,10 +74,13 @@ exit all
 configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} create
 exit all
 configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} shutdown
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} description "${vpls.description}"
 configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
 configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} no shutdown
 </#list>
 
+
+<#if sdps??>
 # vpls sdps
 <#list sdps as sdp>
 configure service vpls ${vpls.id} mesh-sdp ${sdp.id}:${vpls.id} vc-type vlan create
@@ -79,6 +88,7 @@ exit all
 configure service vpls ${vpls.id} mesh-sdp ${sdp.id}:${vpls.id} no shutdown
 exit all
 </#list>
+</#if>
 
 configure service vpls ${vpls.id} no shutdown
 

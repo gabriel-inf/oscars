@@ -143,10 +143,10 @@ public class RequestFactory {
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
         srcHop.put("urn", srcEdge);
-        srcHop.put("vlan", "999");
+        srcHop.put("vlan", "1233");
         HashMap<String, String> dstHop = new HashMap<String, String>();
         dstHop.put("urn", dstEdge);
-        dstHop.put("vlan", "999");
+        dstHop.put("vlan", "1233");
         hops.add(srcHop);
         hops.add(dstHop);
         String description = "same device";

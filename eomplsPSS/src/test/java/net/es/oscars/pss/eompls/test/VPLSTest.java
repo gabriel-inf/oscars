@@ -307,7 +307,7 @@ public class VPLSTest {
     public void testWithResDetails() throws PSSException {
         ResDetails rd = RequestFactory.getALU_ALU("foo.net-771");
 
-        SR_VPLS_ConfigGen cg = new SR_VPLS_ConfigGen();
+        SR_VPLS_ConfigGen alucg = new SR_VPLS_ConfigGen();
 
 
         PSSAction action = new PSSAction();
@@ -327,13 +327,13 @@ public class VPLSTest {
         String srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(rd, true);
         log.debug("setting up src for ALU-ALU");
-        String srcSetup     = cg.getSetup(action, srcDeviceId);
+        String srcSetup     = alucg.getSetup(action, srcDeviceId);
         log.debug("done setting up src for ALU-ALU");
         System.out.println(srcSetup);
 
 
         log.debug("starting teardown for ALU-ALU");
-        String srcTeardown  = cg.getTeardown(action, srcDeviceId);
+        String srcTeardown  = alucg.getTeardown(action, srcDeviceId);
         System.out.println(srcTeardown);
         log.debug("done with teardown for ALU-ALU");
 
@@ -344,16 +344,50 @@ public class VPLSTest {
         srq.setReservation(rd);
         trq.setReservation(rd);
 
-        srcSetup    = cg.getSetup(action, srcDeviceId);
+        log.debug("starting ALU setup for ALU-MX");
+        srcSetup    = alucg.getSetup(action, srcDeviceId);
         System.out.println(srcSetup);
-        srcTeardown = cg.getTeardown(action, srcDeviceId);
+        log.debug("starting ALU teardown for ALU-MX");
+        srcTeardown = alucg.getTeardown(action, srcDeviceId);
         System.out.println(srcTeardown);
 
-        MX_VPLS_ConfigGen mcg = new MX_VPLS_ConfigGen();
-        String dstSetup     = mcg.getSetup(action, dstDeviceId);
+        MX_VPLS_ConfigGen mxcg = new MX_VPLS_ConfigGen();
+        log.debug("starting MX setup for ALU-MX");
+        String dstSetup     = mxcg.getSetup(action, dstDeviceId);
         System.out.println(dstSetup);
-        String dstTeardown  = mcg.getTeardown(action, dstDeviceId);
+        log.debug("starting MX teardown for ALU-MX");
+        String dstTeardown  = mxcg.getTeardown(action, dstDeviceId);
         System.out.println(dstTeardown);
+
+
+        rd = RequestFactory.getSameMX();
+        srq.setReservation(rd);
+        trq.setReservation(rd);
+        srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+        log.debug("starting setup same MX");
+        String setup     = mxcg.getSetup(action, srcDeviceId);
+        System.out.println(setup);
+        log.debug("done setup same MX");
+        log.debug("starting teardown same MX");
+        String teardown    = mxcg.getTeardown(action, srcDeviceId);
+        System.out.println(teardown);
+        log.debug("done teardown same MX");
+
+
+        rd = RequestFactory.getSameALU();
+        srq.setReservation(rd);
+        trq.setReservation(rd);
+        srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+        log.debug("starting setup same ALU");
+        setup     = alucg.getSetup(action, srcDeviceId);
+        System.out.println(setup);
+        log.debug("done setup same ALU");
+        log.debug("starting teardown same ALU");
+        teardown    = alucg.getTeardown(action, srcDeviceId);
+        System.out.println(teardown);
+        log.debug("done teardown same ALU");
+
+
     }
 
 
