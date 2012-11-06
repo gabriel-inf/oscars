@@ -61,11 +61,11 @@ public class RequestFactory {
         hop2.put("urn", hop2Edge);
         hop2.put("vlan", "999");
         HashMap<String, String> hop3 = new HashMap<String, String>();
-        hop1.put("urn", hop3Edge);
-        hop1.put("vlan", "999");
+        hop3.put("urn", hop3Edge);
+        hop3.put("vlan", "999");
         HashMap<String, String> hop4 = new HashMap<String, String>();
-        hop1.put("urn", hop4Edge);
-        hop1.put("vlan", "999");
+        hop4.put("urn", hop4Edge);
+        hop4.put("vlan", "999");
         
         hops.add(srcHop);
         hops.add(hop1);

@@ -208,8 +208,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         policerBandwidthLimit = lspBandwidth;
         policerBurstSizeLimit = lspBandwidth / 10;
 
-        String lspTargetDeviceId;
-        boolean reverse = false;
 
         EoMPLSClassFactory ecf = EoMPLSClassFactory.getInstance();
 
@@ -291,6 +289,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         // only if different devices
         if (!sameDevice) {
+            String lspTargetDeviceId;
+            boolean reverse = false;
             log.debug("different devices, setting up LSPs and paths");
             List<CtrlPlaneHopContent> localHops;
             try {
@@ -303,6 +303,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
             if (!deviceId.equals(srcDeviceId)) {
                 egressLink = ingressLink;
+                reverse = true;
             }
 
 
