@@ -81,13 +81,21 @@
             <version>6.1.16</version>
         </dependency>
 
+        <!-- quartz -->
+        <dependency>
+            <groupId>org.opensymphony.quartz</groupId>
+            <artifactId>quartz</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
+        <!-- specific WSS4j version -->
         <dependency>
             <groupId>org.apache.ws.security</groupId>
             <artifactId>wss4j</artifactId>
             <version>1.5.8</version>
+        </dependency>
 
         <!-- CXF -->
-        </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-soap</artifactId>
