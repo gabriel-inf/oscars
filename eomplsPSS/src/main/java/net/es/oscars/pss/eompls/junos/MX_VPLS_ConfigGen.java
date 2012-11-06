@@ -301,7 +301,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
             CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
             CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
-            if (deviceId.equals(srcDeviceId)) {
+            if (!deviceId.equals(srcDeviceId)) {
                 egressLink = ingressLink;
             }
 
