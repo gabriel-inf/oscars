@@ -301,19 +301,15 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
             CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();
             CtrlPlaneLinkContent egressLink = localHops.get(localHops.size()-1).getLink();
+            if (deviceId.equals(srcDeviceId)) {
+                egressLink = ingressLink;
+            }
 
-            String srcLinkId = ingressLink.getId();
-            URNParserResult srcRes = URNParser.parseTopoIdent(srcLinkId);
+
             String dstLinkId = egressLink.getId();
             URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
+            lspTargetDeviceId = dstRes.getNodeId();
 
-            if (deviceId.equals(srcDeviceId)) {
-                lspTargetDeviceId = srcRes.getNodeId();
-
-            } else {
-                lspTargetDeviceId = dstRes.getNodeId();
-
-            }
             lspNeighbor         = dar.getDeviceAddress(lspTargetDeviceId);
             LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
 
