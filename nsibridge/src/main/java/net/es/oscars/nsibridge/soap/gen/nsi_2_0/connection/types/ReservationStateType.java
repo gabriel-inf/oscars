@@ -49,7 +49,7 @@ public class ReservationStateType {
 
     @XmlElement(required = true)
     protected ReservationStateEnumType state;
-    @XmlAttribute(name = "version")
+    @XmlAttribute
     protected Integer version;
 
     /**

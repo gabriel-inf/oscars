@@ -4,47 +4,52 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
-import java.util.Iterator;
+
+
+import net.es.oscars.nsibridge.beans.config.JettyConfig;
+import net.es.oscars.nsibridge.beans.config.JettyServiceConfig;
+
+import net.es.oscars.utils.config.ConfigHelper;
+import org.apache.cxf.configuration.jsse.TLSServerParameters;
+import org.apache.cxf.configuration.security.ClientAuthentication;
+import org.apache.cxf.configuration.security.FiltersType;
+import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
+import org.apache.cxf.service.invoker.BeanInvoker;
+import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngineFactory;
+import org.apache.log4j.Logger;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.cxf.configuration.jsse.TLSServerParameters;
-import org.apache.cxf.configuration.security.ClientAuthentication;
-import org.apache.cxf.configuration.security.FiltersType;
-import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
-import org.apache.cxf.service.invoker.BeanInvoker;
-import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngineFactory;
-import org.apache.log4j.Logger;
-
 public class JettyContainer {
-    private String hostname;
-    private Integer port;
-    private HashMap<String, Object> servicesToExpose = new HashMap<String, Object>();
-    private boolean useSSL = false;
-    private boolean useBasicAuth = false;
-    private HashMap<String, String> userPasswords = new HashMap<String, String>();
-    private String sslKeystorePath = "";
-    private String sslKeystorePass = "";
-    private String sslKeyPass = "";
-    private String sslTruststorePath = "";
-    private String sslTruststorePass = "";
+    private JettyContainer() {} ;
+    private static JettyContainer instance;
+    public static JettyContainer getInstance() {
+        if (instance == null) instance = new JettyContainer();
+        return instance;
+    }
+
+
+    private JettyConfig config;
+
     private Logger log = Logger.getLogger(JettyContainer.class);
+
 
 
     public void startServer() {
 
+        String hostname = config.getHttp().getHostname();
+        Integer port = config.getHttp().getPort();
 
-        Iterator<String> servicePathIt = servicesToExpose.keySet().iterator();
+        boolean useSSL = config.getSsl().isUseSSL();
+        boolean useBasicAuth = config.getAuth().isUseBasicAuth();
+
 
         String basePath = "http://"+hostname+":"+port+"/";
         if (useSSL) {
@@ -52,16 +57,24 @@ public class JettyContainer {
         }
         log.info("Starting jetty at: "+basePath);
 
-        while (servicePathIt.hasNext()) {
+        JettyServiceConfig[] serviceConfigs = config.getServices();
 
-            String servicePath = servicePathIt.next();
-            Object implementor = servicesToExpose.get(servicePath);
-
-
+        for (JettyServiceConfig serviceConfig: serviceConfigs) {
             JaxWsServerFactoryBean sf = new JaxWsServerFactoryBean();
-            sf.setAddress(basePath+servicePath);
-            sf.setServiceClass(implementor.getClass());
-            sf.getServiceFactory().setInvoker(new BeanInvoker(implementor));
+
+            String servicePath = serviceConfig.getPath();
+            String implementor = serviceConfig.getImplementor();
+            try {
+                Object implementorObj = Class.forName(implementor).getConstructor((Class[]) null).newInstance((Object[]) null);
+                sf.setAddress(basePath+servicePath);
+                sf.setServiceClass(implementorObj.getClass());
+                sf.getServiceFactory().setInvoker(new BeanInvoker(implementorObj));
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Problem loading class: "+implementor);
+                System.exit(1);
+            }
+
 
             if (useSSL) {
                 log.info("Using SSL");
@@ -70,19 +83,45 @@ public class JettyContainer {
 
             org.apache.cxf.endpoint.Server server = sf.create();
             if (useBasicAuth) {
-                log.info("Using HTTP Basic Auth");
+                String passwdFile = config.getAuth().getPasswdFileName();
+                log.info("Using HTTP Basic Auth with passwords from "+passwdFile);
                 BasicAuthAuthorizationInterceptor icpt = new BasicAuthAuthorizationInterceptor();
-                icpt.setUsers(userPasswords);
+                HashMap <String, String> passwds = new HashMap <String, String>();
+                passwds = ConfigHelper.getConfiguration(passwdFile, passwds.getClass());
+                icpt.setUsers(passwds);
                 server.getEndpoint().getInInterceptors().add(icpt);
-           }
+            }
+
+
+
+            for (String inInterceptor : serviceConfig.getInInterceptors()) {
+                try {
+                    Interceptor interceptorObj = (Interceptor) Class.forName(inInterceptor).getConstructor((Class[]) null).newInstance((Object[]) null);
+                    server.getEndpoint().getInInterceptors().add(interceptorObj);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.err.println("Problem loading class: "+inInterceptor);
+                    System.exit(1);
+                }
+
+            }
+
             String endpoint = server.getEndpoint().getEndpointInfo().getAddress();
             log.info("Server started at " + endpoint);
         }
+
+
     }
 
 
 
     private JaxWsServerFactoryBean configureSSLOnTheServer(JaxWsServerFactoryBean sf, int port) {
+        String sslKeystorePath      = config.getSsl().getSslKeystorePath();
+        String sslKeystorePass      = config.getSsl().getSslKeystorePass();
+        String sslKeyPass           = config.getSsl().getSslKeyPass();
+        String sslTruststorePath    = config.getSsl().getSslKeystorePath();
+        String sslTruststorePass    = config.getSsl().getSslTruststorePass();
+
         try {
 
             TLSServerParameters tlsParams = new TLSServerParameters();
@@ -144,89 +183,14 @@ public class JettyContainer {
         }
 
         return sf;
+
     }
 
-
-    public String getHostname() {
-        return hostname;
-    }
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-    public Integer getPort() {
-        return port;
-    }
-    public void setPort(Integer port) {
-        this.port = port;
+    public JettyConfig getConfig() {
+        return config;
     }
 
-    public HashMap<String, Object> getServicesToExpose() {
-        return servicesToExpose;
+    public void setConfig(JettyConfig config) {
+        this.config = config;
     }
-    public void setServicesToExpose(HashMap<String, Object> servicesToExpose) {
-        this.servicesToExpose = servicesToExpose;
-    }
-    public void setUseSSL(boolean useSSL) {
-        this.useSSL = useSSL;
-    }
-    public boolean isUseSSL() {
-        return useSSL;
-    }
-
-    public void setUseBasicAuth(boolean useBasicAuth) {
-        this.useBasicAuth = useBasicAuth;
-    }
-
-    public boolean isUseBasicAuth() {
-        return useBasicAuth;
-    }
-    public String getSslKeystorePath() {
-        return sslKeystorePath;
-    }
-    public void setSslKeystorePath(String sslKeystorePath) {
-        this.sslKeystorePath = sslKeystorePath;
-    }
-    public String getSslKeystorePass() {
-        return sslKeystorePass;
-    }
-    public void setSslKeystorePass(String sslKeystorePass) {
-        this.sslKeystorePass = sslKeystorePass;
-    }
-    public String getSslTruststorePath() {
-        return sslTruststorePath;
-    }
-    public void setSslTruststorePath(String sslTruststorePath) {
-        this.sslTruststorePath = sslTruststorePath;
-    }
-    public String getSslTruststorePass() {
-        return sslTruststorePass;
-    }
-    public void setSslTruststorePass(String sslTruststorePass) {
-        this.sslTruststorePass = sslTruststorePass;
-    }
-
-
-
-    public void setUserPasswords(HashMap<String, String> userPasswords) {
-        this.userPasswords = userPasswords;
-    }
-
-
-
-    public HashMap<String, String> getUserPasswords() {
-        return userPasswords;
-    }
-
-
-
-    public void setSslKeyPass(String sslKeypass) {
-        this.sslKeyPass = sslKeypass;
-    }
-
-
-
-    public String getSslKeyPass() {
-        return sslKeyPass;
-    }
-
 }

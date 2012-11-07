@@ -70,7 +70,7 @@ public class ReservationConfirmCriteriaType {
     protected TypeValuePairListType serviceAttributes;
     @XmlElement(required = true)
     protected PathType path;
-    @XmlAttribute(name = "version", required = true)
+    @XmlAttribute(required = true)
     protected int version;
 
     /**

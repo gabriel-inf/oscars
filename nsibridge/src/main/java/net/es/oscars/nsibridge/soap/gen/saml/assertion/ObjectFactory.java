@@ -37,8 +37,8 @@ public class ObjectFactory {
     private final static QName _Issuer_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "Issuer");
     private final static QName _NameID_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "NameID");
     private final static QName _AttributeStatement_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "AttributeStatement");
-    private final static QName _AuthnContextDecl_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "AuthnContextDecl");
     private final static QName _Attribute_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "Attribute");
+    private final static QName _AuthnContextDecl_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "AuthnContextDecl");
     private final static QName _Subject_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "Subject");
     private final static QName _EncryptedAssertion_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "EncryptedAssertion");
     private final static QName _Advice_QNAME = new QName("urn:oasis:names:tc:SAML:2.0:assertion", "Advice");
@@ -68,91 +68,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AuthzDecisionStatementType }
-     * 
-     */
-    public AuthzDecisionStatementType createAuthzDecisionStatementType() {
-        return new AuthzDecisionStatementType();
-    }
-
-    /**
-     * Create an instance of {@link AssertionType }
-     * 
-     */
-    public AssertionType createAssertionType() {
-        return new AssertionType();
-    }
-
-    /**
      * Create an instance of {@link AuthnContextType }
      * 
      */
     public AuthnContextType createAuthnContextType() {
         return new AuthnContextType();
-    }
-
-    /**
-     * Create an instance of {@link ConditionsType }
-     * 
-     */
-    public ConditionsType createConditionsType() {
-        return new ConditionsType();
-    }
-
-    /**
-     * Create an instance of {@link NameIDType }
-     * 
-     */
-    public NameIDType createNameIDType() {
-        return new NameIDType();
-    }
-
-    /**
-     * Create an instance of {@link EvidenceType }
-     * 
-     */
-    public EvidenceType createEvidenceType() {
-        return new EvidenceType();
-    }
-
-    /**
-     * Create an instance of {@link SubjectType }
-     * 
-     */
-    public SubjectType createSubjectType() {
-        return new SubjectType();
-    }
-
-    /**
-     * Create an instance of {@link SubjectConfirmationType }
-     * 
-     */
-    public SubjectConfirmationType createSubjectConfirmationType() {
-        return new SubjectConfirmationType();
-    }
-
-    /**
-     * Create an instance of {@link KeyInfoConfirmationDataType }
-     * 
-     */
-    public KeyInfoConfirmationDataType createKeyInfoConfirmationDataType() {
-        return new KeyInfoConfirmationDataType();
-    }
-
-    /**
-     * Create an instance of {@link AudienceRestrictionType }
-     * 
-     */
-    public AudienceRestrictionType createAudienceRestrictionType() {
-        return new AudienceRestrictionType();
-    }
-
-    /**
-     * Create an instance of {@link SubjectConfirmationDataType }
-     * 
-     */
-    public SubjectConfirmationDataType createSubjectConfirmationDataType() {
-        return new SubjectConfirmationDataType();
     }
 
     /**
@@ -164,27 +84,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SubjectLocalityType }
+     * Create an instance of {@link AttributeType }
      * 
      */
-    public SubjectLocalityType createSubjectLocalityType() {
-        return new SubjectLocalityType();
+    public AttributeType createAttributeType() {
+        return new AttributeType();
     }
 
     /**
-     * Create an instance of {@link ProxyRestrictionType }
+     * Create an instance of {@link AudienceRestrictionType }
      * 
      */
-    public ProxyRestrictionType createProxyRestrictionType() {
-        return new ProxyRestrictionType();
-    }
-
-    /**
-     * Create an instance of {@link EncryptedElementType }
-     * 
-     */
-    public EncryptedElementType createEncryptedElementType() {
-        return new EncryptedElementType();
+    public AudienceRestrictionType createAudienceRestrictionType() {
+        return new AudienceRestrictionType();
     }
 
     /**
@@ -196,14 +108,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AuthnStatementType }
-     * 
-     */
-    public AuthnStatementType createAuthnStatementType() {
-        return new AuthnStatementType();
-    }
-
-    /**
      * Create an instance of {@link OneTimeUseType }
      * 
      */
@@ -212,11 +116,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link AttributeType }
+     * Create an instance of {@link ProxyRestrictionType }
      * 
      */
-    public AttributeType createAttributeType() {
-        return new AttributeType();
+    public ProxyRestrictionType createProxyRestrictionType() {
+        return new ProxyRestrictionType();
     }
 
     /**
@@ -225,6 +129,102 @@ public class ObjectFactory {
      */
     public AttributeStatementType createAttributeStatementType() {
         return new AttributeStatementType();
+    }
+
+    /**
+     * Create an instance of {@link SubjectConfirmationType }
+     * 
+     */
+    public SubjectConfirmationType createSubjectConfirmationType() {
+        return new SubjectConfirmationType();
+    }
+
+    /**
+     * Create an instance of {@link NameIDType }
+     * 
+     */
+    public NameIDType createNameIDType() {
+        return new NameIDType();
+    }
+
+    /**
+     * Create an instance of {@link AssertionType }
+     * 
+     */
+    public AssertionType createAssertionType() {
+        return new AssertionType();
+    }
+
+    /**
+     * Create an instance of {@link AuthnStatementType }
+     * 
+     */
+    public AuthnStatementType createAuthnStatementType() {
+        return new AuthnStatementType();
+    }
+
+    /**
+     * Create an instance of {@link SubjectConfirmationDataType }
+     * 
+     */
+    public SubjectConfirmationDataType createSubjectConfirmationDataType() {
+        return new SubjectConfirmationDataType();
+    }
+
+    /**
+     * Create an instance of {@link KeyInfoConfirmationDataType }
+     * 
+     */
+    public KeyInfoConfirmationDataType createKeyInfoConfirmationDataType() {
+        return new KeyInfoConfirmationDataType();
+    }
+
+    /**
+     * Create an instance of {@link EncryptedElementType }
+     * 
+     */
+    public EncryptedElementType createEncryptedElementType() {
+        return new EncryptedElementType();
+    }
+
+    /**
+     * Create an instance of {@link SubjectType }
+     * 
+     */
+    public SubjectType createSubjectType() {
+        return new SubjectType();
+    }
+
+    /**
+     * Create an instance of {@link AuthzDecisionStatementType }
+     * 
+     */
+    public AuthzDecisionStatementType createAuthzDecisionStatementType() {
+        return new AuthzDecisionStatementType();
+    }
+
+    /**
+     * Create an instance of {@link EvidenceType }
+     * 
+     */
+    public EvidenceType createEvidenceType() {
+        return new EvidenceType();
+    }
+
+    /**
+     * Create an instance of {@link SubjectLocalityType }
+     * 
+     */
+    public SubjectLocalityType createSubjectLocalityType() {
+        return new SubjectLocalityType();
+    }
+
+    /**
+     * Create an instance of {@link ConditionsType }
+     * 
+     */
+    public ConditionsType createConditionsType() {
+        return new ConditionsType();
     }
 
     /**
@@ -327,21 +327,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "urn:oasis:names:tc:SAML:2.0:assertion", name = "AuthnContextDecl")
-    public JAXBElement<Object> createAuthnContextDecl(Object value) {
-        return new JAXBElement<Object>(_AuthnContextDecl_QNAME, Object.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AttributeType }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "urn:oasis:names:tc:SAML:2.0:assertion", name = "Attribute")
     public JAXBElement<AttributeType> createAttribute(AttributeType value) {
         return new JAXBElement<AttributeType>(_Attribute_QNAME, AttributeType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:oasis:names:tc:SAML:2.0:assertion", name = "AuthnContextDecl")
+    public JAXBElement<Object> createAuthnContextDecl(Object value) {
+        return new JAXBElement<Object>(_AuthnContextDecl_QNAME, Object.class, null, value);
     }
 
     /**

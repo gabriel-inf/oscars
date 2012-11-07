@@ -1,18 +1,36 @@
 package net.es.oscars.nsibridge.test.state;
 
 
+import net.es.oscars.nsibridge.common.ConfigManager;
+import net.es.oscars.nsibridge.prov.CoordHolder;
+import net.es.oscars.nsibridge.state.LeafProviderModel;
 import net.es.oscars.nsibridge.state.PSM_TransitionHandler;
 import net.es.oscars.nsibridge.state.ProviderSM;
 import net.es.oscars.nsibridge.state.PSM_Event;
 import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.utils.config.ConfigDefaults;
+import net.es.oscars.utils.config.ContextConfig;
+import net.es.oscars.utils.svc.ServiceNames;
 import org.apache.log4j.Logger;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
+
+import java.io.File;
 
 /**
  * @haniotak Date: 2012-08-07
  */
 public class PSMTest {
     private static final Logger LOG = Logger.getLogger(PSMTest.class);
+    @BeforeSuite
+    public void init() throws Exception {
+        ContextConfig.getInstance().setContext(ConfigDefaults.CTX_TESTING);
+        ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
+        CoordHolder.getInstance().setOscarsConfig(ConfigManager.getInstance().getCoordConfig("config/oscars.yaml"));
+
+        CoordHolder.getInstance().initialize();
+    }
+
 
     @Test (expectedExceptions = NullPointerException.class)
     public void noTH() throws Exception {
@@ -23,14 +41,18 @@ public class PSMTest {
     @Test (expectedExceptions = StateException.class)
     public void badAfterInit() throws Exception {
         ProviderSM sm = new ProviderSM("badAfterInit");
-        sm.setTransitionHandler(new PSM_TransitionHandler());
+        PSM_TransitionHandler th = new PSM_TransitionHandler();
+        th.setMdl(new LeafProviderModel());
+        sm.setTransitionHandler(th);
         sm.process(PSM_Event.ACT_FL);
     }
 
     @Test (expectedExceptions = StateException.class)
     public void badAfterRsvRQ() throws Exception {
         ProviderSM sm = new ProviderSM("badAfterRsvRQ");
-        sm.setTransitionHandler(new PSM_TransitionHandler());
+        PSM_TransitionHandler th = new PSM_TransitionHandler();
+        th.setMdl(new LeafProviderModel());
+        sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.ACT_OK);
     }
@@ -38,7 +60,9 @@ public class PSMTest {
     @Test
     public void rsvFail() throws Exception {
         ProviderSM sm = new ProviderSM("rsvFail");
-        sm.setTransitionHandler(new PSM_TransitionHandler());
+        PSM_TransitionHandler th = new PSM_TransitionHandler();
+        th.setMdl(new LeafProviderModel());
+        sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_FL);
     }
@@ -47,7 +71,9 @@ public class PSMTest {
     @Test
     public void simpleWorkflow() throws Exception {
         ProviderSM sm = new ProviderSM("simple");
-        sm.setTransitionHandler(new PSM_TransitionHandler());
+        PSM_TransitionHandler th = new PSM_TransitionHandler();
+        th.setMdl(new LeafProviderModel());
+        sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_OK);
 
@@ -62,7 +88,9 @@ public class PSMTest {
     @Test
     public void provisionedWorkflow() throws Exception {
         ProviderSM sm = new ProviderSM("provision");
-        sm.setTransitionHandler(new PSM_TransitionHandler());
+        PSM_TransitionHandler th = new PSM_TransitionHandler();
+        th.setMdl(new LeafProviderModel());
+        sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_OK);
 
@@ -77,7 +105,9 @@ public class PSMTest {
     @Test
     public void actThenReleaseWorkflow() throws Exception {
         ProviderSM sm = new ProviderSM("actRelease");
-        sm.setTransitionHandler(new PSM_TransitionHandler());
+        PSM_TransitionHandler th = new PSM_TransitionHandler();
+        th.setMdl(new LeafProviderModel());
+        sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_OK);
 

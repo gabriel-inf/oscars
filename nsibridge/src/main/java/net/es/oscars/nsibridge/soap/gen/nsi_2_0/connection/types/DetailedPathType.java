@@ -80,7 +80,7 @@ public class DetailedPathType {
     protected ConnectionStatesType connectionStates;
     protected PathType path;
     protected ChildDetailedListType children;
-    @XmlAttribute(name = "order", required = true)
+    @XmlAttribute(required = true)
     protected int order;
 
     /**

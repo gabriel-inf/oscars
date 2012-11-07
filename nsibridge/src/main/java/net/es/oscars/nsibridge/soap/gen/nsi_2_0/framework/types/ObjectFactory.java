@@ -30,11 +30,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link VariablesType }
+     * Create an instance of {@link TypeValuePairType }
      * 
      */
-    public VariablesType createVariablesType() {
-        return new VariablesType();
+    public TypeValuePairType createTypeValuePairType() {
+        return new TypeValuePairType();
     }
 
     /**
@@ -46,11 +46,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TypeValuePairType }
+     * Create an instance of {@link VariablesType }
      * 
      */
-    public TypeValuePairType createTypeValuePairType() {
-        return new TypeValuePairType();
+    public VariablesType createVariablesType() {
+        return new VariablesType();
     }
 
     /**

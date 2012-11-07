@@ -10,7 +10,6 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.types.TypeValuePairLis
 /**
  * 
  *                 Type definition for a reservation modification request criteria.
- *                 Only those values requiring change are specified in the request.
  *                 
  *                 Elements:
  *                 
@@ -36,7 +35,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.types.TypeValuePairLis
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="schedule" type="{http://schemas.ogf.org/nsi/2012/03/connection/types}ScheduleType" minOccurs="0"/>
- *         &lt;element name="bandwidth" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
+ *         &lt;element name="bandwidth" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="serviceAttributes" type="{http://schemas.ogf.org/nsi/2012/03/framework/types}TypeValuePairListType" minOccurs="0"/>
  *         &lt;element name="path" type="{http://schemas.ogf.org/nsi/2012/03/connection/types}PathType" minOccurs="0"/>
  *       &lt;/sequence>
@@ -57,7 +56,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.types.TypeValuePairLis
 public class ModifyRequestCriteriaType {
 
     protected ScheduleType schedule;
-    protected Integer bandwidth;
+    protected int bandwidth;
     protected TypeValuePairListType serviceAttributes;
     protected PathType path;
 
@@ -88,24 +87,16 @@ public class ModifyRequestCriteriaType {
     /**
      * Gets the value of the bandwidth property.
      * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
      */
-    public Integer getBandwidth() {
+    public int getBandwidth() {
         return bandwidth;
     }
 
     /**
      * Sets the value of the bandwidth property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
      */
-    public void setBandwidth(Integer value) {
+    public void setBandwidth(int value) {
         this.bandwidth = value;
     }
 

@@ -49,7 +49,7 @@ public class ProvisionStateType {
 
     @XmlElement(required = true)
     protected ProvisionStateEnumType state;
-    @XmlAttribute(name = "version")
+    @XmlAttribute
     protected Integer version;
 
     /**

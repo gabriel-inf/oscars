@@ -64,7 +64,7 @@ public class SummaryPathType {
     @XmlElement(required = true)
     protected String connectionId;
     protected PathType path;
-    @XmlAttribute(name = "order", required = true)
+    @XmlAttribute(required = true)
     protected int order;
 
     /**

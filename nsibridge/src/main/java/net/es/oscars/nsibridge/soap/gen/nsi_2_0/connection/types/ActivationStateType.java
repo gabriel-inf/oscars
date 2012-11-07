@@ -50,7 +50,7 @@ public class ActivationStateType {
 
     @XmlElement(required = true)
     protected ActivationStateEnumType state;
-    @XmlAttribute(name = "version")
+    @XmlAttribute
     protected Integer version;
 
     /**

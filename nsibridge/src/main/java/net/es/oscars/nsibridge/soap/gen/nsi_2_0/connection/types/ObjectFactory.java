@@ -27,8 +27,8 @@ public class ObjectFactory {
     private final static QName _ModifyCancelConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "modifyCancelConfirmed");
     private final static QName _Modify_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "modify");
     private final static QName _ReserveFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "reserveFailed");
-    private final static QName _Provision_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "provision");
     private final static QName _ProvisionConfirmed_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "provisionConfirmed");
+    private final static QName _Provision_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "provision");
     private final static QName _Notification_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "notification");
     private final static QName _ModifyCancelFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "modifyCancelFailed");
     private final static QName _ModifyCancel_QNAME = new QName("http://schemas.ogf.org/nsi/2012/03/connection/types", "modifyCancel");
@@ -58,19 +58,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link QueryDetailsResultType }
+     * Create an instance of {@link DetailedPathType }
      * 
      */
-    public QueryDetailsResultType createQueryDetailsResultType() {
-        return new QueryDetailsResultType();
+    public DetailedPathType createDetailedPathType() {
+        return new DetailedPathType();
     }
 
     /**
-     * Create an instance of {@link ModifyCheckConfirmedType }
+     * Create an instance of {@link ModifyCheckType }
      * 
      */
-    public ModifyCheckConfirmedType createModifyCheckConfirmedType() {
-        return new ModifyCheckConfirmedType();
+    public ModifyCheckType createModifyCheckType() {
+        return new ModifyCheckType();
     }
 
     /**
@@ -82,86 +82,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link QueryType }
-     * 
-     */
-    public QueryType createQueryType() {
-        return new QueryType();
-    }
-
-    /**
-     * Create an instance of {@link ChildDetailedListType }
-     * 
-     */
-    public ChildDetailedListType createChildDetailedListType() {
-        return new ChildDetailedListType();
-    }
-
-    /**
-     * Create an instance of {@link ReserveConfirmedType }
-     * 
-     */
-    public ReserveConfirmedType createReserveConfirmedType() {
-        return new ReserveConfirmedType();
-    }
-
-    /**
-     * Create an instance of {@link GenericRequestType }
-     * 
-     */
-    public GenericRequestType createGenericRequestType() {
-        return new GenericRequestType();
-    }
-
-    /**
-     * Create an instance of {@link ScheduleType }
-     * 
-     */
-    public ScheduleType createScheduleType() {
-        return new ScheduleType();
-    }
-
-    /**
-     * Create an instance of {@link QueryFilterType }
-     * 
-     */
-    public QueryFilterType createQueryFilterType() {
-        return new QueryFilterType();
-    }
-
-    /**
-     * Create an instance of {@link QuerySummaryResultType }
-     * 
-     */
-    public QuerySummaryResultType createQuerySummaryResultType() {
-        return new QuerySummaryResultType();
-    }
-
-    /**
-     * Create an instance of {@link PathType }
-     * 
-     */
-    public PathType createPathType() {
-        return new PathType();
-    }
-
-    /**
-     * Create an instance of {@link SummaryPathType }
-     * 
-     */
-    public SummaryPathType createSummaryPathType() {
-        return new SummaryPathType();
-    }
-
-    /**
-     * Create an instance of {@link OrderedStpType }
-     * 
-     */
-    public OrderedStpType createOrderedStpType() {
-        return new OrderedStpType();
-    }
-
-    /**
      * Create an instance of {@link GenericConfirmedType }
      * 
      */
@@ -170,11 +90,35 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link QueryConfirmedType }
+     * Create an instance of {@link ReserveType }
      * 
      */
-    public QueryConfirmedType createQueryConfirmedType() {
-        return new QueryConfirmedType();
+    public ReserveType createReserveType() {
+        return new ReserveType();
+    }
+
+    /**
+     * Create an instance of {@link QueryDetailsResultType }
+     * 
+     */
+    public QueryDetailsResultType createQueryDetailsResultType() {
+        return new QueryDetailsResultType();
+    }
+
+    /**
+     * Create an instance of {@link ReservationStateType }
+     * 
+     */
+    public ReservationStateType createReservationStateType() {
+        return new ReservationStateType();
+    }
+
+    /**
+     * Create an instance of {@link ActivationStateType }
+     * 
+     */
+    public ActivationStateType createActivationStateType() {
+        return new ActivationStateType();
     }
 
     /**
@@ -186,11 +130,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DetailedPathType }
+     * Create an instance of {@link PathType }
      * 
      */
-    public DetailedPathType createDetailedPathType() {
-        return new DetailedPathType();
+    public PathType createPathType() {
+        return new PathType();
+    }
+
+    /**
+     * Create an instance of {@link StpListType }
+     * 
+     */
+    public StpListType createStpListType() {
+        return new StpListType();
+    }
+
+    /**
+     * Create an instance of {@link GenericRequestType }
+     * 
+     */
+    public GenericRequestType createGenericRequestType() {
+        return new GenericRequestType();
+    }
+
+    /**
+     * Create an instance of {@link QuerySummaryResultType }
+     * 
+     */
+    public QuerySummaryResultType createQuerySummaryResultType() {
+        return new QuerySummaryResultType();
+    }
+
+    /**
+     * Create an instance of {@link QueryFilterType }
+     * 
+     */
+    public QueryFilterType createQueryFilterType() {
+        return new QueryFilterType();
     }
 
     /**
@@ -202,6 +178,78 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link QueryConfirmedType }
+     * 
+     */
+    public QueryConfirmedType createQueryConfirmedType() {
+        return new QueryConfirmedType();
+    }
+
+    /**
+     * Create an instance of {@link ChildDetailedListType }
+     * 
+     */
+    public ChildDetailedListType createChildDetailedListType() {
+        return new ChildDetailedListType();
+    }
+
+    /**
+     * Create an instance of {@link ModifyCheckConfirmedType }
+     * 
+     */
+    public ModifyCheckConfirmedType createModifyCheckConfirmedType() {
+        return new ModifyCheckConfirmedType();
+    }
+
+    /**
+     * Create an instance of {@link OrderedStpType }
+     * 
+     */
+    public OrderedStpType createOrderedStpType() {
+        return new OrderedStpType();
+    }
+
+    /**
+     * Create an instance of {@link GenericFailedType }
+     * 
+     */
+    public GenericFailedType createGenericFailedType() {
+        return new GenericFailedType();
+    }
+
+    /**
+     * Create an instance of {@link SummaryPathType }
+     * 
+     */
+    public SummaryPathType createSummaryPathType() {
+        return new SummaryPathType();
+    }
+
+    /**
+     * Create an instance of {@link QueryType }
+     * 
+     */
+    public QueryType createQueryType() {
+        return new QueryType();
+    }
+
+    /**
+     * Create an instance of {@link StpType }
+     * 
+     */
+    public StpType createStpType() {
+        return new StpType();
+    }
+
+    /**
+     * Create an instance of {@link ScheduleType }
+     * 
+     */
+    public ScheduleType createScheduleType() {
+        return new ScheduleType();
+    }
+
+    /**
      * Create an instance of {@link ProvisionStateType }
      * 
      */
@@ -210,11 +258,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ReserveType }
+     * Create an instance of {@link ReserveConfirmedType }
      * 
      */
-    public ReserveType createReserveType() {
-        return new ReserveType();
+    public ReserveConfirmedType createReserveConfirmedType() {
+        return new ReserveConfirmedType();
+    }
+
+    /**
+     * Create an instance of {@link ChildSummaryListType }
+     * 
+     */
+    public ChildSummaryListType createChildSummaryListType() {
+        return new ChildSummaryListType();
     }
 
     /**
@@ -234,67 +290,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ModifyCheckType }
-     * 
-     */
-    public ModifyCheckType createModifyCheckType() {
-        return new ModifyCheckType();
-    }
-
-    /**
      * Create an instance of {@link ConnectionStatesType }
      * 
      */
     public ConnectionStatesType createConnectionStatesType() {
         return new ConnectionStatesType();
-    }
-
-    /**
-     * Create an instance of {@link ActivationStateType }
-     * 
-     */
-    public ActivationStateType createActivationStateType() {
-        return new ActivationStateType();
-    }
-
-    /**
-     * Create an instance of {@link ReservationStateType }
-     * 
-     */
-    public ReservationStateType createReservationStateType() {
-        return new ReservationStateType();
-    }
-
-    /**
-     * Create an instance of {@link GenericFailedType }
-     * 
-     */
-    public GenericFailedType createGenericFailedType() {
-        return new GenericFailedType();
-    }
-
-    /**
-     * Create an instance of {@link StpListType }
-     * 
-     */
-    public StpListType createStpListType() {
-        return new StpListType();
-    }
-
-    /**
-     * Create an instance of {@link StpType }
-     * 
-     */
-    public StpType createStpType() {
-        return new StpType();
-    }
-
-    /**
-     * Create an instance of {@link ChildSummaryListType }
-     * 
-     */
-    public ChildSummaryListType createChildSummaryListType() {
-        return new ChildSummaryListType();
     }
 
     /**
@@ -325,21 +325,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2012/03/connection/types", name = "provision")
-    public JAXBElement<GenericRequestType> createProvision(GenericRequestType value) {
-        return new JAXBElement<GenericRequestType>(_Provision_QNAME, GenericRequestType.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenericConfirmedType }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2012/03/connection/types", name = "provisionConfirmed")
     public JAXBElement<GenericConfirmedType> createProvisionConfirmed(GenericConfirmedType value) {
         return new JAXBElement<GenericConfirmedType>(_ProvisionConfirmed_QNAME, GenericConfirmedType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericRequestType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2012/03/connection/types", name = "provision")
+    public JAXBElement<GenericRequestType> createProvision(GenericRequestType value) {
+        return new JAXBElement<GenericRequestType>(_Provision_QNAME, GenericRequestType.class, null, value);
     }
 
     /**

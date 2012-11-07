@@ -74,12 +74,12 @@ public class X509DataType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     * {@link Object }
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     * {@link Element }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      * {@link JAXBElement }{@code <}{@link X509IssuerSerialType }{@code >}
-     * {@link Object }
-     * {@link Element }
      * 
      * 
      */

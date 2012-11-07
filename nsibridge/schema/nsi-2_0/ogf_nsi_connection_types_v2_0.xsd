@@ -453,7 +453,6 @@
         <xsd:annotation>
             <xsd:documentation xml:lang="en">
                 Type definition for a reservation modification request criteria.
-                Only those values requiring change are specified in the request.
                 
                 Elements:
                 
@@ -471,7 +470,7 @@
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="schedule"            type="tns:ScheduleType" minOccurs="0" />
-            <xsd:element name="bandwidth"           type="xsd:int" minOccurs="0" />
+            <xsd:element name="bandwidth"           type="xsd:int" />
             <xsd:element name="serviceAttributes"   type="ftypes:TypeValuePairListType" minOccurs="0" />
             <xsd:element name="path"                type="tns:PathType" minOccurs="0" />
         </xsd:sequence>
@@ -1110,7 +1109,7 @@
             <xsd:documentation xml:lang="en">
                 The orientation of an STP with respect to the network.
                 
-                Ingress - the STP is being used as an ingress to the network.
+                Ingress - the STP is bring used as an ingress to the network.
                 
                 Egress - the STP is being used as an egress to the network.
             </xsd:documentation>

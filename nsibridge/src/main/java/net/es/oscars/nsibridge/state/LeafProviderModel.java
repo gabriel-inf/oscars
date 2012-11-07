@@ -1,11 +1,20 @@
 package net.es.oscars.nsibridge.state;
 
+
+import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.nsibridge.ifces.ProviderMDL;
+import net.es.oscars.nsibridge.prov.CoordHolder;
+
+import net.es.oscars.utils.soap.OSCARSServiceException;
+
+
 
 /**
  * @haniotak Date: 2012-08-08
  */
-public class AggegatorProvMDL implements ProviderMDL {
+public class LeafProviderModel implements ProviderMDL {
+
+
     @Override
     public void cleanup() {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -23,7 +32,14 @@ public class AggegatorProvMDL implements ProviderMDL {
 
     @Override
     public void sendResvRQ() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        ResCreateContent rc = new ResCreateContent();
+        try {
+            CoordHolder.getInstance().sendCreate(rc);
+        } catch (OSCARSServiceException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     @Override
@@ -75,4 +91,7 @@ public class AggegatorProvMDL implements ProviderMDL {
     public void sendProvFL() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+
+
 }

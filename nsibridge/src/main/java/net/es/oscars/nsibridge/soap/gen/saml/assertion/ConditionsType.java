@@ -44,10 +44,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 public class ConditionsType {
 
     @XmlElements({
+        @XmlElement(name = "Condition"),
         @XmlElement(name = "OneTimeUse", type = OneTimeUseType.class),
-        @XmlElement(name = "AudienceRestriction", type = AudienceRestrictionType.class),
         @XmlElement(name = "ProxyRestriction", type = ProxyRestrictionType.class),
-        @XmlElement(name = "Condition")
+        @XmlElement(name = "AudienceRestriction", type = AudienceRestrictionType.class)
     })
     protected List<ConditionAbstractType> conditionOrAudienceRestrictionOrOneTimeUse;
     @XmlAttribute(name = "NotBefore")
@@ -75,10 +75,10 @@ public class ConditionsType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link OneTimeUseType }
-     * {@link AudienceRestrictionType }
-     * {@link ProxyRestrictionType }
      * {@link ConditionAbstractType }
+     * {@link OneTimeUseType }
+     * {@link ProxyRestrictionType }
+     * {@link AudienceRestrictionType }
      * 
      * 
      */

@@ -2,85 +2,54 @@ package net.es.oscars.nsibridge.common;
 
 import static java.util.Arrays.asList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.es.oscars.nsibridge.beans.NSAInfo;
-
+import joptsimple.OptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import net.es.oscars.nsibridge.beans.config.OscarsConfig;
+import net.es.oscars.nsibridge.beans.config.JettyConfig;
+import net.es.oscars.nsibridge.prov.CoordHolder;
+import net.es.oscars.utils.config.ConfigDefaults;
+import net.es.oscars.utils.config.ConfigException;
+import net.es.oscars.utils.config.ContextConfig;
+
+import java.io.File;
 
 public class Invoker {
 
-    private static Map<String, Object> config;
-    private static HashMap<String, Object> servicesToExpose;
-    private static Integer port = 8080;
-    private static String hostname = "localhost";
-    private static boolean useSSL = false;
-    private static boolean useBasicAuth = false;
-    private static HashMap<String, String> userPasswords = new HashMap<String, String>();
-    private static String sslKeystorePath = "";
-    private static String sslKeystorePass = "";
-    private static String sslKeyPass = "";
-    private static String sslTruststorePath = "";
-    private static String sslTruststorePass = "";
+    private static String context = ConfigDefaults.CTX_PRODUCTION;
+
+    private Invoker() {
+    }
+
+    private static Invoker instance;
+    private static Invoker getInstance() {
+        if (instance == null) {
+            instance = new Invoker();
+        }
+        return instance;
+    }
+
 
     public static void main(String[] args) throws Exception {
+        Invoker.getInstance().run(args);
+    }
 
-        configure();
+    private void run(String[] args) throws Exception {
 
-        // create a parser
-        OptionParser parser = new OptionParser() {
-            {
-                acceptsAll( asList( "h", "?" ), "show help then exit" );
-                accepts( "help", "show extended help then exit" );
-                accepts( "port" , "HTTP port" ).withRequiredArg().describedAs("int (default: "+port+")").ofType(Integer.class);
-                accepts( "host" , "HTTP hostname" ).withRequiredArg().describedAs("string (default: "+hostname+")").ofType(String.class);
-                accepts( "test" , "IDC test (run list())" );
-            }
-        };
+        parseArgs( args );
 
-        OptionSet options = parser.parse( args );
-
-        // check for help
-        if ( options.has( "?" ) || options.has("h") || options.has("help")) {
-            parser.printHelpOn( System.out );
-            System.exit(0);
-        }
-        
-
-        if (options.has("port")) {
-            port = (Integer) options.valueOf("port");
-        }
-        if (options.has("host")) {
-            hostname = (String) options.valueOf("host");
-        }
-
-        JettyContainer jc = new JettyContainer();
-        jc.setPort(port);
-        jc.setHostname(hostname);
-
-        jc.setServicesToExpose(servicesToExpose);
+        ContextConfig.getInstance().setContext(context);
+        ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
 
 
-        if (useBasicAuth) {
-            //jc.setUseBasicAuth(true);
-            //jc.setUserPasswords(userPasswords);
-        }
+        CoordHolder.getInstance().setOscarsConfig(this.configureCoord());
+        CoordHolder.getInstance().initialize();
 
-        if (useSSL) {
-            jc.setUseSSL(true);
-            jc.setSslKeystorePath(sslKeystorePath);
-            jc.setSslKeystorePass(sslKeystorePass);
-            jc.setSslKeyPass(sslKeyPass);
-            jc.setSslTruststorePath(sslTruststorePath);
-            jc.setSslTruststorePass(sslTruststorePass);
-        }
+        JettyContainer jc = JettyContainer.getInstance();
+        jc.setConfig(this.configureJetty());
 
         jc.startServer();
-        setupNSAs();
-        
+
         while (true) {
             /*
             for (NSAAPI nsa : NSAFactory.getInstance().getNSAs()) {
@@ -90,69 +59,45 @@ public class Invoker {
               */
         }
     }
-    
-    // make this configurable
-    private static void setupNSAs() {
-        NSAInfo nsaD = new NSAInfo();
-        nsaD.setNsaId("urn:ogf:network:nsa:Dominica-OSCARS");
-        nsaD.setProviderWsdl("http://jupiter.es.net:8088/ConnectionProvider?wsdl");
-        nsaD.setRequesterUrl("http://jupiter.es.net:8088/ConnectionRequester");
-        //NSAList.getInstance().addNSA("dominica", nsaD);
-        //NSAFactory.getInstance().addNSA(nsaD.getNsaId(), new OSCARS_0_5_NSA(nsaD.getNsaId()));
-        
-        NSAInfo nsaG = new NSAInfo();
-        nsaG.setNsaId("urn:ogf:network:nsa:Grenada-GLAMBDA-AIST");
-        nsaG.setProviderWsdl("http://163.220.30.174:8090/nsi_gl_proxy/services/ConnectionServiceProvider?wsdl");
-        //NSAList.getInstance().addNSA("grenada", nsaG);
+
+    public static void parseArgs(String args[])  throws java.io.IOException {
+
+        OptionParser parser = new OptionParser();
+        parser.acceptsAll( asList( "h", "?" ), "show help then exit" );
+        OptionSpec<String> CONTEXT = parser.accepts("c", "context:INITTEST,DEVELOPMENT,SDK,PRODUCTION").withRequiredArg().ofType(String.class);
+        OptionSet options = parser.parse( args );
+
+        // check for help
+        if ( options.has( "?" ) ) {
+            parser.printHelpOn( System.out );
+            System.exit(0);
+        }
+        if (options.has(CONTEXT) ){
+            context = options.valueOf(CONTEXT);
+            if (!context.equals("UNITTEST") &&
+                    !context.equals("SDK") &&
+                    !context.equals("DEVELOPMENT") &&
+                    !context.equals("PRODUCTION") )
+            {
+                System.out.println("unrecognized CONTEXT value: " + context);
+                System.exit(-1);
+            }
+        }
+    }
+
+
+
+    private OscarsConfig configureCoord() throws ConfigException {
+
+        ConfigManager cm = ConfigManager.getInstance();
+        OscarsConfig jc = cm.getCoordConfig("config/oscars.yaml");
+        return jc;
+    }
+
+    private JettyConfig configureJetty() throws ConfigException {
+        ConfigManager cm = ConfigManager.getInstance();
+        JettyConfig jc = cm.getJettyConfig("config/jetty.yaml");
+        return jc;
 
     }
-    
-    /**
-     * loads configuration from config/config.yaml 
-     */
-    @SuppressWarnings("unchecked")
-    private static void configure() {
-        ConfigManager cm = ConfigManager.getInstance();
-        config = cm.getConfiguration();
-        Map<String, Object> httpConfig = (Map<String, Object>) config.get("http");
-        port = (Integer) httpConfig.get("port");
-        hostname = (String) httpConfig.get("hostname");
-
-
-
-        useSSL = (Boolean) httpConfig.get("useSSL");
-        if (useSSL) {
-            Map<String, Object> sslConfig = (Map<String, Object>) config.get("ssl");
-            sslKeystorePath = (String) sslConfig.get("keystorePath");
-            sslKeystorePass = (String) sslConfig.get("keystorePass");
-            sslKeyPass = (String) sslConfig.get("keyPass");
-            sslTruststorePath = (String) sslConfig.get("truststorePath");
-            sslTruststorePass = (String) sslConfig.get("truststorePass");
-        }
-
-        useBasicAuth = (Boolean) httpConfig.get("useBasicAuth");
-        if (useBasicAuth) {
-            String passwdFileName = (String) httpConfig.get("passwdFileName");
-            Map<String, Object> usernamePasswd = cm.getConfiguration(passwdFileName);
-            for (String username : usernamePasswd.keySet()) {
-                String passwd = (String) usernamePasswd.get(username);
-                userPasswords.put(username, passwd);
-            }
-        }
-
-        servicesToExpose = new HashMap<String, Object>();
-
-        ArrayList<Map<String, Object>> servicesConfig = (ArrayList<Map<String, Object>>) config.get("services");
-        for (Map<String, Object> serviceConfig : servicesConfig) {
-            String path = (String) serviceConfig.get("path");
-            String impl = (String) serviceConfig.get("implementor");
-            try {
-                Object implementorObj = Class.forName(impl).getConstructor((Class[]) null).newInstance((Object[]) null);
-                servicesToExpose.put(path, implementorObj);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("Problem loading class: "+impl);
-                System.exit(1);
-            }
-        }
-    }}
+}
