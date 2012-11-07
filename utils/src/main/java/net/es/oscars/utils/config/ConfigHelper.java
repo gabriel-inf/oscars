@@ -32,5 +32,34 @@ public class ConfigHelper {
         }
         return configuration;
     }
+
+    static public <T> T getConfiguration(String filename, java.lang.Class<T> clazz) {
+        T configuration = null;
+
+        if (configuration == null) {
+            InputStream propFile = ConfigHelper.class.getClassLoader().getSystemResourceAsStream(filename);
+            if (propFile == null) {
+                try {
+                    propFile = new FileInputStream(new File(filename));
+                } catch (FileNotFoundException e) {
+                    System.out.println("ConfigHelper: configuration file: "+ filename + " not found");
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+
+            try {
+                configuration =  Yaml.loadType(propFile, clazz);
+            } catch (FileNotFoundException e) {
+                System.out.println("ConfigHelper: configuration file: "+ filename + " not found");
+                e.printStackTrace();
+                System.exit(1);
+
+            }
+        }
+        return configuration;
+    }
+
+
 }
 
