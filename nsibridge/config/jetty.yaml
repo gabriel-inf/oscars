@@ -24,8 +24,6 @@ ssl:
 services:
     - path:         'ConnectionProvider'
       implementor:  'net.es.oscars.nsibridge.soap.impl.ConnectionProvider'
-      inInterceptors:
-        - "net.es.oscars.nsibridge.soap.impl.NSIHeaderInInterceptor"
 
 #    - path:         'ConnectionRequester'
 #      implementor:  'net.es.oscars.nsibridge.soap.impl.ConnectionRequester'

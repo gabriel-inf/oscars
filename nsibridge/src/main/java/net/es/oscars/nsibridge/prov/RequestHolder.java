@@ -21,6 +21,13 @@ public class RequestHolder {
         return this.resvRequests;
     }
 
+    public ResvRequest findResvRequest(String connectionId) {
+        for (ResvRequest req : this.resvRequests) {
+            if (req.getConnectionId().equals(connectionId)) return req;
+        }
+        return null;
+    }
+
 
 
 }

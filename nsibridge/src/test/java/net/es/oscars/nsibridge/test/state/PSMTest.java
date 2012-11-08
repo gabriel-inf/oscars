@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.test.state;
 
 import net.es.oscars.nsibridge.common.ConfigManager;
 import net.es.oscars.nsibridge.prov.CoordHolder;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.state.LeafProviderModel;
 import net.es.oscars.nsibridge.state.PSM_TransitionHandler;
 import net.es.oscars.nsibridge.state.ProviderSM;
@@ -10,7 +11,6 @@ import net.es.oscars.nsibridge.state.PSM_Event;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ContextConfig;
-import net.es.oscars.utils.svc.ServiceNames;
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -26,7 +26,7 @@ public class PSMTest {
     public void init() throws Exception {
         ContextConfig.getInstance().setContext(ConfigDefaults.CTX_TESTING);
         ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
-        CoordHolder.getInstance().setOscarsConfig(ConfigManager.getInstance().getCoordConfig("config/oscars.yaml"));
+        CoordHolder.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
 
         CoordHolder.getInstance().initialize();
     }
@@ -40,18 +40,21 @@ public class PSMTest {
 
     @Test (expectedExceptions = StateException.class)
     public void badAfterInit() throws Exception {
-        ProviderSM sm = new ProviderSM("badAfterInit");
+        String connId = "badAfterInit";
+
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
         sm.setTransitionHandler(th);
         sm.process(PSM_Event.ACT_FL);
     }
 
     @Test (expectedExceptions = StateException.class)
     public void badAfterRsvRQ() throws Exception {
-        ProviderSM sm = new ProviderSM("badAfterRsvRQ");
+        String connId = "badAfterRsvRQ";
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
         sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.ACT_OK);
@@ -59,9 +62,10 @@ public class PSMTest {
 
     @Test
     public void rsvFail() throws Exception {
-        ProviderSM sm = new ProviderSM("rsvFail");
+        String connId = "rsvFail";
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
         sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_FL);
@@ -70,9 +74,10 @@ public class PSMTest {
 
     @Test
     public void simpleWorkflow() throws Exception {
-        ProviderSM sm = new ProviderSM("simple");
+        String connId = "simple";
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
         sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_OK);
@@ -87,9 +92,10 @@ public class PSMTest {
 
     @Test
     public void provisionedWorkflow() throws Exception {
-        ProviderSM sm = new ProviderSM("provision");
+        String connId = "provision";
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
         sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_OK);
@@ -104,9 +110,11 @@ public class PSMTest {
 
     @Test
     public void actThenReleaseWorkflow() throws Exception {
-        ProviderSM sm = new ProviderSM("actRelease");
+        String connId = "actRelease";
+
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
         sm.setTransitionHandler(th);
         sm.process(PSM_Event.RSV_RQ);
         sm.process(PSM_Event.RSV_OK);
@@ -121,5 +129,6 @@ public class PSMTest {
 
         sm.process(PSM_Event.END_TIME);
     }
+
 
 }

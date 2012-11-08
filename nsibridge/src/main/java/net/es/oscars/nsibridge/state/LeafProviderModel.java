@@ -2,17 +2,21 @@ package net.es.oscars.nsibridge.state;
 
 
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
+import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.ifces.ProviderMDL;
 import net.es.oscars.nsibridge.prov.CoordHolder;
 
+import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
+import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 
 
-
-/**
- * @haniotak Date: 2012-08-08
- */
 public class LeafProviderModel implements ProviderMDL {
+    String connectionId = "";
+    public LeafProviderModel(String connId) {
+        connectionId = connId;
+    }
+    private  LeafProviderModel() {}
 
 
     @Override
@@ -32,7 +36,15 @@ public class LeafProviderModel implements ProviderMDL {
 
     @Override
     public void sendResvRQ() {
-        ResCreateContent rc = new ResCreateContent();
+        ResvRequest req = RequestHolder.getInstance().findResvRequest(connectionId);
+        ResCreateContent rc;
+        if (req == null) {
+            rc = new ResCreateContent();
+
+        } else {
+            rc = NSI_OSCARS_Translation.makeOscarsResv(req);
+        }
+
         try {
             CoordHolder.getInstance().sendCreate(rc);
         } catch (OSCARSServiceException e) {

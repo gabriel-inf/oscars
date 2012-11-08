@@ -48,9 +48,10 @@ public class RequestProcessor {
         conn.setConnectionId(connId);
         ch.getConnections().add(conn);
 
-        ProviderSM sm = new ProviderSM(request.getConnectionId());
+        ProviderSM sm = new ProviderSM(connId);
         PSM_TransitionHandler th = new PSM_TransitionHandler();
-        th.setMdl(new LeafProviderModel());
+        th.setMdl(new LeafProviderModel(connId));
+
         smh.getStateMachines().add(sm);
         try {
             sm.process(PSM_Event.RSV_RQ);

@@ -6,7 +6,6 @@ import java.util.List;
 public class JettyServiceConfig {
     private String path;
     private String implementor;
-    private List<String> inInterceptors = new ArrayList<String>();
     public JettyServiceConfig() {
 
     }
@@ -27,12 +26,4 @@ public class JettyServiceConfig {
         this.implementor = implementor;
     }
 
-
-    public List<String> getInInterceptors() {
-        return inInterceptors;
-    }
-
-    public void setInInterceptors(List<String> inInterceptors) {
-        this.inInterceptors = inInterceptors;
-    }
 }

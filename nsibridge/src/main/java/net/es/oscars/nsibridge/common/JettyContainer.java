@@ -93,7 +93,7 @@ public class JettyContainer {
             }
 
 
-
+            /*
             for (String inInterceptor : serviceConfig.getInInterceptors()) {
                 try {
                     Interceptor interceptorObj = (Interceptor) Class.forName(inInterceptor).getConstructor((Class[]) null).newInstance((Object[]) null);
@@ -103,8 +103,8 @@ public class JettyContainer {
                     System.err.println("Problem loading class: "+inInterceptor);
                     System.exit(1);
                 }
-
             }
+            */
 
             String endpoint = server.getEndpoint().getEndpointInfo().getAddress();
             log.info("Server started at " + endpoint);

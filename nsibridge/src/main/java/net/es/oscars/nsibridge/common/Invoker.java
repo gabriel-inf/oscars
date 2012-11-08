@@ -7,7 +7,9 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import net.es.oscars.nsibridge.beans.config.OscarsConfig;
 import net.es.oscars.nsibridge.beans.config.JettyConfig;
+import net.es.oscars.nsibridge.beans.config.StpConfig;
 import net.es.oscars.nsibridge.prov.CoordHolder;
+import net.es.oscars.nsibridge.prov.NSAConfigHolder;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
@@ -22,7 +24,7 @@ public class Invoker {
     }
 
     private static Invoker instance;
-    private static Invoker getInstance() {
+    public static Invoker getInstance() {
         if (instance == null) {
             instance = new Invoker();
         }
@@ -31,22 +33,29 @@ public class Invoker {
 
 
     public static void main(String[] args) throws Exception {
-        Invoker.getInstance().run(args);
-    }
-
-    private void run(String[] args) throws Exception {
-
         parseArgs( args );
 
-        ContextConfig.getInstance().setContext(context);
+        Invoker.getInstance().run(context);
+    }
+
+    public void run(String ctx) throws Exception {
+
+
+        ContextConfig.getInstance().setContext(ctx);
         ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
 
+        NSAConfigHolder.getInstance().setNsaConfig(ConfigManager.getInstance().getNSAConfig("config/nsa.yaml"));
+        NSAConfigHolder.getInstance().setStpConfigs(ConfigManager.getInstance().getStpConfig("config/stp.yaml"));
+        for (StpConfig stp : NSAConfigHolder.getInstance().getStpConfigs()) {
+            System.out.println("stp :"+stp.getStpId());
+        }
 
-        CoordHolder.getInstance().setOscarsConfig(this.configureCoord());
+
+        CoordHolder.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
         CoordHolder.getInstance().initialize();
 
         JettyContainer jc = JettyContainer.getInstance();
-        jc.setConfig(this.configureJetty());
+        jc.setConfig(ConfigManager.getInstance().getJettyConfig("config/jetty.yaml"));
 
         jc.startServer();
 
@@ -87,17 +96,6 @@ public class Invoker {
 
 
 
-    private OscarsConfig configureCoord() throws ConfigException {
 
-        ConfigManager cm = ConfigManager.getInstance();
-        OscarsConfig jc = cm.getCoordConfig("config/oscars.yaml");
-        return jc;
-    }
 
-    private JettyConfig configureJetty() throws ConfigException {
-        ConfigManager cm = ConfigManager.getInstance();
-        JettyConfig jc = cm.getJettyConfig("config/jetty.yaml");
-        return jc;
-
-    }
 }
