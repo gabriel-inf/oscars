@@ -19,6 +19,8 @@ import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.eompls.util.VPLS_DomainIdentifiers;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
+import net.es.oscars.pss.util.VlanGroupConfig;
+import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
@@ -33,7 +35,10 @@ import java.util.Map;
 
 public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
     private Logger log = Logger.getLogger(SR_VPLS_ConfigGen.class);
+    public SR_VPLS_ConfigGen() throws ConfigException, PSSException {
+        VlanGroupConfig.configure();
 
+    }
 
 
 
@@ -454,23 +459,33 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         String dstLinkId = egressLink.getId();
         URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
 
+        String srcVlan = ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+        String dstVlan = egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange();
+
+        ArrayList<String> srcVlans = VlanGroupConfig.getVlans(srcDeviceId, srcRes.getPortId(), srcVlan);
+        ArrayList<String> dstVlans = VlanGroupConfig.getVlans(dstDeviceId, dstRes.getPortId(), dstVlan);
+
 
         HashMap<String, ArrayList<SRIfceInfo>> deviceIfceInfo = new HashMap<String, ArrayList<SRIfceInfo>>();
         deviceIfceInfo.put(srcDeviceId, new ArrayList<SRIfceInfo>());
         deviceIfceInfo.put(dstDeviceId, new ArrayList<SRIfceInfo>());
-        SRIfceInfo aIfceInfo = new SRIfceInfo();
-        aIfceInfo.setDescription(gri);
-        aIfceInfo.setName(srcRes.getPortId());
-        aIfceInfo.setVlan(ingressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange());
-        log.debug("setting "+srcDeviceId+" : "+aIfceInfo.getName());
-        deviceIfceInfo.get(srcDeviceId).add(aIfceInfo);
+        for (String vlan : srcVlans) {
+            SRIfceInfo aIfceInfo = new SRIfceInfo();
+            aIfceInfo.setDescription(gri);
+            aIfceInfo.setName(srcRes.getPortId());
+            aIfceInfo.setVlan(vlan);
+            log.debug("setting "+srcDeviceId+" : "+aIfceInfo.getName());
+            deviceIfceInfo.get(srcDeviceId).add(aIfceInfo);
+        }
 
-        SRIfceInfo zIfceInfo = new SRIfceInfo();
-        zIfceInfo.setDescription(gri);
-        zIfceInfo.setName(dstRes.getPortId());
-        zIfceInfo.setVlan(egressLink.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getSuggestedVLANRange());
-        log.debug("setting "+dstDeviceId+" : "+zIfceInfo.getName());
-        deviceIfceInfo.get(dstDeviceId).add(zIfceInfo);
+        for (String vlan : dstVlans) {
+            SRIfceInfo zIfceInfo = new SRIfceInfo();
+            zIfceInfo.setDescription(gri);
+            zIfceInfo.setName(dstRes.getPortId());
+            zIfceInfo.setVlan(vlan);
+            log.debug("setting "+dstDeviceId+" : "+zIfceInfo.getName());
+            deviceIfceInfo.get(dstDeviceId).add(zIfceInfo);
+        }
         return deviceIfceInfo;
     }
 

@@ -67,7 +67,7 @@ public class VPLSTest {
     }
 
     @Test(groups = { "alu-vpls-template"} )
-    private void testALUVPLSTemplate() throws PSSException{
+    private void testALUVPLSTemplate() throws PSSException, ConfigException {
         SR_VPLS_ConfigGen cg = new SR_VPLS_ConfigGen();
         ALUNameGenerator ng = ALUNameGenerator.getInstance();
         Integer sdpNum = 2;
@@ -304,7 +304,7 @@ public class VPLSTest {
 
     @Test(groups = { "vpls" })
 
-    public void testWithResDetails() throws PSSException {
+    public void testWithResDetails() throws PSSException, ConfigException  {
 
         String output;
 
@@ -377,7 +377,7 @@ public class VPLSTest {
         System.out.println(output);
         log.debug("done teardown same MX");
 
-
+*/
         rd = RequestFactory.getSameALU();
         srq.setReservation(rd);
         trq.setReservation(rd);
@@ -390,7 +390,8 @@ public class VPLSTest {
         output    = alucg.getTeardown(action, srcDeviceId);
         System.out.println(output);
         log.debug("done teardown same ALU");
-*/
+
+        /*
         rd = RequestFactory.getMX_MX();
         srq.setReservation(rd);
         trq.setReservation(rd);
@@ -408,7 +409,7 @@ public class VPLSTest {
         output    = mxcg.getTeardown(action, dstDeviceId);
         System.out.println(output);
         log.debug("done teardown same MX-MX");
-
+    */
 
     }
 
