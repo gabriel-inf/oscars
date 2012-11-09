@@ -30,23 +30,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class CoordHolder {
-    private static Logger log = Logger.getLogger(CoordHolder.class);
+public class OscarsProxy {
+    private static Logger log = Logger.getLogger(OscarsProxy.class);
     private CoordClient coordClient;
     private AuthNClient authNClient;
     private OscarsConfig oscarsConfig;
 
 
-    private static CoordHolder instance;
+    private static OscarsProxy instance;
 
 
 
-    public static CoordHolder getInstance()  throws OSCARSServiceException {
-        if (instance == null) instance = new CoordHolder();
+    public static OscarsProxy getInstance()  throws OSCARSServiceException {
+        if (instance == null) instance = new OscarsProxy();
         return instance;
 
     }
-    private CoordHolder() {
+    private OscarsProxy() {
 
     }
 
@@ -72,13 +72,20 @@ public class CoordHolder {
         Object[] req = new Object[]{subjectAttributes, createReservation};
         if (oscarsConfig.isStub()) {
             System.out.println("stub mode, not contacting coordinator");
-            return null;
+            CreateReply cr = new CreateReply();
+            cr.setStatus("RESERVED");
+            return cr;
         } else {
             Object[] res = coordClient.invoke("createReservation",req);
-            CreateReply response = (CreateReply) res[0];
-            return response;
+            CreateReply cr = (CreateReply) res[0];
+            return cr;
         }
     }
+
+
+
+
+
 
 
 

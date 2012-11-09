@@ -16,7 +16,6 @@ import net.es.oscars.utils.config.ConfigHelper;
 import org.apache.cxf.configuration.jsse.TLSServerParameters;
 import org.apache.cxf.configuration.security.ClientAuthentication;
 import org.apache.cxf.configuration.security.FiltersType;
-import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.service.invoker.BeanInvoker;
 import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngineFactory;
@@ -28,6 +27,12 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 public class JettyContainer {
+    public HashMap<String, Object> getSoapHandlers() {
+        return soapHandlers;
+    }
+
+    private HashMap<String, Object> soapHandlers = new HashMap<String, Object>();
+
     private JettyContainer() {} ;
     private static JettyContainer instance;
     public static JettyContainer getInstance() {
@@ -66,7 +71,9 @@ public class JettyContainer {
             String implementor = serviceConfig.getImplementor();
             try {
                 Object implementorObj = Class.forName(implementor).getConstructor((Class[]) null).newInstance((Object[]) null);
-                sf.setAddress(basePath+servicePath);
+                soapHandlers.put(servicePath, implementorObj);
+
+                sf.setAddress(basePath + servicePath);
                 sf.setServiceClass(implementorObj.getClass());
                 sf.getServiceFactory().setInvoker(new BeanInvoker(implementorObj));
             } catch (Exception e) {

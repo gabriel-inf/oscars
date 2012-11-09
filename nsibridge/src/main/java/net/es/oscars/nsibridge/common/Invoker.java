@@ -5,18 +5,22 @@ import static java.util.Arrays.asList;
 import joptsimple.OptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import net.es.oscars.nsibridge.beans.config.OscarsConfig;
-import net.es.oscars.nsibridge.beans.config.JettyConfig;
+
 import net.es.oscars.nsibridge.beans.config.StpConfig;
-import net.es.oscars.nsibridge.prov.CoordHolder;
+import net.es.oscars.nsibridge.prov.OscarsProxy;
 import net.es.oscars.nsibridge.prov.NSAConfigHolder;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
+import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.task.TaskException;
+import net.es.oscars.utils.task.sched.Schedule;
 
 import java.io.File;
 
-public class Invoker {
+public class Invoker implements Runnable {
+    private boolean running = false;
+
 
     private static String context = ConfigDefaults.CTX_PRODUCTION;
 
@@ -33,16 +37,25 @@ public class Invoker {
 
 
     public static void main(String[] args) throws Exception {
-        parseArgs( args );
-
-        Invoker.getInstance().run(context);
+        parseArgs(args);
+        Thread thr = new Thread(Invoker.getInstance());
+        thr.start();
     }
 
-    public void run(String ctx) throws Exception {
+    public void setContext(String ctx) {
+        context = ctx;
+    }
+
+    public void run() {
 
 
-        ContextConfig.getInstance().setContext(ctx);
-        ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
+        try {
+            ContextConfig.getInstance().setContext(context);
+            ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
+        } catch (ConfigException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         NSAConfigHolder.getInstance().setNsaConfig(ConfigManager.getInstance().getNSAConfig("config/nsa.yaml"));
         NSAConfigHolder.getInstance().setStpConfigs(ConfigManager.getInstance().getStpConfig("config/stp.yaml"));
@@ -51,20 +64,42 @@ public class Invoker {
         }
 
 
-        CoordHolder.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
-        CoordHolder.getInstance().initialize();
+        try {
+            OscarsProxy.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
+            OscarsProxy.getInstance().initialize();
+        } catch (OSCARSServiceException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         JettyContainer jc = JettyContainer.getInstance();
         jc.setConfig(ConfigManager.getInstance().getJettyConfig("config/jetty.yaml"));
 
         jc.startServer();
 
+
+        Schedule ts = Schedule.getInstance();
+
+        try {
+            ts.start();
+        } catch (TaskException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+
         while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            // System.out.println("nsiBridge still running");
             /*
             for (NSAAPI nsa : NSAFactory.getInstance().getNSAs()) {
                 nsa.tick();
             }
-            Thread.sleep(500);
               */
         }
     }

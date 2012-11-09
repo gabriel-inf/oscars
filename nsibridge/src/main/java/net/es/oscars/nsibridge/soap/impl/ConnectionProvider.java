@@ -31,31 +31,19 @@ public class ConnectionProvider implements ConnectionProviderPort {
                         CommonHeaderType inHeader,
                         Holder<CommonHeaderType> outHeader) throws ServiceException    {
         log.info("Executing operation reserve");
+
         ResvRequest req = new ResvRequest();
         req.setConnectionId(connectionId);
         req.setCriteria(criteria);
         req.setDescription(description);
         req.setGlobalReservationId(globalReservationId);
         req.setInHeader(inHeader);
-
-        /*
-        log.debug(globalReservationId);
-        log.debug(description);
-        log.debug(connectionId);
-        log.debug(criteria);
-        log.debug(inHeader);
-        */
-
-
-        RequestProcessor.getInstance().process(req);
-
-
+        log.debug("connId: "+connectionId);
 
 
         try {
+            RequestProcessor.getInstance().startReserve(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
-            log.debug(outHeaderValue );
-
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
             ex.printStackTrace();

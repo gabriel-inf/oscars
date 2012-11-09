@@ -2,12 +2,8 @@ package net.es.oscars.nsibridge.test.state;
 
 
 import net.es.oscars.nsibridge.common.ConfigManager;
-import net.es.oscars.nsibridge.prov.CoordHolder;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.state.LeafProviderModel;
-import net.es.oscars.nsibridge.state.PSM_TransitionHandler;
-import net.es.oscars.nsibridge.state.ProviderSM;
-import net.es.oscars.nsibridge.state.PSM_Event;
+import net.es.oscars.nsibridge.prov.OscarsProxy;
+
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ContextConfig;
@@ -17,21 +13,18 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 
-/**
- * @haniotak Date: 2012-08-07
- */
 public class PSMTest {
     private static final Logger LOG = Logger.getLogger(PSMTest.class);
     @BeforeSuite
     public void init() throws Exception {
         ContextConfig.getInstance().setContext(ConfigDefaults.CTX_TESTING);
         ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
-        CoordHolder.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
+        OscarsProxy.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
 
-        CoordHolder.getInstance().initialize();
+        OscarsProxy.getInstance().initialize();
     }
 
-
+/*
     @Test (expectedExceptions = NullPointerException.class)
     public void noTH() throws Exception {
         ProviderSM sm = new ProviderSM("noTH");
@@ -129,6 +122,6 @@ public class PSMTest {
 
         sm.process(PSM_Event.END_TIME);
     }
-
+*/
 
 }
