@@ -14,7 +14,7 @@ public class NSI_Term_SM implements StateMachine {
 
 
     public NSI_Term_SM(String id) {
-        this.state = NSI_Resv_State.INITIAL;
+        this.state = NSI_Term_State.INITIAL;
         this.id = id;
     }
 

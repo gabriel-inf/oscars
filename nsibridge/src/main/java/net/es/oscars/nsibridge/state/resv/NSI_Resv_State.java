@@ -10,5 +10,9 @@ public enum NSI_Resv_State implements SM_State {
     RESERVE_FAILED,
 
     MODIFYING,
+    MODIFY_CHECKING,
+    MODIFY_CHECKED,
+    MODIFY_CANCELING,
+    MODIFY_CANCEL_FAILED,
     MODIFY_FAILED
 }

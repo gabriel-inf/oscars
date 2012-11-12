@@ -3,10 +3,12 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.state.act.NSI_Act_SM;
+import net.es.oscars.nsibridge.state.act.NSI_Act_State;
 import net.es.oscars.nsibridge.state.act.NSI_Act_TH;
 import net.es.oscars.nsibridge.state.act.NSI_Leaf_Act_Model;
 import net.es.oscars.nsibridge.state.prov.NSI_Leaf_Prov_Model;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
+import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_TH;
 import net.es.oscars.nsibridge.state.resv.NSI_Leaf_Resv_Model;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
@@ -58,6 +60,7 @@ public class NSI_SM_Holder {
             throw new ServiceException(errMsg);
         }
         asm = new NSI_Act_SM(connId);
+        asm.setState(NSI_Act_State.INACTIVE);
         NSI_Act_TH ath = new NSI_Act_TH();
         asm.setTransitionHandler(ath);
         NSI_Leaf_Act_Model aml = new NSI_Leaf_Act_Model(connId);
@@ -65,6 +68,7 @@ public class NSI_SM_Holder {
 
 
         psm = new NSI_Prov_SM(connId);
+        psm.setState(NSI_Prov_State.SCHEDULED);
         NSI_Prov_TH pth = new NSI_Prov_TH();
         psm.setTransitionHandler(pth);
         NSI_Leaf_Prov_Model pml = new NSI_Leaf_Prov_Model(connId);

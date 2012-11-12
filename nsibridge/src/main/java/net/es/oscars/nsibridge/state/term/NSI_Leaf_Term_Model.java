@@ -1,8 +1,15 @@
 package net.es.oscars.nsibridge.state.term;
 
 
+import net.es.oscars.nsibridge.ifces.NSIMessage;
 import net.es.oscars.nsibridge.ifces.NsiTermModel;
+import net.es.oscars.nsibridge.task.OscarsTermTask;
+import net.es.oscars.nsibridge.task.SendNSIMessageTask;
+import net.es.oscars.utils.task.Task;
+import net.es.oscars.utils.task.TaskException;
+import net.es.oscars.utils.task.sched.Workflow;
 
+import java.util.Date;
 
 
 public class NSI_Leaf_Term_Model implements NsiTermModel {
@@ -16,16 +23,44 @@ public class NSI_Leaf_Term_Model implements NsiTermModel {
 
     @Override
     public void doLocalTerm() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task oscarsTerm = new OscarsTermTask(connectionId);
+
+        try {
+            wf.schedule(oscarsTerm, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void sendNsiTermCF() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, NSIMessage.TERM_CF);
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
+
 
     @Override
     public void sendNsiTermFL() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, NSIMessage.TERM_FL);
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 }

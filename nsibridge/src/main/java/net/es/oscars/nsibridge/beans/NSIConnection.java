@@ -1,10 +1,18 @@
 package net.es.oscars.nsibridge.beans;
 
 
-import net.es.oscars.nsibridge.state.ProviderSM;
-
 public class NSIConnection {
     private String connectionId;
+
+    private String oscarsGri;
+
+    public String getOscarsGri() {
+        return oscarsGri;
+    }
+
+    public void setOscarsGri(String oscarsGri) {
+        this.oscarsGri = oscarsGri;
+    }
 
     public String getConnectionId() {
         return connectionId;

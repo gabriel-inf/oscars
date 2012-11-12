@@ -1,7 +1,7 @@
 ---
 
 http:
-    port:               8088
+    port:               8288
     hostname:           jupiter.es.net
 
 auth:
@@ -22,7 +22,7 @@ ssl:
 
 
 services:
-    - path:         'ConnectionProvider'
+    - path:         'ConnectionService'
       implementor:  'net.es.oscars.nsibridge.soap.impl.ConnectionProvider'
 
 #    - path:         'ConnectionRequester'

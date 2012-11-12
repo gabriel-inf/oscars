@@ -1,7 +1,6 @@
 package net.es.oscars.nsibridge.state.act;
 
 import net.es.oscars.nsibridge.ifces.*;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
 import org.apache.log4j.Logger;
 
 public class NSI_Act_SM implements StateMachine {
@@ -14,7 +13,7 @@ public class NSI_Act_SM implements StateMachine {
 
 
     public NSI_Act_SM(String id) {
-        this.state = NSI_Resv_State.INITIAL;
+        this.state = NSI_Act_State.INACTIVE;
         this.id = id;
     }
 

@@ -1,5 +1,7 @@
 package net.es.oscars.nsibridge.prov;
 
+import net.es.oscars.api.soap.gen.v06.CancelResContent;
+import net.es.oscars.api.soap.gen.v06.CancelResReply;
 import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.authN.soap.gen.DNType;
@@ -56,7 +58,29 @@ public class OscarsProxy {
     }
 
 
+    public CancelResReply sendCancel(CancelResContent cancelReservation) throws OSCARSServiceException {
+        MessagePropertiesType msgProps = cancelReservation.getMessageProperties();
+        if (msgProps == null) {
+            msgProps = this.makeMessageProps();
+        }
+        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps);
+        msgProps = updateMessageProperties(msgProps, subjectAttributes);
+        cancelReservation.setMessageProperties(msgProps);
 
+
+        Object[] req = new Object[]{subjectAttributes, cancelReservation};
+
+        if (oscarsConfig.isStub()) {
+            System.out.println("stub mode, not contacting coordinator");
+            CancelResReply cr = new CancelResReply();
+            cr.setStatus("CANCELLED");
+            return cr;
+        } else {
+            Object[] res = coordClient.invoke("cancelReservation", req);
+            CancelResReply cr = (CancelResReply) res[0];
+            return cr;
+        }
+    }
 
     public CreateReply sendCreate(ResCreateContent createReservation) throws OSCARSServiceException {
         MessagePropertiesType msgProps = createReservation.getMessageProperties();
@@ -73,6 +97,7 @@ public class OscarsProxy {
         if (oscarsConfig.isStub()) {
             System.out.println("stub mode, not contacting coordinator");
             CreateReply cr = new CreateReply();
+            cr.setGlobalReservationId(UUID.randomUUID().toString());
             cr.setStatus("RESERVED");
             return cr;
         } else {

@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.beans.config.StpConfig;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.ReservationRequestCriteriaType;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
@@ -10,6 +11,13 @@ import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 import java.util.List;
 
 public class NSI_OSCARS_Translation {
+
+    public static CancelResContent makeOscarsCancel(String oscarsGri) {
+        CancelResContent crc = new CancelResContent();
+        crc.setGlobalReservationId(oscarsGri);
+        return crc;
+    }
+
     public static ResCreateContent makeOscarsResv(ResvRequest req) {
         ReservationRequestCriteriaType crit = req.getCriteria();
 

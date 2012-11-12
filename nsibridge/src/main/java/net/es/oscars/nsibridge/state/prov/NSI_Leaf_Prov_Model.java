@@ -1,8 +1,10 @@
 package net.es.oscars.nsibridge.state.prov;
 
 
+import net.es.oscars.nsibridge.ifces.NSIMessage;
 import net.es.oscars.nsibridge.ifces.NsiProvModel;
-import net.es.oscars.nsibridge.task.ProcNSIResvRequest;
+import net.es.oscars.nsibridge.task.LocalProvTask;
+import net.es.oscars.nsibridge.task.SendNSIMessageTask;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
@@ -21,31 +23,86 @@ public class NSI_Leaf_Prov_Model implements NsiProvModel {
 
     @Override
     public void doLocalProv() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        LocalProvTask provTask = new LocalProvTask(connectionId, NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
+
+        try {
+            wf.schedule(provTask , now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
     public void sendNsiProvCF() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, NSIMessage.PROV_CF);
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void sendNsiProvFL() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, NSIMessage.PROV_FL);
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void doLocalRel() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        LocalProvTask provTask = new LocalProvTask(connectionId, NSI_Prov_Event.LOCAL_REL_CONFIRMED);
+
+        try {
+            wf.schedule(provTask , now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void sendNsiRelCF() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, NSIMessage.REL_CF);
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void sendNsiRelFL() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, NSIMessage.REL_FL);
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 }

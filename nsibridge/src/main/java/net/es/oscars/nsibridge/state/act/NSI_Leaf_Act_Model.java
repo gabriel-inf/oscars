@@ -2,10 +2,10 @@ package net.es.oscars.nsibridge.state.act;
 
 
 import net.es.oscars.nsibridge.ifces.NsiActModel;
-import net.es.oscars.nsibridge.task.ProcNSIResvRequest;
-import net.es.oscars.utils.task.Task;
+import net.es.oscars.nsibridge.task.LocalActTask;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
+
 
 import java.util.Date;
 
@@ -18,29 +18,31 @@ public class NSI_Leaf_Act_Model implements NsiActModel {
     private NSI_Leaf_Act_Model() {}
 
 
-
-    public void rqLocalResv() {
+    @Override
+    public void doLocalAct() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task procNSI = new ProcNSIResvRequest(connectionId);
+        LocalActTask actTask = new LocalActTask(connectionId, NSI_Act_Event.LOCAL_ACT_CONFIRMED);
 
         try {
-            wf.schedule(procNSI, now + 1000);
+            wf.schedule(actTask , now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }
-
-    }
-
-
-    @Override
-    public void doLocalAct() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void doLocalDeact() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        LocalActTask actTask = new LocalActTask(connectionId, NSI_Act_Event.LOCAL_DEACT_CONFIRMED);
+
+        try {
+            wf.schedule(actTask , now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
     }
 }

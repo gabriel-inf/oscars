@@ -1,6 +1,8 @@
 package net.es.oscars.nsibridge.test.req;
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
+import net.es.oscars.nsibridge.beans.ProvRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.headers.CommonHeaderType;
 
@@ -13,6 +15,23 @@ import java.util.UUID;
 
 
 public class NSIRequestFactory {
+    public static ProvRequest getProvRequest(ResvRequest resvReq) {
+        ProvRequest pq = new ProvRequest();
+        pq.setConnectionId(resvReq.getConnectionId());
+        CommonHeaderType inHeader = makeHeader();
+        pq.setInHeader(inHeader);
+        return pq;
+    }
+
+    public static TermRequest getTermRequest(ProvRequest preq) {
+        TermRequest tq = new TermRequest();
+        tq.setConnectionId(preq.getConnectionId());
+        CommonHeaderType inHeader = makeHeader();
+        tq.setInHeader(inHeader);
+        return tq;
+
+    }
+
     public static ResvRequest getRequest() throws DatatypeConfigurationException {
         Long threeMins = 3 * 60 * 1000L;
         Long tenMins = 10 * 60 * 1000L;
@@ -60,15 +79,19 @@ public class NSIRequestFactory {
         req.setCriteria(crit);
 
 
+        CommonHeaderType inHeader = makeHeader();
+        req.setInHeader(inHeader);
+        return req;
+    }
+
+    public static CommonHeaderType makeHeader() {
         CommonHeaderType inHeader = new CommonHeaderType();
         inHeader.setProtocolVersion("http://schemas.ogf.org/nsi/2012/03/connection");
-        inHeader.setCorrelationId("urn:"+UUID.randomUUID().toString());
+        inHeader.setCorrelationId("urn:" + UUID.randomUUID().toString());
         inHeader.setRequesterNSA("urn:ogf:network:nsa:starlight");
         inHeader.setProviderNSA("urn:ogf:network:nsa:esnet");
-        inHeader.setReplyTo("http://starlight.net/foo/bar/");
-        req.setInHeader(inHeader);
-
-        return req;
+        inHeader.setReplyTo("http://jupiter.es.net:8088/ConnectionRequester");
+        return inHeader;
     }
 
 

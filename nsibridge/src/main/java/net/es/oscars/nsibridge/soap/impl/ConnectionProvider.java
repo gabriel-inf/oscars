@@ -1,6 +1,6 @@
 package net.es.oscars.nsibridge.soap.impl;
 
-import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.prov.RequestProcessor;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.provider.ConnectionProviderPort;
 
@@ -49,58 +49,95 @@ public class ConnectionProvider implements ConnectionProviderPort {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-
-    }
-
-    public void release(String connectionId,
-                        CommonHeaderType header,
-                        Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation release");
-        log.debug(connectionId);
-        log.debug(header);
-        try {
-            CommonHeaderType outHeaderValue = null;
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new ServiceException("serviceException...");
-    }
-
-
-    public void terminate(String connectionId,
-                          CommonHeaderType header,
-                          Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation terminate");
-        log.debug(connectionId);
-        log.debug(header);
-        try {
-            CommonHeaderType outHeaderValue = null;
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new ServiceException("serviceException...");
     }
 
 
     public void provision(String connectionId,
-                          CommonHeaderType header,
+                          CommonHeaderType inHeader,
                           Holder<CommonHeaderType> outHeader) throws ServiceException    {
         log.info("Executing operation provision");
         log.debug(connectionId);
-        log.debug(header);
+
+        ProvRequest req = new ProvRequest();
+        req.setConnectionId(connectionId);
+        req.setInHeader(inHeader);
         try {
-            CommonHeaderType outHeaderValue = null;
+            RequestProcessor.getInstance().startProvision(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        //throw new ServiceException("serviceException...");
     }
+
+    public void terminate(String connectionId,
+                          CommonHeaderType inHeader,
+                          Holder<CommonHeaderType> outHeader) throws ServiceException    {
+        log.info("Executing operation terminate");
+        log.debug(connectionId);
+
+        TermRequest req = new TermRequest();
+        req.setConnectionId(connectionId);
+        req.setInHeader(inHeader);
+
+        try {
+            RequestProcessor.getInstance().startTerminate(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+
+    public void release(String connectionId,
+                        CommonHeaderType inHeader,
+                        Holder<CommonHeaderType> outHeader) throws ServiceException    {
+        log.info("Executing operation release");
+        log.debug(connectionId);
+
+        RelRequest req = new RelRequest();
+        req.setConnectionId(connectionId);
+        req.setInHeader(inHeader);
+        try {
+            RequestProcessor.getInstance().startRelease(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+
+
+    public void query(QueryOperationType operation,
+                      QueryFilterType queryFilter,
+                      CommonHeaderType inHeader,
+                      Holder<CommonHeaderType> outHeader) throws ServiceException    {
+        log.info("Executing operation query");
+        QueryRequest req = new QueryRequest();
+        req.setOperation(operation);
+        req.setQueryFilter(queryFilter);
+        req.setInHeader(inHeader);
+
+        try {
+            RequestProcessor.getInstance().startQuery(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+
+
+
+
+
 
 
     public void queryFailed(ServiceExceptionType serviceException,
@@ -116,9 +153,8 @@ public class ConnectionProvider implements ConnectionProviderPort {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        //throw new ServiceException("serviceException...");
+        throw new ServiceException("operation not supported");
     }
-
 
     public GenericAcknowledgmentType queryConfirmed(QueryConfirmedType queryConfirmed,
                                                     Holder<CommonHeaderType> header) throws ServiceException    {
@@ -127,38 +163,14 @@ public class ConnectionProvider implements ConnectionProviderPort {
         log.debug(header.value);
         try {
             GenericAcknowledgmentType _return = null;
-            return _return;
+            throw new ServiceException("operation not supported");
+
+            // return _return;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        //throw new ServiceException("serviceException...");
     }
-
-
-
-
-    public void query(QueryOperationType operation,
-                      QueryFilterType queryFilter,
-                      CommonHeaderType header,
-                      Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation query");
-        log.debug(operation);
-        log.debug(queryFilter);
-        log.debug(header);
-        try {
-            CommonHeaderType outHeaderValue = null;
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-        //throw new ServiceException("serviceException...");
-    }
-
-
-
-
 
     public void modifyCheck(String connectionId,
                             ModifyRequestCriteriaType criteria,
@@ -171,11 +183,12 @@ public class ConnectionProvider implements ConnectionProviderPort {
         try {
             CommonHeaderType outHeaderValue = null;
             outHeader.value = outHeaderValue;
+            throw new ServiceException("operation not supported");
+
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        //throw new ServiceException("serviceException...");
     }
 
 
@@ -188,11 +201,12 @@ public class ConnectionProvider implements ConnectionProviderPort {
         try {
             CommonHeaderType outHeaderValue = null;
             outHeader.value = outHeaderValue;
+            throw new ServiceException("operation not supported");
+
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        //throw new ServiceException("serviceException...");
     }
 
     public void modifyCancel(String connectionId,
@@ -204,11 +218,12 @@ public class ConnectionProvider implements ConnectionProviderPort {
         try {
             CommonHeaderType outHeaderValue = null;
             outHeader.value = outHeaderValue;
+            throw new ServiceException("operation not supported");
+
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        //throw new ServiceException("serviceException...");
     }
 
 }
