@@ -237,10 +237,8 @@ public class CreateReservation extends HttpServlet {
         if (strParam != null && !strParam.trim().equals("")) {
             explicitPath = strParam.trim();
             this.log.debug("explicit path: " + explicitPath);
-            
-            System.out.println("explicitPath: " + explicitPath);
+
             inHops = explicitPath.split("\\s+");
-            System.out.println("inHops.length: " + inHops.length);
             for (int i = 0; i < inHops.length; i++) {
                 inHops[i] = inHops[i].trim();
                 if (inHops[i].equals(" ") || inHops[i].equals("")) {
