@@ -18,7 +18,10 @@ import net.sf.json.JSONObject;
 
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwcapContent;
+import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneSwitchingCapabilitySpecificInfo;
 
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -291,6 +294,16 @@ public class CreateReservation extends HttpServlet {
             layer2Info.setSrcVtag(srcVtag);
             layer2Info.setDestVtag(destVtag);
             requestedPath.setLayer2Info(layer2Info);
+            //update ath with vlan info
+            if(!pathHops.isEmpty()){
+            	if(!"any".equals(srcVlan)){
+            		this.createVlanHop(srcVlan, pathHops.get(0));
+            	}
+            	if(!"any".equals(destVlan)){
+            		this.createVlanHop(destVlan, pathHops.get(pathHops.size()-1));
+            	}
+            }
+            
         }else if(layer.equals("layer3")) {
             Layer3Info layer3Info = new Layer3Info();
             
@@ -341,5 +354,17 @@ public class CreateReservation extends HttpServlet {
         }
         this.log.debug("handlePath:end");
         return requestedPath;
+    }
+    
+    private void createVlanHop(String vlan, CtrlPlaneHopContent hop) {
+    	CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
+		CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+		CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+		swcapInfo.setVlanRangeAvailability(vlan);
+		swcap.setSwitchingCapabilitySpecificInfo(swcapInfo );
+		link.setSwitchingCapabilityDescriptors(swcap);
+		link.setId(hop.getLinkIdRef());
+		hop.setLinkIdRef(null);
+		hop.setLink(link);
     }
 }
