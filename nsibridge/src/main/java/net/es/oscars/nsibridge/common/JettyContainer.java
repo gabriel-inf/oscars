@@ -27,6 +27,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 public class JettyContainer {
+    private String hostname;
+
     public HashMap<String, Object> getSoapHandlers() {
         return soapHandlers;
     }

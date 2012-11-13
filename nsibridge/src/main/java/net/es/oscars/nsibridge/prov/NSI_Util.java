@@ -1,5 +1,6 @@
 package net.es.oscars.nsibridge.prov;
 
+import net.es.oscars.nsibridge.common.JettyContainer;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.framework.types.ServiceExceptionType;
@@ -167,7 +168,8 @@ public class NSI_Util {
         ht.setProtocolVersion(ph.getProtocolVersion());
         ht.setProviderNSA(ph.getProviderNSA());
         ht.setRequesterNSA(ph.getRequesterNSA());
-        ht.setReplyTo("foo.net");
+
+        ht.setReplyTo("http://jupiter.es.net:8288/ConnectionService");
         return ht;
 
     }

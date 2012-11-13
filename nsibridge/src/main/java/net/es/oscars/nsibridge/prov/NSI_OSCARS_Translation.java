@@ -5,17 +5,20 @@ import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.beans.config.StpConfig;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0.connection.types.ReservationRequestCriteriaType;
+import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlanePathContent;
 
 import java.util.List;
 
 public class NSI_OSCARS_Translation {
-
+    private static final Logger log = Logger.getLogger(NSI_OSCARS_Translation.class);
     public static CancelResContent makeOscarsCancel(String oscarsGri) {
         CancelResContent crc = new CancelResContent();
         crc.setGlobalReservationId(oscarsGri);
         return crc;
+
+
     }
 
     public static ResCreateContent makeOscarsResv(ResvRequest req) {
@@ -78,7 +81,13 @@ public class NSI_OSCARS_Translation {
         for (StpConfig cfg : stpConfigs) {
             if (cfg.getStpId().equals(stpId)) return cfg;
         }
-        return null;
+
+        log.info("could not find STP config for: "+stpId+", generating a default one");
+        StpConfig def = new StpConfig();
+        def.setOscarsId(stpId);
+        def.setOscarsVlan(100);
+        def.setStpId(stpId);
+        return def;
     }
 
 }

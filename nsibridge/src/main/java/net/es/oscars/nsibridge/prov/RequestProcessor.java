@@ -11,8 +11,12 @@ import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.term.NSI_Term_Event;
 import net.es.oscars.nsibridge.state.term.NSI_Term_SM;
+import net.es.oscars.nsibridge.task.QueryTask;
 import net.es.oscars.utils.task.TaskException;
+import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
+
+import java.util.Date;
 
 public class RequestProcessor {
     private static final Logger log = Logger.getLogger(RequestProcessor.class);
@@ -130,11 +134,25 @@ public class RequestProcessor {
 
 
     public void startQuery(QueryRequest request) throws ServiceException, TaskException {
+        RequestHolder rh = RequestHolder.getInstance();
+        rh.getQueryRequests().add(request);
+
+
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        QueryTask queryTask = new QueryTask(request);
+
+        try {
+            wf.schedule(queryTask , now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
+
 
         CommonHeaderType inHeader = request.getInHeader();
         CommonHeaderType outHeader = this.makeOutHeader(inHeader);
         request.setOutHeader(outHeader);
-        throw new ServiceException("unsupported operation");
     }
 
     private CommonHeaderType makeOutHeader(CommonHeaderType inHeader) {
