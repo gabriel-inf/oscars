@@ -11,6 +11,7 @@ configure service vpls ${vpls.id} no mesh-sdp ${sdp.id}:${vpls.id}
 configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} shutdown
 configure service vpls ${vpls.id} no sap ${ifce.name}:${ifce.vlan}
 </#list>
+configure service vpls ${vpls.id} shutdown
 configure service no vpls ${vpls.id}
 
 <#if sdps??>
