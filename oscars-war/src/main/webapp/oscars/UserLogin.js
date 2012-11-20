@@ -144,9 +144,17 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
         var reservationCreatePane = new dojox.layout.ContentPane(
             {title:'Create Reservation', id: 'reservationCreatePane'},
              dojo.doc.createElement('div'));
+        //turn on path field
+        dojo.connect(reservationCreatePane, "onDownloadEnd", function(){
+            if(responseObject.specifyPath == true){
+                dojo.byId("authorizedPathDisplay").style.display = "";
+            }
+        });
         reservationCreatePane.setHref("forms/reservationCreate.html");
         mainTabContainer.addChild(reservationCreatePane, 0);
         reservationCreatePane.startup();
+        
+        
     }
     // reservation details form
     if (responseObject.authorizedTabs.reservationDetailsPane) {

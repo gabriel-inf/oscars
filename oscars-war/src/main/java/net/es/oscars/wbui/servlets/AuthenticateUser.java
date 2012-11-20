@@ -17,7 +17,9 @@ import net.es.oscars.authN.soap.gen.*;
 import net.es.oscars.authN.soap.gen.policy.*;
 import net.es.oscars.utils.clients.AuthZClient;
 import net.es.oscars.authZ.soap.gen.*;
+import net.es.oscars.common.soap.gen.AuthConditionType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
+import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.topology.PathTools;
@@ -42,7 +44,7 @@ public class AuthenticateUser extends HttpServlet {
         log.info(netLogger.start(methodName));
         PrintWriter out = response.getWriter();
         ServletCore core = (ServletCore)
-            getServletContext().getAttribute(ServletCore.CORE);
+                getServletContext().getAttribute(ServletCore.CORE);
         // if setup during init failed, unlikely to work on later
         // servlet calls, so not using getInstance
         if (core == null) {
@@ -58,7 +60,7 @@ public class AuthenticateUser extends HttpServlet {
         String guestLogin = userSession.getGuestLogin();
         String sessionName = "";
         if (userName != null && guestLogin != null &&
-            userName.equals(guestLogin)) {
+                userName.equals(guestLogin)) {
             sessionName = "1234567890";
         } else {
             Random generator = new Random();
@@ -82,7 +84,7 @@ public class AuthenticateUser extends HttpServlet {
             setSessionReq.setSessionName(sessionName);
             Object[] sessionReq = new Object[]{setSessionReq};
             Object[] sessionResp =
-                authNPolicyClient.invoke("setSession", sessionReq);
+                    authNPolicyClient.invoke("setSession", sessionReq);
             this.handleDisplay(authZClient, attrs, userName, outputMap, out);
         } catch (OSCARSServiceException e) {
             ServletUtils.handleFailure(out, log, e, methodName);
@@ -123,8 +125,8 @@ public class AuthenticateUser extends HttpServlet {
      * @param out handles output back to browser
      */
     public void handleDisplay(AuthZClient client, SubjectAttributes attrs,
-                String userName, Map<String, Object> outputMap, PrintWriter out)
-            throws OSCARSServiceException {
+            String userName, Map<String, Object> outputMap, PrintWriter out)
+                    throws OSCARSServiceException {
 
         this.log.debug("handleDisplay.start");
         Map<String, Object> authorizedTabs = new HashMap<String, Object>();
@@ -136,7 +138,7 @@ public class AuthenticateUser extends HttpServlet {
 
         CheckMultiAccessParams req = new CheckMultiAccessParams();
         req.setSubjectAttrs(attrs);
- 
+
         List<ReqPermType> reqPermTypes = req.getReqPermissions();
         ReqPermType rp = new ReqPermType();
         rp.setResource("Users");
@@ -159,14 +161,14 @@ public class AuthenticateUser extends HttpServlet {
         permissions.add("list");
         permissions.add("query");
         reqPermTypes.add(rp);
-        
+
         Object[] soapReq = new Object[]{req};
         Object[] resp = client.invoke("checkMultiAccess", soapReq); 
         MultiAccessPerms reply = (MultiAccessPerms) resp[0];
         List<MultiAccessPerm> accessPerms = reply.getAccessPerm();
 
         Map<String, HashMap<String, String>> resourcePerms =
-            new HashMap<String, HashMap<String,String>>();
+                new HashMap<String, HashMap<String,String>>();
         for (MultiAccessPerm accessPerm: accessPerms) {
             HashMap<String, String> permMap = new HashMap<String, String>();
             List<PermType> permTypes = accessPerm.getPermissionGranted();
@@ -174,6 +176,31 @@ public class AuthenticateUser extends HttpServlet {
                 permMap.put(permType.getPermission(), permType.getAction());
             }
             resourcePerms.put(accessPerm.getResource(), permMap);
+
+            //debug stuff
+            outputMap.put("specifyPath", Boolean.FALSE);
+            outputMap.put("displayPath", Boolean.FALSE);
+            for(PermType permGranted : accessPerm.getPermissionGranted()){
+                if(permGranted.getConditions() != null){
+                    for(AuthConditionType authCond : permGranted.getConditions().getAuthCondition()){
+                        if(AuthZConstants.RESERVATIONS.equals(accessPerm.getResource()) &&
+                                AuthZConstants.CREATE.equals(permGranted.getPermission()) &&
+                                AuthZConstants.SPEC_PATH_ELEMS.equals(authCond.getName()) && 
+                                authCond.getConditionValue() != null &&
+                                !authCond.getConditionValue().isEmpty() &&
+                                "true".equals(authCond.getConditionValue().get(0))){
+                            outputMap.put("specifyPath", Boolean.TRUE);
+                        }else if(AuthZConstants.RESERVATIONS.equals(accessPerm.getResource()) &&
+                                AuthZConstants.QUERY.equals(permGranted.getPermission()) &&
+                                AuthZConstants.INT_HOPS_ALLOWED.equals(authCond.getName()) && 
+                                authCond.getConditionValue() != null &&
+                                !authCond.getConditionValue().isEmpty() &&
+                                "true".equals(authCond.getConditionValue().get(0))){
+                            outputMap.put("displayPath", Boolean.TRUE);
+                        }
+                    }
+                }
+            }
         }
         String authVal = resourcePerms.get("Reservations").get("list");
         if (authVal == null) {
@@ -185,7 +212,7 @@ public class AuthenticateUser extends HttpServlet {
         } else {
             outputMap.put("reservationsDisplay", Boolean.FALSE);
         }
-        
+
 
         authVal = resourcePerms.get("Reservations").get("query");
         if (authVal == null) {
@@ -209,7 +236,7 @@ public class AuthenticateUser extends HttpServlet {
         }
 
 
-        
+
         String authQueryVal = resourcePerms.get("Users").get("query");
         if (authQueryVal == null) {
             authQueryVal = "DENIED";

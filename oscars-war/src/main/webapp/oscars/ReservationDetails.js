@@ -171,7 +171,13 @@ oscars.ReservationDetails.cloneReservation = function () {
     if (oscars.Utils.isBlank(node.innerHTML)) {
         layer2Reservation = false;
     }
-    if (pathSectionNode.style.display != "none") {
+   /* Removing section below because a) it doesn't work and b) the more common
+      case is you almost always don't want it to copy the path. This basically 
+      moves the extra clicks from the common case (not specifying path) where 
+      you would need to delete the path, to the less common case where you want 
+      the exact same path and can just copy-paste.
+      
+   if (pathSectionNode.style.display != "none") {
         if (layer2Reservation) {
             tableNode = dojo.byId("pathReplace");
         } else {
@@ -191,6 +197,8 @@ oscars.ReservationDetails.cloneReservation = function () {
             textareaWidget.setValue(pathStr);
         }
     }
+    */
+    
     if (layer2Reservation) {
         var srcVlan = node.innerHTML;
         dijit.byId("srcVlan").setValue(node.innerHTML);
