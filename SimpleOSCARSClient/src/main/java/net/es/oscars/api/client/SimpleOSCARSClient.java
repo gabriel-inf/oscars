@@ -336,11 +336,11 @@ public final class SimpleOSCARSClient {
                     Object[] res = client.invoke("modifyReservation",req);
                     ModifyResReply response = (ModifyResReply) res[0];
                     if (outputFormat.equals("humanReadable")) {
-                        System.out.println ("Response: " + response.getReservation().getGlobalReservationId() + " , " +
-                                response.getReservation().getStatus());
+                        System.out.println ("Response: " + response.getGlobalReservationId() + " , " +
+                                response.getStatus());
                         System.out.println ("[modifyReservation] completed gri= " +
-                                    response.getReservation().getGlobalReservationId() + " status=" +
-                                    response.getReservation().getStatus());
+                                    response.getGlobalReservationId() + " status=" +
+                                    response.getStatus());
                     }
                     else if (outputFormat.equals("rawResponse")) {
                         marshaller.marshal( (new ObjectFactory()).createModifyReservationResponse(response), System.out );
