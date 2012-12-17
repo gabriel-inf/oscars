@@ -690,6 +690,8 @@ public class ResourceManager {
         List<String> reqDomains = null;
         List<Reservation> reservations = null;
         Boolean internalPathAuthorized = false;
+        internalPathAuthorized = internalHopsAllowed(authConditions);
+
         List<String> loginIds = new ArrayList<String>();
         List<ResDetails> resDetailsList = new ArrayList<ResDetails>();
         this.log.debug(netLogger.start(event));
