@@ -1,3 +1,0 @@
----
-soap:
-    publishTo:  'http://localhost:9001/OSCARS'

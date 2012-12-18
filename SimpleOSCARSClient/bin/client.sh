@@ -15,4 +15,4 @@ if [ ! -f "$JAR_FILE" ]; then
 fi
 
 # Run the command, setting the config path, and specifying to use stdin
-java -Done-jar.verbose=false -Done-jar.info=false -Done-jar.main.class=net.es.oscars.api.client.SimpleOSCARSClient -jar $JAR_FILE -o config_path=$CONFIG_PATH -f -
+java -Done-jar.verbose=false -Done-jar.info=false -Done-jar.main.class=net.es.oscars.api.client.SimpleOSCARSClient -jar $JAR_FILE -o config_path=$CONFIG_PATH $* 
