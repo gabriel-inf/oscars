@@ -54,8 +54,18 @@
         </xsd:annotation>        
     </xsd:element>
    
+    <xsd:element name="evts" type="tns:EthernetVlanType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                This Ethernet VLAN Transport Service element is used to specify
+                a point-to-point Ethernet VLAN service request in the NSI CS
+                protocol.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+    
     <!-- These are the modifiable parameters within this service. -->
-    <xsd:element name="capacity" type="xsd:int" />
+    <xsd:element name="capacity" type="xsd:long" />
     
     <!-- Type definitions for services types. -->
     <xsd:complexType name="P2PServiceBaseType">
@@ -85,7 +95,7 @@
             </xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="capacity"        type="xsd:int" />
+            <xsd:element name="capacity"        type="xsd:long" />
             <xsd:element name="directionality"  type="types:DirectionalityType" default="Bidirectional" />
             <xsd:element name="symmetricPath"   type="xsd:boolean" minOccurs="0" />
             <xsd:element name="sourceSTP"       type="types:StpType" />
@@ -129,9 +139,69 @@
             <xsd:extension  base="tns:P2PServiceBaseType">
                 <xsd:sequence>
                     <xsd:element name="mtu"       type="xsd:int" minOccurs="0" />
-                    <xsd:element name="burstsize" type="xsd:int" minOccurs="0" />
+                    <xsd:element name="burstsize" type="xsd:long" minOccurs="0" />
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    <xsd:complexType name="EthernetVlanType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                Point-to-Point Ethernet VLAN service definition.
+                
+                Elements:
+                
+                capacity - Capacity of the service in Mb/s including ethernet
+                framing headers.
+                
+                directionality - The (uni or bi) directionality of the service.
+                
+                symmetricPath - An indication that both directions of a bidirectional
+                circuit must fallow the same path.  Only applicable when
+                directionality is "Bidirectional".  If not specified then value
+                is assumed to be false.
+                
+                sourceSTP - Source STP of the service.
+                
+                destSTP - Destination STP of the service.
+                
+                ero - Hop-by-hop ordered list of STP from sourceSTP to
+                destSTP. List does not include sourceSTP and destSTP.
+                
+                mtu - Specifies the maximum transmission unit size in bits.
+                
+                burstsize - Specifies the maximum number of bits that can be
+                send to the interface before the sender must wait before
+                sending again.
+                
+                sourceVLAN -  Specifies the VLAN identifier for the source port
+                (1 - 4095).
+                
+                destVLAN -  Specifies the VLAN identifier for the destination port
+                (1 - 4095).
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension  base="tns:EthernetBaseType">
+                <xsd:sequence>
+                    <xsd:element name="sourceVLAN" type="tns:vlanIdType" />
+                    <xsd:element name="destVLAN"   type="tns:vlanIdType" />
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:simpleType name="vlanIdType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                A simple type modelling a VLAN identifier and restricting range
+                to between 1 - 4095.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="1"/>
+            <xsd:maxInclusive value="4095"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>
