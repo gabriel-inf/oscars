@@ -9,7 +9,7 @@
 %define relnum 1
 
 Name:           oscars-%{subpackage_name}
-Version:        0.6
+Version:        0.6.1
 Release:        %{relnum}
 Summary:        OSCARS PCE Null Aggregator Service 
 License:        distributable, see LICENSE

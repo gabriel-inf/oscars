@@ -5,7 +5,7 @@
 %define relnum 1
 
 Name:           oscars-%{package_name}
-Version:        0.6
+Version:        0.6.1
 Release:        %{relnum}
 Summary:        OSCARS Environment
 License:        distributable, see LICENSE

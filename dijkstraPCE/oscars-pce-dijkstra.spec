@@ -6,10 +6,10 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum  3 
+%define relnum 1 
 
 Name:           oscars-pce-%{pce_name}
-Version:        0.6
+Version:        0.6.1
 Release:        %{relnum}
 Summary:        OSCARS Dijkstra PCE
 License:        distributable, see LICENSE

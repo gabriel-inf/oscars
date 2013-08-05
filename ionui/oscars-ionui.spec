@@ -6,10 +6,10 @@
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
 %define war_dir /var/lib/oscars/ion/war-tmp
-%define relnum 4 
+%define relnum 1 
 
 Name:           oscars-%{package_name}
-Version:        0.6
+Version:        0.6.1
 Release:        %{relnum}
 Summary:        ION Web User Interface 
 License:        distributable, see LICENSE

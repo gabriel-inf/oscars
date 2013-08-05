@@ -8,7 +8,7 @@
 %define relnum 1
 
 Name:           oscars-%{package_name}
-Version:        0.6
+Version:        0.6.1
 Release:        %{relnum}
 Summary:        OSCARS WS-Notification Broker 
 License:        distributable, see LICENSE
