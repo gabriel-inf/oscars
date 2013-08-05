@@ -30,7 +30,7 @@
 
   <http:conduit name="*.http-conduit">
     <http:client ReceiveTimeout="120000"/>
-    <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>

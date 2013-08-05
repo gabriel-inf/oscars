@@ -19,7 +19,7 @@
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <http:conduit name="{http://oscars.es.net/OSCARS/authN}AuthNPort.http-conduit">
-    <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -42,7 +42,7 @@
     </http:tlsClientParameters>
    </http:conduit>
    <http:conduit name="{http://oscars.es.net/OSCARS/authNPolicy}AuthNPolicyPort.http-conduit">
-    <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>

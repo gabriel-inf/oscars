@@ -82,7 +82,7 @@
   <!-- configuration for SSL connections  -->
 
   <http:conduit name="*.http-conduit">
-    <http:tlsClientParameters secureSocketProtocol="SSL">
+    <http:tlsClientParameters secureSocketProtocol="SSL" disableCNCheck="true">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -108,7 +108,7 @@
    </http:conduit>
     
    <http:conduit name="{http://oscars.es.net/OSCARS/wsnbroker}WSNBrokerPort.http-conduit">
-    <http:tlsClientParameters secureSocketProtocol="SSL">
+    <http:tlsClientParameters secureSocketProtocol="SSL" disableCNCheck="true">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
