@@ -1,8 +1,8 @@
 %define install_base /opt/oscars
-%define relnum 2 
+%define relnum 1 
 
 Name:           oscars
-Version:        0.6
+Version:        0.6.1
 Release:        %{relnum}
 Summary:        OSCARS  
 License:        distributable, see LICENSE
