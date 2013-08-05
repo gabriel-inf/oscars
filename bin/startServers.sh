@@ -143,6 +143,7 @@ startPSS() {
     DRAGONPSS="DRAGON"
     EOMPLSPSS="EOMPLS"
     OPENFLOWPSS="OPENFLOW"
+    OPENFLOWJPSS="OPENFLOWJ"
     #Get PSS choice, but keep stubPSS the default
     whichPSS="STUB"
     Config=$(sh $OSCARS_DIST/bin/parseManifest.sh Utils Utils $CONTEXT )
@@ -165,6 +166,8 @@ startPSS() {
         startEomplsPSS
     elif [ "$whichPSS" == "$OPENFLOWPSS" ]; then
         startOpenflowPSS
+    elif [ "$whichPSS" == "$OPENFLOWJPSS" ]; then
+        startOpenflowJPSS
     else
         startStubPSS
     fi
@@ -184,6 +187,10 @@ startEomplsPSS(){
 
 startOpenflowPSS(){
     startService "PSSService" "PSSService" "openflowPSS" "openflowPSS"
+}
+
+startOpenflowJPSS(){
+    startService "PSSService" "PSSService" "openflowjPSS" "openflowjPSS"
 }
 
 startLookup(){
