@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 1 
+%define relnum 2 
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -74,7 +74,9 @@ perl -e 's/%{package_name}-\$vers/%{package_name}/g' -pi $(find %{buildroot}/%{i
 
 %post
 #configure database
-%{install_base}/sql/configure_database %{install_base}/sql/
+if [ $1 -eq 1 ]; then
+    %{install_base}/sql/configure_database %{install_base}/sql/
+fi
 
 #Create directory for PID files
 mkdir -p %{run_dir}

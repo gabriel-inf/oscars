@@ -2,7 +2,7 @@
 %define oscars_src_dir rpm-environment
 %define oscars_dist /opt/oscars
 %define oscars_home /etc/oscars
-%define relnum 1
+%define relnum 2
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -49,7 +49,9 @@ bash common-soap/bin/exportconfig ./ %{oscars_home} %{buildroot}
 chmod 755 /etc/profile.d/oscars.sh
 mkdir -p %{oscars_home}/modules
 mkdir -p %{oscars_home}/keystores
-%{oscars_dist}/bin/gendefaultcerts %{oscars_home}/keystores
+if [ $1 -eq 1 ]; then
+    %{oscars_dist}/bin/gendefaultcerts %{oscars_home}/keystores
+fi
 chown oscars:oscars %{oscars_home}/keystores/*
 chmod 600 %{oscars_home}/keystores/*
 
