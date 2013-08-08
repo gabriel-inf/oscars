@@ -452,25 +452,7 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         if (isSetupError || isTeardownError) {
             this.status = PSSConstants.FAIL;
             this.setReservationState();
-
-            // try to do a local path teardown
-            try {
-                TeardownReqContent pssReq = new TeardownReqContent();
-                Coordinator coordinator = Coordinator.getInstance();
-                pssReq.setTransactionId(this.getTransactionId());
-                pssReq.setCallbackEndpoint(coordinator.getCallbackEndpoint());
-                pssReq.setReservation(resDetails);
-                PSSTeardownPathAction pathTeardownAction = new PSSTeardownPathAction (this.getName() + "-PSSTeardownPathAction",
-                                                                                      null,
-                                                                                       pssReq);
-                pathTeardownAction.execute();
-                if (pathTeardownAction.getState() == CoordAction.State.FAILED) {
-                   throw pathTeardownAction.getException();
-                }
-                isTeardownPending = true;
-            } catch (Exception ex) {
-                LOG.warn(netLogger.error("ProcessErrorEvent", ErrSev.MINOR, "failed to teardown an ACTIVE circuit"));
-            }
+            this.sendTeardown();
         }
 
          ErrorReport errRep = new ErrorReport(errorCode,
@@ -482,6 +464,35 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                                               ModuleName.COORD,
                                               eventContent.getErrorSource());
          this.fail (new OSCARSServiceException(errRep));
+    }
+    
+    //Sends a teardown request to clean-up active circuits on failure
+    private void sendTeardown() {
+        //no need to send two teardown requests
+        if(isTeardownPending){
+            return;
+        }
+        
+        // try to do a local path teardown
+        LOG.info(netLogger.start("sendTeardown"));
+        try {
+            TeardownReqContent pssReq = new TeardownReqContent();
+            Coordinator coordinator = Coordinator.getInstance();
+            pssReq.setTransactionId(this.getTransactionId());
+            pssReq.setCallbackEndpoint(coordinator.getCallbackEndpoint());
+            pssReq.setReservation(resDetails);
+            PSSTeardownPathAction pathTeardownAction = new PSSTeardownPathAction (this.getName() + "-PSSTeardownPathAction",
+                                                                                  null,
+                                                                                   pssReq);
+            pathTeardownAction.execute();
+            if (pathTeardownAction.getState() == CoordAction.State.FAILED) {
+               throw pathTeardownAction.getException();
+            }
+            isTeardownPending = true;
+            LOG.info(netLogger.end("sendTeardown"));
+        } catch (Exception ex) {
+            LOG.error(netLogger.error("sendTeardown", ErrSev.MINOR, "failed to teardown an ACTIVE circuit"));
+        }
     }
 
     // sends UPSTREAM event to nextIDC (downstream) IDC
@@ -686,7 +697,12 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
                                                                   StateEngineValues.UNKNOWN,
                                                                   errorRep);
         action.execute();
-
+        
+        //clean-up any active circuits
+        if(this.status != null){
+            this.sendTeardown();
+        }
+        
         if (action.getState() == CoordAction.State.FAILED) {
             LOG.error(netLogger.error(method,ErrSev.MAJOR,"rmUpdateStatus failed with exception " +
                                       action.getException().getMessage()));
