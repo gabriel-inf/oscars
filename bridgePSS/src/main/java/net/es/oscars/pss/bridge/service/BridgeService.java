@@ -10,11 +10,14 @@ import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 import net.es.oscars.pss.api.CircuitService;
 import net.es.oscars.pss.api.Connector;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
+import net.es.oscars.pss.beans.PSSRequest;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSCommand;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.CircuitServiceConfig;
 import net.es.oscars.pss.bridge.util.BridgeUtils;
+import net.es.oscars.pss.soap.gen.TeardownReqContent;
+
 import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.enums.ActionType;
@@ -99,6 +102,7 @@ public class BridgeService implements CircuitService {
         String errorMessage = null;
         OSCARSFaultReport faultReport = new OSCARSFaultReport ();
         faultReport.setDomainId(PathTools.getLocalDomainId());
+        PSSRequest request = action.getRequest();
         ResDetails res = null;
 
         try {
@@ -168,8 +172,28 @@ public class BridgeService implements CircuitService {
                 
             }
             action.setFaultReport(faultReport);
-            
             ClassFactory.getInstance().getWorkflow().update(action);
+
+            if (action.getActionType().equals(ActionType.SETUP)){
+                PSSAction remove = new PSSAction();
+                TeardownReqContent tdReq = new TeardownReqContent();
+                tdReq.setReservation(res);
+                request.setTeardownReq(tdReq);
+                request.setRequestType(PSSRequest.PSSRequestTypes.TEARDOWN);
+                remove.setRequest(request);
+                remove.setActionType(ActionType.TEARDOWN);
+
+                deviceCommand = cg.getConfig(remove, deviceId);
+                comm.setDeviceCommand(deviceCommand);
+                try {
+                    conn.sendCommand(comm);
+                } catch (PSSException f){
+                    log.error(f);
+                }
+
+            }
+
+            action.setStatus(ActionStatus.FAIL);
             throw e;
         }
         System.out.println("sent command!");
