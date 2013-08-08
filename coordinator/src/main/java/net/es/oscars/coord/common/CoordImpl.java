@@ -669,6 +669,9 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             PathRequest request =  PathRequest.getPathRequest(PathRequest.PSS_CREATE_PATH +  "-" + gri,
                                                               createPathReq.getMessageProperties(),
                                                               resDetails);
+            //eliminates race condition with CONFIRMED events. make sure the createPath sets the path.
+            request.setResDetails(resDetails);
+            
             request.execute();
             if ( request.getState().equals(State.FAILED)) {
                 throw request.getException();
