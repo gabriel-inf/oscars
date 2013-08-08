@@ -773,6 +773,9 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                 PathRequest request =  PathRequest.getPathRequest(PathRequest.PSS_TEARDOWN_PATH +  "-" + gri,
                                                                   teardownPathReq.getMessageProperties(),
                                                                   resDetails);
+                //eliminates race condition with CONFIRMED events. make sure the createPath sets the path.
+                request.setResDetails(resDetails);
+
                 request.execute();
                 retStatus = StateEngineValues.INTEARDOWN;
                 if (request.getState().equals(State.FAILED)) {
