@@ -3,14 +3,14 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.ifces.StateException;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.headers.CommonHeaderType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
-import net.es.oscars.nsibridge.state.life.NSI_Term_Event;
-import net.es.oscars.nsibridge.state.life.NSI_Term_SM;
 import net.es.oscars.nsibridge.task.QueryTask;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
@@ -120,8 +120,8 @@ public class RequestProcessor {
             throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
         }
         try {
-            NSI_Term_SM sm = smh.getTermStateMachines().get(connId);
-            sm.process(NSI_Term_Event.RECEIVED_NSI_TERM_RQ);
+            NSI_Life_SM sm = smh.getTermStateMachines().get(connId);
+            sm.process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ);
         } catch (StateException ex) {
             log.error(ex);
             throw new ServiceException("term state machine does not allow transition: "+connId);

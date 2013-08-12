@@ -22,7 +22,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public void doLocalTerm() {
+    public void localTerm() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -36,7 +36,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
     }
 
     @Override
-    public void sendNsiTermCF() {
+    public void sendTermCF() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -51,7 +51,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public void sendNsiTermFL() {
+    public void notifyForcedEnd() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();

@@ -1,18 +1,27 @@
 package net.es.oscars.nsibridge.state.prov;
 
 import net.es.oscars.nsibridge.ifces.SM_State;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
 
 
-public enum NSI_Prov_State implements SM_State {
-    INITIAL,
-    SCHEDULED,
+public class NSI_Prov_State implements SM_State {
 
-    PROVISIONING,
-    PROVISION_FAILED,
-    PROVISIONED,
+    private ProvisionStateEnumType enumType;
+    public String value() {
+        return enumType.value();
 
-    RELEASING,
-    RELEASE_FAILED,
+    }
+    public void setValue(String value) {
+        enumType = ProvisionStateEnumType.fromValue(value);
 
+    }
+    public Object state() {
+        return enumType;
+    }
+    public void setState(Object state) {
+        if (state instanceof ProvisionStateEnumType) {
+            enumType = (ProvisionStateEnumType) state;
+        }
+    }
 
 }

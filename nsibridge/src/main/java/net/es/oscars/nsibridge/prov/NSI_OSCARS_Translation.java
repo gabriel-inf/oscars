@@ -2,10 +2,10 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.beans.config.StpConfig;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.connection.types.ReservationRequestCriteriaType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.types.TypeValuePairType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.P2PServiceBaseType;
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.*;
 
@@ -43,23 +43,36 @@ public class NSI_OSCARS_Translation {
 
         rc.setDescription(req.getDescription());
 
-        urc.setBandwidth(crit.getBandwidth());
+        P2PServiceBaseType p2ps = null;
+        for (Object o : crit.getAny()) {
+            if (o instanceof P2PServiceBaseType) {
+                p2ps = (P2PServiceBaseType) o;
+            }
+        }
+        if (p2ps == null) {
+            throw new TranslationException("no p2ps element!");
+        }
+        Long capacity = p2ps.getCapacity();
+        int bandwidth = capacity.intValue();
+
+
+        urc.setBandwidth(bandwidth);
         urc.setStartTime(crit.getSchedule().getStartTime().toGregorianCalendar().getTimeInMillis() / 1000);
         urc.setEndTime(crit.getSchedule().getEndTime().toGregorianCalendar().getTimeInMillis() / 1000);
-        String srcStp = crit.getPath().getSourceSTP().getLocalId();
-        String dstStp = crit.getPath().getDestSTP().getLocalId();
+        String srcStp = p2ps.getSourceSTP().getLocalId();
+        String dstStp = p2ps.getDestSTP().getLocalId();
 
 
         StpConfig srcStpCfg = findStp(srcStp);
         StpConfig dstStpCfg = findStp(dstStp);
         String nsiSrcVlan = null;
         String nsiDstVlan = null;
-        for (TypeValuePairType tvp : crit.getPath().getSourceSTP().getLabels().getAttribute()) {
+        for (TypeValuePairType tvp : p2ps.getSourceSTP().getLabels().getAttribute()) {
             if (tvp.getType().toUpperCase().equals("VLAN")) {
                 nsiSrcVlan = tvp.getValue().get(0);
             }
         }
-        for (TypeValuePairType tvp : crit.getPath().getDestSTP().getLabels().getAttribute()) {
+        for (TypeValuePairType tvp : p2ps.getDestSTP().getLabels().getAttribute()) {
             if (tvp.getType().toUpperCase().equals("VLAN")) {
                 nsiDstVlan = tvp.getValue().get(0);
             }

@@ -12,17 +12,17 @@ import net.es.oscars.utils.task.sched.Workflow;
 import java.util.Date;
 
 
-public class NSI_Leaf_Prov_Model implements NsiProvMdl {
+public class NSI_UP_Prov_Impl implements NsiProvMdl {
     String connectionId = "";
-    public NSI_Leaf_Prov_Model(String connId) {
+    public NSI_UP_Prov_Impl(String connId) {
         connectionId = connId;
     }
-    private NSI_Leaf_Prov_Model() {}
+    private NSI_UP_Prov_Impl() {}
 
 
 
     @Override
-    public void doLocalProv() {
+    public void localProv() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -37,7 +37,7 @@ public class NSI_Leaf_Prov_Model implements NsiProvMdl {
     }
 
     @Override
-    public void sendNsiProvCF() {
+    public void sendProvCF() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -51,7 +51,7 @@ public class NSI_Leaf_Prov_Model implements NsiProvMdl {
     }
 
     @Override
-    public void sendNsiProvFL() {
+    public void notifyProvFL() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -65,7 +65,7 @@ public class NSI_Leaf_Prov_Model implements NsiProvMdl {
     }
 
     @Override
-    public void doLocalRel() {
+    public void localRel() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -79,7 +79,7 @@ public class NSI_Leaf_Prov_Model implements NsiProvMdl {
     }
 
     @Override
-    public void sendNsiRelCF() {
+    public void sendRelCF() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -93,7 +93,7 @@ public class NSI_Leaf_Prov_Model implements NsiProvMdl {
     }
 
     @Override
-    public void sendNsiRelFL() {
+    public void notifyRelFL() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();

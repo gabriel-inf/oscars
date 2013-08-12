@@ -191,6 +191,9 @@
     <xsd:element name="queryNotificationSync"           type="tns:QueryNotificationType" />
     <xsd:element name="queryNotificationSyncConfirmed"  type="tns:QueryNotificationConfirmedType" />
     <xsd:element name="queryNotificationSyncFailed"     type="tns:QueryFailedType" />
+
+    <!-- ********** Error message elements ********** -->
+    <xsd:element name="error" type="tns:GenericErrorType" />
     
     <!-- ********** Notification message elements ********** -->
     <xsd:element name="errorEvent"             type="tns:ErrorEventType" />
@@ -513,6 +516,29 @@
         <xsd:sequence>
             <xsd:element name="connectionId"        type="ftypes:ConnectionIdType" />
             <xsd:element name="connectionStates"    type="tns:ConnectionStatesType" />
+            <xsd:element name="serviceException"    type="ftypes:ServiceExceptionType" />
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="GenericErrorType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">
+                A generic "Error" message type sent in response to a previous
+                protocol "Request" message.  An error message is generated when
+                an error condition occurs that does not result in a state
+                machine transition.  This type is used in response to all
+                request types that can return an error.
+                
+                The correlationId carried in the NSI header will identify the
+                original request associated with this error message.
+                
+                Elements:
+                
+                serviceException - Specific error condition - the reason for the
+                failure.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
             <xsd:element name="serviceException"    type="ftypes:ServiceExceptionType" />
         </xsd:sequence>
     </xsd:complexType>

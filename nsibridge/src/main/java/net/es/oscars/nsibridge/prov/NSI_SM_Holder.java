@@ -1,21 +1,19 @@
 package net.es.oscars.nsibridge.prov;
 
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.state.actv.NSI_Actv_SM;
-import net.es.oscars.nsibridge.state.actv.NSI_Actv_State;
-import net.es.oscars.nsibridge.state.actv.NSI_Actv_TH;
-import net.es.oscars.nsibridge.state.actv.NSI_UP_Actv_Impl;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
+import net.es.oscars.nsibridge.state.actv.*;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
+import net.es.oscars.nsibridge.state.life.NSI_Life_TH;
 import net.es.oscars.nsibridge.state.life.NSI_UP_Life_Impl;
-import net.es.oscars.nsibridge.state.prov.NSI_Leaf_Prov_Model;
+import net.es.oscars.nsibridge.state.prov.NSI_UP_Prov_Impl;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_TH;
 import net.es.oscars.nsibridge.state.resv.NSI_UP_Resv_Impl;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_TH;
-import net.es.oscars.nsibridge.state.life.NSI_Term_SM;
-import net.es.oscars.nsibridge.state.life.NSI_Term_TH;
 
 import java.util.HashMap;
 
@@ -23,7 +21,7 @@ public class NSI_SM_Holder {
     private HashMap<String, NSI_Actv_SM> actStateMachines= new HashMap<String, NSI_Actv_SM>();
     private HashMap<String, NSI_Prov_SM> provStateMachines= new HashMap<String, NSI_Prov_SM>();
     private HashMap<String, NSI_Resv_SM> resvStateMachines= new HashMap<String, NSI_Resv_SM>();
-    private HashMap<String, NSI_Term_SM> termStateMachines= new HashMap<String, NSI_Term_SM>();
+    private HashMap<String, NSI_Life_SM> termStateMachines= new HashMap<String, NSI_Life_SM>();
 
     private static NSI_SM_Holder instance;
     private NSI_SM_Holder() {}
@@ -36,7 +34,7 @@ public class NSI_SM_Holder {
         NSI_Actv_SM asm = this.findNsiActSM(connId);
         NSI_Prov_SM psm = this.findNsiProvSM(connId);
         NSI_Resv_SM rsm = this.findNsiResvSM(connId);
-        NSI_Term_SM tsm = this.findNsiTermSM(connId);
+        NSI_Life_SM tsm = this.findNsiTermSM(connId);
         boolean error = false;
         String errMsg = "";
         if (asm != null) {
@@ -60,7 +58,9 @@ public class NSI_SM_Holder {
             throw new ServiceException(errMsg);
         }
         asm = new NSI_Actv_SM(connId);
-        asm.setState(NSI_Actv_State.INACTIVE);
+        NSI_Actv_State as = new NSI_Actv_State();
+        as.setState(NSI_Actv_StateEnum.INACTIVE);
+        asm.setState(as);
         NSI_Actv_TH ath = new NSI_Actv_TH();
         asm.setTransitionHandler(ath);
         NSI_UP_Actv_Impl aml = new NSI_UP_Actv_Impl(connId);
@@ -68,10 +68,12 @@ public class NSI_SM_Holder {
 
 
         psm = new NSI_Prov_SM(connId);
-        psm.setState(NSI_Prov_State.SCHEDULED);
+        NSI_Prov_State ps = new NSI_Prov_State();
+        ps.setState(ProvisionStateEnumType.RELEASED);
+        psm.setState(ps);
         NSI_Prov_TH pth = new NSI_Prov_TH();
         psm.setTransitionHandler(pth);
-        NSI_Leaf_Prov_Model pml = new NSI_Leaf_Prov_Model(connId);
+        NSI_UP_Prov_Impl pml = new NSI_UP_Prov_Impl(connId);
         pth.setMdl(pml);
 
 
@@ -81,8 +83,8 @@ public class NSI_SM_Holder {
         NSI_UP_Resv_Impl rml = new NSI_UP_Resv_Impl(connId);
         rth.setMdl(rml);
 
-        tsm = new NSI_Term_SM(connId);
-        NSI_Term_TH tth = new NSI_Term_TH();
+        tsm = new NSI_Life_SM(connId);
+        NSI_Life_TH tth = new NSI_Life_TH();
         tsm.setTransitionHandler(tth);
         NSI_UP_Life_Impl tml = new NSI_UP_Life_Impl(connId);
         tth.setMdl(tml);
@@ -109,7 +111,7 @@ public class NSI_SM_Holder {
         return resvStateMachines.get(connId);
     }
 
-    public NSI_Term_SM findNsiTermSM(String connId) {
+    public NSI_Life_SM findNsiTermSM(String connId) {
         return termStateMachines.get(connId);
     }
 
@@ -126,7 +128,7 @@ public class NSI_SM_Holder {
         return resvStateMachines;
     }
 
-    public HashMap<String, NSI_Term_SM> getTermStateMachines() {
+    public HashMap<String, NSI_Life_SM> getTermStateMachines() {
         return termStateMachines;
     }
 }

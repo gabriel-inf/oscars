@@ -213,6 +213,11 @@ Description: This is a draft version of the WSDL common types and messages for t
         <wsdl:part name="queryNotificationSyncFailed" element="types:queryNotificationSyncFailed" />
     </wsdl:message>
     
+    <!-- ********** Error message set ********** -->
+    <wsdl:message name="error">
+        <wsdl:part name="error" element="types:error" />
+    </wsdl:message>
+    
     <!-- ********** Notification message set ********** -->
     <wsdl:message name="errorEvent">
         <wsdl:part name="errorEvent" element="types:errorEvent" />

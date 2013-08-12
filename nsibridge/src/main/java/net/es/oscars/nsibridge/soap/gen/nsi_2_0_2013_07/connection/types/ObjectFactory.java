@@ -25,6 +25,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceE
 @XmlRegistry
 public class ObjectFactory {
 
+    private final static QName _Error_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "error");
     private final static QName _QueryNotification_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "queryNotification");
     private final static QName _Acknowledgment_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "acknowledgment");
     private final static QName _ReserveFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "reserveFailed");
@@ -131,6 +132,14 @@ public class ObjectFactory {
      */
     public QueryNotificationType createQueryNotificationType() {
         return new QueryNotificationType();
+    }
+
+    /**
+     * Create an instance of {@link GenericErrorType }
+     * 
+     */
+    public GenericErrorType createGenericErrorType() {
+        return new GenericErrorType();
     }
 
     /**
@@ -315,6 +324,15 @@ public class ObjectFactory {
      */
     public QuerySummaryResultType createQuerySummaryResultType() {
         return new QuerySummaryResultType();
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericErrorType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2013/07/connection/types", name = "error")
+    public JAXBElement<GenericErrorType> createError(GenericErrorType value) {
+        return new JAXBElement<GenericErrorType>(_Error_QNAME, GenericErrorType.class, null, value);
     }
 
     /**

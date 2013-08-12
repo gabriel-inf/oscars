@@ -13,7 +13,8 @@ public class NSI_Actv_SM implements StateMachine {
 
 
     public NSI_Actv_SM(String id) {
-        this.state = NSI_Actv_State.INACTIVE;
+        this.state = new NSI_Actv_State();
+        this.state.setState(NSI_Actv_StateEnum.INACTIVE);
         this.id = id;
     }
 
@@ -24,20 +25,26 @@ public class NSI_Actv_SM implements StateMachine {
             throw new NullPointerException("PSM: ["+this.id+"]: Null transition handler.");
         }
 
-        NSI_Actv_State prevState = (NSI_Actv_State) this.getState();
-        NSI_Actv_State nextState = null;
+        NSI_Actv_State ps = (NSI_Actv_State) this.getState();
+        NSI_Actv_State ns = new NSI_Actv_State();
         String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
         LOG.debug(pre);
         String error = pre;
 
+        NSI_Actv_StateEnum prevState = (NSI_Actv_StateEnum) this.state.state();
+        NSI_Actv_StateEnum nextState = null;
+
+
+
         switch (prevState) {
             case INACTIVE:
-                if (event.equals(NSI_Actv_Event.START_TIME)) {
-                    nextState = NSI_Actv_State.ACTIVATING;
-                    this.setState(nextState);
-                } else if (event.equals(NSI_Actv_Event.CLEANUP)) {
+                if (event.equals(NSI_Actv_Event.PAST_START_TIME)) {
+                    nextState = NSI_Actv_StateEnum.ACTIVATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Actv_Event.LOCAL_CLEANUP)) {
 
-                } else if (event.equals(NSI_Actv_Event.END_TIME)) {
+                } else if (event.equals(NSI_Actv_Event.PAST_END_TIME)) {
 
                 } else if (event.equals(NSI_Actv_Event.RECEIVED_NSI_TERM_RQ)) {
 
@@ -49,11 +56,13 @@ public class NSI_Actv_SM implements StateMachine {
                 break;
             case ACTIVATING:
                 if (event.equals(NSI_Actv_Event.LOCAL_ACT_CONFIRMED)) {
-                    nextState = NSI_Actv_State.ACTIVE;
-                    this.setState(nextState);
+                    nextState = NSI_Actv_StateEnum.ACTIVE;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else if (event.equals(NSI_Actv_Event.LOCAL_ACT_FAILED)) {
-                    nextState = NSI_Actv_State.INACTIVE;
-                    this.setState(nextState);
+                    nextState = NSI_Actv_StateEnum.INACTIVE;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);
@@ -62,18 +71,18 @@ public class NSI_Actv_SM implements StateMachine {
                 break;
 
             case ACTIVE:
-                if (event.equals(NSI_Actv_Event.END_TIME)) {
-                    nextState = NSI_Actv_State.DEACTIVATING;
-                    this.setState(nextState);
-                } else if (event.equals(NSI_Actv_Event.CLEANUP)) {
-                    nextState = NSI_Actv_State.DEACTIVATING;
-                    this.setState(nextState);
-                } else if (event.equals(NSI_Actv_Event.END_TIME)) {
-                    nextState = NSI_Actv_State.DEACTIVATING;
-                    this.setState(nextState);
+                if (event.equals(NSI_Actv_Event.PAST_END_TIME)) {
+                    nextState = NSI_Actv_StateEnum.DEACTIVATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Actv_Event.LOCAL_CLEANUP)) {
+                    nextState = NSI_Actv_StateEnum.DEACTIVATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else if (event.equals(NSI_Actv_Event.RECEIVED_NSI_TERM_RQ)) {
-                    nextState = NSI_Actv_State.DEACTIVATING;
-                    this.setState(nextState);
+                    nextState = NSI_Actv_StateEnum.DEACTIVATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);
@@ -82,11 +91,13 @@ public class NSI_Actv_SM implements StateMachine {
                 break;
             case DEACTIVATING:
                 if (event.equals(NSI_Actv_Event.LOCAL_DEACT_CONFIRMED)) {
-                    nextState = NSI_Actv_State.INACTIVE;
-                    this.setState(nextState);
+                    nextState = NSI_Actv_StateEnum.INACTIVE;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else if (event.equals(NSI_Actv_Event.LOCAL_DEACT_FAILED)) {
-                    nextState = NSI_Actv_State.ACTIVE;
-                    this.setState(nextState);
+                    nextState = NSI_Actv_StateEnum.ACTIVE;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);
@@ -97,7 +108,7 @@ public class NSI_Actv_SM implements StateMachine {
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
         LOG.debug(post);
-        this.transitionHandler.process(prevState, nextState, event, this);
+        this.transitionHandler.process(ps, ns, event, this);
     }
 
 

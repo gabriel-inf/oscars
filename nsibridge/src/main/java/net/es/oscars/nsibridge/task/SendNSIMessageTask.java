@@ -4,7 +4,7 @@ package net.es.oscars.nsibridge.task;
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.ifces.Nsi_Message;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.headers.CommonHeaderType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;

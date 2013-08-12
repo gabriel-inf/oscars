@@ -7,8 +7,8 @@ import net.es.oscars.nsibridge.beans.NSIConnection;
 import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsibridge.state.life.NSI_Term_Event;
-import net.es.oscars.nsibridge.state.life.NSI_Term_SM;
+import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
@@ -34,7 +34,7 @@ public class OscarsTermTask extends Task  {
 
 
             TermRequest req = rh.findTermRequest(connId);
-            NSI_Term_SM tsm = smh.getTermStateMachines().get(connId);
+            NSI_Life_SM tsm = smh.getTermStateMachines().get(connId);
             NSIConnection conn = ch.findConnection(connId);
             String oscarsGri = conn.getOscarsGri();
 
@@ -57,13 +57,13 @@ public class OscarsTermTask extends Task  {
             try {
                 CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc);
                 if (reply.getStatus().equals("FAILED")) {
-                    tsm.process(NSI_Term_Event.LOCAL_TERM_FAILED);
+                    tsm.process(NSI_Life_Event.LOCAL_TERM_FAILED);
                 } else {
-                    tsm.process(NSI_Term_Event.LOCAL_TERM_CONFIRMED);
+                    tsm.process(NSI_Life_Event.LOCAL_TERM_CONFIRMED);
                 }
             } catch (OSCARSServiceException e) {
                 try {
-                    tsm.process(NSI_Term_Event.LOCAL_TERM_FAILED);
+                    tsm.process(NSI_Life_Event.LOCAL_TERM_FAILED);
                 } catch (StateException e1) {
                     e.printStackTrace();
                 }

@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.state.prov;
 
 import net.es.oscars.nsibridge.ifces.*;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
 import org.apache.log4j.Logger;
 
 public class NSI_Prov_TH implements TransitionHandler {
@@ -16,35 +17,31 @@ public class NSI_Prov_TH implements TransitionHandler {
         NSI_Prov_State to = (NSI_Prov_State) gto;
         NSI_Prov_Event ev = (NSI_Prov_Event) gev;
 
-        switch (from) {
-            case INITIAL:
+        ProvisionStateEnumType fromState = (ProvisionStateEnumType) from.state();
+        ProvisionStateEnumType toState = (ProvisionStateEnumType) to.state();
 
-                break;
-            case SCHEDULED:
-                if (to.equals(NSI_Prov_State.PROVISIONING)) {
-                    mdl.doLocalProv();
+        String transitionStr = fromState+" -> "+toState;
+        switch (fromState) {
+            case RELEASED:
+                if (to.equals(ProvisionStateEnumType.PROVISIONING)) {
+                    mdl.localProv();
                 }
                 break;
+
             case PROVISIONING:
-                if (to.equals(NSI_Prov_State.PROVISIONED)) {
-                    mdl.sendNsiProvCF();
-                } else if (to.equals(NSI_Prov_State.SCHEDULED)) {
-                    mdl.sendNsiProvFL();
+                if (to.equals(ProvisionStateEnumType.PROVISIONED)) {
+                    mdl.sendProvCF();
                 }
                 break;
             case PROVISIONED:
-                if (to.equals(NSI_Prov_State.PROVISIONING)) {
-                    mdl.doLocalProv();
-                } else if (to.equals(NSI_Prov_State.RELEASING)) {
-                    mdl.doLocalRel();
+                if (to.equals(ProvisionStateEnumType.RELEASING)) {
+                    mdl.localRel();
                 }
                 break;
 
             case RELEASING:
-                if (to.equals(NSI_Prov_State.SCHEDULED)) {
-                    mdl.sendNsiRelCF();
-                } else if (to.equals(NSI_Prov_State.PROVISIONED)) {
-                    mdl.sendNsiRelFL();
+                if (to.equals(ProvisionStateEnumType.RELEASED)) {
+                    mdl.sendRelCF();
                 }
                 break;
             default:

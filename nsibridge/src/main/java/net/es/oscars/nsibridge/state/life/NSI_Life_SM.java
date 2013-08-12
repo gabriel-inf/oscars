@@ -1,19 +1,23 @@
 package net.es.oscars.nsibridge.state.life;
 
 import net.es.oscars.nsibridge.ifces.*;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
 import org.apache.log4j.Logger;
 
-public class NSI_Term_SM implements StateMachine {
+public class NSI_Life_SM implements StateMachine {
 
-    private static final Logger LOG = Logger.getLogger(NSI_Term_SM.class);
+    private static final Logger LOG = Logger.getLogger(NSI_Life_SM.class);
 
     private TransitionHandler transitionHandler;
     private SM_State state;
     private String id;
 
 
-    public NSI_Term_SM(String id) {
-        this.state = NSI_Term_State.INITIAL;
+    public NSI_Life_SM(String id) {
+        this.state = new NSI_Life_State();
+        this.state.setState(LifecycleStateEnumType.CREATED);
         this.id = id;
     }
 
@@ -24,25 +28,30 @@ public class NSI_Term_SM implements StateMachine {
             throw new NullPointerException("PSM: ["+this.id+"]: Null transition handler.");
         }
 
-        NSI_Term_State prevState = (NSI_Term_State) this.getState();
-        NSI_Term_State nextState = null;
+        NSI_Life_State ps = (NSI_Life_State) this.getState();
+        NSI_Life_State ns = new NSI_Life_State();
         String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
         LOG.debug(pre);
         String error = pre;
 
+        LifecycleStateEnumType prevState = (LifecycleStateEnumType) this.state.state();
+        LifecycleStateEnumType nextState = null;
 
 
         switch (prevState) {
-            case INITIAL:
-                if (event.equals(NSI_Term_Event.CLEANUP)) {
-                    nextState = NSI_Term_State.TERMINATING;
-                    this.setState(nextState);
-                } else if (event.equals(NSI_Term_Event.END_TIME)) {
-                    nextState = NSI_Term_State.TERMINATING;
-                    this.setState(nextState);
-                } else if (event.equals(NSI_Term_Event.RECEIVED_NSI_TERM_RQ)) {
-                    nextState = NSI_Term_State.TERMINATING;
-                    this.setState(nextState);
+            case CREATED:
+                if (event.equals(NSI_Life_Event.CLEANUP)) {
+                    nextState = LifecycleStateEnumType.TERMINATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Life_Event.END_TIME)) {
+                    nextState = LifecycleStateEnumType.TERMINATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Life_Event.RECEIVED_NSI_TERM_RQ)) {
+                    nextState = LifecycleStateEnumType.TERMINATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);
@@ -50,12 +59,14 @@ public class NSI_Term_SM implements StateMachine {
                 }
                 break;
             case TERMINATING:
-                if (event.equals(NSI_Term_Event.LOCAL_TERM_CONFIRMED)) {
-                    nextState = NSI_Term_State.TERMINATED;
-                    this.setState(nextState);
-                } else if (event.equals(NSI_Term_Event.LOCAL_TERM_FAILED)) {
-                    nextState = NSI_Term_State.TERMINATE_FAILED;
-                    this.setState(nextState);
+                if (event.equals(NSI_Life_Event.LOCAL_TERM_CONFIRMED)) {
+                    nextState = LifecycleStateEnumType.TERMINATED;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Life_Event.LOCAL_TERM_FAILED)) {
+                    nextState = LifecycleStateEnumType.FAILED;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);
@@ -66,7 +77,7 @@ public class NSI_Term_SM implements StateMachine {
                 error = pre + " : error : event ["+event+"] not allowed";
                 LOG.error(error);
                 throw new StateException(error);
-            case TERMINATE_FAILED:
+            case FAILED:
                 error = pre + " : error : event ["+event+"] not allowed";
                 LOG.error(error);
                 throw new StateException(error);
@@ -75,7 +86,7 @@ public class NSI_Term_SM implements StateMachine {
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
         LOG.debug(post);
-        this.transitionHandler.process(prevState, nextState, event, this);
+        this.transitionHandler.process(ps, ns, event, this);
     }
 
 

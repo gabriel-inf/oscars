@@ -45,4 +45,19 @@ public class NSI_UP_Actv_Impl implements NsiActvMdl {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void notifyAct() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void notifyDeact() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void notifyError() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

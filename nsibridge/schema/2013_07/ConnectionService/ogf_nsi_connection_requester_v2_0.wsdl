@@ -218,12 +218,26 @@ This document is the SOAP endpoint definition for a requester NSA and holds defi
             <wsdl:output name="queryNotificationFailedACK"  message="interface:acknowledgment" />
             <wsdl:fault  name="serviceException"            message="interface:serviceException" />
         </wsdl:operation>
+
+        <!-- ********** Error message set ********** -->
+        
+        <wsdl:operation name="error">
+            <wsdl:documentation>
+                This error message is sent from a Provider NSA to Requester
+                NSA as an indication of the occurance of an error condition.
+                This  is in response to an original request from the associated
+                Requester NSA.
+            </wsdl:documentation>
+            <wsdl:input  name="error"             message="interface:error" />
+            <wsdl:output name="errorACK"          message="interface:acknowledgment" />
+            <wsdl:fault  name="serviceException"  message="interface:serviceException" />
+        </wsdl:operation>
         
         <!-- ********** Notification message set ********** -->
         
         <wsdl:operation name="errorEvent">
             <wsdl:documentation>
-                An autonomous message issued from a Provider NSA to Requester
+                An autonomous error message issued from a Provider NSA to Requester
                 NSA.  The acknowledgment indicates that the Requester NSA has
                 accepted the notification request for processing. There are no
                 associated confirmed or failed messages.
@@ -515,6 +529,25 @@ This document is the SOAP endpoint definition for a requester NSA and holds defi
         <wsdl:operation name="queryNotificationFailed">
             <soap:operation
                 soapAction="http://schemas.ogf.org/nsi/2013/04/connection/service/queryNotificationFailed"
+                style="document" />
+            <wsdl:input>
+                <soap:header message="interface:header" part="header" use="literal"/>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:header message="interface:header" part="header" use="literal"/>
+                <soap:body use="literal" />
+            </wsdl:output>
+            <wsdl:fault name="serviceException">
+                <soap:fault name="serviceException" use="literal" />
+            </wsdl:fault>
+        </wsdl:operation>
+        
+        <!-- ********** Error operation set ********** -->
+
+        <wsdl:operation name="error">
+            <soap:operation
+                soapAction="http://schemas.ogf.org/nsi/2013/04/connection/service/error"
                 style="document" />
             <wsdl:input>
                 <soap:header message="interface:header" part="header" use="literal"/>
