@@ -9,6 +9,7 @@ import joptsimple.OptionSet;
 import net.es.oscars.nsibridge.beans.config.StpConfig;
 import net.es.oscars.nsibridge.prov.OscarsProxy;
 import net.es.oscars.nsibridge.prov.NSAConfigHolder;
+import net.es.oscars.nsibridge.svc.PersistenceHolder;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
@@ -18,8 +19,16 @@ import net.es.oscars.utils.task.sched.Schedule;
 
 import java.io.File;
 
-public class Invoker implements Runnable {
-    private boolean running = false;
+public class Invoker {
+    private static boolean keepRunning = true;
+
+    public static boolean isKeepRunning() {
+        return keepRunning;
+    }
+
+    public static void setKeepRunning(boolean keepRunning) {
+        Invoker.keepRunning = keepRunning;
+    }
 
 
     private static String context = ConfigDefaults.CTX_PRODUCTION;
@@ -36,18 +45,13 @@ public class Invoker implements Runnable {
     }
 
 
-    public static void main(String[] args) throws Exception {
-        parseArgs(args);
-        Thread thr = new Thread(Invoker.getInstance());
-        thr.start();
-    }
 
     public void setContext(String ctx) {
         context = ctx;
     }
 
-    public void run() {
-
+    public static void main(String[] args) throws Exception {
+        parseArgs(args);
 
         try {
             ContextConfig.getInstance().setContext(context);
@@ -87,21 +91,22 @@ public class Invoker implements Runnable {
             System.exit(1);
         }
 
+        Runtime.getRuntime().addShutdownHook(
+                new Thread() {
+                    public void run() {
+                        System.out.println("Shutting down..");
+                        PersistenceHolder.getInstance().getEntityManager().close();
+                        System.out.println("Shutdown complete.");
+                        Invoker.setKeepRunning(false);
+                    }
+                }
+        );
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            // System.out.println("nsiBridge still running");
-            /*
-            for (NSAAPI nsa : NSAFactory.getInstance().getNSAs()) {
-                nsa.tick();
-            }
-              */
+        while (keepRunning) {
+            Thread.sleep(1);
         }
+
+
     }
 
     public static void parseArgs(String args[])  throws java.io.IOException {
