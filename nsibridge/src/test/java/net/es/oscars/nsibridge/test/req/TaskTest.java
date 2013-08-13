@@ -5,20 +5,18 @@ import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.common.Invoker;
 import net.es.oscars.nsibridge.common.JettyContainer;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.headers.CommonHeaderType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.task.sched.Workflow;
-import org.testng.annotations.BeforeSuite;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import org.testng.annotations.Test;
 
 import javax.xml.ws.Holder;
 
 public class TaskTest {
     private static ConnectionProvider cp;
 
-    @BeforeSuite (groups = {"task"})
+    // @BeforeSuite (groups = {"task"})
     public void init() throws Exception {
         Invoker i = Invoker.getInstance();
         i.setContext(ConfigDefaults.CTX_TESTING);
@@ -36,7 +34,7 @@ public class TaskTest {
 
     }
 
-    @Test (groups = {"task"})
+   //  @Test (groups = {"task"})
     public void testTasks() throws Exception {
 
         ResvRequest rreq = NSIRequestFactory.getRequest();

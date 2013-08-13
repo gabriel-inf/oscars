@@ -14,6 +14,7 @@
         <spring.version>3.2.3.RELEASE</spring.version>
         <java.version>1.6</java.version>
         <hibernate.version>4.2.1.Final</hibernate.version>
+        <cucumber.version>1.1.4-SNAPSHOT</cucumber.version>
         <build.rootdir>/Users/haniotak/ij/0_6_trunk/nsibridge</build.rootdir>
         <oscars.version>0.0.1-SNAPSHOT</oscars.version>
 
@@ -24,8 +25,17 @@
             <id>onejar-maven-plugin.googlecode.com</id>
             <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
         </pluginRepository>
+
+
     </pluginRepositories>
     <repositories>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <!-- removed because it breaks POMs -->
             <id>java.net</id>
@@ -70,13 +80,29 @@
             <version>2.2.3</version>
         </dependency>
 
-        <!-- testing -->
+
+        <!-- cucumber testing -->
         <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.7</version>
+            <groupId>info.cukes</groupId>
+            <artifactId>cucumber-picocontainer</artifactId>
+            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>info.cukes</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+
+
+
         
         <!-- command-line parsing -->
         <dependency>
@@ -161,7 +187,6 @@
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
         </dependency>
-
 
 
         <!-- configuration -->
@@ -395,6 +420,7 @@ c                                        </wsdlOption>
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+
 
         </plugins>
 

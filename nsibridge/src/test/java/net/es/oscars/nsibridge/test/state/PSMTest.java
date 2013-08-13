@@ -8,14 +8,12 @@ import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ContextConfig;
 import org.apache.log4j.Logger;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
 
 import java.io.File;
 
 public class PSMTest {
     private static final Logger LOG = Logger.getLogger(PSMTest.class);
-    @BeforeSuite
+    // @BeforeSuite
     public void init() throws Exception {
         ContextConfig.getInstance().setContext(ConfigDefaults.CTX_TESTING);
         ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));

@@ -19,7 +19,7 @@ import net.es.oscars.utils.task.sched.Schedule;
 
 import java.io.File;
 
-public class Invoker {
+public class Invoker implements Runnable {
     private static boolean keepRunning = true;
 
     public static boolean isKeepRunning() {
@@ -45,13 +45,18 @@ public class Invoker {
     }
 
 
+    public static void main(String[] args) throws Exception {
+        parseArgs(args);
+        Thread thr = new Thread(Invoker.getInstance());
+        thr.start();
+    }
 
     public void setContext(String ctx) {
         context = ctx;
     }
 
-    public static void main(String[] args) throws Exception {
-        parseArgs(args);
+    public void run() {
+
 
         try {
             ContextConfig.getInstance().setContext(context);
@@ -103,7 +108,13 @@ public class Invoker {
         );
 
         while (keepRunning) {
-            Thread.sleep(1);
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                System.exit(1);
+
+            }
         }
 
 

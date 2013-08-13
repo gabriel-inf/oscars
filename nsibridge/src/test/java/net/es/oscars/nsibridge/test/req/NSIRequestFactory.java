@@ -6,10 +6,15 @@ import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.TermRequest;
 import net.es.oscars.nsibridge.beans.config.JettyConfig;
 import net.es.oscars.nsibridge.common.ConfigManager;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.connection.types.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.headers.CommonHeaderType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.types.TypeValuePairListType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_04.framework.types.TypeValuePairType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.*;
+
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.*;
+
+
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -59,7 +64,7 @@ public class NSIRequestFactory {
 
         ResvRequest req = new ResvRequest();
         ReservationRequestCriteriaType crit = new ReservationRequestCriteriaType();
-        PathType pt = new PathType();
+        // PathType pt = new PathType();
         StpType srcStp = new StpType();
         StpType dstStp = new StpType();
         ScheduleType sch = new ScheduleType();
@@ -89,7 +94,7 @@ public class NSIRequestFactory {
         dstTvp.getValue().add("850");
         dstStp.getLabels().getAttribute().add(dstTvp);
 
-
+        /*
         pt.setDirectionality(DirectionalityType.BIDIRECTIONAL);
         pt.setSourceSTP(srcStp);
         pt.setDestSTP(dstStp);
@@ -97,6 +102,7 @@ public class NSIRequestFactory {
 
         crit.setBandwidth(100);
         crit.setPath(pt);
+        */
         crit.setSchedule(sch);
 
 
