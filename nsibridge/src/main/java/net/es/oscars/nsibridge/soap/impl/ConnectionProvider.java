@@ -25,13 +25,14 @@ public class ConnectionProvider implements ConnectionProviderPort {
 
 
     @Override
-    public void reserve(@WebParam(mode = WebParam.Mode.INOUT, name = "connectionId", targetNamespace = "") Holder<String> connectionId,
-                        @WebParam(name = "globalReservationId", targetNamespace = "") String globalReservationId,
-                        @WebParam(name = "description", targetNamespace = "") String description,
-                        @WebParam(name = "criteria", targetNamespace = "") ReservationRequestCriteriaType criteria,
-                        @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType inHeader,
-                        @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
-            throws ServiceException {
+    public void reserve(
+            @WebParam(mode = WebParam.Mode.INOUT, name = "connectionId", targetNamespace = "") Holder<String> connectionId,
+            @WebParam(name = "globalReservationId", targetNamespace = "") String globalReservationId,
+            @WebParam(name = "description", targetNamespace = "") String description,
+            @WebParam(name = "criteria", targetNamespace = "") ReservationRequestCriteriaType criteria,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType inHeader,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
+                throws ServiceException {
         log.info("Executing operation reserve");
 
         ResvRequest req = new ResvRequest();
@@ -54,59 +55,94 @@ public class ConnectionProvider implements ConnectionProviderPort {
     }
 
     @Override
-    public void reserveAbort(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
+    public void reserveAbort(
+            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
 
     @Override
-    public void reserveCommit(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
+    public void reserveCommit(
+            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void provision(
+            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void release(
+            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
 
 
-
     @Override
-    public void provision(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void release(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
-
-    @Override
-    public void terminate(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
+    public void terminate(
+            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
 
     @Override
-    public QueryNotificationConfirmedType queryNotificationSync(@WebParam(partName = "queryNotificationSync", name = "queryNotificationSync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryNotificationType queryNotificationSync, @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header) throws QueryNotificationSyncFailed {
+    public QueryNotificationConfirmedType queryNotificationSync(
+            @WebParam(partName = "queryNotificationSync", name = "queryNotificationSync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryNotificationType queryNotificationSync,
+            @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
+                throws QueryNotificationSyncFailed {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void queryNotification(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "startNotificationId", targetNamespace = "") Integer startNotificationId, @WebParam(name = "endNotificationId", targetNamespace = "") Integer endNotificationId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
+    public void queryNotification(
+            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
+            @WebParam(name = "startNotificationId", targetNamespace = "") Integer startNotificationId,
+            @WebParam(name = "endNotificationId", targetNamespace = "") Integer endNotificationId,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public GenericAcknowledgmentType queryRecursive(@WebParam(partName = "queryRecursive", name = "queryRecursive", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType queryRecursive, @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header) throws ServiceException {
+    public GenericAcknowledgmentType queryRecursive(
+            @WebParam(partName = "queryRecursive", name = "queryRecursive", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType queryRecursive,
+            @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
+                throws ServiceException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public GenericAcknowledgmentType querySummary(@WebParam(partName = "querySummary", name = "querySummary", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummary, @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header) throws ServiceException {
+    public GenericAcknowledgmentType querySummary(
+            @WebParam(partName = "querySummary", name = "querySummary", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummary,
+            @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
+                throws ServiceException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QuerySummaryConfirmedType querySummarySync(@WebParam(partName = "querySummarySync", name = "querySummarySync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummarySync, @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header) throws QuerySummarySyncFailed {
+    public QuerySummaryConfirmedType querySummarySync(
+            @WebParam(partName = "querySummarySync", name = "querySummarySync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummarySync,
+            @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
+                throws QuerySummarySyncFailed {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
