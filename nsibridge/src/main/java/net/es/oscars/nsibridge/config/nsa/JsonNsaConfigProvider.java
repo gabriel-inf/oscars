@@ -1,4 +1,4 @@
-package net.es.oscars.nsibridge.config.oscars;
+package net.es.oscars.nsibridge.config.nsa;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -9,8 +9,8 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
-public class JsonOscarsConfigProvider  extends JsonConfigProvider implements OscarsConfigProvider {
-    private HashMap<String, OscarsConfig> configs = new HashMap<String, OscarsConfig>();
+public class JsonNsaConfigProvider extends JsonConfigProvider implements NsaConfigProvider {
+    private HashMap<String, NsaConfig> configs = new HashMap<String, NsaConfig>();
 
 
     public void loadConfig() throws Exception {
@@ -18,12 +18,12 @@ public class JsonOscarsConfigProvider  extends JsonConfigProvider implements Osc
         File configFile = new File(this.getFilename());
         String json = FileUtils.readFileToString(configFile);
         Gson gson = new Gson();
-        Type type = new TypeToken<HashMap<String, OscarsConfig>>() {}.getType();
+        Type type = new TypeToken<HashMap<String, NsaConfig>>() {}.getType();
 
         configs = gson.fromJson(json, type);
     }
 
-    public OscarsConfig getConfig(String id) {
+    public NsaConfig getConfig(String id) {
         return configs.get(id);
     }
 }

@@ -1,8 +1,8 @@
 package net.es.oscars.nsibridge.prov;
 
 
-import net.es.oscars.nsibridge.beans.config.ProviderNSAConfig;
-import net.es.oscars.nsibridge.beans.config.StpConfig;
+import net.es.oscars.nsibridge.config.nsa.NsaConfig;
+import net.es.oscars.nsibridge.config.nsa.StpConfig;
 
 public class NSAConfigHolder {
     private NSAConfigHolder() {}
@@ -12,22 +12,16 @@ public class NSAConfigHolder {
         return instance;
     }
 
-    private ProviderNSAConfig nsaConfig;
+    private NsaConfig nsaConfig;
     private StpConfig[] stpConfigs;
 
-    public ProviderNSAConfig getNsaConfig() {
+    public NsaConfig getNsaConfig() {
         return nsaConfig;
     }
 
-    public void setNsaConfig(ProviderNSAConfig nsaConfig) {
+    public void setNsaConfig(NsaConfig nsaConfig) {
         this.nsaConfig = nsaConfig;
     }
 
-    public StpConfig[] getStpConfigs() {
-        return stpConfigs;
-    }
 
-    public void setStpConfigs(StpConfig[] stpConfigs) {
-        this.stpConfigs = stpConfigs;
-    }
 }

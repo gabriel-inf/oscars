@@ -2,7 +2,7 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsibridge.beans.config.StpConfig;
+import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.P2PServiceBaseType;
@@ -150,8 +150,9 @@ public class NSI_OSCARS_Translation {
     }
 
     public static StpConfig findStp(String stpId) {
-        StpConfig[] stpConfigs = NSAConfigHolder.getInstance().getStpConfigs();
-        for (StpConfig cfg : stpConfigs) {
+        List<StpConfig> stps = NSAConfigHolder.getInstance().getNsaConfig().getStps();
+
+        for (StpConfig cfg : stps) {
             if (cfg.getStpId().equals(stpId)) return cfg;
         }
 

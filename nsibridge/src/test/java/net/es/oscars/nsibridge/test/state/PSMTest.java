@@ -17,7 +17,7 @@ public class PSMTest {
     public void init() throws Exception {
         ContextConfig.getInstance().setContext(ConfigDefaults.CTX_TESTING);
         ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
-        OscarsProxy.getInstance().setOscarsConfig(ConfigManager.getInstance().getOscarsConfig("config/oscars.yaml"));
+        // OscarsProxy.getInstance().setOscarsConfig();
 
         OscarsProxy.getInstance().initialize();
     }

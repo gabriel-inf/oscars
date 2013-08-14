@@ -13,6 +13,7 @@
         <cxf.version>2.7.6</cxf.version>
         <spring.version>3.2.3.RELEASE</spring.version>
         <java.version>1.6</java.version>
+        <slf4j.version>1.7.5</slf4j.version>
         <hibernate.version>4.2.1.Final</hibernate.version>
         <cucumber.version>1.1.4-SNAPSHOT</cucumber.version>
         <build.rootdir>/Users/haniotak/ij/0_6_trunk/nsibridge</build.rootdir>
@@ -127,18 +128,16 @@
 
         <!-- logging -->
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-    
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.6.6</version>
-        </dependency>
-
-
 
         <!-- CXF -->
         <dependency>
@@ -201,6 +200,20 @@
             <groupId>net.es.oscars</groupId>
             <artifactId>utils</artifactId>
             <version>${oscars.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.perfsonar</groupId>
+                    <artifactId>ps-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.opensymphony.quartz</groupId>
+                    <artifactId>quartz</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 

@@ -1,4 +1,4 @@
-package net.es.oscars.nsibridge.common;
+package net.es.oscars.nsibridge.soap.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;

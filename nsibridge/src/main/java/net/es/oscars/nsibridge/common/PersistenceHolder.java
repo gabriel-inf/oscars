@@ -1,4 +1,4 @@
-package net.es.oscars.nsibridge.svc;
+package net.es.oscars.nsibridge.common;
 
 
 import javax.persistence.EntityManager;
