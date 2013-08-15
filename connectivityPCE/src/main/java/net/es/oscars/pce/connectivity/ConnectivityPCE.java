@@ -50,7 +50,7 @@ public class ConnectivityPCE {
     private int maxSearchDepth;
     
     private final int DEFAULT_MAX_DEPTH = 10;
-    
+    private final int MAX_DOMAIN_BATCH_SIZE=20;
     
     /**
      * @param moduleName a String indicating the name of the module as it 
@@ -174,68 +174,73 @@ public class ConnectivityPCE {
             HashMap<String, Boolean> visitedDomains, 
             OSCARSNetLogger netLogger) throws OSCARSServiceException{
         ArrayList<CtrlPlaneDomainContent> domains = new ArrayList<CtrlPlaneDomainContent>();
-        GetTopologyRequestType topoRequest = new GetTopologyRequestType();
-        MessagePropertiesType msgProps = new MessagePropertiesType();
-        msgProps.setGlobalTransactionId("TBD");
-        topoRequest.setMessageProperties(msgProps);
-        topoRequest.getDomainId().addAll(queryQueue);
-        queryQueue.clear();
-        GetTopologyResponseType topoResponse = null;
-        HashMap<String, String> netLogProps = new HashMap<String, String>();
-        netLogProps.put("topos", OSCARSNetLogger.serializeList(topoRequest.getDomainId()));
-        try {
-            
-            this.log.debug(netLogger.start("getTopology", null, this.topoBridgeUrl, netLogProps));
-            synchronized(this){
-                if(this.topoBridgeClient == null){
-                    this.topoBridgeClient = TopoBridgeClient.getClient(topoBridgeUrl, this.topoBridgeWsdl);
-                }
-            }
-            Object[] request = {topoRequest};
-            Object [] response = this.topoBridgeClient.invoke("getTopology", request);
-            //response = this.topoBridgeClient.getTopology(topoRequest);
-            topoResponse = (GetTopologyResponseType)response[0];
-            this.log.debug(netLogger.end("getTopology", null, this.topoBridgeUrl, netLogProps));
-        } catch (Exception e) {
-            this.log.debug(netLogger.error("getTopology",ErrSev.MAJOR, e.getMessage(), topoBridgeUrl, netLogProps));
-            throw new OSCARSServiceException("Error from topoBridge: " + e.getMessage());
-        }
-        
         HashMap<String, Boolean> edgeDomainMap = new HashMap<String, Boolean>();
-        for(CtrlPlaneTopologyContent topo : topoResponse.getTopology()){
-            for(CtrlPlaneDomainContent domain : topo.getDomain()){
-                String domainId = NMWGParserUtil.normalizeURN(domain.getId());
-                visitedDomains.put(domainId, true);
-                domains.add(domain);
-                
-                //if this is the last domain then we don't need to look any further
-                if(targetDomain == null){
-                    return domains;
+        
+        //grab all domains but only grab up to MAX_DOMAIN_BATCH_SIZE at a time
+        while(!queryQueue.isEmpty()){
+            GetTopologyRequestType topoRequest = new GetTopologyRequestType();
+            MessagePropertiesType msgProps = new MessagePropertiesType();
+            msgProps.setGlobalTransactionId("TBD");
+            topoRequest.setMessageProperties(msgProps);
+            for (int i = 0; i < MAX_DOMAIN_BATCH_SIZE && !queryQueue.isEmpty(); i++){
+                topoRequest.getDomainId().add(queryQueue.remove(0));
+            }
+            GetTopologyResponseType topoResponse = null;
+            HashMap<String, String> netLogProps = new HashMap<String, String>();
+            netLogProps.put("topos", OSCARSNetLogger.serializeList(topoRequest.getDomainId()));
+            try {
+
+                this.log.debug(netLogger.start("getTopology", null, this.topoBridgeUrl, netLogProps));
+                synchronized(this){
+                    if(this.topoBridgeClient == null){
+                        this.topoBridgeClient = TopoBridgeClient.getClient(topoBridgeUrl, this.topoBridgeWsdl);
+                    }
                 }
-                
-                //Get edge domains
-                for(CtrlPlaneNodeContent node : domain.getNode()){
-                    for(CtrlPlanePortContent port : node.getPort()){
-                        for(CtrlPlaneLinkContent link : port.getLink()){
-                            String remoteDomain = NMWGParserUtil.getURN(link.getRemoteLinkId(), NMWGParserUtil.DOMAIN_TYPE);
-                            remoteDomain = NMWGParserUtil.normalizeURN(remoteDomain);
-                            if(!NMWGParserUtil.TOPO_ID_WILDCARD.equals(remoteDomain) &&
-                                    !domainId.equals(remoteDomain) && 
-                                    !visitedDomains.containsKey(remoteDomain)){
-                                edgeDomainMap.put(remoteDomain, true);
+                Object[] request = {topoRequest};
+                Object [] response = this.topoBridgeClient.invoke("getTopology", request);
+                topoResponse = (GetTopologyResponseType)response[0];
+                this.log.debug(netLogger.end("getTopology", null, this.topoBridgeUrl, netLogProps));
+            } catch (Exception e) {
+                this.log.debug(netLogger.error("getTopology",ErrSev.MAJOR, e.getMessage(), topoBridgeUrl, netLogProps));
+                throw new OSCARSServiceException("Error from topoBridge: " + e.getMessage());
+            }
+            
+            for(CtrlPlaneTopologyContent topo : topoResponse.getTopology()){
+                for(CtrlPlaneDomainContent domain : topo.getDomain()){
+                    String domainId = NMWGParserUtil.normalizeURN(domain.getId());
+                    visitedDomains.put(domainId, true);
+                    domains.add(domain);
+
+                    //if this is the last domain then we don't need to look any further
+                    if(targetDomain == null){
+                        queryQueue.clear();
+                        return domains;
+                    }
+
+                    //Get edge domains
+                    for(CtrlPlaneNodeContent node : domain.getNode()){
+                        for(CtrlPlanePortContent port : node.getPort()){
+                            for(CtrlPlaneLinkContent link : port.getLink()){
+                                String remoteDomain = NMWGParserUtil.getURN(link.getRemoteLinkId(), NMWGParserUtil.DOMAIN_TYPE);
+                                remoteDomain = NMWGParserUtil.normalizeURN(remoteDomain);
+                                if(!NMWGParserUtil.TOPO_ID_WILDCARD.equals(remoteDomain) &&
+                                        !domainId.equals(remoteDomain) && 
+                                        !visitedDomains.containsKey(remoteDomain)){
+                                    edgeDomainMap.put(remoteDomain, true);
+                                }
                             }
                         }
                     }
-                }
-                
-                //if found targetDomain then return and it will be retrieved 
-                //on the next call to this method
-                if(targetDomain != null && edgeDomainMap.containsKey(targetDomain)){
-                    return domains;
+
+                    //if found targetDomain then return and it will be retrieved 
+                    //on the next call to this method
+                    if(targetDomain != null && edgeDomainMap.containsKey(targetDomain)){
+                        queryQueue.clear();
+                        return domains;
+                    }
                 }
             }
         }
-        
         //if we're here then we didn't find the target domain so if there's
         //no new domains to search then we have no connectivity
         if(edgeDomainMap.isEmpty()){
@@ -248,7 +253,7 @@ public class ConnectivityPCE {
         
         return domains;
     }
-    
+
     /**
      * Returns the maximum number of levels for which the breadth-first 
      * search will traverse between two domains in the path until it fails.
