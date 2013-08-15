@@ -11,6 +11,7 @@ import java.util.Set;
 public class ConnectionRecord {
     protected Long id;
     protected String connectionId;
+    protected String oscarsGri;
 
     protected Set<DataplaneStatusRecord> dataplaneStatusRecords;
     protected Set<ResvRecord> resvRecords;
@@ -56,7 +57,6 @@ public class ConnectionRecord {
         this.resvRecords = resvRecords;
     }
 
-
     public ProvisionStateEnumType getProvisionState() {
         return provisionState;
     }
@@ -72,4 +72,13 @@ public class ConnectionRecord {
     public void setLifecycleState(LifecycleStateEnumType lifecycleState) {
         this.lifecycleState = lifecycleState;
     }
+
+    public String getOscarsGri() {
+        return oscarsGri;
+    }
+
+    public void setOscarsGri(String oscarsGri) {
+        this.oscarsGri = oscarsGri;
+    }
+
 }

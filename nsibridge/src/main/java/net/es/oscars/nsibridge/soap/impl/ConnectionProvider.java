@@ -36,10 +36,12 @@ public class ConnectionProvider implements ConnectionProviderPort {
         log.info("Executing operation reserve");
 
         ResvRequest req = new ResvRequest();
-        req.setConnectionId(connectionId.value);
-        req.setCriteria(criteria);
-        req.setDescription(description);
-        req.setGlobalReservationId(globalReservationId);
+        ReserveType reserveType = new ReserveType();
+        req.setReserveType(reserveType);
+        req.getReserveType().setConnectionId(connectionId.value);
+        req.getReserveType().setCriteria(criteria);
+        req.getReserveType().setDescription(description);
+        req.getReserveType().setGlobalReservationId(globalReservationId);
         req.setInHeader(inHeader);
         log.debug("connId: "+connectionId);
 

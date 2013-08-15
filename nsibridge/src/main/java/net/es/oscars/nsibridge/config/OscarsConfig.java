@@ -1,10 +1,10 @@
-package net.es.oscars.nsibridge.config.oscars;
+package net.es.oscars.nsibridge.config;
 
 
 public class OscarsConfig {
-    private String userDN = "";
-    private String issuerDN = "";
-    private boolean stub = false;
+    protected String userDN = "";
+    protected String issuerDN = "";
+    protected boolean stub = false;
 
     public OscarsConfig(){
 

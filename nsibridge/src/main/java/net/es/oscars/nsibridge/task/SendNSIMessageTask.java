@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.task;
 
 
 import net.es.oscars.nsibridge.beans.*;
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.ifces.Nsi_Message;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -30,15 +31,13 @@ public class SendNSIMessageTask extends Task  {
         try {
             super.onRun();
             log.debug(this.id + " starting");
-
-
-            NSI_ConnectionHolder ch = NSI_ConnectionHolder.getInstance();
-            NSIConnection conn = ch.findConnection(connId);
-            if (conn != null) {
+            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            if (cr!= null) {
                 log.debug("found connection entry for connId: "+connId);
             } else {
                 throw new TaskException("could not find connection entry for connId: "+connId);
             }
+            /*
 
             RequestHolder rh = RequestHolder.getInstance();
             ResvRequest rreq = rh.findResvRequest(connId);
@@ -109,9 +108,9 @@ public class SendNSIMessageTask extends Task  {
             }
 
 
+            */
 
-
-
+            /*
 
             log.debug("connId: "+connId+" replyTo: "+reqReplyTo);
             URL url;
@@ -121,6 +120,7 @@ public class SendNSIMessageTask extends Task  {
                 e.printStackTrace();
                 return;
             }
+            */
 
 
             /*

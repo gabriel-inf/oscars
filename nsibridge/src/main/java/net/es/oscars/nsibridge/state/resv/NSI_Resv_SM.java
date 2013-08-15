@@ -63,7 +63,7 @@ public class NSI_Resv_SM implements StateMachine {
                 }
                 break;
             case RESERVE_COMMITTING:
-                if (event.equals(NSI_Resv_Event.LOCAL_RESV_COMMITTED)) {
+                if (event.equals(NSI_Resv_Event.LOCAL_RESV_CONFIRMED)) {
                     ns.setState(ReservationStateEnumType.RESERVE_START);
                     this.setState(ns);
                 } else if (event.equals(NSI_Resv_Event.LOCAL_RESV_FAILED)) {

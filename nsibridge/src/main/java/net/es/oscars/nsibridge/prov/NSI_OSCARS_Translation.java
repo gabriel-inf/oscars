@@ -2,12 +2,16 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.nsa.NsaConfig;
+import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.P2PServiceBaseType;
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.*;
+import org.springframework.context.ApplicationContext;
 
 import java.util.List;
 
@@ -22,7 +26,7 @@ public class NSI_OSCARS_Translation {
     }
 
     public static ResCreateContent makeOscarsResv(ResvRequest req) throws TranslationException {
-        ReservationRequestCriteriaType crit = req.getCriteria();
+        ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
         String nsiLog;
         String oscarsLog;
 
@@ -41,7 +45,7 @@ public class NSI_OSCARS_Translation {
         pi.setPathType("loose");
         pi.setPathSetupMode("timer-automatic");
 
-        rc.setDescription(req.getDescription());
+        rc.setDescription(req.getReserveType().getDescription());
 
         P2PServiceBaseType p2ps = null;
         for (Object o : crit.getAny()) {
@@ -84,8 +88,8 @@ public class NSI_OSCARS_Translation {
         if (nsiDstVlan == null) {
             throw new TranslationException("no dst vlan in NSI message!");
         }
-        nsiLog = "nsi gri: "+req.getGlobalReservationId()+"\n";
-        nsiLog += "nsi connId: "+req.getConnectionId()+"\n";
+        nsiLog = "nsi gri: "+req.getReserveType().getGlobalReservationId()+"\n";
+        nsiLog += "nsi connId: "+req.getReserveType().getConnectionId()+"\n";
         nsiLog += "src stp: "+srcStp+" vlan: "+nsiSrcVlan+"\n";
         nsiLog += "dst stp: "+dstStp+" vlan: "+nsiDstVlan+"\n";
         nsiLog += "stime "+crit.getSchedule().getStartTime();
@@ -150,7 +154,15 @@ public class NSI_OSCARS_Translation {
     }
 
     public static StpConfig findStp(String stpId) {
-        List<StpConfig> stps = NSAConfigHolder.getInstance().getNsaConfig().getStps();
+        SpringContext sc = SpringContext.getInstance();
+        ApplicationContext ax = sc.initContext("config/beans.xml");
+
+
+        NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
+
+        NsaConfig nc = np.getConfig("local");
+
+        List<StpConfig> stps = nc.getStps();
 
         for (StpConfig cfg : stps) {
             if (cfg.getStpId().equals(stpId)) return cfg;

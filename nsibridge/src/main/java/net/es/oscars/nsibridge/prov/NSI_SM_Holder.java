@@ -18,10 +18,9 @@ import net.es.oscars.nsibridge.state.resv.NSI_Resv_TH;
 import java.util.HashMap;
 
 public class NSI_SM_Holder {
-    private HashMap<String, NSI_Actv_SM> actStateMachines= new HashMap<String, NSI_Actv_SM>();
     private HashMap<String, NSI_Prov_SM> provStateMachines= new HashMap<String, NSI_Prov_SM>();
     private HashMap<String, NSI_Resv_SM> resvStateMachines= new HashMap<String, NSI_Resv_SM>();
-    private HashMap<String, NSI_Life_SM> termStateMachines= new HashMap<String, NSI_Life_SM>();
+    private HashMap<String, NSI_Life_SM> lifeStateMachines = new HashMap<String, NSI_Life_SM>();
 
     private static NSI_SM_Holder instance;
     private NSI_SM_Holder() {}
@@ -31,16 +30,11 @@ public class NSI_SM_Holder {
     }
 
     public void makeStateMachines(String connId) throws ServiceException {
-        NSI_Actv_SM asm = this.findNsiActSM(connId);
         NSI_Prov_SM psm = this.findNsiProvSM(connId);
         NSI_Resv_SM rsm = this.findNsiResvSM(connId);
-        NSI_Life_SM tsm = this.findNsiTermSM(connId);
+        NSI_Life_SM tsm = this.findNsiLifeSM(connId);
         boolean error = false;
         String errMsg = "";
-        if (asm != null) {
-            error = true;
-            errMsg += "found existing actSM";
-        }
         if (psm != null) {
             error = true;
             errMsg += "found existing provSM";
@@ -57,15 +51,6 @@ public class NSI_SM_Holder {
         if (error) {
             throw new ServiceException(errMsg);
         }
-        asm = new NSI_Actv_SM(connId);
-        NSI_Actv_State as = new NSI_Actv_State();
-        as.setState(NSI_Actv_StateEnum.INACTIVE);
-        asm.setState(as);
-        NSI_Actv_TH ath = new NSI_Actv_TH();
-        asm.setTransitionHandler(ath);
-        NSI_UP_Actv_Impl aml = new NSI_UP_Actv_Impl(connId);
-        ath.setMdl(aml);
-
 
         psm = new NSI_Prov_SM(connId);
         NSI_Prov_State ps = new NSI_Prov_State();
@@ -91,17 +76,12 @@ public class NSI_SM_Holder {
 
 
 
-        this.actStateMachines.put(connId, asm);
         this.provStateMachines.put(connId, psm);
         this.resvStateMachines.put(connId, rsm);
-        this.termStateMachines.put(connId, tsm);
+        this.lifeStateMachines.put(connId, tsm);
 
     }
 
-
-    public NSI_Actv_SM findNsiActSM(String connId) {
-        return actStateMachines.get(connId);
-    }
 
     public NSI_Prov_SM findNsiProvSM(String connId) {
         return provStateMachines.get(connId);
@@ -111,14 +91,10 @@ public class NSI_SM_Holder {
         return resvStateMachines.get(connId);
     }
 
-    public NSI_Life_SM findNsiTermSM(String connId) {
-        return termStateMachines.get(connId);
+    public NSI_Life_SM findNsiLifeSM(String connId) {
+        return lifeStateMachines.get(connId);
     }
 
-
-    public HashMap<String, NSI_Actv_SM> getActStateMachines() {
-        return actStateMachines;
-    }
 
     public HashMap<String, NSI_Prov_SM> getProvStateMachines() {
         return provStateMachines;
@@ -128,7 +104,7 @@ public class NSI_SM_Holder {
         return resvStateMachines;
     }
 
-    public HashMap<String, NSI_Life_SM> getTermStateMachines() {
-        return termStateMachines;
+    public HashMap<String, NSI_Life_SM> getLifeStateMachines() {
+        return lifeStateMachines;
     }
 }

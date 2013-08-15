@@ -2,13 +2,13 @@ package net.es.oscars.nsibridge.prov;
 
 
 import net.es.oscars.nsibridge.beans.*;
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
-import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
-import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.task.QueryTask;
@@ -16,11 +16,13 @@ import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
+import javax.persistence.EntityManager;
 import java.util.Date;
 
 public class RequestProcessor {
     private static final Logger log = Logger.getLogger(RequestProcessor.class);
     private static RequestProcessor instance;
+    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
     private RequestProcessor() {}
     public static RequestProcessor getInstance() {
         if (instance == null) instance = new RequestProcessor();
@@ -28,24 +30,24 @@ public class RequestProcessor {
     }
 
     public void startReserve(ResvRequest request) throws ServiceException, TaskException {
-        String connId = request.getConnectionId();
+        String connId = request.getReserveType().getConnectionId();
 
-        NSI_ConnectionHolder ch = NSI_ConnectionHolder.getInstance();
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         RequestHolder rh = RequestHolder.getInstance();
 
         rh.getResvRequests().add(request);
 
-        NSIConnection conn = ch.findConnection(request.getConnectionId());
-        if (conn != null) {
-            throw new ServiceException("internal error: found existing connection for new reservation with connectionId: "+connId);
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        if (cr != null) {
+            throw new ServiceException("preexisting connection record found while starting reserve() for connectionId: "+connId);
         }
 
+        em.getTransaction().begin();
         smh.makeStateMachines(connId);
-
-        conn = new NSIConnection();
-        conn.setConnectionId(connId);
-        ch.getConnections().add(conn);
+        cr = new ConnectionRecord();
+        cr.setConnectionId(connId);
+        em.persist(cr);
+        em.getTransaction().commit();
 
         try {
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
@@ -61,46 +63,39 @@ public class RequestProcessor {
 
     }
 
-    public void startProvision(ProvRequest request) throws ServiceException, TaskException  {
+    public void startProvision(SimpleRequest request) throws ServiceException, TaskException  {
         String connId = request.getConnectionId();
 
-        NSI_ConnectionHolder ch = NSI_ConnectionHolder.getInstance();
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        RequestHolder rh = RequestHolder.getInstance();
-        rh.getProvRequests().add(request);
-        NSIConnection conn = ch.findConnection(request.getConnectionId());
-        if (conn == null) {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        if (cr == null) {
             throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
         }
-        try {
-            NSI_Prov_SM sm = smh.getProvStateMachines().get(connId);
-            sm.process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ);
-        } catch (StateException ex) {
-            log.error(ex);
-            throw new ServiceException("prov state machine does not allow transition: "+connId);
-        }
 
-        CommonHeaderType inHeader = request.getInHeader();
-        CommonHeaderType outHeader = this.makeOutHeader(inHeader);
-        request.setOutHeader(outHeader);
-    }
-    public void startRelease(RelRequest request) throws ServiceException, TaskException  {
-        String connId = request.getConnectionId();
-
-        NSI_ConnectionHolder ch = NSI_ConnectionHolder.getInstance();
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         RequestHolder rh = RequestHolder.getInstance();
-        rh.getRelRequests().add(request);
-        NSIConnection conn = ch.findConnection(request.getConnectionId());
-        if (conn == null) {
-            throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
-        }
+        rh.getSimpleRequests().add(request);
+
         try {
-            NSI_Prov_SM sm = smh.getProvStateMachines().get(connId);
-            sm.process(NSI_Prov_Event.RECEIVED_NSI_REL_RQ);
+            switch (request.getRequestType()) {
+                case PROVISION:
+                    smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ);
+                break;
+                case RELEASE:
+                    smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ);
+                break;
+                case TERMINATE:
+                    smh.getLifeStateMachines().get(connId).process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ);
+                break;
+                case RESERVE_ABORT:
+                    smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_AB);
+                break;
+                case RESERVE_COMMIT:
+                    smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_CM);
+                break;
+            }
         } catch (StateException ex) {
             log.error(ex);
-            throw new ServiceException("prov state machine does not allow transition: "+connId);
+            throw new ServiceException("state machine does not allow transition: "+connId);
         }
 
         CommonHeaderType inHeader = request.getInHeader();
@@ -108,29 +103,6 @@ public class RequestProcessor {
         request.setOutHeader(outHeader);
     }
 
-    public void startTerminate(TermRequest request) throws ServiceException, TaskException   {
-        String connId = request.getConnectionId();
-
-        NSI_ConnectionHolder ch = NSI_ConnectionHolder.getInstance();
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        RequestHolder rh = RequestHolder.getInstance();
-        rh.getTermRequests().add(request);
-        NSIConnection conn = ch.findConnection(request.getConnectionId());
-        if (conn == null) {
-            throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
-        }
-        try {
-            NSI_Life_SM sm = smh.getTermStateMachines().get(connId);
-            sm.process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ);
-        } catch (StateException ex) {
-            log.error(ex);
-            throw new ServiceException("term state machine does not allow transition: "+connId);
-        }
-
-        CommonHeaderType inHeader = request.getInHeader();
-        CommonHeaderType outHeader = this.makeOutHeader(inHeader);
-        request.setOutHeader(outHeader);
-    }
 
 
     public void startQuery(QueryRequest request) throws ServiceException, TaskException {

@@ -209,10 +209,6 @@
                     <groupId>net.perfsonar</groupId>
                     <artifactId>ps-api</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.opensymphony.quartz</groupId>
-                    <artifactId>quartz</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 

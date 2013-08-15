@@ -6,14 +6,12 @@ import joptsimple.OptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-import net.es.oscars.nsibridge.config.http.HttpConfig;
-import net.es.oscars.nsibridge.config.http.HttpConfigProvider;
+import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
-import net.es.oscars.nsibridge.config.oscars.OscarsConfig;
-import net.es.oscars.nsibridge.config.oscars.OscarsConfigProvider;
+import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.prov.OscarsProxy;
 import net.es.oscars.nsibridge.prov.NSAConfigHolder;
 import net.es.oscars.nsibridge.soap.impl.ProviderServer;
@@ -70,7 +68,7 @@ public class Invoker implements Runnable {
             ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
         } catch (ConfigException e) {
             e.printStackTrace();
-            System.exit(1);
+            Invoker.setKeepRunning(false);
         }
 
 
@@ -79,33 +77,39 @@ public class Invoker implements Runnable {
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.initContext("config/beans.xml");
 
-        OscarsConfigProvider op = ax.getBean("oscarsConfigProvider", OscarsConfigProvider.class);
+
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
-        HttpConfigProvider hp = ax.getBean("httpConfigProvider", HttpConfigProvider.class);
-
-
-
 
         NsaConfig nc = np.getConfig("local");
-        NSAConfigHolder.getInstance().setNsaConfig(nc);
 
-        for (StpConfig stp : NSAConfigHolder.getInstance().getNsaConfig().getStps()) {
+        for (StpConfig stp : nc.getStps()) {
             System.out.println("stp :"+stp.getStpId());
         }
 
+        OscarsConfig oc = ax.getBean("oscarsConfig", OscarsConfig.class);
+        HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
+
+
 
         try {
-            OscarsConfig oc = op.getConfig("local");
             OscarsProxy.getInstance().setOscarsConfig(oc);
             // OscarsProxy.getInstance().initialize();
         } catch (OSCARSServiceException e) {
             e.printStackTrace();
-            System.exit(1);
+            Invoker.setKeepRunning(false);
         }
 
-        PersistenceHolder.getInstance().getEntityManager();
+        Schedule ts = Schedule.getInstance();
 
-        HttpConfig hc = hp.getConfig("provider");
+        try {
+            ts.start();
+        } catch (TaskException e) {
+            e.printStackTrace();
+            Invoker.setKeepRunning(false);
+        }
+
+
+        PersistenceHolder.getInstance().getEntityManager();
 
         try {
             ProviderServer ps = ProviderServer.makeServer(hc);
@@ -121,14 +125,6 @@ public class Invoker implements Runnable {
         //jc.startServer();
 
 
-        Schedule ts = Schedule.getInstance();
-
-        try {
-            ts.start();
-        } catch (TaskException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
 
         Runtime.getRuntime().addShutdownHook(
                 new Thread() {

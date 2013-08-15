@@ -1,40 +1,40 @@
 package net.es.oscars.nsibridge.prov;
 
-import net.es.oscars.nsibridge.beans.config.JettyConfig;
-import net.es.oscars.nsibridge.common.JettyContainer;
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.config.HttpConfig;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
-import net.es.oscars.nsibridge.state.actv.NSI_Actv_SM;
-import net.es.oscars.nsibridge.state.actv.NSI_Actv_State;
-import net.es.oscars.nsibridge.state.actv.NSI_Actv_StateEnum;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
+import org.springframework.context.ApplicationContext;
 
+import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
+import java.util.List;
 
 public class NSI_Util {
     public static ConnectionStatesType makeConnectionStates(String connId) throws Exception {
 
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
-        NSI_Actv_SM asm = smh.getActStateMachines().get(connId);
         NSI_Prov_SM psm = smh.getProvStateMachines().get(connId);
-        NSI_Life_SM tsm = smh.getTermStateMachines().get(connId);
+        NSI_Life_SM lsm = smh.getLifeStateMachines().get(connId);
         if (rsm == null) {
 
         }
-        if (asm == null) {
 
-        }
         if (psm == null) {
 
         }
-        if (tsm == null) {
+        if (lsm == null) {
 
         }
 
@@ -55,35 +55,17 @@ public class NSI_Util {
         ProvisionStateEnumType pt = null;
         cst.setProvisionState(pt);
 
-        NSI_Actv_State as = (NSI_Actv_State) asm.getState();
-        NSI_Actv_StateEnum ase = (NSI_Actv_StateEnum) as.state();
-
         NSI_Prov_State ps = (NSI_Prov_State) psm.getState();
         ProvisionStateEnumType pse = (ProvisionStateEnumType) ps.state();
 
         NSI_Resv_State rs = (NSI_Resv_State) rsm.getState();
         ReservationStateEnumType rse = (ReservationStateEnumType) rs.state();
 
-        NSI_Life_State ls = (NSI_Life_State) tsm.getState();
+        NSI_Life_State ls = (NSI_Life_State) lsm.getState();
         LifecycleStateEnumType lse = (LifecycleStateEnumType) ls.state();
 
 
-        switch (ase) {
-            case INACTIVE:
-                dt.setActive(false);
-                break;
-            case ACTIVE:
-                dt.setActive(true);
-                break;
-            case ACTIVATING:
-                dt.setActive(false);
-                break;
-            case DEACTIVATING:
-                dt.setActive(true);
-                break;
-            default:
-                dt.setActive(false);
-        }
+
 
         cst.setDataPlaneStatus(dt);
         cst.setLifecycleState(lse);
@@ -101,6 +83,23 @@ public class NSI_Util {
         return st;
     }
 
+    public static ConnectionRecord getConnectionRecord(String connectionId) throws ServiceException {
+        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+
+        em.getTransaction().begin();
+        String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connectionId+"'";
+
+        List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
+        em.getTransaction().commit();
+        if (recordList.size() == 0) {
+            return null;
+        } else if (recordList.size() > 1) {
+            throw new ServiceException("internal error: found multiple connection records ("+recordList.size()+") with connectionId: "+connectionId);
+        } else {
+            return recordList.get(0);
+        }
+    }
+
     public static CommonHeaderType makeNsiOutgoingHeader(CommonHeaderType ph) {
 
 
@@ -110,12 +109,13 @@ public class NSI_Util {
         ht.setProviderNSA(ph.getProviderNSA());
         ht.setRequesterNSA(ph.getRequesterNSA());
 
+        SpringContext sc = SpringContext.getInstance();
+        ApplicationContext ax = sc.initContext("config/beans.xml");
+        HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
 
-        JettyConfig jc = JettyContainer.getInstance().getConfig();
-        String hostname = jc.getHttp().getHostname();
-        Integer port = jc.getHttp().getPort();
 
-        ht.setReplyTo("http://"+hostname+":"+port+"/ConnectionService");
+
+        ht.setReplyTo(hc.getUrl()+"/ConnectionService");
         return ht;
 
     }

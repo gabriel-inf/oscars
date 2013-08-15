@@ -3,8 +3,8 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.api.soap.gen.v06.CancelResContent;
 import net.es.oscars.api.soap.gen.v06.CancelResReply;
-import net.es.oscars.nsibridge.beans.NSIConnection;
-import net.es.oscars.nsibridge.beans.TermRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
@@ -27,21 +27,22 @@ public class OscarsTermTask extends Task  {
         log.debug(this.id + " starting");
         try {
             super.onRun();
+            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            if (cr!= null) {
+                log.debug("found connection entry for connId: "+connId);
+            } else {
+                throw new TaskException("could not find connection entry for connId: "+connId);
+            }
+
 
             RequestHolder rh = RequestHolder.getInstance();
-            NSI_ConnectionHolder ch = NSI_ConnectionHolder.getInstance();
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
 
 
-            TermRequest req = rh.findTermRequest(connId);
-            NSI_Life_SM tsm = smh.getTermStateMachines().get(connId);
-            NSIConnection conn = ch.findConnection(connId);
-            String oscarsGri = conn.getOscarsGri();
+            SimpleRequest req = rh.findSimpleRequest(connId);
+            NSI_Life_SM tsm = smh.getLifeStateMachines().get(connId);
+            String oscarsGri = cr.getOscarsGri();
 
-
-            if (conn != null) {
-                log.debug("found connection entry for connId: "+connId);
-            }
 
             if (req != null) {
                 log.debug("found request for connId: "+connId);

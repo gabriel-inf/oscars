@@ -1,6 +1,6 @@
 package net.es.oscars.nsibridge.soap.impl;
 
-import net.es.oscars.nsibridge.config.http.HttpConfig;
+import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
@@ -15,7 +15,7 @@ public class ProviderServer {
     }
     public static ProviderServer makeServer(HttpConfig conf) throws Exception {
         if (instance == null) {
-            instance = new ProviderServer(conf.url, conf.bus);
+            instance = new ProviderServer(conf.getUrl(), conf.getBus());
         }
         return instance;
     }
