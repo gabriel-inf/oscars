@@ -12,6 +12,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
 import org.apache.log4j.Logger;
 
 import javax.xml.ws.Holder;
+import java.util.UUID;
 
 @WebService(
                       serviceName = "ConnectionServiceProvider",
@@ -34,16 +35,24 @@ public class ConnectionProvider implements ConnectionProviderPort {
             @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
                 throws ServiceException {
         log.info("Executing operation reserve");
+        String connId;
+        if (connectionId == null || connectionId.value == null || connectionId.value.equals("")) {
+            log.info("generating new connection ID (none provided)");
+            connId = UUID.randomUUID().toString();
+
+        } else {
+            connId = connectionId.value;
+        }
+        log.debug("connId: "+connId);
 
         ResvRequest req = new ResvRequest();
         ReserveType reserveType = new ReserveType();
         req.setReserveType(reserveType);
-        req.getReserveType().setConnectionId(connectionId.value);
+        req.getReserveType().setConnectionId(connId);
         req.getReserveType().setCriteria(criteria);
         req.getReserveType().setDescription(description);
         req.getReserveType().setGlobalReservationId(globalReservationId);
         req.setInHeader(inHeader);
-        log.debug("connId: "+connectionId);
 
 
         try {

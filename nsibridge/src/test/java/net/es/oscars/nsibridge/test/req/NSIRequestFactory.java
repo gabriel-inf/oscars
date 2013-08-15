@@ -97,6 +97,7 @@ public class NSIRequestFactory {
 
 
         String connId = UUID.randomUUID().toString();
+        req.setReserveType(new ReserveType());
         req.getReserveType().setConnectionId(connId);
         req.getReserveType().setDescription("test description");
         req.getReserveType().setGlobalReservationId("some GRI");

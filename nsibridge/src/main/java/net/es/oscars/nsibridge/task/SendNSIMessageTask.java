@@ -1,26 +1,21 @@
 package net.es.oscars.nsibridge.task;
 
 
-import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.ifces.Nsi_Message;
+import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class SendNSIMessageTask extends Task  {
     private static final Logger log = Logger.getLogger(SendNSIMessageTask.class);
 
     private String connId = "";
-    private Nsi_Message message;
+    private CallbackMessages message;
 
 
-    public SendNSIMessageTask(String connId, Nsi_Message message) {
+    public SendNSIMessageTask(String connId, CallbackMessages message) {
         this.scope = "nsi";
         this.connId = connId;
         this.message = message;

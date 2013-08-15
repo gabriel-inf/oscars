@@ -63,7 +63,7 @@ public class RequestProcessor {
 
     }
 
-    public void startProvision(SimpleRequest request) throws ServiceException, TaskException  {
+    public void processSimple(SimpleRequest request) throws ServiceException, TaskException  {
         String connId = request.getConnectionId();
 
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
@@ -77,6 +77,12 @@ public class RequestProcessor {
 
         try {
             switch (request.getRequestType()) {
+                case RESERVE_ABORT:
+                    smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_AB);
+                    break;
+                case RESERVE_COMMIT:
+                    smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_CM);
+                    break;
                 case PROVISION:
                     smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ);
                 break;
@@ -85,12 +91,6 @@ public class RequestProcessor {
                 break;
                 case TERMINATE:
                     smh.getLifeStateMachines().get(connId).process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ);
-                break;
-                case RESERVE_ABORT:
-                    smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_AB);
-                break;
-                case RESERVE_COMMIT:
-                    smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_CM);
                 break;
             }
         } catch (StateException ex) {

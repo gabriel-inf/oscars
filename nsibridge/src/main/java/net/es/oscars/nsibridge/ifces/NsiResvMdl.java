@@ -16,5 +16,7 @@ public interface NsiResvMdl {
 
     public void sendRsvAbtCF();
 
+    public void sendRsvTimeout();
+
 
 }

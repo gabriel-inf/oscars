@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.state.prov;
 
 
-import net.es.oscars.nsibridge.ifces.Nsi_Message;
+import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiProvMdl;
 import net.es.oscars.nsibridge.task.LocalProvTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;
@@ -41,7 +41,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, Nsi_Message.PROV_CF);
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.PROV_CF);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
@@ -55,7 +55,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, Nsi_Message.PROV_FL);
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
@@ -83,7 +83,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, Nsi_Message.REL_CF);
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.REL_CF);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
@@ -97,7 +97,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, Nsi_Message.REL_FL);
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);

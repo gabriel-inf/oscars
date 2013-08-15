@@ -13,13 +13,9 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class BasicJPA {
-    private EntityManager em;
-    @Given("^I have initialized JPA")
-    public void initializeJPA() {
-        em = PersistenceHolder.getInstance().getEntityManager();
+public class BasicJPASteps {
+    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
 
-    }
     @When("^I insert a new ConnectionRecord with id: \"([^\"]*)\"$")
     public void insertConnectionRecord(String connId) {
         em.getTransaction().begin();
@@ -28,7 +24,7 @@ public class BasicJPA {
         em.persist(cr);
         em.getTransaction().commit();
     }
-    @Then("^I can find the record with id: \"([^\"]*)\"$")
+    @Then("^I can find the ConnectionRecord with id: \"([^\"]*)\"$")
     public void checkTheLetter(final String connId) {
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connId+"'";

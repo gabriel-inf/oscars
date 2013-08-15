@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.state.life;
 
 
-import net.es.oscars.nsibridge.ifces.Nsi_Message;
+import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 import net.es.oscars.nsibridge.task.OscarsTermTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;
@@ -40,7 +40,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, Nsi_Message.TERM_CF);
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.TERM_CF);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
@@ -51,11 +51,11 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public void notifyForcedEnd() {
+    public void notifyForcedEndErrorEvent() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, Nsi_Message.TERM_FL);
+        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR_EVENT);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);

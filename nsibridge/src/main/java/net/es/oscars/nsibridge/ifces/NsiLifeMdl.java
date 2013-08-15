@@ -6,7 +6,7 @@ public interface NsiLifeMdl {
 
     public void sendTermCF();
 
-    public void notifyForcedEnd();
+    public void notifyForcedEndErrorEvent();
 
 
 
