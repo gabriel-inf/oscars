@@ -91,8 +91,6 @@ public class ConnectionProvider implements ConnectionProviderPort {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
-
     @Override
     public void terminate(
             @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
@@ -102,14 +100,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
-    @Override
-    public QueryNotificationConfirmedType queryNotificationSync(
-            @WebParam(partName = "queryNotificationSync", name = "queryNotificationSync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryNotificationType queryNotificationSync,
-            @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
-                throws QueryNotificationSyncFailed {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    // query
 
     @Override
     public void queryNotification(
@@ -138,11 +129,21 @@ public class ConnectionProvider implements ConnectionProviderPort {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    // sync methods
+
     @Override
     public QuerySummaryConfirmedType querySummarySync(
             @WebParam(partName = "querySummarySync", name = "querySummarySync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummarySync,
             @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
                 throws QuerySummarySyncFailed {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public QueryNotificationConfirmedType queryNotificationSync(
+            @WebParam(partName = "queryNotificationSync", name = "queryNotificationSync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryNotificationType queryNotificationSync,
+            @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
+            throws QueryNotificationSyncFailed {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

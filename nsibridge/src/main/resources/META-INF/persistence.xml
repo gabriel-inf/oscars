@@ -4,8 +4,9 @@
              version="2.0">
     <persistence-unit name="net.es.oscars.nsibridge">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <class>net.es.oscars.nsibridge.beans.db.ResvReqRecord</class>
-
+        <class>net.es.oscars.nsibridge.beans.db.ConnectionRecord</class>
+        <class>net.es.oscars.nsibridge.beans.db.ResvRecord</class>
+        <class>net.es.oscars.nsibridge.beans.db.DataplaneStatusRecord</class>
         <properties>
             <property name="hibernate.ejb.cfgfile" value="hibernate.xml"/>
         </properties>
