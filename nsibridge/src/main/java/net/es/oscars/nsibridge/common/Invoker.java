@@ -13,7 +13,6 @@ import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.prov.OscarsProxy;
-import net.es.oscars.nsibridge.prov.NSAConfigHolder;
 import net.es.oscars.nsibridge.soap.impl.ProviderServer;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;

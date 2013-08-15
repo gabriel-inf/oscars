@@ -7,6 +7,7 @@ import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 
 public class ProviderServer {
     private org.apache.cxf.endpoint.Server server;
+    private boolean running = false;
 
     private static ProviderServer instance;
 
@@ -30,12 +31,22 @@ public class ProviderServer {
         sf.setServiceBean(cp);
         server = sf.create();
         server.start();
+        this.setRunning(true);
         System.out.println("... started");
     }
 
     public void stop() {
         server.stop();
         server.destroy();
+        this.setRunning(false);
 
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
     }
 }

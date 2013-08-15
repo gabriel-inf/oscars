@@ -1,11 +1,9 @@
 package net.es.oscars.nsibridge.test.req;
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
-import net.es.oscars.nsibridge.beans.ProvRequest;
 import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsibridge.beans.TermRequest;
-import net.es.oscars.nsibridge.beans.config.JettyConfig;
-import net.es.oscars.nsibridge.common.ConfigManager;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.*;
 
@@ -36,21 +34,13 @@ public class NSIRequestFactory {
         return req;
     }
 
-    public static ProvRequest getProvRequest(ResvRequest resvReq) {
-        ProvRequest pq = new ProvRequest();
-        pq.setConnectionId(resvReq.getConnectionId());
+    public static SimpleRequest getSimpleRequest(ResvRequest resvReq, SimpleRequestType type) {
+        SimpleRequest pq = new SimpleRequest ();
+        pq.setConnectionId(resvReq.getReserveType().getConnectionId());
         CommonHeaderType inHeader = makeHeader();
         pq.setInHeader(inHeader);
+        pq.setRequestType(SimpleRequestType.PROVISION);
         return pq;
-    }
-
-    public static TermRequest getTermRequest(ProvRequest preq) {
-        TermRequest tq = new TermRequest();
-        tq.setConnectionId(preq.getConnectionId());
-        CommonHeaderType inHeader = makeHeader();
-        tq.setInHeader(inHeader);
-        return tq;
-
     }
 
     public static ResvRequest getRequest() throws DatatypeConfigurationException {
@@ -107,10 +97,10 @@ public class NSIRequestFactory {
 
 
         String connId = UUID.randomUUID().toString();
-        req.setConnectionId(connId);
-        req.setDescription("test description");
-        req.setGlobalReservationId("some GRI");
-        req.setCriteria(crit);
+        req.getReserveType().setConnectionId(connId);
+        req.getReserveType().setDescription("test description");
+        req.getReserveType().setGlobalReservationId("some GRI");
+        req.getReserveType().setCriteria(crit);
 
 
         CommonHeaderType inHeader = makeHeader();

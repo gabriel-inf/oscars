@@ -1,7 +1,6 @@
 package net.es.oscars.nsibridge.test.state;
 
 
-import net.es.oscars.nsibridge.common.ConfigManager;
 import net.es.oscars.nsibridge.prov.OscarsProxy;
 
 import net.es.oscars.nsibridge.ifces.StateException;

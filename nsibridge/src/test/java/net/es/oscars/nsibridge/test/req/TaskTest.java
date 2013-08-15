@@ -1,12 +1,12 @@
 package net.es.oscars.nsibridge.test.req;
 
-import net.es.oscars.nsibridge.beans.ProvRequest;
 import net.es.oscars.nsibridge.beans.QueryRequest;
-import net.es.oscars.nsibridge.beans.TermRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.common.Invoker;
-import net.es.oscars.nsibridge.common.JettyContainer;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
+import net.es.oscars.nsibridge.soap.impl.ProviderServer;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.task.sched.Workflow;
 import net.es.oscars.nsibridge.beans.ResvRequest;
@@ -23,12 +23,10 @@ public class TaskTest {
         Thread thr = new Thread(i);
         thr.start();
 
-        cp = (ConnectionProvider) JettyContainer.getInstance().getSoapHandlers().get("ConnectionService");
         System.out.print("waiting for jetty.");
-        while (cp == null) {
+        while (ProviderServer.getInstance().isRunning() == false) {
             Thread.sleep(500);
             System.out.print(".");
-            cp = (ConnectionProvider) JettyContainer.getInstance().getSoapHandlers().get("ConnectionService");
         }
         System.out.println("\n got jetty!");
 
@@ -38,13 +36,13 @@ public class TaskTest {
     public void testTasks() throws Exception {
 
         ResvRequest rreq = NSIRequestFactory.getRequest();
-        ProvRequest preq = NSIRequestFactory.getProvRequest(rreq);
-        TermRequest treq = NSIRequestFactory.getTermRequest(preq);
+        SimpleRequest preq = NSIRequestFactory.getSimpleRequest(rreq, SimpleRequestType.PROVISION);
+        SimpleRequest treq = NSIRequestFactory.getSimpleRequest(rreq, SimpleRequestType.TERMINATE);
         QueryRequest qreq = NSIRequestFactory.getQueryRequest();
 
-        String connId = rreq.getConnectionId();
-        String gri = rreq.getGlobalReservationId();
-        String desc = rreq.getDescription();
+        String connId = rreq.getReserveType().getConnectionId();
+        String gri = rreq.getReserveType().getGlobalReservationId();
+        String desc = rreq.getReserveType().getDescription();
 
         Holder<CommonHeaderType> holder = new Holder<CommonHeaderType>();
         holder.value = rreq.getOutHeader();
