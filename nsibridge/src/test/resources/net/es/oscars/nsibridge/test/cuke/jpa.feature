@@ -2,6 +2,9 @@ Feature: JPA insertion / deletion of records
 
   I want to verify I can insert and delete JPA records
 
-  Scenario: Insert and find ConnectionRecord
-    When I insert a new ConnectionRecord with id: "foobar"
-    Then I can find the ConnectionRecord with id: "foobar"
+  Scenario: Insert, find, delete ConnectionRecord
+    Given the count of ConnectionRecords with connectionId: "foobar" is 0
+    When I insert a new ConnectionRecord with connectionId: "foobar"
+    Then the count of ConnectionRecords with connectionId: "foobar" is 1
+    Then I can delete the ConnectionRecord with connectionId: "foobar"
+    Then the count of ConnectionRecords with connectionId: "foobar" is 0

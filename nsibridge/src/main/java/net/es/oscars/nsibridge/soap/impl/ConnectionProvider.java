@@ -37,7 +37,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
         log.info("Executing operation reserve");
         String connId;
         if (connectionId == null || connectionId.value == null || connectionId.value.equals("")) {
-            log.info("generating new connection ID (none provided)");
+            log.debug("generating new connection ID (none provided)");
             connId = UUID.randomUUID().toString();
 
         } else {
@@ -69,9 +69,22 @@ public class ConnectionProvider implements ConnectionProviderPort {
     public void reserveAbort(
             @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
                 throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
+
+        SimpleRequest req = new SimpleRequest();
+        req.setConnectionId(connectionId);
+        req.setRequestType(SimpleRequestType.RESERVE_ABORT);
+        req.setInHeader(header);
+
+        try {
+            RequestProcessor.getInstance().processSimple(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 
 
@@ -79,36 +92,84 @@ public class ConnectionProvider implements ConnectionProviderPort {
     public void reserveCommit(
             @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
                 throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        SimpleRequest req = new SimpleRequest();
+        req.setConnectionId(connectionId);
+        req.setRequestType(SimpleRequestType.RESERVE_COMMIT);
+        req.setInHeader(header);
+
+        try {
+            RequestProcessor.getInstance().processSimple(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
     public void provision(
             @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
                 throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        SimpleRequest req = new SimpleRequest();
+        req.setConnectionId(connectionId);
+        req.setRequestType(SimpleRequestType.PROVISION);
+        req.setInHeader(header);
+        try {
+            RequestProcessor.getInstance().processSimple(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
     public void release(
             @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
                 throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        SimpleRequest req = new SimpleRequest();
+        req.setConnectionId(connectionId);
+        req.setRequestType(SimpleRequestType.RELEASE);
+        req.setInHeader(header);
+
+        try {
+            RequestProcessor.getInstance().processSimple(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
     public void terminate(
             @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> outHeader)
                 throws ServiceException {
-        //To change body of implemented methods use File | Settings | File Templates.
+
+        SimpleRequest req = new SimpleRequest();
+        req.setConnectionId(connectionId);
+        req.setRequestType(SimpleRequestType.TERMINATE);
+        req.setInHeader(header);
+
+        try {
+            RequestProcessor.getInstance().processSimple(req);
+            CommonHeaderType outHeaderValue = req.getOutHeader();
+            outHeader.value = outHeaderValue;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 
     // query

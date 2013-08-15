@@ -6,9 +6,12 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @Cucumber.Options(format = { "pretty", "html:target/cucumber-html-report/" })
 
+/**
+ * main class; this is needed to run the rest of the cucumber tests
+ */
 public class CukeBaseTest {
     @Test
     public void foo() {
-        System.out.println("cuke");
+        // System.out.println("cuke");
     }
 }
