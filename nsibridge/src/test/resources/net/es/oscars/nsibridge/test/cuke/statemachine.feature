@@ -29,3 +29,32 @@ Feature: State machines behavior verification
     When I submit the Reserve event "LOCAL_RESV_CHECK_CF"
     Then the ReserveStateMachine has thrown an exception
     Then the ReserveStateMachine state is "ReserveStart"
+
+
+  Scenario: No error walk through the Lifecycle uPA state machine
+    Given that I have created a new LifecycleStateMachine for connectionId: "life-sm"
+    Given that I have set the Lifecycle model implementation to be a stub
+    Then the LifecycleStateMachine state is "Created"
+
+    When I submit the Lifecycle event "RECEIVED_NSI_TERM_RQ"
+    Then the LifecycleStateMachine state is "Terminating"
+
+    When I submit the Lifecycle event "LOCAL_TERM_CONFIRMED"
+    Then the LifecycleStateMachine state is "Terminated"
+
+  Scenario: No error walk through the Provisioning uPA state machine
+    Given that I have created a new ProvisioningStateMachine for connectionId: "prov-sm"
+    Given that I have set the Provisioning model implementation to be a stub
+    Then the ProvisioningStateMachine state is "Released"
+
+    When I submit the Provisioning event "RECEIVED_NSI_PROV_RQ"
+    Then the ProvisioningStateMachine state is "Provisioning"
+
+    When I submit the Provisioning event "LOCAL_PROV_CONFIRMED"
+    Then the ProvisioningStateMachine state is "Provisioned"
+
+    When I submit the Provisioning event "RECEIVED_NSI_REL_RQ"
+    Then the ProvisioningStateMachine state is "Releasing"
+
+    When I submit the Provisioning event "LOCAL_REL_CONFIRMED"
+    Then the ProvisioningStateMachine state is "Released"
