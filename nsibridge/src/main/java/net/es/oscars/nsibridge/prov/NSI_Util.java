@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
@@ -18,9 +19,26 @@ import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
+import java.util.Date;
 import java.util.List;
 
 public class NSI_Util {
+    public static OscarsStatusRecord getLatestOscarsRecord(String connectionId) throws ServiceException {
+        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+        ConnectionRecord cr = getConnectionRecord(connectionId);
+        Date latest = null;
+        OscarsStatusRecord result = null;
+        for (OscarsStatusRecord or : cr.getOscarsStatusRecords()) {
+            if (latest == null) {
+                result = or;
+            } else if (or.getDate().after(latest)) {
+                result = or;
+            }
+
+        }
+        return result;
+    }
+
     public static ConnectionStatesType makeConnectionStates(String connId) throws Exception {
 
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();

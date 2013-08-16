@@ -8,12 +8,12 @@ import java.util.Date;
 
 @Entity
 public class OscarsStatusRecord {
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
     protected Long id;
     protected Date date;
     protected String status;
 
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
     public Long getId() {
         return id;
     }

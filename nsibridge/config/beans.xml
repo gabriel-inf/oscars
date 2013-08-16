@@ -30,6 +30,17 @@
         <property name="issuerDN" value="foo.net:issuer"/>
         <property name="stub" value="true"/>
     </bean>
+    <bean id="timingConfig"
+          class="net.es.oscars.nsibridge.config.TimingConfig"
+          scope="singleton">
+
+        <property name="resvTimeout" value="300"/>
+        <property name="queryInterval" value="15"/>
+        <property name="queryAfterResvWait" value="15"/>
+        <property name="queryAfterSetupWait" value="15"/>
+        <property name="queryAfterTeardownWait" value="15"/>
+        <property name="queryResultDelay" value="0.1"/>
+    </bean>
 
 
 

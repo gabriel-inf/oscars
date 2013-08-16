@@ -82,4 +82,13 @@ public class ConnectionRecord {
         this.oscarsGri = oscarsGri;
     }
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable
+    public Set<OscarsStatusRecord> getOscarsStatusRecords() {
+        return oscarsStatusRecords;
+    }
+
+    public void setOscarsStatusRecords(Set<OscarsStatusRecord> oscarsStatusRecords) {
+        this.oscarsStatusRecords = oscarsStatusRecords;
+    }
 }

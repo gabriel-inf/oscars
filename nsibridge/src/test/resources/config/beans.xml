@@ -23,6 +23,17 @@
         <property name="stub" value="true"/>
     </bean>
 
+    <bean id="timingConfig"
+          class="net.es.oscars.nsibridge.config.TimingConfig"
+          scope="singleton">
+
+        <property name="resvTimeout" value="30"/>
+        <property name="queryInterval" value="15"/>
+        <property name="queryAfterResvWait" value="0.1"/>
+        <property name="queryAfterSetupWait" value="0.1"/>
+        <property name="queryAfterTeardownWait" value="0.1"/>
+        <property name="queryResultDelay" value="0.1"/>
+    </bean>
 
 
     <bean id="nsaConfigProvider"
