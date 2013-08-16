@@ -50,10 +50,10 @@ public class NSI_Resv_SM implements StateMachine {
                 }
                 break;
             case RESERVE_CHECKING:
-                if (event.equals(NSI_Resv_Event.LOCAL_RESV_CONFIRMED)) {
+                if (event.equals(NSI_Resv_Event.LOCAL_RESV_CHECK_CF)) {
                     ns.setState(ReservationStateEnumType.RESERVE_HELD);
                     this.setState(ns);
-                } else if (event.equals(NSI_Resv_Event.LOCAL_RESV_FAILED)) {
+                } else if (event.equals(NSI_Resv_Event.LOCAL_RESV_CHECK_FL)) {
                     ns.setState(ReservationStateEnumType.RESERVE_FAILED);
                     this.setState(ns);
                 } else {
@@ -63,10 +63,10 @@ public class NSI_Resv_SM implements StateMachine {
                 }
                 break;
             case RESERVE_COMMITTING:
-                if (event.equals(NSI_Resv_Event.LOCAL_RESV_CONFIRMED)) {
+                if (event.equals(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF)) {
                     ns.setState(ReservationStateEnumType.RESERVE_START);
                     this.setState(ns);
-                } else if (event.equals(NSI_Resv_Event.LOCAL_RESV_FAILED)) {
+                } else if (event.equals(NSI_Resv_Event.LOCAL_RESV_COMMIT_FL)) {
                     ns.setState(ReservationStateEnumType.RESERVE_START);
                     this.setState(ns);
                 } else {
