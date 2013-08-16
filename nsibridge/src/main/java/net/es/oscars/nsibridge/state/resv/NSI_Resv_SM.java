@@ -62,6 +62,23 @@ public class NSI_Resv_SM implements StateMachine {
                     throw new StateException(error);
                 }
                 break;
+            case RESERVE_HELD:
+                if (event.equals(NSI_Resv_Event.RECEIVED_NSI_RESV_CM)) {
+                    ns.setState(ReservationStateEnumType.RESERVE_COMMITTING);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Resv_Event.RECEIVED_NSI_RESV_AB)) {
+                    ns.setState(ReservationStateEnumType.RESERVE_ABORTING);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Resv_Event.RESV_TIMEOUT)) {
+                    ns.setState(ReservationStateEnumType.RESERVE_TIMEOUT);
+                    this.setState(ns);
+                } else {
+                    error = pre + " : error : event ["+event+"] not allowed";
+                    LOG.error(error);
+                    throw new StateException(error);
+                }
+                break;
+
             case RESERVE_COMMITTING:
                 if (event.equals(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF)) {
                     ns.setState(ReservationStateEnumType.RESERVE_START);
@@ -75,13 +92,33 @@ public class NSI_Resv_SM implements StateMachine {
                     throw new StateException(error);
                 }
                 break;
-            // TODO: all cases
-
-            case RESERVE_HELD:
-                error = pre + " : error : event ["+event+"] not allowed";
+            case RESERVE_ABORTING:
+                if (event.equals(NSI_Resv_Event.LOCAL_TIMEOUT)) {
+                    ns.setState(ReservationStateEnumType.RESERVE_ABORTING);
+                    this.setState(ns);
+                } else {
+                    error = pre + " : error : event ["+event+"] not allowed";
+                    LOG.error(error);
+                    throw new StateException(error);
+                }
+                break;
+            case RESERVE_TIMEOUT:
+                if (event.equals(NSI_Resv_Event.LOCAL_RESV_ABORT_CF)) {
+                    ns.setState(ReservationStateEnumType.RESERVE_START);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Resv_Event.LOCAL_RESV_ABORT_FL)) {
+                    ns.setState(ReservationStateEnumType.RESERVE_START);
+                    this.setState(ns);
+                } else {
+                    error = pre + " : error : event ["+event+"] not allowed";
+                    LOG.error(error);
+                    throw new StateException(error);
+                }
+                break;
+            case RESERVE_FAILED:
+                error = pre + " : error : event ["+event+"] not allowed; at RESERVE_FAILED";
                 LOG.error(error);
                 throw new StateException(error);
-
         }
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";

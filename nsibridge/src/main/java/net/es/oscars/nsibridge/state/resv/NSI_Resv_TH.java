@@ -55,7 +55,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_COMMITTING:
                 if (toState == ReservationStateEnumType.RESERVE_START) {
-                    if (ev == NSI_Resv_Event.LOCAL_RESV_CONFIRMED) {
+                    if (ev == NSI_Resv_Event.LOCAL_RESV_COMMIT_CF) {
                        mdl.sendRsvCmtCF();
                     } else {
                         mdl.sendRsvCmtFL();
