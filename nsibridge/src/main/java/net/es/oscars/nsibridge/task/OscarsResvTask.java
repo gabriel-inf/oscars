@@ -66,7 +66,7 @@ public class OscarsResvTask extends Task  {
                 log.debug("could not translate NSI request");
 
                 try {
-                    rsm.process(NSI_Resv_Event.LOCAL_RESV_FAILED);
+                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                 } catch (StateException e1) {
                     ex.printStackTrace();
                     e1.printStackTrace();
@@ -84,13 +84,13 @@ public class OscarsResvTask extends Task  {
                     em.getTransaction().commit();
 
                     if (reply.getStatus().equals("FAILED")) {
-                        rsm.process(NSI_Resv_Event.LOCAL_RESV_FAILED);
+                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                     } else {
-                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CONFIRMED);
+                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
                     }
                 } catch (OSCARSServiceException e) {
                     try {
-                        rsm.process(NSI_Resv_Event.LOCAL_RESV_FAILED);
+                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                     } catch (StateException e1) {
                         e.printStackTrace();
                         e1.printStackTrace();
