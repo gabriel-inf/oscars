@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
@@ -43,7 +44,7 @@ public class NSI_OSCARS_Translation {
         pi.setPath(path);
         List<CtrlPlaneHopContent> pathHops = path.getHop();
         pi.setPathType("loose");
-        pi.setPathSetupMode("timer-automatic");
+        pi.setPathSetupMode("signal-xml");
 
         rc.setDescription(req.getReserveType().getDescription());
 
@@ -152,6 +153,26 @@ public class NSI_OSCARS_Translation {
         return rc;
 
     }
+
+    public static CreatePathContent makeOscarsSetup(String gri) throws TranslationException {
+        CreatePathContent cp = new CreatePathContent();
+        cp.setGlobalReservationId(gri);
+        return cp;
+    }
+
+    public static TeardownPathContent makeOscarsTeardown(String gri) throws TranslationException {
+        TeardownPathContent tp = new TeardownPathContent();
+        tp.setGlobalReservationId(gri);
+        return tp;
+    }
+
+    public static QueryResContent makeOscarsQuery(String gri) throws TranslationException {
+        QueryResContent tp = new QueryResContent();
+        tp.setGlobalReservationId(gri);
+        return tp;
+    }
+
+
 
     public static StpConfig findStp(String stpId) {
         SpringContext sc = SpringContext.getInstance();

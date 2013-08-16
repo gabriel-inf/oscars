@@ -1,9 +1,6 @@
 package net.es.oscars.nsibridge.prov;
 
-import net.es.oscars.api.soap.gen.v06.CancelResContent;
-import net.es.oscars.api.soap.gen.v06.CancelResReply;
-import net.es.oscars.api.soap.gen.v06.CreateReply;
-import net.es.oscars.api.soap.gen.v06.ResCreateContent;
+import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.authN.soap.gen.DNType;
 import net.es.oscars.authN.soap.gen.VerifyDNReqType;
 import net.es.oscars.authN.soap.gen.VerifyReply;
@@ -108,9 +105,81 @@ public class OscarsProxy {
     }
 
 
+    public TeardownPathResponseContent sendTeardown(TeardownPathContent tp) throws OSCARSServiceException {
+        MessagePropertiesType msgProps = tp.getMessageProperties();
+        if (msgProps == null) {
+            msgProps = this.makeMessageProps();
+        }
+
+        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps);
+        msgProps = updateMessageProperties(msgProps, subjectAttributes);
+        tp.setMessageProperties(msgProps);
+
+        // Build the query
+        Object[] req = new Object[]{subjectAttributes, tp};
+        if (oscarsConfig.isStub()) {
+            System.out.println("stub mode, not contacting coordinator");
+            TeardownPathResponseContent tr = new TeardownPathResponseContent();
+            tr.setStatus("INTEARDOWN");
+            return tr;
+        } else {
+            Object[] res = coordClient.invoke("sendTeardown",req);
+            TeardownPathResponseContent tr = (TeardownPathResponseContent) res[0];
+            return tr;
+        }
+    }
 
 
 
+    public CreatePathResponseContent sendSetup(CreatePathContent tp) throws OSCARSServiceException {
+        MessagePropertiesType msgProps = tp.getMessageProperties();
+        if (msgProps == null) {
+            msgProps = this.makeMessageProps();
+        }
+
+        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps);
+        msgProps = updateMessageProperties(msgProps, subjectAttributes);
+        tp.setMessageProperties(msgProps);
+
+        // Build the query
+        Object[] req = new Object[]{subjectAttributes, tp};
+        if (oscarsConfig.isStub()) {
+            System.out.println("stub mode, not contacting coordinator");
+            CreatePathResponseContent tr = new CreatePathResponseContent();
+            tr.setStatus("INSETUP");
+            return tr;
+        } else {
+            Object[] res = coordClient.invoke("sendSetup",req);
+            CreatePathResponseContent tr = (CreatePathResponseContent) res[0];
+            return tr;
+        }
+    }
+
+
+    public QueryResReply sendQuery(QueryResContent qc) throws OSCARSServiceException {
+        MessagePropertiesType msgProps = qc.getMessageProperties();
+        if (msgProps == null) {
+            msgProps = this.makeMessageProps();
+        }
+
+        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps);
+        msgProps = updateMessageProperties(msgProps, subjectAttributes);
+        qc.setMessageProperties(msgProps);
+
+        // Build the query
+        Object[] req = new Object[]{subjectAttributes, qc};
+        if (oscarsConfig.isStub()) {
+            System.out.println("stub mode, not contacting coordinator");
+            QueryResReply tr = new QueryResReply();
+            String gri = qc.getGlobalReservationId();
+            tr.getReservationDetails().setGlobalReservationId(gri);
+            return tr;
+        } else {
+            Object[] res = coordClient.invoke("sendQuery",req);
+            QueryResReply tr = (QueryResReply) res[0];
+            return tr;
+        }
+    }
 
 
 

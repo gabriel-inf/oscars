@@ -15,6 +15,7 @@ public class ConnectionRecord {
 
     protected Set<DataplaneStatusRecord> dataplaneStatusRecords;
     protected Set<ResvRecord> resvRecords;
+    protected Set<OscarsStatusRecord> oscarsStatusRecords;
     protected ProvisionStateEnumType provisionState;
     protected LifecycleStateEnumType lifecycleState;
 
