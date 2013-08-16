@@ -3,7 +3,6 @@ package net.es.oscars.nsibridge.state.life;
 import net.es.oscars.nsibridge.ifces.SM_State;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 
-
 public class NSI_Life_State implements SM_State {
     private LifecycleStateEnumType enumType;
     public String value() {

@@ -8,7 +8,6 @@ import net.es.oscars.nsibridge.task.SendNSIMessageTask;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
-
 import java.util.Date;
 
 

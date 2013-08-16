@@ -2,8 +2,6 @@ package net.es.oscars.nsibridge.state.life;
 
 import net.es.oscars.nsibridge.ifces.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
 import org.apache.log4j.Logger;
 
 public class NSI_Life_SM implements StateMachine {

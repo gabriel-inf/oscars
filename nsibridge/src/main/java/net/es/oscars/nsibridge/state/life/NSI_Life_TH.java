@@ -19,8 +19,6 @@ public class NSI_Life_TH implements TransitionHandler {
         LifecycleStateEnumType fromState = (LifecycleStateEnumType) from.state();
         LifecycleStateEnumType toState = (LifecycleStateEnumType) to.state();
 
-
-
         switch (fromState) {
             case CREATED:
                 if (to.equals(LifecycleStateEnumType.TERMINATING)) {

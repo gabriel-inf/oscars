@@ -9,8 +9,4 @@ public enum NSI_Life_Event implements SM_Event {
 
     LOCAL_TERM_CONFIRMED,
     LOCAL_TERM_FAILED,
-
-
-
-
 }
