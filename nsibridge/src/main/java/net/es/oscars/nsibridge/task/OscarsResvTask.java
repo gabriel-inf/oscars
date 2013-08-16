@@ -4,6 +4,7 @@ package net.es.oscars.nsibridge.task;
 import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.prov.*;
@@ -17,6 +18,7 @@ import net.es.oscars.nsibridge.beans.ResvRequest;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
+import java.util.Date;
 
 public class OscarsResvTask extends Task  {
     private static final Logger log = Logger.getLogger(OscarsResvTask.class);
@@ -65,12 +67,15 @@ public class OscarsResvTask extends Task  {
                 log.debug(ex);
                 log.debug("could not translate NSI request");
 
-                try {
-                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                } catch (StateException e1) {
-                    ex.printStackTrace();
-                    e1.printStackTrace();
-                }
+                em.getTransaction().begin();
+                cr.setOscarsGri(null);
+                OscarsStatusRecord or = new OscarsStatusRecord();
+                or.setStatus("FAILED");
+                or.setDate(new Date());
+                cr.getOscarsStatusRecords().add(or);
+                em.persist(cr);
+                em.getTransaction().commit();
+
 
             }
             if (rc != null) {
@@ -83,18 +88,16 @@ public class OscarsResvTask extends Task  {
                     em.persist(cr);
                     em.getTransaction().commit();
 
-                    if (reply.getStatus().equals("FAILED")) {
-                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                    } else {
-                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
-                    }
                 } catch (OSCARSServiceException e) {
-                    try {
-                        rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                    } catch (StateException e1) {
-                        e.printStackTrace();
-                        e1.printStackTrace();
-                    }
+
+                    em.getTransaction().begin();
+                    cr.setOscarsGri(null);
+                    OscarsStatusRecord or = new OscarsStatusRecord();
+                    or.setStatus("FAILED");
+                    or.setDate(new Date());
+                    cr.getOscarsStatusRecords().add(or);
+                    em.persist(cr);
+                    em.getTransaction().commit();
 
                 }
             }

@@ -3,7 +3,7 @@ package net.es.oscars.nsibridge.state.life;
 
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
-import net.es.oscars.nsibridge.task.OscarsTermTask;
+import net.es.oscars.nsibridge.task.OscarsCancelTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
@@ -25,10 +25,10 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task oscarsTerm = new OscarsTermTask(connectionId);
+        Task oscarsCancel = new OscarsCancelTask(connectionId);
 
         try {
-            wf.schedule(oscarsTerm, now + 1000);
+            wf.schedule(oscarsCancel, now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }

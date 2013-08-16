@@ -68,6 +68,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_FAILED:
                 if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
+                    mdl.localAbort();
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -83,7 +84,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_TIMEOUT:
                 if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
-
+                    mdl.localAbort();
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
