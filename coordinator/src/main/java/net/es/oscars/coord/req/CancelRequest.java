@@ -39,6 +39,7 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
     private boolean                 sentCONFIRMED = false;
     private boolean                 receivedCOMPLETED = false;
     private boolean                 sentCOMPLETED = false;
+    private boolean                 sentTeardown = false;
     private CtrlPlanePathContent    reservedPath = null;
     private ResDetails              resDetails = null;
     private String                  nextDomain = null;
@@ -230,9 +231,11 @@ public class CancelRequest extends CoordRequest <CancelResContent, CancelResRepl
     private void checkReservationState(String method) {
 
         // is it time to start a teardown
-        if (PCEFinished && isActive) {
+        if (PCEFinished && isActive && !sentTeardown) {
             this.startTeardown(method, resDetails);
+            sentTeardown = true;
         }
+
         // is it time to send a CANCEL_CONFIRMED
         if ( PCEFinished && ! isActive && ! isLocalOnly &&
                 !firstDomain && !sentCONFIRMED &&
