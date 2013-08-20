@@ -6,10 +6,9 @@ import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
-import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.*;
 
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;

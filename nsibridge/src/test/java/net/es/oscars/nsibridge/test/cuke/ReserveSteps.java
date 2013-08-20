@@ -7,22 +7,29 @@ import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReserveType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
 import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class ReserveSteps {
     private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
     private int resvReqCount;
+    private List<ConnectionRecord> connectionRecords;
+    private String theConnectionId;
 
     @When("^I submit reserve\\(\\) with connectionId: \"([^\"]*)\"$")
     public void I_submit_reserve_with_connectionId(String arg1) throws Throwable {
@@ -35,8 +42,6 @@ public class ReserveSteps {
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
         cp.reserve(connHolder, rt.getGlobalReservationId(), rt.getDescription(), rt.getCriteria(), resvRequest.getInHeader(), outHolder);
     }
-
-
 
 
     @Given("^that I know the count of all pending reservation requests$")
@@ -52,4 +57,50 @@ public class ReserveSteps {
         assertThat(newCount, is(resvReqCount+arg1));
 
     }
+
+
+    @Given("^I know all the connectionRecords$")
+    public void I_know_all_the_connectionRecords() throws Throwable {
+        em.getTransaction().begin();
+        String query = "SELECT c FROM ConnectionRecord c ";
+        connectionRecords = em.createQuery(query, ConnectionRecord.class).getResultList();
+        em.getTransaction().commit();
+    }
+
+    @Then("^I can find exactly (\\d+) new connectionRecords")
+    public void I_can_find_exactly_N_connectionRecords(int arg1) throws Throwable {
+        em.getTransaction().begin();
+        String query = "SELECT c FROM ConnectionRecord c";
+
+        List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
+        em.getTransaction().commit();
+
+        List<ConnectionRecord> newRecords = new ArrayList<ConnectionRecord>();
+        for (ConnectionRecord cr : recordList) {
+            if (!connectionRecords.contains(cr)) {
+                newRecords.add(cr);
+            }
+        }
+        assertThat(newRecords.size(), is(arg1));
+        theConnectionId = newRecords.get(0).getConnectionId();
+
+    }
+
+    @Then("^I know the assigned connectionId$")
+    public void I_know_the_assigned_connectionId() throws Throwable {
+        assertThat(theConnectionId, notNullValue());
+        assert (!theConnectionId.isEmpty());
+
+    }
+
+    @Then("^there is a reservation state machine for the assigned connectionId$")
+    public void there_is_a_reservation_state_machine_for_the_assigned_connectionId() throws Throwable {
+
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.findNsiResvSM(theConnectionId);
+        assertThat(rsm, notNullValue());
+
+    }
+
+
 }

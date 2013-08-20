@@ -1,9 +1,8 @@
 package net.es.oscars.nsibridge.test.state;
 
 
-import net.es.oscars.nsibridge.prov.OscarsProxy;
+import net.es.oscars.nsibridge.oscars.OscarsProxy;
 
-import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ContextConfig;
 import org.apache.log4j.Logger;

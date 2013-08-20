@@ -1,4 +1,4 @@
-package net.es.oscars.nsibridge.prov;
+package net.es.oscars.nsibridge.oscars;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.authN.soap.gen.DNType;
@@ -171,8 +171,10 @@ public class OscarsProxy {
         if (oscarsConfig.isStub()) {
             System.out.println("stub mode, not contacting coordinator");
             QueryResReply tr = new QueryResReply();
+            ResDetails rd = new ResDetails();
             String gri = qc.getGlobalReservationId();
-            tr.getReservationDetails().setGlobalReservationId(gri);
+            rd.setGlobalReservationId(gri);
+            tr.setReservationDetails(rd);
             return tr;
         } else {
             Object[] res = coordClient.invoke("sendQuery",req);
@@ -187,6 +189,8 @@ public class OscarsProxy {
         if (coordClient != null) {
             return;
         }
+        if (this.getOscarsConfig().isStub()) return;
+
         ContextConfig cc = ContextConfig.getInstance();
         cc.setServiceName(ServiceNames.SVC_COORD);
 
@@ -220,9 +224,12 @@ public class OscarsProxy {
     }
 
     private void initAuthNClient() throws OSCARSServiceException {
+
         if (authNClient != null) {
             return;
         }
+
+        if (this.getOscarsConfig().isStub()) return;
 
         ContextConfig cc = ContextConfig.getInstance();
         cc.setServiceName(ServiceNames.SVC_COORD);

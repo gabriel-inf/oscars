@@ -4,31 +4,37 @@ Feature: State machines behavior verification
 
   Scenario: No error walk through the Reserve uPA state machine
     Given that I have created a new ReserveStateMachine for connectionId: "reserve-sm"
-    Given that I have set the Reserve model implementation to be a stub
+    Given that I have set the Reserve model implementation for connectionId: "reserve-sm" to be a stub
 
-    Then the ReserveStateMachine state is "ReserveStart"
+    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveStart"
 
-    When I submit the Reserve event "RECEIVED_NSI_RESV_RQ"
-    Then the ReserveStateMachine state is "ReserveChecking"
+    When I submit the Reserve event: "RECEIVED_NSI_RESV_RQ" for connectionId: "reserve-sm"
+    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveChecking"
 
-    When I submit the Reserve event "LOCAL_RESV_CHECK_CF"
-    Then the ReserveStateMachine state is "ReserveHeld"
+    When I submit the Reserve event: "LOCAL_RESV_CHECK_CF" for connectionId: "reserve-sm"
+    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveHeld"
 
-    When I submit the Reserve event "RECEIVED_NSI_RESV_CM"
-    Then the ReserveStateMachine state is "ReserveCommitting"
+    When I submit the Reserve event: "RECEIVED_NSI_RESV_CM" for connectionId: "reserve-sm"
+    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveCommitting"
 
-    When I submit the Reserve event "LOCAL_RESV_COMMIT_CF"
-    Then the ReserveStateMachine state is "ReserveStart"
+    When I submit the Reserve event: "LOCAL_RESV_COMMIT_CF" for connectionId: "reserve-sm"
+    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveStart"
+    Then the ReserveStateMachine for connectionId: "reserve-sm" has not thrown an exception
+
+
+
 
 
   Scenario: Exercise catching errors at the Reserve uPA state machine
-    Given that I have created a new ReserveStateMachine for connectionId: "reserve-sm"
-    Given that I have set the Reserve model implementation to be a stub
-    Then the ReserveStateMachine state is "ReserveStart"
+    Given that I have created a new ReserveStateMachine for connectionId: "reserve-sm-fail"
+    Given that I have set the Reserve model implementation for connectionId: "reserve-sm-fail" to be a stub
+    Then the ReserveStateMachine state for connectionId: "reserve-sm-fail" is: "ReserveStart"
 
-    When I submit the Reserve event "LOCAL_RESV_CHECK_CF"
-    Then the ReserveStateMachine has thrown an exception
-    Then the ReserveStateMachine state is "ReserveStart"
+    When I submit the Reserve event: "LOCAL_RESV_CHECK_CF" for connectionId: "reserve-sm-fail"
+    Then the ReserveStateMachine for connectionId: "reserve-sm-fail" has thrown an exception
+    Then the ReserveStateMachine state for connectionId: "reserve-sm-fail" is: "ReserveStart"
+
+
 
 
   Scenario: No error walk through the Lifecycle uPA state machine
@@ -41,6 +47,8 @@ Feature: State machines behavior verification
 
     When I submit the Lifecycle event "LOCAL_TERM_CONFIRMED"
     Then the LifecycleStateMachine state is "Terminated"
+
+
 
   Scenario: No error walk through the Provisioning uPA state machine
     Given that I have created a new ProvisioningStateMachine for connectionId: "prov-sm"

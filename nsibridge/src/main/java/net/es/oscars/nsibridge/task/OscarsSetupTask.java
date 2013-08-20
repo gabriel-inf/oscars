@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;

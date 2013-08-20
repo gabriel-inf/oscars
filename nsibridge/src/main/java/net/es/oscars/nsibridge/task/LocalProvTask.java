@@ -1,9 +1,7 @@
 package net.es.oscars.nsibridge.task;
 
 
-import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
-import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.StateException;
@@ -15,7 +13,6 @@ import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 
-import javax.persistence.EntityManager;
 import java.util.Date;
 
 public class LocalProvTask extends Task  {

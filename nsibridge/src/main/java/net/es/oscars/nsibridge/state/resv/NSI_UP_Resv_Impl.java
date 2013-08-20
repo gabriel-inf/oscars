@@ -1,10 +1,16 @@
 package net.es.oscars.nsibridge.state.resv;
 
 
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiResvMdl;
+import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
+import net.es.oscars.nsibridge.prov.NSI_Util;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
@@ -30,35 +36,74 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
-        // submit the oscars create()
-        Double d = (tc.getTaskInterval() * 1000);
-        Long when = now + d.longValue();
-        Task oscarsResv = new OscarsResvTask(connectionId);
+
+        ConnectionRecord cr = null;
         try {
-            wf.schedule(oscarsResv, when);
-        } catch (TaskException e) {
-            e.printStackTrace();
+            cr = NSI_Util.getConnectionRecord(connectionId);
+        } catch (ServiceException e) {
+            try {
+                NSI_Resv_SM.handleEvent(connectionId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+            } catch (StateException e1) {
+                e1.printStackTrace();
+            }
         }
 
-        // query to see what happened
-        d = (tc.getQueryAfterResvWait() * 1000);
-        when = now + d.longValue();
-        OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
-        try {
-            wf.schedule(oqt , when);
-        } catch (TaskException e) {
-            e.printStackTrace();
+
+
+        boolean newResvRequired = false;
+        boolean waitRequired = false;
+        if (cr.getOscarsGri() == null) {
+            newResvRequired = true;
+        } else if (ConnectionRecord.getLatestStatusRecord(cr) != null) {
+            OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+            if (or.getStatus().equals("RESERVED") || or.getStatus().equals("ACTIVE")) {
+                newResvRequired = false;
+                waitRequired = false;
+            } else if (or.getStatus().equals("FAILED") || or.getStatus().equals("CANCELLED")|| or.getStatus().equals("UNKNOWN")) {
+                newResvRequired = true;
+                waitRequired = false;
+            } else if (or.getStatus().equals("INSETUP") || or.getStatus().equals("INTEARDOWN") || or.getStatus().equals("INPATHCALCULATION")  ) {
+                waitRequired = true;
+            }
         }
 
-        // examine the results of the query()
-        d = ((tc.getQueryAfterResvWait() + tc.getQueryResultDelay()) * 1000);
-        when = now + d.longValue();
-        LocalResvTask lrt = new LocalResvTask(connectionId, NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
-        try {
-            wf.schedule(lrt , when);
-        } catch (TaskException e) {
-            e.printStackTrace();
+
+        if (newResvRequired) {
+            // submit the oscars create()
+            Double d = (tc.getTaskInterval() * 1000);
+            Long when = now + d.longValue();
+            Task oscarsResv = new OscarsResvTask(connectionId);
+            try {
+                wf.schedule(oscarsResv, when);
+            } catch (TaskException e) {
+                e.printStackTrace();
+            }
+
+            // query to see what happened
+            d = (tc.getQueryAfterResvWait() * 1000);
+            when = now + d.longValue();
+            OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
+            try {
+                wf.schedule(oqt , when);
+            } catch (TaskException e) {
+                e.printStackTrace();
+            }
+
+            // examine the results of the query()
+            d = ((tc.getQueryAfterResvWait() + tc.getQueryResultDelay()) * 1000);
+            when = now + d.longValue();
+            LocalResvTask lrt = new LocalResvTask(connectionId, NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
+            try {
+                wf.schedule(lrt , when);
+            } catch (TaskException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // modify
         }
+
+
+
 
     }
 

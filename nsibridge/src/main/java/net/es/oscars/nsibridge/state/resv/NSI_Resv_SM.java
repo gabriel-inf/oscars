@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.state.resv;
 
 import net.es.oscars.nsibridge.ifces.*;
+import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
 import org.apache.log4j.Logger;
 
@@ -34,7 +35,7 @@ public class NSI_Resv_SM implements StateMachine {
 
 
         String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
-        LOG.debug(pre);
+        //LOG.debug(pre);
         String error = pre;
 
 
@@ -122,7 +123,7 @@ public class NSI_Resv_SM implements StateMachine {
         }
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
-        LOG.debug(post);
+        // LOG.debug(post);
         this.transitionHandler.process(ps, ns, event, this);
     }
 
@@ -154,5 +155,11 @@ public class NSI_Resv_SM implements StateMachine {
         this.transitionHandler = transitionHandler;
     }
 
+
+    public static void handleEvent(String connectionId, NSI_Resv_Event event) throws StateException {
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM sm = smh.findNsiResvSM(connectionId);
+        sm.process(event);
+    }
 
 }

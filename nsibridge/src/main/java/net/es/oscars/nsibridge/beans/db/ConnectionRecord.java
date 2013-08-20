@@ -5,6 +5,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.Provisi
 import javax.persistence.*;
 import java.lang.Long;
 import java.lang.String;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -13,9 +14,9 @@ public class ConnectionRecord {
     protected String connectionId;
     protected String oscarsGri;
 
-    protected Set<DataplaneStatusRecord> dataplaneStatusRecords;
-    protected Set<ResvRecord> resvRecords;
-    protected Set<OscarsStatusRecord> oscarsStatusRecords;
+    protected Set<DataplaneStatusRecord> dataplaneStatusRecords = new HashSet<DataplaneStatusRecord>();
+    protected Set<ResvRecord> resvRecords = new HashSet<ResvRecord>();
+    protected Set<OscarsStatusRecord> oscarsStatusRecords = new HashSet<OscarsStatusRecord>();
     protected ProvisionStateEnumType provisionState;
     protected LifecycleStateEnumType lifecycleState;
 
@@ -91,4 +92,27 @@ public class ConnectionRecord {
     public void setOscarsStatusRecords(Set<OscarsStatusRecord> oscarsStatusRecords) {
         this.oscarsStatusRecords = oscarsStatusRecords;
     }
+
+
+
+
+
+
+    // helper methods here
+
+    public static OscarsStatusRecord getLatestStatusRecord(ConnectionRecord cr) {
+        OscarsStatusRecord res = null;
+        for (OscarsStatusRecord or : cr.getOscarsStatusRecords()) {
+            if (res == null) {
+                res = or;
+            } else {
+                if (or.getDate().after(res.getDate())) {
+                    res = or;
+                }
+            }
+        }
+        return res;
+    }
+
+
 }

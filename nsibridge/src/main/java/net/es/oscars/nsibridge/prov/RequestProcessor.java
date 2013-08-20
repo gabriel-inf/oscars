@@ -39,15 +39,17 @@ public class RequestProcessor {
 
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr != null) {
-            throw new ServiceException("preexisting connection record found while starting reserve() for connectionId: "+connId);
+            log.info("preexisting connection record found while starting reserve() for connectionId: "+connId);
+        } else {
+            log.info("creating new connection record for connectionId: "+connId);
+            em.getTransaction().begin();
+            smh.makeStateMachines(connId);
+            cr = new ConnectionRecord();
+            cr.setConnectionId(connId);
+            em.persist(cr);
+            em.getTransaction().commit();
         }
 
-        em.getTransaction().begin();
-        smh.makeStateMachines(connId);
-        cr = new ConnectionRecord();
-        cr.setConnectionId(connId);
-        em.persist(cr);
-        em.getTransaction().commit();
 
         try {
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
