@@ -31,7 +31,7 @@ public class NSI_Prov_SM implements StateMachine {
         NSI_Prov_State ps = (NSI_Prov_State) this.getState();
         NSI_Prov_State ns = new NSI_Prov_State();
         String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
-        LOG.debug(pre);
+        // LOG.debug(pre);
         String error = pre;
 
         ProvisionStateEnumType prevState = (ProvisionStateEnumType) this.state.state();
@@ -87,7 +87,7 @@ public class NSI_Prov_SM implements StateMachine {
         }
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
-        LOG.debug(post);
+        // LOG.debug(post);
         this.transitionHandler.process(ps, ns, event, this);
     }
 

@@ -183,6 +183,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
                 throws ServiceException {
         //To change body of implemented methods use File | Settings | File Templates.
+        // TODO
     }
 
     @Override
@@ -190,6 +191,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             @WebParam(partName = "queryRecursive", name = "queryRecursive", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType queryRecursive,
             @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
                 throws ServiceException {
+        // TODO
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -198,6 +200,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             @WebParam(partName = "querySummary", name = "querySummary", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummary,
             @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
                 throws ServiceException {
+        // TODO
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -207,8 +210,19 @@ public class ConnectionProvider implements ConnectionProviderPort {
     public QuerySummaryConfirmedType querySummarySync(
             @WebParam(partName = "querySummarySync", name = "querySummarySync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType querySummarySync,
             @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
-                throws QuerySummarySyncFailed {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+            throws QuerySummarySyncFailed {
+
+        QueryRequest req = new QueryRequest();
+        req.setQuery(querySummarySync);
+        QuerySummaryConfirmedType res;
+        try {
+            res = RequestProcessor.getInstance().syncQuerySum(req);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+        return res;
+
     }
 
     @Override
@@ -216,6 +230,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             @WebParam(partName = "queryNotificationSync", name = "queryNotificationSync", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryNotificationType queryNotificationSync,
             @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
             throws QueryNotificationSyncFailed {
+        // TODO
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

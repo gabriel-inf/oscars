@@ -29,7 +29,7 @@ public class NSI_Life_SM implements StateMachine {
         NSI_Life_State ps = (NSI_Life_State) this.getState();
         NSI_Life_State ns = new NSI_Life_State();
         String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
-        LOG.debug(pre);
+        //LOG.debug(pre);
         String error = pre;
 
         LifecycleStateEnumType prevState = (LifecycleStateEnumType) this.state.state();
@@ -83,7 +83,7 @@ public class NSI_Life_SM implements StateMachine {
 
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
-        LOG.debug(post);
+        //  LOG.debug(post);
         this.transitionHandler.process(ps, ns, event, this);
     }
 

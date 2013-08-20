@@ -92,7 +92,7 @@ public class Invoker implements Runnable {
 
         try {
             OscarsProxy.getInstance().setOscarsConfig(oc);
-            // OscarsProxy.getInstance().initialize();
+            OscarsProxy.getInstance().initialize();
         } catch (OSCARSServiceException e) {
             e.printStackTrace();
             Invoker.setKeepRunning(false);

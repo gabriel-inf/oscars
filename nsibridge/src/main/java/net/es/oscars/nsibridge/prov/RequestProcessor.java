@@ -6,9 +6,12 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
+import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.task.QueryTask;
@@ -39,7 +42,7 @@ public class RequestProcessor {
 
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr != null) {
-            log.info("preexisting connection record found while starting reserve() for connectionId: "+connId);
+            log.info("preexisting connection record found while starting reserve() for connectionId: " + connId);
         } else {
             log.info("creating new connection record for connectionId: "+connId);
             em.getTransaction().begin();
@@ -105,9 +108,43 @@ public class RequestProcessor {
         request.setOutHeader(outHeader);
     }
 
+    public QuerySummaryConfirmedType syncQuerySum(QueryRequest request) throws ServiceException, TaskException {
+        QuerySummaryConfirmedType result = new QuerySummaryConfirmedType();
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        RequestHolder rh = RequestHolder.getInstance();
+
+        for (String connId: request.getQuery().getConnectionId()) {
+            QuerySummaryResultType resultType = new QuerySummaryResultType();
+
+            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            resultType.setConnectionId(connId);
+            ConnectionStatesType cst = new ConnectionStatesType();
+            resultType.setConnectionStates(cst);
+            NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
+            NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
+            NSI_Prov_SM psm = smh.findNsiProvSM(connId);
+
+            LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
+            ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
+            ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
+            DataPlaneStatusType         dst = new DataPlaneStatusType();
+            dst.setActive(true);
+            dst.setVersion(1);
+            cst.setProvisionState(pst);
+            cst.setLifecycleState(lst);
+            cst.setReservationState(rst);
+
+            result.getReservation().add(resultType);
+        }
 
 
-    public void startQuery(QueryRequest request) throws ServiceException, TaskException {
+
+        return result;
+
+    }
+
+    public void asyncQuery(QueryRequest request) throws ServiceException, TaskException {
+        // TODO:
         RequestHolder rh = RequestHolder.getInstance();
         rh.getQueryRequests().add(request);
 
