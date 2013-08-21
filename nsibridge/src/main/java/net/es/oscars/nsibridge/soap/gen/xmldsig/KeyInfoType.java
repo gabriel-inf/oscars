@@ -55,11 +55,11 @@ public class KeyInfoType {
     @XmlElementRefs({
         @XmlElementRef(name = "KeyName", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
         @XmlElementRef(name = "SPKIData", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "MgmtData", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "X509Data", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
         @XmlElementRef(name = "RetrievalMethod", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
+        @XmlElementRef(name = "X509Data", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
+        @XmlElementRef(name = "KeyValue", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
         @XmlElementRef(name = "PGPData", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "KeyValue", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false)
+        @XmlElementRef(name = "MgmtData", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false)
     })
     @XmlMixed
     @XmlAnyElement(lax = true)
@@ -91,13 +91,13 @@ public class KeyInfoType {
      * {@link Element }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link SPKIDataType }{@code >}
-     * {@link String }
-     * {@link Object }
-     * {@link JAXBElement }{@code <}{@link String }{@code >}
-     * {@link JAXBElement }{@code <}{@link X509DataType }{@code >}
      * {@link JAXBElement }{@code <}{@link RetrievalMethodType }{@code >}
-     * {@link JAXBElement }{@code <}{@link PGPDataType }{@code >}
+     * {@link Object }
+     * {@link JAXBElement }{@code <}{@link X509DataType }{@code >}
      * {@link JAXBElement }{@code <}{@link KeyValueType }{@code >}
+     * {@link String }
+     * {@link JAXBElement }{@code <}{@link PGPDataType }{@code >}
+     * {@link JAXBElement }{@code <}{@link String }{@code >}
      * 
      * 
      */
