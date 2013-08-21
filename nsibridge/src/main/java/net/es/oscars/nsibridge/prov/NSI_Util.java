@@ -2,9 +2,11 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -15,6 +17,7 @@ import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
@@ -23,6 +26,9 @@ import java.util.Date;
 import java.util.List;
 
 public class NSI_Util {
+
+    private static final Logger log = Logger.getLogger(NSI_Util.class);
+
     public static OscarsStatusRecord getLatestOscarsRecord(String connectionId) throws ServiceException {
         EntityManager em = PersistenceHolder.getInstance().getEntityManager();
         ConnectionRecord cr = getConnectionRecord(connectionId);
@@ -92,6 +98,119 @@ public class NSI_Util {
 
         return cst;
 
+    }
+
+    public static void createConnectionRecordIfNeeded(String connId) throws ServiceException {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        if (cr != null) {
+            log.info("connection record was found while starting reserve() for connectionId: " + connId);
+        } else {
+            EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+            log.info("creating new connection record for connectionId: " + connId);
+            em.getTransaction().begin();
+            cr = new ConnectionRecord();
+            cr.setConnectionId(connId);
+            em.persist(cr);
+            em.getTransaction().commit();
+        }
+    }
+
+
+    public static void persistStateMachines(String connId) throws ServiceException {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+
+
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
+        NSI_Prov_SM psm = smh.findNsiProvSM(connId);
+        NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
+
+        cr.setLifecycleState(LifecycleStateEnumType.fromValue(lsm.getState().value()));
+        cr.setProvisionState(ProvisionStateEnumType.fromValue(psm.getState().value()));
+
+        ResvRecord rr = new ResvRecord();
+        rr.setReservationState(ReservationStateEnumType.fromValue(rsm.getState().value()));
+        rr.setDate(new Date());
+        rr.setVersion(0);
+        cr.getResvRecords().add(rr);
+
+        // save
+        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+        em.getTransaction().begin();
+        em.persist(cr);
+        em.getTransaction().commit();
+    }
+
+
+
+    public static void makeNewStateMachines(String connId) throws ServiceException {
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        if (!smh.hasStateMachines(connId)) {
+            smh.makeStateMachines(connId);
+        }
+
+    }
+
+    public static boolean restoreStateMachines(String connId) throws ServiceException {
+        boolean restoredLife = false;
+        boolean restoredProv = false;
+        boolean restoredResv = false;
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        if (cr == null) {
+            throw new ServiceException("could not locate connection record for "+connId);
+        }
+
+
+        NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
+        NSI_Prov_SM psm = smh.findNsiProvSM(connId);
+        NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
+
+        // if we have restored the state
+        if (cr.getLifecycleState() != null) {
+            NSI_Life_State ls = new NSI_Life_State();
+            ls.setState(cr.getLifecycleState());
+            lsm.setState(ls);
+            restoredLife = true;
+        }
+
+        if (cr.getProvisionState() != null) {
+            NSI_Prov_State ps = new NSI_Prov_State();
+            ps.setState(cr.getProvisionState());
+            psm.setState(ps);
+            restoredProv = true;
+        }
+
+        ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
+        if (rr != null) {
+            NSI_Resv_State rs = new NSI_Resv_State();
+            rs.setState(rr.getReservationState());
+            rsm.setState(rs);
+            restoredResv = true;
+        }
+        return (restoredLife && restoredProv && restoredResv);
+    }
+
+
+
+    public static boolean needNewOscarsResv(String connId) throws ServiceException {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+        if (or == null) {
+            return true;
+
+        } else {
+            if (or.getStatus().equals(OscarsStates.CANCELLED)) {
+                return true;
+            } else if (or.getStatus().equals(OscarsStates.FAILED)) {
+                return true;
+            } else if (or.getStatus().equals(OscarsStates.UNKNOWN)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     public static ServiceExceptionType makeServiceException(String error) {

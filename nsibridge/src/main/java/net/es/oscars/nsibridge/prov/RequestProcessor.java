@@ -3,8 +3,8 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -25,36 +25,36 @@ import java.util.Date;
 public class RequestProcessor {
     private static final Logger log = Logger.getLogger(RequestProcessor.class);
     private static RequestProcessor instance;
-    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
     private RequestProcessor() {}
     public static RequestProcessor getInstance() {
         if (instance == null) instance = new RequestProcessor();
         return instance;
     }
 
-    public void startReserve(ResvRequest request) throws ServiceException, TaskException {
+    public void startReserve(ResvRequest request) throws ServiceException {
         String connId = request.getReserveType().getConnectionId();
 
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        RequestHolder rh = RequestHolder.getInstance();
+        NSI_Util.createConnectionRecordIfNeeded(connId);
 
-        rh.getResvRequests().add(request);
-
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-        if (cr != null) {
-            log.info("preexisting connection record found while starting reserve() for connectionId: " + connId);
-        } else {
-            log.info("creating new connection record for connectionId: "+connId);
-            em.getTransaction().begin();
-            smh.makeStateMachines(connId);
-            cr = new ConnectionRecord();
-            cr.setConnectionId(connId);
-            em.persist(cr);
-            em.getTransaction().commit();
+        if (!NSI_Util.restoreStateMachines(connId)) {
+            NSI_Util.makeNewStateMachines(connId);
         }
+        NSI_Util.persistStateMachines(connId);
+
+
+
+        if (NSI_Util.needNewOscarsResv(request.getReserveType().getConnectionId())) {
+            request.setOscarsOp(OscarsOps.RESERVE);
+        } else {
+            request.setOscarsOp(OscarsOps.MODIFY);
+        }
+
+        RequestHolder rh = RequestHolder.getInstance();
+        rh.getResvRequests().add(request);
 
 
         try {
+            NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
             rsm.process(NSI_Resv_Event.RECEIVED_NSI_RESV_RQ);
         } catch (StateException ex) {
@@ -77,6 +77,13 @@ public class RequestProcessor {
         }
 
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        if (!smh.hasStateMachines(connId)) {
+            if (!NSI_Util.restoreStateMachines(connId)) {
+                throw new ServiceException("internal error: could not initialize state machines for connectionId: "+connId);
+            }
+        }
+        NSI_Util.persistStateMachines(connId);
+
         RequestHolder rh = RequestHolder.getInstance();
         rh.getSimpleRequests().add(request);
 
@@ -127,12 +134,14 @@ public class RequestProcessor {
             LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
             ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
             ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
-            DataPlaneStatusType         dst = new DataPlaneStatusType();
-            dst.setActive(true);
-            dst.setVersion(1);
             cst.setProvisionState(pst);
             cst.setLifecycleState(lst);
             cst.setReservationState(rst);
+
+            // TODO: actually implement this
+            DataPlaneStatusType         dst = new DataPlaneStatusType();
+            dst.setActive(true);
+            dst.setVersion(1);
 
             result.getReservation().add(resultType);
         }
@@ -172,10 +181,11 @@ public class RequestProcessor {
         outHeader.setProtocolVersion(inHeader.getProtocolVersion());
         outHeader.setProviderNSA(inHeader.getProviderNSA());
         outHeader.setRequesterNSA(inHeader.getRequesterNSA());
-
         return outHeader;
-
     }
+
+
+
 
 
 

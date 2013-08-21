@@ -81,6 +81,17 @@ public class NSI_SM_Holder {
 
     }
 
+    public boolean hasStateMachines(String connId) {
+
+        if ( (provStateMachines.get(connId) != null) &&
+             (lifeStateMachines.get(connId) != null) &&
+             (resvStateMachines.get(connId) != null) ) {
+            return true;
+
+        }
+        return false;
+    }
+
 
     public NSI_Prov_SM findNsiProvSM(String connId) {
         return provStateMachines.get(connId);

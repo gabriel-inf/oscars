@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.Date;
 
 @Entity
 public class ResvRecord {
@@ -14,6 +15,8 @@ public class ResvRecord {
     @GeneratedValue(strategy= GenerationType.AUTO)
     protected Long id;
     protected int version;
+    protected Date date;
+
     protected ReservationStateEnumType reservationState;
 
     public int getVersion() {
@@ -38,5 +41,13 @@ public class ResvRecord {
 
     public void setReservationState(ReservationStateEnumType reservationState) {
         this.reservationState = reservationState;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

@@ -114,5 +114,17 @@ public class ConnectionRecord {
         return res;
     }
 
-
+    public static ResvRecord getLatestResvRecord(ConnectionRecord cr) {
+        ResvRecord res = null;
+        for (ResvRecord or : cr.getResvRecords()) {
+            if (res == null) {
+                res = or;
+            } else {
+                if (or.getDate().after(res.getDate())) {
+                    res = or;
+                }
+            }
+        }
+        return res;
+    }
 }
