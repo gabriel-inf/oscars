@@ -225,6 +225,7 @@ public class DijkstraPCE {
         HashMap<String, List<CtrlPlaneLinkContent>> shortestPathMap = new HashMap<String, List<CtrlPlaneLinkContent>>();
         HashMap<String, Boolean> visitedNodeMap = new HashMap<String, Boolean>();
         HashMap<String, Boolean> excludedLinkMap = new HashMap<String, Boolean>();
+        HashMap<String, Boolean> validDestNodes = new HashMap<String, Boolean>();
         
         //initialization
         srcNode = NMWGParserUtil.normalizeURN(srcNode);
@@ -262,8 +263,13 @@ public class DijkstraPCE {
         
         //get neighbors
         while(!nodeCostMap.isEmpty()){
-            //get the minimum cost node and set as visited
+            //get the minimum cost node
             String currentNode = this.findMinCostNode(nodeCostMap);
+            //check if we have reached our destination
+            if(validDestNodes.containsKey(currentNode)){
+                return shortestPathMap.get(currentNode);
+            }
+            //mark as visited
             visitedNodeMap.put(currentNode, true);
             
             //look at neighbors
@@ -305,9 +311,14 @@ public class DijkstraPCE {
                     
                     int destTestResult = this.isDestFound(dest, destType, srcLink, link, remoteNode, currentPath, nodeMap);
                     if(destTestResult == DEST_FOUND){
-                      //if found destination
-                        return currentPath;
-                    }else if(destTestResult == DEST_NOT_EVAL){
+                        /*
+                         * If matches destination criteria, mark as a valid destination.
+                         * We do not return the path yet because there may be a lower cost path
+                         * we have not seen yet. Also, we add to a map since the destination may 
+                         * be a domain thus multiple nodes could be valid destinations. 
+                         */
+                        validDestNodes.put(remoteNode, true);
+                    }if(destTestResult == DEST_NOT_EVAL){
                         /* destination found but the link properties (e.g. VLANs)
                          * invalidate this solution */
                         excludedLinkMap.put(NMWGParserUtil.normalizeURN(link.getId()), true);
