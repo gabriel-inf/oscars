@@ -16,7 +16,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class BasicJPASteps {
-    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+    private EntityManager em = PersistenceHolder.getEntityManager();
     private int connCount;
 
     @When("^I insert a new ConnectionRecord with connectionId: \"([^\"]*)\"$")

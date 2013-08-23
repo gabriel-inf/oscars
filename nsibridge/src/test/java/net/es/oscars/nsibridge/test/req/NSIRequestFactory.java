@@ -35,12 +35,12 @@ public class NSIRequestFactory {
         return req;
     }
 
-    public static SimpleRequest getSimpleRequest(ResvRequest resvReq, SimpleRequestType type) {
+    public static SimpleRequest getSimpleRequest(String connectionId, SimpleRequestType type) {
         SimpleRequest pq = new SimpleRequest ();
-        pq.setConnectionId(resvReq.getReserveType().getConnectionId());
+        pq.setConnectionId(connectionId);
         CommonHeaderType inHeader = makeHeader();
         pq.setInHeader(inHeader);
-        pq.setRequestType(SimpleRequestType.PROVISION);
+        pq.setRequestType(type);
         return pq;
     }
 

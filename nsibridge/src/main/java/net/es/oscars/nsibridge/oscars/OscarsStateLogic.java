@@ -14,7 +14,7 @@ public class OscarsStateLogic {
             case FAILED:
             case UNKNOWN:
             case CANCELLED:
-                return false;
+                return true;
         }
         return false;
     }

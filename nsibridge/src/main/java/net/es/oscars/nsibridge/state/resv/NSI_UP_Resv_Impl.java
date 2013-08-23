@@ -68,7 +68,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             }
         }
 
-
         if (newResvRequired) {
             // submit the oscars create()
             Double d = (tc.getTaskInterval() * 1000);
@@ -88,35 +87,12 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
                 }
             }
 
-            /*
-            // query to see what happened
-            d = (tc.getQueryAfterResvWait() * 1000);
-            when = now + d.longValue();
-            OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
-            try {
-                wf.schedule(oqt , when);
-            } catch (TaskException e) {
-                e.printStackTrace();
-            }
-
-            // examine the results of the query()
-            d = ((tc.getQueryAfterResvWait() + tc.getQueryResultDelay()) * 1000);
-            when = now + d.longValue();
-            LocalResvTask lrt = new LocalResvTask(connectionId, NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
-            try {
-                wf.schedule(lrt , when);
-            } catch (TaskException e) {
-                e.printStackTrace();
-            }
-            */
-
         } else {
-            // modify
+            if (waitRequired) {
+                // modify
+
+            }
         }
-
-
-
-
     }
 
     @Override
@@ -128,7 +104,19 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     @Override
     public void localCommit() {
         LOG.debug("localCommit: "+connectionId);
-        // nothing to do - everything is doen in the check phase
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
+
+
+        try {
+            rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF);
+            NSI_Util.persistStateMachines(connectionId);
+        }catch (StateException ex) {
+            LOG.error(ex);
+        }catch (ServiceException ex) {
+            LOG.error(ex);
+        }
+
     }
 
     @Override

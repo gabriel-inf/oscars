@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;
@@ -54,7 +55,7 @@ public class OscarsQueryTask extends Task  {
 
                     log.debug("connId: "+connId+"gri: "+reply.getReservationDetails().getGlobalReservationId());
 
-                    EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+                    EntityManager em = PersistenceHolder.getEntityManager();
                     em.getTransaction().begin();
                     OscarsStatusRecord or = new OscarsStatusRecord();
                     or.setDate(new Date());

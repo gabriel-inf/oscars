@@ -1,8 +1,12 @@
 package net.es.oscars.nsibridge.task;
 
 
+import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.oscars.OscarsStateLogic;
+import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import net.es.oscars.nsibridge.prov.*;
 
@@ -27,17 +31,15 @@ public class OscarsResvTask extends Task  {
     }
 
     public void onRun() throws TaskException {
-        log.debug(this.id + " starting");
+        log.debug("OscarsResvTask for connId: "+connId+" starting");
         try {
             super.onRun();
-            EntityManager em = PersistenceHolder.getInstance().getEntityManager();
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
             if (cr!= null) {
                 log.debug("found connection entry for connId: "+connId);
             } else {
                 throw new TaskException("could not find connection entry for connId: "+connId);
             }
-
 
 
             RequestHolder rh = RequestHolder.getInstance();
@@ -60,25 +62,37 @@ public class OscarsResvTask extends Task  {
             try {
                 OscarsUtil.submitResv(req);
                 newResvSubmittedOK = true;
+                log.debug("submitted OSCARS create() for connId: "+connId);
             } catch (TranslationException ex) {
                 log.error(ex);
             } catch (ServiceException ex) {
                 log.error(ex);
             }
+
             if (!newResvSubmittedOK) {
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                rh.removeResvRequest(connId);
+                this.onSuccess();
+                return;
             }
 
+            boolean localConfirmed = false;
+            boolean localDecided = false;
+            OscarsStates os = OscarsStates.FAILED;
+            while (!localDecided) {
+                OscarsUtil.submitQuery(cr);
+                OscarsStatusRecord oc = ConnectionRecord.getLatestStatusRecord(cr);
+                if (oc != null && oc.getStatus() != null) {
+                    os = OscarsStates.valueOf(oc.getStatus());
+                    if (OscarsStateLogic.isStateSteady(os)) {
+                        localDecided = true;
+                    }
+                }
+            }
 
-
-            // TODO: query
-            boolean localConfirmed = true;
-
-
-
-
-
-
+            if (os.equals(OscarsStates.RESERVED)) {
+                localConfirmed = true;
+            }
 
             if (localConfirmed) {
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
@@ -86,14 +100,16 @@ public class OscarsResvTask extends Task  {
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
 
             }
+            NSI_Util.persistStateMachines(connId);
 
+            rh.removeResvRequest(connId);
 
         } catch (Exception ex) {
             ex.printStackTrace();
             this.onFail();
         }
 
-        log.debug(this.id + " finishing");
+        log.debug("OscarsResvTask finishing for connId: "+connId);
 
         this.onSuccess();
     }

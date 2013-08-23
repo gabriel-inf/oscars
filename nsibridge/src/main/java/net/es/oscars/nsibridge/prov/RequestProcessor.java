@@ -33,6 +33,7 @@ public class RequestProcessor {
 
     public void startReserve(ResvRequest request) throws ServiceException {
         String connId = request.getReserveType().getConnectionId();
+        log.debug("startReserve for connId: "+connId);
 
         NSI_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId());
 
@@ -43,9 +44,11 @@ public class RequestProcessor {
 
 
 
-        if (NSI_Util.needNewOscarsResv(request.getReserveType().getConnectionId())) {
+        if (NSI_Util.needNewOscarsResv(connId)) {
+            log.debug("OSCARS create needed for connId: "+connId);
             request.setOscarsOp(OscarsOps.RESERVE);
         } else {
+            log.debug("OSCARS modify needed for connId: "+connId);
             request.setOscarsOp(OscarsOps.MODIFY);
         }
 
@@ -78,6 +81,7 @@ public class RequestProcessor {
 
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         if (!smh.hasStateMachines(connId)) {
+            log.info("loading state machines for "+connId);
             if (!NSI_Util.restoreStateMachines(connId)) {
                 throw new ServiceException("internal error: could not initialize state machines for connectionId: "+connId);
             }

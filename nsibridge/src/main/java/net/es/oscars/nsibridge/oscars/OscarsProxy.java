@@ -35,10 +35,17 @@ public class OscarsProxy {
     private AuthNClient authNClient;
     private OscarsConfig oscarsConfig;
 
+    private HashMap<String, OscarsStates> stubStates = new HashMap<String, OscarsStates>();
 
     private static OscarsProxy instance;
 
+    public HashMap<String, OscarsStates> getStubStates() {
+        return stubStates;
+    }
 
+    public void setStubState(String gri, OscarsStates state) {
+        this.stubStates.put(gri, state);
+    }
 
     public static OscarsProxy getInstance()  throws OSCARSServiceException {
         if (instance == null) instance = new OscarsProxy();
@@ -70,7 +77,7 @@ public class OscarsProxy {
         if (oscarsConfig.isStub()) {
             System.out.println("stub mode, not contacting coordinator");
             CancelResReply cr = new CancelResReply();
-            cr.setStatus("CANCELLED");
+            stubStates.put(cancelReservation.getGlobalReservationId(), OscarsStates.CANCELLED);
             try {
                 Thread.sleep(oscarsConfig.getStubDelayMillis());
             } catch (InterruptedException ex) {
@@ -101,6 +108,7 @@ public class OscarsProxy {
             CreateReply cr = new CreateReply();
             cr.setGlobalReservationId(UUID.randomUUID().toString());
             cr.setStatus("RESERVED");
+            stubStates.put(cr.getGlobalReservationId(), OscarsStates.RESERVED);
             try {
                 Thread.sleep(oscarsConfig.getStubDelayMillis());
             } catch (InterruptedException ex) {
@@ -132,6 +140,7 @@ public class OscarsProxy {
             System.out.println("stub mode, not contacting coordinator");
             TeardownPathResponseContent tr = new TeardownPathResponseContent();
             tr.setStatus("INTEARDOWN");
+            stubStates.put(tp.getGlobalReservationId(), OscarsStates.INTEARDOWN);
             try {
                 Thread.sleep(oscarsConfig.getStubDelayMillis());
             } catch (InterruptedException ex) {
@@ -163,7 +172,7 @@ public class OscarsProxy {
         if (oscarsConfig.isStub()) {
             System.out.println("stub mode, not contacting coordinator");
             CreatePathResponseContent tr = new CreatePathResponseContent();
-            tr.setStatus("INSETUP");
+            stubStates.put(tp.getGlobalReservationId(), OscarsStates.INSETUP);
             try {
                 Thread.sleep(oscarsConfig.getStubDelayMillis());
             } catch (InterruptedException ex) {
@@ -192,11 +201,16 @@ public class OscarsProxy {
         // Build the query
         Object[] req = new Object[]{subjectAttributes, qc};
         if (oscarsConfig.isStub()) {
-            System.out.println("stub mode, not contacting coordinator");
+            String gri = qc.getGlobalReservationId();
+            OscarsStates stubState = this.getStubStates().get(gri);
+
+            if (stubState == null) stubState = OscarsStates.CREATED;
+
+            System.out.println("stub query mode for gri: "+gri+", stub state: "+stubState);
             QueryResReply tr = new QueryResReply();
             ResDetails rd = new ResDetails();
-            String gri = qc.getGlobalReservationId();
             rd.setGlobalReservationId(gri);
+            rd.setStatus(stubState.toString());
             tr.setReservationDetails(rd);
             try {
                 Thread.sleep(oscarsConfig.getStubDelayMillis());

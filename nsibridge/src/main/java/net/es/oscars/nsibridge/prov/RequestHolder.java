@@ -27,6 +27,17 @@ public class RequestHolder {
         return null;
     }
 
+    public void removeResvRequest(String connId) {
+        int idx = 0;
+        for (ResvRequest rr : resvRequests) {
+            if (rr.getReserveType().getConnectionId().equals(connId)) {
+                resvRequests.remove(idx);
+                return;
+            }
+            idx++;
+        }
+    }
+
     public SimpleRequest findSimpleRequest(String connId) {
         for (SimpleRequest sr : simpleRequests) {
             if (sr.getConnectionId().equals(connId)) return sr;

@@ -43,7 +43,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
         } else {
             connId = connectionId.value;
         }
-        log.debug("connId: "+connId);
+        log.debug("ConnectionProvider.reserve: connId: "+connId);
 
         ResvRequest req = new ResvRequest();
         ReserveType reserveType = new ReserveType();

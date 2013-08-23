@@ -30,7 +30,7 @@ public class NSI_Util {
     private static final Logger log = Logger.getLogger(NSI_Util.class);
 
     public static OscarsStatusRecord getLatestOscarsRecord(String connectionId) throws ServiceException {
-        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+        EntityManager em = PersistenceHolder.getEntityManager();
         ConnectionRecord cr = getConnectionRecord(connectionId);
         Date latest = null;
         OscarsStatusRecord result = null;
@@ -105,7 +105,7 @@ public class NSI_Util {
         if (cr != null) {
             log.info("connection record was found while starting reserve() for connectionId: " + connId);
         } else {
-            EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+            EntityManager em = PersistenceHolder.getEntityManager();
             log.info("creating new connection record for connectionId: " + connId);
             em.getTransaction().begin();
             cr = new ConnectionRecord();
@@ -119,6 +119,7 @@ public class NSI_Util {
 
 
     public static void persistStateMachines(String connId) throws ServiceException {
+        log.info("persisting state machines for connId: "+connId);
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
 
 
@@ -130,6 +131,7 @@ public class NSI_Util {
         cr.setLifecycleState(LifecycleStateEnumType.fromValue(lsm.getState().value()));
         cr.setProvisionState(ProvisionStateEnumType.fromValue(psm.getState().value()));
 
+        // not good
         ResvRecord rr = new ResvRecord();
         rr.setReservationState(ReservationStateEnumType.fromValue(rsm.getState().value()));
         rr.setDate(new Date());
@@ -137,7 +139,7 @@ public class NSI_Util {
         cr.getResvRecords().add(rr);
 
         // save
-        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+        EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
         em.persist(cr);
         em.getTransaction().commit();
@@ -223,8 +225,7 @@ public class NSI_Util {
     }
 
     public static ConnectionRecord getConnectionRecord(String connectionId) throws ServiceException {
-        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
-
+        EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connectionId+"'";
 
@@ -235,6 +236,7 @@ public class NSI_Util {
         } else if (recordList.size() > 1) {
             throw new ServiceException("internal error: found multiple connection records ("+recordList.size()+") with connectionId: "+connectionId);
         } else {
+            em.refresh(recordList.get(0));
             return recordList.get(0);
         }
     }

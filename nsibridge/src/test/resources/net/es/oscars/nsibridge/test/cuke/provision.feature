@@ -4,8 +4,11 @@ Feature: provision a reservation
 
   Scenario: Provision internally through Java
     Given I have set up Spring
+    Given I have started the scheduler
     Given that I know the count of all pending provisioning requests
     When I submit reserve() with connectionId: "provision-connid"
+    When I wait until I know the OSCARS gri for connectionId: "provision-connid"
+    When I set the OSCARS stub state for connectionId: "provision-connid" to "RESERVED"
     When I submit provision() with connectionId: "provision-connid"
     Then the count of pending provisioning requests has changed by 1
 

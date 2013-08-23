@@ -22,7 +22,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class QuerySteps {
-    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+    private EntityManager em = PersistenceHolder.getEntityManager();
     @Then("^querySummarySync\\(\\) with connectionId: \"([^\"]*)\" returns resvState \"([^\"]*)\"$")
     public void querySummarySync_with_connectionId_returns_resvState(String connId, String resvState) throws Throwable {
         ConnectionProvider cp = new ConnectionProvider();

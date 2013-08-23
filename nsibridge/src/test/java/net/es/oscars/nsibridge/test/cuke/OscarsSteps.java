@@ -13,6 +13,7 @@ import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 
@@ -28,7 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class OscarsSteps {
     private OscarsProxy op;
     private String gri;
-    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+    private EntityManager em = PersistenceHolder.getEntityManager();
 
     @Given("^I have set up the OSCARS proxy$")
     public void I_have_set_up_the_OSCARS_proxy() throws Throwable {
@@ -73,7 +74,7 @@ public class OscarsSteps {
 
         QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(connGri);
         QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
-        EntityManager em = PersistenceHolder.getInstance().getEntityManager();
+        EntityManager em = PersistenceHolder.getEntityManager();
 
         OscarsStatusRecord or = new OscarsStatusRecord();
         em.getTransaction().begin();
@@ -107,5 +108,18 @@ public class OscarsSteps {
         assertThat(or.getStatus(), is(state));
 
     }
+
+    @When("^I set the OSCARS stub state for connectionId: \"([^\"]*)\" to \"([^\"]*)\"$")
+    public void I_set_the_OSCARS_stub_state_for_connectionId_to(String connId, String oscarsState) throws Throwable {
+        OscarsProxy op = OscarsProxy.getInstance();
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        assertThat(cr, notNullValue());
+        String connGri = cr.getOscarsGri();
+        assertThat(connGri, notNullValue());
+        op.getStubStates().put(connGri, OscarsStates.valueOf(oscarsState));
+
+   }
+
+
 
 }

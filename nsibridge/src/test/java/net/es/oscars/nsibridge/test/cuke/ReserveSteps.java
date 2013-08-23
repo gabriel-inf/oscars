@@ -4,14 +4,18 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
+import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReserveType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
+import net.es.oscars.nsibridge.state.resv.NSI_UP_Resv_Impl;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
 import javax.persistence.EntityManager;
@@ -25,8 +29,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class ReserveSteps {
-    private EntityManager em = PersistenceHolder.getInstance().getEntityManager();
     private int resvReqCount;
+    private EntityManager em = PersistenceHolder.getEntityManager();
     private List<ConnectionRecord> connectionRecords;
     private String theConnectionId;
 
@@ -109,18 +113,35 @@ public class ReserveSteps {
         assertThat(rr.getOscarsOp().toString(), is(arg2));
 
     }
+    @When("^I wait until I know the OSCARS gri for connectionId: \"([^\"]*)\"$")
+    public void I_wait_until_I_know_the_OSCARS_gri_for_connectionId(String arg1) throws Throwable {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(arg1);
+        Long timeout = 10000L;
+        Long elapsed = 0L;
+        while ((elapsed < timeout) &&
+              (cr.getOscarsGri() == null || cr.getOscarsGri().equals(""))) {
+            cr = NSI_Util.getConnectionRecord(arg1);
+            System.out.println("waiting for oscars Gri for connId "+arg1+ " gri: "+cr.getOscarsGri());
+            Thread.sleep(500);
+            elapsed += 500;
+            RequestHolder rh = RequestHolder.getInstance();
+            for (ResvRequest rr : rh.getResvRequests()) {
+                // System.out.println(" -- "+rr.getReserveType().getConnectionId());
+            }
 
 
-    @When("^I wait until the LocalResvTask for connectionId: \"([^\"]*)\" has completed$")
-    public void I_wait_until_the_LocalResvTask_for_connectionId_has_completed(String arg1) throws Throwable {
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.findNsiResvSM(arg1);
-
-        while (rsm.getState().value().equals("ReserveChecking")) {
-            System.out.println("waiting..");
-            Thread.sleep(250);
         }
+        assertThat(cr.getOscarsGri(), notNullValue());
+    }
+    @When("^I submit reserveCommit with connectionId: \"([^\"]*)\"$")
+    public void I_submit_reserveCommit_with_connectionId(String connectionId) throws Throwable {
+        ConnectionProvider cp = new ConnectionProvider();
+
+        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connectionId, SimpleRequestType.RESERVE_COMMIT);
+        Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+        cp.reserveCommit(connectionId, commRequest.getInHeader(), outHolder);
 
     }
+
 
 }

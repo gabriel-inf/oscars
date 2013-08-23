@@ -108,7 +108,7 @@ public class Invoker implements Runnable {
         }
 
 
-        PersistenceHolder.getInstance().getEntityManager();
+        PersistenceHolder.getEntityManager();
 
         try {
             ProviderServer ps = ProviderServer.makeServer(hc);
@@ -129,7 +129,7 @@ public class Invoker implements Runnable {
                 new Thread() {
                     public void run() {
                         System.out.println("Shutting down..");
-                        PersistenceHolder.getInstance().getEntityManager().close();
+                        PersistenceHolder.getEntityManager().close();
                         ProviderServer.getInstance().stop();
                         System.out.println("Shutdown complete.");
                         Invoker.setKeepRunning(false);
