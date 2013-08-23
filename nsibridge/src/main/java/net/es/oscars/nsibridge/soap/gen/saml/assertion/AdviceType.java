@@ -43,10 +43,10 @@ import org.w3c.dom.Element;
 public class AdviceType {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "Assertion", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "AssertionURIRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "EncryptedAssertion", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "AssertionIDRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class, required = false)
+        @XmlElementRef(name = "Assertion", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
+        @XmlElementRef(name = "AssertionIDRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
+        @XmlElementRef(name = "EncryptedAssertion", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class),
+        @XmlElementRef(name = "AssertionURIRef", namespace = "urn:oasis:names:tc:SAML:2.0:assertion", type = JAXBElement.class)
     })
     @XmlAnyElement(lax = true)
     protected List<Object> assertionIDRefOrAssertionURIRefOrAssertion;
@@ -69,11 +69,11 @@ public class AdviceType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
-     * {@link JAXBElement }{@code <}{@link EncryptedElementType }{@code >}
+     * {@link JAXBElement }{@code <}{@link AssertionType }{@code >}
      * {@link Object }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
-     * {@link JAXBElement }{@code <}{@link AssertionType }{@code >}
+     * {@link JAXBElement }{@code <}{@link EncryptedElementType }{@code >}
+     * {@link Element }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * 
      * 

@@ -25,8 +25,8 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceE
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Error_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "error");
     private final static QName _QueryNotification_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "queryNotification");
+    private final static QName _Error_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "error");
     private final static QName _Acknowledgment_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "acknowledgment");
     private final static QName _ReserveFailed_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "reserveFailed");
     private final static QName _ReserveAbort_QNAME = new QName("http://schemas.ogf.org/nsi/2013/07/connection/types", "reserveAbort");
@@ -327,21 +327,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GenericErrorType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2013/07/connection/types", name = "error")
-    public JAXBElement<GenericErrorType> createError(GenericErrorType value) {
-        return new JAXBElement<GenericErrorType>(_Error_QNAME, GenericErrorType.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link QueryNotificationType }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2013/07/connection/types", name = "queryNotification")
     public JAXBElement<QueryNotificationType> createQueryNotification(QueryNotificationType value) {
         return new JAXBElement<QueryNotificationType>(_QueryNotification_QNAME, QueryNotificationType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenericErrorType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.ogf.org/nsi/2013/07/connection/types", name = "error")
+    public JAXBElement<GenericErrorType> createError(GenericErrorType value) {
+        return new JAXBElement<GenericErrorType>(_Error_QNAME, GenericErrorType.class, null, value);
     }
 
     /**

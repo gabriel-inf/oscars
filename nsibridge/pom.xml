@@ -249,6 +249,9 @@
                                                 <extraarg>true</extraarg>
                                                 <extraarg>-impl</extraarg>
                                                 <extraarg>-client</extraarg>
+                                                <extraarg>-frontend</extraarg>
+                                                <extraarg>jaxws21</extraarg>
+
                                                 <extraarg>-autoNameResolution</extraarg>
                                                 <extraarg>-p</extraarg>
                                                 <extraarg>http://schemas.ogf.org/nsi/2013/07/services/point2point=net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point</extraarg>
@@ -296,6 +299,8 @@ c                                        </wsdlOption>
                                                 <extraarg>true</extraarg>
                                                 <extraarg>-impl</extraarg>
                                                 <extraarg>-client</extraarg>
+                                                <extraarg>-frontend</extraarg>
+                                                <extraarg>jaxws21</extraarg>
                                                 <extraarg>-autoNameResolution</extraarg>
                                                 <extraarg>-p</extraarg>
                                                 <extraarg>http://schemas.ogf.org/nsi/2013/07/services/point2point=net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point</extraarg>
@@ -343,6 +348,9 @@ c                                        </wsdlOption>
                                                 <extraarg>true</extraarg>
                                                 <extraarg>-impl</extraarg>
                                                 <extraarg>-client</extraarg>
+                                                <extraarg>-frontend</extraarg>
+                                                <extraarg>jaxws21</extraarg>
+
                                                 <extraarg>-autoNameResolution</extraarg>
                                                 <extraarg>-p</extraarg>
                                                 <extraarg>http://schemas.ogf.org/nsi/2013/07/services/point2point=net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point</extraarg>

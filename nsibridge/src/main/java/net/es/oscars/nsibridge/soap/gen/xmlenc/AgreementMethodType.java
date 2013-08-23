@@ -46,9 +46,9 @@ import net.es.oscars.nsibridge.soap.gen.xmldsig.KeyInfoType;
 public class AgreementMethodType {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "RecipientKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "KA-Nonce", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "OriginatorKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class, required = false)
+        @XmlElementRef(name = "RecipientKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class),
+        @XmlElementRef(name = "OriginatorKeyInfo", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class),
+        @XmlElementRef(name = "KA-Nonce", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class)
     })
     @XmlMixed
     @XmlAnyElement(lax = true)
@@ -75,11 +75,11 @@ public class AgreementMethodType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link Object }
+     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      * {@link JAXBElement }{@code <}{@link KeyInfoType }{@code >}
      * {@link String }
-     * {@link Object }
      * {@link JAXBElement }{@code <}{@link KeyInfoType }{@code >}
-     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      * 
      * 
      */
