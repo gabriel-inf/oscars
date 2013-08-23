@@ -1,27 +1,20 @@
 package net.es.oscars.nsibridge.task;
 
 
-import net.es.oscars.api.soap.gen.v06.CreateReply;
-import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
-import net.es.oscars.nsibridge.ifces.StateException;
-import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import net.es.oscars.nsibridge.prov.*;
 
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
-import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
-import java.util.Date;
 
 public class OscarsResvTask extends Task  {
     private static final Logger log = Logger.getLogger(OscarsResvTask.class);
@@ -63,19 +56,22 @@ public class OscarsResvTask extends Task  {
                 log.debug("found state machine for connId: "+connId);
             }
 
-            boolean newResvSubmittedOK;
+            boolean newResvSubmittedOK = false;
             try {
                 OscarsUtil.submitResv(req);
+                newResvSubmittedOK = true;
             } catch (TranslationException ex) {
-
-                newResvSubmittedOK = false;
+                log.error(ex);
             } catch (ServiceException ex) {
-                newResvSubmittedOK = false;
-
+                log.error(ex);
+            }
+            if (!newResvSubmittedOK) {
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
             }
 
 
-            // TODO
+
+            // TODO: query
             boolean localConfirmed = true;
 
 
@@ -83,15 +79,12 @@ public class OscarsResvTask extends Task  {
 
 
 
-            try {
-                if (localConfirmed) {
-                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
-                } else {
-                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
 
-                }
-            } catch (StateException ex) {
-                log.error(ex);
+            if (localConfirmed) {
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
+            } else {
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+
             }
 
 
