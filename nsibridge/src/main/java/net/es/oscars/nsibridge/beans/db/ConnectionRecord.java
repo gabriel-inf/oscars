@@ -13,6 +13,8 @@ public class ConnectionRecord {
     protected Long id;
     protected String connectionId;
     protected String oscarsGri;
+    protected String requesterNSA;
+    protected String nsiGlobalGri;
 
     protected Set<DataplaneStatusRecord> dataplaneStatusRecords = new HashSet<DataplaneStatusRecord>();
     protected Set<ResvRecord> resvRecords = new HashSet<ResvRecord>();
@@ -93,10 +95,21 @@ public class ConnectionRecord {
         this.oscarsStatusRecords = oscarsStatusRecords;
     }
 
+    public String getRequesterNSA() {
+        return requesterNSA;
+    }
 
+    public void setRequesterNSA(String requesterNSA) {
+        this.requesterNSA = requesterNSA;
+    }
 
+    public String getNsiGlobalGri() {
+        return nsiGlobalGri;
+    }
 
-
+    public void setNsiGlobalGri(String nsiGlobalGri) {
+        this.nsiGlobalGri = nsiGlobalGri;
+    }
 
     // helper methods here
 

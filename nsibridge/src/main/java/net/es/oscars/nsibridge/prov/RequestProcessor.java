@@ -34,7 +34,7 @@ public class RequestProcessor {
     public void startReserve(ResvRequest request) throws ServiceException {
         String connId = request.getReserveType().getConnectionId();
 
-        NSI_Util.createConnectionRecordIfNeeded(connId);
+        NSI_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId());
 
         if (!NSI_Util.restoreStateMachines(connId)) {
             NSI_Util.makeNewStateMachines(connId);

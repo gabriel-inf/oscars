@@ -1,6 +1,5 @@
 package net.es.oscars.nsibridge.test.cuke;
 
-import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -102,5 +101,26 @@ public class ReserveSteps {
 
     }
 
+    @Then("^the ResvRequest for connectionId: \"([^\"]*)\" has OscarsOp: \"([^\"]*)\"$")
+    public void the_ResvRequest_for_connectionId_has_OscarsOp(String arg1, String arg2) throws Throwable {
+        RequestHolder rh = RequestHolder.getInstance();
+        ResvRequest rr = rh.findResvRequest(arg1);
+        assertThat(rr, notNullValue());
+        assertThat(rr.getOscarsOp().toString(), is(arg2));
+
+    }
+
+
+    @When("^I wait until the LocalResvTask for connectionId: \"([^\"]*)\" has completed$")
+    public void I_wait_until_the_LocalResvTask_for_connectionId_has_completed(String arg1) throws Throwable {
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.findNsiResvSM(arg1);
+
+        while (rsm.getState().value().equals("ReserveChecking")) {
+            System.out.println("waiting..");
+            Thread.sleep(250);
+        }
+
+    }
 
 }

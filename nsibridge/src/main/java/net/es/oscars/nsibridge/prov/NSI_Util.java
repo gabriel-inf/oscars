@@ -100,7 +100,7 @@ public class NSI_Util {
 
     }
 
-    public static void createConnectionRecordIfNeeded(String connId) throws ServiceException {
+    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri) throws ServiceException {
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr != null) {
             log.info("connection record was found while starting reserve() for connectionId: " + connId);
@@ -110,6 +110,8 @@ public class NSI_Util {
             em.getTransaction().begin();
             cr = new ConnectionRecord();
             cr.setConnectionId(connId);
+            cr.setNsiGlobalGri(nsiGlobalGri);
+            cr.setRequesterNSA(requesterNSA);
             em.persist(cr);
             em.getTransaction().commit();
         }

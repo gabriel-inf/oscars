@@ -21,6 +21,7 @@
         <property name="userDN" value="foo.net:user"/>
         <property name="issuerDN" value="foo.net:issuer"/>
         <property name="stub" value="true"/>
+        <property name="stubDelayMillis" value="1000"/>
     </bean>
 
     <bean id="timingConfig"

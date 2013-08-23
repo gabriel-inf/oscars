@@ -4,6 +4,7 @@ import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
+import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.*;
 
@@ -84,17 +85,15 @@ public class NSIRequestFactory {
         dstTvp.getValue().add("850");
         dstStp.getLabels().getAttribute().add(dstTvp);
 
-        /*
-        pt.setDirectionality(DirectionalityType.BIDIRECTIONAL);
-        pt.setSourceSTP(srcStp);
-        pt.setDestSTP(dstStp);
-        pt.setDirectionality(DirectionalityType.BIDIRECTIONAL);
+        P2PServiceBaseType p2ps = new P2PServiceBaseType();
+        crit.getAny().add(p2ps);
+        p2ps.setCapacity(100);
+        p2ps.setDirectionality(DirectionalityType.BIDIRECTIONAL);
+        p2ps.setSourceSTP(srcStp);
+        p2ps.setDestSTP(dstStp);
 
-        crit.setBandwidth(100);
-        crit.setPath(pt);
-        */
+
         crit.setSchedule(sch);
-
 
         String connId = UUID.randomUUID().toString();
         req.setReserveType(new ReserveType());

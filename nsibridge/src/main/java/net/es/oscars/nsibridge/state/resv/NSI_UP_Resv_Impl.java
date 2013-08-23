@@ -25,6 +25,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     protected TimingConfig tc;
     private static final Logger LOG = Logger.getLogger(NSI_UP_Resv_Impl.class);
 
+
     public NSI_UP_Resv_Impl(String connId) {
         tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
         connectionId = connId;
@@ -75,10 +76,19 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             Task oscarsResv = new OscarsResvTask(connectionId);
             try {
                 wf.schedule(oscarsResv, when);
+
             } catch (TaskException e) {
-                e.printStackTrace();
+                LOG.error(e);
+                NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+                NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
+                try {
+                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                } catch (StateException ex) {
+                    ex.printStackTrace();
+                }
             }
 
+            /*
             // query to see what happened
             d = (tc.getQueryAfterResvWait() * 1000);
             when = now + d.longValue();
@@ -98,6 +108,8 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             } catch (TaskException e) {
                 e.printStackTrace();
             }
+            */
+
         } else {
             // modify
         }
@@ -256,5 +268,8 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             e.printStackTrace();
         }
     }
+
+
+
 
 }

@@ -5,6 +5,7 @@ public class OscarsConfig {
     protected String userDN = "";
     protected String issuerDN = "";
     protected boolean stub = false;
+    protected long stubDelayMillis = 0L;
 
     public OscarsConfig(){
 
@@ -41,5 +42,13 @@ public class OscarsConfig {
 
     public void setIssuerDN(String issuerDN) {
         this.issuerDN = issuerDN;
+    }
+
+    public long getStubDelayMillis() {
+        return stubDelayMillis;
+    }
+
+    public void setStubDelayMillis(long stubDelayMillis) {
+        this.stubDelayMillis = stubDelayMillis;
     }
 }

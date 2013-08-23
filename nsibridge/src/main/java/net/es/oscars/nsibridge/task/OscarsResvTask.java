@@ -6,9 +6,13 @@ import net.es.oscars.api.soap.gen.v06.ResCreateContent;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import net.es.oscars.nsibridge.prov.*;
 
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;
@@ -59,47 +63,37 @@ public class OscarsResvTask extends Task  {
                 log.debug("found state machine for connId: "+connId);
             }
 
-            ResCreateContent rc = null;
+            boolean newResvSubmittedOK;
             try {
-                rc = NSI_OSCARS_Translation.makeOscarsResv(req);
+                OscarsUtil.submitResv(req);
             } catch (TranslationException ex) {
-                log.debug(ex);
-                log.debug("could not translate NSI request");
 
-                em.getTransaction().begin();
-                cr.setOscarsGri(null);
-                OscarsStatusRecord or = new OscarsStatusRecord();
-                or.setStatus("FAILED");
-                or.setDate(new Date());
-                cr.getOscarsStatusRecords().add(or);
-                em.persist(cr);
-                em.getTransaction().commit();
-
+                newResvSubmittedOK = false;
+            } catch (ServiceException ex) {
+                newResvSubmittedOK = false;
 
             }
-            if (rc != null) {
-                try {
-                    CreateReply reply = OscarsProxy.getInstance().sendCreate(rc);
-                    log.debug("connId: "+connId+"gri: "+reply.getGlobalReservationId());
 
-                    em.getTransaction().begin();
-                    cr.setOscarsGri(reply.getGlobalReservationId());
-                    em.persist(cr);
-                    em.getTransaction().commit();
 
-                } catch (OSCARSServiceException e) {
+            // TODO
+            boolean localConfirmed = true;
 
-                    em.getTransaction().begin();
-                    cr.setOscarsGri(null);
-                    OscarsStatusRecord or = new OscarsStatusRecord();
-                    or.setStatus("FAILED");
-                    or.setDate(new Date());
-                    cr.getOscarsStatusRecords().add(or);
-                    em.persist(cr);
-                    em.getTransaction().commit();
+
+
+
+
+
+            try {
+                if (localConfirmed) {
+                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
+                } else {
+                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
 
                 }
+            } catch (StateException ex) {
+                log.error(ex);
             }
+
 
         } catch (Exception ex) {
             ex.printStackTrace();

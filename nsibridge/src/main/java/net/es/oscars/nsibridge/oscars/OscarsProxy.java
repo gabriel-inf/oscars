@@ -71,6 +71,11 @@ public class OscarsProxy {
             System.out.println("stub mode, not contacting coordinator");
             CancelResReply cr = new CancelResReply();
             cr.setStatus("CANCELLED");
+            try {
+                Thread.sleep(oscarsConfig.getStubDelayMillis());
+            } catch (InterruptedException ex) {
+                log.debug(ex);
+            }
             return cr;
         } else {
             Object[] res = coordClient.invoke("cancelReservation", req);
@@ -96,6 +101,12 @@ public class OscarsProxy {
             CreateReply cr = new CreateReply();
             cr.setGlobalReservationId(UUID.randomUUID().toString());
             cr.setStatus("RESERVED");
+            try {
+                Thread.sleep(oscarsConfig.getStubDelayMillis());
+            } catch (InterruptedException ex) {
+                log.debug(ex);
+            }
+
             return cr;
         } else {
             Object[] res = coordClient.invoke("createReservation",req);
@@ -121,6 +132,12 @@ public class OscarsProxy {
             System.out.println("stub mode, not contacting coordinator");
             TeardownPathResponseContent tr = new TeardownPathResponseContent();
             tr.setStatus("INTEARDOWN");
+            try {
+                Thread.sleep(oscarsConfig.getStubDelayMillis());
+            } catch (InterruptedException ex) {
+                log.debug(ex);
+            }
+
             return tr;
         } else {
             Object[] res = coordClient.invoke("sendTeardown",req);
@@ -147,6 +164,12 @@ public class OscarsProxy {
             System.out.println("stub mode, not contacting coordinator");
             CreatePathResponseContent tr = new CreatePathResponseContent();
             tr.setStatus("INSETUP");
+            try {
+                Thread.sleep(oscarsConfig.getStubDelayMillis());
+            } catch (InterruptedException ex) {
+                log.debug(ex);
+            }
+
             return tr;
         } else {
             Object[] res = coordClient.invoke("sendSetup",req);
@@ -175,6 +198,12 @@ public class OscarsProxy {
             String gri = qc.getGlobalReservationId();
             rd.setGlobalReservationId(gri);
             tr.setReservationDetails(rd);
+            try {
+                Thread.sleep(oscarsConfig.getStubDelayMillis());
+            } catch (InterruptedException ex) {
+                log.debug(ex);
+            }
+
             return tr;
         } else {
             Object[] res = coordClient.invoke("sendQuery",req);
