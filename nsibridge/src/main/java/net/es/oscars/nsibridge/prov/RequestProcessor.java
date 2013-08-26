@@ -67,6 +67,10 @@ public class RequestProcessor {
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
             Set<UUID> taskIds = rsm.process(NSI_Resv_Event.RECEIVED_NSI_RESV_RQ);
             request.getTaskIds().addAll(taskIds);
+            for (UUID taskId : request.getTaskIds()) {
+                log.debug("   task id:  " +taskId);
+            }
+
         } catch (StateException ex) {
             log.error(ex);
             throw new ServiceException("resv state machine does not allow transition: "+connId);

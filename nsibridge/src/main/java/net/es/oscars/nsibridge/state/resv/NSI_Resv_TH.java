@@ -96,6 +96,9 @@ public class NSI_Resv_TH implements TransitionHandler {
             default:
 
         }
+        for (UUID taskId : taskIds) {
+            LOG.debug("   task id:  " +taskId);
+        }
         return taskIds;
     }
 

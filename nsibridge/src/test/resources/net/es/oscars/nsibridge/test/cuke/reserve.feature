@@ -21,8 +21,8 @@ Feature: new reservation
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveStart"
     When I wait 2000 milliseconds
 
-    When I submit reserve() with connectionId: "reserve-connid"
-    Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "MODIFY"
+#    When I submit reserve() with connectionId: "reserve-connid"
+#    Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "MODIFY"
 
 
 

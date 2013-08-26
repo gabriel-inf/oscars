@@ -6,24 +6,29 @@ import net.es.oscars.utils.task.sched.Workflow;
 
 
 public class ScheduleSteps {
-    private static boolean started = false;
     @Given("^I have started the scheduler$")
     public void I_have_started_the_scheduler() throws Throwable {
         Schedule sch = Schedule.getInstance();
-        if (!started) {
-            started = true;
-            sch.start();
-        }
+        sch.start();
 
     }
     @Given("^I have stopped the scheduler$")
     public void I_have_stopped_the_scheduler() throws Throwable {
         Schedule sch = Schedule.getInstance();
-        if (started) {
-            started = false;
-            sch.stop();
-        }
+        sch.stop();
+    }
 
+
+    @Given("^I have started the Quartz scheduler$")
+    public void I_have_started_the_Quartz_scheduler() throws Throwable {
+        Schedule sch = Schedule.getInstance();
+        sch.startQuartz();
+    }
+
+    @Given("^I have stopped the Quartz scheduler$")
+    public void I_have_stopped_the_Quartz_scheduler() throws Throwable {
+        Schedule sch = Schedule.getInstance();
+        sch.stopQuartz();
     }
 
 
