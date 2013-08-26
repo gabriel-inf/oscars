@@ -3,6 +3,8 @@ package net.es.oscars.nsibridge.state.resv;
 
 import net.es.oscars.nsibridge.ifces.NsiResvMdl;
 
+import java.util.UUID;
+
 
 public class NSI_Stub_Resv_Impl implements NsiResvMdl {
     String connectionId = "";
@@ -11,53 +13,53 @@ public class NSI_Stub_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public void localCheck() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID localCheck() {
+        return null;
     }
 
     @Override
-    public void localHold() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID localHold() {
+        return null;
     }
 
     @Override
-    public void localCommit() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID localCommit() {
+        return null;
     }
 
     @Override
-    public void localAbort() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID localAbort() {
+        return null;
     }
 
     @Override
-    public void sendRsvCF() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID sendRsvCF() {
+        return null;
     }
 
     @Override
-    public void sendRsvFL() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID sendRsvFL() {
+        return null;
     }
 
     @Override
-    public void sendRsvCmtCF() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID sendRsvCmtCF() {
+        return null;
     }
 
     @Override
-    public void sendRsvCmtFL() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID sendRsvCmtFL() {
+        return null;
     }
 
     @Override
-    public void sendRsvAbtCF() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID sendRsvAbtCF() {
+        return null;
     }
 
     @Override
-    public void sendRsvTimeout() {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public UUID sendRsvTimeout() {
+        return null;
     }
 
 }

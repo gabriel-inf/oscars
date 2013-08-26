@@ -9,6 +9,7 @@ import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import java.util.Date;
+import java.util.UUID;
 
 
 public class NSI_UP_Life_Impl implements NsiLifeMdl {
@@ -21,45 +22,50 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public void localTerm() {
+    public UUID localTerm() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
         Task oscarsCancel = new OscarsCancelTask(connectionId);
-
+        UUID taskId = null;
         try {
-            wf.schedule(oscarsCancel, now + 1000);
+            taskId = wf.schedule(oscarsCancel, now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
     @Override
-    public void sendTermCF() {
+    public UUID sendTermCF() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.TERM_CF);
+        UUID taskId = null;
 
         try {
-            wf.schedule(sendNsiMsg, now + 1000);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
 
     @Override
-    public void notifyForcedEndErrorEvent() {
+    public UUID notifyForcedEndErrorEvent() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR_EVENT);
+        UUID taskId = null;
 
         try {
-            wf.schedule(sendNsiMsg, now + 1000);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 }

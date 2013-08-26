@@ -3,11 +3,11 @@
         "nsaId": "urn:ogf:network:nsa:esnet",
         "stps": [
             {
-                "stpId":        "urn:ogf:network:es.net:2012:bi-es-startap",
+                "stpId":        "urn:ogf:network:es.net:2013:bi-es-startap",
                 "oscarsId":     "urn:ogf:network:es.net:star-cr5:xe-3/1/1:*"
             },
             {
-                "stpId":        "urn:ogf:network:es.net:2012:bi-ps",
+                "stpId":        "urn:ogf:network:es.net:2013:bi-ps",
                 "oscarsId":     "urn:ogf:network:es.net:star-cr5:xe-6/1/1:*"
             }
         ]

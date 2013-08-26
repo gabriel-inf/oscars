@@ -1,11 +1,11 @@
 package net.es.oscars.nsibridge.ifces;
 
-/**
- * @haniotak Date: 2012-08-08
- */
+import java.util.Set;
+import java.util.UUID;
+
 public interface StateMachine {
 
-    public void process(SM_Event ev) throws StateException;
+    public Set<UUID> process(SM_Event ev) throws StateException;
 
     public void setTransitionHandler(TransitionHandler th);
     public TransitionHandler getTransitionHandler();

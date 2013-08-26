@@ -1,16 +1,18 @@
 package net.es.oscars.nsibridge.ifces;
 
 
+import java.util.UUID;
+
 public interface NsiProvMdl {
 
-    public void localProv();
-    public void localRel();
+    public UUID localProv();
+    public UUID localRel();
 
-    public void sendProvCF();
-    public void notifyProvFL();
+    public UUID sendProvCF();
+    public UUID notifyProvFL();
 
-    public void sendRelCF();
-    public void notifyRelFL();
+    public UUID sendRelCF();
+    public UUID notifyRelFL();
 
 
 }

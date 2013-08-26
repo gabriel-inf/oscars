@@ -11,6 +11,7 @@ import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 
 import java.util.Date;
+import java.util.UUID;
 
 
 public class NSI_UP_Prov_Impl implements NsiProvMdl {
@@ -23,8 +24,12 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
 
     @Override
-    public void localProv() {
+    public UUID localProv() {
+        UUID taskId = null;
+
         long now = new Date().getTime();
+
+        // TODO: run only one task
         TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
         Workflow wf = Workflow.getInstance();
 
@@ -51,45 +56,54 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
         LocalProvTask provTask = new LocalProvTask(connectionId, NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
         try {
-            wf.schedule(provTask , when);
+            taskId = wf.schedule(provTask , when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
+
     }
 
     @Override
-    public void sendProvCF() {
+    public UUID sendProvCF() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.PROV_CF);
-
+        UUID taskId = null;
         try {
-            wf.schedule(sendNsiMsg, now + 1000);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
     @Override
-    public void notifyProvFL() {
+    public UUID notifyProvFL() {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR);
+        UUID taskId = null;
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
+
     }
 
     @Override
-    public void localRel() {
+    public UUID localRel() {
+        // TODO: run only one task
+
         TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
+        UUID taskId = null;
 
 
         Double d = (tc.getTaskInterval() * 1000);
@@ -119,11 +133,14 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
+
     }
 
     @Override
-    public void sendRelCF() {
+    public UUID sendRelCF() {
         long now = new Date().getTime();
+        UUID taskId = null;
 
         Workflow wf = Workflow.getInstance();
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.REL_CF);
@@ -133,11 +150,14 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
+
     }
 
     @Override
-    public void notifyRelFL() {
+    public UUID notifyRelFL() {
         long now = new Date().getTime();
+        UUID taskId = null;
 
         Workflow wf = Workflow.getInstance();
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR);
@@ -147,5 +167,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
+
     }
 }

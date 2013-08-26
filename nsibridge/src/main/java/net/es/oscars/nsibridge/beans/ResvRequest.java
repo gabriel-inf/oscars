@@ -3,6 +3,9 @@ package net.es.oscars.nsibridge.beans;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReserveType;
 
+import java.util.HashSet;
+import java.util.UUID;
+
 public class ResvRequest extends GenericRequest {
 
     protected ReserveType reserveType;
@@ -23,4 +26,6 @@ public class ResvRequest extends GenericRequest {
     public void setOscarsOp(OscarsOps oscarsOp) {
         this.oscarsOp = oscarsOp;
     }
+
+
 }

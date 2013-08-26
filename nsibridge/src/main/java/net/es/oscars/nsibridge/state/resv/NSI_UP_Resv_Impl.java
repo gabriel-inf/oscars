@@ -18,6 +18,7 @@ import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
+import java.util.UUID;
 
 
 public class NSI_UP_Resv_Impl implements NsiResvMdl {
@@ -33,9 +34,10 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
 
     @Override
-    public void localCheck() {
+    public UUID localCheck() {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
+        UUID taskId = null;
 
 
         ConnectionRecord cr = null;
@@ -79,7 +81,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             Task oscarsResv = new OscarsResvTask(connectionId);
             try {
                 LOG.info("scheduling oscarsResv for connId:"+connectionId+", will run in "+d+"ms");
-                wf.schedule(oscarsResv, when);
+                taskId = wf.schedule(oscarsResv, when);
 
             } catch (TaskException e) {
                 LOG.error(e);
@@ -97,16 +99,21 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
             }
         }
+        return taskId;
     }
 
     @Override
-    public void localHold() {
+    public UUID localHold() {
+        UUID taskId = null;
+
         LOG.debug("localHold: "+connectionId);
         // nothing to do - everything is doen in the check phase
+        return taskId;
     }
 
     @Override
-    public void localCommit() {
+    public UUID localCommit() {
+        UUID taskId = null;
         LOG.debug("localCommit: "+connectionId);
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
@@ -120,11 +127,15 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         }catch (ServiceException ex) {
             LOG.error(ex);
         }
-
+        return taskId;
     }
 
     @Override
-    public void localAbort() {
+    public UUID localAbort() {
+
+        // TODO : schedule just one job!
+        UUID taskId = null;
+
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
@@ -143,7 +154,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         when = now + d.longValue();
         OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
         try {
-            wf.schedule(oqt , when);
+            taskId = wf.schedule(oqt , when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
@@ -157,10 +168,15 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
+
+
+        return taskId;
     }
 
     @Override
-    public void sendRsvCF() {
+    public UUID sendRsvCF() {
+        UUID taskId = null;
+
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
@@ -170,16 +186,18 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.RESV_CF);
 
         try {
-            wf.schedule(sendNsiMsg, when);
+            taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
     @Override
-    public void sendRsvFL() {
+    public UUID sendRsvFL() {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
+        UUID taskId = null;
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
@@ -187,16 +205,19 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.RESV_FL);
 
         try {
-            wf.schedule(sendNsiMsg, when);
+            taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
+
     }
 
     @Override
-    public void sendRsvCmtCF() {
+    public UUID sendRsvCmtCF() {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
+        UUID taskId = null;
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
@@ -204,14 +225,17 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.RESV_CM_CF);
 
         try {
-            wf.schedule(sendNsiMsg, when);
+            taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
     @Override
-    public void sendRsvCmtFL() {
+    public UUID sendRsvCmtFL() {
+        UUID taskId = null;
+
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
@@ -221,14 +245,16 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.RESV_CM_FL);
 
         try {
-            wf.schedule(sendNsiMsg, when);
+            taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
     @Override
-    public void sendRsvAbtCF() {
+    public UUID sendRsvAbtCF() {
+        UUID taskId = null;
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
@@ -238,16 +264,18 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.RESV_AB_CF);
 
         try {
-            wf.schedule(sendNsiMsg, when);
+            taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
     @Override
-    public void sendRsvTimeout() {
+    public UUID sendRsvTimeout() {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
+        UUID taskId = null;
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
@@ -255,10 +283,11 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.RESV_TIMEOUT);
 
         try {
-            wf.schedule(sendNsiMsg, when);
+            taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
     }
 
 

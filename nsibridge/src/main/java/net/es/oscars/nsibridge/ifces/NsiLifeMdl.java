@@ -1,12 +1,14 @@
 package net.es.oscars.nsibridge.ifces;
 
+import java.util.UUID;
+
 public interface NsiLifeMdl {
 
-    public void localTerm();
+    public UUID localTerm();
 
-    public void sendTermCF();
+    public UUID sendTermCF();
 
-    public void notifyForcedEndErrorEvent();
+    public UUID notifyForcedEndErrorEvent();
 
 
 

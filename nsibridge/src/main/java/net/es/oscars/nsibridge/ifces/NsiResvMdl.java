@@ -1,22 +1,24 @@
 package net.es.oscars.nsibridge.ifces;
 
 
+import java.util.UUID;
+
 public interface NsiResvMdl {
 
-    public void localCheck();
-    public void localHold();
-    public void localCommit();
-    public void localAbort();
+    public UUID localCheck();
+    public UUID localHold();
+    public UUID localCommit();
+    public UUID localAbort();
 
-    public void sendRsvCF();
-    public void sendRsvFL();
+    public UUID sendRsvCF();
+    public UUID sendRsvFL();
 
-    public void sendRsvCmtCF();
-    public void sendRsvCmtFL();
+    public UUID sendRsvCmtCF();
+    public UUID sendRsvCmtFL();
 
-    public void sendRsvAbtCF();
+    public UUID sendRsvAbtCF();
 
-    public void sendRsvTimeout();
+    public UUID sendRsvTimeout();
 
 
 }

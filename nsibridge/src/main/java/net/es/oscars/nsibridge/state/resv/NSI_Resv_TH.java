@@ -4,6 +4,10 @@ import net.es.oscars.nsibridge.ifces.*;
 import org.apache.log4j.Logger;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 
 public class NSI_Resv_TH implements TransitionHandler {
 
@@ -13,7 +17,7 @@ public class NSI_Resv_TH implements TransitionHandler {
     private NsiResvMdl mdl;
 
     @Override
-    public void process(SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
+    public Set<UUID> process(SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
         NSI_Resv_State from = (NSI_Resv_State) gfrom;
         NSI_Resv_State to = (NSI_Resv_State) gto;
         NSI_Resv_Event ev = (NSI_Resv_Event) gev;
@@ -21,11 +25,11 @@ public class NSI_Resv_TH implements TransitionHandler {
         ReservationStateEnumType fromState = (ReservationStateEnumType) from.state();
         ReservationStateEnumType toState = (ReservationStateEnumType) to.state();
         String transitionStr = fromState+" -> "+toState;
-
+        HashSet<UUID> taskIds = new HashSet<UUID>();
         switch (fromState) {
             case RESERVE_START:
                 if (toState == ReservationStateEnumType.RESERVE_CHECKING) {
-                    mdl.localCheck();
+                    taskIds.add(mdl.localCheck());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -33,11 +37,11 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_CHECKING:
                 if (toState == ReservationStateEnumType.RESERVE_HELD) {
-                    mdl.localHold();
-                    mdl.sendRsvCF();
+                    taskIds.add(mdl.localHold());
+                    taskIds.add(mdl.sendRsvCF());
                 } else if (toState == ReservationStateEnumType.RESERVE_FAILED) {
-                    mdl.localAbort();
-                    mdl.sendRsvFL();
+                    taskIds.add(mdl.localAbort());
+                    taskIds.add(mdl.sendRsvFL());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -45,9 +49,9 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_HELD:
                 if (toState == ReservationStateEnumType.RESERVE_COMMITTING) {
-                    mdl.localCommit();
+                    taskIds.add(mdl.localCommit());
                 } else if (toState == ReservationStateEnumType.RESERVE_TIMEOUT) {
-                    mdl.localAbort();
+                    taskIds.add(mdl.localAbort());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -56,9 +60,9 @@ public class NSI_Resv_TH implements TransitionHandler {
             case RESERVE_COMMITTING:
                 if (toState == ReservationStateEnumType.RESERVE_START) {
                     if (ev == NSI_Resv_Event.LOCAL_RESV_COMMIT_CF) {
-                       mdl.sendRsvCmtCF();
+                        taskIds.add(mdl.sendRsvCmtCF());
                     } else {
-                        mdl.sendRsvCmtFL();
+                        taskIds.add(mdl.sendRsvCmtFL());
                     }
 
                 } else {
@@ -68,7 +72,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_FAILED:
                 if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
-                    mdl.localAbort();
+                    taskIds.add(mdl.localAbort());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -76,7 +80,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_ABORTING:
                 if (toState == ReservationStateEnumType.RESERVE_START) {
-                    mdl.sendRsvAbtCF();
+                    taskIds.add(mdl.sendRsvAbtCF());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -84,7 +88,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_TIMEOUT:
                 if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
-                    mdl.localAbort();
+                    taskIds.add(mdl.localAbort());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -92,6 +96,7 @@ public class NSI_Resv_TH implements TransitionHandler {
             default:
 
         }
+        return taskIds;
     }
 
 

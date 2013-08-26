@@ -4,6 +4,9 @@ import net.es.oscars.nsibridge.ifces.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 import org.apache.log4j.Logger;
 
+import java.util.Set;
+import java.util.UUID;
+
 public class NSI_Life_SM implements StateMachine {
 
     private static final Logger LOG = Logger.getLogger(NSI_Life_SM.class);
@@ -20,7 +23,7 @@ public class NSI_Life_SM implements StateMachine {
     }
 
     @Override
-    public void process(SM_Event event) throws StateException {
+    public Set<UUID> process(SM_Event event) throws StateException {
         if (this.transitionHandler == null) {
             LOG.error("PSM: ["+this.id+"]: Null transition handler");
             throw new NullPointerException("PSM: ["+this.id+"]: Null transition handler.");
@@ -84,7 +87,7 @@ public class NSI_Life_SM implements StateMachine {
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
         //  LOG.debug(post);
-        this.transitionHandler.process(ps, ns, event, this);
+        return (this.transitionHandler.process(ps, ns, event, this));
     }
 
 

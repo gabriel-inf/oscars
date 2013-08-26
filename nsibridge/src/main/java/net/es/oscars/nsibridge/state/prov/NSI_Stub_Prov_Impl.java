@@ -10,6 +10,7 @@ import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 
 import java.util.Date;
+import java.util.UUID;
 
 
 public class NSI_Stub_Prov_Impl implements NsiProvMdl {
@@ -22,27 +23,32 @@ public class NSI_Stub_Prov_Impl implements NsiProvMdl {
 
 
     @Override
-    public void localProv() {
-
+    public UUID localProv() {
+        return null;
     }
 
     @Override
-    public void sendProvCF() {
+    public UUID sendProvCF() {
+        return null;
     }
 
     @Override
-    public void notifyProvFL() {
+    public UUID notifyProvFL() {
+        return null;
     }
 
     @Override
-    public void localRel() {
+    public UUID localRel() {
+        return null;
     }
 
     @Override
-    public void sendRelCF() {
+    public UUID sendRelCF() {
+        return null;
     }
 
     @Override
-    public void notifyRelFL() {
+    public UUID notifyRelFL() {
+        return null;
     }
 }

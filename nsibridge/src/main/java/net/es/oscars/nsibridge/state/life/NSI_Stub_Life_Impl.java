@@ -3,6 +3,8 @@ package net.es.oscars.nsibridge.state.life;
 
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 
+import java.util.UUID;
+
 
 public class NSI_Stub_Life_Impl implements NsiLifeMdl {
     String connectionId = "";
@@ -14,16 +16,18 @@ public class NSI_Stub_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public void localTerm() {
+    public UUID localTerm() {
+        return null;
     }
 
     @Override
-    public void sendTermCF() {
+    public UUID sendTermCF() {
+        return null;
     }
 
 
     @Override
-    public void notifyForcedEndErrorEvent() {
-
+    public UUID notifyForcedEndErrorEvent() {
+        return null;
     }
 }
