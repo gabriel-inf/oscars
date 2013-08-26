@@ -1,10 +1,13 @@
 package net.es.oscars.nsibridge.prov;
 
 
+import net.es.oscars.api.soap.gen.v06.QueryResContent;
+import net.es.oscars.api.soap.gen.v06.QueryResReply;
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
+import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -15,6 +18,7 @@ import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.task.QueryTask;
+import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -126,26 +130,49 @@ public class RequestProcessor {
 
         for (String connId: request.getQuery().getConnectionId()) {
             QuerySummaryResultType resultType = new QuerySummaryResultType();
-
+            
+            //lookup connection record
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
             resultType.setConnectionId(connId);
+            resultType.setRequesterNSA(cr.getRequesterNSA());
+            resultType.setGlobalReservationId(cr.getNsiGlobalGri());
+            
+            //Set connection states
             ConnectionStatesType cst = new ConnectionStatesType();
-            resultType.setConnectionStates(cst);
             NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
             NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
             NSI_Prov_SM psm = smh.findNsiProvSM(connId);
-
             LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
             ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
             ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
             cst.setProvisionState(pst);
             cst.setLifecycleState(lst);
             cst.setReservationState(rst);
-
+            resultType.setConnectionStates(cst);
             // TODO: actually implement this
-            DataPlaneStatusType         dst = new DataPlaneStatusType();
+            DataPlaneStatusType dst = new DataPlaneStatusType();
             dst.setActive(true);
             dst.setVersion(1);
+            
+            //Set details of reservation based on query
+            try {
+                QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(cr.getOscarsGri());
+                QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
+                if(reply == null || reply.getReservationDetails() == null){
+                    throw new ServiceException("No matching OSCARS reservation found with oscars GRI " + cr.getOscarsGri());
+                }
+                //set description
+                resultType.setDescription(reply.getReservationDetails().getDescription());
+                //set criteria
+                resultType.getCriteria().add(
+                        NSI_OSCARS_Translation.makeNSIQuerySummaryCriteria(reply.getReservationDetails()));
+            } catch (OSCARSServiceException e) {
+                e.printStackTrace();
+                throw new ServiceException("Error returned from OSCARS query: " + e.getMessage());
+            } catch (TranslationException e) {
+                e.printStackTrace();
+                throw new ServiceException("Unable to translate query request for OSCARS: " + e.getMessage());
+            }
 
             result.getReservation().add(resultType);
         }

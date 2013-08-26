@@ -264,4 +264,21 @@ public class PathTools {
 
         
     }
+    
+    /**
+     * returns true if hap has vlans, false otherwise
+     * 
+     * @param hop
+     * @return rue if hap has vlans, false otherwise
+     */
+    public static boolean isVlanHop(CtrlPlaneHopContent hop){
+        
+        if(hop.getLink() == null || hop.getLink().getSwitchingCapabilityDescriptors() == null ||
+                hop.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo() == null ||
+                hop.getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability() == null){
+            return false;
+        }
+        
+        return true;
+    }
 }
