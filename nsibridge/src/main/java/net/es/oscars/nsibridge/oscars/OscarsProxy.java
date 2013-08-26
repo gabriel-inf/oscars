@@ -61,6 +61,34 @@ public class OscarsProxy {
         this.initCoordClient();
     }
 
+    public ModifyResReply sendModify(ModifyResContent modifyReservation) throws OSCARSServiceException {
+        MessagePropertiesType msgProps = modifyReservation.getMessageProperties();
+        if (msgProps == null) {
+            msgProps = this.makeMessageProps();
+        }
+        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps);
+        msgProps = updateMessageProperties(msgProps, subjectAttributes);
+        modifyReservation.setMessageProperties(msgProps);
+
+
+        Object[] req = new Object[]{subjectAttributes, modifyReservation};
+
+        if (oscarsConfig.isStub()) {
+            System.out.println("stub mode, not contacting coordinator");
+            ModifyResReply cr = new ModifyResReply();
+            stubStates.put(modifyReservation.getGlobalReservationId(), OscarsStates.RESERVED);
+            try {
+                Thread.sleep(oscarsConfig.getStubDelayMillis());
+            } catch (InterruptedException ex) {
+                log.debug(ex);
+            }
+            return cr;
+        } else {
+            Object[] res = coordClient.invoke("modifyReservation", req);
+            ModifyResReply cr = (ModifyResReply) res[0];
+            return cr;
+        }
+    }
 
     public CancelResReply sendCancel(CancelResContent cancelReservation) throws OSCARSServiceException {
         MessagePropertiesType msgProps = cancelReservation.getMessageProperties();

@@ -116,14 +116,14 @@ public class ReserveSteps {
     @When("^I wait until I know the OSCARS gri for connectionId: \"([^\"]*)\"$")
     public void I_wait_until_I_know_the_OSCARS_gri_for_connectionId(String arg1) throws Throwable {
         ConnectionRecord cr = NSI_Util.getConnectionRecord(arg1);
-        Long timeout = 10000L;
+        Long timeout = 30000L;
         Long elapsed = 0L;
         while ((elapsed < timeout) &&
               (cr.getOscarsGri() == null || cr.getOscarsGri().equals(""))) {
             cr = NSI_Util.getConnectionRecord(arg1);
             System.out.println("waiting for oscars Gri for connId "+arg1+ " gri: "+cr.getOscarsGri());
-            Thread.sleep(500);
-            elapsed += 500;
+            Thread.sleep(1000);
+            elapsed += 1000;
             RequestHolder rh = RequestHolder.getInstance();
             for (ResvRequest rr : rh.getResvRequests()) {
                 // System.out.println(" -- "+rr.getReserveType().getConnectionId());

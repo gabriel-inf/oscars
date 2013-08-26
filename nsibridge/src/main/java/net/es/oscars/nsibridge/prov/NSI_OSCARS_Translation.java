@@ -26,6 +26,11 @@ public class NSI_OSCARS_Translation {
 
     }
 
+    public static ModifyResContent makeOscarsModify(ResvRequest req) throws TranslationException {
+        ModifyResContent mrc = new ModifyResContent();
+        // TODO
+        return mrc;
+    }
     public static ResCreateContent makeOscarsResv(ResvRequest req) throws TranslationException {
         ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
         String nsiLog;

@@ -1,10 +1,10 @@
 package net.es.oscars.nsibridge.task;
 
 
-import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
-import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.oscars.OscarsStateLogic;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.oscars.OscarsUtil;
@@ -18,16 +18,17 @@ import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import org.apache.log4j.Logger;
 
-import javax.persistence.EntityManager;
 
 public class OscarsResvTask extends Task  {
     private static final Logger log = Logger.getLogger(OscarsResvTask.class);
+    protected TimingConfig tc;
 
     private String connId = "";
 
     public OscarsResvTask(String connId) {
         this.scope = "oscars";
         this.connId = connId;
+        tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
     }
 
     public void onRun() throws TaskException {
@@ -79,7 +80,17 @@ public class OscarsResvTask extends Task  {
             boolean localConfirmed = false;
             boolean localDecided = false;
             OscarsStates os = OscarsStates.FAILED;
-            while (!localDecided) {
+
+            // wait until we can query
+            Double d = tc.getQueryAfterResvWait() * 1000;
+            Long sleep = d.longValue();
+            Thread.sleep(sleep);
+
+
+            double elapsed = 0;
+            double timeout = tc.getOscarsResvTimeout() * 1000;
+
+            while (!localDecided && timeout > elapsed) {
                 OscarsUtil.submitQuery(cr);
                 OscarsStatusRecord oc = ConnectionRecord.getLatestStatusRecord(cr);
                 if (oc != null && oc.getStatus() != null) {
@@ -88,9 +99,17 @@ public class OscarsResvTask extends Task  {
                         localDecided = true;
                     }
                 }
+                if (!localDecided) {
+                    Double qi  = tc.getQueryInterval() * 1000;
+                    sleep = qi.longValue();
+                    Thread.sleep(sleep);
+                    elapsed += qi;
+                }
             }
-
-            if (os.equals(OscarsStates.RESERVED)) {
+            // timed out waiting
+            if (elapsed > timeout && !localDecided) {
+                localConfirmed = false;
+            } else if (os.equals(OscarsStates.RESERVED)) {
                 localConfirmed = true;
             }
 

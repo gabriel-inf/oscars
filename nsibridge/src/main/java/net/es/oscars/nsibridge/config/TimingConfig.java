@@ -8,6 +8,8 @@ public class TimingConfig {
     protected double queryAfterTeardownWait;
     protected double queryInterval;
     protected double queryResultDelay;
+    protected double oscarsResvTimeout;
+    protected double modifyWaitTimeout;
 
     public double getResvTimeout() {
         return resvTimeout;
@@ -63,5 +65,21 @@ public class TimingConfig {
 
     public void setTaskInterval(double taskInterval) {
         this.taskInterval = taskInterval;
+    }
+
+    public double getModifyWaitTimeout() {
+        return modifyWaitTimeout;
+    }
+
+    public void setModifyWaitTimeout(double modifyWaitTimeout) {
+        this.modifyWaitTimeout = modifyWaitTimeout;
+    }
+
+    public double getOscarsResvTimeout() {
+        return oscarsResvTimeout;
+    }
+
+    public void setOscarsResvTimeout(double oscarsResvTimeout) {
+        this.oscarsResvTimeout = oscarsResvTimeout;
     }
 }

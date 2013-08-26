@@ -1,9 +1,6 @@
 package net.es.oscars.nsibridge.oscars;
 
-import net.es.oscars.api.soap.gen.v06.CreateReply;
-import net.es.oscars.api.soap.gen.v06.QueryResContent;
-import net.es.oscars.api.soap.gen.v06.QueryResReply;
-import net.es.oscars.api.soap.gen.v06.ResCreateContent;
+import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
@@ -80,6 +77,39 @@ public class OscarsUtil {
             }
         } else {
             throw new TranslationException("could not translate to OSCARS query");
+        }
+    }
+
+    public static void submitModify(ResvRequest resvRequest) throws TranslationException, ServiceException  {
+        log.debug("submitModify start");
+        String connId = resvRequest.getReserveType().getConnectionId();
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+
+        ModifyResContent mc = null;
+        try {
+            mc = NSI_OSCARS_Translation.makeOscarsModify(resvRequest);
+            log.debug("translated NSI to OSCARS");
+        } catch (TranslationException ex) {
+            log.debug(ex);
+            log.debug("could not translate NSI request");
+            addOscarsRecord(cr, null, new Date(), "FAILED");
+            throw ex;
+        }
+
+        if (mc == null) {
+            addOscarsRecord(cr, null, new Date(), "FAILED");
+            throw new TranslationException("null result in translation");
+        }
+
+        try {
+            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc);
+            log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
+            addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
+        } catch (OSCARSServiceException e) {
+            addOscarsRecord(cr, null, new Date(), "FAILED");
+            log.debug(e);
+            throw new ServiceException("Failed to modify reservation");
         }
     }
 

@@ -60,10 +60,14 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             if (or.getStatus().equals("RESERVED") || or.getStatus().equals("ACTIVE")) {
                 newResvRequired = false;
                 waitRequired = false;
-            } else if (or.getStatus().equals("FAILED") || or.getStatus().equals("CANCELLED")|| or.getStatus().equals("UNKNOWN")) {
+            } else if (or.getStatus().equals("FAILED") ||
+                       or.getStatus().equals("CANCELLED") ||
+                       or.getStatus().equals("UNKNOWN")) {
                 newResvRequired = true;
                 waitRequired = false;
-            } else if (or.getStatus().equals("INSETUP") || or.getStatus().equals("INTEARDOWN") || or.getStatus().equals("INPATHCALCULATION")  ) {
+            } else if (or.getStatus().equals("INSETUP") ||
+                       or.getStatus().equals("INTEARDOWN") ||
+                       or.getStatus().equals("INPATHCALCULATION")  ) {
                 waitRequired = true;
             }
         }
@@ -89,7 +93,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         } else {
             if (waitRequired) {
-                // modify
 
             }
         }

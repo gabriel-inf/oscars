@@ -41,6 +41,8 @@
         <property name="queryAfterSetupWait" value="15"/>
         <property name="queryAfterTeardownWait" value="15"/>
         <property name="queryResultDelay" value="0.1"/>
+        <property name="oscarsResvTimeout" value="30"/>
+        <property name="modifyWaitTimeout" value="30"/>
     </bean>
 
 
