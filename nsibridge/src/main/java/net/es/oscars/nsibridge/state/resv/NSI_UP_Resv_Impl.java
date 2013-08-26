@@ -18,6 +18,7 @@ import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -106,27 +107,32 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     public UUID localHold() {
         UUID taskId = null;
 
+
         LOG.debug("localHold: "+connectionId);
-        // nothing to do - everything is doen in the check phase
+        // nothing to do - everything is done in the check phase
         return taskId;
     }
 
     @Override
     public UUID localCommit() {
         UUID taskId = null;
+
         LOG.debug("localCommit: "+connectionId);
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
 
 
         try {
-            rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF);
+            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF);
+            taskId = taskIds.iterator().next();
             NSI_Util.persistStateMachines(connectionId);
         }catch (StateException ex) {
             LOG.error(ex);
         }catch (ServiceException ex) {
             LOG.error(ex);
         }
+
+
         return taskId;
     }
 

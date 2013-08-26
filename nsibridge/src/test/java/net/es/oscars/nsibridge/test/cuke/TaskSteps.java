@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.sched.Schedule;
@@ -21,14 +22,25 @@ public class TaskSteps {
     private static Logger log = Logger.getLogger(TaskSteps.class);
     private HashMap<String, Set<UUID>> connTasks = new HashMap<String, Set<UUID>>();
 
-    @Then("^I know the taskIds for connectionId: \"([^\"]*)\"$")
-    public void I_know_the_taskIds_for_connectionId(String arg1) throws Throwable {
+    @Then("^I know the reserve taskIds for connectionId: \"([^\"]*)\"$")
+    public void I_know_the_reserve_taskIds_for_connectionId(String arg1) throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
         ResvRequest rr = rh.findResvRequest(arg1);
         assertThat(rr, notNullValue());
         assertThat(rr.getTaskIds().size(), is(1));
         connTasks.put(arg1, rr.getTaskIds());
     }
+
+    @Then("^I know the simpleRequest taskIds for connectionId: \"([^\"]*)\"$")
+    public void I_know_the_simpleRequest_taskIds_for_connectionId(String arg1) throws Throwable {
+        RequestHolder rh = RequestHolder.getInstance();
+        SimpleRequest rr = rh.findSimpleRequest(arg1);
+        assertThat(rr, notNullValue());
+        assertThat(rr.getTaskIds().size(), is(1));
+        connTasks.put(arg1, rr.getTaskIds());
+    }
+
+
 
     @When("^I tell the scheduler to run the taskIds for connectionId: \"([^\"]*)\" in (\\d+) milliseconds$")
     public void I_tell_the_scheduler_to_run_the_taskIds_for_connectionId_in_milliseconds(String arg1, int arg2) throws Throwable {
@@ -47,7 +59,7 @@ public class TaskSteps {
             boolean matchAll = true;
             for (UUID taskId : connTasks.get(connId)) {
                 RunState rs = wf.getRunState(taskId);
-                log.debug("taskId:"+taskId+" runState: "+rs);
+                log.debug("taskId:" + taskId + " runState: " + rs);
                 if (!rs.toString().equals(runState)) {
                     matchAll = false;
                 }
@@ -67,7 +79,7 @@ public class TaskSteps {
             RunState rs = wf.getRunState(taskId);
             assertThat(rs.toString(), is(runState));
         }
-        log.debug("waited for "+elapsed+" ms until runstate for connId: "+connId+" became"+runState);
+        log.debug("waited for "+elapsed+" ms until runstate for connId: "+connId+" became "+runState);
     }
 
 

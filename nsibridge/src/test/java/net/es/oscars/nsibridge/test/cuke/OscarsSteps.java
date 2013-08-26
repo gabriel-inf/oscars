@@ -7,6 +7,7 @@ import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
+import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
@@ -16,6 +17,9 @@ import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
 import net.es.oscars.nsibridge.prov.NSI_Util;
+import net.es.oscars.nsibridge.prov.RequestHolder;
+import net.es.oscars.utils.task.sched.Workflow;
+import org.junit.Assert;
 
 import javax.persistence.EntityManager;
 
@@ -120,6 +124,12 @@ public class OscarsSteps {
 
    }
 
+    @Then("^I know the OSCARS gri for connectionId: \"([^\"]*)\"$")
+    public void I_know_the_OSCARS_gri_for_connectionId(String arg1) throws Throwable {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(arg1);
+
+        Assert.assertThat(cr.getOscarsGri(), notNullValue());
+    }
 
 
 }
