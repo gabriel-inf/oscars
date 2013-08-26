@@ -2,12 +2,15 @@ package net.es.oscars.utils.task.sched;
 
 
 import net.es.oscars.utils.task.Outcome;
+import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Workflow {
@@ -28,8 +31,9 @@ public class Workflow {
 
     private ConcurrentLinkedQueue<ScheduledTask> scheduledTasks = new ConcurrentLinkedQueue<ScheduledTask>();
     private ConcurrentLinkedQueue<Task> runningTasks = new ConcurrentLinkedQueue<Task>();
+    private ConcurrentHashMap<UUID, RunState> runStates = new ConcurrentHashMap<UUID, RunState>();
 
-    public synchronized void schedule(Task task, long when) throws TaskException {
+    public synchronized UUID schedule(Task task, long when) throws TaskException {
         for (Task prereq : task.getPrereqs()) {
             this.schedule(prereq, when);
         }
@@ -37,7 +41,10 @@ public class Workflow {
         st.task = task;
         st.when = when;
         scheduledTasks.add(st);
+        runStates.put(task.getId(), RunState.SCHEDULED);
+
         task.onScheduled(new Date().getTime());
+        return task.getId();
     }
 
 
@@ -54,7 +61,34 @@ public class Workflow {
         return result;
     }
 
+    public synchronized boolean runScheduledTask(UUID id) throws TaskException {
+        boolean found = false;
+        ScheduledTask entry = null;
+        for (ScheduledTask st : scheduledTasks) {
+            if (st.task.getId().equals(id)) {
+                found = true;
+                entry = st;
+                break;
+            }
+        }
+        Task task;
+        if (found) {
+            task = entry.task;
+            scheduledTasks.remove(entry);
+            runningTasks.add(task);
+        } else {
+            return false;
+        }
+        runStates.put(task.getId(), RunState.RUNNING);
+        task.onRun();
+        this.finishRunning(task);
+        return true;
+    }
 
+
+    public synchronized RunState getRunState(UUID id) {
+        return runStates.get(id);
+    }
 
     public synchronized Task nextRunnable(long time) throws TaskException {
         Task task = null;
@@ -95,6 +129,7 @@ public class Workflow {
         if (found) {
             scheduledTasks.remove(entry);
             runningTasks.add(task);
+            runStates.put(task.getId(), RunState.RUNNING);
         }
         return task;
     }
@@ -134,7 +169,10 @@ public class Workflow {
     public synchronized void finishRunning(Task task) {
         System.out.println("finishRunning "+task.getId());
         runningTasks.remove(task);
+        runStates.put(task.getId(), RunState.FINISHED);
+
     }
+
 
 
 }

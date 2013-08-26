@@ -9,8 +9,8 @@ import org.quartz.JobExecutionException;
 
 import java.util.Date;
 
-public class TaskRunner implements Job {
-    private Logger log = Logger.getLogger(TaskRunner.class);
+public class WFTicker implements Job {
+    private Logger log = Logger.getLogger(WFTicker.class);
 
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         Workflow wf = net.es.oscars.utils.task.sched.Workflow.getInstance();
