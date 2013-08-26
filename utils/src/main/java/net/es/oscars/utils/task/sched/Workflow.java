@@ -5,6 +5,7 @@ import net.es.oscars.utils.task.Outcome;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Workflow {
-
+    Logger log = Logger.getLogger(Workflow.class);
     private static Workflow instance;
     private Workflow() {}
     public static Workflow getInstance() {
@@ -79,7 +80,11 @@ public class Workflow {
         } else {
             return false;
         }
+
+        log.debug("preparing to run task id "+id);
         runStates.put(task.getId(), RunState.RUNNING);
+        log.debug("running task id "+id);
+
         task.onRun();
         this.finishRunning(task);
         return true;
@@ -167,7 +172,7 @@ public class Workflow {
     }
 
     public synchronized void finishRunning(Task task) {
-        System.out.println("finishRunning "+task.getId());
+        log.debug("finishRunning "+task.getId());
         runningTasks.remove(task);
         runStates.put(task.getId(), RunState.FINISHED);
 
