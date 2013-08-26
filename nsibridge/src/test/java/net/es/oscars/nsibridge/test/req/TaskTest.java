@@ -36,13 +36,13 @@ public class TaskTest {
     public void testTasks() throws Exception {
 
         ResvRequest rreq = NSIRequestFactory.getRequest();
-        SimpleRequest preq = NSIRequestFactory.getSimpleRequest(rreq, SimpleRequestType.PROVISION);
-        SimpleRequest treq = NSIRequestFactory.getSimpleRequest(rreq, SimpleRequestType.TERMINATE);
-        QueryRequest qreq = NSIRequestFactory.getQueryRequest();
-
         String connId = rreq.getReserveType().getConnectionId();
         String gri = rreq.getReserveType().getGlobalReservationId();
         String desc = rreq.getReserveType().getDescription();
+        
+        SimpleRequest preq = NSIRequestFactory.getSimpleRequest(connId, SimpleRequestType.PROVISION);
+        SimpleRequest treq = NSIRequestFactory.getSimpleRequest(connId, SimpleRequestType.TERMINATE);
+        QueryRequest qreq = NSIRequestFactory.getQueryRequest();
 
         Holder<CommonHeaderType> holder = new Holder<CommonHeaderType>();
         holder.value = rreq.getOutHeader();
