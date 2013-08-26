@@ -63,6 +63,8 @@ public class Workflow {
     }
 
     public synchronized boolean runScheduledTask(UUID id) throws TaskException {
+        if (id == null) return true;
+
         boolean found = false;
         ScheduledTask entry = null;
         for (ScheduledTask st : scheduledTasks) {
@@ -92,6 +94,8 @@ public class Workflow {
 
 
     public synchronized RunState getRunState(UUID id) {
+        if (id == null) return RunState.FINISHED;
+
         return runStates.get(id);
     }
 
