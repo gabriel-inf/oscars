@@ -27,10 +27,17 @@ public class NSI_OSCARS_Translation {
     }
 
     public static ModifyResContent makeOscarsModify(ResvRequest req) throws TranslationException {
+
         ModifyResContent mrc = new ModifyResContent();
+        throw new TranslationException("modify not implemented");
         // TODO
-        return mrc;
+        // return mrc;
     }
+
+
+
+
+
     public static ResCreateContent makeOscarsResv(ResvRequest req) throws TranslationException {
         ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
         String nsiLog;

@@ -52,17 +52,17 @@ Feature: State machines behavior verification
 
   Scenario: No error walk through the Provisioning uPA state machine
     Given that I have created a new ProvisioningStateMachine for connectionId: "prov-sm"
-    Given that I have set the Provisioning model implementation to be a stub
-    Then the ProvisioningStateMachine state is "Released"
+    Given that I have set the Provisioning model implementation for connectionId: "prov-sm" to be a stub
+    Then the ProvisioningStateMachine state for connectionId: "prov-sm" is "Released"
 
-    When I submit the Provisioning event "RECEIVED_NSI_PROV_RQ"
-    Then the ProvisioningStateMachine state is "Provisioning"
+    When I submit the Provisioning event "RECEIVED_NSI_PROV_RQ" for connectionId: "prov-sm"
+    Then the ProvisioningStateMachine state for connectionId: "prov-sm" is "Provisioning"
 
-    When I submit the Provisioning event "LOCAL_PROV_CONFIRMED"
-    Then the ProvisioningStateMachine state is "Provisioned"
+    When I submit the Provisioning event "LOCAL_PROV_CONFIRMED" for connectionId: "prov-sm"
+    Then the ProvisioningStateMachine state for connectionId: "prov-sm" is "Provisioned"
 
-    When I submit the Provisioning event "RECEIVED_NSI_REL_RQ"
-    Then the ProvisioningStateMachine state is "Releasing"
+    When I submit the Provisioning event "RECEIVED_NSI_REL_RQ" for connectionId: "prov-sm"
+    Then the ProvisioningStateMachine state for connectionId: "prov-sm" is "Releasing"
 
-    When I submit the Provisioning event "LOCAL_REL_CONFIRMED"
-    Then the ProvisioningStateMachine state is "Released"
+    When I submit the Provisioning event "LOCAL_REL_CONFIRMED" for connectionId: "prov-sm"
+    Then the ProvisioningStateMachine state for connectionId: "prov-sm" is "Released"

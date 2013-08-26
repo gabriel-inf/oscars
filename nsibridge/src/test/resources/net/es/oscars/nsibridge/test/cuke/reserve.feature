@@ -11,16 +11,21 @@ Feature: new reservation
     Given I have started the scheduler
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
     Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "RESERVE"
-
     When I wait until I know the OSCARS gri for connectionId: "reserve-connid"
     When I set the OSCARS stub state for connectionId: "reserve-connid" to "RESERVED"
-    When I wait 500 milliseconds
+    When I wait 2000 milliseconds
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveHeld"
+    When I wait 500 milliseconds
     When I submit reserveCommit with connectionId: "reserve-connid"
+    When I wait 500 milliseconds
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveStart"
+    When I wait 500 milliseconds
 
     When I submit reserve() with connectionId: "reserve-connid"
     Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "MODIFY"
+
+
+
 
 
 

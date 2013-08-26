@@ -11,6 +11,9 @@ Feature: provision a reservation
     When I set the OSCARS stub state for connectionId: "provision-connid" to "RESERVED"
     When I submit provision() with connectionId: "provision-connid"
     Then the count of pending provisioning requests has changed by 1
+    When I wait 500 milliseconds
+    Then the ProvisioningStateMachine state for connectionId: "provision-connid" is "Provisioning"
+
 
 
   Scenario: Provision failure because of unknown connectionId
