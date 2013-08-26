@@ -46,7 +46,6 @@ public class RequestProcessor {
         if (!NSI_Util.restoreStateMachines(connId)) {
             NSI_Util.makeNewStateMachines(connId);
         }
-        NSI_Util.persistStateMachines(connId);
 
 
 
@@ -74,6 +73,8 @@ public class RequestProcessor {
         } catch (StateException ex) {
             log.error(ex);
             throw new ServiceException("resv state machine does not allow transition: "+connId);
+        } finally {
+            NSI_Util.persistStateMachines(connId);
         }
 
         CommonHeaderType inHeader = request.getInHeader();
@@ -97,7 +98,6 @@ public class RequestProcessor {
                 throw new ServiceException("internal error: could not initialize state machines for connectionId: "+connId);
             }
         }
-        NSI_Util.persistStateMachines(connId);
 
         RequestHolder rh = RequestHolder.getInstance();
         rh.getSimpleRequests().add(request);
@@ -128,6 +128,8 @@ public class RequestProcessor {
         } catch (StateException ex) {
             log.error(ex);
             throw new ServiceException("state machine does not allow transition: "+connId);
+        } finally {
+            NSI_Util.persistStateMachines(connId);
         }
 
         CommonHeaderType inHeader = request.getInHeader();

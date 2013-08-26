@@ -4,25 +4,40 @@ Feature: new reservation
 
   Scenario: Submit new reservation internally through Java
     Given I have set up Spring
+    Given I have stopped the scheduler
+    Given I have started the Quartz scheduler
+
+
     Given that I know the count of all pending reservation requests
+
     When I submit reserve() with connectionId: "reserve-connid"
+
     Then the count of ConnectionRecords with connectionId: "reserve-connid" is 1
     Then the count of pending reservation requests has changed by 1
-    Given I have started the scheduler
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
     Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "RESERVE"
-    When I wait until I know the OSCARS gri for connectionId: "reserve-connid"
-    When I set the OSCARS stub state for connectionId: "reserve-connid" to "RESERVED"
-    When I wait 500 milliseconds
-    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveHeld"
-    When I wait 2000 milliseconds
-    When I submit reserveCommit with connectionId: "reserve-connid"
-    When I wait 500 milliseconds
-    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveStart"
-    When I wait 2000 milliseconds
 
-#    When I submit reserve() with connectionId: "reserve-connid"
-#    Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "MODIFY"
+    Then I know the reserve taskIds for connectionId: "reserve-connid"
+    When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
+    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"
+    Then I know the OSCARS gri for connectionId: "reserve-connid"
+    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveHeld"
+
+    When I wait 5000 milliseconds
+
+    When I submit reserveCommit with connectionId: "reserve-connid"
+    Then I know the simpleRequest taskIds for connectionId: "reserve-connid"
+    When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
+    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"
+    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveStart"
+
+
+    When I submit reserve() with connectionId: "reserve-connid"
+    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
+    Then I know the reserve taskIds for connectionId: "reserve-connid"
+    When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
+    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"
+    Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "MODIFY"
 
 
 
