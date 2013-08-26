@@ -32,7 +32,8 @@ public class OscarsResvTask extends Task  {
     }
 
     public void onRun() throws TaskException {
-        log.debug("OscarsResvTask for connId: "+connId+" starting");
+        String pre = "OscarsResvTask job id "+this.getId()+" connId: "+connId;
+        log.debug(pre +" starting");
         try {
             super.onRun();
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
@@ -63,7 +64,7 @@ public class OscarsResvTask extends Task  {
             try {
                 OscarsUtil.submitResv(req);
                 newResvSubmittedOK = true;
-                log.debug("submitted OSCARS create() for connId: "+connId);
+                log.debug(pre + " submitted OSCARS create()");
             } catch (TranslationException ex) {
                 log.error(ex);
             } catch (ServiceException ex) {
@@ -84,6 +85,7 @@ public class OscarsResvTask extends Task  {
             // wait until we can query
             Double d = tc.getQueryAfterResvWait() * 1000;
             Long sleep = d.longValue();
+            log.debug(pre + " waiting "+sleep+" ms until we can query");
             Thread.sleep(sleep);
 
 
@@ -102,6 +104,8 @@ public class OscarsResvTask extends Task  {
                 if (!localDecided) {
                     Double qi  = tc.getQueryInterval() * 1000;
                     sleep = qi.longValue();
+                    log.debug(pre + " not decided yet, waiting "+sleep+" ms to query again");
+
                     Thread.sleep(sleep);
                     elapsed += qi;
                 }
@@ -128,7 +132,7 @@ public class OscarsResvTask extends Task  {
             this.onFail();
         }
 
-        log.debug("OscarsResvTask finishing for connId: "+connId);
+        log.debug("OscarsResvTask job id "+this.getId()+"for connId: "+connId+" done");
 
         this.onSuccess();
     }

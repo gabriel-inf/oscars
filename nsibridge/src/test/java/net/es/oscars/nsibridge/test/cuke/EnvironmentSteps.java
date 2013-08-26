@@ -11,7 +11,8 @@ public class EnvironmentSteps {
     public void I_have_set_up_Spring() throws Throwable {
         System.out.print("Initializing Spring... ");
         SpringContext sc = SpringContext.getInstance();
-        ApplicationContext ax = sc.initContext("config/beans.xml");
+        ApplicationContext ax = sc.initContext("classpath:config/beans.xml");
+
     }
     @When("^I wait (\\d+) milliseconds$")
     public void I_wait_milliseconds(int arg1) throws Throwable {

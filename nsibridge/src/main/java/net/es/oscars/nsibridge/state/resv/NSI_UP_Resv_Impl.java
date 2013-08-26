@@ -78,6 +78,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             Long when = now + d.longValue();
             Task oscarsResv = new OscarsResvTask(connectionId);
             try {
+                LOG.info("scheduling oscarsResv for connId:"+connectionId+", will run in "+d+"ms");
                 wf.schedule(oscarsResv, when);
 
             } catch (TaskException e) {

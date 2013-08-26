@@ -131,12 +131,16 @@ public class NSI_Util {
         cr.setLifecycleState(LifecycleStateEnumType.fromValue(lsm.getState().value()));
         cr.setProvisionState(ProvisionStateEnumType.fromValue(psm.getState().value()));
 
-        // not good
+        // TODO: not good
         ResvRecord rr = new ResvRecord();
         rr.setReservationState(ReservationStateEnumType.fromValue(rsm.getState().value()));
         rr.setDate(new Date());
         rr.setVersion(0);
         cr.getResvRecords().add(rr);
+
+        log.debug("  saving lsm state: "+lsm.getState().value());
+        log.debug("  saving psm state: "+psm.getState().value());
+        log.debug("  saving rsm state: "+rsm.getState().value()+ " date: "+rr.getDate());
 
         // save
         EntityManager em = PersistenceHolder.getEntityManager();
@@ -156,6 +160,7 @@ public class NSI_Util {
     }
 
     public static boolean restoreStateMachines(String connId) throws ServiceException {
+        log.info("restoring state machines for connId: "+connId);
         boolean restoredLife = false;
         boolean restoredProv = false;
         boolean restoredResv = false;
@@ -176,6 +181,7 @@ public class NSI_Util {
             NSI_Life_State ls = new NSI_Life_State();
             ls.setState(cr.getLifecycleState());
             lsm.setState(ls);
+            log.debug("  restored lsm state: "+lsm.getState().value());
             restoredLife = true;
         }
 
@@ -183,6 +189,8 @@ public class NSI_Util {
             NSI_Prov_State ps = new NSI_Prov_State();
             ps.setState(cr.getProvisionState());
             psm.setState(ps);
+            log.debug("  restored psm state: "+psm.getState().value());
+
             restoredProv = true;
         }
 
@@ -191,8 +199,11 @@ public class NSI_Util {
             NSI_Resv_State rs = new NSI_Resv_State();
             rs.setState(rr.getReservationState());
             rsm.setState(rs);
+            log.debug("  restored rsm state: "+rsm.getState().value()+" date: "+rr.getDate());
+
             restoredResv = true;
         }
+
         return (restoredLife && restoredProv && restoredResv);
     }
 

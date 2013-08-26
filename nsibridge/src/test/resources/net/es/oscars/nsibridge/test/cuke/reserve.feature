@@ -4,13 +4,14 @@ Feature: new reservation
 
   Scenario: Submit new reservation internally through Java
     Given I have set up Spring
-    Given I have started the scheduler
     Given that I know the count of all pending reservation requests
     When I submit reserve() with connectionId: "reserve-connid"
     Then the count of ConnectionRecords with connectionId: "reserve-connid" is 1
     Then the count of pending reservation requests has changed by 1
+    Given I have started the scheduler
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
     Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "RESERVE"
+
     When I wait until I know the OSCARS gri for connectionId: "reserve-connid"
     When I set the OSCARS stub state for connectionId: "reserve-connid" to "RESERVED"
     When I wait 500 milliseconds
