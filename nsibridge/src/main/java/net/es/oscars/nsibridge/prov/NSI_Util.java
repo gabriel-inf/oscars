@@ -138,9 +138,9 @@ public class NSI_Util {
         rr.setVersion(0);
         cr.getResvRecords().add(rr);
 
-        log.debug("  saving lsm state: "+lsm.getState().value());
-        log.debug("  saving psm state: "+psm.getState().value());
-        log.debug("  saving rsm state: "+rsm.getState().value()+ " date: "+rr.getDate());
+        log.debug("  saving lsm state: " + lsm.getState().value());
+        log.debug("  saving psm state: " + psm.getState().value());
+        log.debug("  saving rsm state: " + rsm.getState().value() + " date: " + rr.getDate());
 
         // save
         EntityManager em = PersistenceHolder.getEntityManager();
@@ -173,8 +173,17 @@ public class NSI_Util {
 
 
         NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
+        if (lsm == null) {
+            lsm = new NSI_Life_SM(connId);
+        }
         NSI_Prov_SM psm = smh.findNsiProvSM(connId);
+        if (psm == null) {
+            psm = new NSI_Prov_SM(connId);
+        }
         NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
+        if (rsm == null) {
+            rsm = new NSI_Resv_SM(connId);
+        }
 
         // if we have restored the state
         if (cr.getLifecycleState() != null) {

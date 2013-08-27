@@ -6,6 +6,7 @@ import joptsimple.OptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
@@ -22,6 +23,7 @@ import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
 import org.springframework.context.ApplicationContext;
 
+import javax.persistence.EntityManager;
 import java.io.File;
 
 public class Invoker implements Runnable {
@@ -108,7 +110,8 @@ public class Invoker implements Runnable {
         }
 
 
-        PersistenceHolder.getEntityManager();
+        EntityManager em = PersistenceHolder.getEntityManager();
+
 
         try {
             ProviderServer ps = ProviderServer.makeServer(hc);
