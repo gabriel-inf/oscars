@@ -9,6 +9,7 @@ public interface NsiResvMdl {
     public UUID localHold();
     public UUID localCommit();
     public UUID localAbort();
+    public UUID localRollback();
 
     public UUID sendRsvCF();
     public UUID sendRsvFL();

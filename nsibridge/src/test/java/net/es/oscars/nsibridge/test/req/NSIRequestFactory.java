@@ -1,10 +1,8 @@
 package net.es.oscars.nsibridge.test.req;
-import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
-import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.*;
 
@@ -66,31 +64,20 @@ public class NSIRequestFactory {
 
         sch.setStartTime(sTime);
         sch.setEndTime(eTime);
-
+        srcStp.setNetworkId("esnet");
         srcStp.setLocalId("urn:ogf:network:stp:esnet.ets:chi-80");
-        TypeValuePairType srcTvp = new TypeValuePairType();
-        srcTvp.setType("VLAN");
-        srcTvp.getValue().add("850");
-
-        TypeValuePairListType slbls = new TypeValuePairListType();
-        srcStp.setLabels(slbls);
-        slbls.getAttribute().add(srcTvp);
 
         dstStp.setLocalId("urn:ogf:network:stp:esnet.ets:ps-80");
-        TypeValuePairListType dlbls = new TypeValuePairListType();
-        dstStp.setLabels(dlbls);
+        dstStp.setNetworkId("esnet");
 
-        TypeValuePairType dstTvp = new TypeValuePairType();
-        dstTvp.setType("VLAN");
-        dstTvp.getValue().add("850");
-        dstStp.getLabels().getAttribute().add(dstTvp);
-
-        P2PServiceBaseType p2ps = new P2PServiceBaseType();
-        crit.getAny().add(p2ps);
-        p2ps.setCapacity(100);
-        p2ps.setDirectionality(DirectionalityType.BIDIRECTIONAL);
-        p2ps.setSourceSTP(srcStp);
-        p2ps.setDestSTP(dstStp);
+        EthernetVlanType evtp = new EthernetVlanType();
+        crit.getAny().add(evtp);
+        evtp.setCapacity(100);
+        evtp.setDirectionality(DirectionalityType.BIDIRECTIONAL);
+        evtp.setSourceSTP(srcStp);
+        evtp.setDestSTP(dstStp);
+        evtp.setSourceVLAN(400);
+        evtp.setDestVLAN(500);
 
 
         crit.setSchedule(sch);

@@ -40,7 +40,7 @@ public class NSI_Resv_TH implements TransitionHandler {
                     taskIds.add(mdl.localHold());
                     taskIds.add(mdl.sendRsvCF());
                 } else if (toState == ReservationStateEnumType.RESERVE_FAILED) {
-                    taskIds.add(mdl.localAbort());
+                    taskIds.add(mdl.localRollback());
                     taskIds.add(mdl.sendRsvFL());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
@@ -50,6 +50,8 @@ public class NSI_Resv_TH implements TransitionHandler {
             case RESERVE_HELD:
                 if (toState == ReservationStateEnumType.RESERVE_COMMITTING) {
                     taskIds.add(mdl.localCommit());
+                } else if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
+                    taskIds.add(mdl.localAbort());
                 } else if (toState == ReservationStateEnumType.RESERVE_TIMEOUT) {
                     taskIds.add(mdl.localAbort());
                 } else {
@@ -61,18 +63,12 @@ public class NSI_Resv_TH implements TransitionHandler {
                 if (toState == ReservationStateEnumType.RESERVE_START) {
                     if (ev == NSI_Resv_Event.LOCAL_RESV_COMMIT_CF) {
                         taskIds.add(mdl.sendRsvCmtCF());
-                    } else {
+                    } else if (ev == NSI_Resv_Event.LOCAL_RESV_COMMIT_FL) {
                         taskIds.add(mdl.sendRsvCmtFL());
+                    } else {
+                        throw new StateException("invalid event received ["+ev+"]");
                     }
 
-                } else {
-                    throw new StateException("invalid state transition ["+transitionStr+"]");
-                }
-                break;
-
-            case RESERVE_FAILED:
-                if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
-                    taskIds.add(mdl.localAbort());
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -93,6 +89,16 @@ public class NSI_Resv_TH implements TransitionHandler {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
                 break;
+
+            case RESERVE_FAILED:
+                if (toState == ReservationStateEnumType.RESERVE_START) {
+                    // taskIds.add(mdl.localAbort());
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
+                }
+                break;
+
+
             default:
 
         }

@@ -33,6 +33,12 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         connectionId = connId;
     }
 
+    @Override
+    public UUID localRollback() {
+        // TODO
+        return null;
+    }
+
 
     @Override
     public UUID localCheck() {

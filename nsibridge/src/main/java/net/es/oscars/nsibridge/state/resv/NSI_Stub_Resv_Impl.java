@@ -33,6 +33,11 @@ public class NSI_Stub_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
+    public UUID localRollback() {
+        return null;
+    }
+
+    @Override
     public UUID sendRsvCF() {
         return null;
     }
