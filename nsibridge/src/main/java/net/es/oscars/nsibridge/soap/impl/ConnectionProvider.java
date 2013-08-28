@@ -60,7 +60,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException(ex);
         }
     }
@@ -82,7 +82,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException(ex);
         }
     }
@@ -104,7 +104,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException(ex);
         }
     }
@@ -124,7 +124,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException(ex);
         }
     }
@@ -145,7 +145,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException(ex);
         }
     }
@@ -167,7 +167,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException(ex);
         }
     }
@@ -237,96 +237,5 @@ public class ConnectionProvider implements ConnectionProviderPort {
     public ConnectionProvider() {
 
     }
-
-    /*
-
-    public void reserve(String globalReservationId,
-                        String description,
-                        String connectionId,
-                        ReservationRequestCriteriaType criteria,
-                        CommonHeaderType inHeader,
-                        Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation reserve");
-
-        ResvRequest req = new ResvRequest();
-        req.setConnectionId(connectionId);
-        req.setCriteria(criteria);
-        req.setDescription(description);
-        req.setGlobalReservationId(globalReservationId);
-        req.setInHeader(inHeader);
-        log.debug("connId: "+connectionId);
-
-
-        try {
-            RequestProcessor.getInstance().startReserve(req);
-            CommonHeaderType outHeaderValue = req.getOutHeader();
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
-
-
-    public void provision(String connectionId,
-                          CommonHeaderType inHeader,
-                          Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation provision");
-        log.debug(connectionId);
-
-        ProvRequest req = new ProvRequest();
-        req.setConnectionId(connectionId);
-        req.setInHeader(inHeader);
-        try {
-            RequestProcessor.getInstance().startProvision(req);
-            CommonHeaderType outHeaderValue = req.getOutHeader();
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public void terminate(String connectionId,
-                          CommonHeaderType inHeader,
-                          Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation terminate");
-        log.debug(connectionId);
-
-        TermRequest req = new TermRequest();
-        req.setConnectionId(connectionId);
-        req.setInHeader(inHeader);
-
-        try {
-            RequestProcessor.getInstance().startTerminate(req);
-            CommonHeaderType outHeaderValue = req.getOutHeader();
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
-
-
-
-    public void release(String connectionId,
-                        CommonHeaderType inHeader,
-                        Holder<CommonHeaderType> outHeader) throws ServiceException    {
-        log.info("Executing operation release");
-        log.debug(connectionId);
-
-        RelRequest req = new RelRequest();
-        req.setConnectionId(connectionId);
-        req.setInHeader(inHeader);
-        try {
-            RequestProcessor.getInstance().startRelease(req);
-            CommonHeaderType outHeaderValue = req.getOutHeader();
-            outHeader.value = outHeaderValue;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
-    */
 
 }

@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.state.life;
 
 
+import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 import net.es.oscars.nsibridge.task.OscarsCancelTask;
@@ -26,7 +27,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task oscarsCancel = new OscarsCancelTask(connectionId);
+        Task oscarsCancel = new OscarsCancelTask(connectionId, SimpleRequestType.TERMINATE);
         UUID taskId = null;
         try {
             taskId = wf.schedule(oscarsCancel, now + 1000);

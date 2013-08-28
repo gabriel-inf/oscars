@@ -432,7 +432,6 @@ public class OscarsProxy {
     }
 
     public void setOscarsConfig(OscarsConfig oscarsConfig) {
-        System.out.println(oscarsConfig.toString());
         this.oscarsConfig = oscarsConfig;
     }
 

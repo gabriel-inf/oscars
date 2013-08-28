@@ -18,6 +18,7 @@ import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_UP_Resv_Impl;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 import net.es.oscars.utils.task.sched.Workflow;
+import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
@@ -34,6 +35,7 @@ public class ReserveSteps {
     private EntityManager em = PersistenceHolder.getEntityManager();
     private List<ConnectionRecord> connectionRecords;
     private String theConnectionId;
+    private static Logger log = Logger.getLogger(ReserveSteps.class);
 
     @When("^I submit reserve\\(\\) with connectionId: \"([^\"]*)\"$")
     public void I_submit_reserve_with_connectionId(String arg1) throws Throwable {
@@ -129,7 +131,7 @@ public class ReserveSteps {
         while ((elapsed < timeout) &&
               (cr.getOscarsGri() == null || cr.getOscarsGri().equals(""))) {
             cr = NSI_Util.getConnectionRecord(arg1);
-            System.out.println("waiting for oscars Gri for connId "+arg1+ " gri: "+cr.getOscarsGri());
+            log.debug("waiting for oscars Gri for connId "+arg1+ " gri: "+cr.getOscarsGri());
             Thread.sleep(1000);
             elapsed += 1000;
             RequestHolder rh = RequestHolder.getInstance();
@@ -137,7 +139,7 @@ public class ReserveSteps {
                 System.out.println(" -- "+rr.getReserveType().getConnectionId());
             }
             Workflow wf = Workflow.getInstance();
-            System.out.println(wf.printTasks());
+            log.debug(wf.printTasks());
 
         }
 
