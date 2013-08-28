@@ -12,6 +12,7 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.OscarsConfig;
+import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
@@ -20,6 +21,7 @@ import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.junit.Assert;
+import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
 
@@ -38,9 +40,16 @@ public class OscarsSteps {
     @Given("^I have set up the OSCARS proxy$")
     public void I_have_set_up_the_OSCARS_proxy() throws Throwable {
         op = OscarsProxy.getInstance();
-        OscarsConfig oc =  SpringContext.getInstance().getContext().getBean("oscarsConfig", OscarsConfig.class);
+
+        ApplicationContext ax = SpringContext.getInstance().getContext();
+        OscarsConfig oc =  ax.getBean("oscarsConfig", OscarsConfig.class);
+        OscarsStubConfig os = ax.getBean("oscarsStubConfig", OscarsStubConfig.class);
+
         op.setOscarsConfig(oc);
+        OscarsProxy.getInstance().setOscarsStubConfig(os);
+
         assertThat(op.getOscarsConfig(), notNullValue());
+        assertThat(op.getOscarsStubConfig(), notNullValue());
 
     }
 

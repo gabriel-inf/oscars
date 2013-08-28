@@ -6,14 +6,6 @@
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 
-
-    <bean id="nsaConfigProvider"
-          class="net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider"
-          init-method="loadConfig"
-          scope="singleton">
-        <property name="filename" value="config/nsa.json"/>
-    </bean>
-
     <bean id="httpConfig"
           class="net.es.oscars.nsibridge.config.HttpConfig"
           scope="singleton">
@@ -28,9 +20,30 @@
 
         <property name="userDN" value="foo.net:user"/>
         <property name="issuerDN" value="foo.net:issuer"/>
-        <property name="stub" value="true"/>
-        <property name="stubDelayMillis" value="1000"/>
     </bean>
+
+    <!-- usually no need to change below this line -->
+
+    <bean id="nsaConfigProvider"
+          class="net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider"
+          init-method="loadConfig"
+          scope="singleton">
+        <property name="filename" value="config/nsa.json"/>
+    </bean>
+
+    <bean id="oscarsStubConfig"
+          class="net.es.oscars.nsibridge.config.OscarsStubConfig"
+          scope="singleton">
+        <property name="failDescription" value="failme"/>
+        <property name="stub" value="true"/>
+        <property name="resvDelayMillis" value="15000"/>
+        <property name="queryDelayMillis" value="200" />
+        <property name="cancelDelayMillis" value="15000" />
+        <property name="setupDelayMillis" value="15000" />
+        <property name="teardownDelayMillis" value="15000" />
+        <property name="authDelayMillis" value="100" />
+    </bean>
+
     <bean id="timingConfig"
           class="net.es.oscars.nsibridge.config.TimingConfig"
           scope="singleton">
