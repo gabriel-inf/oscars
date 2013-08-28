@@ -1,0 +1,3 @@
+#!/bin/bash
+java -Done-jar.main.class=net.es.oscars.nsibridge.client.cli.QuerySummaryCLIClient -Djava.net.preferIPv4Stack=true -jar $OSCARS_DIST/nsibridge/target/nsibridge-1.0.one-jar.jar $*
+
