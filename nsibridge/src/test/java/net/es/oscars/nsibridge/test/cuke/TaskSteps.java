@@ -4,6 +4,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.sched.Schedule;
@@ -31,10 +32,10 @@ public class TaskSteps {
         connTasks.put(arg1, rr.getTaskIds());
     }
 
-    @Then("^I know the simpleRequest taskIds for connectionId: \"([^\"]*)\"$")
-    public void I_know_the_simpleRequest_taskIds_for_connectionId(String arg1) throws Throwable {
+    @Then("^I know the simpleRequest taskIds for connectionId: \"([^\"]*)\" type: \"([^\"]*)\"$")
+    public void I_know_the_simpleRequest_taskIds_for_connectionId(String arg1, String arg2) throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
-        SimpleRequest rr = rh.findSimpleRequest(arg1);
+        SimpleRequest rr = rh.findSimpleRequest(arg1, SimpleRequestType.valueOf(arg2));
         assertThat(rr, notNullValue());
         assertThat(rr.getTaskIds().size(), is(1));
         connTasks.put(arg1, rr.getTaskIds());

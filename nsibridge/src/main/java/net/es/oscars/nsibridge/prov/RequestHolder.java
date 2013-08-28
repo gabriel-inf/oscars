@@ -38,11 +38,27 @@ public class RequestHolder {
         }
     }
 
-    public SimpleRequest findSimpleRequest(String connId) {
+
+    public SimpleRequest findSimpleRequest(String connId, SimpleRequestType type) {
         for (SimpleRequest sr : simpleRequests) {
-            if (sr.getConnectionId().equals(connId)) return sr;
+            if (sr.getConnectionId().equals(connId) && sr.getRequestType().equals(type)) {
+
+                return sr;
+            }
         }
         return null;
+    }
+
+
+    public void removeSimpleRequest(String connId, SimpleRequestType type) {
+        int idx = 0;
+        for (SimpleRequest sr : simpleRequests) {
+            if (sr.getConnectionId().equals(connId) && sr.getRequestType().equals(type)) {
+                simpleRequests.remove(idx);
+                return;
+            }
+            idx++;
+        }
     }
 
 

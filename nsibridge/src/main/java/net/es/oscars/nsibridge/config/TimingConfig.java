@@ -4,6 +4,7 @@ public class TimingConfig {
     protected double taskInterval;
     protected double resvTimeout;
     protected double queryAfterResvWait;
+    protected double queryAfterCancelWait;
     protected double queryAfterSetupWait;
     protected double queryAfterTeardownWait;
     protected double queryInterval;
@@ -81,5 +82,13 @@ public class TimingConfig {
 
     public void setOscarsResvTimeout(double oscarsResvTimeout) {
         this.oscarsResvTimeout = oscarsResvTimeout;
+    }
+
+    public double getQueryAfterCancelWait() {
+        return queryAfterCancelWait;
+    }
+
+    public void setQueryAfterCancelWait(double queryAfterCancelWait) {
+        this.queryAfterCancelWait = queryAfterCancelWait;
     }
 }

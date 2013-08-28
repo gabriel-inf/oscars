@@ -60,6 +60,30 @@ public class OscarsResvTask extends Task  {
                 log.debug("found state machine for connId: "+connId);
             }
 
+
+            boolean newResvRequired = false;
+            boolean waitRequired = false;
+            if (cr.getOscarsGri() == null) {
+                newResvRequired = true;
+            } else if (ConnectionRecord.getLatestStatusRecord(cr) != null) {
+                OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+                if (or.getStatus().equals("RESERVED") || or.getStatus().equals("ACTIVE")) {
+                    newResvRequired = false;
+                    waitRequired = false;
+                } else if (or.getStatus().equals("FAILED") ||
+                        or.getStatus().equals("CANCELLED") ||
+                        or.getStatus().equals("UNKNOWN")) {
+                    newResvRequired = true;
+                    waitRequired = false;
+                } else if (or.getStatus().equals("INSETUP") ||
+                        or.getStatus().equals("INTEARDOWN") ||
+                        or.getStatus().equals("INPATHCALCULATION")  ) {
+                    waitRequired = true;
+                }
+            }
+
+
+
             boolean newResvSubmittedOK = false;
             try {
                 OscarsUtil.submitResv(req);

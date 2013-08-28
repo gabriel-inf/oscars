@@ -42,7 +42,7 @@ public class LocalResvTask extends Task  {
                 success = false;
                 decided = false;
 
-            } else if (or.getStatus().equals("FINISHED")) {
+            } else if (or.getStatus().equals("FINISHED") || or.getStatus().equals("CANCELLED")) {
                 if (event.equals(NSI_Resv_Event.LOCAL_RESV_ABORT_CF)) {
                     success = true;
                     decided = true;

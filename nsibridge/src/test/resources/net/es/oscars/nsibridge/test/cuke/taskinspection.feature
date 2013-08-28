@@ -19,7 +19,7 @@ Feature: inspect workflow tasks
     Then the ReserveStateMachine state for connectionId: "task-connid" is: "ReserveHeld"
 
     When I submit reserveCommit with connectionId: "task-connid"
-    Then I know the simpleRequest taskIds for connectionId: "task-connid"
+    Then I know the simpleRequest taskIds for connectionId: "task-connid" type: "RESERVE_COMMIT"
     When I wait up to 1000 ms until the runstate for the taskIds for connectionId: "task-connid" is "SCHEDULED"
 
     When I tell the scheduler to run the taskIds for connectionId: "task-connid" in 500 milliseconds

@@ -6,6 +6,7 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
@@ -15,6 +16,7 @@ import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
 import org.apache.log4j.Logger;
@@ -284,6 +286,26 @@ public class NSI_Util {
         Holder h = new Holder();
         h.value = hd;
         return h;
+    }
+
+    public static void isConnectionOK(String connectionId) throws ServiceException {
+
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connectionId);
+
+
+        RequestHolder rh = RequestHolder.getInstance();
+        if (rh == null) {
+            throw new ServiceException("no requestHolder");
+        }
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        if (smh == null) {
+            throw new ServiceException("no stateMachineHolder");
+
+        }
+        if (!smh.hasStateMachines(connectionId)) {
+            throw new ServiceException("no stateMachines for "+connectionId);
+        }
+
     }
 
 }

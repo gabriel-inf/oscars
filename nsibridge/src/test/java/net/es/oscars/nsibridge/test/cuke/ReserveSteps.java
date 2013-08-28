@@ -47,6 +47,13 @@ public class ReserveSteps {
         cp.reserve(connHolder, rt.getGlobalReservationId(), rt.getDescription(), rt.getCriteria(), resvRequest.getInHeader(), outHolder);
     }
 
+    @When("^I submit reserveAbort with connectionId: \"([^\"]*)\"$")
+    public void I_submit_abort_with_connectionId(String arg1) throws Throwable {
+        ConnectionProvider cp = new ConnectionProvider();
+        CommonHeaderType inHeader = NSIRequestFactory.makeHeader();
+        Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+        cp.reserveAbort(arg1, inHeader, outHolder);
+    }
 
     @Given("^that I know the count of all pending reservation requests$")
     public void that_I_know_the_count_of_all_pending_reservation_requests() throws Throwable {

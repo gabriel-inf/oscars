@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.state.resv;
 
 
+import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
@@ -49,6 +50,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         ConnectionRecord cr = null;
         try {
+            NSI_Util.isConnectionOK(connectionId);
             cr = NSI_Util.getConnectionRecord(connectionId);
         } catch (ServiceException e) {
             try {
@@ -102,7 +104,9 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             }
 
         } else {
+            // TODO: modify
             if (waitRequired) {
+
 
             }
         }
@@ -145,42 +149,43 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     @Override
     public UUID localAbort() {
 
-        // TODO : schedule just one job!
         UUID taskId = null;
 
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
+        boolean recordOK = true;
+
+        ConnectionRecord cr = null;
+        try {
+            NSI_Util.isConnectionOK(connectionId);
+            cr = NSI_Util.getConnectionRecord(connectionId);
+            if (cr.getOscarsGri() == null) {
+                recordOK = false;
+            }
+        } catch (ServiceException e) {
+            e.printStackTrace();
+            recordOK = false;
+        }
+
+        if (!recordOK) {
+            try {
+                NSI_Resv_SM.handleEvent(connectionId, NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
+                return null;
+            } catch (StateException e) {
+                e.printStackTrace();
+            }
+        }
+
         // submit the oscars cancel()
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
-        Task oscarsCancel = new OscarsCancelTask(connectionId);
+        Task oscarsCancel = new OscarsCancelTask(connectionId, SimpleRequestType.RESERVE_ABORT);
         try {
-            wf.schedule(oscarsCancel, when);
+            taskId = wf.schedule(oscarsCancel, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
-
-        // query to see what happened
-        d = (tc.getQueryAfterResvWait() * 1000);
-        when = now + d.longValue();
-        OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
-        try {
-            taskId = wf.schedule(oqt , when);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
-
-        // examine the results of the query()
-        d = ((tc.getQueryAfterResvWait() + tc.getQueryResultDelay()) * 1000);
-        when = now + d.longValue();
-        LocalResvTask lrt = new LocalResvTask(connectionId, NSI_Resv_Event.LOCAL_RESV_ABORT_CF);
-        try {
-            wf.schedule(lrt , when);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
-
 
         return taskId;
     }
@@ -301,6 +306,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         }
         return taskId;
     }
+
 
 
 
