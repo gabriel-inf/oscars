@@ -5,11 +5,14 @@ import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.TaskException;
@@ -17,6 +20,8 @@ import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Set;
 
 public class OscarsUtil {
     private static final Logger log = Logger.getLogger(OscarsUtil.class);
@@ -126,6 +131,135 @@ public class OscarsUtil {
         or.setStatus(status);
         em.persist(cr);
         em.getTransaction().commit();
+    }
 
+    public static OscarsLogicAction pollUntilAnOpAllowed(Set<OscarsOps> ops, ConnectionRecord cr) throws ServiceException {
+        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
+
+        Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
+        Double pollTimeout = tc.getOscarsTimingConfig().getPollTimeout() * 1000;
+
+        double elapsed = 0;
+        double timeout = pollTimeout;
+        OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+
+        OscarsLogicAction result = OscarsLogicAction.ASK_LATER;
+        HashMap<OscarsOps, OscarsLogicAction> allActions = new HashMap<OscarsOps, OscarsLogicAction>();
+        if (or != null) {
+            for (OscarsOps op : ops) {
+                OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
+                allActions.put(op, anAction);
+                log.debug("op: "+op+" action:"+anAction);
+            }
+        } else {
+            for (OscarsOps op : ops) {
+                OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.UNSUBMITTED);
+                allActions.put(op, anAction);
+                log.debug("op: "+op+" action:"+anAction);
+            }
+        }
+
+        // return YES if it is a yes for any op
+        boolean foundYes = false;
+        boolean foundYesOrAskLater = false;
+        for (OscarsOps op : ops) {
+            log.debug("op: "+op+" action:"+allActions.get(op));
+
+            if (allActions.get(op).equals(OscarsLogicAction.YES)) {
+                foundYes = true;
+                foundYesOrAskLater = true;
+            } else if (allActions.get(op).equals(OscarsLogicAction.ASK_LATER)) {
+                foundYesOrAskLater = true;
+            }
+        }
+
+        if (foundYes) return OscarsLogicAction.YES;
+        if (!foundYesOrAskLater) {
+            return OscarsLogicAction.NO;
+        }
+
+        while (result == OscarsLogicAction.ASK_LATER && elapsed < timeout) {
+            try {
+                Thread.sleep(pollInterval.longValue());
+                elapsed += pollInterval;
+                OscarsUtil.submitQuery(cr);
+                for (OscarsOps op : ops) {
+                    OscarsLogicAction thisAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
+                }
+
+                foundYes = false;
+                foundYesOrAskLater = false;
+                for (OscarsOps op : ops) {
+                    if (allActions.get(op).equals(OscarsLogicAction.YES)) {
+                        result = OscarsLogicAction.YES;
+                        foundYesOrAskLater = true;
+                        foundYes = true;
+
+                    } else if (allActions.get(op).equals(OscarsLogicAction.ASK_LATER)) {
+                        foundYesOrAskLater = true;
+                    }
+                }
+
+                if (foundYes) return OscarsLogicAction.YES;
+                if (!foundYesOrAskLater) {
+                    return OscarsLogicAction.NO;
+                }
+
+            } catch (TranslationException ex) {
+                log.error(ex);
+                throw new ServiceException("could not submit query");
+            } catch (InterruptedException ex) {
+                throw new ServiceException("interrupted");
+            }
+        }
+        return result;
+    }
+
+    public static OscarsStates pollUntilResvStable(ConnectionRecord cr) throws ServiceException {
+        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
+
+        Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
+        Double pollTimeout = tc.getOscarsTimingConfig().getPollTimeout() * 1000;
+
+        double elapsed = 0;
+        double timeout = pollTimeout;
+
+
+        OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+        if (or == null) {
+            try {
+                OscarsUtil.submitQuery(cr);
+            } catch (TranslationException ex) {
+                log.error(ex);
+                throw new ServiceException("could not poll");
+            }
+        }
+        OscarsStates os = OscarsStates.valueOf(or.getStatus());
+        boolean stable = false;
+
+
+        while (!stable && timeout > elapsed) {
+            if (OscarsStateLogic.isStateSteady(os)) {
+                stable = true;
+            } else {
+                try {
+                    Thread.sleep(pollInterval.longValue());
+                    elapsed += pollInterval;
+                    OscarsUtil.submitQuery(cr);
+                } catch (InterruptedException ex) {
+                    throw new ServiceException("interrupted");
+                } catch (TranslationException ex) {
+                    log.error(ex);
+                    throw new ServiceException("could not poll");
+                }
+            }
+        }
+
+        // timed out waiting
+        if (elapsed > timeout && !stable) {
+            throw new ServiceException("timed out");
+        }
+
+        return os;
     }
 }

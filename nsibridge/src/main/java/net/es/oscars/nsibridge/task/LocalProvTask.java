@@ -65,7 +65,7 @@ public class LocalProvTask extends Task  {
             Long when = now + d.longValue();
 
             OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
-            d = (tc.getQueryInterval() * 1000);
+            d = (tc.getOscarsTimingConfig().getPollInterval() * 1000);
             when = now + d.longValue();
             try {
                 wf.schedule(oqt , when);
@@ -74,7 +74,7 @@ public class LocalProvTask extends Task  {
             }
 
             // reschedule this same task to look at the results of that query
-            d = ((tc.getQueryInterval()+tc.getQueryResultDelay()) * 1000);
+            d = ((tc.getOscarsTimingConfig().getPollInterval()) * 1000);
             when = now + d.longValue();
 
             LocalProvTask provTask = new LocalProvTask(connectionId, NSI_Prov_Event.LOCAL_PROV_CONFIRMED);

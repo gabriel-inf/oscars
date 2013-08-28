@@ -71,7 +71,7 @@ public class OscarsCancelTask extends Task  {
 
 
             double elapsed = 0;
-            double timeout = tc.getOscarsResvTimeout() * 1000;
+            double timeout = tc.getOscarsTimingConfig().getSubmitTimeout() * 1000;
             Long sleep;
 
             boolean cancelRequired = true;
@@ -99,7 +99,7 @@ public class OscarsCancelTask extends Task  {
                 OscarsUtil.submitQuery(cr);
 
                 if (!cancelNeedDecided) {
-                    Double qi  = tc.getQueryInterval() * 1000;
+                    Double qi  = tc.getOscarsTimingConfig().getPollInterval() * 1000;
                     sleep = qi.longValue();
                     log.debug(pre + " not decided yet, waiting "+sleep+" ms to query again");
 
@@ -144,14 +144,14 @@ public class OscarsCancelTask extends Task  {
             OscarsStates os = OscarsStates.FAILED;
 
             // wait until we can query
-            Double d = tc.getQueryAfterCancelWait() * 1000;
+            Double d = tc.getOscarsTimingConfig().getPollInterval() * 1000;
             sleep = d.longValue();
             log.debug(pre + " waiting "+sleep+" ms until we can query");
             Thread.sleep(sleep);
 
 
             elapsed = 0;
-            timeout = tc.getOscarsResvTimeout() * 1000;
+            timeout = tc.getOscarsTimingConfig().getPollInterval() * 1000;
 
             while (!localDecided && timeout > elapsed) {
                 OscarsUtil.submitQuery(cr);
@@ -165,7 +165,7 @@ public class OscarsCancelTask extends Task  {
                     }
                 }
                 if (!localDecided) {
-                    Double qi  = tc.getQueryInterval() * 1000;
+                    Double qi  = tc.getOscarsTimingConfig().getPollInterval() * 1000;
                     sleep = qi.longValue();
                     log.debug(pre + " not decided yet, waiting "+sleep+" ms to query again");
 

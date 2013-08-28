@@ -34,6 +34,8 @@ Feature: new reservation
 
     When I submit reserve() with connectionId: "reserve-connid"
     Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
+    When I wait 100 milliseconds
+
     Then I know the reserve taskIds for connectionId: "reserve-connid"
     When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
     When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"

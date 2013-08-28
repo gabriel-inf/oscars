@@ -6,7 +6,6 @@ import joptsimple.OptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;

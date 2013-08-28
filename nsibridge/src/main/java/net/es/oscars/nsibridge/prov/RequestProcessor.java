@@ -1,32 +1,22 @@
 package net.es.oscars.nsibridge.prov;
 
 
-import net.es.oscars.api.soap.gen.v06.QueryResContent;
-import net.es.oscars.api.soap.gen.v06.QueryResReply;
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
-import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
-import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
-import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
-import net.es.oscars.nsibridge.task.QueryTask;
-import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.TaskException;
-import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
-import javax.persistence.EntityManager;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -61,16 +51,19 @@ public class RequestProcessor {
         }
 
         RequestHolder rh = RequestHolder.getInstance();
+
         rh.getResvRequests().add(request);
+        request = rh.findResvRequest(connId);
 
 
         try {
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
             Set<UUID> taskIds = rsm.process(NSI_Resv_Event.RECEIVED_NSI_RESV_RQ);
+            request.getTaskIds().clear();
             request.getTaskIds().addAll(taskIds);
             for (UUID taskId : request.getTaskIds()) {
-                log.debug("   task id:  " +taskId);
+                log.debug("connId: "+connId+"  task id:  " +taskId);
             }
 
         } catch (StateException ex) {
@@ -183,25 +176,7 @@ public class RequestProcessor {
 
     public void asyncQuery(QueryRequest request) throws ServiceException, TaskException {
         // TODO:
-        RequestHolder rh = RequestHolder.getInstance();
-        rh.getQueryRequests().add(request);
 
-
-        long now = new Date().getTime();
-
-        Workflow wf = Workflow.getInstance();
-        QueryTask queryTask = new QueryTask(request);
-
-        try {
-            wf.schedule(queryTask , now + 1000);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
-
-
-        CommonHeaderType inHeader = request.getInHeader();
-        CommonHeaderType outHeader = this.makeOutHeader(inHeader);
-        request.setOutHeader(outHeader);
     }
 
     private CommonHeaderType makeOutHeader(CommonHeaderType inHeader) {

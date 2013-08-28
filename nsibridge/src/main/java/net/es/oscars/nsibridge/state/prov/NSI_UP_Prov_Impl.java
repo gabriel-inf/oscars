@@ -43,7 +43,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         }
 
         OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
-        d = (tc.getQueryAfterSetupWait() * 1000);
+        d = (tc.getOscarsTimingConfig().getPollInterval() * 1000);
         when = now + d.longValue();
         try {
             wf.schedule(oqt , when);
@@ -51,7 +51,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
             e.printStackTrace();
         }
 
-        d = (tc.getQueryResultDelay() * 1000);
+        d = (tc.getOscarsTimingConfig().getPollInterval() * 1000);
         when = now + d.longValue();
 
         LocalProvTask provTask = new LocalProvTask(connectionId, NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
@@ -116,7 +116,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         }
 
         OscarsQueryTask oqt = new OscarsQueryTask(connectionId);
-        d = (tc.getQueryAfterSetupWait() * 1000);
+        d = (tc.getOscarsTimingConfig().getPollInterval() * 1000);
         when = now + d.longValue();
         try {
             wf.schedule(oqt , when);
@@ -124,7 +124,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
             e.printStackTrace();
         }
 
-        d = (tc.getQueryResultDelay() * 1000);
+        d = (tc.getOscarsTimingConfig().getPollInterval() * 1000);
         when = now + d.longValue();
 
         LocalProvTask provTask = new LocalProvTask(connectionId, NSI_Prov_Event.LOCAL_PROV_CONFIRMED);

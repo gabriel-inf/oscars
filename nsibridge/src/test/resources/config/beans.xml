@@ -28,16 +28,17 @@
           scope="singleton">
 
         <property name="resvTimeout" value="30"/>
-        <property name="queryInterval" value="5"/>
-        <property name="queryAfterResvWait" value="0.1"/>
-        <property name="queryAfterCancelWait" value="0.1"/>
-        <property name="queryAfterSetupWait" value="0.1"/>
-        <property name="queryAfterTeardownWait" value="0.1"/>
-        <property name="queryResultDelay" value="0.1"/>
-        <property name="oscarsResvTimeout" value="2"/>
-        <property name="modifyWaitTimeout" value="2"/>
+        <property name="oscarsTimingConfig" ref="oscarsTimingConfig" />
+
     </bean>
 
+    <bean id="oscarsTimingConfig"
+          class="net.es.oscars.nsibridge.config.OscarsTimingConfig"
+          scope="singleton">
+        <property name="submitTimeout" value="15"/>
+        <property name="pollTimeout" value="30"/>
+        <property name="pollInterval" value="2"/>
+    </bean>
 
     <bean id="nsaConfigProvider"
           class="net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider"

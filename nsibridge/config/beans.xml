@@ -47,18 +47,18 @@
     <bean id="timingConfig"
           class="net.es.oscars.nsibridge.config.TimingConfig"
           scope="singleton">
-
         <property name="resvTimeout" value="300"/>
-        <property name="queryInterval" value="15"/>
-        <property name="queryAfterResvWait" value="10"/>
-        <property name="queryAfterCancelWait" value="10"/>
-        <property name="queryAfterSetupWait" value="10"/>
-        <property name="queryAfterTeardownWait" value="10"/>
-        <property name="queryResultDelay" value="0.1"/>
-        <property name="oscarsResvTimeout" value="30"/>
-        <property name="modifyWaitTimeout" value="30"/>
-    </bean>
+        <property name="oscarsTimingConfig" ref="oscarsTimingConfig" />
 
+    </bean>
+    <bean id="oscarsTimingConfig"
+          class="net.es.oscars.nsibridge.config.OscarsTimingConfig"
+          scope="singleton">
+        <property name="submitTimeout" value="15"/>
+        <property name="pollInterval" value="5"/>
+        <property name="pollTimeout" value="30"/>
+
+    </bean>
 
 
 </beans>

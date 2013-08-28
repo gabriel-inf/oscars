@@ -29,7 +29,14 @@ public class TaskSteps {
         ResvRequest rr = rh.findResvRequest(arg1);
         assertThat(rr, notNullValue());
         assertThat(rr.getTaskIds().size(), is(1));
+        for (UUID taskId : rr.getTaskIds()) {
+            log.debug("rr taskId: "+taskId);
+        }
+
         connTasks.put(arg1, rr.getTaskIds());
+        for (UUID taskId : connTasks.get(arg1)) {
+            log.debug("connId: "+arg1+" taskId: "+taskId);
+        }
     }
 
     @Then("^I know the simpleRequest taskIds for connectionId: \"([^\"]*)\" type: \"([^\"]*)\"$")
@@ -60,7 +67,7 @@ public class TaskSteps {
             boolean matchAll = true;
             for (UUID taskId : connTasks.get(connId)) {
                 RunState rs = wf.getRunState(taskId);
-                log.debug("taskId:" + taskId + " runState: " + rs);
+                log.debug("taskId: " + taskId + " runState: " + rs);
                 if (!rs.toString().equals(runState)) {
                     matchAll = false;
                 }
