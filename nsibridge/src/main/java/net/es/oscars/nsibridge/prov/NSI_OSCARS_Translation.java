@@ -2,17 +2,30 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
+import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.DataPlaneStatusType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
+import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
+import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.PathTools;
 
@@ -187,6 +200,61 @@ public class NSI_OSCARS_Translation {
         return tp;
     }
     
+    public static QuerySummaryResultType makeNSIQueryResult(ConnectionRecord cr)  throws TranslationException {
+        QuerySummaryResultType resultType = new QuerySummaryResultType();
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        RequestHolder rh = RequestHolder.getInstance();
+        
+        resultType.setConnectionId(cr.getConnectionId());
+        resultType.setRequesterNSA(cr.getRequesterNSA());
+        resultType.setGlobalReservationId(cr.getNsiGlobalGri());
+        
+        //Set connection states
+        ConnectionStatesType cst = new ConnectionStatesType();
+        NSI_Resv_SM rsm = smh.findNsiResvSM(cr.getConnectionId());
+        NSI_Life_SM lsm = smh.findNsiLifeSM(cr.getConnectionId());
+        NSI_Prov_SM psm = smh.findNsiProvSM(cr.getConnectionId());
+        LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
+        ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
+        ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
+        DataPlaneStatusType dst = new DataPlaneStatusType();
+        dst.setVersion(1); //TODO: get this for real
+        dst.setVersionConsistent(true);//always true for uPA 
+        //for now just link dataplane state to provision state since we don't have way to get this directly
+        if(ProvisionStateEnumType.PROVISIONED.equals(pst.value()) ||
+                ProvisionStateEnumType.RELEASING.equals(pst.value())){
+            dst.setActive(true);
+        }else{
+            dst.setActive(false);
+        }
+        cst.setProvisionState(pst);
+        cst.setLifecycleState(lst);
+        cst.setReservationState(rst);
+        cst.setDataPlaneStatus(dst);
+        resultType.setConnectionStates(cst);
+
+        //Set details of reservation based on query
+        try {
+            QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(cr.getOscarsGri());
+            QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
+            if(reply == null || reply.getReservationDetails() == null){
+                throw new TranslationException("No matching OSCARS reservation found with oscars GRI " + cr.getOscarsGri());
+            }
+            //set description
+            resultType.setDescription(reply.getReservationDetails().getDescription());
+            //set criteria
+            resultType.getCriteria().add(
+                    NSI_OSCARS_Translation.makeNSIQuerySummaryCriteria(reply.getReservationDetails()));
+        } catch (OSCARSServiceException e) {
+            e.printStackTrace();
+            throw new TranslationException("Error returned from OSCARS query: " + e.getMessage());
+        } catch (TranslationException e) {
+            e.printStackTrace();
+            throw new TranslationException("Unable to translate query request for OSCARS: " + e.getMessage());
+        }
+        
+        return resultType;
+    }
     public static QuerySummaryResultCriteriaType makeNSIQuerySummaryCriteria(ResDetails oscarsResDetails) throws TranslationException {
         QuerySummaryResultCriteriaType criteriaType = new QuerySummaryResultCriteriaType();
         

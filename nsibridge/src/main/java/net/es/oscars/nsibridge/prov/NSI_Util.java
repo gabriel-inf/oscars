@@ -263,6 +263,28 @@ public class NSI_Util {
         }
     }
 
+    public static List<ConnectionRecord> getConnectionRecords() throws ServiceException {
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        String query = "SELECT c FROM ConnectionRecord c";
+
+        List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
+        em.getTransaction().commit();
+        
+        return recordList;
+    }
+
+    public static List<ConnectionRecord> getConnectionRecordsByGri(String nsiGlobalGri) throws ServiceException {
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        String query = "SELECT c FROM ConnectionRecord c WHERE c.nsiGlobalGri = '"+nsiGlobalGri+"'";
+
+        List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
+        em.getTransaction().commit();
+        
+        return recordList;
+    }
+
     public static CommonHeaderType makeNsiOutgoingHeader(CommonHeaderType ph) {
 
 

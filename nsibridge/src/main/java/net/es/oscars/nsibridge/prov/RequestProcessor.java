@@ -24,7 +24,10 @@ import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -139,63 +142,40 @@ public class RequestProcessor {
 
     public QuerySummaryConfirmedType syncQuerySum(QueryRequest request) throws ServiceException, TaskException {
         QuerySummaryConfirmedType result = new QuerySummaryConfirmedType();
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        RequestHolder rh = RequestHolder.getInstance();
-
-        for (String connId: request.getQuery().getConnectionId()) {
-            QuerySummaryResultType resultType = new QuerySummaryResultType();
-            
-            //lookup connection record
+        List<ConnectionRecord> connRecords = new ArrayList<ConnectionRecord>();
+        boolean hasFilters = false;
+        
+        //lookup based on connection ids
+        for(String connId : request.getQuery().getConnectionId()){
+            hasFilters = true;
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-            if(cr == null){
-                //do not fail if we don't find the reservation per the spec
-                return result;
+            if(cr != null){
+                connRecords.add(cr);
             }
-            resultType.setConnectionId(connId);
-            resultType.setRequesterNSA(cr.getRequesterNSA());
-            resultType.setGlobalReservationId(cr.getNsiGlobalGri());
-            
-            //Set connection states
-            ConnectionStatesType cst = new ConnectionStatesType();
-            NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
-            NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
-            NSI_Prov_SM psm = smh.findNsiProvSM(connId);
-            LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
-            ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
-            ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
-            cst.setProvisionState(pst);
-            cst.setLifecycleState(lst);
-            cst.setReservationState(rst);
-            resultType.setConnectionStates(cst);
-            // TODO: actually implement this
-            DataPlaneStatusType dst = new DataPlaneStatusType();
-            dst.setActive(true);
-            dst.setVersion(1);
-            
-            //Set details of reservation based on query
-            try {
-                QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(cr.getOscarsGri());
-                QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
-                if(reply == null || reply.getReservationDetails() == null){
-                    throw new ServiceException("No matching OSCARS reservation found with oscars GRI " + cr.getOscarsGri());
-                }
-                //set description
-                resultType.setDescription(reply.getReservationDetails().getDescription());
-                //set criteria
-                resultType.getCriteria().add(
-                        NSI_OSCARS_Translation.makeNSIQuerySummaryCriteria(reply.getReservationDetails()));
-            } catch (OSCARSServiceException e) {
-                e.printStackTrace();
-                throw new ServiceException("Error returned from OSCARS query: " + e.getMessage());
-            } catch (TranslationException e) {
-                e.printStackTrace();
-                throw new ServiceException("Unable to translate query request for OSCARS: " + e.getMessage());
-            }
-
-            result.getReservation().add(resultType);
         }
 
+        //lookup based on NSA GRI
+        for(String gri : request.getQuery().getGlobalReservationId()){
+            hasFilters = true;
+            connRecords.addAll(NSI_Util.getConnectionRecordsByGri(gri));
+        }
 
+        //send list
+        if(!hasFilters){
+            connRecords = NSI_Util.getConnectionRecords();
+        }
+
+        //format result
+        for (ConnectionRecord cr: connRecords) {
+            try {
+                QuerySummaryResultType resultType = NSI_OSCARS_Translation.makeNSIQueryResult(cr);
+                result.getReservation().add(resultType);
+            } catch (TranslationException e) {
+                log.error("Unable to translate reservation: " + e.getMessage());
+                //continue so one bad reservation doesn't ruin things for everybody
+            }
+            
+        }
 
         return result;
 
