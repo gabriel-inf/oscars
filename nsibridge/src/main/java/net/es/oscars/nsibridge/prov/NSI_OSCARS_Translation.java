@@ -9,9 +9,8 @@ import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpType;
 import net.es.oscars.utils.topology.NMWGParserUtil;
@@ -20,9 +19,7 @@ import net.es.oscars.utils.topology.PathTools;
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.*;
 import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Node;
 
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -230,14 +227,19 @@ public class NSI_OSCARS_Translation {
         }
         
         //Set P2P fields
+        
         EthernetVlanType evtsType = new EthernetVlanType();
         evtsType.setCapacity(bandwidth);
         evtsType.setDirectionality(DirectionalityType.BIDIRECTIONAL); //change if oscars extended in future
         evtsType.setSymmetricPath(true);//change if oscars extended in future
         StpType sourceStp = new StpType();
         StpType destStp = new StpType();
-        sourceStp.setNetworkId(PathTools.getLocalDomainId());
-        destStp.setNetworkId(PathTools.getLocalDomainId());
+        
+        String nsaId = findNsaId();
+        if(findNsaId() != null){
+            sourceStp.setNetworkId(nsaId);
+            destStp.setNetworkId(nsaId);
+        }
         if(pathInfo.getPath() != null &&  pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2){
             List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
             sourceStp.setLocalId(findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(0))).getStpId());
@@ -266,7 +268,10 @@ public class NSI_OSCARS_Translation {
         }else{
             throw new TranslationException("OSCARS reservation has no path or Layer2Info set so cannot determine STPs");
         }
-        criteriaType.getAny().add(evtsType);
+        evtsType.setSourceSTP(sourceStp);
+        evtsType.setDestSTP(destStp);
+        ObjectFactory objFactory = new ObjectFactory();
+        criteriaType.getAny().add(objFactory.createEvts(evtsType));
         
         return criteriaType;
     }
@@ -313,6 +318,15 @@ public class NSI_OSCARS_Translation {
         def.setOscarsId(oscarsId);
         def.setStpId(oscarsId);
         return def;
+    }
+    
+    public static String findNsaId(){
+        SpringContext sc = SpringContext.getInstance();
+        ApplicationContext ax = sc.initContext("config/beans.xml");
+        NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
+        NsaConfig nc = np.getConfig("local");
+        
+        return nc.getNsaId();
     }
 
 }

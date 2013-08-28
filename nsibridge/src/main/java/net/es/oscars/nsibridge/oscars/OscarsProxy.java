@@ -254,7 +254,7 @@ public class OscarsProxy {
 
             return tr;
         } else {
-            Object[] res = coordClient.invoke("sendQuery",req);
+            Object[] res = coordClient.invoke("queryReservation",req);
             QueryResReply tr = (QueryResReply) res[0];
             return tr;
         }

@@ -16,7 +16,7 @@ import javax.xml.ws.ResponseWrapper;
  * 
  */
 @WebService(targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/provider", name = "ConnectionProviderPort")
-@XmlSeeAlso({net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.saml.assertion.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.xmldsig.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.xmlenc.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ObjectFactory.class})
+@XmlSeeAlso({net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.saml.assertion.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.xmldsig.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.xmlenc.ObjectFactory.class, net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ObjectFactory.class})
 public interface ConnectionProviderPort {
 
     /**

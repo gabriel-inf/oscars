@@ -147,6 +147,10 @@ public class RequestProcessor {
             
             //lookup connection record
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            if(cr == null){
+                //do not fail if we don't find the reservation per the spec
+                return result;
+            }
             resultType.setConnectionId(connId);
             resultType.setRequesterNSA(cr.getRequesterNSA());
             resultType.setGlobalReservationId(cr.getNsiGlobalGri());
