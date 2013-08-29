@@ -47,15 +47,15 @@ public class ReserveStateMachineSteps {
         assertThat(state.value(), is(stateStr));
     }
 
-    @When("^I submit the Reserve event: \"([^\"]*)\" for connectionId: \"([^\"]*)\"$")
-    public void I_submit_the_Reserve_event(String arg1, String connectionId) throws Throwable {
+    @When("^I submit the Reserve event: \"([^\"]*)\" for connectionId: \"([^\"]*)\" and correlationId: \"([^\"]*)\"$")
+    public void I_submit_the_Reserve_event(String arg1, String connectionId, String correlationId) throws Throwable {
         smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.findNsiResvSM(connectionId);
 
         NSI_Resv_Event ev = NSI_Resv_Event.valueOf(arg1);
         rsmExceptions.put(connectionId, false);
         try {
-            rsm.process(ev);
+            rsm.process(ev, correlationId);
         } catch (Exception ex) {
             rsmExceptions.put(connectionId, true);
         }

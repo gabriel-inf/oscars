@@ -1,10 +1,14 @@
 package net.es.oscars.nsibridge.state.life;
 
 
-import net.es.oscars.nsibridge.beans.SimpleRequestType;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
+import net.es.oscars.nsibridge.oscars.OscarsOps;
+import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.task.OscarsCancelTask;
+import net.es.oscars.nsibridge.task.OscarsTeardownTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
@@ -23,14 +27,28 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public UUID localTerm() {
+    public UUID localTerm(String correlationId) {
+        UUID taskId = null;
+
         long now = new Date().getTime();
 
+        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
         Workflow wf = Workflow.getInstance();
-        Task oscarsCancel = new OscarsCancelTask(connectionId, SimpleRequestType.TERMINATE);
-        UUID taskId = null;
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Life_SM lsm = smh.findNsiLifeSM(connectionId);
+
+        OscarsCancelTask ost = new OscarsCancelTask();
+        ost.setCorrelationId(correlationId);
+        ost.setOscarsOp(OscarsOps.CANCEL);
+        ost.setStateMachine(lsm);
+        ost.setSuccessEvent(NSI_Life_Event.LOCAL_TERM_CONFIRMED);
+        ost.setFailEvent(NSI_Life_Event.LOCAL_TERM_FAILED);
+
+
+        Double d = (tc.getTaskInterval() * 1000);
+        Long when = now + d.longValue();
         try {
-            taskId = wf.schedule(oscarsCancel, now + 1000);
+            taskId = wf.schedule(ost , when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
@@ -38,7 +56,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
     }
 
     @Override
-    public UUID sendTermCF() {
+    public UUID sendTermCF(String correlationId) {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -55,7 +73,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public UUID notifyForcedEndErrorEvent() {
+    public UUID notifyForcedEndErrorEvent(String correlationId) {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();

@@ -7,5 +7,5 @@ import java.util.UUID;
  * @haniotak Date: 2012-08-08
  */
 public interface TransitionHandler {
-    public Set<UUID> process(SM_State from, SM_State to, SM_Event ev, StateMachine sm) throws StateException;
+    public Set<UUID> process(String correlationId, SM_State from, SM_State to, SM_Event ev, StateMachine sm) throws StateException;
 }

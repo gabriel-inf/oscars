@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
+import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
@@ -16,24 +17,34 @@ import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import java.util.Date;
+import java.util.List;
 
 public class OscarsQueryTask extends Task  {
     private static final Logger log = Logger.getLogger(OscarsQueryTask.class);
 
-    private String connId = "";
+    private String corrId = "";
 
-    public OscarsQueryTask(String connId) {
+    public OscarsQueryTask(String corrId) {
         this.scope = "oscars";
-        this.connId = connId;
+        this.corrId = corrId;
     }
 
     public void onRun() throws TaskException {
         log.debug(this.id + " starting");
         try {
             super.onRun();
+            RequestHolder rh = RequestHolder.getInstance();
+            QueryRequest req = rh.getQueryRequests().get(corrId);
+            List<String> connIds = req.getQuery().getConnectionId();
+
+
+            // FIXME
+            String connId = connIds.get(0);
+
+
+
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
 
-            RequestHolder rh = RequestHolder.getInstance();
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
 
             String oscarsGri = cr.getOscarsGri();

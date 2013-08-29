@@ -1,15 +1,8 @@
 package net.es.oscars.nsibridge.state.prov;
 
 
-import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiProvMdl;
-import net.es.oscars.nsibridge.task.LocalProvTask;
-import net.es.oscars.nsibridge.task.SendNSIMessageTask;
-import net.es.oscars.utils.task.Task;
-import net.es.oscars.utils.task.TaskException;
-import net.es.oscars.utils.task.sched.Workflow;
 
-import java.util.Date;
 import java.util.UUID;
 
 
@@ -23,32 +16,32 @@ public class NSI_Stub_Prov_Impl implements NsiProvMdl {
 
 
     @Override
-    public UUID localProv() {
+    public UUID localProv(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendProvCF() {
+    public UUID sendProvCF(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID notifyProvFL() {
+    public UUID notifyProvFL(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID localRel() {
+    public UUID localRel(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRelCF() {
+    public UUID sendRelCF(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID notifyRelFL() {
+    public UUID notifyRelFL(String correlationId) {
         return null;
     }
 }

@@ -5,14 +5,14 @@ import java.util.UUID;
 
 public interface NsiProvMdl {
 
-    public UUID localProv();
-    public UUID localRel();
+    public UUID localProv(String correlationId);
+    public UUID localRel(String correlationId);
 
-    public UUID sendProvCF();
-    public UUID notifyProvFL();
+    public UUID sendProvCF(String correlationId);
+    public UUID notifyProvFL(String correlationId);
 
-    public UUID sendRelCF();
-    public UUID notifyRelFL();
+    public UUID sendRelCF(String correlationId);
+    public UUID notifyRelFL(String correlationId);
 
 
 }

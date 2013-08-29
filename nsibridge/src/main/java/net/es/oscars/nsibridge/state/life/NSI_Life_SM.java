@@ -23,7 +23,7 @@ public class NSI_Life_SM implements StateMachine {
     }
 
     @Override
-    public Set<UUID> process(SM_Event event) throws StateException {
+    public Set<UUID> process(SM_Event event, String correlationId) throws StateException {
         if (this.transitionHandler == null) {
             LOG.error("PSM: ["+this.id+"]: Null transition handler");
             throw new NullPointerException("PSM: ["+this.id+"]: Null transition handler.");
@@ -87,7 +87,7 @@ public class NSI_Life_SM implements StateMachine {
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
         //  LOG.debug(post);
-        return (this.transitionHandler.process(ps, ns, event, this));
+        return (this.transitionHandler.process(correlationId, ps, ns, event, this));
     }
 
 

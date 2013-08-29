@@ -24,7 +24,7 @@ public class NSI_Resv_SM implements StateMachine {
     }
 
     @Override
-    public Set<UUID> process(SM_Event event) throws StateException {
+    public Set<UUID> process(SM_Event event, String correlationId) throws StateException {
         if (this.transitionHandler == null) {
             LOG.error("PSM: ["+this.id+"]: Null transition handler");
             throw new NullPointerException("PSM: ["+this.id+"]: Null transition handler.");
@@ -140,7 +140,7 @@ public class NSI_Resv_SM implements StateMachine {
 
         String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState().value()+"] after event ["+event+"]";
         LOG.debug(post);
-        Set<UUID> taskIds = this.transitionHandler.process(ps, ns, event, this);
+        Set<UUID> taskIds = this.transitionHandler.process(correlationId, ps, ns, event, this);
         for (UUID taskId : taskIds) {
             LOG.debug("   task id:  " +taskId);
         }
@@ -177,10 +177,10 @@ public class NSI_Resv_SM implements StateMachine {
     }
 
 
-    public static void handleEvent(String connectionId, NSI_Resv_Event event) throws StateException {
+    public static void handleEvent(String connectionId, String correlationId, NSI_Resv_Event event) throws StateException {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM sm = smh.findNsiResvSM(connectionId);
-        sm.process(event);
+        sm.process(event, correlationId);
     }
 
 }

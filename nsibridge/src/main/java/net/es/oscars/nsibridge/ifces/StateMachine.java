@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public interface StateMachine {
 
-    public Set<UUID> process(SM_Event ev) throws StateException;
+    public Set<UUID> process(SM_Event ev, String correlationId) throws StateException;
 
     public void setTransitionHandler(TransitionHandler th);
     public TransitionHandler getTransitionHandler();

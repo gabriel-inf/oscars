@@ -50,15 +50,15 @@ public class ProvisionSMSteps {
     }
 
 
-    @When("^I submit the Provisioning event \"([^\"]*)\" for connectionId: \"([^\"]*)\"$")
-    public void I_submit_the_Provisioning_event(String arg1, String connectionId) throws Throwable {
+    @When("^I submit the Provisioning event \"([^\"]*)\" for connectionId: \"([^\"]*)\" and correlationId: \"([^\"]*)\"$")
+    public void I_submit_the_Provisioning_event(String arg1, String connectionId, String correlationId) throws Throwable {
         smh = NSI_SM_Holder.getInstance();
         NSI_Prov_SM psm = smh.findNsiProvSM(connectionId);
 
         NSI_Prov_Event ev = NSI_Prov_Event.valueOf(arg1);
         psmExceptions.put(connectionId, false);
         try {
-            psm.process(ev);
+            psm.process(ev, correlationId);
         } catch (Exception ex) {
             psmExceptions.put(connectionId, true);
         }

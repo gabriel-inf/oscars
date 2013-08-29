@@ -16,7 +16,7 @@ public class NSI_Life_TH implements TransitionHandler {
     private NsiLifeMdl mdl;
 
     @Override
-    public Set<UUID> process(SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
+    public Set<UUID> process(String correlationId, SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
         NSI_Life_State from = (NSI_Life_State) gfrom;
         NSI_Life_State to = (NSI_Life_State) gto;
         NSI_Life_Event ev = (NSI_Life_Event) gev;
@@ -27,12 +27,12 @@ public class NSI_Life_TH implements TransitionHandler {
         switch (fromState) {
             case CREATED:
                 if (to.equals(LifecycleStateEnumType.TERMINATING)) {
-                    taskIds.add(mdl.localTerm());
+                    taskIds.add(mdl.localTerm(correlationId));
                 }
                 break;
             case TERMINATING:
                 if (to.equals(LifecycleStateEnumType.TERMINATED)) {
-                    taskIds.add(mdl.sendTermCF());
+                    taskIds.add(mdl.sendTermCF(correlationId));
                 }
                 break;
             case FAILED:

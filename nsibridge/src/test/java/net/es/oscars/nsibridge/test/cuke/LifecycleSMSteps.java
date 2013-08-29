@@ -31,12 +31,12 @@ public class LifecycleSMSteps {
     }
 
 
-    @When("^I submit the Lifecycle event \"([^\"]*)\"$")
-    public void I_submit_the_Lifecycle_event(String arg1) throws Throwable {
+    @When("^I submit the Lifecycle event \"([^\"]*)\" for correlationId: \"([^\"]*)\"$")
+    public void I_submit_the_Lifecycle_event(String arg1, String correlationId) throws Throwable {
         NSI_Life_Event ev = NSI_Life_Event.valueOf(arg1);
         lsmException = false;
         try {
-            lsm.process(ev);
+            lsm.process(ev, correlationId);
         } catch (Exception ex) {
             lsmException = true;
         }

@@ -14,6 +14,8 @@ import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
@@ -38,14 +40,14 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID localRollback() {
+    public UUID localRollback(String correlationId) {
         // TODO
         return null;
     }
 
 
     @Override
-    public UUID localCheck() {
+    public UUID localCheck(String correlationId) {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
         UUID taskId = null;
@@ -57,7 +59,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             cr = NSI_Util.getConnectionRecord(connectionId);
         } catch (ServiceException e) {
             try {
-                NSI_Resv_SM.handleEvent(connectionId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
             } catch (StateException e1) {
                 e1.printStackTrace();
             }
@@ -81,7 +83,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         } catch (TaskException e) {
             log.error(e);
             try {
-                NSI_Resv_SM.handleEvent(connectionId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                 rh.removeResvRequest(connectionId);
             } catch (StateException ex) {
                 ex.printStackTrace();
@@ -92,7 +94,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID localHold() {
+    public UUID localHold(String correlationId) {
         UUID taskId = null;
 
 
@@ -102,7 +104,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID localCommit() {
+    public UUID localCommit(String correlationId) {
         UUID taskId = null;
 
         log.debug("localCommit: " + connectionId);
@@ -111,7 +113,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
 
         try {
-            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF);
+            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF, correlationId);
             taskId = taskIds.iterator().next();
             NSI_Util.persistStateMachines(connectionId);
         }catch (StateException ex) {
@@ -125,7 +127,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID localAbort() {
+    public UUID localAbort(String correlationId) {
 
         UUID taskId = null;
 
@@ -148,7 +150,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         if (!recordOK) {
             try {
-                NSI_Resv_SM.handleEvent(connectionId, NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
+                NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
                 return null;
             } catch (StateException e) {
                 e.printStackTrace();
@@ -158,9 +160,18 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         // submit the oscars cancel()
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
-        Task oscarsCancel = new OscarsCancelTask(connectionId, SimpleRequestType.RESERVE_ABORT);
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.findNsiResvSM(connectionId);
+
+        OscarsCancelTask ost = new OscarsCancelTask();
+        ost.setCorrelationId(correlationId);
+        ost.setOscarsOp(OscarsOps.CANCEL);
+        ost.setStateMachine(rsm);
+        ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_CF);
+        ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
+
         try {
-            taskId = wf.schedule(oscarsCancel, when);
+            taskId = wf.schedule(ost, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
@@ -169,7 +180,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID sendRsvCF() {
+    public UUID sendRsvCF(String correlationId) {
         UUID taskId = null;
 
         long now = new Date().getTime();
@@ -189,7 +200,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID sendRsvFL() {
+    public UUID sendRsvFL(String correlationId) {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
         UUID taskId = null;
@@ -209,7 +220,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID sendRsvCmtCF() {
+    public UUID sendRsvCmtCF(String correlationId) {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
         UUID taskId = null;
@@ -228,7 +239,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID sendRsvCmtFL() {
+    public UUID sendRsvCmtFL(String correlationId) {
         UUID taskId = null;
 
         long now = new Date().getTime();
@@ -248,7 +259,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID sendRsvAbtCF() {
+    public UUID sendRsvAbtCF(String correlationId) {
         UUID taskId = null;
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
@@ -267,7 +278,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID sendRsvTimeout() {
+    public UUID sendRsvTimeout(String correlationId) {
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
         UUID taskId = null;

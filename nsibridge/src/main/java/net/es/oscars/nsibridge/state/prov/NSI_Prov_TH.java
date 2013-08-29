@@ -16,7 +16,7 @@ public class NSI_Prov_TH implements TransitionHandler {
     private NsiProvMdl mdl;
 
     @Override
-    public Set<UUID> process(SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
+    public Set<UUID> process(String correlationId, SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
         NSI_Prov_State from = (NSI_Prov_State) gfrom;
         NSI_Prov_State to = (NSI_Prov_State) gto;
         NSI_Prov_Event ev = (NSI_Prov_Event) gev;
@@ -29,24 +29,24 @@ public class NSI_Prov_TH implements TransitionHandler {
         switch (fromState) {
             case RELEASED:
                 if (to.equals(ProvisionStateEnumType.PROVISIONING)) {
-                    taskIds.add(mdl.localProv());
+                    taskIds.add(mdl.localProv(correlationId));
                 }
                 break;
 
             case PROVISIONING:
                 if (to.equals(ProvisionStateEnumType.PROVISIONED)) {
-                    taskIds.add(mdl.sendProvCF());
+                    taskIds.add(mdl.sendProvCF(correlationId));
                 }
                 break;
             case PROVISIONED:
                 if (to.equals(ProvisionStateEnumType.RELEASING)) {
-                    taskIds.add(mdl.localRel());
+                    taskIds.add(mdl.localRel(correlationId));
                 }
                 break;
 
             case RELEASING:
                 if (to.equals(ProvisionStateEnumType.RELEASED)) {
-                    taskIds.add(mdl.sendRelCF());
+                    taskIds.add(mdl.sendRelCF(correlationId));
                 }
                 break;
             default:

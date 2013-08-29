@@ -15,6 +15,27 @@ public class RequestHolder {
     private static RequestHolder instance;
     private RequestHolder() {}
 
+
+    public String findConnectionId(String correlationId) {
+        if (resvRequests.containsKey(correlationId)) {
+            return resvRequests.get(correlationId).getReserveType().getConnectionId();
+        }
+        if (simpleRequests.containsKey(correlationId)) {
+            return simpleRequests.get(correlationId).getConnectionId();
+        }
+        return null;
+    }
+
+
+    public void removeRequest(String correlationId) {
+        if (resvRequests.containsKey(correlationId)) {
+            resvRequests.remove(correlationId);
+        }
+        if (simpleRequests.containsKey(correlationId)) {
+            simpleRequests.remove(correlationId);
+        }
+    }
+
     public static RequestHolder getInstance() {
         if (instance == null) instance = new RequestHolder();
         return instance;
@@ -49,4 +70,6 @@ public class RequestHolder {
     public HashMap<String, SimpleRequest> getSimpleRequests() {
         return simpleRequests;
     }
+
+
 }

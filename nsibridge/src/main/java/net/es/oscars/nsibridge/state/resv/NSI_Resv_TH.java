@@ -17,7 +17,7 @@ public class NSI_Resv_TH implements TransitionHandler {
     private NsiResvMdl mdl;
 
     @Override
-    public Set<UUID> process(SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
+    public Set<UUID> process(String correlationId, SM_State gfrom, SM_State gto, SM_Event gev, StateMachine gsm) throws StateException {
         NSI_Resv_State from = (NSI_Resv_State) gfrom;
         NSI_Resv_State to = (NSI_Resv_State) gto;
         NSI_Resv_Event ev = (NSI_Resv_Event) gev;
@@ -29,7 +29,7 @@ public class NSI_Resv_TH implements TransitionHandler {
         switch (fromState) {
             case RESERVE_START:
                 if (toState == ReservationStateEnumType.RESERVE_CHECKING) {
-                    taskIds.add(mdl.localCheck());
+                    taskIds.add(mdl.localCheck(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -37,11 +37,11 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_CHECKING:
                 if (toState == ReservationStateEnumType.RESERVE_HELD) {
-                    taskIds.add(mdl.localHold());
-                    taskIds.add(mdl.sendRsvCF());
+                    taskIds.add(mdl.localHold(correlationId));
+                    taskIds.add(mdl.sendRsvCF(correlationId));
                 } else if (toState == ReservationStateEnumType.RESERVE_FAILED) {
-                    taskIds.add(mdl.localRollback());
-                    taskIds.add(mdl.sendRsvFL());
+                    taskIds.add(mdl.localRollback(correlationId));
+                    taskIds.add(mdl.sendRsvFL(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -49,11 +49,11 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_HELD:
                 if (toState == ReservationStateEnumType.RESERVE_COMMITTING) {
-                    taskIds.add(mdl.localCommit());
+                    taskIds.add(mdl.localCommit(correlationId));
                 } else if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
-                    taskIds.add(mdl.localAbort());
+                    taskIds.add(mdl.localAbort(correlationId));
                 } else if (toState == ReservationStateEnumType.RESERVE_TIMEOUT) {
-                    taskIds.add(mdl.localAbort());
+                    taskIds.add(mdl.localAbort(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -62,9 +62,9 @@ public class NSI_Resv_TH implements TransitionHandler {
             case RESERVE_COMMITTING:
                 if (toState == ReservationStateEnumType.RESERVE_START) {
                     if (ev == NSI_Resv_Event.LOCAL_RESV_COMMIT_CF) {
-                        taskIds.add(mdl.sendRsvCmtCF());
+                        taskIds.add(mdl.sendRsvCmtCF(correlationId));
                     } else if (ev == NSI_Resv_Event.LOCAL_RESV_COMMIT_FL) {
-                        taskIds.add(mdl.sendRsvCmtFL());
+                        taskIds.add(mdl.sendRsvCmtFL(correlationId));
                     } else {
                         throw new StateException("invalid event received ["+ev+"]");
                     }
@@ -76,7 +76,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_ABORTING:
                 if (toState == ReservationStateEnumType.RESERVE_START) {
-                    taskIds.add(mdl.sendRsvAbtCF());
+                    taskIds.add(mdl.sendRsvAbtCF(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -84,7 +84,7 @@ public class NSI_Resv_TH implements TransitionHandler {
 
             case RESERVE_TIMEOUT:
                 if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
-                    taskIds.add(mdl.localAbort());
+                    taskIds.add(mdl.localAbort(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }

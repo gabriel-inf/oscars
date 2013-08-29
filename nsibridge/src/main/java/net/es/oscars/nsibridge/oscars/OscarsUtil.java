@@ -2,21 +2,16 @@ package net.es.oscars.nsibridge.oscars;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
-import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
@@ -32,9 +27,6 @@ public class OscarsUtil {
         log.debug("submitResv start");
         String connId = resvRequest.getReserveType().getConnectionId();
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
-
 
         ResCreateContent rc = null;
         try {
@@ -62,16 +54,63 @@ public class OscarsUtil {
             throw new ServiceException("Failed to submit reservation");
         }
     }
+    public static void submitSetup(ConnectionRecord cr) throws ServiceException {
+        log.debug("submitSetup start");
+        String oscarsGri = cr.getOscarsGri();
+
+        CreatePathContent cp = null;
+        try {
+            cp = NSI_OSCARS_Translation.makeOscarsSetup(oscarsGri);
+        } catch (TranslationException ex) {
+            log.debug(ex);
+            log.debug("could not translate NSI request");
+
+        }
+        if (cp != null) {
+            try {
+                CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp);
+            } catch (OSCARSServiceException e) {
+                addOscarsRecord(cr, null, new Date(), "FAILED");
+                log.error(e);
+                throw new ServiceException("could not submit setup");
+            }
+        }
+        log.debug("submitSetup complete");
+    }
+
+    public static void submitTeardown(ConnectionRecord cr) throws ServiceException {
+        log.debug("submitTeardown start");
+        String oscarsGri = cr.getOscarsGri();
+
+        TeardownPathContent cp = null;
+        try {
+            cp = NSI_OSCARS_Translation.makeOscarsTeardown(oscarsGri);
+        } catch (TranslationException ex) {
+            log.debug(ex);
+            log.debug("could not translate NSI request");
+
+        }
+        if (cp != null) {
+            try {
+                TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp);
+            } catch (OSCARSServiceException e) {
+                addOscarsRecord(cr, null, new Date(), "FAILED");
+                log.error(e);
+                throw new ServiceException("could not submit setup");
+            }
+        }
+        log.debug("submitTeardown complete");
+    }
+
+
+
 
     public static void submitCancel(ConnectionRecord cr) throws ServiceException  {
-        log.debug("submitResv start");
+        log.debug("submitCancel start");
         String oscarsGri = cr.getOscarsGri();
 
 
         CancelResContent rc = NSI_OSCARS_Translation.makeOscarsCancel(oscarsGri);
-        boolean cancelSubmittedOK = false;
-
-
         try {
             CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc);
         } catch (OSCARSServiceException e) {
@@ -79,6 +118,7 @@ public class OscarsUtil {
             log.error(e);
             throw new ServiceException("could not submit cancel");
         }
+        log.debug("submitCancel complete");
     }
 
     public static void submitQuery(ConnectionRecord cr) throws TranslationException {
@@ -109,7 +149,6 @@ public class OscarsUtil {
         log.debug("submitModify start");
         String connId = resvRequest.getReserveType().getConnectionId();
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
 
         ModifyResContent mc = null;
         try {
@@ -157,13 +196,13 @@ public class OscarsUtil {
 
 
 
-    public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr) throws ServiceException {
+    public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr) throws TranslationException {
         HashSet<OscarsOps> ops = new HashSet<OscarsOps>();
         ops.add(op);
         return pollUntilAnOpAllowed(ops, cr);
     }
 
-    public static OscarsLogicAction pollUntilAnOpAllowed(Set<OscarsOps> ops, ConnectionRecord cr) throws ServiceException {
+    public static OscarsLogicAction pollUntilAnOpAllowed(Set<OscarsOps> ops, ConnectionRecord cr) throws TranslationException {
         TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
 
         Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
@@ -214,7 +253,8 @@ public class OscarsUtil {
                 elapsed += pollInterval;
                 OscarsUtil.submitQuery(cr);
                 for (OscarsOps op : ops) {
-                    OscarsLogicAction thisAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
+                    OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
+                    allActions.put(op, anAction);
                 }
 
                 foundYes = false;
@@ -230,17 +270,20 @@ public class OscarsUtil {
                     }
                 }
 
-                if (foundYes) return OscarsLogicAction.YES;
+                if (foundYes) {
+                    return OscarsLogicAction.YES;
+                }
                 if (!foundYesOrAskLater) {
                     return OscarsLogicAction.NO;
                 }
 
-            } catch (TranslationException ex) {
-                log.error(ex);
-                throw new ServiceException("could not submit query");
             } catch (InterruptedException ex) {
-                throw new ServiceException("interrupted");
+                throw new TranslationException("interrupted");
             }
+        }
+
+        if (result == OscarsLogicAction.ASK_LATER) {
+            result = OscarsLogicAction.TIMED_OUT;
         }
         return result;
     }

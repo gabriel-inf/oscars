@@ -4,11 +4,11 @@ import java.util.UUID;
 
 public interface NsiLifeMdl {
 
-    public UUID localTerm();
+    public UUID localTerm(String correlationId);
 
-    public UUID sendTermCF();
+    public UUID sendTermCF(String correlationId);
 
-    public UUID notifyForcedEndErrorEvent();
+    public UUID notifyForcedEndErrorEvent(String correlationId);
 
 
 

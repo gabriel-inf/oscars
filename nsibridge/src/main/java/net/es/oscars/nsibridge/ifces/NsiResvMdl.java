@@ -5,21 +5,21 @@ import java.util.UUID;
 
 public interface NsiResvMdl {
 
-    public UUID localCheck();
-    public UUID localHold();
-    public UUID localCommit();
-    public UUID localAbort();
-    public UUID localRollback();
+    public UUID localCheck(String correlationId);
+    public UUID localHold(String correlationId);
+    public UUID localCommit(String correlationId);
+    public UUID localAbort(String correlationId);
+    public UUID localRollback(String correlationId);
 
-    public UUID sendRsvCF();
-    public UUID sendRsvFL();
+    public UUID sendRsvCF(String correlationId);
+    public UUID sendRsvFL(String correlationId);
 
-    public UUID sendRsvCmtCF();
-    public UUID sendRsvCmtFL();
+    public UUID sendRsvCmtCF(String correlationId);
+    public UUID sendRsvCmtFL(String correlationId);
 
-    public UUID sendRsvAbtCF();
+    public UUID sendRsvAbtCF(String correlationId);
 
-    public UUID sendRsvTimeout();
+    public UUID sendRsvTimeout(String correlationId);
 
 
 }

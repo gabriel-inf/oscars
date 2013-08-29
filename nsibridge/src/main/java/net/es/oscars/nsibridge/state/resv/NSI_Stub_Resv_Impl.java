@@ -13,57 +13,57 @@ public class NSI_Stub_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID localCheck() {
+    public UUID localCheck(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID localHold() {
+    public UUID localHold(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID localCommit() {
+    public UUID localCommit(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID localAbort() {
+    public UUID localAbort(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID localRollback() {
+    public UUID localRollback(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRsvCF() {
+    public UUID sendRsvCF(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRsvFL() {
+    public UUID sendRsvFL(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRsvCmtCF() {
+    public UUID sendRsvCmtCF(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRsvCmtFL() {
+    public UUID sendRsvCmtFL(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRsvAbtCF() {
+    public UUID sendRsvAbtCF(String correlationId) {
         return null;
     }
 
     @Override
-    public UUID sendRsvTimeout() {
+    public UUID sendRsvTimeout(String correlationId) {
         return null;
     }
 

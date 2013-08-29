@@ -60,7 +60,7 @@ public class RequestProcessor {
         try {
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
-            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.RECEIVED_NSI_RESV_RQ);
+            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.RECEIVED_NSI_RESV_RQ, corrId);
             request.getTaskIds().clear();
             request.getTaskIds().addAll(taskIds);
             for (UUID taskId : request.getTaskIds()) {
@@ -104,23 +104,23 @@ public class RequestProcessor {
         try {
             switch (request.getRequestType()) {
                 case RESERVE_ABORT:
-                    taskIds = smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_AB);
+                    taskIds = smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_AB, corrId);
                     request.getTaskIds().addAll(taskIds);
                     break;
                 case RESERVE_COMMIT:
-                    taskIds = smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_CM);
+                    taskIds = smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_CM, corrId);
                     request.getTaskIds().addAll(taskIds);
                     break;
                 case PROVISION:
-                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ);
+                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ, corrId);
                     request.getTaskIds().addAll(taskIds);
                 break;
                 case RELEASE:
-                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ);
+                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ, corrId);
                     request.getTaskIds().addAll(taskIds);
                 break;
                 case TERMINATE:
-                    taskIds= smh.getLifeStateMachines().get(connId).process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ);
+                    taskIds= smh.getLifeStateMachines().get(connId).process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ, corrId);
                     request.getTaskIds().addAll(taskIds);
                 break;
             }

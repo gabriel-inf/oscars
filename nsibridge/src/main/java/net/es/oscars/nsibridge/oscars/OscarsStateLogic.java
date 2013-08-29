@@ -18,6 +18,13 @@ public class OscarsStateLogic {
     // if ASK_LATER, I need to wait and ask again
     private static HashMap<OscarsStates, HashMap<OscarsOps, OscarsLogicAction>> need;
 
+    // for each operation & state combination
+    // if YES, this operation succeeded
+    // if NO, this operation failed
+    // if ASK_LATER, I need to wait and ask again
+    private static HashMap<OscarsOps, HashMap<OscarsStates, OscarsLogicAction>> success;
+
+
     static {
         allow = new HashMap<OscarsStates, HashMap<OscarsOps, OscarsLogicAction>>();
         // can't reserve on reserved
@@ -104,6 +111,82 @@ public class OscarsStateLogic {
         need.put(OscarsStates.FAILED, noOps);
         need.put(OscarsStates.UNKNOWN, noOps);
 
+
+        success = new HashMap<OscarsOps, HashMap<OscarsStates, OscarsLogicAction>>();
+        HashMap<OscarsStates, OscarsLogicAction> resvSuccess = new HashMap<OscarsStates, OscarsLogicAction>();
+        resvSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.YES);
+        resvSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.YES);
+        resvSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.CREATED, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
+        resvSuccess.put(OscarsStates.UNKNOWN, OscarsLogicAction.NO);
+        resvSuccess.put(OscarsStates.CANCELLED, OscarsLogicAction.NO);
+        resvSuccess.put(OscarsStates.FAILED, OscarsLogicAction.NO);
+        success.put(OscarsOps.RESERVE, resvSuccess);
+
+
+        HashMap<OscarsStates, OscarsLogicAction> cancelSuccess = new HashMap<OscarsStates, OscarsLogicAction>();
+        cancelSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
+        cancelSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.UNKNOWN, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.CANCELLED, OscarsLogicAction.YES);
+        cancelSuccess.put(OscarsStates.FAILED, OscarsLogicAction.NO);
+        success.put(OscarsOps.CANCEL, cancelSuccess);
+
+        HashMap<OscarsStates, OscarsLogicAction> modSuccess = new HashMap<OscarsStates, OscarsLogicAction>();
+        modSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.YES);
+        modSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.YES);
+        modSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.ASK_LATER);
+        modSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.ASK_LATER);
+        modSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
+        modSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.ASK_LATER);
+        modSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
+        modSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
+        modSuccess.put(OscarsStates.UNKNOWN, OscarsLogicAction.NO);
+        modSuccess.put(OscarsStates.CANCELLED, OscarsLogicAction.NO);
+        modSuccess.put(OscarsStates.FAILED, OscarsLogicAction.NO);
+        success.put(OscarsOps.MODIFY, modSuccess);
+
+        HashMap<OscarsStates, OscarsLogicAction> setupSuccess = new HashMap<OscarsStates, OscarsLogicAction>();
+        setupSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.YES);
+        setupSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.ASK_LATER);
+        setupSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.UNKNOWN, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.CANCELLED, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.FAILED, OscarsLogicAction.NO);
+        success.put(OscarsOps.SETUP, setupSuccess);
+
+
+        HashMap<OscarsStates, OscarsLogicAction> teardownSuccess = new HashMap<OscarsStates, OscarsLogicAction>();
+        teardownSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.YES);
+        teardownSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.YES);
+        teardownSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
+        teardownSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.UNKNOWN, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.CANCELLED, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.FAILED, OscarsLogicAction.NO);
+        success.put(OscarsOps.TEARDOWN, teardownSuccess);
+
+
+
     }
 
 
@@ -126,9 +209,14 @@ public class OscarsStateLogic {
     }
 
 
+    public static OscarsLogicAction didOperationSucceed(OscarsOps op, OscarsStates state) {
+
+        OscarsLogicAction result = success.get(op).get(state);
+        return result;
+    }
+
     public static OscarsLogicAction isOperationAllowed(OscarsOps op, OscarsStates state) {
         OscarsLogicAction result = allow.get(state).get(op);
-        log.debug("op: "+op+" state:"+state+" result:"+result);
         return result;
 
     }

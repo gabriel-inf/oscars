@@ -18,15 +18,12 @@ import org.apache.log4j.Logger;
 import java.util.HashSet;
 import java.util.Set;
 
-public class OscarsResvOrModifyTask extends Task  {
+public class OscarsResvOrModifyTask extends SMTask  {
     private static final Logger log = Logger.getLogger(OscarsResvOrModifyTask.class);
-
-    private String corrId = "";
 
     protected TimingConfig tc;
     public OscarsResvOrModifyTask(String corrId) {
         this.scope = "oscars";
-        this.corrId = corrId;
     }
 
     public void onRun() throws TaskException {
@@ -36,7 +33,7 @@ public class OscarsResvOrModifyTask extends Task  {
             super.onRun();
 
             RequestHolder rh = RequestHolder.getInstance();
-            ResvRequest req = rh.findResvRequest(corrId);
+            ResvRequest req = rh.findResvRequest(this.correlationId);
             String connId = req.getReserveType().getConnectionId();
 
 
@@ -71,16 +68,13 @@ public class OscarsResvOrModifyTask extends Task  {
                     ops.add(OscarsOps.RESERVE);
                     try {
                         OscarsUtil.pollUntilAnOpAllowed(ops, cr);
-                    } catch (ServiceException ex) {
+                    } catch (TranslationException ex) {
                         log.error(ex);
                         try {
-                            NSI_Resv_SM.handleEvent(connId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-
-
+                            NSI_Resv_SM.handleEvent(connId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                         } catch (StateException ex1) {
                             log.error(ex1);
                         }
-
                     }
                     or = ConnectionRecord.getLatestStatusRecord(cr);
                     state = OscarsStates.valueOf(or.getStatus());
@@ -104,16 +98,16 @@ public class OscarsResvOrModifyTask extends Task  {
             OscarsLogicAction action;
             try {
                 action = OscarsUtil.pollUntilOpAllowed(theOp, cr);
-            } catch (ServiceException ex) {
+            } catch (TranslationException ex) {
                 log.error(ex);
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
                 this.onSuccess();
                 return;
             }
 
             // if we still cannot perform the operation, fail
             if (!action.equals(OscarsLogicAction.YES)) {
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
                 this.onSuccess();
                 return;
             }
@@ -137,7 +131,7 @@ public class OscarsResvOrModifyTask extends Task  {
             }
 
             if (!submittedOK) {
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
                 this.onSuccess();
                 return;
             }
@@ -145,12 +139,12 @@ public class OscarsResvOrModifyTask extends Task  {
             try {
                 OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
                 if (os.equals(OscarsStates.RESERVED)) {
-                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
+                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF, correlationId);
                     this.onSuccess();
                     return;
                 }
             } catch (ServiceException ex) {
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
                 this.onSuccess();
                 return;
             }
@@ -166,7 +160,7 @@ public class OscarsResvOrModifyTask extends Task  {
             this.onFail();
         }
 
-        log.debug("OscarsResvOrModifyTask finishing for corrId: "+corrId);
+        log.debug("OscarsResvOrModifyTask finishing for corrId: "+this.correlationId);
 
         this.onSuccess();
     }
