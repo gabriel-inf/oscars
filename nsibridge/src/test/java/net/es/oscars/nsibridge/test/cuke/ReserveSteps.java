@@ -135,7 +135,7 @@ public class ReserveSteps {
             Thread.sleep(1000);
             elapsed += 1000;
             RequestHolder rh = RequestHolder.getInstance();
-            for (ResvRequest rr : rh.getResvRequests()) {
+            for (ResvRequest rr : rh.getResvRequests().values()) {
                 System.out.println(" -- "+rr.getReserveType().getConnectionId());
             }
             Workflow wf = Workflow.getInstance();

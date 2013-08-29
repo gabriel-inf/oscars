@@ -4,13 +4,13 @@ package net.es.oscars.nsibridge.prov;
 import net.es.oscars.nsibridge.beans.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RequestHolder {
-    private List<ResvRequest>   resvRequests    = new ArrayList<ResvRequest>();
-    private List<QueryRequest>  queryRequests   = new ArrayList<QueryRequest>();
-    private List<SimpleRequest>  simpleRequests = new ArrayList<SimpleRequest>();
-
+    private HashMap<String, ResvRequest>    resvRequests    = new HashMap<String, ResvRequest>();
+    private HashMap<String, QueryRequest>   queryRequests   = new HashMap<String, QueryRequest>();
+    private HashMap<String, SimpleRequest>  simpleRequests  = new HashMap<String, SimpleRequest>();
 
     private static RequestHolder instance;
     private RequestHolder() {}
@@ -20,71 +20,33 @@ public class RequestHolder {
         return instance;
     }
 
-    public ResvRequest findResvRequest(String connId) {
-        for (ResvRequest rr : resvRequests) {
-            if (rr.getReserveType().getConnectionId().equals(connId)) return rr;
-        }
-        return null;
+    public ResvRequest findResvRequest(String correlationId) {
+        return resvRequests.get(correlationId);
     }
 
-    public void removeResvRequest(String connId) {
-        int idx = 0;
-        for (ResvRequest rr : resvRequests) {
-            if (rr.getReserveType().getConnectionId().equals(connId)) {
-                resvRequests.remove(idx);
-                return;
-            }
-            idx++;
-        }
+    public void removeResvRequest(String correlationId) {
+        resvRequests.remove(correlationId);
     }
 
 
-    public SimpleRequest findSimpleRequest(String connId, SimpleRequestType type) {
-        for (SimpleRequest sr : simpleRequests) {
-            if (sr.getConnectionId().equals(connId) && sr.getRequestType().equals(type)) {
-
-                return sr;
-            }
-        }
-        return null;
+    public SimpleRequest findSimpleRequest(String correlationId) {
+        return simpleRequests.get(correlationId);
     }
 
 
-    public void removeSimpleRequest(String connId, SimpleRequestType type) {
-        int idx = 0;
-        for (SimpleRequest sr : simpleRequests) {
-            if (sr.getConnectionId().equals(connId) && sr.getRequestType().equals(type)) {
-                simpleRequests.remove(idx);
-                return;
-            }
-            idx++;
-        }
+    public void removeSimpleRequest(String correlationId) {
+        simpleRequests.remove(correlationId);
     }
 
-
-
-    public List<ResvRequest> getResvRequests() {
-        return this.resvRequests;
+    public HashMap<String, ResvRequest> getResvRequests() {
+        return resvRequests;
     }
 
-
-    public void setResvRequests(List<ResvRequest> resvRequests) {
-        this.resvRequests = resvRequests;
-    }
-
-    public List<QueryRequest> getQueryRequests() {
+    public HashMap<String, QueryRequest> getQueryRequests() {
         return queryRequests;
     }
 
-    public void setQueryRequests(List<QueryRequest> queryRequests) {
-        this.queryRequests = queryRequests;
-    }
-
-    public List<SimpleRequest> getSimpleRequests() {
+    public HashMap<String, SimpleRequest> getSimpleRequests() {
         return simpleRequests;
-    }
-
-    public void setSimpleRequests(List<SimpleRequest> simpleRequests) {
-        this.simpleRequests = simpleRequests;
     }
 }

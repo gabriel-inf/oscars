@@ -31,7 +31,7 @@ public class ProvisionSteps {
     public void that_I_know_the_count_of_all_pending_provisioning_requests() throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
         provReqCount = 0;
-        for (SimpleRequest sr : rh.getSimpleRequests()) {
+        for (SimpleRequest sr : rh.getSimpleRequests().values()) {
             if (sr.getRequestType().equals(SimpleRequestType.PROVISION)) provReqCount++;
         }
 
@@ -55,7 +55,7 @@ public class ProvisionSteps {
     public void the_count_of_pending_provisioning_requests_has_changed_by(int arg1) throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
         int newCount = 0;
-        for (SimpleRequest sr : rh.getSimpleRequests()) {
+        for (SimpleRequest sr : rh.getSimpleRequests().values()) {
             if (sr.getRequestType().equals(SimpleRequestType.PROVISION)) newCount++;
         }
         assertThat(newCount, is(provReqCount+arg1));

@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.oscars;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
@@ -21,6 +22,7 @@ import org.apache.log4j.Logger;
 import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 public class OscarsUtil {
@@ -58,6 +60,24 @@ public class OscarsUtil {
             addOscarsRecord(cr, null, new Date(), "FAILED");
             log.debug(e);
             throw new ServiceException("Failed to submit reservation");
+        }
+    }
+
+    public static void submitCancel(ConnectionRecord cr) throws ServiceException  {
+        log.debug("submitResv start");
+        String oscarsGri = cr.getOscarsGri();
+
+
+        CancelResContent rc = NSI_OSCARS_Translation.makeOscarsCancel(oscarsGri);
+        boolean cancelSubmittedOK = false;
+
+
+        try {
+            CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc);
+        } catch (OSCARSServiceException e) {
+            addOscarsRecord(cr, null, new Date(), "FAILED");
+            log.error(e);
+            throw new ServiceException("could not submit cancel");
         }
     }
 
@@ -131,6 +151,16 @@ public class OscarsUtil {
         or.setStatus(status);
         em.persist(cr);
         em.getTransaction().commit();
+    }
+
+
+
+
+
+    public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr) throws ServiceException {
+        HashSet<OscarsOps> ops = new HashSet<OscarsOps>();
+        ops.add(op);
+        return pollUntilAnOpAllowed(ops, cr);
     }
 
     public static OscarsLogicAction pollUntilAnOpAllowed(Set<OscarsOps> ops, ConnectionRecord cr) throws ServiceException {

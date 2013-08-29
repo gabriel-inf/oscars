@@ -21,12 +21,12 @@ import java.util.Set;
 public class OscarsResvOrModifyTask extends Task  {
     private static final Logger log = Logger.getLogger(OscarsResvOrModifyTask.class);
 
-    private String connId = "";
+    private String corrId = "";
 
     protected TimingConfig tc;
-    public OscarsResvOrModifyTask(String connId) {
+    public OscarsResvOrModifyTask(String corrId) {
         this.scope = "oscars";
-        this.connId = connId;
+        this.corrId = corrId;
     }
 
     public void onRun() throws TaskException {
@@ -36,9 +36,11 @@ public class OscarsResvOrModifyTask extends Task  {
             super.onRun();
 
             RequestHolder rh = RequestHolder.getInstance();
-            NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+            ResvRequest req = rh.findResvRequest(corrId);
+            String connId = req.getReserveType().getConnectionId();
 
-            ResvRequest req = rh.findResvRequest(connId);
+
+            NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
             NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
 
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
@@ -74,13 +76,15 @@ public class OscarsResvOrModifyTask extends Task  {
                         try {
                             NSI_Resv_SM.handleEvent(connId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
 
-                            rh.removeResvRequest(connId);
 
                         } catch (StateException ex1) {
                             log.error(ex1);
                         }
 
                     }
+                    or = ConnectionRecord.getLatestStatusRecord(cr);
+                    state = OscarsStates.valueOf(or.getStatus());
+
                     modAction = OscarsStateLogic.isOperationNeeded(OscarsOps.MODIFY, state);
                     resvAction = OscarsStateLogic.isOperationNeeded(OscarsOps.RESERVE, state);
                     if (resvAction.equals(OscarsLogicAction.YES)) {
@@ -99,13 +103,10 @@ public class OscarsResvOrModifyTask extends Task  {
 
             OscarsLogicAction action;
             try {
-                Set<OscarsOps> ops = new HashSet<OscarsOps>();
-                ops.add(theOp);
-                action = OscarsUtil.pollUntilAnOpAllowed(ops, cr);
+                action = OscarsUtil.pollUntilOpAllowed(theOp, cr);
             } catch (ServiceException ex) {
                 log.error(ex);
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                // rh.removeResvRequest(connId);
                 this.onSuccess();
                 return;
             }
@@ -113,7 +114,6 @@ public class OscarsResvOrModifyTask extends Task  {
             // if we still cannot perform the operation, fail
             if (!action.equals(OscarsLogicAction.YES)) {
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                // rh.removeResvRequest(connId);
                 this.onSuccess();
                 return;
             }
@@ -138,7 +138,6 @@ public class OscarsResvOrModifyTask extends Task  {
 
             if (!submittedOK) {
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                // rh.removeResvRequest(connId);
                 this.onSuccess();
                 return;
             }
@@ -152,14 +151,12 @@ public class OscarsResvOrModifyTask extends Task  {
                 }
             } catch (ServiceException ex) {
                 rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-                // rh.removeResvRequest(connId);
                 this.onSuccess();
                 return;
             }
 
             NSI_Util.persistStateMachines(connId);
 
-            //rh.removeResvRequest(connId);
 
         } catch (StateException ex) {
             ex.printStackTrace();
@@ -169,7 +166,7 @@ public class OscarsResvOrModifyTask extends Task  {
             this.onFail();
         }
 
-        log.debug("OscarsResvOrModifyTask finishing for connId: "+connId);
+        log.debug("OscarsResvOrModifyTask finishing for corrId: "+corrId);
 
         this.onSuccess();
     }

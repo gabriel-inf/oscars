@@ -32,7 +32,9 @@ public class RequestProcessor {
 
     public void startReserve(ResvRequest request) throws ServiceException {
         String connId = request.getReserveType().getConnectionId();
-        log.debug("startReserve for connId: "+connId);
+        String corrId = request.getInHeader().getCorrelationId();
+
+        log.debug("startReserve for connId: "+connId+" corrId:"+corrId);
 
         NSI_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId());
 
@@ -52,8 +54,7 @@ public class RequestProcessor {
 
         RequestHolder rh = RequestHolder.getInstance();
 
-        rh.getResvRequests().add(request);
-        request = rh.findResvRequest(connId);
+        rh.getResvRequests().put(corrId, request);
 
 
         try {
@@ -81,6 +82,7 @@ public class RequestProcessor {
 
     public void processSimple(SimpleRequest request) throws ServiceException, TaskException  {
         String connId = request.getConnectionId();
+        String corrId = request.getInHeader().getCorrelationId();
 
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr == null) {
@@ -96,7 +98,8 @@ public class RequestProcessor {
         }
 
         RequestHolder rh = RequestHolder.getInstance();
-        rh.getSimpleRequests().add(request);
+        rh.getSimpleRequests().put(corrId, request);
+
         Set<UUID> taskIds;
         try {
             switch (request.getRequestType()) {

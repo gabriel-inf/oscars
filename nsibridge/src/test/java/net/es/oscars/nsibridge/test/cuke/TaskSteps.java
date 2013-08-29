@@ -42,7 +42,7 @@ public class TaskSteps {
     @Then("^I know the simpleRequest taskIds for connectionId: \"([^\"]*)\" type: \"([^\"]*)\"$")
     public void I_know_the_simpleRequest_taskIds_for_connectionId(String arg1, String arg2) throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
-        SimpleRequest rr = rh.findSimpleRequest(arg1, SimpleRequestType.valueOf(arg2));
+        SimpleRequest rr = rh.findSimpleRequest(arg1);
         assertThat(rr, notNullValue());
         assertThat(rr.getTaskIds().size(), is(1));
         connTasks.put(arg1, rr.getTaskIds());
