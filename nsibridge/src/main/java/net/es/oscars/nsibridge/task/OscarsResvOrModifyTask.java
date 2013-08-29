@@ -9,36 +9,43 @@ import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
-import net.es.oscars.utils.task.Task;
+import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class OscarsResvOrModifyTask extends SMTask  {
+public class OscarsResvOrModifyTask extends OscarsTask  {
     private static final Logger log = Logger.getLogger(OscarsResvOrModifyTask.class);
 
     protected TimingConfig tc;
-    public OscarsResvOrModifyTask(String corrId) {
+    public OscarsResvOrModifyTask() {
         this.scope = "oscars";
     }
 
+    public void submitOscars(ConnectionRecord cr) {
+
+    }
+
+    @Override
     public void onRun() throws TaskException {
         log.debug(this.id + " starting");
         try {
-
-            super.onRun();
+            this.runstate = RunState.RUNNING;
+            this.getTimeline().setStarted(new Date().getTime());
 
             RequestHolder rh = RequestHolder.getInstance();
             ResvRequest req = rh.findResvRequest(this.correlationId);
+            if (req == null) {
+                stateMachine.process(failEvent, correlationId);
+                this.onSuccess();
+                return;
+            }
             String connId = req.getReserveType().getConnectionId();
 
-
-            NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-            NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
 
             ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
             if (cr!= null) {
@@ -71,7 +78,7 @@ public class OscarsResvOrModifyTask extends SMTask  {
                     } catch (TranslationException ex) {
                         log.error(ex);
                         try {
-                            NSI_Resv_SM.handleEvent(connId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+                            stateMachine.process(failEvent, correlationId);
                         } catch (StateException ex1) {
                             log.error(ex1);
                         }
@@ -100,14 +107,14 @@ public class OscarsResvOrModifyTask extends SMTask  {
                 action = OscarsUtil.pollUntilOpAllowed(theOp, cr);
             } catch (TranslationException ex) {
                 log.error(ex);
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
+                stateMachine.process(failEvent, correlationId);
                 this.onSuccess();
                 return;
             }
 
             // if we still cannot perform the operation, fail
             if (!action.equals(OscarsLogicAction.YES)) {
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
+                stateMachine.process(failEvent, correlationId);
                 this.onSuccess();
                 return;
             }
@@ -131,7 +138,7 @@ public class OscarsResvOrModifyTask extends SMTask  {
             }
 
             if (!submittedOK) {
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
+                stateMachine.process(failEvent, correlationId);
                 this.onSuccess();
                 return;
             }
@@ -139,12 +146,12 @@ public class OscarsResvOrModifyTask extends SMTask  {
             try {
                 OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
                 if (os.equals(OscarsStates.RESERVED)) {
-                    rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_CF, correlationId);
+                    stateMachine.process(successEvent, correlationId);
                     this.onSuccess();
                     return;
                 }
             } catch (ServiceException ex) {
-                rsm.process(NSI_Resv_Event.LOCAL_RESV_CHECK_FL, correlationId);
+                stateMachine.process(failEvent, correlationId);
                 this.onSuccess();
                 return;
             }

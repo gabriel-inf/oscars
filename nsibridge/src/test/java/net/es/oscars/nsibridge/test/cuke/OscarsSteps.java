@@ -60,8 +60,9 @@ public class OscarsSteps {
         gri = cr.getGlobalReservationId();
     }
 
-    @Then("^I can save the new OSCARS GRI in a connectionRecord for connectionId: \"([^\"]*)\"$")
-    public void I_can_save_the_new_OSCARS_GRI_in_a_connectionRecord_for_connectionId(String connId) throws Throwable {
+    @Then("^I can save the new OSCARS GRI in a connectionRecord$")
+    public void I_can_save_the_new_OSCARS_GRI_in_a_connectionRecord_for_connectionId() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
 
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
 
@@ -78,8 +79,9 @@ public class OscarsSteps {
 
     }
 
-    @When("^I submit an OSCARS query for connectionId: \"([^\"]*)\"$")
-    public void I_submit_an_OSCARS_query_for_connectionId(String connId) throws Throwable {
+    @When("^I submit an OSCARS query$")
+    public void I_submit_an_OSCARS_query_for_connectionId() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         assertThat(cr, notNullValue());
         String connGri = cr.getOscarsGri();
@@ -100,8 +102,10 @@ public class OscarsSteps {
     }
 
 
-    @Then("^I have saved an OSCARS state for connectionId: \"([^\"]*)\"$")
-    public void I_have_saved_an_OSCARS_state_for_connectionId(String connId) throws Throwable {
+    @Then("^I have saved an OSCARS state$")
+    public void I_have_saved_an_OSCARS_state_for_connectionId() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         assertThat(cr, notNullValue());
         String connGri = cr.getOscarsGri();
@@ -110,8 +114,10 @@ public class OscarsSteps {
         assertThat(or, notNullValue());
     }
 
-    @Then("^the latest OSCARS state for connectionId: \"([^\"]*)\" is \"([^\"]*)\"$")
-    public void the_latest_OSCARS_state_for_connectionId_is(String connId, String state) throws Throwable {
+    @Then("^the latest OSCARS state is \"([^\"]*)\"$")
+    public void the_latest_OSCARS_state_for_connectionId_is(String state) throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         assertThat(cr, notNullValue());
         String connGri = cr.getOscarsGri();
@@ -122,8 +128,10 @@ public class OscarsSteps {
 
     }
 
-    @When("^I set the OSCARS stub state for connectionId: \"([^\"]*)\" to \"([^\"]*)\"$")
-    public void I_set_the_OSCARS_stub_state_for_connectionId_to(String connId, String oscarsState) throws Throwable {
+    @When("^I set the OSCARS stub state to \"([^\"]*)\"$")
+    public void I_set_the_OSCARS_stub_state_for_connectionId_to(String oscarsState) throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
         OscarsProxy op = OscarsProxy.getInstance();
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         assertThat(cr, notNullValue());
@@ -133,9 +141,11 @@ public class OscarsSteps {
 
    }
 
-    @Then("^I know the OSCARS gri for connectionId: \"([^\"]*)\"$")
-    public void I_know_the_OSCARS_gri_for_connectionId(String arg1) throws Throwable {
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(arg1);
+    @Then("^I know the OSCARS gri$")
+    public void I_know_the_OSCARS_gri_for_connectionId() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
 
         Assert.assertThat(cr.getOscarsGri(), notNullValue());
     }

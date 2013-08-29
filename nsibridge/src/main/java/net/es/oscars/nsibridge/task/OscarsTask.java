@@ -25,6 +25,8 @@ public abstract class OscarsTask extends SMTask {
         this.oscarsOp = oscarsOp;
     }
 
+
+
     public void onRun() throws TaskException {
 
         String pre = "OscarsTask id "+this.getId()+" corrId: "+correlationId;

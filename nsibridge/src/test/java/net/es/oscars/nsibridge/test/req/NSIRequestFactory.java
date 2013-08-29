@@ -28,15 +28,15 @@ public class NSIRequestFactory {
         QueryType q = new QueryType();
         req.setQuery(q);
 
-        CommonHeaderType inHeader = makeHeader();
+        CommonHeaderType inHeader = makeHeader(null);
         req.setInHeader(inHeader);
         return req;
     }
 
-    public static SimpleRequest getSimpleRequest(String connectionId, SimpleRequestType type) {
+    public static SimpleRequest getSimpleRequest(String connectionId, String correlationId, SimpleRequestType type) {
         SimpleRequest pq = new SimpleRequest ();
         pq.setConnectionId(connectionId);
-        CommonHeaderType inHeader = makeHeader();
+        CommonHeaderType inHeader = makeHeader(correlationId);
         pq.setInHeader(inHeader);
         pq.setRequestType(type);
         return pq;
@@ -90,20 +90,21 @@ public class NSIRequestFactory {
         req.getReserveType().setCriteria(crit);
 
 
-        CommonHeaderType inHeader = makeHeader();
+        CommonHeaderType inHeader = makeHeader(null);
         req.setInHeader(inHeader);
         return req;
     }
 
-    public static CommonHeaderType makeHeader() {
+    public static CommonHeaderType makeHeader(String corrId) {
         CommonHeaderType inHeader = new CommonHeaderType();
         inHeader.setProtocolVersion("http://schemas.ogf.org/nsi/2012/03/connection");
-        inHeader.setCorrelationId("urn:" + UUID.randomUUID().toString());
+        if (corrId == null || corrId.equals("")) {
+            inHeader.setCorrelationId("urn:" + UUID.randomUUID().toString());
+        } else {
+            inHeader.setCorrelationId(corrId);
+        }
         inHeader.setRequesterNSA("urn:ogf:network:nsa:starlight");
         inHeader.setProviderNSA("urn:ogf:network:nsa:esnet");
-
-
-
 
         inHeader.setReplyTo("http://localhost:8088/ConnectionRequester");
         return inHeader;

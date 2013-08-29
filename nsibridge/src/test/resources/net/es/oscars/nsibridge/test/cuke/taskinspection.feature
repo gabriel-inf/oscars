@@ -5,24 +5,28 @@ Feature: inspect workflow tasks
   Scenario: Reserve task tracking
     Given I have set up Spring
     Given I have stopped the scheduler
-    When I submit reserve() with connectionId: "task-connid"
-    Then the ReserveStateMachine state for connectionId: "task-connid" is: "ReserveChecking"
+    When I set the current connId to: "task-connid"
+    When I set the current corrId to: "task-corrid-01"
 
-    Then I know the reserve taskIds for connectionId: "task-connid"
+    When I submit reserve
+    Then the ReserveStateMachine state is: "ReserveChecking"
+
+    Then I know the reserve taskIds
     Given I have started the Quartz scheduler
 
-    When I tell the scheduler to run the taskIds for connectionId: "task-connid" in 500 milliseconds
+    When I tell the scheduler to run the taskIds in 500 milliseconds
 
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "task-connid" is "FINISHED"
-    Then I know the OSCARS gri for connectionId: "task-connid"
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then I know the OSCARS gri
 
-    Then the ReserveStateMachine state for connectionId: "task-connid" is: "ReserveHeld"
+    Then the ReserveStateMachine state is: "ReserveHeld"
 
-    When I submit reserveCommit with connectionId: "task-connid"
-    Then I know the simpleRequest taskIds for connectionId: "task-connid" type: "RESERVE_COMMIT"
-    When I wait up to 1000 ms until the runstate for the taskIds for connectionId: "task-connid" is "SCHEDULED"
+    When I set the current corrId to: "task-corrid-02"
+    When I submit reserveCommit
+    Then I know the simpleRequest taskIds
+    When I wait up to 1000 ms until the task runstate is "SCHEDULED"
 
-    When I tell the scheduler to run the taskIds for connectionId: "task-connid" in 500 milliseconds
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "task-connid" is "FINISHED"
+    When I tell the scheduler to run the taskIds in 500 milliseconds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
 
-    Then the ReserveStateMachine state for connectionId: "task-connid" is: "ReserveStart"
+    Then the ReserveStateMachine state is: "ReserveStart"

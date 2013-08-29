@@ -2,5 +2,9 @@ Feature: query reservation
 
   Scenario: query a new reservation
     Given I have set up Spring
-    When I submit reserve() with connectionId: "query-connid"
-    Then querySummarySync() with connectionId: "query-connid" returns resvState "ReserveChecking"
+    When I set the current connId to: "query-connid"
+    When I set the current corrId to: "query-corrid-1"
+
+    When I submit reserve
+    When I set the current corrId to: "query-corrid-2"
+    Then querySummarySync() returns resvState "ReserveChecking"

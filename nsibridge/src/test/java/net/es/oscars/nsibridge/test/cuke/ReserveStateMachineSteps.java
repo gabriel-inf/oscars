@@ -18,58 +18,69 @@ import static org.junit.Assert.assertThat;
 public class ReserveStateMachineSteps {
     private HashMap<String, Boolean> rsmExceptions = new HashMap<String, Boolean>();
     private NSI_SM_Holder smh;
-    @Given("^that I have created a new ReserveStateMachine for connectionId: \"([^\"]*)\"$")
-    public void that_I_have_created_a_new_ReserveStateMachine(String connectionId) throws Throwable {
-        NSI_Resv_SM rsm = new NSI_Resv_SM(connectionId);
+    @Given("^that I have created a new ReserveStateMachine$")
+    public void that_I_have_created_a_new_ReserveStateMachine() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
+        NSI_Resv_SM rsm = new NSI_Resv_SM(connId);
         smh = NSI_SM_Holder.getInstance();
-        smh.getResvStateMachines().put(connectionId, rsm);
-        rsmExceptions.put(connectionId, false);
+        smh.getResvStateMachines().put(connId, rsm);
+        rsmExceptions.put(connId, false);
     }
 
-    @Given("^that I have set the Reserve model implementation for connectionId: \"([^\"]*)\" to be a stub$")
-    public void that_I_have_set_the_Reserve_model_implementation_to_be_a_stub(String connectionId) throws Throwable {
+    @Given("^that I have set the Reserve model implementation to be a stub$")
+    public void that_I_have_set_the_Reserve_model_implementation_to_be_a_stub() throws Throwable {
         NSI_Stub_Resv_Impl stub = new NSI_Stub_Resv_Impl(null);
         NSI_Resv_TH th = new NSI_Resv_TH();
         th.setMdl(stub);
+        String connId = HelperSteps.getValue("connId");
+
 
         smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.findNsiResvSM(connectionId);
+        NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
         rsm.setTransitionHandler(th);
     }
 
-    @Then("^the ReserveStateMachine state for connectionId: \"([^\"]*)\" is: \"([^\"]*)\"$")
-    public void the_ReserveStateMachine_state_for_connectionId_is(String connectionId, String stateStr) throws Throwable {
+    @Then("^the ReserveStateMachine state is: \"([^\"]*)\"$")
+    public void the_ReserveStateMachine_state_is(String stateStr) throws Throwable {
         smh = NSI_SM_Holder.getInstance();
+        String connId = HelperSteps.getValue("connId");
 
-        NSI_Resv_SM rsm = smh.findNsiResvSM(connectionId);
+        NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
         SM_State state = rsm.getState();
 
         assertThat(state.value(), is(stateStr));
     }
 
-    @When("^I submit the Reserve event: \"([^\"]*)\" for connectionId: \"([^\"]*)\" and correlationId: \"([^\"]*)\"$")
-    public void I_submit_the_Reserve_event(String arg1, String connectionId, String correlationId) throws Throwable {
+    @When("^I submit the Reserve event: \"([^\"]*)\"$")
+    public void I_submit_the_Reserve_event(String arg1) throws Throwable {
         smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.findNsiResvSM(connectionId);
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+        NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
 
         NSI_Resv_Event ev = NSI_Resv_Event.valueOf(arg1);
-        rsmExceptions.put(connectionId, false);
+        rsmExceptions.put(connId, false);
         try {
-            rsm.process(ev, correlationId);
+            rsm.process(ev, corrId);
         } catch (Exception ex) {
-            rsmExceptions.put(connectionId, true);
+            rsmExceptions.put(corrId, true);
         }
     }
 
-    @Then("^the ReserveStateMachine for connectionId: \"([^\"]*)\" has thrown an exception$")
-    public void the_ReserveStateMachine_has_thrown_an_exception(String arg1) throws Throwable {
-        assertThat(rsmExceptions.get(arg1), is(true));
+    @Then("^the ReserveStateMachine has thrown an exception$")
+    public void the_ReserveStateMachine_has_thrown_an_exception() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
+        assertThat(rsmExceptions.get(connId), is(true));
     }
 
 
-    @Then("^the ReserveStateMachine for connectionId: \"([^\"]*)\" has not thrown an exception$")
-    public void the_ReserveStateMachine_has_not_thrown_an_exception(String arg1) throws Throwable {
-        assertThat(rsmExceptions.get(arg1), is(false));
+    @Then("^the ReserveStateMachine has not thrown an exception$")
+    public void the_ReserveStateMachine_has_not_thrown_an_exception() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
+        assertThat(rsmExceptions.get(connId), is(false));
     }
 
 

@@ -4,7 +4,6 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
-import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.sched.Schedule;
@@ -21,51 +20,59 @@ import static org.hamcrest.core.IsNull.notNullValue;
 
 public class TaskSteps {
     private static Logger log = Logger.getLogger(TaskSteps.class);
-    private HashMap<String, Set<UUID>> connTasks = new HashMap<String, Set<UUID>>();
+    private HashMap<String, Set<UUID>> corrTasks = new HashMap<String, Set<UUID>>();
 
-    @Then("^I know the reserve taskIds for connectionId: \"([^\"]*)\"$")
-    public void I_know_the_reserve_taskIds_for_connectionId(String arg1) throws Throwable {
+    @Then("^I know the reserve taskIds$")
+    public void I_know_the_reserve_taskIds() throws Throwable {
+        String corrId = HelperSteps.getValue("corrId");
+
         RequestHolder rh = RequestHolder.getInstance();
-        ResvRequest rr = rh.findResvRequest(arg1);
+        ResvRequest rr = rh.findResvRequest(corrId);
         assertThat(rr, notNullValue());
         assertThat(rr.getTaskIds().size(), is(1));
         for (UUID taskId : rr.getTaskIds()) {
             log.debug("rr taskId: "+taskId);
         }
 
-        connTasks.put(arg1, rr.getTaskIds());
-        for (UUID taskId : connTasks.get(arg1)) {
-            log.debug("connId: "+arg1+" taskId: "+taskId);
+        corrTasks.put(corrId, rr.getTaskIds());
+        for (UUID taskId : corrTasks.get(corrId)) {
+            log.debug("connId: "+corrId+" taskId: "+taskId);
         }
     }
 
-    @Then("^I know the simpleRequest taskIds for connectionId: \"([^\"]*)\" type: \"([^\"]*)\"$")
-    public void I_know_the_simpleRequest_taskIds_for_connectionId(String arg1, String arg2) throws Throwable {
+    @Then("^I know the simpleRequest taskIds$")
+    public void I_know_the_simpleRequest_taskIds() throws Throwable {
+        String corrId = HelperSteps.getValue("corrId");
+
         RequestHolder rh = RequestHolder.getInstance();
-        SimpleRequest rr = rh.findSimpleRequest(arg1);
+        SimpleRequest rr = rh.findSimpleRequest(corrId);
         assertThat(rr, notNullValue());
         assertThat(rr.getTaskIds().size(), is(1));
-        connTasks.put(arg1, rr.getTaskIds());
+        corrTasks.put(corrId, rr.getTaskIds());
     }
 
 
 
-    @When("^I tell the scheduler to run the taskIds for connectionId: \"([^\"]*)\" in (\\d+) milliseconds$")
-    public void I_tell_the_scheduler_to_run_the_taskIds_for_connectionId_in_milliseconds(String arg1, int arg2) throws Throwable {
+    @When("^I tell the scheduler to run the taskIds in (\\d+) milliseconds$")
+    public void I_tell_the_scheduler_to_run_the_taskIds_in_milliseconds(int arg2) throws Throwable {
+        String corrId = HelperSteps.getValue("corrId");
+
         Schedule schedule = Schedule.getInstance();
-        for (UUID taskId : connTasks.get(arg1)) {
+        for (UUID taskId : corrTasks.get(corrId)) {
             schedule.scheduleSpecificTask(taskId, arg2);
         }
     }
 
-    @When("^I wait up to (\\d+) ms until the runstate for the taskIds for connectionId: \"([^\"]*)\" is \"([^\"]*)\"$")
-    public void I_wait_up_to_ms_until_the_runstate_for_the_taskIds_for_connectionId_is(int timeout, String connId, String runState) throws Throwable {
+    @When("^I wait up to (\\d+) ms until the task runstate is \"([^\"]*)\"$")
+    public void I_wait_up_to_ms_until_the_task_runstate_is(int timeout, String runState) throws Throwable {
+        String corrId = HelperSteps.getValue("corrId");
+
         Workflow wf = Workflow.getInstance();
         int elapsed = 0;
         boolean haveRunState = false;
         while ((elapsed < timeout) && !haveRunState) {
             boolean matchAll = true;
-            for (UUID taskId : connTasks.get(connId)) {
+            for (UUID taskId : corrTasks.get(corrId)) {
                 RunState rs = wf.getRunState(taskId);
                 log.debug("taskId: " + taskId + " runState: " + rs);
                 if (!rs.toString().equals(runState)) {
@@ -75,7 +82,7 @@ public class TaskSteps {
             if (matchAll) {
                 haveRunState = true;
             } else {
-                log.debug("sleeping 100ms until runstate for connId: "+connId+" is "+runState);
+                log.debug("sleeping 100ms until runstate for corrId: "+corrId+" is "+runState);
                 Thread.sleep(100);
                 elapsed += 100;
             }
@@ -83,11 +90,11 @@ public class TaskSteps {
         assertThat(elapsed < timeout, is (true));
         assertThat(haveRunState, is(true));
 
-        for (UUID taskId : connTasks.get(connId)) {
+        for (UUID taskId : corrTasks.get(corrId)) {
             RunState rs = wf.getRunState(taskId);
             assertThat(rs.toString(), is(runState));
         }
-        log.debug("waited for "+elapsed+" ms until runstate for connId: "+connId+" became "+runState);
+        log.debug("waited for "+elapsed+" ms until runstate for corrId: "+corrId+" became "+runState);
     }
 
 

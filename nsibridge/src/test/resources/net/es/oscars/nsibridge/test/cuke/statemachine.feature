@@ -3,40 +3,49 @@ Feature: State machines behavior verification
   I want to verify my various state machines work as intended
 
   Scenario: No error walk through the Reserve uPA state machine
-    Given that I have created a new ReserveStateMachine for connectionId: "reserve-sm"
-    Given that I have set the Reserve model implementation for connectionId: "reserve-sm" to be a stub
+    When I set the current connId to: "reserve-sm"
+    Given that I have created a new ReserveStateMachine
+    Given that I have set the Reserve model implementation to be a stub
 
-    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveStart"
+    Then the ReserveStateMachine state is: "ReserveStart"
 
-    When I submit the Reserve event: "RECEIVED_NSI_RESV_RQ" for connectionId: "reserve-sm" and correlationId: "resv-sm-corr-1"
-    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveChecking"
+    When I set the current corrId to: "reserve-sm-1"
+    When I submit the Reserve event: "RECEIVED_NSI_RESV_RQ"
+    Then the ReserveStateMachine state is: "ReserveChecking"
 
-    When I submit the Reserve event: "LOCAL_RESV_CHECK_CF" for connectionId: "reserve-sm" and correlationId: "resv-sm-corr-2"
-    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveHeld"
+    When I set the current corrId to: "reserve-sm-2"
+    When I submit the Reserve event: "LOCAL_RESV_CHECK_CF"
+    Then the ReserveStateMachine state is: "ReserveHeld"
 
-    When I submit the Reserve event: "RECEIVED_NSI_RESV_CM" for connectionId: "reserve-sm" and correlationId: "resv-sm-corr-3"
-    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveCommitting"
+    When I set the current corrId to: "reserve-sm-3"
+    When I submit the Reserve event: "RECEIVED_NSI_RESV_CM"
+    Then the ReserveStateMachine state is: "ReserveCommitting"
 
-    When I submit the Reserve event: "LOCAL_RESV_COMMIT_CF" for connectionId: "reserve-sm" and correlationId: "resv-sm-corr-4"
-    Then the ReserveStateMachine state for connectionId: "reserve-sm" is: "ReserveStart"
-    Then the ReserveStateMachine for connectionId: "reserve-sm" has not thrown an exception
+    When I set the current corrId to: "reserve-sm-4"
+    When I submit the Reserve event: "LOCAL_RESV_COMMIT_CF"
+
+    Then the ReserveStateMachine state is: "ReserveStart"
+    Then the ReserveStateMachine has not thrown an exception
 
 
 
 
 
   Scenario: Exercise catching errors at the Reserve uPA state machine
-    Given that I have created a new ReserveStateMachine for connectionId: "reserve-sm-fail"
-    Given that I have set the Reserve model implementation for connectionId: "reserve-sm-fail" to be a stub
-    Then the ReserveStateMachine state for connectionId: "reserve-sm-fail" is: "ReserveStart"
+    When I set the current connId to: "reserve-sm-fail"
+    When I set the current corrId to: "reserve-sm-fail"
 
-    When I submit the Reserve event: "LOCAL_RESV_CHECK_CF" for connectionId: "reserve-sm-fail" and correlationId: "resv-sm-fail-corr"
-    Then the ReserveStateMachine for connectionId: "reserve-sm-fail" has thrown an exception
-    Then the ReserveStateMachine state for connectionId: "reserve-sm-fail" is: "ReserveStart"
+    Given that I have created a new ReserveStateMachine
+    Given that I have set the Reserve model implementation to be a stub
+
+    Then the ReserveStateMachine state is: "ReserveStart"
+    When I submit the Reserve event: "LOCAL_RESV_CHECK_CF"
+
+    Then the ReserveStateMachine has thrown an exception
+    Then the ReserveStateMachine state is: "ReserveStart"
 
 
-
-
+# fixme to use helpers for connIds
   Scenario: No error walk through the Lifecycle uPA state machine
     Given that I have created a new LifecycleStateMachine for connectionId: "life-sm"
     Given that I have set the Lifecycle model implementation to be a stub

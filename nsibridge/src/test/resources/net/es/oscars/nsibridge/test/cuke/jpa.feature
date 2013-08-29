@@ -4,8 +4,10 @@ Feature: JPA insertion / deletion of records
 
   Scenario: Insert, find, delete ConnectionRecord
     Given I have set up Spring
-    Given the count of ConnectionRecords with connectionId: "foobar" is 0
-    When I insert a new ConnectionRecord with connectionId: "foobar"
-    Then the count of ConnectionRecords with connectionId: "foobar" is 1
-    Then I can delete the ConnectionRecord with connectionId: "foobar"
-    Then the count of ConnectionRecords with connectionId: "foobar" is 0
+    When I set the current connId to: "foobar"
+
+    Given the count of ConnectionRecords is 0
+    When I insert a new ConnectionRecord
+    Then the count of ConnectionRecords is 1
+    Then I can delete the ConnectionRecord
+    Then the count of ConnectionRecords is 0

@@ -3,27 +3,19 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
-import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReserveType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
-import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ProvisionSteps {
-    private EntityManager em = PersistenceHolder.getEntityManager();
     private int provReqCount;
     private boolean thrownException = false;
 
@@ -37,13 +29,16 @@ public class ProvisionSteps {
 
     }
 
-    @When("^I submit provision\\(\\) with connectionId: \"([^\"]*)\"$")
-    public void I_submit_provision_with_connectionId(String arg1) throws Throwable {
+    @When("^I submit provision$")
+    public void I_submit_provision() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+
         ConnectionProvider cp = new ConnectionProvider();
-        CommonHeaderType inHeader = NSIRequestFactory.makeHeader();
+        CommonHeaderType inHeader = NSIRequestFactory.makeHeader(corrId);
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
         try {
-            cp.provision(arg1, inHeader, outHolder);
+            cp.provision(connId, inHeader, outHolder);
         } catch (Exception ex) {
             thrownException = true;
             // this should fail
@@ -61,7 +56,7 @@ public class ProvisionSteps {
         assertThat(newCount, is(provReqCount+arg1));
 
     }
-    @Then("^the provision\\(\\) call has thrown an exception$")
+    @Then("^the provision call has thrown an exception$")
     public void the_provision_call_has_thrown_an_exception() throws Throwable {
         assertThat(thrownException, is(true));
     }

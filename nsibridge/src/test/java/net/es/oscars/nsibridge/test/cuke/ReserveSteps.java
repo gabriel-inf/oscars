@@ -15,7 +15,6 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.Reserve
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
-import net.es.oscars.nsibridge.state.resv.NSI_UP_Resv_Impl;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -37,11 +35,16 @@ public class ReserveSteps {
     private String theConnectionId;
     private static Logger log = Logger.getLogger(ReserveSteps.class);
 
-    @When("^I submit reserve\\(\\) with connectionId: \"([^\"]*)\"$")
-    public void I_submit_reserve_with_connectionId(String arg1) throws Throwable {
+    @When("^I submit reserve$")
+    public void I_submit_reserve_() throws Throwable {
         ResvRequest resvRequest = NSIRequestFactory.getRequest();
         ReserveType rt = resvRequest.getReserveType();
-        rt.setConnectionId(arg1);
+
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+
+        resvRequest.getInHeader().setCorrelationId(corrId);
+        rt.setConnectionId(connId);
         ConnectionProvider cp = new ConnectionProvider();
         Holder<String> connHolder = new Holder<String>();
         connHolder.value = rt.getConnectionId();
@@ -49,12 +52,15 @@ public class ReserveSteps {
         cp.reserve(connHolder, rt.getGlobalReservationId(), rt.getDescription(), rt.getCriteria(), resvRequest.getInHeader(), outHolder);
     }
 
-    @When("^I submit reserveAbort with connectionId: \"([^\"]*)\"$")
-    public void I_submit_abort_with_connectionId(String arg1) throws Throwable {
+    @When("^I submit reserveAbort")
+    public void I_submit_abort() throws Throwable {
         ConnectionProvider cp = new ConnectionProvider();
-        CommonHeaderType inHeader = NSIRequestFactory.makeHeader();
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+
+        CommonHeaderType inHeader = NSIRequestFactory.makeHeader(corrId);
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
-        cp.reserveAbort(arg1, inHeader, outHolder);
+        cp.reserveAbort(connId, inHeader, outHolder);
     }
 
     @Given("^that I know the count of all pending reservation requests$")
@@ -115,23 +121,26 @@ public class ReserveSteps {
 
     }
 
-    @Then("^the ResvRequest for connectionId: \"([^\"]*)\" has OscarsOp: \"([^\"]*)\"$")
-    public void the_ResvRequest_for_connectionId_has_OscarsOp(String arg1, String arg2) throws Throwable {
+    @Then("^the ResvRequest has OscarsOp: \"([^\"]*)\"$")
+    public void the_ResvRequest_has_OscarsOp(String oscarsOp) throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
-        ResvRequest rr = rh.findResvRequest(arg1);
+        String corrId = HelperSteps.getValue("corrId");
+
+        ResvRequest rr = rh.findResvRequest(corrId);
         assertThat(rr, notNullValue());
-        assertThat(rr.getOscarsOp().toString(), is(arg2));
+        assertThat(rr.getOscarsOp().toString(), is(oscarsOp));
 
     }
-    @When("^I wait until I know the OSCARS gri for connectionId: \"([^\"]*)\"$")
-    public void I_wait_until_I_know_the_OSCARS_gri_for_connectionId(String arg1) throws Throwable {
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(arg1);
+    @When("^I wait until I know the OSCARS gri$")
+    public void I_wait_until_I_know_the_OSCARS_gri() throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         Long timeout = 15000L;
         Long elapsed = 0L;
         while ((elapsed < timeout) &&
               (cr.getOscarsGri() == null || cr.getOscarsGri().equals(""))) {
-            cr = NSI_Util.getConnectionRecord(arg1);
-            log.debug("waiting for oscars Gri for connId "+arg1+ " gri: "+cr.getOscarsGri());
+            cr = NSI_Util.getConnectionRecord(connId);
+            log.debug("waiting for oscars Gri for connId "+connId+ " gri: "+cr.getOscarsGri());
             Thread.sleep(1000);
             elapsed += 1000;
             RequestHolder rh = RequestHolder.getInstance();
@@ -145,13 +154,18 @@ public class ReserveSteps {
 
         assertThat(cr.getOscarsGri(), notNullValue());
     }
-    @When("^I submit reserveCommit with connectionId: \"([^\"]*)\"$")
-    public void I_submit_reserveCommit_with_connectionId(String connectionId) throws Throwable {
-        ConnectionProvider cp = new ConnectionProvider();
 
-        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connectionId, SimpleRequestType.RESERVE_COMMIT);
+
+    @When("^I submit reserveCommit$")
+    public void I_submit_reserveCommit() throws Throwable {
+        ConnectionProvider cp = new ConnectionProvider();
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+
+
+        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connId, corrId, SimpleRequestType.RESERVE_COMMIT);
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
-        cp.reserveCommit(connectionId, commRequest.getInHeader(), outHolder);
+        cp.reserveCommit(connId, commRequest.getInHeader(), outHolder);
 
     }
 

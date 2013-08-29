@@ -10,36 +10,39 @@ Feature: new reservation
 
     Given that I know the count of all pending reservation requests
 
-    When I submit reserve() with connectionId: "reserve-connid"
+    When I set the current connId to: "reserve-connid"
+    When I set the current corrId to: "reserve-submit-corrid"
 
-    Then the count of ConnectionRecords with connectionId: "reserve-connid" is 1
+    When I submit reserve
+    Then the count of ConnectionRecords is 1
     Then the count of pending reservation requests has changed by 1
-    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
-    Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "RESERVE"
+    Then the ReserveStateMachine state is: "ReserveChecking"
+    Then the ResvRequest has OscarsOp: "RESERVE"
 
-    Then I know the reserve taskIds for connectionId: "reserve-connid"
-    When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"
-    Then I know the OSCARS gri for connectionId: "reserve-connid"
-    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveHeld"
+    Then I know the reserve taskIds
+    When I tell the scheduler to run the taskIds in 500 milliseconds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then I know the OSCARS gri
+    Then the ReserveStateMachine state is: "ReserveHeld"
 
     When I wait 1000 milliseconds
+    When I set the current corrId to: "reserve-commit-corrid"
 
-    When I submit reserveCommit with connectionId: "reserve-connid"
-    Then I know the simpleRequest taskIds for connectionId: "reserve-connid" type: "RESERVE_COMMIT"
-    When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"
-    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveStart"
+    When I submit reserveCommit
+    Then I know the simpleRequest taskIds
+    When I tell the scheduler to run the taskIds in 500 milliseconds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then the ReserveStateMachine state is: "ReserveStart"
 
-
-    When I submit reserve() with connectionId: "reserve-connid"
-    Then the ReserveStateMachine state for connectionId: "reserve-connid" is: "ReserveChecking"
+    When I set the current corrId to: "reserve-submit-2-corrid"
+    When I submit reserve
+    Then the ReserveStateMachine state is: "ReserveChecking"
     When I wait 100 milliseconds
 
-    Then I know the reserve taskIds for connectionId: "reserve-connid"
-    When I tell the scheduler to run the taskIds for connectionId: "reserve-connid" in 500 milliseconds
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "reserve-connid" is "FINISHED"
-    Then the ResvRequest for connectionId: "reserve-connid" has OscarsOp: "MODIFY"
+    Then I know the reserve taskIds
+    When I tell the scheduler to run the taskIds in 500 milliseconds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then the ResvRequest has OscarsOp: "MODIFY"
 
 
 
@@ -47,10 +50,14 @@ Feature: new reservation
 
 
   Scenario: Submit new reservation internally through Java (without a connectionId)
+    When I set the current connId to: ""
+    When I set the current corrId to: "reserve-no-connid"
+
     Given I have set up Spring
     Given that I know the count of all ConnectionRecords
     Given that I know the count of all pending reservation requests
-    When I submit reserve() with connectionId: ""
+
+    When I submit reserve
     Then the count of all ConnectionRecords has changed by 1
     Then the count of pending reservation requests has changed by 1
 
@@ -62,24 +69,27 @@ Feature: new reservation
 
 
     Given that I know the count of all pending reservation requests
+    When I set the current connId to: "abort-connid"
+    When I set the current corrId to: "abort-reserve-corrid"
 
-    When I submit reserve() with connectionId: "abort-connid"
 
-    Then the ReserveStateMachine state for connectionId: "abort-connid" is: "ReserveChecking"
-    Then the ResvRequest for connectionId: "abort-connid" has OscarsOp: "RESERVE"
+    When I submit reserve
+    Then the ReserveStateMachine state is: "ReserveChecking"
+    Then the ResvRequest has OscarsOp: "RESERVE"
 
-    Then I know the reserve taskIds for connectionId: "abort-connid"
-    When I tell the scheduler to run the taskIds for connectionId: "abort-connid" in 500 milliseconds
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "abort-connid" is "FINISHED"
-    Then I know the OSCARS gri for connectionId: "abort-connid"
-    Then the ReserveStateMachine state for connectionId: "abort-connid" is: "ReserveHeld"
+    Then I know the reserve taskIds
+    When I tell the scheduler to run the taskIds in 500 milliseconds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then I know the OSCARS gri
+    Then the ReserveStateMachine state is: "ReserveHeld"
 
     When I wait 1000 milliseconds
 
-    When I submit reserveAbort with connectionId: "abort-connid"
-    Then the ReserveStateMachine state for connectionId: "abort-connid" is: "ReserveAborting"
-    Then I know the simpleRequest taskIds for connectionId: "abort-connid" type: "RESERVE_ABORT"
-    When I tell the scheduler to run the taskIds for connectionId: "abort-connid" in 500 milliseconds
-    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "abort-connid" is "FINISHED"
-    Then the ReserveStateMachine state for connectionId: "abort-connid" is: "ReserveStart"
+    When I set the current corrId to: "abort-reserve-corrid"
+    When I submit reserveAbort
+    Then the ReserveStateMachine state is: "ReserveAborting"
+    Then I know the simpleRequest taskIds
+    When I tell the scheduler to run the taskIds in 500 milliseconds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then the ReserveStateMachine state is: "ReserveStart"
 

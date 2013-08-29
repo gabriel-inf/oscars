@@ -65,19 +65,25 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             }
         }
 
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
 
         RequestHolder rh = RequestHolder.getInstance();
+
+
+        OscarsResvOrModifyTask ost = new OscarsResvOrModifyTask();
+        ost.setCorrelationId(correlationId);
+        ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
+        ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
+        ost.setStateMachine(rsm);
+        ost.setOscarsOp(OscarsOps.RESERVE);
 
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
         log.info("scheduling Modify / Resv for connId:" + connectionId + ", will run in " + d + "ms");
-        Task oscarsTask = new OscarsResvOrModifyTask(connectionId);
-
-
-
         try {
-            taskId = wf.schedule(oscarsTask, when);
+            taskId = wf.schedule(ost, when);
             log.info("task id: "+taskId);
 
         } catch (TaskException e) {

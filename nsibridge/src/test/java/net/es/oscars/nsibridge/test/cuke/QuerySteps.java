@@ -23,9 +23,11 @@ import static org.junit.Assert.assertThat;
 
 public class QuerySteps {
     private EntityManager em = PersistenceHolder.getEntityManager();
-    @Then("^querySummarySync\\(\\) with connectionId: \"([^\"]*)\" returns resvState \"([^\"]*)\"$")
-    public void querySummarySync_with_connectionId_returns_resvState(String connId, String resvState) throws Throwable {
+    @Then("^querySummarySync\\(\\) returns resvState \"([^\"]*)\"$")
+    public void querySummarySync_with_connectionId_returns_resvState(String resvState) throws Throwable {
         ConnectionProvider cp = new ConnectionProvider();
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
 
         QueryType qt = new QueryType();
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();

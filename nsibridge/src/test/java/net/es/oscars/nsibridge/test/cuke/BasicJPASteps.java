@@ -8,9 +8,7 @@ import net.es.oscars.nsibridge.common.PersistenceHolder;
 
 import javax.persistence.EntityManager;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -19,8 +17,10 @@ public class BasicJPASteps {
     private EntityManager em = PersistenceHolder.getEntityManager();
     private int connCount;
 
-    @When("^I insert a new ConnectionRecord with connectionId: \"([^\"]*)\"$")
-    public void insertConnectionRecord(String connId) {
+    @When("^I insert a new ConnectionRecord$")
+    public void insertConnectionRecord() {
+        String connId = HelperSteps.getValue("connId");
+
         em.getTransaction().begin();
         ConnectionRecord cr = new ConnectionRecord();
         cr.setConnectionId(connId);
@@ -28,9 +28,11 @@ public class BasicJPASteps {
         em.getTransaction().commit();
     }
 
-    @Given("^the count of ConnectionRecords with connectionId: \"([^\"]*)\" is (\\d+)$")
-    public void the_count_of_ConnectionRecords_with_connectionId_is(String connId, int count) throws Throwable {
+    @Given("^the count of ConnectionRecords is (\\d+)$")
+    public void the_count_of_ConnectionRecords_is(int count) throws Throwable {
         em.getTransaction().begin();
+        String connId = HelperSteps.getValue("connId");
+
         String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connId+"'";
 
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
@@ -63,8 +65,10 @@ public class BasicJPASteps {
 
     }
 
-    @Then("^I can delete the ConnectionRecord with connectionId: \"([^\"]*)\"$")
-    public void deleteConnectionRecord(final String connId) {
+    @Then("^I can delete the ConnectionRecord$")
+    public void deleteConnectionRecord() {
+        String connId = HelperSteps.getValue("connId");
+
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connId+"'";
 
