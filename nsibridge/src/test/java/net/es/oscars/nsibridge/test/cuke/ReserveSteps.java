@@ -171,29 +171,6 @@ public class ReserveSteps {
         assertThat(rr.getOscarsOp().toString(), is(oscarsOp));
 
     }
-    @When("^I wait until I know the OSCARS gri$")
-    public void I_wait_until_I_know_the_OSCARS_gri() throws Throwable {
-        String connId = HelperSteps.getValue("connId");
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-        Long timeout = 25000L;
-        Long elapsed = 0L;
-        while ((elapsed < timeout) &&
-              (cr.getOscarsGri() == null || cr.getOscarsGri().equals(""))) {
-            cr = NSI_Util.getConnectionRecord(connId);
-            log.debug("waiting for oscars Gri for connId "+connId+ " gri: "+cr.getOscarsGri());
-            Thread.sleep(1000);
-            elapsed += 1000;
-            RequestHolder rh = RequestHolder.getInstance();
-            for (ResvRequest rr : rh.getResvRequests().values()) {
-                System.out.println(" -- "+rr.getReserveType().getConnectionId());
-            }
-            Workflow wf = Workflow.getInstance();
-            log.debug(wf.printTasks());
-
-        }
-
-        assertThat(cr.getOscarsGri(), notNullValue());
-    }
 
 
 

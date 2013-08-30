@@ -1,6 +1,8 @@
 package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.nsibridge.prov.NSI_Util;
+import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 
@@ -18,8 +20,12 @@ public class SMTransitionTask extends SMTask {
 
         try {
             this.stateMachine.process(this.successEvent, this.correlationId);
+            RequestHolder rh = RequestHolder.getInstance();
+            String connId = rh.findConnectionId(correlationId);
+            NSI_Util.persistStateMachines(connId);
+            log.debug("saving state machines for connId: "+connId);
 
-        } catch (StateException ex) {
+        } catch (Exception ex) {
             log.error(ex);
         }
         super.onSuccess();

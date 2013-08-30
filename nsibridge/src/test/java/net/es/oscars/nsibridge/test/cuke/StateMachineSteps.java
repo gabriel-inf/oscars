@@ -244,5 +244,56 @@ public class StateMachineSteps {
 
     }
 
+    @Then("^I wait up to (\\d+) ms until the \"([^\"]*)\" state is: \"([^\"]*)\"$")
+    public void I_wait_ms_until_I_know_the_sm_state_is(Integer ms, String smt, String stateStr) throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+
+        Long timeout = ms.longValue();
+        Long elapsed = 0L;
+        smh = NSI_SM_Holder.getInstance();
+
+        StateMachine sm = null;
+        SMTypes smtype = null;
+        try {
+            smtype = SMTypes.valueOf(smt);
+        } catch (IllegalArgumentException ex) {
+            throw ex;
+        }
+
+        assertThat(smtype, notNullValue());
+
+        switch (smtype) {
+            case RSM:
+                sm = smh.findNsiResvSM(connId);
+                break;
+            case PSM:
+                sm = smh.findNsiProvSM(connId);
+                break;
+            case LSM:
+                sm = smh.findNsiLifeSM(connId);
+                break;
+        }
+        assertThat(sm, notNullValue());
+
+        SM_State state = sm.getState();
+
+        boolean haveDesiredState = state.value().equals(stateStr);
+        int interval = 100;
+        while ((elapsed < timeout) && !haveDesiredState ) {
+            log.debug ("sleeping "+interval+" ms (elapsed: "+elapsed+") for "+smt+" state ("+state.value()+") to becomes "+stateStr);
+            Thread.sleep(interval);
+            elapsed += interval;
+            state = sm.getState();
+            haveDesiredState = state.value().equals(stateStr);
+        }
+
+        if (elapsed > timeout && !haveDesiredState) {
+            throw new Exception("timed out waiting for "+smt+" state ("+state.value()+") to become "+stateStr);
+        }
+
+        log.debug("waited for "+elapsed+" ms until "+smt+" state for connId: "+connId+" became "+state.value());
+
+        assertThat(state.value(), is(stateStr));
+    }
 
 }

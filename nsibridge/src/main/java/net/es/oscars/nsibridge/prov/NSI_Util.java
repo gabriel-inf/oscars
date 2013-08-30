@@ -2,11 +2,9 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
-import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
-import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
@@ -16,10 +14,9 @@ import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
-import net.es.oscars.nsibridge.task.ProvMonitorTask;
+import net.es.oscars.nsibridge.task.ProvMonitor;
 import net.es.oscars.utils.task.sched.Schedule;
 import org.apache.log4j.Logger;
 import org.quartz.JobDetail;
@@ -29,7 +26,6 @@ import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
-import java.util.Date;
 import java.util.List;
 
 public class NSI_Util {
@@ -267,7 +263,7 @@ public class NSI_Util {
         SimpleTrigger provTrigger = new SimpleTrigger("ProvTicker", "ProvTicker");
         provTrigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         provTrigger.setRepeatInterval(500);
-        JobDetail provJobDetail = new JobDetail("ProvTicker", "ProvTicker", ProvMonitorTask.class);
+        JobDetail provJobDetail = new JobDetail("ProvTicker", "ProvTicker", ProvMonitor.class);
         ts.getScheduler().scheduleJob(provJobDetail, provTrigger);
         isProvMonitorRunning = true;
     }

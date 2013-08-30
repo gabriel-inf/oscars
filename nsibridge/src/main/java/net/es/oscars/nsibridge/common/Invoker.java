@@ -16,16 +16,13 @@ import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.soap.impl.ProviderServer;
-import net.es.oscars.nsibridge.task.ProvMonitorTask;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
-import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
-import org.quartz.SimpleTrigger;
 import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;

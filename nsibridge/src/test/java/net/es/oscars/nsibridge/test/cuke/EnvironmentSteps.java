@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.utils.task.sched.Schedule;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -17,8 +18,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class EnvironmentSteps {
     private static Logger log = Logger.getLogger(EnvironmentSteps.class);
+    private static boolean didSetup = false;
     @Given("^I have set up the run environment$")
     public void I_have_set_up_the_run_environment() throws Throwable {
+        if (didSetup) return;
+
         SpringContext sc = SpringContext.getInstance();
         sc.initContext("src/test/resources/config/beans.xml");
 
@@ -37,6 +41,10 @@ public class EnvironmentSteps {
         Schedule sch = Schedule.getInstance();
         sch.start();
         assertThat(sch.isStarted(), is(true));
+
+        NSI_Util.scheduleProvMonitor();
+
+        didSetup = true;
 
     }
     @When("^I wait (\\d+) milliseconds$")

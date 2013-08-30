@@ -8,7 +8,6 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.Task;

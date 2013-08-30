@@ -10,7 +10,7 @@ Feature: provision a reservation
 
 
     When I submit reserve
-    When I wait until I know the OSCARS gri
+    When I wait up to 15000 ms until I know the OSCARS gri
 
 
     When I set the current corrId to: "provision-corrid-2"
