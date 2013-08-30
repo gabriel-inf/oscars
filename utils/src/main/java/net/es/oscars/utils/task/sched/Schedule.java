@@ -10,6 +10,7 @@ import org.quartz.SimpleTrigger;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Date;
+import java.util.Properties;
 import java.util.UUID;
 
 public class Schedule {
@@ -45,7 +46,13 @@ public class Schedule {
     public void startQuartz() throws TaskException {
         if (quartzStarted) return;
         try {
+            /*
+            Properties props = new Properties();
+            props.put("org.quartz.properties", "config/quartz.properties");
+            */
+
             SchedulerFactory schedFact = new StdSchedulerFactory();
+
             this.scheduler = schedFact.getScheduler();
             scheduler.start();
             quartzStarted = true;
@@ -62,7 +69,7 @@ public class Schedule {
             // look at the queue every second
             SimpleTrigger inspectorTrigger = new SimpleTrigger("WFTicker", "WFTicker");
             inspectorTrigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-            inspectorTrigger.setRepeatInterval(100);
+            inspectorTrigger.setRepeatInterval(500);
             JobDetail inspectorJobDetail = new JobDetail("WFTicker", "WFTicker", WFTicker.class);
             this.scheduler.scheduleJob(inspectorJobDetail, inspectorTrigger);
             taskRunnerStarted = true;

@@ -101,6 +101,7 @@ public class Workflow {
 
     public synchronized Task nextRunnable(long time) throws TaskException {
         Task task = null;
+        // log.debug("nextRunnable starting");
         for (Task waiting : this.waitingToRun(time)) {
             if (waiting.getScope() == null || waiting.getScope().equals("")) {
                 task = waiting;
@@ -113,7 +114,7 @@ public class Workflow {
 
                 } else if (running.getScope().equals(waiting.getScope())) {
                     blocked = true;
-                    // System.out.println(running.getId()+" blocks "+waiting.getId()+", scope "+waiting.getScope());
+                    log.debug(running.getId()+" blocks "+waiting.getId()+", scope "+waiting.getScope());
                 }
             }
             if (!blocked) {
@@ -140,6 +141,12 @@ public class Workflow {
             runningTasks.add(task);
             runStates.put(task.getId(), RunState.RUNNING);
         }
+        if (task != null) {
+            log.debug("nextRunnable: "+task.getId());
+        } else {
+            log.debug("nextRunnable: none");
+        }
+
         return task;
     }
 
