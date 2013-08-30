@@ -177,7 +177,7 @@ public class OscarsUtil {
 
     public static void addOscarsRecord(ConnectionRecord cr, String gri, Date date, String status) {
         String connId = cr.getConnectionId();
-        log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status+" date: "+date.getTime());
+        // log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status+" date: "+date.getTime());
         EntityManager em = PersistenceHolder.getEntityManager();
         em.refresh(cr);
 
@@ -333,9 +333,6 @@ public class OscarsUtil {
                     os = OscarsStates.valueOf(or.getStatus());
                     log.debug("queried oscars, elapsed ms: "+elapsed+" state: "+os);
 
-                    log.debug("now: "+new Date().getTime());
-                    Workflow wf = Workflow.getInstance();
-                    log.debug(wf.printTasks());
 
 
                 } catch (InterruptedException ex) {

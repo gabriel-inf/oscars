@@ -9,6 +9,8 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceE
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
+import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
+import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
@@ -56,9 +58,19 @@ public class RequestProcessor {
         rh.getResvRequests().put(corrId, request);
 
 
+
         try {
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-            NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
+            NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
+
+            NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
+            NSI_Life_State lsmState = (NSI_Life_State) lsm.getState();
+            LifecycleStateEnumType lsmEnumState = (LifecycleStateEnumType) lsmState.state();
+
+            if (!lsmEnumState.equals(LifecycleStateEnumType.CREATED)) {
+                throw new ServiceException("cannot reserve: lifecycle state: "+lsm.getState().value());
+            }
+
             Set<UUID> taskIds = rsm.process(NSI_Resv_Event.RECEIVED_NSI_RESV_RQ, corrId);
             request.getTaskIds().clear();
             request.getTaskIds().addAll(taskIds);
@@ -83,7 +95,7 @@ public class RequestProcessor {
         String connId = request.getConnectionId();
         String corrId = request.getInHeader().getCorrelationId();
 
-        log.debug("processSimple: connId: " + connId + " corrId: " + corrId);
+        log.debug("processSimple: connId: " + connId + " corrId: " + corrId+ " type: "+request.getRequestType());
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr == null) {
             throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
@@ -96,6 +108,16 @@ public class RequestProcessor {
                 throw new ServiceException("internal error: could not initialize state machines for connectionId: "+connId);
             }
         }
+
+        // if we are terminating / terminated, no operations other than query are allowed
+        NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
+        NSI_Life_State lsmState = (NSI_Life_State) lsm.getState();
+        LifecycleStateEnumType lsmEnumState = (LifecycleStateEnumType) lsmState.state();
+
+        if (!lsmEnumState.equals(LifecycleStateEnumType.CREATED)) {
+            throw new ServiceException("cannot perform "+request.getRequestType()+" - lifecycle state: "+lsm.getState().value());
+        }
+
 
         RequestHolder rh = RequestHolder.getInstance();
         rh.getSimpleRequests().put(corrId, request);

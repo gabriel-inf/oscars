@@ -1,8 +1,7 @@
 Feature: query reservation
 
   Scenario: query a new reservation
-    Given I have set up Spring
-    Given I have started the scheduler
+    Given I have set up the run environment
 
     When I set the current connId to: "query-connid"
     When I set the current corrId to: "query-corrid-1"

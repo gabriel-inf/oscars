@@ -65,7 +65,7 @@ public class TaskSteps {
             boolean matchAll = true;
             for (UUID taskId : corrTasks.get(corrId)) {
                 RunState rs = wf.getRunState(taskId);
-                log.debug("taskId: " + taskId + " runState: " + rs);
+                // log.debug("taskId: " + taskId + " runState: " + rs);
                 if (!rs.toString().equals(runState)) {
                     matchAll = false;
                 }
@@ -73,7 +73,7 @@ public class TaskSteps {
             if (matchAll) {
                 haveRunState = true;
             } else {
-                log.debug("sleeping 100ms until runstate for corrId: "+corrId+" is "+runState);
+                // log.debug("sleeping 100ms until runstate for corrId: "+corrId+" is "+runState);
                 Thread.sleep(100);
                 elapsed += 100;
             }

@@ -1,8 +1,7 @@
 Feature: OSCARS operations
 
   Scenario: create an OSCARS reservation
-    Given I have set up Spring
-    Given I have set up the OSCARS proxy
+    Given I have set up the run environment
     When I set the current connId to: "oscars-resv"
 
     When submit a new OSCARS reserve() request

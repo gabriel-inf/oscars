@@ -6,6 +6,7 @@ import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.prov.RequestHolder;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
@@ -21,7 +22,6 @@ public class ProvisionSteps {
     private static Logger log = Logger.getLogger(ProvisionSteps.class);
 
     private int provReqCount;
-    private boolean thrownException = false;
 
     @Given("^that I know the count of all pending provisioning requests$")
     public void that_I_know_the_count_of_all_pending_provisioning_requests() throws Throwable {
@@ -46,9 +46,11 @@ public class ProvisionSteps {
             log.debug("submitting provision connId:"+connId+" corrId: "+corrId);
             cp.provision(connId, commRequest.getInHeader(), outHolder);
         } catch (Exception ex) {
-            thrownException = true;
+            log.error(ex);
+            HelperSteps.setSubmitException(true);
+            return;
         }
-
+        HelperSteps.setSubmitException(false);
     }
 
     @Then("^the count of pending provisioning requests has changed by (\\d+)$")
@@ -60,10 +62,6 @@ public class ProvisionSteps {
         }
         assertThat(newCount, is(provReqCount+arg1));
 
-    }
-    @Then("^the provision call has thrown an exception$")
-    public void the_provision_call_has_thrown_an_exception() throws Throwable {
-        assertThat(thrownException, is(true));
     }
 
 }

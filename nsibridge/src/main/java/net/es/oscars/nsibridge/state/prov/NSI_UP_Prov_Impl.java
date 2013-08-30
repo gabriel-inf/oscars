@@ -52,7 +52,6 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         SMTransitionTask sm = new SMTransitionTask();
         sm.setCorrelationId(correlationId);
         sm.setStateMachine(psm);
-        sm.setFailEvent(NSI_Prov_Event.LOCAL_PROV_FAILED);
         sm.setSuccessEvent(NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
 
         Double d = (tc.getTaskInterval() * 1000);

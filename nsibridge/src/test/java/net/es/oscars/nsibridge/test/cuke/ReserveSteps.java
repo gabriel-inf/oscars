@@ -11,6 +11,7 @@ import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReserveType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
@@ -49,7 +50,36 @@ public class ReserveSteps {
         Holder<String> connHolder = new Holder<String>();
         connHolder.value = rt.getConnectionId();
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
-        cp.reserve(connHolder, rt.getGlobalReservationId(), rt.getDescription(), rt.getCriteria(), resvRequest.getInHeader(), outHolder);
+        try {
+            cp.reserve(connHolder, rt.getGlobalReservationId(), rt.getDescription(), rt.getCriteria(), resvRequest.getInHeader(), outHolder);
+        } catch (Exception ex) {
+            log.error(ex);
+            HelperSteps.setSubmitException(true);
+            return;
+        }
+        HelperSteps.setSubmitException(false);
+
+    }
+
+
+    @When("^I submit reserveCommit$")
+    public void I_submit_reserveCommit() throws Throwable {
+        ConnectionProvider cp = new ConnectionProvider();
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+
+
+        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connId, corrId, SimpleRequestType.RESERVE_COMMIT);
+        Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+        try {
+            cp.reserveCommit(connId, commRequest.getInHeader(), outHolder);
+        } catch (Exception ex) {
+            log.error(ex);
+            HelperSteps.setSubmitException(true);
+            return;
+        }
+        HelperSteps.setSubmitException(false);
+
     }
 
     @When("^I submit reserveAbort")
@@ -60,8 +90,18 @@ public class ReserveSteps {
 
         CommonHeaderType inHeader = NSIRequestFactory.makeHeader(corrId);
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
-        cp.reserveAbort(connId, inHeader, outHolder);
+        try {
+            cp.reserveAbort(connId, inHeader, outHolder);
+        } catch (Exception ex) {
+            log.error(ex);
+            HelperSteps.setSubmitException(true);
+            return;
+        }
+        HelperSteps.setSubmitException(false);
     }
+
+
+
 
     @Given("^that I know the count of all pending reservation requests$")
     public void that_I_know_the_count_of_all_pending_reservation_requests() throws Throwable {
@@ -156,18 +196,6 @@ public class ReserveSteps {
     }
 
 
-    @When("^I submit reserveCommit$")
-    public void I_submit_reserveCommit() throws Throwable {
-        ConnectionProvider cp = new ConnectionProvider();
-        String connId = HelperSteps.getValue("connId");
-        String corrId = HelperSteps.getValue("corrId");
-
-
-        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connId, corrId, SimpleRequestType.RESERVE_COMMIT);
-        Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
-        cp.reserveCommit(connId, commRequest.getInHeader(), outHolder);
-
-    }
 
 
 }

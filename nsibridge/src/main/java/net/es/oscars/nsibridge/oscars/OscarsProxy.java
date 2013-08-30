@@ -79,7 +79,7 @@ public class OscarsProxy {
         Object[] req = new Object[]{subjectAttributes, modifyReservation};
 
         if (oscarsStubConfig.isStub()) {
-            log.info("stub mode for sendModify");
+            // log.info("stub mode for sendModify");
             ModifyResReply cr = new ModifyResReply();
             stubStates.put(modifyReservation.getGlobalReservationId(), OscarsStates.INPATHCALCULATION);
             try {
@@ -114,7 +114,7 @@ public class OscarsProxy {
         Object[] req = new Object[]{subjectAttributes, cancelReservation};
 
         if (oscarsStubConfig.isStub()) {
-            log.info("stub mode for sendCancel");
+            // log.info("stub mode for sendCancel");
             CancelResReply cr = new CancelResReply();
             stubStates.put(cancelReservation.getGlobalReservationId(), OscarsStates.RESERVED);
             try {
@@ -147,7 +147,7 @@ public class OscarsProxy {
         // Build the query
         Object[] req = new Object[]{subjectAttributes, createReservation};
         if (oscarsStubConfig.isStub()) {
-            log.info("stub mode for sendCreate");
+            // log.info("stub mode for sendCreate");
             CreateReply cr = new CreateReply();
             cr.setGlobalReservationId(UUID.randomUUID().toString());
             OscarsStates state = OscarsStates.CREATED;
@@ -190,7 +190,7 @@ public class OscarsProxy {
         // Build the query
         Object[] req = new Object[]{subjectAttributes, tp};
         if (oscarsStubConfig.isStub()) {
-            log.info("stub mode for sendTeardown");
+            // log.info("stub mode for sendTeardown");
             TeardownPathResponseContent tr = new TeardownPathResponseContent();
             tr.setStatus("INTEARDOWN");
             stubStates.put(tp.getGlobalReservationId(), OscarsStates.INTEARDOWN);
@@ -227,7 +227,7 @@ public class OscarsProxy {
         // Build the query
         Object[] req = new Object[]{subjectAttributes, tp};
         if (oscarsStubConfig.isStub()) {
-            log.info("stub mode for sendSetup");
+            // log.info("stub mode for sendSetup");
             CreatePathResponseContent tr = new CreatePathResponseContent();
             stubStates.put(tp.getGlobalReservationId(), OscarsStates.INSETUP);
             try {
@@ -267,7 +267,7 @@ public class OscarsProxy {
 
             if (stubState == null) stubState = OscarsStates.CREATED;
 
-            log.info("stub query mode for gri: " + gri + ", stub state: " + stubState);
+            // log.info("stub query mode for gri: " + gri + ", stub state: " + stubState);
             QueryResReply tr = new QueryResReply();
             ResDetails rd = new ResDetails();
             rd.setGlobalReservationId(gri);
@@ -275,7 +275,7 @@ public class OscarsProxy {
             tr.setReservationDetails(rd);
             try {
                 long delay = oscarsStubConfig.getQueryDelayMillis();
-                log.debug("sleeping for " + delay + "ms");
+                // log.debug("sleeping for " + delay + "ms");
                 Thread.sleep(delay);
             } catch (InterruptedException ex) {
                 log.debug(ex);
@@ -389,10 +389,10 @@ public class OscarsProxy {
         Object[] req = new Object[]{verifyDNReq};
         SubjectAttributes subjectAttrs;
         if (oscarsStubConfig.isStub()) {
-            log.info("stub mode, not contacting authN");
+            // log.info("stub mode for sendAuthNRequest");
             try {
                 long delay = oscarsStubConfig.getAuthDelayMillis();
-                log.info("sleeping for " + delay + "ms");
+                // log.info("sleeping for " + delay + "ms");
                 Thread.sleep(delay);
             } catch (InterruptedException ex) {
                 log.debug(ex);

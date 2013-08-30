@@ -31,28 +31,14 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class OscarsSteps {
-    private OscarsProxy op;
     private String gri;
     private EntityManager em = PersistenceHolder.getEntityManager();
 
-    @Given("^I have set up the OSCARS proxy$")
-    public void I_have_set_up_the_OSCARS_proxy() throws Throwable {
-        op = OscarsProxy.getInstance();
 
-        ApplicationContext ax = SpringContext.getInstance().getContext();
-        OscarsConfig oc =  ax.getBean("oscarsConfig", OscarsConfig.class);
-        OscarsStubConfig os = ax.getBean("oscarsStubConfig", OscarsStubConfig.class);
-
-        op.setOscarsConfig(oc);
-        OscarsProxy.getInstance().setOscarsStubConfig(os);
-
-        assertThat(op.getOscarsConfig(), notNullValue());
-        assertThat(op.getOscarsStubConfig(), notNullValue());
-
-    }
 
     @When("^submit a new OSCARS reserve\\(\\) request$")
     public void submit_a_new_OSCARS_reserve_request() throws Throwable {
+        OscarsProxy op = OscarsProxy.getInstance();
         ResCreateContent rcc = new ResCreateContent();
         CreateReply cr = op.sendCreate(rcc);
         gri = cr.getGlobalReservationId();

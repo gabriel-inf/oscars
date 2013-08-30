@@ -3,7 +3,7 @@ Feature: JPA insertion / deletion of records
   I want to verify I can insert and delete JPA records
 
   Scenario: Insert, find, delete ConnectionRecord
-    Given I have set up Spring
+    Given I have set up the run environment
     When I set the current connId to: "foobar"
 
     Given the count of ConnectionRecords is 0
