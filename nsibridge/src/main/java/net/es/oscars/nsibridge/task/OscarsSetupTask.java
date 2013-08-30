@@ -8,6 +8,9 @@ import org.apache.log4j.Logger;
 
 public class OscarsSetupTask extends OscarsTask  {
     private static final Logger log = Logger.getLogger(OscarsSetupTask.class);
+    public OscarsSetupTask() {
+        this.scope = "oscars";
+    }
 
 
     public void submitOscars(ConnectionRecord cr) throws ServiceException {

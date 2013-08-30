@@ -56,6 +56,10 @@ public class NSI_Prov_SM implements StateMachine {
                     nextState = ProvisionStateEnumType.PROVISIONED;
                     ns.setState(nextState);
                     this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.LOCAL_PROV_FAILED)) {
+                    nextState = ProvisionStateEnumType.RELEASED;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);

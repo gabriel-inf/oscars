@@ -34,7 +34,6 @@
     <bean id="oscarsStubConfig"
           class="net.es.oscars.nsibridge.config.OscarsStubConfig"
           scope="singleton">
-        <property name="failDescription" value="failme"/>
         <property name="stub" value="true"/>
         <property name="resvDelayMillis" value="15000"/>
         <property name="queryDelayMillis" value="200" />
@@ -42,6 +41,7 @@
         <property name="setupDelayMillis" value="15000" />
         <property name="teardownDelayMillis" value="15000" />
         <property name="authDelayMillis" value="100" />
+        <property name="responseDelayMillis" value="100" />
     </bean>
 
     <bean id="timingConfig"
@@ -55,7 +55,7 @@
           class="net.es.oscars.nsibridge.config.OscarsTimingConfig"
           scope="singleton">
         <property name="submitTimeout" value="15"/>
-        <property name="pollInterval" value="5"/>
+        <property name="pollInterval" value="1"/>
         <property name="pollTimeout" value="30"/>
 
     </bean>

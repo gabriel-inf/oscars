@@ -11,6 +11,7 @@ import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
+import org.apache.log4j.Logger;
 
 import java.util.Date;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
     public NSI_UP_Prov_Impl(String connId) {
         connectionId = connId;
     }
+    private static final Logger log = Logger.getLogger(NSI_UP_Prov_Impl.class);
     private NSI_UP_Prov_Impl() {}
 
 
@@ -28,6 +30,8 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
     @Override
     public UUID localProv(String correlationId) {
         UUID taskId = null;
+        log.debug("local prov start");
+
 
         long now = new Date().getTime();
 
@@ -36,21 +40,29 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Prov_SM psm = smh.findNsiProvSM(connectionId);
 
+        /*
         OscarsSetupTask ost = new OscarsSetupTask();
         ost.setCorrelationId(correlationId);
         ost.setOscarsOp(OscarsOps.SETUP);
         ost.setStateMachine(psm);
         ost.setFailEvent(NSI_Prov_Event.LOCAL_PROV_FAILED);
         ost.setSuccessEvent(NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
+        */
 
+        SMTransitionTask sm = new SMTransitionTask();
+        sm.setCorrelationId(correlationId);
+        sm.setStateMachine(psm);
+        sm.setFailEvent(NSI_Prov_Event.LOCAL_PROV_FAILED);
+        sm.setSuccessEvent(NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
         try {
-            taskId = wf.schedule(ost , when);
+            taskId = wf.schedule(sm , when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        log.debug("local prov scheduled taskId: "+taskId);
         return taskId;
     }
 
@@ -89,6 +101,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
     @Override
     public UUID localRel(String correlationId) {
         UUID taskId = null;
+        log.debug("local release start");
 
         long now = new Date().getTime();
 
@@ -97,21 +110,30 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Prov_SM psm = smh.findNsiProvSM(connectionId);
 
+        /*
         OscarsTeardownTask ost = new OscarsTeardownTask();
         ost.setCorrelationId(correlationId);
         ost.setOscarsOp(OscarsOps.TEARDOWN);
         ost.setStateMachine(psm);
         ost.setSuccessEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
         ost.setFailEvent(NSI_Prov_Event.LOCAL_REL_FAILED);
+        */
+        SMTransitionTask sm = new SMTransitionTask();
+        sm.setCorrelationId(correlationId);
+        sm.setStateMachine(psm);
+        sm.setFailEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
+        sm.setSuccessEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
 
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
         try {
-            taskId = wf.schedule(ost , when);
+            taskId = wf.schedule(sm , when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        log.debug("local release scheduled taskId: "+taskId);
+
         return taskId;
 
     }

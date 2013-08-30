@@ -18,8 +18,6 @@ import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
 import net.es.oscars.nsibridge.prov.NSI_Util;
-import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.utils.task.sched.Workflow;
 import org.junit.Assert;
 import org.springframework.context.ApplicationContext;
 
@@ -95,7 +93,7 @@ public class OscarsSteps {
         em.getTransaction().begin();
         or.setDate(new Date());
         or.setStatus(reply.getReservationDetails().getStatus());
-        cr.getOscarsStatusRecords().add(or);
+        cr.setOscarsStatusRecord(or);
         em.persist(cr);
         em.getTransaction().commit();
 
@@ -110,7 +108,7 @@ public class OscarsSteps {
         assertThat(cr, notNullValue());
         String connGri = cr.getOscarsGri();
         assertThat(connGri, notNullValue());
-        OscarsStatusRecord  or = ConnectionRecord.getLatestStatusRecord(cr);
+        OscarsStatusRecord or = cr.getOscarsStatusRecord();
         assertThat(or, notNullValue());
     }
 
@@ -122,7 +120,7 @@ public class OscarsSteps {
         assertThat(cr, notNullValue());
         String connGri = cr.getOscarsGri();
         assertThat(connGri, notNullValue());
-        OscarsStatusRecord  or = ConnectionRecord.getLatestStatusRecord(cr);
+        OscarsStatusRecord or = cr.getOscarsStatusRecord();
         assertThat(or, notNullValue());
         assertThat(or.getStatus(), is(state));
 

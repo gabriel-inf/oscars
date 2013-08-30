@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.state.prov;
 
 import net.es.oscars.nsibridge.ifces.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.HashSet;
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 public class NSI_Prov_TH implements TransitionHandler {
 
-    private static final Logger LOG = Logger.getLogger(NSI_Prov_TH.class);
+    private static final Logger log = Logger.getLogger(NSI_Prov_TH.class);
 
 
     private NsiProvMdl mdl;
@@ -28,29 +29,39 @@ public class NSI_Prov_TH implements TransitionHandler {
         String transitionStr = fromState+" -> "+toState;
         switch (fromState) {
             case RELEASED:
-                if (to.equals(ProvisionStateEnumType.PROVISIONING)) {
+                if (toState.equals(ProvisionStateEnumType.PROVISIONING)) {
                     taskIds.add(mdl.localProv(correlationId));
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
+
                 }
                 break;
 
             case PROVISIONING:
-                if (to.equals(ProvisionStateEnumType.PROVISIONED)) {
+                if (toState.equals(ProvisionStateEnumType.PROVISIONED)) {
                     taskIds.add(mdl.sendProvCF(correlationId));
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
                 break;
             case PROVISIONED:
-                if (to.equals(ProvisionStateEnumType.RELEASING)) {
+                if (toState.equals(ProvisionStateEnumType.RELEASING)) {
                     taskIds.add(mdl.localRel(correlationId));
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
                 break;
 
             case RELEASING:
-                if (to.equals(ProvisionStateEnumType.RELEASED)) {
+                if (toState.equals(ProvisionStateEnumType.RELEASED)) {
                     taskIds.add(mdl.sendRelCF(correlationId));
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
-                break;
             default:
+                throw new StateException("invalid state transition ["+transitionStr+"]");
         }
+        log.debug("corrId: "+correlationId+" from: "+fromState+" to: " +toState+" taskIds: "+ StringUtils.join(taskIds.toArray(), ","));
         return taskIds;
     }
 

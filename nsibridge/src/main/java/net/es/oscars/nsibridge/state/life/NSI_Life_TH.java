@@ -23,23 +23,29 @@ public class NSI_Life_TH implements TransitionHandler {
         LifecycleStateEnumType fromState = (LifecycleStateEnumType) from.state();
         LifecycleStateEnumType toState = (LifecycleStateEnumType) to.state();
         HashSet<UUID> taskIds = new HashSet<UUID>();
+        String transitionStr = fromState+" -> "+toState;
 
         switch (fromState) {
             case CREATED:
-                if (to.equals(LifecycleStateEnumType.TERMINATING)) {
+                if (toState.equals(LifecycleStateEnumType.TERMINATING)) {
                     taskIds.add(mdl.localTerm(correlationId));
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
                 break;
             case TERMINATING:
-                if (to.equals(LifecycleStateEnumType.TERMINATED)) {
+                if (toState.equals(LifecycleStateEnumType.TERMINATED)) {
                     taskIds.add(mdl.sendTermCF(correlationId));
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
                 break;
             case FAILED:
-                break;
+                throw new StateException("invalid state transition ["+transitionStr+"]");
             case TERMINATED:
-                break;
+                throw new StateException("invalid state transition ["+transitionStr+"]");
             default:
+                throw new StateException("invalid state transition ["+transitionStr+"]");
         }
         return taskIds;
     }

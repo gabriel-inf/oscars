@@ -1,6 +1,5 @@
 package net.es.oscars.nsibridge.beans.db;
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,7 +16,9 @@ public class ResvRecord {
     protected int version;
     protected Date date;
 
-    protected ReservationStateEnumType reservationState;
+    protected Date startTime;
+    protected Date endTime;
+    protected long capacity;
 
     public int getVersion() {
         return version;
@@ -35,13 +36,6 @@ public class ResvRecord {
         this.id = id;
     }
 
-    public ReservationStateEnumType getReservationState() {
-        return reservationState;
-    }
-
-    public void setReservationState(ReservationStateEnumType reservationState) {
-        this.reservationState = reservationState;
-    }
 
     public Date getDate() {
         return date;
@@ -49,5 +43,30 @@ public class ResvRecord {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public long getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(long capacity) {
+        this.capacity = capacity;
     }
 }

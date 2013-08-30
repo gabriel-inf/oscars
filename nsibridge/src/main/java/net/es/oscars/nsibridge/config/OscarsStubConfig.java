@@ -2,13 +2,13 @@ package net.es.oscars.nsibridge.config;
 
 public class OscarsStubConfig {
     protected boolean stub;
-    protected String failDescription;
     protected long queryDelayMillis;
     protected long resvDelayMillis;
     protected long cancelDelayMillis;
     protected long setupDelayMillis;
     protected long teardownDelayMillis;
     protected long authDelayMillis;
+    protected long responseDelayMillis;
 
     public boolean isStub() {
         return stub;
@@ -67,11 +67,12 @@ public class OscarsStubConfig {
         this.authDelayMillis = authDelayMillis;
     }
 
-    public String getFailDescription() {
-        return failDescription;
+
+    public long getResponseDelayMillis() {
+        return responseDelayMillis;
     }
 
-    public void setFailDescription(String failDescription) {
-        this.failDescription = failDescription;
+    public void setResponseDelayMillis(long responseDelayMillis) {
+        this.responseDelayMillis = responseDelayMillis;
     }
 }

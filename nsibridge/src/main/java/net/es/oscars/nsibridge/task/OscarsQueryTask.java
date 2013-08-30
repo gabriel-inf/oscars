@@ -71,7 +71,7 @@ public class OscarsQueryTask extends Task  {
                     OscarsStatusRecord or = new OscarsStatusRecord();
                     or.setDate(new Date());
                     or.setStatus(reply.getReservationDetails().getStatus());
-                    cr.getOscarsStatusRecords().add(or);
+                    cr.setOscarsStatusRecord(or);
                     em.persist(cr);
                     em.getTransaction().commit();
 

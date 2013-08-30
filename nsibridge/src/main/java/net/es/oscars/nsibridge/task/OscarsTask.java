@@ -55,7 +55,7 @@ public abstract class OscarsTask extends SMTask {
                 processFail(connId);
                 this.onSuccess();
             }
-            OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+            OscarsStatusRecord or = cr.getOscarsStatusRecord();
             if (or == null) {
                 log.error("no oscars record");
                 processFail(connId);
@@ -98,7 +98,7 @@ public abstract class OscarsTask extends SMTask {
             } else if (opAction.equals(OscarsLogicAction.ASK_LATER)) {
 
                 // until we know whether we are allowed to submit
-                OscarsLogicAction allowed = OscarsUtil.pollUntilOpAllowed(oscarsOp, cr);
+                OscarsLogicAction allowed = OscarsUtil.pollUntilOpAllowed(oscarsOp, cr, this.id);
                 switch (allowed) {
                     // should never return this
                     case ASK_LATER:
@@ -121,7 +121,7 @@ public abstract class OscarsTask extends SMTask {
                 }
 
                 // check again if operation is needed
-                or = ConnectionRecord.getLatestStatusRecord(cr);
+                or = cr.getOscarsStatusRecord();
                 state = OscarsStates.valueOf(or.getStatus());
 
                 opAction = OscarsStateLogic.isOperationNeeded(oscarsOp, state);
@@ -149,7 +149,6 @@ public abstract class OscarsTask extends SMTask {
             }
 
             // wait until the reservation stabilizes
-
             OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
 
             // check whether it succeeded

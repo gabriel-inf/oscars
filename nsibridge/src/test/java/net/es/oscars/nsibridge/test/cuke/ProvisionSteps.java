@@ -9,6 +9,7 @@ import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
+import org.apache.log4j.Logger;
 
 import javax.xml.ws.Holder;
 
@@ -16,6 +17,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ProvisionSteps {
+
+    private static Logger log = Logger.getLogger(ProvisionSteps.class);
+
     private int provReqCount;
     private boolean thrownException = false;
 
@@ -31,17 +35,18 @@ public class ProvisionSteps {
 
     @When("^I submit provision$")
     public void I_submit_provision() throws Throwable {
+        ConnectionProvider cp = new ConnectionProvider();
+
         String connId = HelperSteps.getValue("connId");
         String corrId = HelperSteps.getValue("corrId");
-
-        ConnectionProvider cp = new ConnectionProvider();
-        CommonHeaderType inHeader = NSIRequestFactory.makeHeader(corrId);
+        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connId, corrId, SimpleRequestType.PROVISION);
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+
         try {
-            cp.provision(connId, inHeader, outHolder);
+            log.debug("submitting provision connId:"+connId+" corrId: "+corrId);
+            cp.provision(connId, commRequest.getInHeader(), outHolder);
         } catch (Exception ex) {
             thrownException = true;
-            // this should fail
         }
 
     }

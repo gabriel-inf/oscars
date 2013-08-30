@@ -12,26 +12,22 @@ Feature: provision a reservation
 
     When I submit reserve
     When I wait until I know the OSCARS gri
-    When I set the OSCARS stub state to "RESERVED"
-
-#    Given I have stopped the scheduler
-#    Given I have started the Quartz scheduler
 
 
-#    When I submit provision
-#    Then I know the simpleRequest taskIds for connectionId: "provision-connid" type: "PROVISION"
-#    When I tell the scheduler to run the taskIds for connectionId: "provision-connid" in 500 milliseconds
-#    Then the count of pending provisioning requests has changed by 1
-#    When I wait 500 milliseconds
-#    Then the ProvisioningStateMachine state for connectionId: "provision-connid" is "Provisioning"
+    When I set the current corrId to: "provision-corrid-2"
+    When I submit provision
+    Then the "PSM" state is: "Provisioning"
+    Then the count of pending provisioning requests has changed by 1
 
-#    When I wait up to 10000 ms until the runstate for the taskIds for connectionId: "provision-connid" is "FINISHED"
-#    Then the ProvisioningStateMachine state for connectionId: "provision-connid" is "Provisioned"
+    Then I know the simpleRequest taskIds
+    When I wait up to 10000 ms until the task runstate is "FINISHED"
+    Then the "PSM" state is: "Provisioned"
 
 
 
   Scenario: Provision failure because of unknown connectionId
     Given I have set up Spring
+    Given I have started the scheduler
     Given that I know the count of all pending provisioning requests
     When I set the current connId to: "unknown-connid"
     When I set the current corrId to: "unknown-corrid"

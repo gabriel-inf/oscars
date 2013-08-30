@@ -13,6 +13,7 @@ import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.utils.task.TaskException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 
@@ -41,8 +42,6 @@ public class RequestProcessor {
         if (!NSI_Util.restoreStateMachines(connId)) {
             NSI_Util.makeNewStateMachines(connId);
         }
-
-
 
         if (NSI_Util.needNewOscarsResv(connId)) {
             log.debug("OSCARS create needed for connId: "+connId);
@@ -84,6 +83,7 @@ public class RequestProcessor {
         String connId = request.getConnectionId();
         String corrId = request.getInHeader().getCorrelationId();
 
+        log.debug("processSimple: connId: " + connId + " corrId: " + corrId);
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr == null) {
             throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
@@ -116,7 +116,7 @@ public class RequestProcessor {
                     request.getTaskIds().addAll(taskIds);
                 break;
                 case RELEASE:
-                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ, corrId);
+                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_REL_RQ, corrId);
                     request.getTaskIds().addAll(taskIds);
                 break;
                 case TERMINATE:
@@ -130,6 +130,7 @@ public class RequestProcessor {
         } finally {
             NSI_Util.persistStateMachines(connId);
         }
+        log.debug("processSimple: "+connId+" corrId: "+corrId+" taskIds: "+ StringUtils.join(request.getTaskIds(), ","));
 
         CommonHeaderType inHeader = request.getInHeader();
         CommonHeaderType outHeader = this.makeOutHeader(inHeader);

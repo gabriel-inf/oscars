@@ -19,7 +19,12 @@ import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
+import net.es.oscars.nsibridge.task.ProvMonitorTask;
+import net.es.oscars.utils.task.sched.Schedule;
 import org.apache.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
 import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
@@ -31,76 +36,6 @@ public class NSI_Util {
 
     private static final Logger log = Logger.getLogger(NSI_Util.class);
 
-    public static OscarsStatusRecord getLatestOscarsRecord(String connectionId) throws ServiceException {
-        EntityManager em = PersistenceHolder.getEntityManager();
-        ConnectionRecord cr = getConnectionRecord(connectionId);
-        Date latest = null;
-        OscarsStatusRecord result = null;
-        for (OscarsStatusRecord or : cr.getOscarsStatusRecords()) {
-            if (latest == null) {
-                result = or;
-            } else if (or.getDate().after(latest)) {
-                result = or;
-            }
-
-        }
-        return result;
-    }
-
-    public static ConnectionStatesType makeConnectionStates(String connId) throws Exception {
-
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connId);
-        NSI_Prov_SM psm = smh.getProvStateMachines().get(connId);
-        NSI_Life_SM lsm = smh.getLifeStateMachines().get(connId);
-        if (rsm == null) {
-
-        }
-
-        if (psm == null) {
-
-        }
-        if (lsm == null) {
-
-        }
-
-
-        ConnectionStatesType cst = new ConnectionStatesType();
-
-        LifecycleStateEnumType lt = null;
-        cst.setLifecycleState(lt);
-
-        ReservationStateEnumType rt = null;
-        cst.setReservationState(rt);
-
-        DataPlaneStatusType dt = new DataPlaneStatusType();
-        dt.setVersion(1);
-        dt.setActive(false);
-        cst.setDataPlaneStatus(dt);
-
-        ProvisionStateEnumType pt = null;
-        cst.setProvisionState(pt);
-
-        NSI_Prov_State ps = (NSI_Prov_State) psm.getState();
-        ProvisionStateEnumType pse = (ProvisionStateEnumType) ps.state();
-
-        NSI_Resv_State rs = (NSI_Resv_State) rsm.getState();
-        ReservationStateEnumType rse = (ReservationStateEnumType) rs.state();
-
-        NSI_Life_State ls = (NSI_Life_State) lsm.getState();
-        LifecycleStateEnumType lse = (LifecycleStateEnumType) ls.state();
-
-
-
-
-        cst.setDataPlaneStatus(dt);
-        cst.setLifecycleState(lse);
-        cst.setProvisionState(pse);
-        cst.setReservationState(rse);
-
-        return cst;
-
-    }
 
     public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri) throws ServiceException {
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
@@ -132,17 +67,11 @@ public class NSI_Util {
 
         cr.setLifecycleState(LifecycleStateEnumType.fromValue(lsm.getState().value()));
         cr.setProvisionState(ProvisionStateEnumType.fromValue(psm.getState().value()));
-
-        // TODO: not good
-        ResvRecord rr = new ResvRecord();
-        rr.setReservationState(ReservationStateEnumType.fromValue(rsm.getState().value()));
-        rr.setDate(new Date());
-        rr.setVersion(0);
-        cr.getResvRecords().add(rr);
+        cr.setReserveState(ReservationStateEnumType.fromValue(rsm.getState().value()));
 
         log.debug("  saving lsm state: " + lsm.getState().value());
         log.debug("  saving psm state: " + psm.getState().value());
-        log.debug("  saving rsm state: " + rsm.getState().value() + " date: " + rr.getDate());
+        log.debug("  saving rsm state: " + rsm.getState().value());
 
         // save
         EntityManager em = PersistenceHolder.getEntityManager();
@@ -205,12 +134,11 @@ public class NSI_Util {
             restoredProv = true;
         }
 
-        ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
-        if (rr != null) {
+        if (cr.getReserveState() != null) {
             NSI_Resv_State rs = new NSI_Resv_State();
-            rs.setState(rr.getReservationState());
+            rs.setState(cr.getReserveState());
             rsm.setState(rs);
-            log.debug("  restored rsm state: "+rsm.getState().value()+" date: "+rr.getDate());
+            log.debug("  restored rsm state: "+rsm.getState().value());
 
             restoredResv = true;
         }
@@ -222,7 +150,7 @@ public class NSI_Util {
 
     public static boolean needNewOscarsResv(String connId) throws ServiceException {
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-        OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+        OscarsStatusRecord or = cr.getOscarsStatusRecord();
         if (or == null) {
             return true;
 
@@ -328,6 +256,28 @@ public class NSI_Util {
             throw new ServiceException("no stateMachines for "+connectionId);
         }
 
+    }
+
+    private static boolean isProvMonitorRunning = false;
+    public static void scheduleProvMonitor() throws SchedulerException {
+        if (isProvMonitorRunning) return;
+
+        Schedule ts = Schedule.getInstance();
+
+        SimpleTrigger provTrigger = new SimpleTrigger("ProvTicker", "ProvTicker");
+        provTrigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
+        provTrigger.setRepeatInterval(500);
+        JobDetail provJobDetail = new JobDetail("ProvTicker", "ProvTicker", ProvMonitorTask.class);
+        ts.getScheduler().scheduleJob(provJobDetail, provTrigger);
+        isProvMonitorRunning = true;
+    }
+    public static void stopProvMonitor() throws SchedulerException {
+        if (isProvMonitorRunning) return;
+        Schedule ts = Schedule.getInstance();
+        ts.getScheduler().pauseTrigger("ProvTicker", "ProvTicker");
+
+
+        isProvMonitorRunning = false;
     }
 
 }

@@ -37,7 +37,7 @@
           scope="singleton">
         <property name="submitTimeout" value="15"/>
         <property name="pollTimeout" value="30"/>
-        <property name="pollInterval" value="2"/>
+        <property name="pollInterval" value="1"/>
     </bean>
 
     <bean id="nsaConfigProvider"
@@ -50,14 +50,14 @@
     <bean id="oscarsStubConfig"
           class="net.es.oscars.nsibridge.config.OscarsStubConfig"
           scope="singleton">
-        <property name="failDescription" value="failme"/>
         <property name="stub" value="true"/>
-        <property name="resvDelayMillis" value="500"/>
-        <property name="queryDelayMillis" value="100" />
-        <property name="cancelDelayMillis" value="1100" />
+        <property name="resvDelayMillis" value="50"/>
+        <property name="queryDelayMillis" value="50" />
+        <property name="cancelDelayMillis" value="100" />
         <property name="setupDelayMillis" value="1100" />
         <property name="teardownDelayMillis" value="1100" />
         <property name="authDelayMillis" value="100" />
+        <property name="responseDelayMillis" value="100" />
 
     </bean>
 

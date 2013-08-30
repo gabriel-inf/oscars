@@ -12,13 +12,11 @@ import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class OscarsUtil {
     private static final Logger log = Logger.getLogger(OscarsUtil.class);
@@ -179,30 +177,32 @@ public class OscarsUtil {
 
     public static void addOscarsRecord(ConnectionRecord cr, String gri, Date date, String status) {
         String connId = cr.getConnectionId();
-        log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status);
+        log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status+" date: "+date.getTime());
         EntityManager em = PersistenceHolder.getEntityManager();
+        em.refresh(cr);
 
         em.getTransaction().begin();
         OscarsStatusRecord or = new OscarsStatusRecord();
         or.setDate(date);
-        cr.getOscarsStatusRecords().add(or);
-        cr.setOscarsGri(gri);
         or.setStatus(status);
+        cr.setOscarsStatusRecord(or);
+        cr.setOscarsGri(gri);
         em.persist(cr);
         em.getTransaction().commit();
+
     }
 
 
 
 
 
-    public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr) throws TranslationException {
+    public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr, UUID taskId) throws TranslationException {
         HashSet<OscarsOps> ops = new HashSet<OscarsOps>();
         ops.add(op);
-        return pollUntilAnOpAllowed(ops, cr);
+        return pollUntilAnOpAllowed(ops, cr, taskId);
     }
 
-    public static OscarsLogicAction pollUntilAnOpAllowed(Set<OscarsOps> ops, ConnectionRecord cr) throws TranslationException {
+    public static OscarsLogicAction pollUntilAnOpAllowed(Set<OscarsOps> ops, ConnectionRecord cr, UUID taskId) throws TranslationException {
         TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
 
         Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
@@ -210,7 +210,7 @@ public class OscarsUtil {
 
         double elapsed = 0;
         double timeout = pollTimeout;
-        OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+        OscarsStatusRecord or = cr.getOscarsStatusRecord();
 
         OscarsLogicAction result = OscarsLogicAction.ASK_LATER;
         HashMap<OscarsOps, OscarsLogicAction> allActions = new HashMap<OscarsOps, OscarsLogicAction>();
@@ -249,9 +249,12 @@ public class OscarsUtil {
 
         while (result == OscarsLogicAction.ASK_LATER && elapsed < timeout) {
             try {
+                log.debug("task "+taskId+" waiting...");
                 Thread.sleep(pollInterval.longValue());
                 elapsed += pollInterval;
                 OscarsUtil.submitQuery(cr);
+                or = cr.getOscarsStatusRecord();
+
                 for (OscarsOps op : ops) {
                     OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
                     allActions.put(op, anAction);
@@ -293,33 +296,50 @@ public class OscarsUtil {
 
         Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
         Double pollTimeout = tc.getOscarsTimingConfig().getPollTimeout() * 1000;
+        try {
+            log.debug("waiting "+pollInterval+" ms to poll for connId: "+cr.getConnectionId());
+            Thread.sleep(pollInterval.longValue());
+
+
+        } catch (InterruptedException ex) {
+            log.error(ex);
+            throw new ServiceException("interrupted");
+        }
 
         double elapsed = 0;
         double timeout = pollTimeout;
 
 
-        OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
-        if (or == null) {
-            try {
-                OscarsUtil.submitQuery(cr);
-            } catch (TranslationException ex) {
-                log.error(ex);
-                throw new ServiceException("could not poll");
-            }
+        OscarsStatusRecord or = cr.getOscarsStatusRecord();
+        try {
+            OscarsUtil.submitQuery(cr);
+        } catch (TranslationException ex) {
+            log.error(ex);
+            throw new ServiceException("could not poll");
         }
+
         OscarsStates os = OscarsStates.valueOf(or.getStatus());
         boolean stable = false;
 
 
         while (!stable && timeout > elapsed) {
-            if (OscarsStateLogic.isStateSteady(os)) {
-                stable = true;
-            } else {
+            stable = OscarsStateLogic.isStateSteady(os);
+            if (!stable) {
                 try {
                     Thread.sleep(pollInterval.longValue());
                     elapsed += pollInterval;
                     OscarsUtil.submitQuery(cr);
+                    or = cr.getOscarsStatusRecord();
+                    os = OscarsStates.valueOf(or.getStatus());
+                    log.debug("queried oscars, elapsed ms: "+elapsed+" state: "+os);
+
+                    log.debug("now: "+new Date().getTime());
+                    Workflow wf = Workflow.getInstance();
+                    log.debug(wf.printTasks());
+
+
                 } catch (InterruptedException ex) {
+                    log.error(ex);
                     throw new ServiceException("interrupted");
                 } catch (TranslationException ex) {
                     log.error(ex);
@@ -332,6 +352,8 @@ public class OscarsUtil {
         if (elapsed > timeout && !stable) {
             throw new ServiceException("timed out");
         }
+        log.debug("stable state: "+os);
+
 
         return os;
     }

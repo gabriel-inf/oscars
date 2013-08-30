@@ -135,7 +135,7 @@ public class ReserveSteps {
     public void I_wait_until_I_know_the_OSCARS_gri() throws Throwable {
         String connId = HelperSteps.getValue("connId");
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
-        Long timeout = 15000L;
+        Long timeout = 25000L;
         Long elapsed = 0L;
         while ((elapsed < timeout) &&
               (cr.getOscarsGri() == null || cr.getOscarsGri().equals(""))) {

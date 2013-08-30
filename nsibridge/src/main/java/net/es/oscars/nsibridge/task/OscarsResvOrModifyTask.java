@@ -54,7 +54,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 throw new TaskException("could not find connection entry for connId: "+connId);
             }
 
-            OscarsStatusRecord or = ConnectionRecord.getLatestStatusRecord(cr);
+            OscarsStatusRecord or = cr.getOscarsStatusRecord();
 
             boolean newResvRequired = false;
 
@@ -74,7 +74,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                     ops.add(OscarsOps.MODIFY);
                     ops.add(OscarsOps.RESERVE);
                     try {
-                        OscarsUtil.pollUntilAnOpAllowed(ops, cr);
+                        OscarsUtil.pollUntilAnOpAllowed(ops, cr, this.id);
                     } catch (TranslationException ex) {
                         log.error(ex);
                         try {
@@ -83,7 +83,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                             log.error(ex1);
                         }
                     }
-                    or = ConnectionRecord.getLatestStatusRecord(cr);
+                    or = cr.getOscarsStatusRecord();
                     state = OscarsStates.valueOf(or.getStatus());
 
                     modAction = OscarsStateLogic.isOperationNeeded(OscarsOps.MODIFY, state);
@@ -104,7 +104,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
 
             OscarsLogicAction action;
             try {
-                action = OscarsUtil.pollUntilOpAllowed(theOp, cr);
+                action = OscarsUtil.pollUntilOpAllowed(theOp, cr, this.id);
             } catch (TranslationException ex) {
                 log.error(ex);
                 stateMachine.process(failEvent, correlationId);

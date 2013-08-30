@@ -53,15 +53,6 @@ public class TaskSteps {
 
 
 
-    @When("^I tell the scheduler to run the taskIds in (\\d+) milliseconds$")
-    public void I_tell_the_scheduler_to_run_the_taskIds_in_milliseconds(int arg2) throws Throwable {
-        String corrId = HelperSteps.getValue("corrId");
-
-        Schedule schedule = Schedule.getInstance();
-        for (UUID taskId : corrTasks.get(corrId)) {
-            schedule.scheduleSpecificTask(taskId, arg2);
-        }
-    }
 
     @When("^I wait up to (\\d+) ms until the task runstate is \"([^\"]*)\"$")
     public void I_wait_up_to_ms_until_the_task_runstate_is(int timeout, String runState) throws Throwable {
