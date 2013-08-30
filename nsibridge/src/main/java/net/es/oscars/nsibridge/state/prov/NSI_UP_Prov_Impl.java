@@ -70,7 +70,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.PROV_CF);
+        Task sendNsiMsg = new SendNSIMessageTask(correlationId, CallbackMessages.PROV_CF);
         UUID taskId = null;
         try {
             taskId = wf.schedule(sendNsiMsg, now + 1000);
@@ -85,7 +85,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR);
+        Task sendNsiMsg = new SendNSIMessageTask(correlationId, CallbackMessages.ERROR);
         UUID taskId = null;
 
         try {
@@ -143,7 +143,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         UUID taskId = null;
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.REL_CF);
+        Task sendNsiMsg = new SendNSIMessageTask(correlationId, CallbackMessages.REL_CF);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
@@ -160,7 +160,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         UUID taskId = null;
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR);
+        Task sendNsiMsg = new SendNSIMessageTask(correlationId, CallbackMessages.ERROR);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);

@@ -31,6 +31,12 @@
         <property name="filename" value="config/nsa.json"/>
     </bean>
 
+    <bean id="nsaStubConfig"
+          class = "net.es.oscars.nsibridge.config.nsa.NSAStubConfig"
+          scope="singleton">
+        <property name="performCallback" value="false"/>
+    </bean>
+
     <bean id="oscarsStubConfig"
           class="net.es.oscars.nsibridge.config.OscarsStubConfig"
           scope="singleton">

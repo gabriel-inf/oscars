@@ -83,7 +83,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.TERM_CF);
+        Task sendNsiMsg = new SendNSIMessageTask(correlationId, CallbackMessages.TERM_CF);
         UUID taskId = null;
 
         try {
@@ -100,7 +100,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(connectionId, CallbackMessages.ERROR_EVENT);
+        Task sendNsiMsg = new SendNSIMessageTask(correlationId, CallbackMessages.ERROR_EVENT);
         UUID taskId = null;
 
         try {
