@@ -219,7 +219,7 @@ public class NSI_Util {
         ht.setRequesterNSA(ph.getRequesterNSA());
 
         SpringContext sc = SpringContext.getInstance();
-        ApplicationContext ax = sc.initContext("config/beans.xml");
+        ApplicationContext ax = sc.getContext();
         HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
 
 

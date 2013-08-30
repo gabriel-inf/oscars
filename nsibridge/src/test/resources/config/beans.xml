@@ -58,7 +58,7 @@
           class="net.es.oscars.nsibridge.config.OscarsStubConfig"
           scope="singleton">
         <property name="stub" value="true"/>
-        <property name="resvDelayMillis" value="50"/>
+        <property name="resvDelayMillis" value="500"/>
         <property name="queryDelayMillis" value="50" />
         <property name="cancelDelayMillis" value="100" />
         <property name="setupDelayMillis" value="1100" />

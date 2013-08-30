@@ -63,7 +63,7 @@ public class ProviderServer {
         server = sf.create();
         server.start();
         this.setRunning(true);
-        System.out.println("... started");
+        System.out.println("    ... provider server started");
     }
 
     public void stop() {

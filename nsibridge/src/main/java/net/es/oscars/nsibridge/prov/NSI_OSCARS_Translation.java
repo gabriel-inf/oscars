@@ -346,7 +346,7 @@ public class NSI_OSCARS_Translation {
 
     public static StpConfig findStp(String stpId) {
         SpringContext sc = SpringContext.getInstance();
-        ApplicationContext ax = sc.initContext("config/beans.xml");
+        ApplicationContext ax = sc.getContext();
 
 
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
@@ -368,7 +368,7 @@ public class NSI_OSCARS_Translation {
     
     public static StpConfig findStpByOSCARSId(String oscarsId) {
         SpringContext sc = SpringContext.getInstance();
-        ApplicationContext ax = sc.initContext("config/beans.xml");
+        ApplicationContext ax = sc.getContext();
         oscarsId = NMWGParserUtil.normalizeURN(oscarsId);
 
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
@@ -390,7 +390,7 @@ public class NSI_OSCARS_Translation {
     
     public static String findNsaId(){
         SpringContext sc = SpringContext.getInstance();
-        ApplicationContext ax = sc.initContext("config/beans.xml");
+        ApplicationContext ax = sc.getContext();
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
         NsaConfig nc = np.getConfig("local");
         

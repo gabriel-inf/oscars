@@ -18,6 +18,14 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.Common
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.feature.Feature;
+import org.apache.cxf.feature.LoggingFeature;
+import org.apache.cxf.frontend.ClientFactoryBean;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.interceptor.LoggingInInterceptor;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -25,6 +33,8 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SendNSIMessageTask extends Task  {
     private static final Logger log = Logger.getLogger(SendNSIMessageTask.class);
@@ -45,10 +55,8 @@ public class SendNSIMessageTask extends Task  {
         NSAStubConfig stubConfig = ax.getBean("nsaStubConfig", NSAStubConfig.class);
         try {
             super.onRun();
-            log.debug(this.id + " starting, corrId: "+corrId);
 
             RequestHolder rh = RequestHolder.getInstance();
-
 
             ResvRequest rreq = rh.findResvRequest(corrId);
             SimpleRequest sr = rh.findSimpleRequest(corrId);
@@ -59,11 +67,11 @@ public class SendNSIMessageTask extends Task  {
 
 
             if (rreq != null) {
-                log.debug("found resv request for corrId: "+corrId);
+                // log.debug("found resv request for corrId: "+corrId);
                 reqHeader = rreq.getInHeader();
             } else if (sr != null) {
                 // simpleRequest
-                log.debug("found simple request for corrId: "+corrId);
+                // log.debug("found simple request for corrId: "+corrId);
                 reqHeader = sr.getInHeader();
             } else {
                 log.error("no request found, exiting");
@@ -72,7 +80,7 @@ public class SendNSIMessageTask extends Task  {
             }
 
             String replyTo = reqHeader.getReplyTo();
-            log.debug("corrId: "+corrId+" replyTo: "+replyTo);
+            log.debug("corrId: "+corrId+" replyTo: "+replyTo+" type:"+message);
             URL url;
             try {
                 url = new URL(replyTo);
@@ -88,14 +96,49 @@ public class SendNSIMessageTask extends Task  {
             }
 
 
-            ConnectionServiceRequester client = new ConnectionServiceRequester();
-            ConnectionRequesterPort port = client.getConnectionServiceRequesterPort();
-            BindingProvider bp = (BindingProvider) port;
-            bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url.toString());
+            // set logging
+            LoggingInInterceptor in = new LoggingInInterceptor();
+            in.setPrettyLogging(true);
+
+            LoggingOutInterceptor out = new LoggingOutInterceptor();
+            out.setPrettyLogging(true);
+
+            // Client clientProxy = ClientProxy.getClient(port);
+            // clientProxy.getInInterceptors().add(in);
+            // clientProxy.getOutInterceptors().add(out);
+
+            // ConnectionServiceRequester client = new ConnectionServiceRequester();
+            // ConnectionRequesterPort port = client.getConnectionServiceRequesterPort();
+            // set callback address
+
+//            BindingProvider bp = (BindingProvider) port;
+//            bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url.toString());
+
+            JaxWsProxyFactoryBean fb = new JaxWsProxyFactoryBean();
+            fb.getInInterceptors().add(in);
+            fb.getOutInterceptors().add(out);
+            fb.setAddress(url.toString());
+
+            Map props = fb.getProperties();
+            if (props == null) {
+                props = new HashMap<String, Object>();
+            }
+            props.put("jaxb.additionalContextClasses",
+                    new Class[] {
+                            net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
+                    });
+            fb.setProperties(props);
+
+
+
+            fb.setServiceClass(ConnectionRequesterPort.class);
+            ConnectionRequesterPort port = (ConnectionRequesterPort) fb.create();
+
+
+
 
 
             CommonHeaderType outHeader = NSI_Util.makeNsiOutgoingHeader(reqHeader);
-
 
             Holder outHolder = new Holder<CommonHeaderType>();
             ServiceExceptionType st = NSI_Util.makeServiceException("internal error");
@@ -118,8 +161,13 @@ public class SendNSIMessageTask extends Task  {
                     String description = rreq.getReserveType().getDescription();
 
                     ReservationRequestCriteriaType rrct = rreq.getReserveType().getCriteria();
-                    // TODO: finish this
+
                     ReservationConfirmCriteriaType rcct = new ReservationConfirmCriteriaType();
+                    rcct.setSchedule(rrct.getSchedule());
+                    rcct.setServiceType(rrct.getServiceType());
+                    rcct.setVersion(rrct.getVersion());
+                    rcct.getAny().addAll(rrct.getAny());
+                    rcct.getOtherAttributes().putAll(rrct.getOtherAttributes());
 
                     port.reserveConfirmed(connId, gri, description, rcct, outHeader, outHolder);
                     break;
@@ -149,6 +197,7 @@ public class SendNSIMessageTask extends Task  {
                     // port.reserveTimeout();
                     break;
                 case MSG_TIMEOUT:
+                    // as a uPA we should probably never send this
                     // port.messageDeliveryTimeout();
                     break;
                 case DATAPLANE_CHANGE:

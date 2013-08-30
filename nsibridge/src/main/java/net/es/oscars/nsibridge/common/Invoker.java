@@ -76,7 +76,7 @@ public class Invoker implements Runnable {
 
 
 
-        System.out.print("Initializing Spring... ");
+        System.out.println("Initializing Spring... ");
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.initContext("config/beans.xml");
 
@@ -86,7 +86,7 @@ public class Invoker implements Runnable {
         NsaConfig nc = np.getConfig("local");
 
         for (StpConfig stp : nc.getStps()) {
-            System.out.println("stp :"+stp.getStpId());
+            // System.out.println("stp :"+stp.getStpId());
         }
 
         OscarsConfig oc = ax.getBean("oscarsConfig", OscarsConfig.class);

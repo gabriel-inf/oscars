@@ -15,7 +15,7 @@ import javax.xml.ws.Service;
  * 
  */
 @WebServiceClient(name = "ConnectionServiceRequester", 
-                  wsdlLocation = "file:/Users/haniotak/ij12/0_6_trunk/nsibridge/schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl",
+                  wsdlLocation = "file:schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl",
                   targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/requester") 
 public class ConnectionServiceRequester extends Service {
 
@@ -26,11 +26,11 @@ public class ConnectionServiceRequester extends Service {
     static {
         URL url = null;
         try {
-            url = new URL("file:/Users/haniotak/ij12/0_6_trunk/nsibridge/schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl");
+            url = new URL("file:schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl");
         } catch (MalformedURLException e) {
             java.util.logging.Logger.getLogger(ConnectionServiceRequester.class.getName())
                 .log(java.util.logging.Level.INFO, 
-                     "Can not initialize the default wsdl from {0}", "file:/Users/haniotak/ij12/0_6_trunk/nsibridge/schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl");
+                     "Can not initialize the default wsdl from {0}", "file:schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl");
         }
         WSDL_LOCATION = url;
     }
