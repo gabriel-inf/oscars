@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.state.life;
 
 import net.es.oscars.nsibridge.ifces.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.HashSet;
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 public class NSI_Life_TH implements TransitionHandler {
 
-    private static final Logger LOG = Logger.getLogger(NSI_Life_TH.class);
+    private static final Logger log = Logger.getLogger(NSI_Life_TH.class);
 
 
     private NsiLifeMdl mdl;
@@ -24,6 +25,11 @@ public class NSI_Life_TH implements TransitionHandler {
         LifecycleStateEnumType toState = (LifecycleStateEnumType) to.state();
         HashSet<UUID> taskIds = new HashSet<UUID>();
         String transitionStr = fromState+" -> "+toState;
+        String pre = "corrId: "+correlationId+" "+transitionStr;
+        log.debug(pre);
+
+
+
 
         switch (fromState) {
             case CREATED:
@@ -47,6 +53,7 @@ public class NSI_Life_TH implements TransitionHandler {
             default:
                 throw new StateException("invalid state transition ["+transitionStr+"]");
         }
+        log.debug(pre+" taskIds: "+ StringUtils.join(taskIds.toArray(), ","));
         return taskIds;
     }
 

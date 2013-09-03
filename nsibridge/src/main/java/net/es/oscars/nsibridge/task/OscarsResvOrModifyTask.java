@@ -40,7 +40,8 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             RequestHolder rh = RequestHolder.getInstance();
             ResvRequest req = rh.findResvRequest(this.correlationId);
             if (req == null) {
-                stateMachine.process(failEvent, correlationId);
+                this.getStateMachine().process(this.failEvent, this.correlationId);
+
                 this.onSuccess();
                 return;
             }
@@ -78,7 +79,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                     } catch (TranslationException ex) {
                         log.error(ex);
                         try {
-                            stateMachine.process(failEvent, correlationId);
+                            this.getStateMachine().process(this.failEvent, this.correlationId);
                         } catch (StateException ex1) {
                             log.error(ex1);
                         }
@@ -107,14 +108,14 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 action = OscarsUtil.pollUntilOpAllowed(theOp, cr, this.id);
             } catch (TranslationException ex) {
                 log.error(ex);
-                stateMachine.process(failEvent, correlationId);
+                this.getStateMachine().process(this.failEvent, this.correlationId);
                 this.onSuccess();
                 return;
             }
 
             // if we still cannot perform the operation, fail
             if (!action.equals(OscarsLogicAction.YES)) {
-                stateMachine.process(failEvent, correlationId);
+                this.getStateMachine().process(this.failEvent, this.correlationId);
                 this.onSuccess();
                 return;
             }
@@ -138,7 +139,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             }
 
             if (!submittedOK) {
-                stateMachine.process(failEvent, correlationId);
+                this.getStateMachine().process(this.failEvent, this.correlationId);
                 this.onSuccess();
                 return;
             }
@@ -146,12 +147,12 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             try {
                 OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
                 if (os.equals(OscarsStates.RESERVED)) {
-                    stateMachine.process(successEvent, correlationId);
+                    this.getStateMachine().process(this.successEvent, this.correlationId);
                     this.onSuccess();
                     return;
                 }
             } catch (ServiceException ex) {
-                stateMachine.process(failEvent, correlationId);
+                this.getStateMachine().process(this.failEvent, this.correlationId);
                 this.onSuccess();
                 return;
             }

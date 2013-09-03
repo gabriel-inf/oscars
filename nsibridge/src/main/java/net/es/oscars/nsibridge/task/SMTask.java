@@ -2,10 +2,15 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.nsibridge.ifces.SM_Event;
 import net.es.oscars.nsibridge.ifces.StateMachine;
+import net.es.oscars.nsibridge.ifces.StateMachineType;
+import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
+import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.Task;
+import net.es.oscars.utils.task.TaskException;
 
 public class SMTask extends Task {
-    protected StateMachine stateMachine;
+    private StateMachineType smt;
+
     protected SM_Event successEvent;
     protected SM_Event failEvent;
     protected String correlationId;
@@ -18,13 +23,46 @@ public class SMTask extends Task {
         this.correlationId = correlationId;
     }
 
-    public StateMachine getStateMachine() {
-        return stateMachine;
+    public StateMachine getStateMachine() throws TaskException {
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        if (smh == null) {
+            throw new TaskException("could not find the state machine holder");
+        }
+
+
+        RequestHolder rh = RequestHolder.getInstance();
+        if (rh == null) {
+            throw new TaskException("could not find the request holder");
+        }
+        String connId = rh.findConnectionId(correlationId);
+        if (connId == null) {
+            throw new TaskException("could not find connection id for corrId: "+correlationId);
+        }
+
+        if (smt == null) {
+            throw new TaskException("no state machine type set");
+        }
+
+        switch (smt) {
+            case RSM:
+                return smh.findNsiResvSM(connId);
+            case PSM:
+                return smh.findNsiProvSM(connId);
+            case LSM:
+                return smh.findNsiLifeSM(connId);
+        }
+        throw new TaskException("could not find a an "+smt+" SM for connId: "+connId);
+
     }
 
-    public void setStateMachine(StateMachine stateMachine) {
-        this.stateMachine = stateMachine;
+    public StateMachineType getSmt() {
+        return smt;
     }
+
+    public void setSmt(StateMachineType smt) {
+        this.smt = smt;
+    }
+
 
     public SM_Event getSuccessEvent() {
         return successEvent;

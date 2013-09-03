@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class OscarsProvQueue {
     private static OscarsProvQueue ourInstance = new OscarsProvQueue();
-    protected HashMap<String, String> inspect = new HashMap<String, String>();
+    protected HashMap<String, OscarsOps> inspect = new HashMap<String, OscarsOps>();
 
     public static OscarsProvQueue getInstance() {
         return ourInstance;
@@ -13,7 +13,7 @@ public class OscarsProvQueue {
     private OscarsProvQueue() {
     }
 
-    public HashMap<String, String> getInspect() {
+    public HashMap<String, OscarsOps> getInspect() {
         return inspect;
     }
 }

@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.state.resv;
 
 import net.es.oscars.nsibridge.ifces.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 
 public class NSI_Resv_TH implements TransitionHandler {
 
-    private static final Logger LOG = Logger.getLogger(NSI_Resv_TH.class);
+    private static final Logger log = Logger.getLogger(NSI_Resv_TH.class);
 
 
     private NsiResvMdl mdl;
@@ -26,6 +27,9 @@ public class NSI_Resv_TH implements TransitionHandler {
         ReservationStateEnumType toState = (ReservationStateEnumType) to.state();
         String transitionStr = fromState+" -> "+toState;
         HashSet<UUID> taskIds = new HashSet<UUID>();
+        String pre = "corrId: "+correlationId+" "+transitionStr;
+        log.debug(pre);
+
         switch (fromState) {
             case RESERVE_START:
                 if (toState == ReservationStateEnumType.RESERVE_CHECKING) {
@@ -102,9 +106,8 @@ public class NSI_Resv_TH implements TransitionHandler {
             default:
 
         }
-        for (UUID taskId : taskIds) {
-            LOG.debug("   task id:  " +taskId);
-        }
+        log.debug(pre+" taskIds: "+ StringUtils.join(taskIds.toArray(), ","));
+
         return taskIds;
     }
 

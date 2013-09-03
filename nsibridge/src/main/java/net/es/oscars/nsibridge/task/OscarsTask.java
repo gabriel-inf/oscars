@@ -79,7 +79,7 @@ public abstract class OscarsTask extends SMTask {
                 case ASK_LATER:
                     break;
                 case NO:
-                    stateMachine.process(successEvent, correlationId);
+                    this.getStateMachine().process(successEvent, correlationId);
                     NSI_Util.persistStateMachines(connId);
                     this.onSuccess();
                     return;
@@ -131,7 +131,7 @@ public abstract class OscarsTask extends SMTask {
                         this.submitOscars(cr);
                         break;
                     case NO:
-                        stateMachine.process(successEvent, correlationId);
+                        this.getStateMachine().process(successEvent, correlationId);
                         NSI_Util.persistStateMachines(connId);
                         this.onSuccess();
                         return;
@@ -154,7 +154,7 @@ public abstract class OscarsTask extends SMTask {
             // check whether it succeeded
             OscarsLogicAction result = OscarsStateLogic.didOperationSucceed(oscarsOp, os);
             if (result.equals(OscarsLogicAction.YES)) {
-                stateMachine.process(successEvent, correlationId);
+                this.getStateMachine().process(successEvent, correlationId);
                 NSI_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
@@ -185,7 +185,7 @@ public abstract class OscarsTask extends SMTask {
 
 
     protected void processFail(String connId) throws StateException, ServiceException, TaskException {
-        stateMachine.process(failEvent, correlationId);
+        this.getStateMachine().process(failEvent, correlationId);
         NSI_Util.persistStateMachines(connId);
         this.onSuccess();
     }

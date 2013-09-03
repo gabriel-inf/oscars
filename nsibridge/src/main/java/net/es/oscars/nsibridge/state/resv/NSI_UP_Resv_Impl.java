@@ -9,6 +9,7 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiResvMdl;
 import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
@@ -75,7 +76,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         ost.setCorrelationId(correlationId);
         ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
         ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
-        ost.setStateMachine(rsm);
+        ost.setSmt(StateMachineType.RSM);
         ost.setOscarsOp(OscarsOps.RESERVE);
 
 
@@ -172,7 +173,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         OscarsCancelTask ost = new OscarsCancelTask();
         ost.setCorrelationId(correlationId);
         ost.setOscarsOp(OscarsOps.CANCEL);
-        ost.setStateMachine(rsm);
+        ost.setSmt(StateMachineType.RSM);
         ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_CF);
         ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
 

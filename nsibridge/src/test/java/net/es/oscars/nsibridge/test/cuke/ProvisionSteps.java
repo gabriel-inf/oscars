@@ -5,6 +5,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
+import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -92,8 +93,8 @@ public class ProvisionSteps {
     public void the_provMonitor_has_started(String action) throws Throwable {
         String connId = HelperSteps.getValue("connId");
 
-        String inspect = OscarsProvQueue.getInstance().getInspect().get(connId);
-        assertThat(inspect, is("SETUP"));
+        OscarsOps op = OscarsProvQueue.getInstance().getInspect().get(connId);
+        assertThat(op.toString(), is(action));
     }
 
 

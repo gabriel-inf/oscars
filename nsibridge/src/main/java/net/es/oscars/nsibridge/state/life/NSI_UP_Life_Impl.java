@@ -5,6 +5,7 @@ import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
+import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
@@ -45,7 +46,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
         SMTransitionTask sm = new SMTransitionTask();
         sm.setCorrelationId(correlationId);
-        sm.setStateMachine(lsm);
+        sm.setSmt(StateMachineType.LSM);
         sm.setSuccessEvent(NSI_Life_Event.LOCAL_TERM_CONFIRMED);
 
 

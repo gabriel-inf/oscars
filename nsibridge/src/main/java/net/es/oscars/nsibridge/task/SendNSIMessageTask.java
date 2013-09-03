@@ -103,17 +103,6 @@ public class SendNSIMessageTask extends Task  {
             LoggingOutInterceptor out = new LoggingOutInterceptor();
             out.setPrettyLogging(true);
 
-            // Client clientProxy = ClientProxy.getClient(port);
-            // clientProxy.getInInterceptors().add(in);
-            // clientProxy.getOutInterceptors().add(out);
-
-            // ConnectionServiceRequester client = new ConnectionServiceRequester();
-            // ConnectionRequesterPort port = client.getConnectionServiceRequesterPort();
-            // set callback address
-
-//            BindingProvider bp = (BindingProvider) port;
-//            bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url.toString());
-
             JaxWsProxyFactoryBean fb = new JaxWsProxyFactoryBean();
             fb.getInInterceptors().add(in);
             fb.getOutInterceptors().add(out);
@@ -128,8 +117,6 @@ public class SendNSIMessageTask extends Task  {
                             net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
                     });
             fb.setProperties(props);
-
-
 
             fb.setServiceClass(ConnectionRequesterPort.class);
             ConnectionRequesterPort port = (ConnectionRequesterPort) fb.create();

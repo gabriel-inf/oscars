@@ -4,6 +4,7 @@ package net.es.oscars.nsibridge.task;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
@@ -46,7 +47,8 @@ public class ProvMonitor implements Job {
 
                 if (cr.getProvisionState().equals(ProvisionStateEnumType.PROVISIONED)) {
                     String connId = cr.getConnectionId();
-                    OscarsProvQueue.getInstance().getInspect().put(connId, "SETUP");
+                    OscarsProvQueue.getInstance().getInspect().put(connId, OscarsOps.SETUP);
+                    log.info("should start SETUP: "+connId);
 
                     ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
                     if (rr == null) {
@@ -61,7 +63,8 @@ public class ProvMonitor implements Job {
 
                 if (cr.getProvisionState().equals(ProvisionStateEnumType.RELEASED)) {
                     String connId = cr.getConnectionId();
-                    OscarsProvQueue.getInstance().getInspect().put(connId, "TEARDOWN");
+                    OscarsProvQueue.getInstance().getInspect().put(connId, OscarsOps.TEARDOWN);
+                    log.info("should start TEARDOWN: "+connId);
 
                     ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
                     if (rr == null) {

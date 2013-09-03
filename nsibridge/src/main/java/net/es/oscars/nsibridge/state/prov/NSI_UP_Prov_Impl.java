@@ -5,6 +5,7 @@ import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiProvMdl;
+import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.task.*;
@@ -51,8 +52,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
         SMTransitionTask sm = new SMTransitionTask();
         sm.setCorrelationId(correlationId);
-        sm.setStateMachine(psm);
+        sm.setSmt(StateMachineType.PSM);
         sm.setSuccessEvent(NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
+        sm.setFailEvent(NSI_Prov_Event.LOCAL_PROV_FAILED);
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
@@ -119,9 +121,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         */
         SMTransitionTask sm = new SMTransitionTask();
         sm.setCorrelationId(correlationId);
-        sm.setStateMachine(psm);
-        sm.setFailEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
+        sm.setSmt(StateMachineType.PSM);
         sm.setSuccessEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
+        sm.setFailEvent(NSI_Prov_Event.LOCAL_REL_FAILED);
 
 
         Double d = (tc.getTaskInterval() * 1000);

@@ -25,8 +25,10 @@ public class NSI_Prov_TH implements TransitionHandler {
         ProvisionStateEnumType fromState = (ProvisionStateEnumType) from.state();
         ProvisionStateEnumType toState = (ProvisionStateEnumType) to.state();
         HashSet<UUID> taskIds = new HashSet<UUID>();
-
         String transitionStr = fromState+" -> "+toState;
+        String pre = "corrId: "+correlationId+" "+transitionStr;
+        log.debug(pre);
+
         switch (fromState) {
             case RELEASED:
                 if (toState.equals(ProvisionStateEnumType.PROVISIONING)) {
@@ -58,10 +60,12 @@ public class NSI_Prov_TH implements TransitionHandler {
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
+                break;
             default:
-                throw new StateException("invalid state transition ["+transitionStr+"]");
+                throw new StateException("default case!");
         }
-        log.debug("corrId: "+correlationId+" from: "+fromState+" to: " +toState+" taskIds: "+ StringUtils.join(taskIds.toArray(), ","));
+        log.debug(pre+" taskIds: "+ StringUtils.join(taskIds.toArray(), ","));
+
         return taskIds;
     }
 
