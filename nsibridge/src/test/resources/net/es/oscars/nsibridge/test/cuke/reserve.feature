@@ -2,7 +2,7 @@ Feature: new reservation
 
     I want to verify I can create a new reservation
 
-    Scenario: Submit new reservation internally through Java
+    Scenario: Complete reservation lifecycle
         Given I have set up the run environment
 
         When I generate a reservation request
@@ -41,6 +41,11 @@ Feature: new reservation
         Then the ResvRequest has OscarsOp: "MODIFY"
         # only because modify is not fully implemented
         Then the "RSM" state is: "ReserveFailed"
+
+        When I assign a random corrId
+        When I submit reserveAbort
+        When I wait up to 10000 ms until the "RSM" state is: "ReserveStart"
+
 
 
     Scenario: Submit new reservation internally through Java (without a connectionId)

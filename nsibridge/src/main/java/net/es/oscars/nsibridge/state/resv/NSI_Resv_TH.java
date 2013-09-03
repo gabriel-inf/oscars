@@ -97,8 +97,8 @@ public class NSI_Resv_TH implements TransitionHandler {
                 break;
 
             case RESERVE_FAILED:
-                if (toState == ReservationStateEnumType.RESERVE_START) {
-                    // taskIds.add(mdl.localAbort());
+                if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
+                    taskIds.add(mdl.localAbort(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }

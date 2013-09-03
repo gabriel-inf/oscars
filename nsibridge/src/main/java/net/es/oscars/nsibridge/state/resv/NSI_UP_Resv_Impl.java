@@ -144,11 +144,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     public UUID localTimeout(String correlationId) {
 
         UUID taskId = null;
-        boolean okAbort = true;
-
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
-
 
         try {
             NSI_Util.abortResvRecord(connectionId);
@@ -209,6 +204,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         return taskId;
 
 
+        // TODO: cancel OR rollback modify
 
         /*
         long now = new Date().getTime();
