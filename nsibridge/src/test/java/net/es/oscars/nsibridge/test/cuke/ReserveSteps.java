@@ -1,5 +1,6 @@
 package net.es.oscars.nsibridge.test.cuke;
 
+import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -8,6 +9,8 @@ import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
@@ -19,6 +22,7 @@ import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
 import javax.xml.ws.Holder;
@@ -173,6 +177,27 @@ public class ReserveSteps {
     }
 
 
+
+    private static double prevResvTimeout;
+    @When("^I set the reserveTimeout to (\\d+) ms$")
+    public void I_set_the_reserveTimeout_to_ms(Integer arg1) throws Throwable {
+
+        ApplicationContext ax = SpringContext.getInstance().getContext();
+
+        TimingConfig tx = ax.getBean("timingConfig", TimingConfig.class);
+        prevResvTimeout = tx.getResvTimeout();
+        tx.setResvTimeout(arg1.doubleValue());
+
+    }
+
+    @Then("^I restore the reserveTimeout value$")
+    public void I_restore_the_reserveTimeout_value() throws Throwable {
+
+        ApplicationContext ax = SpringContext.getInstance().getContext();
+
+        TimingConfig tx = ax.getBean("timingConfig", TimingConfig.class);
+        tx.setResvTimeout(prevResvTimeout);
+    }
 
 
 }

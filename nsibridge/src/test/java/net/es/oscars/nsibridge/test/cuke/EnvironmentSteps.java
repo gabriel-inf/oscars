@@ -8,6 +8,7 @@ import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.NSI_Util;
+import net.es.oscars.nsibridge.prov.ScheduleUtils;
 import net.es.oscars.utils.task.sched.Schedule;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -42,7 +43,8 @@ public class EnvironmentSteps {
         sch.start();
         assertThat(sch.isStarted(), is(true));
 
-        NSI_Util.scheduleProvMonitor();
+        ScheduleUtils.scheduleProvMonitor();
+        ScheduleUtils.scheduleResvTimeoutMonitor();
 
         didSetup = true;
 

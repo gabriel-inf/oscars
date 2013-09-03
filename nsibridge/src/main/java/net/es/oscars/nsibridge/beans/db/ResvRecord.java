@@ -20,6 +20,25 @@ public class ResvRecord {
     protected long capacity;
     protected boolean committed;
 
+    protected Date submittedAt;
+    protected Date committedAt;
+
+    public Date getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(Date submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public Date getCommittedAt() {
+        return committedAt;
+    }
+
+    public void setCommittedAt(Date committedAt) {
+        this.committedAt = committedAt;
+    }
+
     public boolean isCommitted() {
         return committed;
     }

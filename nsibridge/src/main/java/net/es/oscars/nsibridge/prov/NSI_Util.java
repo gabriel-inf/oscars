@@ -6,6 +6,7 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
@@ -18,17 +19,14 @@ import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
-import net.es.oscars.nsibridge.task.ProvMonitor;
-import net.es.oscars.utils.task.sched.Schedule;
 import org.apache.log4j.Logger;
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleTrigger;
 import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
 import javax.xml.bind.JAXBElement;
 import javax.xml.ws.Holder;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class NSI_Util {
@@ -76,6 +74,7 @@ public class NSI_Util {
 
         rr.setVersion(version);
         rr.setCommitted(false);
+        rr.setSubmittedAt(new Date());
 
 
         cr.getResvRecords().add(rr);
@@ -87,7 +86,6 @@ public class NSI_Util {
         log.debug("saved a new resv record for connId: "+cr.getConnectionId()+" v:"+version);
 
     }
-
 
 
     public static void commitResvRecord(String connId) throws ServiceException {
@@ -106,6 +104,21 @@ public class NSI_Util {
                 rec.setCommitted(true);
             }
         }
+
+        Date submittedAt = rr.getSubmittedAt();
+
+        ApplicationContext ax = SpringContext.getInstance().getContext();
+        TimingConfig tx = ax.getBean("timingConfig", TimingConfig.class);
+
+        Long resvTimeout = new Double(tx.getResvTimeout()).longValue();
+        Date now = new Date();
+
+        if (submittedAt.getTime() + resvTimeout < now.getTime()) {
+            throw new ServiceException("commit after timeout");
+        }
+
+        rr.setCommittedAt(new Date());
+
 
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
@@ -303,8 +316,15 @@ public class NSI_Util {
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c";
 
+        List<ConnectionRecord> results = new ArrayList<ConnectionRecord>();
+
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
+        for (ConnectionRecord cr: recordList) {
+            em.refresh(cr);
+            results.add(cr);
+        }
+
         
         return recordList;
     }
@@ -363,28 +383,6 @@ public class NSI_Util {
             throw new ServiceException("no stateMachines for "+connectionId);
         }
 
-    }
-
-    private static boolean isProvMonitorRunning = false;
-    public static void scheduleProvMonitor() throws SchedulerException {
-        if (isProvMonitorRunning) return;
-
-        Schedule ts = Schedule.getInstance();
-
-        SimpleTrigger provTrigger = new SimpleTrigger("ProvTicker", "ProvTicker");
-        provTrigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        provTrigger.setRepeatInterval(500);
-        JobDetail provJobDetail = new JobDetail("ProvTicker", "ProvTicker", ProvMonitor.class);
-        ts.getScheduler().scheduleJob(provJobDetail, provTrigger);
-        isProvMonitorRunning = true;
-    }
-    public static void stopProvMonitor() throws SchedulerException {
-        if (isProvMonitorRunning) return;
-        Schedule ts = Schedule.getInstance();
-        ts.getScheduler().pauseTrigger("ProvTicker", "ProvTicker");
-
-
-        isProvMonitorRunning = false;
     }
 
 }

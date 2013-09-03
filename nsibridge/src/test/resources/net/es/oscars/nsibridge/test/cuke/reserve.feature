@@ -5,6 +5,8 @@ Feature: new reservation
     Scenario: Submit new reservation internally through Java
         Given I have set up the run environment
 
+        When I generate a reservation request
+
         Given that I know the count of all pending reservation requests
 
         When I assign random connId and corrId
@@ -21,10 +23,10 @@ Feature: new reservation
         Then I know the OSCARS gri
         Then the "RSM" state is: "ReserveHeld"
 
-        When I wait 1000 milliseconds
-        When I assign a random corrId
 
+        When I assign a random corrId
         When I submit reserveCommit
+        Then the last submit has not thrown an exception
         Then I know the simpleRequest taskIds
         When I wait up to 10000 ms until the task runstate is "FINISHED"
         Then the "RSM" state is: "ReserveStart"
@@ -41,8 +43,8 @@ Feature: new reservation
         Then the "RSM" state is: "ReserveFailed"
 
 
-
     Scenario: Submit new reservation internally through Java (without a connectionId)
+        Given I have set up the run environment
         When I set the current connId to: ""
         When I assign a random corrId
 
@@ -51,9 +53,13 @@ Feature: new reservation
         Given that I know the count of all ConnectionRecords
         Given that I know the count of all pending reservation requests
 
+        When I generate a reservation request
+
         When I submit reserve
         Then the count of all ConnectionRecords has changed by 1
         Then the count of pending reservation requests has changed by 1
+
+
 
 
     Scenario: Exercise abort reservation
@@ -63,6 +69,7 @@ Feature: new reservation
         Given that I know the count of all pending reservation requests
         When I assign random connId and corrId
 
+        When I generate a reservation request
 
         When I submit reserve
         Then the "RSM" state is: "ReserveChecking"

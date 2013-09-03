@@ -40,10 +40,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             RequestHolder rh = RequestHolder.getInstance();
             ResvRequest req = rh.findResvRequest(this.correlationId);
             if (req == null) {
-                this.getStateMachine().process(this.failEvent, this.correlationId);
-
-                this.onSuccess();
-                return;
+                throw new TaskException("could not locate resvRequest for corrId:"+correlationId);
             }
             String connId = req.getReserveType().getConnectionId();
 
@@ -80,6 +77,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                         log.error(ex);
                         try {
                             this.getStateMachine().process(this.failEvent, this.correlationId);
+                            NSI_Util.persistStateMachines(connId);
                         } catch (StateException ex1) {
                             log.error(ex1);
                         }
@@ -109,6 +107,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             } catch (TranslationException ex) {
                 log.error(ex);
                 this.getStateMachine().process(this.failEvent, this.correlationId);
+                NSI_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
             }
@@ -116,6 +115,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             // if we still cannot perform the operation, fail
             if (!action.equals(OscarsLogicAction.YES)) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
+                NSI_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
             }
@@ -140,6 +140,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
 
             if (!submittedOK) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
+                NSI_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
             }
@@ -149,15 +150,16 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 if (os.equals(OscarsStates.RESERVED)) {
                     this.getStateMachine().process(this.successEvent, this.correlationId);
                     this.onSuccess();
+                    NSI_Util.persistStateMachines(connId);
                     return;
                 }
             } catch (ServiceException ex) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
                 this.onSuccess();
+                NSI_Util.persistStateMachines(connId);
                 return;
             }
 
-            NSI_Util.persistStateMachines(connId);
 
 
         } catch (StateException ex) {

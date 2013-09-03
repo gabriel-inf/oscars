@@ -130,12 +130,10 @@ public class RequestProcessor {
                 case RESERVE_ABORT:
                     taskIds = smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_AB, corrId);
                     request.getTaskIds().addAll(taskIds);
-                    NSI_Util.abortResvRecord(connId);
                     break;
                 case RESERVE_COMMIT:
                     taskIds = smh.getResvStateMachines().get(connId).process(NSI_Resv_Event.RECEIVED_NSI_RESV_CM, corrId);
                     request.getTaskIds().addAll(taskIds);
-                    NSI_Util.commitResvRecord(connId);
                     break;
                 case PROVISION:
                     taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ, corrId);

@@ -9,6 +9,7 @@ public interface NsiResvMdl {
     public UUID localHold(String correlationId);
     public UUID localCommit(String correlationId);
     public UUID localAbort(String correlationId);
+    public UUID localTimeout(String correlationId);
     public UUID localRollback(String correlationId);
 
     public UUID sendRsvCF(String correlationId);

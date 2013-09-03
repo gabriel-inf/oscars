@@ -1,9 +1,7 @@
 package net.es.oscars.nsibridge.state.resv;
 
 
-import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
@@ -15,8 +13,6 @@ import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
-import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
@@ -24,7 +20,6 @@ import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -118,57 +113,111 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
 
-
+        boolean okCommit = true;
         try {
+            NSI_Util.commitResvRecord(connectionId);
             Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF, correlationId);
             taskId = taskIds.iterator().next();
             NSI_Util.persistStateMachines(connectionId);
-        }catch (StateException ex) {
-            log.error(ex);
-        }catch (ServiceException ex) {
+        } catch (ServiceException ex) {
+            okCommit = false;
+        } catch (StateException ex) {
+            okCommit = false;
+        }
+
+        if (!okCommit) {
+            try {
+                Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_FL, correlationId);
+                taskId = taskIds.iterator().next();
+                NSI_Util.persistStateMachines(connectionId);
+            }catch (StateException ex) {
+                log.error(ex);
+            }catch (ServiceException ex) {
+                log.error(ex);
+            }
+        }
+
+        return taskId;
+    }
+
+    @Override
+    public UUID localTimeout(String correlationId) {
+
+        UUID taskId = null;
+        boolean okAbort = true;
+
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
+
+
+        try {
+            NSI_Util.abortResvRecord(connectionId);
+        } catch (ServiceException ex) {
             log.error(ex);
         }
 
-
         return taskId;
+
+
+
     }
 
     @Override
     public UUID localAbort(String correlationId) {
 
         UUID taskId = null;
+        boolean okAbort = true;
 
-        long now = new Date().getTime();
-        Workflow wf = Workflow.getInstance();
-
-        boolean recordOK = true;
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
 
         ConnectionRecord cr = null;
         try {
             NSI_Util.isConnectionOK(connectionId);
             cr = NSI_Util.getConnectionRecord(connectionId);
             if (cr.getOscarsGri() == null) {
-                recordOK = false;
+                okAbort = false;
             }
         } catch (ServiceException e) {
             e.printStackTrace();
-            recordOK = false;
+            okAbort = false;
         }
 
-        if (!recordOK) {
+        try {
+            NSI_Util.abortResvRecord(connectionId);
+            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_CF, correlationId);
+            taskId = taskIds.iterator().next();
+            NSI_Util.persistStateMachines(connectionId);
+        } catch (ServiceException ex) {
+            okAbort = false;
+        } catch (StateException ex) {
+            okAbort = false;
+        }
+
+
+        if (!okAbort) {
             try {
-                NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
-                return null;
-            } catch (StateException e) {
-                e.printStackTrace();
+                Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_FL, correlationId);
+                taskId = taskIds.iterator().next();
+                NSI_Util.persistStateMachines(connectionId);
+            } catch (StateException ex) {
+                log.error(ex);
+            } catch (ServiceException ex) {
+                log.error(ex);
             }
         }
+        return taskId;
+
+
+
+        /*
+        long now = new Date().getTime();
+        Workflow wf = Workflow.getInstance();
 
         // submit the oscars cancel()
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.findNsiResvSM(connectionId);
+
 
         OscarsCancelTask ost = new OscarsCancelTask();
         ost.setCorrelationId(correlationId);
@@ -182,10 +231,9 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        */
 
-        return taskId;
     }
-
     @Override
     public UUID sendRsvCF(String correlationId) {
         UUID taskId = null;

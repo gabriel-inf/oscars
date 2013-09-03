@@ -14,7 +14,7 @@ import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import net.es.oscars.nsibridge.prov.NSI_Util;
+import net.es.oscars.nsibridge.prov.ScheduleUtils;
 import net.es.oscars.nsibridge.soap.impl.ProviderServer;
 import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
@@ -22,6 +22,7 @@ import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
+import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 
@@ -29,6 +30,7 @@ import javax.persistence.EntityManager;
 import java.io.File;
 
 public class Invoker implements Runnable {
+    private static final Logger log = Logger.getLogger(Invoker.class);
     private static boolean keepRunning = true;
 
     public static boolean isKeepRunning() {
@@ -108,7 +110,7 @@ public class Invoker implements Runnable {
 
         try {
             ts.start();
-            NSI_Util.scheduleProvMonitor();
+            ScheduleUtils.scheduleProvMonitor();
         } catch (TaskException e) {
             e.printStackTrace();
             Invoker.setKeepRunning(false);
@@ -142,6 +144,11 @@ public class Invoker implements Runnable {
                         System.out.println("Shutting down..");
                         PersistenceHolder.getEntityManager().close();
                         ProviderServer.getInstance().stop();
+                        try {
+                            Schedule.getInstance().stop();
+                        } catch (Exception ex) {
+                            log.error(ex);
+                        }
                         System.out.println("Shutdown complete.");
                         Invoker.setKeepRunning(false);
                     }

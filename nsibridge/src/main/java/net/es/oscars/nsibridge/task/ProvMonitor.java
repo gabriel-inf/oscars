@@ -6,6 +6,8 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
+import net.es.oscars.nsibridge.prov.NSI_Util;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
 import org.apache.log4j.Logger;
@@ -23,16 +25,16 @@ public class ProvMonitor implements Job {
 
 
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
-
-        EntityManager em = PersistenceHolder.getEntityManager();
-
-        em.getTransaction().begin();
         Date now = new Date();
+        List<ConnectionRecord> recordList;
+        try {
+             recordList = NSI_Util.getConnectionRecords();
 
+        } catch (ServiceException ex) {
+            log.error(ex);
+            return;
+        }
 
-        String query = "SELECT c FROM ConnectionRecord c";
-        List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
-        em.getTransaction().commit();
         for (ConnectionRecord cr: recordList) {
             if (cr.getLifecycleState() == null) {
                 continue;
