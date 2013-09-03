@@ -37,8 +37,8 @@ public class ReserveSteps {
     private static Logger log = Logger.getLogger(ReserveSteps.class);
 
     @When("^I submit reserve$")
-    public void I_submit_reserve_() throws Throwable {
-        ResvRequest resvRequest = NSIRequestFactory.getRequest();
+    public void I_submit_reserve() throws Throwable {
+        ResvRequest resvRequest = HelperSteps.getResvRequest();
         ReserveType rt = resvRequest.getReserveType();
 
         String connId = HelperSteps.getValue("connId");

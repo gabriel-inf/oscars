@@ -34,11 +34,6 @@ public class ProvMonitor implements Job {
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
         for (ConnectionRecord cr: recordList) {
-            // log.debug("connId: "+cr.getConnectionId());
-            // log.debug("  RSM: "+ cr.getReserveState());
-            // log.debug("  PSM: "+ cr.getProvisionState());
-            // log.debug("  LSM: "+ cr.getLifecycleState());
-
             if (cr.getLifecycleState() == null) {
                 continue;
             }
@@ -51,7 +46,6 @@ public class ProvMonitor implements Job {
 
                 if (cr.getProvisionState().equals(ProvisionStateEnumType.PROVISIONED)) {
                     String connId = cr.getConnectionId();
-                    // log.debug("---- will SETUP: "+connId);
                     OscarsProvQueue.getInstance().getInspect().put(connId, "SETUP");
 
                     ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
@@ -61,9 +55,25 @@ public class ProvMonitor implements Job {
 
 
                     if (rr.getStartTime().after(now)) {
-                        // log.info("should start provisioning "+connId);
+                        // log.info("should start setup "+connId);
                     }
                 }
+
+                if (cr.getProvisionState().equals(ProvisionStateEnumType.RELEASED)) {
+                    String connId = cr.getConnectionId();
+                    OscarsProvQueue.getInstance().getInspect().put(connId, "TEARDOWN");
+
+                    ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
+                    if (rr == null) {
+                        continue;
+                    }
+
+
+                    if (rr.getEndTime().before(now)) {
+                        // log.info("should start teardown "+connId);
+                    }
+                }
+
             }
         }
 

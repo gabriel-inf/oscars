@@ -1,11 +1,10 @@
 Feature: query reservation
 
-  Scenario: query a new reservation
-    Given I have set up the run environment
+    Scenario: query a new reservation
+        Given I have set up the run environment
 
-    When I set the current connId to: "query-connid"
-    When I set the current corrId to: "query-corrid-1"
+        When I assign random connId and corrId
 
-    When I submit reserve
-    When I set the current corrId to: "query-corrid-2"
-    Then querySummarySync() returns resvState "ReserveChecking"
+        When I submit reserve
+        When I assign a random corrId
+        Then querySummarySync() returns resvState "ReserveChecking"

@@ -22,9 +22,10 @@ public class LifecycleSteps {
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
         try {
             cp.terminate(connId, inHeader, outHolder);
-        } catch (ServiceException ex) {
+        } catch (Exception ex) {
             log.error(ex);
             HelperSteps.setSubmitException(true);
+            return;
         }
         HelperSteps.setSubmitException(false);
 

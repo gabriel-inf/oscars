@@ -54,6 +54,28 @@ public class ProvisionSteps {
         HelperSteps.setSubmitException(false);
     }
 
+
+    @When("^I submit release")
+    public void I_submit_release() throws Throwable {
+        ConnectionProvider cp = new ConnectionProvider();
+
+        String connId = HelperSteps.getValue("connId");
+        String corrId = HelperSteps.getValue("corrId");
+        SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connId, corrId, SimpleRequestType.RELEASE);
+        Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+
+        try {
+            log.debug("submitting release connId:"+connId+" corrId: "+corrId);
+            cp.release(connId, commRequest.getInHeader(), outHolder);
+        } catch (Exception ex) {
+            log.error(ex);
+            HelperSteps.setSubmitException(true);
+            return;
+        }
+        HelperSteps.setSubmitException(false);
+    }
+
+
     @Then("^the count of pending provisioning requests has changed by (\\d+)$")
     public void the_count_of_pending_provisioning_requests_has_changed_by(int arg1) throws Throwable {
         RequestHolder rh = RequestHolder.getInstance();
