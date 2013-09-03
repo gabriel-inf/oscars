@@ -111,6 +111,7 @@ public class Invoker implements Runnable {
         try {
             ts.start();
             ScheduleUtils.scheduleProvMonitor();
+            ScheduleUtils.scheduleResvTimeoutMonitor();
         } catch (TaskException e) {
             e.printStackTrace();
             Invoker.setKeepRunning(false);
