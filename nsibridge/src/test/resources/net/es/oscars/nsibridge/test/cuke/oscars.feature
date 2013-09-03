@@ -7,3 +7,4 @@ Feature: OSCARS operations
         Then I can save the new OSCARS GRI in a connectionRecord
         When I submit an OSCARS query
         Then I have saved an OSCARS state
+        Then I can delete the ConnectionRecord

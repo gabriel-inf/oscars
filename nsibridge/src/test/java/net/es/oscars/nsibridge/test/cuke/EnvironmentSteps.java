@@ -6,6 +6,7 @@ import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
@@ -22,7 +23,10 @@ public class EnvironmentSteps {
     private static boolean didSetup = false;
     @Given("^I have set up the run environment$")
     public void I_have_set_up_the_run_environment() throws Throwable {
-        if (didSetup) return;
+        if (didSetup) {
+            // log.info("resv timeout: "+SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class).getResvTimeout());
+            return;
+        }
 
         SpringContext sc = SpringContext.getInstance();
         sc.initContext("src/test/resources/config/beans.xml");
@@ -45,6 +49,7 @@ public class EnvironmentSteps {
 
         ScheduleUtils.scheduleProvMonitor();
         ScheduleUtils.scheduleResvTimeoutMonitor();
+
 
         didSetup = true;
 

@@ -84,9 +84,6 @@ Feature: new reservation
 
         When I assign a random corrId
         When I submit reserveAbort
-        Then the "RSM" state is: "ReserveAborting"
-        Then I know the simpleRequest taskIds
-        When I wait up to 10000 ms until the task runstate is "FINISHED"
-        Then the "RSM" state is: "ReserveStart"
+        Then I wait up to 5000 ms until the "RSM" state is: "ReserveStart"
 
 

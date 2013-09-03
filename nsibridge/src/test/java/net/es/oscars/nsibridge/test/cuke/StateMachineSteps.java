@@ -5,6 +5,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.ifces.SM_State;
 import net.es.oscars.nsibridge.ifces.StateMachine;
+import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
@@ -33,19 +34,14 @@ public class StateMachineSteps {
     private NSI_SM_Holder smh;
     private static Logger log = Logger.getLogger(StateMachineSteps.class);
 
-    private enum SMTypes {
-        RSM,
-        PSM,
-        LSM
-    }
 
     @Given("^that I have created a new \"([^\"]*)\" state machine$")
     public void that_I_have_created_a_new_state_machine(String smt) throws Throwable {
         String connId = HelperSteps.getValue("connId");
         smh = NSI_SM_Holder.getInstance();
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -74,9 +70,9 @@ public class StateMachineSteps {
         smh = NSI_SM_Holder.getInstance();
         String connId = HelperSteps.getValue("connId");
         StateMachine sm = null;
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -105,9 +101,9 @@ public class StateMachineSteps {
     public void that_I_have_set_the_model_implementation_to_be_a_stub(String smt) throws Throwable {
         smh = NSI_SM_Holder.getInstance();
         String connId = HelperSteps.getValue("connId");
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -145,9 +141,9 @@ public class StateMachineSteps {
         smh = NSI_SM_Holder.getInstance();
         String connId = HelperSteps.getValue("connId");
         String corrId = HelperSteps.getValue("corrId");
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -195,9 +191,9 @@ public class StateMachineSteps {
         String corrId = HelperSteps.getValue("corrId");
         // log.debug("no exception? corrId: "+corrId);
 
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -222,9 +218,9 @@ public class StateMachineSteps {
     public void the_has_thrown_an_exception(String smt) throws Throwable {
         String corrId = HelperSteps.getValue("corrId");
         // log.debug("has exception? corrId: "+corrId);
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -253,9 +249,9 @@ public class StateMachineSteps {
         smh = NSI_SM_Holder.getInstance();
 
         StateMachine sm = null;
-        SMTypes smtype = null;
+        StateMachineType smtype = null;
         try {
-            smtype = SMTypes.valueOf(smt);
+            smtype = StateMachineType.valueOf(smt);
         } catch (IllegalArgumentException ex) {
             throw ex;
         }
@@ -291,7 +287,7 @@ public class StateMachineSteps {
             throw new Exception("timed out waiting for "+smt+" state ("+state.value()+") to become "+stateStr);
         }
 
-        log.debug("waited for "+elapsed+" ms until "+smt+" state for connId: "+connId+" became "+state.value());
+        log.debug("waited for "+elapsed+" ms (timeout: "+timeout+" until "+smt+" state for connId: "+connId+" became "+state.value());
 
         assertThat(state.value(), is(stateStr));
     }

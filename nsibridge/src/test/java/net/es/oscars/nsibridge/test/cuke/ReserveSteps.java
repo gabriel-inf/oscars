@@ -56,6 +56,7 @@ public class ReserveSteps {
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
         try {
             cp.reserve(connHolder, rt.getGlobalReservationId(), rt.getDescription(), rt.getCriteria(), resvRequest.getInHeader(), outHolder);
+            log.info("submitted reserve for connection id: "+connHolder.value);
         } catch (Exception ex) {
             log.error(ex);
             HelperSteps.setSubmitException(true);
@@ -179,7 +180,7 @@ public class ReserveSteps {
 
 
     private static double prevResvTimeout;
-    @When("^I set the reserveTimeout to (\\d+) ms$")
+    @When("^I set the reserveTimeout to (\\d+) seconds")
     public void I_set_the_reserveTimeout_to_ms(Integer arg1) throws Throwable {
 
         ApplicationContext ax = SpringContext.getInstance().getContext();

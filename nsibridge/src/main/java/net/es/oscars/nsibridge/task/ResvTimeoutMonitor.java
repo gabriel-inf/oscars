@@ -82,8 +82,8 @@ public class ResvTimeoutMonitor implements Job {
             Long resvTimeout = new Double(tx.getResvTimeout()).longValue();
 
 
-            if (submittedAt.getTime() + resvTimeout < now.getTime()) {
-                log.debug("timed out connId: "+connId+" RR v: "+rr.getVersion());
+            if (submittedAt.getTime() + (resvTimeout * 1000) < now.getTime()) {
+                log.debug("timed out connId: "+connId+" RR v: "+rr.getVersion()+" timeout:" +resvTimeout);
                 try {
                     rsm.process(NSI_Resv_Event.RESV_TIMEOUT, UUID.randomUUID().toString());
                     NSI_Util.persistStateMachines(connId);

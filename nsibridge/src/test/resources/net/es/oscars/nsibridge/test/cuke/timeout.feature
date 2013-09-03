@@ -7,14 +7,12 @@ Feature: timeout reservation
         Given I have set up the run environment
 
         When I assign random connId and corrId
-        When I set the reserveTimeout to 1000 ms
+        When I set the reserveTimeout to 1 seconds
 
         When I generate a reservation request
 
         When I submit reserve
         Then the last submit has not thrown an exception
-        Then I wait up to 10000 ms until the "RSM" state is: "ReserveHeld"
-
 
         Then I wait up to 10000 ms until the "RSM" state is: "ReserveTimeout"
         Then I wait 5000 milliseconds
@@ -33,13 +31,12 @@ Feature: timeout reservation
         Given I have set up the run environment
 
         When I assign random connId and corrId
-        When I set the reserveTimeout to 1000 ms
+        When I set the reserveTimeout to 1 seconds
 
         When I generate a reservation request
 
         When I submit reserve
         Then the last submit has not thrown an exception
-        Then I wait up to 10000 ms until the "RSM" state is: "ReserveHeld"
 
         Then I wait up to 10000 ms until the "RSM" state is: "ReserveTimeout"
 

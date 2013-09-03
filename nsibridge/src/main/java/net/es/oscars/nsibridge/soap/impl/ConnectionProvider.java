@@ -56,6 +56,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
 
 
         try {
+            connectionId.value = connId;
             RequestProcessor.getInstance().startReserve(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
