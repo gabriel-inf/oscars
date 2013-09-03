@@ -101,13 +101,20 @@ public class NSI_Util {
 
         ResvRecord rr = uncom.get(0);
         rr.setCommitted(true);
+        for (ResvRecord rec : cr.getResvRecords()) {
+            if (rec.equals(rr)) {
+                rec.setCommitted(true);
+            }
+        }
 
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
-        em.persist(rr);
+        for (ResvRecord rec : cr.getResvRecords()) {
+            em.persist(rec);
+        }
         em.persist(cr);
         em.getTransaction().commit();
-        log.debug("committed resvRecord for connId: "+cr.getConnectionId()+" v:"+rr.getVersion());
+        log.debug("committed resvRecord for connId: "+cr.getConnectionId()+" v:"+rr.getVersion()+ " com: "+rr.isCommitted());
 
     }
 
@@ -125,7 +132,6 @@ public class NSI_Util {
 
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
-        em.remove(rr);
         em.persist(cr);
         em.getTransaction().commit();
         log.debug("aborted resvRecord for connId: "+cr.getConnectionId()+" v:"+rr.getVersion());
@@ -277,12 +283,17 @@ public class NSI_Util {
 
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
+        em.getEntityManagerFactory().getCache().evictAll();
         if (recordList.size() == 0) {
             return null;
         } else if (recordList.size() > 1) {
             throw new ServiceException("internal error: found multiple connection records ("+recordList.size()+") with connectionId: "+connectionId);
         } else {
             em.refresh(recordList.get(0));
+            // should not be needed
+            for (ResvRecord rr : recordList.get(0).getResvRecords()) {
+                em.refresh(rr);
+            }
             return recordList.get(0);
         }
     }
