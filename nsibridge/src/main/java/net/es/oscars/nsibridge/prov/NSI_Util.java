@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
@@ -10,6 +11,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceE
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
@@ -25,6 +27,7 @@ import org.quartz.SimpleTrigger;
 import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
+import javax.xml.bind.JAXBElement;
 import javax.xml.ws.Holder;
 import java.util.List;
 
@@ -32,8 +35,104 @@ public class NSI_Util {
 
     private static final Logger log = Logger.getLogger(NSI_Util.class);
 
+    public static void createResvRecord(String connId, ReserveType rt) throws ServiceException {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        ResvRecord latest = ConnectionRecord.getCommittedResvRecord(cr);
 
-    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri) throws ServiceException {
+        ResvRecord rr = new ResvRecord();
+        Integer version = rt.getCriteria().getVersion();
+        if (version == null) {
+            version = 0;
+        }
+
+        if (latest != null) {
+            if (latest.getVersion() >= version) {
+                throw new ServiceException("requested version: "+version+" <= committed version: "+latest.getVersion());
+            }
+        }
+
+        ReservationRequestCriteriaType crit = rt.getCriteria();
+        EthernetVlanType evts = null;
+        for (Object o : crit.getAny()) {
+            if (o instanceof EthernetVlanType ) {
+                evts = (EthernetVlanType) o;
+            } else {
+
+                JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
+                evts = payload.getValue();
+            }
+        }
+
+        if (evts == null) {
+            throw new ServiceException("no evts element!");
+        }
+
+        Long capacity = evts.getCapacity();
+
+        rr.setCapacity(capacity);
+        rr.setStartTime(crit.getSchedule().getStartTime().toGregorianCalendar().getTime());
+        rr.setEndTime(crit.getSchedule().getEndTime().toGregorianCalendar().getTime());
+
+
+        rr.setVersion(version);
+        rr.setCommitted(false);
+
+
+        cr.getResvRecords().add(rr);
+
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        em.persist(cr);
+        em.getTransaction().commit();
+        log.debug("saved a new resv record for connId: "+cr.getConnectionId()+" v:"+version);
+
+    }
+
+
+
+    public static void commitResvRecord(String connId) throws ServiceException {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        List<ResvRecord> uncom = ConnectionRecord.getUncommittedResvRecords(cr);
+        if (uncom.size() == 0) {
+            throw new ServiceException("zero resvRecords to commit for connId: "+connId);
+        } else if (uncom.size() >1) {
+            throw new ServiceException("multiple resvRecords to commit for connId: "+connId);
+        }
+
+        ResvRecord rr = uncom.get(0);
+        rr.setCommitted(true);
+
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        em.persist(rr);
+        em.persist(cr);
+        em.getTransaction().commit();
+        log.debug("committed resvRecord for connId: "+cr.getConnectionId()+" v:"+rr.getVersion());
+
+    }
+
+    public static void abortResvRecord(String connId) throws ServiceException  {
+        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        List<ResvRecord> uncom = ConnectionRecord.getUncommittedResvRecords(cr);
+        if (uncom.size() == 0) {
+            throw new ServiceException("zero resvRecords to abort for connId: "+connId);
+        } else if (uncom.size() >1) {
+            throw new ServiceException("multiple resvRecords to abort for connId: "+connId);
+        }
+
+        ResvRecord rr = uncom.get(0);
+        cr.getResvRecords().remove(rr);
+
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        em.remove(rr);
+        em.persist(cr);
+        em.getTransaction().commit();
+        log.debug("aborted resvRecord for connId: "+cr.getConnectionId()+" v:"+rr.getVersion());
+    }
+
+
+    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri, String notifyUrl) throws ServiceException {
         ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
         if (cr != null) {
             log.info("connection record was found while starting reserve() for connectionId: " + connId);
@@ -45,6 +144,7 @@ public class NSI_Util {
             cr.setConnectionId(connId);
             cr.setNsiGlobalGri(nsiGlobalGri);
             cr.setRequesterNSA(requesterNSA);
+            cr.setNotifyUrl(notifyUrl);
             em.persist(cr);
             em.getTransaction().commit();
         }

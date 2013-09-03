@@ -6,7 +6,9 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.Reserva
 import javax.persistence.*;
 import java.lang.Long;
 import java.lang.String;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -15,6 +17,7 @@ public class ConnectionRecord {
     protected String connectionId;
     protected String oscarsGri;
     protected String requesterNSA;
+    protected String notifyUrl;
     protected String nsiGlobalGri;
 
     protected Set<DataplaneStatusRecord> dataplaneStatusRecords = new HashSet<DataplaneStatusRecord>();
@@ -122,18 +125,39 @@ public class ConnectionRecord {
         this.nsiGlobalGri = nsiGlobalGri;
     }
 
+    public String getNotifyUrl() {
+        return notifyUrl;
+    }
 
-    public static ResvRecord getLatestResvRecord(ConnectionRecord cr) {
+    public void setNotifyUrl(String notifyUrl) {
+        this.notifyUrl = notifyUrl;
+    }
+
+    public static ResvRecord getCommittedResvRecord(ConnectionRecord cr) {
         ResvRecord res = null;
         for (ResvRecord or : cr.getResvRecords()) {
-            if (res == null) {
-                res = or;
-            } else {
-                if (or.getDate().after(res.getDate())) {
+            if (or.isCommitted()) {
+                if (res == null) {
                     res = or;
+                } else {
+                    if (res.getVersion() > or.getVersion()) {
+                        res = or;
+                    }
                 }
             }
         }
         return res;
     }
+
+    public static List<ResvRecord> getUncommittedResvRecords(ConnectionRecord cr) {
+        ArrayList<ResvRecord> results = new ArrayList<ResvRecord>();
+        for (ResvRecord or : cr.getResvRecords()) {
+            if (!or.isCommitted()) {
+                results.add(or);
+            }
+        }
+        return results;
+    }
+
+
 }

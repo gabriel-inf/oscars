@@ -39,7 +39,7 @@ public class RequestProcessor {
 
         log.debug("startReserve for connId: "+connId+" corrId:"+corrId);
 
-        NSI_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId());
+        NSI_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId(), request.getInHeader().getReplyTo());
 
         if (!NSI_Util.restoreStateMachines(connId)) {
             NSI_Util.makeNewStateMachines(connId);
@@ -77,6 +77,8 @@ public class RequestProcessor {
             for (UUID taskId : request.getTaskIds()) {
                 log.debug("connId: "+connId+"  task id:  " +taskId);
             }
+
+            NSI_Util.createResvRecord(connId, request.getReserveType());
 
         } catch (StateException ex) {
             log.error(ex);

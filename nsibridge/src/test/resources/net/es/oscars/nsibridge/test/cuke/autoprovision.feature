@@ -15,15 +15,12 @@ Feature: set up oscars circuit when start time comes, tear down after end time
         When I submit provision
 
         Then I wait up to 5000 ms until the "PSM" state is: "Provisioned"
-        When I wait 1000 milliseconds
-        Then the provMonitor has started "SETUP"
+        When I wait up to 2000 ms until provMonitor schedules "SETUP"
 
-        When I wait 3000 milliseconds
         When I assign a random corrId
         When I submit release
 
         Then I wait up to 5000 ms until the "PSM" state is: "Released"
-        When I wait 1000 milliseconds
-#        Then the provMonitor has started "TEARDOWN"
+        When I wait up to 3000 ms until provMonitor schedules "TEARDOWN"
 
 

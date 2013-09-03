@@ -15,7 +15,6 @@ import org.quartz.JobExecutionException;
 
 import javax.persistence.EntityManager;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class ProvMonitor implements Job {
@@ -47,10 +46,10 @@ public class ProvMonitor implements Job {
 
                 if (cr.getProvisionState().equals(ProvisionStateEnumType.PROVISIONED)) {
                     String connId = cr.getConnectionId();
-                    OscarsProvQueue.getInstance().getInspect().put(connId, OscarsOps.SETUP);
-                    log.info("should start SETUP: "+connId);
+                    OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.SETUP);
+                    // log.info("should start SETUP: "+connId);
 
-                    ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
+                    ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
                     if (rr == null) {
                         continue;
                     }
@@ -63,10 +62,10 @@ public class ProvMonitor implements Job {
 
                 if (cr.getProvisionState().equals(ProvisionStateEnumType.RELEASED)) {
                     String connId = cr.getConnectionId();
-                    OscarsProvQueue.getInstance().getInspect().put(connId, OscarsOps.TEARDOWN);
-                    log.info("should start TEARDOWN: "+connId);
+                    OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.TEARDOWN);
+                    // log.info("should start TEARDOWN: "+connId);
 
-                    ResvRecord rr = ConnectionRecord.getLatestResvRecord(cr);
+                    ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
                     if (rr == null) {
                         continue;
                     }
@@ -76,8 +75,9 @@ public class ProvMonitor implements Job {
                         // log.info("should start teardown "+connId);
                     }
                 }
-
             }
+
+
         }
 
 

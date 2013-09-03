@@ -5,6 +5,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
+import net.es.oscars.nsibridge.oscars.OscarsAction;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.prov.RequestHolder;
@@ -15,6 +16,8 @@ import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 import org.apache.log4j.Logger;
 
 import javax.xml.ws.Holder;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -88,13 +91,35 @@ public class ProvisionSteps {
 
     }
 
-
-    @Then("^the provMonitor has started \"([^\"]*)\"$")
-    public void the_provMonitor_has_started(String action) throws Throwable {
+    @When("^I wait up to (\\d+) ms until provMonitor schedules \"([^\"]*)\"$")
+    public void I_wait_up_to_ms_until_provMonitor_schedules(Integer ms, String actStr) throws Throwable {
         String connId = HelperSteps.getValue("connId");
+        Long timeout = ms.longValue();
+        Long elapsed = 0L;
 
-        OscarsOps op = OscarsProvQueue.getInstance().getInspect().get(connId);
-        assertThat(op.toString(), is(action));
+        boolean found = false;
+
+        int interval = 100;
+        while ((elapsed < timeout) && !found ) {
+            // log.debug ("sleeping "+interval+" ms (elapsed: "+elapsed+") until provMonitor schedules "+actStr);
+            Thread.sleep(interval);
+            elapsed += interval;
+            List<OscarsAction> actions = OscarsProvQueue.getInstance().getScheduled(connId);
+            for (OscarsAction action: actions) {
+                if (action.getOp().toString().equals(actStr)) {
+                    found = true;
+                }
+            }
+        }
+
+        if (elapsed > timeout && found == false) {
+            throw new Exception("timed out "+elapsed+" ms waiting for provMonitor to schedule "+actStr);
+        }
+
+        log.debug("waited for "+elapsed+" ms until provMonitor scheduled "+actStr);
+
+
+        assertThat(found, is(true));
     }
 
 

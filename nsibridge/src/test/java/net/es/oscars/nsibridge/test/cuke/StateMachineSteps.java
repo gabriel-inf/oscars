@@ -280,7 +280,7 @@ public class StateMachineSteps {
         boolean haveDesiredState = state.value().equals(stateStr);
         int interval = 100;
         while ((elapsed < timeout) && !haveDesiredState ) {
-            log.debug ("sleeping "+interval+" ms (elapsed: "+elapsed+") for "+smt+" state ("+state.value()+") to become "+stateStr);
+            // log.debug ("sleeping "+interval+" ms (elapsed: "+elapsed+") for "+smt+" state ("+state.value()+") to become "+stateStr);
             Thread.sleep(interval);
             elapsed += interval;
             state = sm.getState();

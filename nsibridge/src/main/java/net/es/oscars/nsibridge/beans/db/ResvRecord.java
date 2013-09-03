@@ -14,11 +14,19 @@ public class ResvRecord {
     @GeneratedValue(strategy= GenerationType.AUTO)
     protected Long id;
     protected int version;
-    protected Date date;
 
     protected Date startTime;
     protected Date endTime;
     protected long capacity;
+    protected boolean committed;
+
+    public boolean isCommitted() {
+        return committed;
+    }
+
+    public void setCommitted(boolean committed) {
+        this.committed = committed;
+    }
 
     public int getVersion() {
         return version;
@@ -36,14 +44,6 @@ public class ResvRecord {
         this.id = id;
     }
 
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
 
 
     public Date getStartTime() {
