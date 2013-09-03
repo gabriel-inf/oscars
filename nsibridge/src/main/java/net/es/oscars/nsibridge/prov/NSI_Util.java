@@ -55,9 +55,14 @@ public class NSI_Util {
             if (o instanceof EthernetVlanType ) {
                 evts = (EthernetVlanType) o;
             } else {
+                try {
 
-                JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
-                evts = payload.getValue();
+                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
+                    evts = payload.getValue();
+                } catch (ClassCastException ex) {
+                    log.error(ex);
+                    evts = null;
+                }
             }
         }
 

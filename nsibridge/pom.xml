@@ -240,6 +240,12 @@
             </properties>
         </profile>
         <profile>
+            <id>nocuke</id>
+            <properties>
+                <cucumber.options>--tags @none --strict</cucumber.options>
+            </properties>
+        </profile>
+        <profile>
             <id>rebuild-soap</id>
             <activation>
                 <property><name>rebuildSoap</name></property>

@@ -90,9 +90,12 @@ public class NSI_OSCARS_Translation {
             if (o instanceof EthernetVlanType ) {
                 evts = (EthernetVlanType) o;
             } else {
-
-                JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
-                evts = payload.getValue();
+                try {
+                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
+                    evts = payload.getValue();
+                } catch (ClassCastException ex) {
+                    evts = null;
+                }
 
             }
         }
