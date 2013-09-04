@@ -7,6 +7,8 @@ import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
+import net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider;
+import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
@@ -28,6 +30,7 @@ import javax.xml.ws.Holder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class NSI_Util {
 
@@ -345,14 +348,24 @@ public class NSI_Util {
         return recordList;
     }
 
+
+    public static CommonHeaderType makeNsiOutgoingHeader(String requesterNsa) {
+        CommonHeaderType ht = new CommonHeaderType();
+        ApplicationContext ax = SpringContext.getInstance().getContext();
+        NsaConfig cfg = ax.getBean("nsaConfigProvider", JsonNsaConfigProvider.class).getConfig("local");
+
+
+        ht.setCorrelationId(UUID.randomUUID().toString());
+        ht.setProtocolVersion(cfg.getProtocolVersion());
+        ht.setProviderNSA(cfg.getNsaId());
+        ht.setRequesterNSA(requesterNsa);
+        return ht;
+    }
+
     public static CommonHeaderType makeNsiOutgoingHeader(CommonHeaderType ph) {
 
-
-        CommonHeaderType ht = new CommonHeaderType();
+        CommonHeaderType ht = makeNsiOutgoingHeader(ph.getRequesterNSA());
         ht.setCorrelationId(ph.getCorrelationId());
-        ht.setProtocolVersion(ph.getProtocolVersion());
-        ht.setProviderNSA(ph.getProviderNSA());
-        ht.setRequesterNSA(ph.getRequesterNSA());
 
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.getContext();

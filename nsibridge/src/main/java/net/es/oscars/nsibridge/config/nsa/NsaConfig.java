@@ -6,11 +6,20 @@ import java.util.List;
 
 public class NsaConfig {
     private String nsaId = "";
+    private String protocolVersion = "";
     private List<StpConfig> stps = new ArrayList<StpConfig>();
 
     public NsaConfig() {
 
     };
+
+    public String getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public void setProtocolVersion(String protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
 
     public String getNsaId() {
         return nsaId;
