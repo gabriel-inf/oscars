@@ -78,6 +78,8 @@ public class TaskSteps {
                 elapsed += 100;
             }
         }
+        log.debug("waited for "+elapsed+" ms until runstate for corrId: "+corrId+" became "+runState);
+
         assertThat(elapsed < timeout, is (true));
         assertThat(haveRunState, is(true));
 
@@ -85,7 +87,6 @@ public class TaskSteps {
             RunState rs = wf.getRunState(taskId);
             assertThat(rs.toString(), is(runState));
         }
-        log.debug("waited for "+elapsed+" ms until runstate for corrId: "+corrId+" became "+runState);
     }
 
 

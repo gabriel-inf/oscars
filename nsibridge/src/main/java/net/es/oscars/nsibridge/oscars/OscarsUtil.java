@@ -120,7 +120,7 @@ public class OscarsUtil {
         log.debug("submitCancel complete");
     }
 
-    public static void submitQuery(ConnectionRecord cr) throws TranslationException {
+    public static OscarsStatusRecord submitQuery(ConnectionRecord cr) throws TranslationException {
         String oscarsGri = cr.getOscarsGri();
         if (oscarsGri == null || oscarsGri.equals("")) {
             throw new TranslationException("could not find OSCARS GRI for connId: "+cr.getConnectionId());
@@ -133,11 +133,12 @@ public class OscarsUtil {
                 String oscStatus =  reply.getReservationDetails().getStatus();
 
                 log.debug("query result for connId: "+cr.getConnectionId()+" gri: "+oscarsGri+" status: "+oscStatus);
-                addOscarsRecord(cr, oscarsGri, new Date(), oscStatus);
-
+                OscarsStatusRecord or = addOscarsRecord(cr, oscarsGri, new Date(), oscStatus);
+                return or;
 
             } catch (OSCARSServiceException e) {
-                e.printStackTrace();
+                log.error(e);
+                throw new TranslationException(e.getMessage());
             }
         } else {
             throw new TranslationException("could not translate to OSCARS query");
@@ -176,20 +177,22 @@ public class OscarsUtil {
         }
     }
 
-    public static void addOscarsRecord(ConnectionRecord cr, String gri, Date date, String status) {
+    public static OscarsStatusRecord addOscarsRecord(ConnectionRecord cr, String gri, Date date, String status) {
         String connId = cr.getConnectionId();
-        // log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status+" date: "+date.getTime());
+        log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status+" date: "+date.getTime());
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.refresh(cr);
+        em.getEntityManagerFactory().getCache().evictAll();
 
-        em.getTransaction().begin();
         OscarsStatusRecord or = new OscarsStatusRecord();
         or.setDate(date);
         or.setStatus(status);
         cr.setOscarsStatusRecord(or);
         cr.setOscarsGri(gri);
+
+        em.getTransaction().begin();
         em.persist(cr);
         em.getTransaction().commit();
+        return or;
 
     }
 
@@ -298,7 +301,7 @@ public class OscarsUtil {
         Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
         Double pollTimeout = tc.getOscarsTimingConfig().getPollTimeout() * 1000;
         try {
-            log.debug("waiting "+pollInterval+" ms to poll for connId: "+cr.getConnectionId());
+            log.debug("waiting "+pollInterval+" ms to poll for connId: "+cr.getConnectionId()+" timeout: "+pollTimeout);
             Thread.sleep(pollInterval.longValue());
 
 
@@ -313,7 +316,7 @@ public class OscarsUtil {
 
         OscarsStatusRecord or = cr.getOscarsStatusRecord();
         try {
-            OscarsUtil.submitQuery(cr);
+            or = OscarsUtil.submitQuery(cr);
         } catch (TranslationException ex) {
             log.error(ex);
             throw new ServiceException("could not poll");
@@ -329,8 +332,7 @@ public class OscarsUtil {
                 try {
                     Thread.sleep(pollInterval.longValue());
                     elapsed += pollInterval;
-                    OscarsUtil.submitQuery(cr);
-                    or = cr.getOscarsStatusRecord();
+                    or = OscarsUtil.submitQuery(cr);
                     os = OscarsStates.valueOf(or.getStatus());
                     log.debug("queried oscars, elapsed ms: "+elapsed+" state: "+os);
 

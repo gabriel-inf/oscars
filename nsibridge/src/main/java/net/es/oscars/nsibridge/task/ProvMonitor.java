@@ -11,6 +11,7 @@ import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
+import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -42,46 +43,45 @@ public class ProvMonitor implements Job {
             }
 
             // do not set up oscars if we are TERMINATING / TERMINATED / FAILED
-            if (cr.getLifecycleState().equals(LifecycleStateEnumType.CREATED)) {
-                if (cr.getProvisionState() == null) {
-                    continue;
-                }
-
-                if (cr.getProvisionState().equals(ProvisionStateEnumType.PROVISIONED)) {
-                    String connId = cr.getConnectionId();
-
-                    ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-                    if (rr == null) {
-                        // log.debug("no committed reserve record for: "+connId);
-                        continue;
-                    } else {
-                        // log.debug("found committed reserve record for: "+connId);
-                    }
-
-                    if (rr.getStartTime().before(now) && rr.getEndTime().after(now)) {
-                        OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.SETUP);
-                        // log.info("should start SETUP: "+connId);
-                    } else {
-                        // log.debug("now: "+now+" start: "+rr.getStartTime()+" end: "+rr.getEndTime());
-                    }
-                }
-
-                if (cr.getProvisionState().equals(ProvisionStateEnumType.RELEASED)) {
-                    String connId = cr.getConnectionId();
-                    OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.TEARDOWN);
-                    // log.info("should start TEARDOWN: "+connId);
-
-                    ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-                    if (rr == null) {
-                        continue;
-                    }
-
-
-                    if (rr.getEndTime().before(now)) {
-                        // log.info("should start teardown "+connId);
-                    }
-                }
+            if (!cr.getLifecycleState().equals(LifecycleStateEnumType.CREATED)) {
+                continue;
             }
+            String connId = cr.getConnectionId();
+
+            ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+            // if there's no committed resvRecord, we're before the very first ReserveHeld
+            if (rr == null) {
+                continue;
+            }
+
+            OscarsProvQueue opq = OscarsProvQueue.getInstance();
+
+            try {
+                switch (cr.getProvisionState()) {
+                    case PROVISIONED:
+                        // send a setup if provisioned and
+                        if (rr.getStartTime().before(now) && rr.getEndTime().after(now)) {
+                            if (opq.needsOp(connId, OscarsOps.SETUP)) {
+                               opq.scheduleOp(connId, OscarsOps.SETUP);
+                            }
+                        }
+
+                        break;
+                    case RELEASED:
+                        if (opq.needsOp(connId, OscarsOps.TEARDOWN)) {
+                            opq.scheduleOp(connId, OscarsOps.TEARDOWN);
+                        }
+                        break;
+                    case RELEASING:
+                    case PROVISIONING:
+                    default:
+                        continue;
+
+                }
+            } catch (TaskException ex) {
+                log.error(ex);
+            }
+
 
 
         }

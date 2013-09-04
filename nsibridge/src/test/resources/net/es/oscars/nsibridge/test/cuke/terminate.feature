@@ -3,6 +3,7 @@ Feature: terminate side effects
 
     Scenario: Reserve, commit, terminate. Try provision, reserve, terminate (should fail)
         Given I have set up the run environment
+        Given I clear all existing tasks
 
         Given that I know the count of all pending reservation requests
         When I assign random connId and corrId
@@ -33,3 +34,4 @@ Feature: terminate side effects
         When I assign a random corrId
         When I submit terminate
         Then the last submit has thrown an exception
+        Given I clear all existing tasks

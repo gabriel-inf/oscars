@@ -14,6 +14,7 @@ public class SMTask extends Task {
     protected SM_Event successEvent;
     protected SM_Event failEvent;
     protected String correlationId;
+    protected String connectionId;
 
     public String getCorrelationId() {
         return correlationId;
@@ -21,6 +22,14 @@ public class SMTask extends Task {
 
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
+    }
+
+    public String getConnectionId() {
+        return connectionId;
+    }
+
+    public void setConnectionId(String connectionId) {
+        this.connectionId = connectionId;
     }
 
     public StateMachine getStateMachine() throws TaskException {
@@ -34,10 +43,6 @@ public class SMTask extends Task {
         if (rh == null) {
             throw new TaskException("could not find the request holder");
         }
-        String connId = rh.findConnectionId(correlationId);
-        if (connId == null) {
-            throw new TaskException("could not find connection id for corrId: "+correlationId);
-        }
 
         if (smt == null) {
             throw new TaskException("no state machine type set");
@@ -45,13 +50,13 @@ public class SMTask extends Task {
 
         switch (smt) {
             case RSM:
-                return smh.findNsiResvSM(connId);
+                return smh.findNsiResvSM(connectionId);
             case PSM:
-                return smh.findNsiProvSM(connId);
+                return smh.findNsiProvSM(connectionId);
             case LSM:
-                return smh.findNsiLifeSM(connId);
+                return smh.findNsiLifeSM(connectionId);
         }
-        throw new TaskException("could not find a an "+smt+" SM for connId: "+connId);
+        throw new TaskException("could not find a an "+smt+" SM for connId: "+connectionId);
 
     }
 

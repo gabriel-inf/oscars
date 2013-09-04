@@ -4,6 +4,7 @@ Feature: provision a reservation
 
     Scenario: Provision, release
         Given I have set up the run environment
+        Given I clear all existing tasks
         Given that I know the count of all pending provisioning requests
         When I assign random connId and corrId
 
@@ -30,11 +31,14 @@ Feature: provision a reservation
         Then I know the simpleRequest taskIds
         When I wait up to 10000 ms until the task runstate is "FINISHED"
         Then the "PSM" state is: "Released"
+        Given I clear all existing tasks
 
 
 
     Scenario: Provision failure because of unknown connectionId
         Given I have set up the run environment
+        Given I clear all existing tasks
+
         Given that I know the count of all pending provisioning requests
         When I assign random connId and corrId
 
@@ -42,4 +46,5 @@ Feature: provision a reservation
         When I submit provision
         Then the last submit has thrown an exception
         Then the count of pending provisioning requests has changed by 0
+        Given I clear all existing tasks
 

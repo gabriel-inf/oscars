@@ -1,13 +1,15 @@
 Feature: JPA insertion / deletion of records
 
-  I want to verify I can insert and delete JPA records
+    I want to verify I can insert and delete JPA records
 
-  Scenario: Insert, find, delete ConnectionRecord
-    Given I have set up the run environment
-    When I set the current connId to: "foobar"
+    Scenario: Insert, find, delete ConnectionRecord
+        Given I have set up the run environment
+        Given I clear all existing tasks
+        When I set the current connId to: "foobar"
 
-    Given the count of ConnectionRecords is 0
-    When I insert a new ConnectionRecord
-    Then the count of ConnectionRecords is 1
-    Then I can delete the ConnectionRecord
-    Then the count of ConnectionRecords is 0
+        Given the count of ConnectionRecords is 0
+        When I insert a new ConnectionRecord
+        Then the count of ConnectionRecords is 1
+        Then I can delete the ConnectionRecord
+        Then the count of ConnectionRecords is 0
+        Given I clear all existing tasks

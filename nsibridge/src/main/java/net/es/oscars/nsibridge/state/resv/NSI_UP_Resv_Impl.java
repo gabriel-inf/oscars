@@ -65,6 +65,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
 
         OscarsResvOrModifyTask ost = new OscarsResvOrModifyTask();
+        ost.setConnectionId(connectionId);
         ost.setCorrelationId(correlationId);
         ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
         ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);

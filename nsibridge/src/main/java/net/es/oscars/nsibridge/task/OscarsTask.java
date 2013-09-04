@@ -34,17 +34,11 @@ public abstract class OscarsTask extends SMTask {
 
         log.debug(pre +" starting");
 
-        RequestHolder rh = RequestHolder.getInstance();
-        String connId = rh.findConnectionId(correlationId);
-        if (connId == null) {
-            rh.removeRequest(correlationId);
-            throw new TaskException("unknown connectionId");
-        }
 
         try {
             super.onRun();
 
-            ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connectionId);
             if (cr == null) {
                 processFail();
                 this.onSuccess();
@@ -53,19 +47,21 @@ public abstract class OscarsTask extends SMTask {
 
             String oscarsGri = cr.getOscarsGri();
             if (oscarsGri == null) {
-                processFail(connId);
+                processFail(connectionId);
                 this.onSuccess();
                 return;
             }
             OscarsStatusRecord or = cr.getOscarsStatusRecord();
             if (or == null) {
-                processFail(connId, "no oscars record");
+                processFail(connectionId, "no oscars record");
                 this.onSuccess();
+                return;
             }
             OscarsStates state = OscarsStates.valueOf(or.getStatus());
             if (state == null) {
-                processFail(connId, "no oscars state");
+                processFail(connectionId, "no oscars state");
                 this.onSuccess();
+                return;
             }
 
 
@@ -80,11 +76,11 @@ public abstract class OscarsTask extends SMTask {
                     break;
                 case NO:
                     this.getStateMachine().process(successEvent, correlationId);
-                    DB_Util.persistStateMachines(connId);
+                    DB_Util.persistStateMachines(connectionId);
                     this.onSuccess();
                     return;
                 case TIMED_OUT:
-                    processFail(connId, "unexpected timeout");
+                    processFail(connectionId, "unexpected timeout");
                     return;
             }
 
@@ -101,15 +97,15 @@ public abstract class OscarsTask extends SMTask {
                 switch (allowed) {
                     // should never return this
                     case ASK_LATER:
-                        processFail(connId, "unexpected ask_later");
+                        processFail(connectionId, "unexpected ask_later");
                         return;
                     // if we get this we can not proceed
                     case NO:
-                        processFail(connId, "not allowed (after waiting)");
+                        processFail(connectionId, "not allowed (after waiting)");
                         break;
                     // if we get this we can not proceed
                     case TIMED_OUT:
-                        processFail(connId, "timed out");
+                        processFail(connectionId, "timed out");
                         return;
                     // only now can we try to submit
                     case YES:
@@ -128,16 +124,16 @@ public abstract class OscarsTask extends SMTask {
                         break;
                     case NO:
                         this.getStateMachine().process(successEvent, correlationId);
-                        DB_Util.persistStateMachines(connId);
+                        DB_Util.persistStateMachines(connectionId);
                         this.onSuccess();
                         return;
                     // should never receive this
                     case ASK_LATER:
-                        processFail(connId, "unexpected ask_later");
+                        processFail(connectionId, "unexpected ask_later");
                         return;
                     // should never receive this
                     case TIMED_OUT:
-                        processFail(connId, "unexpected timeout");
+                        processFail(connectionId, "unexpected timeout");
                         return;
                 }
             }
@@ -149,12 +145,12 @@ public abstract class OscarsTask extends SMTask {
             OscarsLogicAction result = OscarsStateLogic.didOperationSucceed(oscarsOp, os);
             if (result.equals(OscarsLogicAction.YES)) {
                 this.getStateMachine().process(successEvent, correlationId);
-                DB_Util.persistStateMachines(connId);
+                DB_Util.persistStateMachines(connectionId);
                 this.onSuccess();
                 return;
 
             } else {
-                processFail(connId, "operation failed");
+                processFail(connectionId, "operation failed");
                 return;
             }
 

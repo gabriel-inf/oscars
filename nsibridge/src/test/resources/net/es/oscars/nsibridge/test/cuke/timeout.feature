@@ -4,6 +4,7 @@ Feature: timeout reservation
 
     Scenario: Exercise timeout reservation - commit
         Given I have set up the run environment
+        Given I clear all existing tasks
 
         When I assign random connId and corrId
         When I set the reserveTimeout to 1 seconds
@@ -24,10 +25,12 @@ Feature: timeout reservation
         Then I wait up to 10000 ms until the "RSM" state is: "ReserveStart"
 
         Then I restore the reserveTimeout value
+        Given I clear all existing tasks
 
 
     Scenario: Exercise timeout reservation - abort
         Given I have set up the run environment
+        Given I clear all existing tasks
 
         When I assign random connId and corrId
         When I set the reserveTimeout to 1 seconds
@@ -45,3 +48,4 @@ Feature: timeout reservation
 
         Then I wait up to 10000 ms until the "RSM" state is: "ReserveStart"
         Then I restore the reserveTimeout value
+        Given I clear all existing tasks

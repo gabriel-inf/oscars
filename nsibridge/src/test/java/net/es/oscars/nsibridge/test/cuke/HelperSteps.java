@@ -79,6 +79,13 @@ public class HelperSteps {
         resvRequest = NSIRequestFactory.getRequest();
     }
 
+    @When("^I set the version to (\\d+)$")
+    public void I_set_the_version_to(int version) throws Throwable {
+        resvRequest.getReserveType().getCriteria().setVersion(version);
+    }
+
+
+
     @When("^I set \"([^\"]*)\" time to (\\d+) sec$")
     public void I_set_time_to_sec(String timeType, int secs) throws Throwable {
         long ms = 1000L * secs;

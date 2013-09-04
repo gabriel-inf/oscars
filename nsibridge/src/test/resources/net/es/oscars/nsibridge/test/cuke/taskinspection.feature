@@ -4,6 +4,8 @@ Feature: inspect workflow tasks
 
     Scenario: Reserve task tracking
         Given I have set up the run environment
+        Given I clear all existing tasks
+
         When I assign random connId and corrId
 
 
@@ -24,3 +26,4 @@ Feature: inspect workflow tasks
         When I wait up to 10000 ms until the task runstate is "FINISHED"
 
         Then the "RSM" state is: "ReserveStart"
+        Given I clear all existing tasks

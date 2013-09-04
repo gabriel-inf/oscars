@@ -44,9 +44,23 @@ public class NSI_Prov_SM implements StateMachine {
 
         switch (prevState) {
             case RELEASED:
-                nextState = ProvisionStateEnumType.PROVISIONING;
-                ns.setState(nextState);
-                this.setState(ns);
+                if (event.equals(NSI_Prov_Event.LOCAL_TEARDOWN_CONFIRMED)) {
+                    nextState = ProvisionStateEnumType.RELEASED;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.LOCAL_TEARDOWN_FAILED)) {
+                    nextState = ProvisionStateEnumType.RELEASED;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.RECEIVED_NSI_PROV_RQ)) {
+                    nextState = ProvisionStateEnumType.PROVISIONING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else {
+                    error = pre + " : error : event ["+event+"] not allowed";
+                    LOG.error(error);
+                    throw new StateException(error);
+                }
                 break;
 
 
@@ -70,6 +84,14 @@ public class NSI_Prov_SM implements StateMachine {
             case PROVISIONED:
                 if (event.equals(NSI_Prov_Event.RECEIVED_NSI_REL_RQ)) {
                     nextState = ProvisionStateEnumType.RELEASING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.LOCAL_SETUP_CONFIRMED)) {
+                    nextState = ProvisionStateEnumType.PROVISIONED;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.LOCAL_SETUP_FAILED)) {
+                    nextState = ProvisionStateEnumType.PROVISIONED;
                     ns.setState(nextState);
                     this.setState(ns);
                 } else {

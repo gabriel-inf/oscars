@@ -14,5 +14,7 @@ public interface NsiProvMdl {
     public UUID sendRelCF(String correlationId);
     public UUID notifyRelFL(String correlationId);
 
+    public UUID dataplaneUpdate(String correlationId);
+
 
 }

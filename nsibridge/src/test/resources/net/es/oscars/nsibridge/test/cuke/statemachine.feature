@@ -3,6 +3,7 @@ Feature: State machines behavior verification
     I want to verify my various state machines work as intended
 
     Scenario: No error walk through the Reserve uPA state machine
+        Given I have set up the run environment
 
         When I assign random connId and corrId
 
@@ -32,6 +33,7 @@ Feature: State machines behavior verification
 
 
     Scenario: Exercise catching errors at the Reserve uPA state machine
+        Given I have set up the run environment
         When I assign random connId and corrId
 
         Given that I have created a new "RSM" state machine
@@ -47,6 +49,7 @@ Feature: State machines behavior verification
 
 
     Scenario: No error walk through the Lifecycle uPA state machine
+        Given I have set up the run environment
         When I assign random connId and corrId
 
         Given that I have created a new "LSM" state machine
@@ -63,6 +66,7 @@ Feature: State machines behavior verification
 
 
   Scenario: No error walk through the Provisioning uPA state machine
+        Given I have set up the run environment
         When I assign random connId and corrId
 
         Given that I have created a new "PSM" state machine

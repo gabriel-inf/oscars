@@ -42,6 +42,7 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         SMTransitionTask sm = new SMTransitionTask();
         sm.setCorrelationId(correlationId);
         sm.setSmt(StateMachineType.LSM);
+        sm.setConnectionId(connectionId);
         sm.setSuccessEvent(NSI_Life_Event.LOCAL_TERM_CONFIRMED);
 
 

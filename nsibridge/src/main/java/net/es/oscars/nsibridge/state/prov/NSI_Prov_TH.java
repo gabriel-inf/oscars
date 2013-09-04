@@ -33,6 +33,17 @@ public class NSI_Prov_TH implements TransitionHandler {
             case RELEASED:
                 if (toState.equals(ProvisionStateEnumType.PROVISIONING)) {
                     taskIds.add(mdl.localProv(correlationId));
+                } else if (toState.equals(ProvisionStateEnumType.RELEASED)) {
+
+                    if (ev.equals(NSI_Prov_Event.LOCAL_TEARDOWN_CONFIRMED)) {
+                        log.info("local teardown OK");
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
+
+                    } else if (ev.equals(NSI_Prov_Event.LOCAL_TEARDOWN_FAILED)) {
+                        log.info("local teardown failed");
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
+
+                    }
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
 
@@ -42,6 +53,7 @@ public class NSI_Prov_TH implements TransitionHandler {
             case PROVISIONING:
                 if (toState.equals(ProvisionStateEnumType.PROVISIONED)) {
                     taskIds.add(mdl.sendProvCF(correlationId));
+
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -49,6 +61,17 @@ public class NSI_Prov_TH implements TransitionHandler {
             case PROVISIONED:
                 if (toState.equals(ProvisionStateEnumType.RELEASING)) {
                     taskIds.add(mdl.localRel(correlationId));
+                } else if (toState.equals(ProvisionStateEnumType.PROVISIONED)) {
+                    if (ev.equals(NSI_Prov_Event.LOCAL_SETUP_CONFIRMED)) {
+                        log.info("local setup OK");
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
+
+                    } else if (ev.equals(NSI_Prov_Event.LOCAL_SETUP_FAILED)) {
+                        log.info("local setup failed");
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
+
+                    }
+
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
