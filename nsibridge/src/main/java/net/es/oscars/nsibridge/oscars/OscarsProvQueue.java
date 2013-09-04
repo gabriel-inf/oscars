@@ -8,6 +8,7 @@ import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.task.OscarsSetupTask;
 import net.es.oscars.nsibridge.task.OscarsTask;
+import net.es.oscars.nsibridge.task.OscarsTeardownTask;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -57,7 +58,7 @@ public class OscarsProvQueue {
             ost.setFailEvent(NSI_Prov_Event.LOCAL_SETUP_FAILED);
             ost.setSuccessEvent(NSI_Prov_Event.LOCAL_SETUP_CONFIRMED);
         } else if (op.equals(OscarsOps.TEARDOWN)) {
-            ost = new OscarsSetupTask();
+            ost = new OscarsTeardownTask();
             ost.setOscarsOp(OscarsOps.TEARDOWN);
             ost.setFailEvent(NSI_Prov_Event.LOCAL_TEARDOWN_FAILED);
             ost.setSuccessEvent(NSI_Prov_Event.LOCAL_TEARDOWN_CONFIRMED);
