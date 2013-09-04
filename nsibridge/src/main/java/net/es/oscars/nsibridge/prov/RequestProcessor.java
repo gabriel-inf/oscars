@@ -14,9 +14,16 @@ import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
+import net.es.oscars.nsibridge.task.ProvMonitor;
+import net.es.oscars.nsibridge.task.QuerySummaryJob;
 import net.es.oscars.utils.task.TaskException;
+import net.es.oscars.utils.task.sched.Schedule;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
 
 
 import java.util.ArrayList;
@@ -206,8 +213,18 @@ public class RequestProcessor {
 
     }
 
-    public void asyncQuery(QueryRequest request) throws ServiceException, TaskException {
-        // TODO:
+    public void asyncQuery(QueryRequest request) throws ServiceException {
+        Schedule ts = Schedule.getInstance();
+        String jobId = "asyncQuerySumm-" + UUID.randomUUID().toString();
+        
+        SimpleTrigger trigger = new SimpleTrigger(jobId, "asyncQuery");
+        JobDetail jobDetail = new JobDetail(jobId, "asyncQuery", QuerySummaryJob.class);
+        jobDetail.getJobDataMap().put(QuerySummaryJob.PARAM_REQUEST, request);
+        try {
+            ts.getScheduler().scheduleJob(jobDetail, trigger);
+        } catch (SchedulerException e) {
+            throw new ServiceException("Unable to schedule query job: " + e.getMessage());
+        }
 
     }
 

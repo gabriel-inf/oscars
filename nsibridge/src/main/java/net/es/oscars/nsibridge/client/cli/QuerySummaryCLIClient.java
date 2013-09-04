@@ -13,6 +13,7 @@ import joptsimple.OptionSet;
 
 import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.QuerySummarySyncFailed;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryConfirmedType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
@@ -26,12 +27,14 @@ public class QuerySummaryCLIClient {
         String url = "http://localhost:8500/nsi-v2/ConnectionServiceProvider";
         String[] connectionIds = new String[0];
         String[] gris = new String[0];
+        Holder<CommonHeaderType> header = ClientUtil.makeClientHeader();
         
         //parse options
         OptionParser parser = new OptionParser(){
             {
                 acceptsAll(Arrays.asList("h", "help"), "prints this help screen");
                 acceptsAll(Arrays.asList("u", "url"), "the URL of the NSA provider").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("r", "reply-url"), "the URL to which the provider should reply. If not set this will be a synchronous request.").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("i", "connection-id"), "the connection id(s) to query. Separate multiple by commas with no whitespace").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("g", "gri"), "the global reservation ID of the connecion(s) to return. Separate multiple by commas with no whitespace").withRequiredArg().ofType(String.class);
             }
@@ -47,6 +50,11 @@ public class QuerySummaryCLIClient {
             
             if(opts.has("u")){
                 url = (String)opts.valueOf("u");
+                new URL(url);
+            }
+            
+            if(opts.has("r")){
+                header.value.setReplyTo((String)opts.valueOf("r"));
                 new URL(url);
             }
             
@@ -71,36 +79,47 @@ public class QuerySummaryCLIClient {
             System.exit(1);
         }
         
-        //create client
-        ConnectionProviderPort client = ClientUtil.createProviderClient(url);
-        
-        //Build request
-        Holder<CommonHeaderType> header = ClientUtil.makeClientHeader();
-        QueryType querySummarySync = new QueryType();
+        //create request
+        QueryType querySummary = new QueryType();
         for(String connId : connectionIds){
-            querySummarySync.getConnectionId().add(connId);
+            querySummary.getConnectionId().add(connId);
         }
         for(String gri : gris){
-            querySummarySync.getGlobalReservationId().add(gri);
+            querySummary.getGlobalReservationId().add(gri);
         }
         
-        //send request;
-        QuerySummaryConfirmedType result = null;
-        try {
-            result = client.querySummarySync(querySummarySync , header);
-        } catch (QuerySummarySyncFailed e) {
-            e.printStackTrace();
+        //process sync or async request
+        ConnectionProviderPort client = ClientUtil.createProviderClient(url);
+        if(header.value.getReplyTo() == null){
+            //send sync request
+            QuerySummaryConfirmedType result = null;
+            try {
+                result = client.querySummarySync(querySummary , header);
+            } catch (QuerySummarySyncFailed e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+
+            //print output
+            for(QuerySummaryResultType querySummRes : result.getReservation()){
+                System.out.println();
+                System.out.println("Connection: " + querySummRes.getConnectionId());
+                System.out.println("Global Reservation Id: " + querySummRes.getGlobalReservationId());
+                System.out.println("Requester NSA: " + querySummRes.getRequesterNSA());
+                System.out.println("Description: " + querySummRes.getDescription());
+                System.out.println();
+            }
+            System.out.println(result.getReservation().size() + " results returned");
+        }else{
+            //send async request
+            try {
+                client.querySummary(querySummary , header);
+                System.out.println("Query sent");
+            } catch (ServiceException e) {
+                e.printStackTrace();
+            }
         }
+
         
-        //print output
-        for(QuerySummaryResultType querySummRes : result.getReservation()){
-            System.out.println();
-            System.out.println("Connection: " + querySummRes.getConnectionId());
-            System.out.println("Global Reservation Id: " + querySummRes.getGlobalReservationId());
-            System.out.println("Requester NSA: " + querySummRes.getRequesterNSA());
-            System.out.println("Description: " + querySummRes.getDescription());
-            System.out.println();
-        }
-        System.out.println(result.getReservation().size() + " results returned");
     }
 }
