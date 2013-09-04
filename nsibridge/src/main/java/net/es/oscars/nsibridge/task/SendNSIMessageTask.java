@@ -4,7 +4,9 @@ package net.es.oscars.nsibridge.task;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.DataplaneStatusRecord;
 import net.es.oscars.nsibridge.beans.db.NotificationRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider;
@@ -174,11 +176,6 @@ public class SendNSIMessageTask extends Task  {
             NotificationRecord nr;
 
 
-            // TODO: fix this
-            boolean dpActive = false;
-            int dpVersion = 0;
-            cr.getDataplaneStatusRecords();
-            boolean dpConsistent = true;
 
             switch (message) {
                 case RESV_CF:
@@ -243,7 +240,30 @@ public class SendNSIMessageTask extends Task  {
 
                     port.reserveTimeout(connId, notificationId.intValue(), cal, d.intValue(), connId, cfg.getNsaId(), outHeader, outHolder);
                     break;
+
                 case DATAPLANE_CHANGE:
+                    if (cr.getDataplaneStatusRecords().size() == 0) {
+                        throw new TaskException("no dataplane status records for connId:"+connId);
+                    }
+                    boolean dpActive = false;
+                    int dpVersion = 0;
+                    for (DataplaneStatusRecord dr : cr.getDataplaneStatusRecords()) {
+                        if (dpVersion < dr.getVersion()) {
+                            dpActive = dr.isActive();
+                            dpVersion = dr.getVersion();
+                        }
+                    }
+                    ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+                    if (rr == null) {
+                        throw new TaskException("could not locate committed resv record for connId: "+connId);
+                    }
+                    boolean dpConsistent = false;
+                    if (rr.getVersion() == dpVersion) {
+                        dpConsistent = true;
+                    }
+
+
+
                     nr = DB_Util.getNotificationRecord(connId, notificationId);
                     gc.setTime(nr.getTimestamp());
                     cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);

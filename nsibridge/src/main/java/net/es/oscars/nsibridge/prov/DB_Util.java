@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
+import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
@@ -278,8 +279,22 @@ public class DB_Util {
         em.getTransaction().begin();
         em.persist(cr);
         em.getTransaction().commit();
+    }
+
+    public static Long makeNotification(String connectionId, EventEnumType eventType, CallbackMessages notificationType) throws ServiceException {
+        ConnectionRecord cr = getConnectionRecord(connectionId);
+        NotificationRecord nr = new NotificationRecord();
+        nr.setEventType(EventEnumType.FORCED_END);
+        nr.setTimestamp(new Date());
+        nr.setNotificationType(notificationType);
+        cr.getNotificationRecords().add(nr);
 
 
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        em.persist(cr);
+        em.getTransaction().commit();
+        return nr.getId();
 
     }
 

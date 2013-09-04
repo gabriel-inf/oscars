@@ -52,7 +52,6 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         sm.setCorrelationId(correlationId);
         sm.setSmt(StateMachineType.PSM);
         sm.setSuccessEvent(NSI_Prov_Event.LOCAL_PROV_CONFIRMED);
-        sm.setFailEvent(NSI_Prov_Event.LOCAL_PROV_FAILED);
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
@@ -84,27 +83,6 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         return taskId;
     }
 
-    @Override
-    public UUID notifyProvFL(String correlationId) {
-        long now = new Date().getTime();
-
-        Workflow wf = Workflow.getInstance();
-        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
-        sendNsiMsg.setCorrId(correlationId);
-        sendNsiMsg.setConnId(connectionId);
-        sendNsiMsg.setMessage(CallbackMessages.ERROR);
-
-
-        UUID taskId = null;
-
-        try {
-            wf.schedule(sendNsiMsg, now + 1000);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
-        return taskId;
-
-    }
 
     @Override
     public UUID localRel(String correlationId) {
@@ -113,12 +91,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
         long now = new Date().getTime();
 
-        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
-        Workflow wf = Workflow.getInstance();
+                /*
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Prov_SM psm = smh.findNsiProvSM(connectionId);
-
-        /*
         OscarsTeardownTask ost = new OscarsTeardownTask();
         ost.setCorrelationId(correlationId);
         ost.setOscarsOp(OscarsOps.TEARDOWN);
@@ -126,11 +101,16 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         ost.setSuccessEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
         ost.setFailEvent(NSI_Prov_Event.LOCAL_REL_FAILED);
         */
+
+
+
+        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
+        Workflow wf = Workflow.getInstance();
+
         SMTransitionTask sm = new SMTransitionTask();
         sm.setCorrelationId(correlationId);
         sm.setSmt(StateMachineType.PSM);
         sm.setSuccessEvent(NSI_Prov_Event.LOCAL_REL_CONFIRMED);
-        sm.setFailEvent(NSI_Prov_Event.LOCAL_REL_FAILED);
 
 
         Double d = (tc.getTaskInterval() * 1000);
@@ -166,6 +146,31 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         return taskId;
 
     }
+
+
+    // failures
+    @Override
+    public UUID notifyProvFL(String correlationId) {
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.ERROR);
+
+
+        UUID taskId = null;
+
+        try {
+            wf.schedule(sendNsiMsg, now + 1000);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
+        return taskId;
+
+    }
+
 
     @Override
     public UUID notifyRelFL(String correlationId) {

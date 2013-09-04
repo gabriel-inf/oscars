@@ -15,7 +15,6 @@ import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.task.*;
-import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -135,9 +134,9 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         if (!okCommit) {
             try {
+                DB_Util.saveException(connectionId, correlationId, exString);
                 Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_FL, correlationId);
                 taskId = taskIds.iterator().next();
-                DB_Util.saveException(connectionId, correlationId, exString);
                 DB_Util.persistStateMachines(connectionId);
             } catch (StateException ex) {
                 log.error(ex);
@@ -190,8 +189,8 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         if (!okAbort) {
             try {
-                Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_FL, correlationId);
                 DB_Util.saveException(connectionId, correlationId, exString);
+                Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_FL, correlationId);
                 taskId = taskIds.iterator().next();
                 DB_Util.persistStateMachines(connectionId);
             } catch (StateException ex) {
@@ -360,21 +359,21 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
-
-        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
-        sendNsiMsg.setCorrId(correlationId);
-        sendNsiMsg.setConnId(connectionId);
-        sendNsiMsg.setMessage(CallbackMessages.RESV_TIMEOUT);
-
-
-
         try {
+            Long notId = DB_Util.makeNotification(connectionId, null, CallbackMessages.RESV_TIMEOUT);
+
+            SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+            sendNsiMsg.setCorrId(correlationId);
+            sendNsiMsg.setConnId(connectionId);
+            sendNsiMsg.setMessage(CallbackMessages.RESV_TIMEOUT);
+            sendNsiMsg.setNotificationId(notId);
+
             taskId = wf.schedule(sendNsiMsg, when);
+        } catch (ServiceException e) {
+            log.error(e);
         } catch (TaskException e) {
-            e.printStackTrace();
+            log.error(e);
         }
-
-
 
         return taskId;
     }

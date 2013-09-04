@@ -6,15 +6,11 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
-import net.es.oscars.nsibridge.oscars.OscarsOps;
-import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
+import net.es.oscars.nsibridge.prov.DB_Util;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.EventEnumType;
-import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
-import net.es.oscars.nsibridge.task.OscarsCancelTask;
-import net.es.oscars.nsibridge.task.OscarsTeardownTask;
 import net.es.oscars.nsibridge.task.SMTransitionTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;
-import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -41,8 +37,6 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
         TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
         Workflow wf = Workflow.getInstance();
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Life_SM lsm = smh.findNsiLifeSM(connectionId);
 
 
         SMTransitionTask sm = new SMTransitionTask();
@@ -60,6 +54,9 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         }
 
         /*
+        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+        NSI_Life_SM lsm = smh.findNsiLifeSM(connectionId);
+
         OscarsCancelTask ost = new OscarsCancelTask();
         ost.setCorrelationId(correlationId);
         ost.setOscarsOp(OscarsOps.CANCEL);
@@ -110,13 +107,15 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         sendNsiMsg.setCorrId(correlationId);
         sendNsiMsg.setConnId(connectionId);
         sendNsiMsg.setMessage(CallbackMessages.ERROR_EVENT);
-        // TODO: notification
-        // sendNsiMsg.setEventType(EventEnumType.FORCED_END);
 
         UUID taskId = null;
 
         try {
+            Long notId = DB_Util.makeNotification(connectionId, EventEnumType.FORCED_END, CallbackMessages.ERROR_EVENT);
+            sendNsiMsg.setNotificationId(notId);
             taskId = wf.schedule(sendNsiMsg, now + 1000);
+        } catch (ServiceException ex) {
+            log.error(ex);
         } catch (TaskException e) {
             e.printStackTrace();
         }
