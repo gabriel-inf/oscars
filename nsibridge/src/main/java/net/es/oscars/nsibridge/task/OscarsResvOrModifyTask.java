@@ -51,7 +51,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 log.debug("found connection entry for connId: "+connId);
             } else {
                 exceptionString = "could not find connection entry for connId: "+connId;
-
+                log.error(exceptionString);
                 throw new TaskException(exceptionString);
             }
 

@@ -61,9 +61,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             }
         }
 
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
-
         RequestHolder rh = RequestHolder.getInstance();
 
 

@@ -49,17 +49,16 @@ public class ProvMonitor implements Job {
 
                 if (cr.getProvisionState().equals(ProvisionStateEnumType.PROVISIONED)) {
                     String connId = cr.getConnectionId();
-                    OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.SETUP);
-                    // log.info("should start SETUP: "+connId);
 
                     ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
                     if (rr == null) {
+                        log.debug("no committed reserve record for: "+connId);
                         continue;
                     }
 
-
-                    if (rr.getStartTime().after(now)) {
-                        // log.info("should start setup "+connId);
+                    if (rr.getStartTime().after(now) && rr.getEndTime().before(now)) {
+                        OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.SETUP);
+                        // log.info("should start SETUP: "+connId);
                     }
                 }
 

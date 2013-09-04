@@ -28,6 +28,7 @@
           scope="singleton">
 
         <property name="resvTimeout" value="30"/>
+        <property name="taskInterval" value="1"/>
         <property name="oscarsTimingConfig" ref="oscarsTimingConfig" />
 
     </bean>

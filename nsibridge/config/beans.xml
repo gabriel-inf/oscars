@@ -54,6 +54,7 @@
           class="net.es.oscars.nsibridge.config.TimingConfig"
           scope="singleton">
         <property name="resvTimeout" value="300"/>
+        <property name="taskInterval" value="1"/>
         <property name="oscarsTimingConfig" ref="oscarsTimingConfig" />
 
     </bean>
