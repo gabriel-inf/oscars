@@ -51,13 +51,14 @@ public class Workflow {
 
 
     public String printTasks() {
-        String result = "Scheduled:\n";
+        String result = "\nScheduled:\n";
         for (ScheduledTask st : scheduledTasks) {
-            result += "when: "+st.when+" id: "+st.task.getId()+" scope: "+st.task.getScope()+"\n";
+            Date then = new Date(st.when);
+            result += "  id: "+st.task.getId()+" scope: "+st.task.getScope()+" when: "+then+" ("+st.when+")\n";
         }
         result += "Running:\n";
         for (Task t : runningTasks) {
-            result += "id: "+t.getId()+" scope: "+t.getScope()+"\n";
+            result += "  id: "+t.getId()+" scope: "+t.getScope()+"\n";
         }
         return result;
     }
@@ -114,7 +115,7 @@ public class Workflow {
 
                 } else if (running.getScope().equals(waiting.getScope())) {
                     blocked = true;
-                    log.debug(running.getId()+" blocks "+waiting.getId()+", scope "+waiting.getScope());
+                    log.debug(running.getId() + " blocks " + waiting.getId() + ", scope " + waiting.getScope());
                 }
             }
             if (!blocked) {
@@ -186,9 +187,39 @@ public class Workflow {
         log.debug("finishRunning "+task.getId());
         runningTasks.remove(task);
         runStates.put(task.getId(), RunState.FINISHED);
-
     }
 
 
+    public synchronized boolean unschedule(UUID taskId) {
+        ScheduledTask removeThis = null;
+        for (ScheduledTask aTask : scheduledTasks) {
 
+            if (aTask.task.getId().equals(taskId)) {
+                removeThis = aTask;
+            }
+        }
+        if (removeThis != null) {
+            scheduledTasks.remove(removeThis);
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized void clear() {
+        scheduledTasks.clear();
+        runningTasks.clear();
+
+    }
+
+    public ConcurrentLinkedQueue<ScheduledTask> getScheduledTasks() {
+        return scheduledTasks;
+    }
+
+    public ConcurrentLinkedQueue<Task> getRunningTasks() {
+        return runningTasks;
+    }
+
+    public ConcurrentHashMap<UUID, RunState> getRunStates() {
+        return runStates;
+    }
 }
