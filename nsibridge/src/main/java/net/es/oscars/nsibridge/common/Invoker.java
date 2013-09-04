@@ -22,6 +22,7 @@ import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
+import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
@@ -131,14 +132,6 @@ public class Invoker implements Runnable {
             System.exit(1);
         }
 
-
-        //JettyContainer jc = JettyContainer.getInstance();
-        //jc.setConfig(ConfigManager.getInstance().getJettyConfig("config/jetty.yaml"));
-
-        //jc.startServer();
-
-
-
         Runtime.getRuntime().addShutdownHook(
                 new Thread() {
                     public void run() {
@@ -156,9 +149,10 @@ public class Invoker implements Runnable {
                 }
         );
 
+        Workflow wf = Workflow.getInstance();
         while (keepRunning) {
             try {
-                Thread.sleep(1);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 System.exit(1);

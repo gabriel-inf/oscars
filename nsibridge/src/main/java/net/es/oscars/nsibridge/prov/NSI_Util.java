@@ -50,6 +50,9 @@ public class NSI_Util {
 
     public static ServiceExceptionType makeServiceException(String connectionId, String correlationId) throws ServiceException  {
         ExceptionRecord er = DB_Util.getExceptionRecord(connectionId, correlationId);
+        if (er == null) {
+            throw new ServiceException("could not locate exception record for connId: "+connectionId+" corrId: "+correlationId);
+        }
 
         NsaConfig nsaCfg = SpringContext.getInstance().getContext().getBean("nsaConfigProvider", NsaConfigProvider.class).getConfig("local");
 

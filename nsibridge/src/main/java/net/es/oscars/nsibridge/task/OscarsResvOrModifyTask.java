@@ -9,7 +9,6 @@ import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
@@ -81,12 +80,16 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                         exceptionString += ex.toString();
                         log.error(ex);
                         try {
+                            DB_Util.saveException(connId, correlationId, exceptionString);
                             this.getStateMachine().process(this.failEvent, this.correlationId);
                             DB_Util.persistStateMachines(connId);
-                            DB_Util.saveException(connId, correlationId, exceptionString);
+                            return;
+                        } catch (ServiceException ex1) {
+                            log.error(ex1);
                             return;
                         } catch (StateException ex1) {
                             log.error(ex1);
+                            return;
                         }
                     }
                     or = cr.getOscarsStatusRecord();

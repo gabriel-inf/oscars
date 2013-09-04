@@ -77,8 +77,12 @@ public class RequestProcessor {
             for (UUID taskId : request.getTaskIds()) {
                 log.debug("connId: "+connId+"  task id:  " +taskId);
             }
-
-            DB_Util.createResvRecord(connId, request.getReserveType());
+            try {
+                DB_Util.createResvRecord(connId, request.getReserveType());
+            } catch (ServiceException ex) {
+                log.error(ex);
+                throw new ServiceException(ex.getMessage());
+            }
 
         } catch (StateException ex) {
             log.error(ex);

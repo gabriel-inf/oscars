@@ -91,6 +91,7 @@ public class DB_Util {
 
 
     public static void commitResvRecord(String connId) throws ServiceException {
+        log.debug("commiting resv record for connId: "+connId);
         ConnectionRecord cr = getConnectionRecord(connId);
         List<ResvRecord> uncom = ConnectionRecord.getUncommittedResvRecords(cr);
         if (uncom.size() == 0) {
@@ -112,10 +113,12 @@ public class DB_Util {
         ApplicationContext ax = SpringContext.getInstance().getContext();
         TimingConfig tx = ax.getBean("timingConfig", TimingConfig.class);
 
-        Long resvTimeout = new Double(tx.getResvTimeout()).longValue();
+        Long resvTimeout = new Double(tx.getResvTimeout()).longValue() * 1000;
         Date now = new Date();
 
         if (submittedAt.getTime() + resvTimeout < now.getTime()) {
+            Date timeout = new Date(submittedAt.getTime()+resvTimeout);
+            log.debug("submitted at:"+submittedAt+" now: "+now+ " timeout: "+timeout);
             throw new ServiceException("commit after timeout");
         }
 
@@ -258,16 +261,16 @@ public class DB_Util {
 
     public static ExceptionRecord getExceptionRecord(String connectionId, String correlationId)  throws ServiceException {
         ConnectionRecord cr = getConnectionRecord(connectionId);
-        ExceptionRecord er = null;
         for (ExceptionRecord err : cr.getExceptionRecords()) {
             if (err.getCorrelationId().equals(correlationId)) {
-                return er;
+                return err;
             }
         }
         throw new ServiceException("could not find ExceptionRecord connId: "+connectionId+" corrId: "+correlationId);
     }
 
     public static void saveException(String connectionId, String correlationId, String exceptionString) throws ServiceException {
+        log.debug("saving exception: connId: "+connectionId+" corrId: "+correlationId+" ["+exceptionString+"]");
         ConnectionRecord cr = getConnectionRecord(connectionId);
         ExceptionRecord er = new ExceptionRecord();
         er.setCorrelationId(correlationId);
@@ -334,6 +337,8 @@ public class DB_Util {
 
     public static List<ConnectionRecord> getConnectionRecords() throws ServiceException {
         EntityManager em = PersistenceHolder.getEntityManager();
+        em.getEntityManagerFactory().getCache().evictAll();
+
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c";
 

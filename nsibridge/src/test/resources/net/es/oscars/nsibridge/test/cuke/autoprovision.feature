@@ -1,3 +1,4 @@
+@wip
 Feature: set up oscars circuit when start time comes, tear down after end time
 
     Scenario: set up when start time arrives
@@ -10,12 +11,18 @@ Feature: set up oscars circuit when start time comes, tear down after end time
         When I assign random connId and corrId
 
         When I submit reserve
+        Then I wait up to 10000 ms until the "RSM" state is: "ReserveHeld"
+
+        When I assign a random corrId
+        When I submit reserveCommit
+        Then I wait up to 10000 ms until the "RSM" state is: "ReserveStart"
+
 
         When I assign a random corrId
         When I submit provision
 
         Then I wait up to 5000 ms until the "PSM" state is: "Provisioned"
-        When I wait up to 2000 ms until provMonitor schedules "SETUP"
+        When I wait up to 5000 ms until provMonitor schedules "SETUP"
 
         When I assign a random corrId
         When I submit release

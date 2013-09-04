@@ -14,6 +14,7 @@ import net.es.oscars.nsibridge.config.nsa.NSAStubConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.prov.*;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -52,6 +53,7 @@ public class SendNSIMessageTask extends Task  {
 
 
     public void onRun() throws TaskException {
+        log.debug(this.id+" starting");
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.getContext();
         NSAStubConfig stubConfig = ax.getBean("nsaStubConfig", NSAStubConfig.class);
@@ -129,34 +131,7 @@ public class SendNSIMessageTask extends Task  {
 
 
 
-
-            // set logging
-            LoggingInInterceptor in = new LoggingInInterceptor();
-            in.setPrettyLogging(true);
-
-            LoggingOutInterceptor out = new LoggingOutInterceptor();
-            out.setPrettyLogging(true);
-
-            JaxWsProxyFactoryBean fb = new JaxWsProxyFactoryBean();
-            fb.getInInterceptors().add(in);
-            fb.getOutInterceptors().add(out);
-
-            fb.setAddress(url.toString());
-
-            Map props = fb.getProperties();
-            if (props == null) {
-                props = new HashMap<String, Object>();
-            }
-            props.put("jaxb.additionalContextClasses",
-                    new Class[] {
-                            net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
-                    });
-            fb.setProperties(props);
-
-            fb.setServiceClass(ConnectionRequesterPort.class);
-            ConnectionRequesterPort port = (ConnectionRequesterPort) fb.create();
-
-
+            ConnectionRequesterPort port = RequesterPortHolder.getInstance().getPort(url);
 
 
             Holder outHolder = new Holder<CommonHeaderType>();
@@ -217,12 +192,20 @@ public class SendNSIMessageTask extends Task  {
 
                 // failures
                 case RESV_FL:
-                    st = NSI_Util.makeServiceException(connId, corrId);
-                    port.reserveFailed(connId, cst, st, outHeader, outHolder);
+                    try {
+                        st = NSI_Util.makeServiceException(connId, corrId);
+                        port.reserveFailed(connId, cst, st, outHeader, outHolder);
+                    } catch (ServiceException ex) {
+                        log.error(ex);
+                    }
                     break;
                 case RESV_CM_FL:
-                    st = NSI_Util.makeServiceException(connId, corrId);
-                    port.reserveCommitFailed(connId, cst, st, outHeader, outHolder);
+                    try {
+                        st = NSI_Util.makeServiceException(connId, corrId);
+                        port.reserveCommitFailed(connId, cst, st, outHeader, outHolder);
+                    } catch (ServiceException ex) {
+                        log.error(ex);
+                    }
                     break;
 
                 case ERROR:
@@ -277,14 +260,19 @@ public class SendNSIMessageTask extends Task  {
                     break;
 
                 case ERROR_EVENT:
-                    nr = DB_Util.getNotificationRecord(connId, notificationId);
-                    gc.setTime(nr.getTimestamp());
-                    cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
+                    try {
+                        nr = DB_Util.getNotificationRecord(connId, notificationId);
+                        gc.setTime(nr.getTimestamp());
+                        cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
 
-                    st = NSI_Util.makeServiceException(connId, corrId);
+                        st = NSI_Util.makeServiceException(connId, corrId);
 
-                    TypeValuePairListType tvl = new TypeValuePairListType();
-                    port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), tvl, st, outHeader, outHolder);
+                        TypeValuePairListType tvl = new TypeValuePairListType();
+                        port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), tvl, st, outHeader, outHolder);
+                    } catch (ServiceException ex) {
+                        log.error(ex);
+
+                    }
                     break;
 
                 // query callbacks
@@ -308,7 +296,6 @@ public class SendNSIMessageTask extends Task  {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             log.error(ex);
             this.onFail();
         }

@@ -52,13 +52,17 @@ public class ProvMonitor implements Job {
 
                     ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
                     if (rr == null) {
-                        log.debug("no committed reserve record for: "+connId);
+                        // log.debug("no committed reserve record for: "+connId);
                         continue;
+                    } else {
+                        // log.debug("found committed reserve record for: "+connId);
                     }
 
-                    if (rr.getStartTime().after(now) && rr.getEndTime().before(now)) {
+                    if (rr.getStartTime().before(now) && rr.getEndTime().after(now)) {
                         OscarsProvQueue.getInstance().scheduleOp(connId, OscarsOps.SETUP);
                         // log.info("should start SETUP: "+connId);
+                    } else {
+                        // log.debug("now: "+now+" start: "+rr.getStartTime()+" end: "+rr.getEndTime());
                     }
                 }
 

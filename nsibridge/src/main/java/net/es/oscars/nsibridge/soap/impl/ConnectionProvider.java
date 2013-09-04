@@ -60,9 +60,11 @@ public class ConnectionProvider implements ConnectionProviderPort {
             RequestProcessor.getInstance().startReserve(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
+        } catch (ServiceException ex) {
+            log.error(ex);
+            throw ex;
         } catch (Exception ex) {
             log.error(ex);
-            throw new RuntimeException(ex);
         }
     }
 
@@ -82,9 +84,11 @@ public class ConnectionProvider implements ConnectionProviderPort {
             RequestProcessor.getInstance().processSimple(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
+        } catch (ServiceException ex) {
+            log.error(ex);
+            throw ex;
         } catch (Exception ex) {
             log.error(ex);
-            throw new RuntimeException(ex);
         }
     }
 
@@ -104,9 +108,11 @@ public class ConnectionProvider implements ConnectionProviderPort {
             RequestProcessor.getInstance().processSimple(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
+        } catch (ServiceException ex) {
+            log.error(ex);
+            throw ex;
         } catch (Exception ex) {
             log.error(ex);
-            throw new RuntimeException(ex);
         }
     }
 
@@ -124,9 +130,11 @@ public class ConnectionProvider implements ConnectionProviderPort {
             RequestProcessor.getInstance().processSimple(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
+        } catch (ServiceException ex) {
+            log.error(ex);
+            throw ex;
         } catch (Exception ex) {
             log.error(ex);
-            throw new RuntimeException(ex);
         }
     }
 
@@ -145,9 +153,11 @@ public class ConnectionProvider implements ConnectionProviderPort {
             RequestProcessor.getInstance().processSimple(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
+        } catch (ServiceException ex) {
+            log.error(ex);
+            throw ex;
         } catch (Exception ex) {
             log.error(ex);
-            throw new RuntimeException(ex);
         }
     }
 
@@ -167,9 +177,11 @@ public class ConnectionProvider implements ConnectionProviderPort {
             RequestProcessor.getInstance().processSimple(req);
             CommonHeaderType outHeaderValue = req.getOutHeader();
             outHeader.value = outHeaderValue;
+        } catch (ServiceException ex) {
+            log.error(ex);
+            throw ex;
         } catch (Exception ex) {
             log.error(ex);
-            throw new RuntimeException(ex);
         }
     }
 

@@ -1,4 +1,3 @@
-@wip
 Feature: timeout reservation
 
     I want to verify I the reservation times out
