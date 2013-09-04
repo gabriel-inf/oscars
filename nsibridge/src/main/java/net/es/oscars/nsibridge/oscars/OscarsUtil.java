@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
+import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
@@ -24,7 +25,7 @@ public class OscarsUtil {
     public static void submitResv(ResvRequest resvRequest) throws TranslationException, ServiceException  {
         log.debug("submitResv start");
         String connId = resvRequest.getReserveType().getConnectionId();
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
 
         ResCreateContent rc = null;
         try {
@@ -146,7 +147,7 @@ public class OscarsUtil {
     public static void submitModify(ResvRequest resvRequest) throws TranslationException, ServiceException  {
         log.debug("submitModify start");
         String connId = resvRequest.getReserveType().getConnectionId();
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
 
         ModifyResContent mc = null;
         try {

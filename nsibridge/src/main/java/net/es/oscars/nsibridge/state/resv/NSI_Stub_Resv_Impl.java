@@ -28,11 +28,6 @@ public class NSI_Stub_Resv_Impl implements NsiResvMdl {
     }
 
     @Override
-    public UUID localTimeout(String correlationId) {
-        return null;
-    }
-
-    @Override
     public UUID localAbort(String correlationId) {
         return null;
     }

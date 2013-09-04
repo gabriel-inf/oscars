@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
+import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.utils.task.TaskException;
@@ -23,7 +24,7 @@ public class SMTransitionTask extends SMTask {
             this.getStateMachine().process(this.successEvent, this.correlationId);
             RequestHolder rh = RequestHolder.getInstance();
             String connId = rh.findConnectionId(correlationId);
-            NSI_Util.persistStateMachines(connId);
+            DB_Util.persistStateMachines(connId);
             log.debug("saving state machines for connId: "+connId);
 
         } catch (Exception ex) {

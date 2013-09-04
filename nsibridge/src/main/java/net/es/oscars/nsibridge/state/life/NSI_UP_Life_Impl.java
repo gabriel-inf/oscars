@@ -8,6 +8,7 @@ import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.EventEnumType;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.task.OscarsCancelTask;
 import net.es.oscars.nsibridge.task.OscarsTeardownTask;
@@ -84,7 +85,11 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.TERM_CF);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.TERM_CF);
+
         UUID taskId = null;
 
         try {
@@ -101,7 +106,13 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, connectionId, CallbackMessages.ERROR_EVENT);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.ERROR_EVENT);
+        // TODO: notification
+        // sendNsiMsg.setEventType(EventEnumType.FORCED_END);
+
         UUID taskId = null;
 
         try {

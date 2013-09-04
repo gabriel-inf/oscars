@@ -6,10 +6,8 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiProvMdl;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
-import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.task.*;
-import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -72,7 +70,11 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.PROV_CF);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.PROV_CF);
+
         UUID taskId = null;
         try {
             taskId = wf.schedule(sendNsiMsg, now + 1000);
@@ -87,7 +89,12 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.ERROR);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.ERROR);
+
+
         UUID taskId = null;
 
         try {
@@ -145,7 +152,11 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         UUID taskId = null;
 
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.REL_CF);
+
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.REL_CF);
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);
@@ -161,8 +172,13 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         long now = new Date().getTime();
         UUID taskId = null;
 
+
         Workflow wf = Workflow.getInstance();
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.ERROR);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.ERROR);
+
 
         try {
             wf.schedule(sendNsiMsg, now + 1000);

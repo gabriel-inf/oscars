@@ -8,6 +8,8 @@
         <class>net.es.oscars.nsibridge.beans.db.ResvRecord</class>
         <class>net.es.oscars.nsibridge.beans.db.DataplaneStatusRecord</class>
         <class>net.es.oscars.nsibridge.beans.db.OscarsStatusRecord</class>
+        <class>net.es.oscars.nsibridge.beans.db.ExceptionRecord</class>
+        <class>net.es.oscars.nsibridge.beans.db.NotificationRecord</class>
         <properties>
             <property name="hibernate.ejb.cfgfile" value="hibernate.xml"/>
         </properties>

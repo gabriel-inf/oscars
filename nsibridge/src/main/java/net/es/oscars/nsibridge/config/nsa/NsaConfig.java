@@ -7,11 +7,20 @@ import java.util.List;
 public class NsaConfig {
     private String nsaId = "";
     private String protocolVersion = "";
+    private String serviceType = "";
     private List<StpConfig> stps = new ArrayList<StpConfig>();
 
     public NsaConfig() {
 
     };
+
+    public String getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
+    }
 
     public String getProtocolVersion() {
         return protocolVersion;

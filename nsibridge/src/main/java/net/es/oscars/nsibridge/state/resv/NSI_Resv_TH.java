@@ -57,7 +57,7 @@ public class NSI_Resv_TH implements TransitionHandler {
                 } else if (toState == ReservationStateEnumType.RESERVE_ABORTING) {
                     taskIds.add(mdl.localAbort(correlationId));
                 } else if (toState == ReservationStateEnumType.RESERVE_TIMEOUT) {
-                    taskIds.add(mdl.localTimeout(correlationId));
+                    taskIds.add(mdl.sendRsvTimeout(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }

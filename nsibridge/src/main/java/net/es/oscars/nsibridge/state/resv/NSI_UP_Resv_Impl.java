@@ -9,6 +9,7 @@ import net.es.oscars.nsibridge.ifces.NsiResvMdl;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.*;
+import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
@@ -52,7 +53,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         ConnectionRecord cr = null;
         try {
             NSI_Util.isConnectionOK(connectionId);
-            cr = NSI_Util.getConnectionRecord(connectionId);
+            cr = DB_Util.getConnectionRecord(connectionId);
         } catch (ServiceException e) {
             try {
                 NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
@@ -85,10 +86,13 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         } catch (TaskException e) {
             log.error(e);
             try {
+                DB_Util.saveException(connectionId, correlationId, e.toString());
                 NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                 rh.removeResvRequest(connectionId);
+            } catch (ServiceException ex) {
+                log.error(ex);
             } catch (StateException ex) {
-                ex.printStackTrace();
+                log.error(ex);
             }
         }
 
@@ -98,8 +102,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     @Override
     public UUID localHold(String correlationId) {
         UUID taskId = null;
-
-
         log.debug("localHold: " + connectionId);
         // nothing to do - everything is done in the check phase
         return taskId;
@@ -113,15 +115,21 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
 
+        String exString = "";
+
         boolean okCommit = true;
         try {
-            NSI_Util.commitResvRecord(connectionId);
+            DB_Util.commitResvRecord(connectionId);
             Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_CF, correlationId);
             taskId = taskIds.iterator().next();
-            NSI_Util.persistStateMachines(connectionId);
+            DB_Util.persistStateMachines(connectionId);
         } catch (ServiceException ex) {
+            log.error(ex);
+            exString = ex.toString();
             okCommit = false;
         } catch (StateException ex) {
+            log.error(ex);
+            exString = ex.toString();
             okCommit = false;
         }
 
@@ -129,48 +137,16 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
             try {
                 Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_FL, correlationId);
                 taskId = taskIds.iterator().next();
-                NSI_Util.persistStateMachines(connectionId);
-            }catch (StateException ex) {
+                DB_Util.saveException(connectionId, correlationId, exString);
+                DB_Util.persistStateMachines(connectionId);
+            } catch (StateException ex) {
                 log.error(ex);
-            }catch (ServiceException ex) {
+            } catch (ServiceException ex) {
                 log.error(ex);
             }
         }
 
         return taskId;
-    }
-
-    @Override
-    public UUID localTimeout(String correlationId) {
-
-        UUID taskId = null;
-
-        try {
-            NSI_Util.abortResvRecord(connectionId);
-        } catch (ServiceException ex) {
-            log.error(ex);
-        }
-
-        long now = new Date().getTime();
-        Workflow wf = Workflow.getInstance();
-
-        Double d = (tc.getTaskInterval() * 1000);
-        Long when = now + d.longValue();
-
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, connectionId, CallbackMessages.RESV_TIMEOUT);
-
-        try {
-            taskId = wf.schedule(sendNsiMsg, when);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
-
-
-
-        return taskId;
-
-
-
     }
 
     @Override
@@ -181,27 +157,33 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
+        String exString = "";
 
         ConnectionRecord cr = null;
         try {
             NSI_Util.isConnectionOK(connectionId);
-            cr = NSI_Util.getConnectionRecord(connectionId);
+            cr = DB_Util.getConnectionRecord(connectionId);
             if (cr.getOscarsGri() == null) {
                 okAbort = false;
             }
         } catch (ServiceException e) {
-            e.printStackTrace();
+            log.error(e);
             okAbort = false;
         }
 
         try {
-            NSI_Util.abortResvRecord(connectionId);
+            DB_Util.abortResvRecord(connectionId);
             Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_CF, correlationId);
             taskId = taskIds.iterator().next();
-            NSI_Util.persistStateMachines(connectionId);
+            DB_Util.persistStateMachines(connectionId);
         } catch (ServiceException ex) {
+            exString = ex.toString();
+            log.error(ex);
+
             okAbort = false;
         } catch (StateException ex) {
+            exString = ex.toString();
+            log.error(ex);
             okAbort = false;
         }
 
@@ -209,8 +191,9 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         if (!okAbort) {
             try {
                 Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_FL, correlationId);
+                DB_Util.saveException(connectionId, correlationId, exString);
                 taskId = taskIds.iterator().next();
-                NSI_Util.persistStateMachines(connectionId);
+                DB_Util.persistStateMachines(connectionId);
             } catch (StateException ex) {
                 log.error(ex);
             } catch (ServiceException ex) {
@@ -255,8 +238,12 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.RESV_CF);
 
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.RESV_CF);
+
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
@@ -275,7 +262,10 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
 
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.RESV_FL);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.RESV_FL);
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
@@ -295,7 +285,10 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
 
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.RESV_CM_CF);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.RESV_CM_CF);
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
@@ -315,7 +308,10 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
 
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.RESV_CM_FL);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.RESV_CM_FL);
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
@@ -334,7 +330,11 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
 
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, null, CallbackMessages.RESV_AB_CF);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.RESV_AB_CF);
+
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
@@ -346,20 +346,36 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
     @Override
     public UUID sendRsvTimeout(String correlationId) {
+
+        UUID taskId = null;
+
+        try {
+            DB_Util.abortResvRecord(connectionId);
+        } catch (ServiceException ex) {
+            log.error(ex);
+        }
+
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
-        UUID taskId = null;
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
 
-        Task sendNsiMsg = new SendNSIMessageTask(correlationId, connectionId, CallbackMessages.RESV_TIMEOUT);
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.RESV_TIMEOUT);
+
+
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
+
+
+
         return taskId;
     }
 

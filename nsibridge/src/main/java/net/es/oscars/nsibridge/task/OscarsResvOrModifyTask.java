@@ -33,6 +33,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
     @Override
     public void onRun() throws TaskException {
         log.debug(this.id + " starting");
+        String exceptionString = "";
         try {
             this.runstate = RunState.RUNNING;
             this.getTimeline().setStarted(new Date().getTime());
@@ -45,11 +46,13 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             String connId = req.getReserveType().getConnectionId();
 
 
-            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
             if (cr!= null) {
                 log.debug("found connection entry for connId: "+connId);
             } else {
-                throw new TaskException("could not find connection entry for connId: "+connId);
+                exceptionString = "could not find connection entry for connId: "+connId;
+
+                throw new TaskException(exceptionString);
             }
 
             OscarsStatusRecord or = cr.getOscarsStatusRecord();
@@ -68,16 +71,20 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 OscarsLogicAction resvAction = OscarsStateLogic.isOperationNeeded(OscarsOps.RESERVE, state);
 
                 while (modAction.equals(OscarsLogicAction.ASK_LATER) || resvAction.equals(OscarsLogicAction.ASK_LATER)) {
+                    exceptionString = "";
                     Set<OscarsOps> ops = new HashSet<OscarsOps>();
                     ops.add(OscarsOps.MODIFY);
                     ops.add(OscarsOps.RESERVE);
                     try {
                         OscarsUtil.pollUntilAnOpAllowed(ops, cr, this.id);
                     } catch (TranslationException ex) {
+                        exceptionString += ex.toString();
                         log.error(ex);
                         try {
                             this.getStateMachine().process(this.failEvent, this.correlationId);
-                            NSI_Util.persistStateMachines(connId);
+                            DB_Util.persistStateMachines(connId);
+                            DB_Util.saveException(connId, correlationId, exceptionString);
+                            return;
                         } catch (StateException ex1) {
                             log.error(ex1);
                         }
@@ -107,7 +114,10 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             } catch (TranslationException ex) {
                 log.error(ex);
                 this.getStateMachine().process(this.failEvent, this.correlationId);
-                NSI_Util.persistStateMachines(connId);
+                DB_Util.persistStateMachines(connId);
+                exceptionString = ex.toString();
+                DB_Util.saveException(connId, correlationId, exceptionString);
+
                 this.onSuccess();
                 return;
             }
@@ -115,8 +125,10 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
             // if we still cannot perform the operation, fail
             if (!action.equals(OscarsLogicAction.YES)) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
-                NSI_Util.persistStateMachines(connId);
+                DB_Util.persistStateMachines(connId);
                 this.onSuccess();
+                exceptionString = "could not perform operation after trying for a while";
+                DB_Util.saveException(connId, correlationId, exceptionString);
                 return;
             }
 
@@ -133,14 +145,17 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 }
                 submittedOK = true;
             } catch (TranslationException ex) {
+                exceptionString = ex.toString();
                 log.error(ex);
             } catch (ServiceException ex) {
+                exceptionString = ex.toString();
                 log.error(ex);
             }
 
             if (!submittedOK) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
-                NSI_Util.persistStateMachines(connId);
+                DB_Util.saveException(connId, correlationId, exceptionString);
+                DB_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
             }
@@ -150,13 +165,15 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 if (os.equals(OscarsStates.RESERVED)) {
                     this.getStateMachine().process(this.successEvent, this.correlationId);
                     this.onSuccess();
-                    NSI_Util.persistStateMachines(connId);
+                    DB_Util.persistStateMachines(connId);
                     return;
                 }
             } catch (ServiceException ex) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
                 this.onSuccess();
-                NSI_Util.persistStateMachines(connId);
+                DB_Util.persistStateMachines(connId);
+                exceptionString = ex.toString();
+                DB_Util.saveException(connId, correlationId, exceptionString);
                 return;
             }
 

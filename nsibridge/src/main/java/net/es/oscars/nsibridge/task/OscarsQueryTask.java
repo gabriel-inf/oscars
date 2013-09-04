@@ -42,7 +42,7 @@ public class OscarsQueryTask extends Task  {
 
 
 
-            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
 
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
 

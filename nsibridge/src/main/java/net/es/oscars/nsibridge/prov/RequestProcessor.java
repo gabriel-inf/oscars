@@ -39,9 +39,9 @@ public class RequestProcessor {
 
         log.debug("startReserve for connId: "+connId+" corrId:"+corrId);
 
-        NSI_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId(), request.getInHeader().getReplyTo());
+        DB_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId(), request.getInHeader().getReplyTo());
 
-        if (!NSI_Util.restoreStateMachines(connId)) {
+        if (!DB_Util.restoreStateMachines(connId)) {
             NSI_Util.makeNewStateMachines(connId);
         }
 
@@ -78,13 +78,13 @@ public class RequestProcessor {
                 log.debug("connId: "+connId+"  task id:  " +taskId);
             }
 
-            NSI_Util.createResvRecord(connId, request.getReserveType());
+            DB_Util.createResvRecord(connId, request.getReserveType());
 
         } catch (StateException ex) {
             log.error(ex);
             throw new ServiceException("resv state machine does not allow transition: "+connId);
         } finally {
-            NSI_Util.persistStateMachines(connId);
+            DB_Util.persistStateMachines(connId);
         }
 
         CommonHeaderType inHeader = request.getInHeader();
@@ -98,7 +98,7 @@ public class RequestProcessor {
         String corrId = request.getInHeader().getCorrelationId();
 
         log.debug("processSimple: connId: " + connId + " corrId: " + corrId+ " type: "+request.getRequestType());
-        ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+        ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
         if (cr == null) {
             throw new ServiceException("internal error: could not find existing connection for new reservation with connectionId: "+connId);
         }
@@ -106,7 +106,7 @@ public class RequestProcessor {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         if (!smh.hasStateMachines(connId)) {
             log.info("loading state machines for "+connId);
-            if (!NSI_Util.restoreStateMachines(connId)) {
+            if (!DB_Util.restoreStateMachines(connId)) {
                 throw new ServiceException("internal error: could not initialize state machines for connectionId: "+connId);
             }
         }
@@ -152,7 +152,7 @@ public class RequestProcessor {
             log.error(ex);
             throw new ServiceException("state machine does not allow transition: "+connId);
         } finally {
-            NSI_Util.persistStateMachines(connId);
+            DB_Util.persistStateMachines(connId);
         }
         log.debug("processSimple: "+connId+" corrId: "+corrId+" taskIds: "+ StringUtils.join(request.getTaskIds(), ","));
 
@@ -169,7 +169,7 @@ public class RequestProcessor {
         //lookup based on connection ids
         for(String connId : request.getQuery().getConnectionId()){
             hasFilters = true;
-            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
             if(cr != null){
                 connRecords.add(cr);
             }
@@ -178,12 +178,12 @@ public class RequestProcessor {
         //lookup based on NSA GRI
         for(String gri : request.getQuery().getGlobalReservationId()){
             hasFilters = true;
-            connRecords.addAll(NSI_Util.getConnectionRecordsByGri(gri));
+            connRecords.addAll(DB_Util.getConnectionRecordsByGri(gri));
         }
 
         //send list
         if(!hasFilters){
-            connRecords = NSI_Util.getConnectionRecords();
+            connRecords = DB_Util.getConnectionRecords();
         }
 
         //format result

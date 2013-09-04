@@ -20,8 +20,13 @@ public class ConnectionRecord {
     protected String notifyUrl;
     protected String nsiGlobalGri;
 
+
+    protected Set<NotificationRecord> notificationRecords= new HashSet<NotificationRecord>();
     protected Set<DataplaneStatusRecord> dataplaneStatusRecords = new HashSet<DataplaneStatusRecord>();
     protected Set<ResvRecord> resvRecords = new HashSet<ResvRecord>();
+    protected Set<ExceptionRecord> exceptionRecords = new HashSet<ExceptionRecord>();
+
+
     protected OscarsStatusRecord oscarsStatusRecord;
 
     protected ProvisionStateEnumType provisionState;
@@ -54,6 +59,27 @@ public class ConnectionRecord {
 
     public void setConnectionId(String connectionId) {
         this.connectionId = connectionId;
+    }
+
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable
+    public Set<ExceptionRecord> getExceptionRecords() {
+        return exceptionRecords;
+    }
+
+    public void setExceptionRecords(Set<ExceptionRecord> exceptionRecords) {
+        this.exceptionRecords = exceptionRecords;
+    }
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable
+    public Set<NotificationRecord> getNotificationRecords() {
+        return notificationRecords;
+    }
+
+    public void setNotificationRecords(Set<NotificationRecord> notificationRecords) {
+        this.notificationRecords = notificationRecords;
     }
 
     @OneToMany(cascade = CascadeType.ALL)
@@ -132,6 +158,10 @@ public class ConnectionRecord {
     public void setNotifyUrl(String notifyUrl) {
         this.notifyUrl = notifyUrl;
     }
+
+
+
+
 
     public static ResvRecord getCommittedResvRecord(ConnectionRecord cr) {
         ResvRecord res = null;

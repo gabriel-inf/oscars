@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.StateException;
+import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
@@ -33,7 +34,7 @@ public class ResvTimeoutMonitor implements Job {
         Date now = new Date();
         List<ConnectionRecord> recordList;
         try {
-            recordList = NSI_Util.getConnectionRecords();
+            recordList = DB_Util.getConnectionRecords();
 
         } catch (ServiceException ex) {
             log.error(ex);
@@ -48,7 +49,7 @@ public class ResvTimeoutMonitor implements Job {
             String connId = cr.getConnectionId();
 
             if (cr.getReserveState() == null) {
-                log.debug("no reserve state for connId: "+connId);
+                log.debug("no reserve state for connId: " + connId);
                 continue;
             }
 
@@ -86,7 +87,7 @@ public class ResvTimeoutMonitor implements Job {
                 log.debug("timed out connId: "+connId+" RR v: "+rr.getVersion()+" timeout:" +resvTimeout);
                 try {
                     rsm.process(NSI_Resv_Event.RESV_TIMEOUT, UUID.randomUUID().toString());
-                    NSI_Util.persistStateMachines(connId);
+                    DB_Util.persistStateMachines(connId);
                 } catch (ServiceException ex) {
                     log.error(ex);
 

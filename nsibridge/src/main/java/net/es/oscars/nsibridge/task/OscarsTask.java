@@ -4,6 +4,7 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
+import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
 import net.es.oscars.nsibridge.prov.TranslationException;
@@ -43,28 +44,27 @@ public abstract class OscarsTask extends SMTask {
         try {
             super.onRun();
 
-            ConnectionRecord cr = NSI_Util.getConnectionRecord(connId);
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
             if (cr == null) {
-                processFail(connId);
+                processFail();
                 this.onSuccess();
+                return;
             }
 
             String oscarsGri = cr.getOscarsGri();
             if (oscarsGri == null) {
-                log.error("no oscars GRI");
                 processFail(connId);
                 this.onSuccess();
+                return;
             }
             OscarsStatusRecord or = cr.getOscarsStatusRecord();
             if (or == null) {
-                log.error("no oscars record");
-                processFail(connId);
+                processFail(connId, "no oscars record");
                 this.onSuccess();
             }
             OscarsStates state = OscarsStates.valueOf(or.getStatus());
             if (state == null) {
-                log.error("no oscars state");
-                processFail(connId);
+                processFail(connId, "no oscars state");
                 this.onSuccess();
             }
 
@@ -80,12 +80,11 @@ public abstract class OscarsTask extends SMTask {
                     break;
                 case NO:
                     this.getStateMachine().process(successEvent, correlationId);
-                    NSI_Util.persistStateMachines(connId);
+                    DB_Util.persistStateMachines(connId);
                     this.onSuccess();
                     return;
                 case TIMED_OUT:
-                    log.error("unexpected timeout");
-                    processFail(connId);
+                    processFail(connId, "unexpected timeout");
                     return;
             }
 
@@ -102,18 +101,15 @@ public abstract class OscarsTask extends SMTask {
                 switch (allowed) {
                     // should never return this
                     case ASK_LATER:
-                        log.error("unexpected ask_later");
-                        processFail(connId);
+                        processFail(connId, "unexpected ask_later");
                         return;
                     // if we get this we can not proceed
                     case NO:
-                        log.error("not allowed (after waiting)");
-                        processFail(connId);
+                        processFail(connId, "not allowed (after waiting)");
                         break;
                     // if we get this we can not proceed
                     case TIMED_OUT:
-                        log.error("timed out");
-                        processFail(connId);
+                        processFail(connId, "timed out");
                         return;
                     // only now can we try to submit
                     case YES:
@@ -132,18 +128,16 @@ public abstract class OscarsTask extends SMTask {
                         break;
                     case NO:
                         this.getStateMachine().process(successEvent, correlationId);
-                        NSI_Util.persistStateMachines(connId);
+                        DB_Util.persistStateMachines(connId);
                         this.onSuccess();
                         return;
                     // should never receive this
                     case ASK_LATER:
-                        log.error("unexpected ask_later");
-                        processFail(connId);
+                        processFail(connId, "unexpected ask_later");
                         return;
                     // should never receive this
                     case TIMED_OUT:
-                        log.error("unexpected timeout");
-                        processFail(connId);
+                        processFail(connId, "unexpected timeout");
                         return;
                 }
             }
@@ -155,12 +149,12 @@ public abstract class OscarsTask extends SMTask {
             OscarsLogicAction result = OscarsStateLogic.didOperationSucceed(oscarsOp, os);
             if (result.equals(OscarsLogicAction.YES)) {
                 this.getStateMachine().process(successEvent, correlationId);
-                NSI_Util.persistStateMachines(connId);
+                DB_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
 
             } else {
-                processFail(connId);
+                processFail(connId, "operation failed");
                 return;
             }
 
@@ -184,12 +178,24 @@ public abstract class OscarsTask extends SMTask {
 
 
 
-    protected void processFail(String connId) throws StateException, ServiceException, TaskException {
-        this.getStateMachine().process(failEvent, correlationId);
-        NSI_Util.persistStateMachines(connId);
-        this.onSuccess();
+
+    protected void processFail(String connId, String exceptionString) throws StateException, ServiceException, TaskException {
+        log.error(exceptionString);
+        DB_Util.saveException(connId, correlationId, exceptionString);
+        this.processFail(connId);
     }
 
+
+    protected void processFail(String connId) throws StateException, ServiceException, TaskException {
+        this.processFail();
+        DB_Util.persistStateMachines(connId);
+    }
+
+
+    protected void processFail() throws StateException, ServiceException, TaskException {
+        this.getStateMachine().process(failEvent, correlationId);
+        this.onSuccess();
+    }
 
     public abstract void submitOscars(ConnectionRecord cr) throws ServiceException;
 
