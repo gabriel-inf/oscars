@@ -57,8 +57,9 @@ public class SimpleCLIClient {
             }
             
             if(opts.has("r")){
-                outHolder.value.setReplyTo((String) opts.valueOf("r"));
+                url = (String) opts.valueOf("r");
                 new URL(url);
+                header.setReplyTo(url);
             }
             
             if(opts.has("i")){
@@ -69,8 +70,9 @@ public class SimpleCLIClient {
             }
 
             if(opts.has("n")){
-                outHolder.value.setRequesterNSA((String) opts.valueOf("n"));
+                header.setRequesterNSA((String) opts.valueOf("n"));
             }
+
             if (opts.has("o")) {
                 srt = SimpleRequestType.valueOf((String) opts.valueOf("o"));
             }

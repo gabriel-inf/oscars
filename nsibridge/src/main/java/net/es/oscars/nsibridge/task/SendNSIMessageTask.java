@@ -110,6 +110,11 @@ public class SendNSIMessageTask extends Task  {
                 log.debug("corrId: "+corrId+" replyTo: "+replyTo+" type:"+message);
             }
 
+            if (replyTo == null) {
+                log.error("null replyTo");
+                this.onSuccess();
+                return;
+            }
 
             URL url;
             try {
