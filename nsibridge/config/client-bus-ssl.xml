@@ -37,7 +37,7 @@
         </sec:trustManagers>
         <sec:keyManagers keyPassword="client-key">
             <sec:keyStore type="JKS" password="client-keystore"
-                          file="client-keystore"/>
+                          file="config/client-keystore.jks"/>
         </sec:keyManagers>
 
 

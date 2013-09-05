@@ -19,28 +19,30 @@ svDN="CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown"
 tmpFile="config/temp.rfc"
 
 
-echo "client-bus-ssl.xml config:\n\n"
+echo "client-bus-ssl.xml config:"
 echo "
+
       <sec:trustManagers>
           <sec:keyStore type=\"JKS\" password=\"$clTruststorePass\"
                file=\"$clTruststore\"/>
       </sec:trustManagers>
       <sec:keyManagers keyPassword=\"$clKeyPass\">
            <sec:keyStore type=\"JKS\" password=\"$clKeystorePass\"
-                file=\"$clKeystorePass\"/>
+                file=\"$clKeystore\"/>
       </sec:keyManagers>
 
       "
 
-echo "server-bus-ssl.xml config:\n\n"
+echo "server-bus-ssl.xml config:"
 echo "
+
       <sec:trustManagers>
           <sec:keyStore type=\"JKS\" password=\"$svTruststorePass\"
                file=\"$svTruststore\"/>
       </sec:trustManagers>
       <sec:keyManagers keyPassword=\"$svKeyPass\">
            <sec:keyStore type=\"JKS\" password=\"$svKeystorePass\"
-                file=\"$svKeystorePass\"/>
+                file=\"$svKeystore\"/>
       </sec:keyManagers>
       "
 

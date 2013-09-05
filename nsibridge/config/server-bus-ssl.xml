@@ -22,7 +22,7 @@
                     </sec:trustManagers>
                     <sec:keyManagers keyPassword="server-key">
                         <sec:keyStore type="JKS" password="server-keystore"
-                                      file="server-keystore"/>
+                                      file="config/server-keystore.jks"/>
                     </sec:keyManagers>
 
                     <sec:cipherSuitesFilter>
