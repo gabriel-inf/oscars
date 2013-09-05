@@ -19,7 +19,7 @@ public class ScheduleUtils {
 
         SimpleTrigger trigger = new SimpleTrigger("ProvTicker", "ProvTicker");
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        trigger.setRepeatInterval(500);
+        trigger.setRepeatInterval(1000);
         JobDetail jobDetail = new JobDetail("ProvTicker", "ProvTicker", ProvMonitor.class);
         ts.getScheduler().scheduleJob(jobDetail, trigger);
         isProvMonitorRunning = true;
@@ -41,7 +41,7 @@ public class ScheduleUtils {
 
         SimpleTrigger trigger = new SimpleTrigger("ResvMonitorTicker", "ResvMonitorTicker");
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        trigger.setRepeatInterval(500);
+        trigger.setRepeatInterval(1000);
         JobDetail jobDetail = new JobDetail("ResvMonitorTicker", "ResvMonitorTicker", ResvTimeoutMonitor.class);
         ts.getScheduler().scheduleJob(jobDetail, trigger);
         isProvMonitorRunning = true;

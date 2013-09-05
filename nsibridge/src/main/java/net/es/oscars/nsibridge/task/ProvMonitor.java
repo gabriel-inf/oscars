@@ -51,6 +51,7 @@ public class ProvMonitor implements Job {
             }
 
             OscarsProvQueue opq = OscarsProvQueue.getInstance();
+            // log.debug("considering connId: "+connId+" ps: "+cr.getProvisionState()+" record: "+now);
 
             try {
                 switch (cr.getProvisionState()) {

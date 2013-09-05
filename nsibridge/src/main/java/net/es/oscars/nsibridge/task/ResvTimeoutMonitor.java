@@ -42,8 +42,6 @@ public class ResvTimeoutMonitor implements Job {
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
 
         for (ConnectionRecord cr : recordList) {
-            EntityManager em = PersistenceHolder.getEntityManager();
-            em.refresh(cr);
 
             String connId = cr.getConnectionId();
 

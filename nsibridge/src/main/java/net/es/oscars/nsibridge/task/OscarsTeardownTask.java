@@ -10,9 +10,9 @@ public class OscarsTeardownTask extends OscarsTask {
     private static final Logger log = Logger.getLogger(OscarsTeardownTask.class);
 
     public void submitOscars(ConnectionRecord cr) throws ServiceException {
-        log.info("submitting setup");
+        log.info("submitting teardown");
         OscarsUtil.submitTeardown(cr);
-        log.info("submitted setup");
+        log.info("submitted teardown");
     }
 
 

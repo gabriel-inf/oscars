@@ -44,8 +44,7 @@ public class OscarsProvQueue {
                 // the last thing we did was to teardown this connId
                 return true;
             }
-        }
-        if (op.equals(OscarsOps.TEARDOWN)) {
+        } else if (op.equals(OscarsOps.TEARDOWN)) {
             // we have never set up this connId; do not tear down
             if (lastScheduled.get(connId) == null) {
                 return false;
@@ -57,10 +56,11 @@ public class OscarsProvQueue {
                 // the last thing we did was to set up this connId
                 return true;
             }
+        } else {
+            log.error("invalid op "+op);
+            // should never get here
+            return false;
         }
-        // should never get here
-        return true;
-
     }
 
     public synchronized void scheduleOp(String connId, OscarsOps op) throws TaskException {
@@ -99,7 +99,6 @@ public class OscarsProvQueue {
 
     public OscarsOps getScheduled(String connId) {
         return lastScheduled.get(connId);
-
     }
 
 }

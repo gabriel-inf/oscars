@@ -252,7 +252,7 @@ public class RequestProcessor {
     public void recursiveQuery(QueryRequest request) throws ServiceException {
         Schedule ts = Schedule.getInstance();
         String jobId = "recursiveQuerySumm-" + UUID.randomUUID().toString();
-        
+
         SimpleTrigger trigger = new SimpleTrigger(jobId, "recursiveQuery");
         JobDetail jobDetail = new JobDetail(jobId, "recursiveQuery", QueryRecursiveJob.class);
         jobDetail.getJobDataMap().put(QueryRecursiveJob.PARAM_REQUEST, request);
@@ -262,7 +262,7 @@ public class RequestProcessor {
             throw new ServiceException("Unable to schedule recursive query job: " + e.getMessage());
         }
     }
-    
+
     private CommonHeaderType makeOutHeader(CommonHeaderType inHeader) {
         CommonHeaderType outHeader = new CommonHeaderType();
         outHeader.setCorrelationId(inHeader.getCorrelationId());
@@ -271,7 +271,6 @@ public class RequestProcessor {
         outHeader.setRequesterNSA(inHeader.getRequesterNSA());
         return outHeader;
     }
-    
 
 
 

@@ -24,10 +24,12 @@ import javax.persistence.EntityManager;
 import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class DB_Util {
     private static final Logger log = Logger.getLogger(DB_Util.class);
+    private static HashMap<String, ConnectionRecord> connectionRecords = new HashMap<String, ConnectionRecord>();
 
 
     public static void createResvRecord(String connId, ReserveType rt) throws ServiceException {
@@ -311,24 +313,27 @@ public class DB_Util {
 
     }
 
-    public static ConnectionRecord getConnectionRecord(String connectionId) throws ServiceException {
-        EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
-        String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connectionId+"'";
 
+
+
+
+    public static ConnectionRecord getConnectionRecord(String connectionId) throws ServiceException {
+
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getEntityManagerFactory().getCache().evictAll();
+        em.getTransaction().begin();
+        em.flush();
+
+        String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connectionId+"'";
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
-        em.getEntityManagerFactory().getCache().evictAll();
+
         if (recordList.size() == 0) {
             return null;
         } else if (recordList.size() > 1) {
             throw new ServiceException("internal error: found multiple connection records ("+recordList.size()+") with connectionId: "+connectionId);
         } else {
             em.refresh(recordList.get(0));
-            // should not be needed
-            for (ResvRecord rr : recordList.get(0).getResvRecords()) {
-                em.refresh(rr);
-            }
             return recordList.get(0);
         }
     }
@@ -336,29 +341,32 @@ public class DB_Util {
 
 
     public static List<ConnectionRecord> getConnectionRecords() throws ServiceException {
-        EntityManager em = PersistenceHolder.getEntityManager();
-        em.getEntityManagerFactory().getCache().evictAll();
-
-        em.getTransaction().begin();
-        String query = "SELECT c FROM ConnectionRecord c";
 
         List<ConnectionRecord> results = new ArrayList<ConnectionRecord>();
 
+        EntityManager em = PersistenceHolder.getEntityManager();
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        em.getTransaction().begin();
+        em.flush();
+
+        String query = "SELECT c FROM ConnectionRecord c";
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
-        em.getTransaction().commit();
         for (ConnectionRecord cr: recordList) {
+            em.refresh(cr);
             results.add(cr);
         }
+        em.getTransaction().commit();
 
 
-        return recordList;
+        return results;
     }
 
     public static List<ConnectionRecord> getConnectionRecordsByGri(String nsiGlobalGri) throws ServiceException {
         EntityManager em = PersistenceHolder.getEntityManager();
+        em.getEntityManagerFactory().getCache().evictAll();
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c WHERE c.nsiGlobalGri = '"+nsiGlobalGri+"'";
-
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
 

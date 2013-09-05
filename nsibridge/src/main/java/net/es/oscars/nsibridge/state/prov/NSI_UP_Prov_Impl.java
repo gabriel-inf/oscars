@@ -64,6 +64,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
     @Override
     public UUID sendProvCF(String correlationId) {
+        log.debug("sendProvCF start");
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -118,6 +119,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
     @Override
     public UUID sendRelCF(String correlationId) {
+        log.debug("sendRelCF start");
         long now = new Date().getTime();
         UUID taskId = null;
 
@@ -141,6 +143,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
     // failures
     @Override
     public UUID notifyProvFL(String correlationId) {
+        log.debug("notifyProvFL start");
         long now = new Date().getTime();
 
         Workflow wf = Workflow.getInstance();
@@ -190,6 +193,12 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         try {
             ConnectionRecord cr = DB_Util.getConnectionRecord(connectionId);
             OscarsStatusRecord or = cr.getOscarsStatusRecord();
+            if (or == null) {
+                log.debug("no oscars record found for "+connectionId);
+                return null;
+            }
+
+
             ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
             DataplaneStatusRecord dr = new DataplaneStatusRecord();
 
