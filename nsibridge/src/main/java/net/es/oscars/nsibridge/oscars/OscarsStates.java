@@ -9,6 +9,7 @@ public enum OscarsStates {
     UNKNOWN,
 
     CREATED,
+    ACCEPTED,
     INPATHCALCULATION,
     INCOMMIT,
     INTEARDOWN,

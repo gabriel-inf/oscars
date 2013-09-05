@@ -67,6 +67,7 @@ public class OscarsStateLogic {
         allow.put(OscarsStates.INCOMMIT, waitOps);
         allow.put(OscarsStates.INPATHCALCULATION, waitOps);
         allow.put(OscarsStates.CREATED, waitOps);
+        allow.put(OscarsStates.ACCEPTED, waitOps);
 
         // not allowed
         HashMap<OscarsOps, OscarsLogicAction> noOps = new HashMap<OscarsOps, OscarsLogicAction>();
@@ -107,9 +108,11 @@ public class OscarsStateLogic {
         need.put(OscarsStates.INCOMMIT, waitOps);
         need.put(OscarsStates.INPATHCALCULATION, waitOps);
         need.put(OscarsStates.CREATED, waitOps);
-
+        need.put(OscarsStates.ACCEPTED, waitOps);
         need.put(OscarsStates.FAILED, noOps);
         need.put(OscarsStates.UNKNOWN, noOps);
+
+
 
 
         success = new HashMap<OscarsOps, HashMap<OscarsStates, OscarsLogicAction>>();
@@ -117,8 +120,9 @@ public class OscarsStateLogic {
         resvSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.YES);
         resvSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.YES);
         resvSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.ASK_LATER);
-        resvSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.ASK_LATER);
         resvSuccess.put(OscarsStates.CREATED, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.ACCEPTED, OscarsLogicAction.ASK_LATER);
+        resvSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.ASK_LATER);
         resvSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.ASK_LATER);
         resvSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
         resvSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
@@ -134,6 +138,7 @@ public class OscarsStateLogic {
         cancelSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.NO);
         cancelSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.NO);
         cancelSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
+        cancelSuccess.put(OscarsStates.ACCEPTED, OscarsLogicAction.NO);
         cancelSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.NO);
         cancelSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
         cancelSuccess.put(OscarsStates.UNSUBMITTED, OscarsLogicAction.NO);
@@ -146,6 +151,7 @@ public class OscarsStateLogic {
         modSuccess.put(OscarsStates.RESERVED, OscarsLogicAction.YES);
         modSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.YES);
         modSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.ASK_LATER);
+        modSuccess.put(OscarsStates.ACCEPTED, OscarsLogicAction.ASK_LATER);
         modSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.ASK_LATER);
         modSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
         modSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.ASK_LATER);
@@ -161,6 +167,7 @@ public class OscarsStateLogic {
         setupSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.YES);
         setupSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.NO);
         setupSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.NO);
+        setupSuccess.put(OscarsStates.ACCEPTED, OscarsLogicAction.NO);
         setupSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
         setupSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.ASK_LATER);
         setupSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.NO);
@@ -176,6 +183,7 @@ public class OscarsStateLogic {
         teardownSuccess.put(OscarsStates.ACTIVE, OscarsLogicAction.NO);
         teardownSuccess.put(OscarsStates.INCOMMIT, OscarsLogicAction.NO);
         teardownSuccess.put(OscarsStates.INPATHCALCULATION, OscarsLogicAction.NO);
+        teardownSuccess.put(OscarsStates.ACCEPTED, OscarsLogicAction.NO);
         teardownSuccess.put(OscarsStates.CREATED, OscarsLogicAction.NO);
         teardownSuccess.put(OscarsStates.INSETUP, OscarsLogicAction.YES);
         teardownSuccess.put(OscarsStates.INTEARDOWN, OscarsLogicAction.ASK_LATER);
