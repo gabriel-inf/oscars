@@ -22,9 +22,6 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceE
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -34,8 +31,6 @@ import javax.xml.ws.Holder;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class SendNSIMessageTask extends Task  {
@@ -120,7 +115,7 @@ public class SendNSIMessageTask extends Task  {
             try {
                 url = new URL(replyTo);
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 return;
             }
 
@@ -197,7 +192,7 @@ public class SendNSIMessageTask extends Task  {
                         st = NSI_Util.makeServiceException(connId, corrId);
                         port.reserveFailed(connId, cst, st, outHeader, outHolder);
                     } catch (ServiceException ex) {
-                        log.error(ex);
+                        log.error(ex.getMessage(), ex);
                     }
                     break;
                 case RESV_CM_FL:
@@ -205,7 +200,7 @@ public class SendNSIMessageTask extends Task  {
                         st = NSI_Util.makeServiceException(connId, corrId);
                         port.reserveCommitFailed(connId, cst, st, outHeader, outHolder);
                     } catch (ServiceException ex) {
-                        log.error(ex);
+                        log.error(ex.getMessage(), ex);
                     }
                     break;
 
@@ -269,7 +264,7 @@ public class SendNSIMessageTask extends Task  {
                         TypeValuePairListType tvl = new TypeValuePairListType();
                         port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), tvl, st, outHeader, outHolder);
                     } catch (ServiceException ex) {
-                        log.error(ex);
+                        log.error(ex.getMessage(), ex);
 
                     }
                     break;
@@ -295,7 +290,7 @@ public class SendNSIMessageTask extends Task  {
             }
 
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
             this.onFail();
         }
 

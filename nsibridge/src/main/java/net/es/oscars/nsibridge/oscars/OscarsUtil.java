@@ -32,8 +32,8 @@ public class OscarsUtil {
             rc = NSI_OSCARS_Translation.makeOscarsResv(resvRequest);
             log.debug("translated NSI to OSCARS");
         } catch (TranslationException ex) {
-            log.debug(ex);
-            log.debug("could not translate NSI request");
+            log.error(ex.getMessage(), ex);
+            log.error("could not translate NSI request");
             addOscarsRecord(cr, null, new Date(), "FAILED");
             throw ex;
         }
@@ -47,9 +47,9 @@ public class OscarsUtil {
             CreateReply reply = OscarsProxy.getInstance().sendCreate(rc);
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
-        } catch (OSCARSServiceException e) {
+        } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, null, new Date(), "FAILED");
-            log.debug(e);
+            log.error(ex.getMessage(), ex);
             throw new ServiceException("Failed to submit reservation");
         }
     }
@@ -68,9 +68,9 @@ public class OscarsUtil {
         if (cp != null) {
             try {
                 CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp);
-            } catch (OSCARSServiceException e) {
+            } catch (OSCARSServiceException ex) {
                 addOscarsRecord(cr, null, new Date(), "FAILED");
-                log.error(e);
+                log.error(ex.getMessage(), ex);
                 throw new ServiceException("could not submit setup");
             }
         }
@@ -85,16 +85,15 @@ public class OscarsUtil {
         try {
             cp = NSI_OSCARS_Translation.makeOscarsTeardown(oscarsGri);
         } catch (TranslationException ex) {
-            log.debug(ex);
-            log.debug("could not translate NSI request");
+            log.error("could not translate NSI request", ex);
 
         }
         if (cp != null) {
             try {
                 TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp);
-            } catch (OSCARSServiceException e) {
+            } catch (OSCARSServiceException ex) {
                 addOscarsRecord(cr, null, new Date(), "FAILED");
-                log.error(e);
+                log.error(ex.getMessage(), ex);
                 throw new ServiceException("could not submit setup");
             }
         }
@@ -112,9 +111,9 @@ public class OscarsUtil {
         CancelResContent rc = NSI_OSCARS_Translation.makeOscarsCancel(oscarsGri);
         try {
             CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc);
-        } catch (OSCARSServiceException e) {
+        } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, null, new Date(), "FAILED");
-            log.error(e);
+            log.error(ex.getMessage(), ex);
             throw new ServiceException("could not submit cancel");
         }
         log.debug("submitCancel complete");
@@ -136,9 +135,9 @@ public class OscarsUtil {
                 OscarsStatusRecord or = addOscarsRecord(cr, oscarsGri, new Date(), oscStatus);
                 return or;
 
-            } catch (OSCARSServiceException e) {
-                log.error(e);
-                throw new TranslationException(e.getMessage());
+            } catch (OSCARSServiceException ex) {
+                log.error(ex.getMessage(), ex);
+                throw new TranslationException(ex.getMessage());
             }
         } else {
             throw new TranslationException("could not translate to OSCARS query");
@@ -155,8 +154,9 @@ public class OscarsUtil {
             mc = NSI_OSCARS_Translation.makeOscarsModify(resvRequest);
             log.debug("translated NSI to OSCARS");
         } catch (TranslationException ex) {
-            log.debug(ex);
-            log.debug("could not translate NSI request");
+            log.error("could not translate NSI request");
+
+            log.error(ex.getMessage(), ex);
             addOscarsRecord(cr, null, new Date(), "FAILED");
             throw ex;
         }
@@ -170,9 +170,10 @@ public class OscarsUtil {
             ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc);
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
-        } catch (OSCARSServiceException e) {
+        } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, null, new Date(), "FAILED");
-            log.debug(e);
+
+            log.error(ex.getMessage(), ex);
             throw new ServiceException("Failed to modify reservation");
         }
     }
@@ -285,6 +286,9 @@ public class OscarsUtil {
                 }
 
             } catch (InterruptedException ex) {
+
+                log.error(ex.getMessage(), ex);
+
                 throw new TranslationException("interrupted");
             }
         }
@@ -306,7 +310,8 @@ public class OscarsUtil {
 
 
         } catch (InterruptedException ex) {
-            log.error(ex);
+
+            log.error(ex.getMessage(), ex);
             throw new ServiceException("interrupted");
         }
 
@@ -339,10 +344,12 @@ public class OscarsUtil {
 
 
                 } catch (InterruptedException ex) {
-                    log.error(ex);
+
+                    log.error(ex.getMessage(), ex);
                     throw new ServiceException("interrupted");
                 } catch (TranslationException ex) {
-                    log.error(ex);
+
+                    log.error(ex.getMessage(), ex);
                     throw new ServiceException("could not poll");
                 }
             }

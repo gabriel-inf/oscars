@@ -91,7 +91,7 @@ public class OscarsProxy {
 
 
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
             return cr;
         } else {
@@ -124,7 +124,7 @@ public class OscarsProxy {
                 this.scheduleStatusUpdate(cancelReservation.getGlobalReservationId(), OscarsStates.CANCELLED, oscarsStubConfig.getCancelDelayMillis());
 
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
             return cr;
         } else {
@@ -165,7 +165,7 @@ public class OscarsProxy {
                 this.scheduleStatusUpdate(cr.getGlobalReservationId(), OscarsStates.RESERVED, oscarsStubConfig.getResvDelayMillis());
 
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
 
             return cr;
@@ -201,7 +201,7 @@ public class OscarsProxy {
                 Thread.sleep(delay);
                 this.scheduleStatusUpdate(tp.getGlobalReservationId(), OscarsStates.RESERVED, oscarsStubConfig.getTeardownDelayMillis());
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
 
             return tr;
@@ -237,7 +237,7 @@ public class OscarsProxy {
                 this.scheduleStatusUpdate(tp.getGlobalReservationId(), OscarsStates.ACTIVE, oscarsStubConfig.getSetupDelayMillis());
 
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
 
             return tr;
@@ -278,7 +278,7 @@ public class OscarsProxy {
                 // log.debug("sleeping for " + delay + "ms");
                 Thread.sleep(delay);
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
 
             return tr;
@@ -304,8 +304,8 @@ public class OscarsProxy {
         String configFilename = null;
         try {
             configFilename = cc.getFilePath(ServiceNames.SVC_COORD ,cc.getContext(), ConfigDefaults.CONFIG);
-        } catch (ConfigException e) {
-            e.printStackTrace();
+        } catch (ConfigException ex) {
+            log.error(ex.getMessage(), ex);
         }
 
 
@@ -324,8 +324,8 @@ public class OscarsProxy {
             URL coordHost = new URL ((String)soap.get("publishTo"));
             URL coordWsdl = cc.getWSDLPath(ServiceNames.SVC_COORD,null);
             coordClient = CoordClient.getClient(coordHost, coordWsdl);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        } catch (MalformedURLException ex) {
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -343,8 +343,8 @@ public class OscarsProxy {
         String configFilename = null;
         try {
             configFilename = cc.getFilePath(ServiceNames.SVC_AUTHN, cc.getContext(), ConfigDefaults.CONFIG);
-        } catch (ConfigException e) {
-            e.printStackTrace();
+        } catch (ConfigException ex) {
+            log.error(ex.getMessage(), ex);
         }
 
         HashMap<String,Object> authNMap = (HashMap<String,Object>) ConfigHelper.getConfiguration(configFilename);
@@ -361,8 +361,8 @@ public class OscarsProxy {
             URL authNHost = new URL ((String)soap.get("publishTo"));
             URL authNWsdl = cc.getWSDLPath(ServiceNames.SVC_AUTHN,null);
             authNClient = AuthNClient.getClient(authNHost, authNWsdl);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        } catch (MalformedURLException ex) {
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -395,7 +395,7 @@ public class OscarsProxy {
                 // log.info("sleeping for " + delay + "ms");
                 Thread.sleep(delay);
             } catch (InterruptedException ex) {
-                log.debug(ex);
+                log.error(ex.getMessage(), ex);
             }
 
             subjectAttrs = new SubjectAttributes();
@@ -451,7 +451,7 @@ public class OscarsProxy {
             log.info("scheduled stub status update in "+delay+"ms, task id: "+taskId+" gri: "+gri+" state: "+state);
         } catch (TaskException ex) {
 
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         }
 
     }
