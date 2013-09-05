@@ -188,7 +188,7 @@ public class OscarsProxy {
         tp.setMessageProperties(msgProps);
 
         // Build the query
-        Object[] req = new Object[]{subjectAttributes, tp};
+        Object[] req = new Object[]{subjectAttributes, tp, null};
         if (oscarsStubConfig.isStub()) {
             // log.info("stub mode for sendTeardown");
             TeardownPathResponseContent tr = new TeardownPathResponseContent();
@@ -214,27 +214,27 @@ public class OscarsProxy {
 
 
 
-    public CreatePathResponseContent sendSetup(CreatePathContent tp) throws OSCARSServiceException {
-        MessagePropertiesType msgProps = tp.getMessageProperties();
+    public CreatePathResponseContent sendSetup(CreatePathContent cp) throws OSCARSServiceException {
+        MessagePropertiesType msgProps = cp.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
 
         SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
-        tp.setMessageProperties(msgProps);
+        cp.setMessageProperties(msgProps);
 
         // Build the query
-        Object[] req = new Object[]{subjectAttributes, tp};
+        Object[] req = new Object[]{subjectAttributes, cp, null};
         if (oscarsStubConfig.isStub()) {
             // log.info("stub mode for sendSetup");
             CreatePathResponseContent tr = new CreatePathResponseContent();
-            stubStates.put(tp.getGlobalReservationId(), OscarsStates.INSETUP);
+            stubStates.put(cp.getGlobalReservationId(), OscarsStates.INSETUP);
             try {
                 long delay = oscarsStubConfig.getResponseDelayMillis();
                 log.debug("sleeping for " + delay + "ms");
                 Thread.sleep(delay);
-                this.scheduleStatusUpdate(tp.getGlobalReservationId(), OscarsStates.ACTIVE, oscarsStubConfig.getSetupDelayMillis());
+                this.scheduleStatusUpdate(cp.getGlobalReservationId(), OscarsStates.ACTIVE, oscarsStubConfig.getSetupDelayMillis());
 
             } catch (InterruptedException ex) {
                 log.error(ex.getMessage(), ex);

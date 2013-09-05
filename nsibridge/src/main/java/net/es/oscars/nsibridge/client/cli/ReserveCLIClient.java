@@ -191,6 +191,8 @@ public class ReserveCLIClient {
             
             if(opts.has("v")){
                 criteria.setVersion((Integer)opts.valueOf("v"));
+            } else {
+                criteria.setVersion(0);
             }
             
             if(opts.has("n")){
