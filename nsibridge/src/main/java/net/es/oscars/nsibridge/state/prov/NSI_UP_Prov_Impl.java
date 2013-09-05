@@ -14,6 +14,7 @@ import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.EventEnumType;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;
@@ -227,6 +228,8 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
             long now = new Date().getTime();
             UUID taskId = null;
             try {
+                Long notId = DB_Util.makeNotification(connectionId, null, CallbackMessages.DATAPLANE_CHANGE);
+                sendNsiMsg.setNotificationId(notId);
                 taskId = wf.schedule(sendNsiMsg, now + 1000);
             } catch (TaskException e) {
                 log.error(e);

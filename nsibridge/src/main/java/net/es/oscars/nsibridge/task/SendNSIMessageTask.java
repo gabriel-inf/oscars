@@ -36,6 +36,7 @@ import java.net.URL;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class SendNSIMessageTask extends Task  {
     private static final Logger log = Logger.getLogger(SendNSIMessageTask.class);
@@ -47,7 +48,7 @@ public class SendNSIMessageTask extends Task  {
 
 
     public SendNSIMessageTask() {
-        this.scope = "nsi";
+        this.scope = UUID.randomUUID().toString();
 
     }
 
@@ -231,7 +232,7 @@ public class SendNSIMessageTask extends Task  {
                     boolean dpActive = false;
                     int dpVersion = 0;
                     for (DataplaneStatusRecord dr : cr.getDataplaneStatusRecords()) {
-                        if (dpVersion < dr.getVersion()) {
+                        if (dpVersion <= dr.getVersion()) {
                             dpActive = dr.isActive();
                             dpVersion = dr.getVersion();
                         }
@@ -244,8 +245,6 @@ public class SendNSIMessageTask extends Task  {
                     if (rr.getVersion() == dpVersion) {
                         dpConsistent = true;
                     }
-
-
 
                     nr = DB_Util.getNotificationRecord(connId, notificationId);
                     gc.setTime(nr.getTimestamp());

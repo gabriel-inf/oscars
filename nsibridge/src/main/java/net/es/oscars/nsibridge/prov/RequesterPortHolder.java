@@ -18,7 +18,7 @@ public class RequesterPortHolder {
     }
 
     HashMap<URL, ConnectionRequesterPort> ports = new HashMap<URL, ConnectionRequesterPort>();
-    public ConnectionRequesterPort getPort(URL url) {
+    public synchronized ConnectionRequesterPort getPort(URL url) {
         if (ports.get(url) == null) {
             ports.put(url, createPort(url));
         }
