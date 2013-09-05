@@ -63,6 +63,7 @@ public class ReserveCLIClient {
                 acceptsAll(Arrays.asList("p", "description"), "a description of the reservation").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("i", "connection-id"), "the connection ID to assign").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("g", "gri"), "the global reservation ID to assign").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("n", "nsa-requester"), "set the NSA requester").withRequiredArg().ofType(String.class);
 //                acceptsAll(Arrays.asList("direction"), "directionality (Bidirectional or unidirectional) of the connection").withRequiredArg().ofType(String.class);
 //                acceptsAll(Arrays.asList("symmetric"), "directionality (Bidirectional or unidirectional) of the connection");
 //                acceptsAll(Arrays.asList("ero"), "List of hops in ero separated by commas. Must include source and destination.");
@@ -190,6 +191,10 @@ public class ReserveCLIClient {
             
             if(opts.has("v")){
                 criteria.setVersion((Integer)opts.valueOf("v"));
+            }
+            
+            if(opts.has("n")){
+                header.value.setRequesterNSA((String)opts.valueOf("n"));
             }
             
             //create client

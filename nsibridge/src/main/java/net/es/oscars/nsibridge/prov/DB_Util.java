@@ -313,11 +313,11 @@ public class DB_Util {
 
     }
 
-
-
-
-
     public static ConnectionRecord getConnectionRecord(String connectionId) throws ServiceException {
+        return DB_Util.getConnectionRecord(connectionId, null);
+    }
+
+    public static ConnectionRecord getConnectionRecord(String connectionId, String requester) throws ServiceException {
 
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getEntityManagerFactory().getCache().evictAll();
@@ -325,6 +325,9 @@ public class DB_Util {
         em.flush();
 
         String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connectionId+"'";
+        if(requester != null){
+            query += " AND c.requesterNSA = '" + requester + "'";
+        }
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
 
@@ -339,8 +342,11 @@ public class DB_Util {
     }
 
 
-
     public static List<ConnectionRecord> getConnectionRecords() throws ServiceException {
+        return getConnectionRecords(null);
+    }
+    
+    public static List<ConnectionRecord> getConnectionRecords(String requester) throws ServiceException {
 
         List<ConnectionRecord> results = new ArrayList<ConnectionRecord>();
 
@@ -351,6 +357,9 @@ public class DB_Util {
         em.flush();
 
         String query = "SELECT c FROM ConnectionRecord c";
+        if(requester != null){
+            query += " WHERE c.requesterNSA = '" + requester + "'";
+        }
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         for (ConnectionRecord cr: recordList) {
             em.refresh(cr);
@@ -362,11 +371,14 @@ public class DB_Util {
         return results;
     }
 
-    public static List<ConnectionRecord> getConnectionRecordsByGri(String nsiGlobalGri) throws ServiceException {
+    public static List<ConnectionRecord> getConnectionRecordsByGri(String nsiGlobalGri, String requester) throws ServiceException {
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getEntityManagerFactory().getCache().evictAll();
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c WHERE c.nsiGlobalGri = '"+nsiGlobalGri+"'";
+        if(requester != null){
+            query += " AND c.requesterNSA = '" + requester + "'";
+        }
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
 

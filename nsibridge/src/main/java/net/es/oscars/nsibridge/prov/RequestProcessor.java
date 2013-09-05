@@ -198,10 +198,16 @@ public class RequestProcessor {
         List<ConnectionRecord> connRecords = new ArrayList<ConnectionRecord>();
         boolean hasFilters = false;
         
+        //get requester NSA
+        if(request.getInHeader() == null || request.getInHeader().getRequesterNSA() == null){
+            throw new ServiceException("Request must specify the requester");
+        }
+        String requester = request.getInHeader().getRequesterNSA();
+        
         //lookup based on connection ids
         for(String connId : request.getQuery().getConnectionId()){
             hasFilters = true;
-            ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connId, requester);
             if(cr != null){
                 connRecords.add(cr);
             }
@@ -210,12 +216,12 @@ public class RequestProcessor {
         //lookup based on NSA GRI
         for(String gri : request.getQuery().getGlobalReservationId()){
             hasFilters = true;
-            connRecords.addAll(DB_Util.getConnectionRecordsByGri(gri));
+            connRecords.addAll(DB_Util.getConnectionRecordsByGri(gri, requester));
         }
 
         //send list
         if(!hasFilters){
-            connRecords = DB_Util.getConnectionRecords();
+            connRecords = DB_Util.getConnectionRecords(requester);
         }
 
         //format result

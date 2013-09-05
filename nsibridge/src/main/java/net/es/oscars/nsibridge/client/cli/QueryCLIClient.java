@@ -39,6 +39,7 @@ public class QueryCLIClient {
                 acceptsAll(Arrays.asList("i", "connection-id"), "the connection id(s) to query. Separate multiple by commas with no whitespace").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("g", "gri"), "the global reservation ID of the connecion(s) to return. Separate multiple by commas with no whitespace").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("R", "recursive"), "sends a recursive query");
+                acceptsAll(Arrays.asList("n", "nsa-requester"), "set the NSA requester").withRequiredArg().ofType(String.class);
             }
         };
         try {
@@ -74,6 +75,9 @@ public class QueryCLIClient {
                 }
             }
             
+            if(opts.has("n")){
+                header.value.setRequesterNSA((String)opts.valueOf("n"));
+            }
         } catch (OptionException e) {
             System.err.println(e.getMessage());
             try{

@@ -243,6 +243,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
 
         QueryRequest req = new QueryRequest();
         req.setQuery(querySummarySync);
+        req.setInHeader(header.value);
         QuerySummaryConfirmedType res;
         try {
             res = RequestProcessor.getInstance().syncQuerySum(req);
