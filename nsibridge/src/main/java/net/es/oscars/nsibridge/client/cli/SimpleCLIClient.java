@@ -57,9 +57,9 @@ public class SimpleCLIClient {
             }
             
             if(opts.has("r")){
-                url = (String) opts.valueOf("r");
-                new URL(url);
-                header.setReplyTo(url);
+                String replyTo  = (String) opts.valueOf("r");
+                new URL(replyTo);
+                header.setReplyTo(replyTo);
             }
             
             if(opts.has("i")){
