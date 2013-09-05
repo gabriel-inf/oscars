@@ -204,8 +204,16 @@ public class ConnectionProvider implements ConnectionProviderPort {
             @WebParam(partName = "queryRecursive", name = "queryRecursive", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types") QueryType queryRecursive,
             @WebParam(partName = "header", mode = WebParam.Mode.INOUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header)
                 throws ServiceException {
-        // TODO
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        QueryRequest req = new QueryRequest();
+        req.setQuery(queryRecursive);
+        req.setInHeader(header.value);
+        try {
+            RequestProcessor.getInstance().recursiveQuery(req);
+        } catch (Exception e) {
+            throw new ServiceException(e.getMessage());
+        }
+        
+        return new GenericAcknowledgmentType();
     }
 
     @Override

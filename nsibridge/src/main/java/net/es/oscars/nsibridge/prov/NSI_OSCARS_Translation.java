@@ -9,10 +9,15 @@ import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ChildRecursiveType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ChildSummaryType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.DataPlaneStatusType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultCriteriaType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryConfirmedType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
@@ -33,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.*;
 import org.springframework.context.ApplicationContext;
 
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -258,6 +264,7 @@ public class NSI_OSCARS_Translation {
         
         return resultType;
     }
+    
     public static QuerySummaryResultCriteriaType makeNSIQuerySummaryCriteria(ResDetails oscarsResDetails) throws TranslationException {
         QuerySummaryResultCriteriaType criteriaType = new QuerySummaryResultCriteriaType();
         
@@ -398,6 +405,37 @@ public class NSI_OSCARS_Translation {
         NsaConfig nc = np.getConfig("local");
         
         return nc.getNsaId();
+    }
+
+    public static List<QueryRecursiveResultType> querySummToRecursive(
+            QuerySummaryConfirmedType summResult) {
+        List<QueryRecursiveResultType> recursiveList = new ArrayList<QueryRecursiveResultType>();
+        
+        for(QuerySummaryResultType summResv : summResult.getReservation()){
+            QueryRecursiveResultType recResult = new QueryRecursiveResultType();
+            recResult.setConnectionId(summResv.getConnectionId());
+            recResult.setConnectionStates(summResv.getConnectionStates());
+            recResult.setDescription(summResv.getDescription());
+            recResult.setGlobalReservationId(summResv.getGlobalReservationId());
+            recResult.setNotificationId(summResv.getNotificationId());
+            recResult.setRequesterNSA(summResv.getRequesterNSA());
+            for(QuerySummaryResultCriteriaType summCrit : summResv.getCriteria()){
+                if(summCrit.getChildren() != null){
+                    throw new RuntimeException("Connection has children but " +
+                            "recursively querying children not supported at this time.");
+                }
+                QueryRecursiveResultCriteriaType recCrit = new QueryRecursiveResultCriteriaType();
+                recCrit.setSchedule(summCrit.getSchedule());
+                recCrit.setServiceType(summCrit.getServiceType());
+                recCrit.setVersion(summCrit.getVersion());
+                recCrit.getAny().addAll(summCrit.getAny());
+                recCrit.getOtherAttributes().putAll(summCrit.getOtherAttributes());
+                
+            }
+            recursiveList.add(recResult);
+        }
+        
+        return recursiveList;
     }
 
 }

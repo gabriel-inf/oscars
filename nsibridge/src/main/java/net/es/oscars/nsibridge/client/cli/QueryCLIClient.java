@@ -21,13 +21,14 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryTy
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 
 
-public class QuerySummaryCLIClient {
+public class QueryCLIClient {
     public static void main(String[] args){
         //initialize input variables
         String url = "http://localhost:8500/nsi-v2/ConnectionServiceProvider";
         String[] connectionIds = new String[0];
         String[] gris = new String[0];
         Holder<CommonHeaderType> header = ClientUtil.makeClientHeader();
+        boolean recursive = false;
         
         //parse options
         OptionParser parser = new OptionParser(){
@@ -37,6 +38,7 @@ public class QuerySummaryCLIClient {
                 acceptsAll(Arrays.asList("r", "reply-url"), "the URL to which the provider should reply. If not set this will be a synchronous request.").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("i", "connection-id"), "the connection id(s) to query. Separate multiple by commas with no whitespace").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("g", "gri"), "the global reservation ID of the connecion(s) to return. Separate multiple by commas with no whitespace").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("R", "recursive"), "sends a recursive query");
             }
         };
         try {
@@ -46,7 +48,6 @@ public class QuerySummaryCLIClient {
                 parser.printHelpOn(System.out);
                 System.exit(0);
             }
-            
             
             if(opts.has("u")){
                 url = (String)opts.valueOf("u");
@@ -65,6 +66,14 @@ public class QuerySummaryCLIClient {
                 gris = ((String)opts.valueOf("g")).split(",");
             }
             
+            if(opts.has("R")){
+                recursive = true;
+                if(header.value.getReplyTo() == null){
+                    System.err.println("Must specify the --reply-url option when doing a recursive query");
+                    System.exit(1);
+                }
+            }
+            
         } catch (OptionException e) {
             System.err.println(e.getMessage());
             try{
@@ -80,12 +89,12 @@ public class QuerySummaryCLIClient {
         }
         
         //create request
-        QueryType querySummary = new QueryType();
+        QueryType queryReq = new QueryType();
         for(String connId : connectionIds){
-            querySummary.getConnectionId().add(connId);
+            queryReq.getConnectionId().add(connId);
         }
         for(String gri : gris){
-            querySummary.getGlobalReservationId().add(gri);
+            queryReq.getGlobalReservationId().add(gri);
         }
         
         //process sync or async request
@@ -94,7 +103,7 @@ public class QuerySummaryCLIClient {
             //send sync request
             QuerySummaryConfirmedType result = null;
             try {
-                result = client.querySummarySync(querySummary , header);
+                result = client.querySummarySync(queryReq , header);
             } catch (QuerySummarySyncFailed e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -110,10 +119,17 @@ public class QuerySummaryCLIClient {
                 System.out.println();
             }
             System.out.println(result.getReservation().size() + " results returned");
+        }else if(recursive){
+            try {
+                client.queryRecursive(queryReq, header);
+                System.out.println("Query sent");
+            } catch (ServiceException e) {
+                e.printStackTrace();
+            }
         }else{
             //send async request
             try {
-                client.querySummary(querySummary , header);
+                client.querySummary(queryReq , header);
                 System.out.println("Query sent");
             } catch (ServiceException e) {
                 e.printStackTrace();

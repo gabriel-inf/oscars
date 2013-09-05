@@ -14,6 +14,7 @@ import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
+import net.es.oscars.nsibridge.task.QueryRecursiveJob;
 import net.es.oscars.nsibridge.task.QuerySummaryJob;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
@@ -248,6 +249,20 @@ public class RequestProcessor {
 
     }
 
+    public void recursiveQuery(QueryRequest request) throws ServiceException {
+        Schedule ts = Schedule.getInstance();
+        String jobId = "recursiveQuerySumm-" + UUID.randomUUID().toString();
+        
+        SimpleTrigger trigger = new SimpleTrigger(jobId, "recursiveQuery");
+        JobDetail jobDetail = new JobDetail(jobId, "recursiveQuery", QueryRecursiveJob.class);
+        jobDetail.getJobDataMap().put(QueryRecursiveJob.PARAM_REQUEST, request);
+        try {
+            ts.getScheduler().scheduleJob(jobDetail, trigger);
+        } catch (SchedulerException e) {
+            throw new ServiceException("Unable to schedule recursive query job: " + e.getMessage());
+        }
+    }
+    
     private CommonHeaderType makeOutHeader(CommonHeaderType inHeader) {
         CommonHeaderType outHeader = new CommonHeaderType();
         outHeader.setCorrelationId(inHeader.getCorrelationId());
@@ -256,6 +271,7 @@ public class RequestProcessor {
         outHeader.setRequesterNSA(inHeader.getRequesterNSA());
         return outHeader;
     }
+    
 
 
 
