@@ -31,7 +31,7 @@ public class NSI_Life_SM implements StateMachine {
 
         NSI_Life_State ps = (NSI_Life_State) this.getState();
         NSI_Life_State ns = new NSI_Life_State();
-        String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
+        String pre = "PRE: PSM ["+this.getId()+"] at state ["+state.value()+"] got event ["+event+"]";
         //LOG.debug(pre);
         String error = pre;
 

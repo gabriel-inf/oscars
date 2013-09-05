@@ -36,7 +36,7 @@ public class NSI_Resv_SM implements StateMachine {
         NSI_Resv_State ps = (NSI_Resv_State) this.state;
 
 
-        String pre = "PRE: PSM ["+this.getId()+"] at state ["+prevState+"] got event ["+event+"]";
+        String pre = "PRE: PSM ["+this.getId()+"] at state ["+prevState.value()+"] got event ["+event+"]";
         //LOG.debug(pre);
         String error = pre;
 

@@ -33,7 +33,7 @@ public class NSI_Prov_SM implements StateMachine {
 
         NSI_Prov_State ps = (NSI_Prov_State) this.getState();
         NSI_Prov_State ns = new NSI_Prov_State();
-        String pre = "PRE: PSM ["+this.getId()+"] at state ["+state+"] got event ["+event+"]";
+        String pre = "PRE: PSM ["+this.getId()+"] at state ["+state.value()+"] got event ["+event+"]";
         // LOG.debug(pre);
         String error = pre;
 

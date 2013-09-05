@@ -107,7 +107,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         try {
             taskId = wf.schedule(sm , when);
         } catch (TaskException e) {
-            e.printStackTrace();
+            log.error(e);
         }
         log.debug("local release scheduled taskId: "+taskId);
 
@@ -128,9 +128,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         sendNsiMsg.setMessage(CallbackMessages.REL_CF);
 
         try {
-            wf.schedule(sendNsiMsg, now + 1000);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
-            e.printStackTrace();
+            log.error(e);
         }
         return taskId;
 
@@ -152,9 +152,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         UUID taskId = null;
 
         try {
-            wf.schedule(sendNsiMsg, now + 1000);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
-            e.printStackTrace();
+            log.error(e);
         }
         return taskId;
 
@@ -175,9 +175,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
 
 
         try {
-            wf.schedule(sendNsiMsg, now + 1000);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
         } catch (TaskException e) {
-            e.printStackTrace();
+            log.error(e);
         }
         return taskId;
     }
@@ -217,6 +217,21 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
             em.persist(cr);
             em.getTransaction().commit();
 
+
+            SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+            sendNsiMsg.setCorrId(correlationId);
+            sendNsiMsg.setConnId(connectionId);
+            sendNsiMsg.setMessage(CallbackMessages.DATAPLANE_CHANGE);
+
+            Workflow wf = Workflow.getInstance();
+            long now = new Date().getTime();
+            UUID taskId = null;
+            try {
+                taskId = wf.schedule(sendNsiMsg, now + 1000);
+            } catch (TaskException e) {
+                log.error(e);
+            }
+            return taskId;
 
         } catch (ServiceException ex) {
             log.error(ex);

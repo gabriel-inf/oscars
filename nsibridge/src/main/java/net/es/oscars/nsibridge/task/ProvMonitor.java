@@ -3,21 +3,17 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
-import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.List;
 
@@ -59,8 +55,8 @@ public class ProvMonitor implements Job {
             try {
                 switch (cr.getProvisionState()) {
                     case PROVISIONED:
-                        // send a setup if provisioned and
-                        if (rr.getStartTime().before(now) && rr.getEndTime().after(now)) {
+                        // send a setup if provisioned and within the resv times
+                        if (now.after(rr.getStartTime()) && now.before(rr.getEndTime())) {
                             if (opq.needsOp(connId, OscarsOps.SETUP)) {
                                opq.scheduleOp(connId, OscarsOps.SETUP);
                             }
@@ -68,8 +64,11 @@ public class ProvMonitor implements Job {
 
                         break;
                     case RELEASED:
-                        if (opq.needsOp(connId, OscarsOps.TEARDOWN)) {
-                            opq.scheduleOp(connId, OscarsOps.TEARDOWN);
+                        // send a teardown if after start time
+                        if (now.after(rr.getStartTime())) {
+                            if (opq.needsOp(connId, OscarsOps.TEARDOWN)) {
+                                opq.scheduleOp(connId, OscarsOps.TEARDOWN);
+                            }
                         }
                         break;
                     case RELEASING:

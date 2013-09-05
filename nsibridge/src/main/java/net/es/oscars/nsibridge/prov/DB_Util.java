@@ -347,7 +347,6 @@ public class DB_Util {
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
         for (ConnectionRecord cr: recordList) {
-            em.refresh(cr);
             results.add(cr);
         }
 

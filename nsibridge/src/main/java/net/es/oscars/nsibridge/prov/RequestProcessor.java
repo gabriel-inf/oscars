@@ -14,7 +14,6 @@ import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_Event;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
-import net.es.oscars.nsibridge.task.ProvMonitor;
 import net.es.oscars.nsibridge.task.QuerySummaryJob;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
@@ -25,11 +24,10 @@ import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.*;
 
 public class RequestProcessor {
     private static final Logger log = Logger.getLogger(RequestProcessor.class);
@@ -63,6 +61,28 @@ public class RequestProcessor {
         RequestHolder rh = RequestHolder.getInstance();
 
         rh.getResvRequests().put(corrId, request);
+
+
+        if (request.getReserveType().getCriteria().getSchedule().getStartTime() == null) {
+            try {
+                GregorianCalendar gc = new GregorianCalendar();
+                XMLGregorianCalendar xgc = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
+                request.getReserveType().getCriteria().getSchedule().setStartTime(xgc);
+            } catch (DatatypeConfigurationException ex) {
+                log.error(ex);
+            }
+        }
+
+        if (request.getReserveType().getCriteria().getSchedule().getStartTime() == null) {
+            try {
+                GregorianCalendar gc = new GregorianCalendar();
+                gc.set(2050, 12, 31);
+                XMLGregorianCalendar xgc = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
+                request.getReserveType().getCriteria().getSchedule().setStartTime(xgc);
+            } catch (DatatypeConfigurationException ex) {
+                log.error(ex);
+            }
+        }
 
 
 

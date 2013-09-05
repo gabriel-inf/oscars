@@ -32,12 +32,33 @@ public class OscarsProvQueue {
     }
 
     public synchronized boolean needsOp(String connId, OscarsOps op) {
-        if (lastScheduled.get(connId) == null) {
-            return true;
+        if (op.equals(OscarsOps.SETUP)) {
+            // we have never set up this connId
+            if (lastScheduled.get(connId) == null) {
+                return true;
+            }
+            // the last thing we did was to setup this connId
+            if (lastScheduled.get(connId) == op) {
+                return false;
+            } else {
+                // the last thing we did was to teardown this connId
+                return true;
+            }
         }
-        if (lastScheduled.get(connId) == op) {
-            return false;
+        if (op.equals(OscarsOps.TEARDOWN)) {
+            // we have never set up this connId; do not tear down
+            if (lastScheduled.get(connId) == null) {
+                return false;
+            }
+            // the last thing we did was to tear down this connId
+            if (lastScheduled.get(connId) == op) {
+                return false;
+            } else {
+                // the last thing we did was to set up this connId
+                return true;
+            }
         }
+        // should never get here
         return true;
 
     }
