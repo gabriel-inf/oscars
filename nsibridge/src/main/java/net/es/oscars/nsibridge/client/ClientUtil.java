@@ -122,7 +122,7 @@ public class ClientUtil {
     
     public static XMLGregorianCalendar unixtimeToXMLGregCal(long timestamp) throws DatatypeConfigurationException{
         GregorianCalendar cal = new GregorianCalendar();
-        cal.setTimeInMillis(timestamp*1000);
+        cal.setTimeInMillis(timestamp);
         
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
     }
