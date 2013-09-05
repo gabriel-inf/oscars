@@ -31,7 +31,11 @@ public class QuerySteps {
 
         QueryType qt = new QueryType();
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+        CommonHeaderType ht = new CommonHeaderType();
+        ht.setRequesterNSA("foo");
+        outHolder.value = ht;
         qt.getConnectionId().add(connId);
+
         QuerySummaryConfirmedType qst = cp.querySummarySync(qt, outHolder);
 
         assertThat(qst, notNullValue());
