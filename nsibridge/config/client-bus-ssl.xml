@@ -31,14 +31,15 @@
 
   <http:conduit name="*.http-conduit">
     <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
-      <sec:trustManagers>
-          <sec:keyStore type="JKS" password="client"
-               file="config/client-truststore.jks"/>
-      </sec:trustManagers>
-      <sec:keyManagers keyPassword="client">
-           <sec:keyStore type="JKS" password="client"
-                file="config/client-keystore.jks"/>
-      </sec:keyManagers>
+        <sec:trustManagers>
+            <sec:keyStore type="JKS" password="client-trust"
+                          file="config/client-truststore.jks"/>
+        </sec:trustManagers>
+        <sec:keyManagers keyPassword="client-key">
+            <sec:keyStore type="JKS" password="client-keystore"
+                          file="client-keystore"/>
+        </sec:keyManagers>
+
 
 
 
@@ -51,6 +52,7 @@
         <sec:include>.*_EXPORT_.*</sec:include>
         <sec:include>.*_EXPORT1024_.*</sec:include>
         <sec:include>.*_WITH_DES_.*</sec:include>
+        <sec:include>.*_WITH_AES_.*</sec:include>
         <sec:include>.*_WITH_NULL_.*</sec:include>
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>

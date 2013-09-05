@@ -16,12 +16,15 @@
 
             <httpj:engine port="8500">
                 <httpj:tlsServerParameters>
-                    <sec:keyManagers keyPassword="server">
-                        <sec:keyStore file="config/server-keystore.jks" password="server" type="JKS"/>
-                    </sec:keyManagers>
                     <sec:trustManagers>
-                        <sec:keyStore file="config/server-truststore.jks" password="server" type="JKS"/>
+                        <sec:keyStore type="JKS" password="server-trust"
+                                      file="config/server-truststore.jks"/>
                     </sec:trustManagers>
+                    <sec:keyManagers keyPassword="server-key">
+                        <sec:keyStore type="JKS" password="server-keystore"
+                                      file="server-keystore"/>
+                    </sec:keyManagers>
+
                     <sec:cipherSuitesFilter>
 
                         <sec:include>.*_EXPORT_.*</sec:include>
