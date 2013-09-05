@@ -206,7 +206,7 @@ public class OscarsProxy {
 
             return tr;
         } else {
-            Object[] res = coordClient.invoke("sendTeardown",req);
+            Object[] res = coordClient.invoke("teardownPath",req);
             TeardownPathResponseContent tr = (TeardownPathResponseContent) res[0];
             return tr;
         }
@@ -242,7 +242,7 @@ public class OscarsProxy {
 
             return tr;
         } else {
-            Object[] res = coordClient.invoke("sendSetup",req);
+            Object[] res = coordClient.invoke("createPath",req);
             CreatePathResponseContent tr = (CreatePathResponseContent) res[0];
             return tr;
         }

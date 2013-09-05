@@ -1,0 +1,10 @@
+#!/bin/bash
+
+log4j="-Dlog4j.configuration=file:./config/client.log4j.properties"
+javaFlags="-Djava.net.preferIPv4Stack=true"
+jar="-jar $OSCARS_DIST/nsibridge/target/nsibridge-1.0.one-jar.jar"
+
+mainClass="-Done-jar.main.class=net.es.oscars.nsibridge.client.cli.SimpleCLIClient"
+
+java $mainClass $javaFlags $log4j $jar  $*
+
