@@ -1,19 +1,9 @@
 package net.es.oscars.nsibridge.config;
 
 
-public class HttpConfig {
-    protected String url;
+public class ClientConfig {
     protected String bus;
     protected String sslBus;
-
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
 
     public String getBus() {
         return bus;

@@ -9,9 +9,9 @@
     <bean id="httpConfig"
           class="net.es.oscars.nsibridge.config.HttpConfig"
           scope="singleton">
-
         <property name="url" value="http://jupiter.es.net:8500/"/>
-        <property name="bus" value="config/jetty.xml"/>
+        <property name="bus" value="config/server-bus.xml"/>
+        <property name="sslBus" value="config/server-bus-ssl.xml"/>
     </bean>
 
     <bean id="oscarsConfig"
@@ -23,7 +23,15 @@
     </bean>
 
 
+
     <!-- usually no need to change below this line -->
+
+    <bean id="clientConfig"
+          class="net.es.oscars.nsibridge.config.ClientConfig"
+          scope="singleton">
+        <property name="bus" value="config/client-bus.xml/"/>
+        <property name="sslBus" value="config/client-bus-ssl.xml"/>
+    </bean>
 
     <bean id="nsaConfigProvider"
           class="net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider"

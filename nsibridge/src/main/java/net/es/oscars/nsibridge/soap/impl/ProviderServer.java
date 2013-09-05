@@ -23,14 +23,27 @@ public class ProviderServer {
     }
     public static ProviderServer makeServer(HttpConfig conf) throws Exception {
         if (instance == null) {
-            instance = new ProviderServer(conf.getUrl(), conf.getBus());
+            instance = new ProviderServer(conf);
         }
         return instance;
     }
 
-    private ProviderServer(String url, String configFile) throws Exception {
-        System.out.println("starting provider server at "+url);
+    private ProviderServer(HttpConfig conf) throws Exception {
+        String url = conf.getUrl();
+        String sslBusConfigFile = conf.getSslBus();
+        String busConfigFile = conf.getBus();
+
         SpringBusFactory factory = new SpringBusFactory();
+        if (url.toLowerCase().startsWith("https")) {
+            factory.createBus(sslBusConfigFile);
+        } else {
+            factory.createBus(busConfigFile);
+        }
+
+        System.out.println("starting provider server at "+url);
+
+
+
         ConnectionProvider cp = new ConnectionProvider();
         JaxWsServerFactoryBean sf = new JaxWsServerFactoryBean();
 

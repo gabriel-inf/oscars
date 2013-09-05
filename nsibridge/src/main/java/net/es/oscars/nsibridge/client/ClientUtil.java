@@ -11,6 +11,10 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.Holder;
 
+import net.es.oscars.nsibridge.config.ClientConfig;
+import net.es.oscars.nsibridge.config.SpringContext;
+import org.apache.cxf.Bus;
+import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
@@ -22,6 +26,9 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.Common
 public class ClientUtil {
 
     public static ConnectionProviderPort createProviderClient(String url){
+
+        prepareBus(url);
+
         // set logging
         LoggingInInterceptor in = new LoggingInInterceptor();
         in.setPrettyLogging(true);
@@ -52,6 +59,10 @@ public class ClientUtil {
     }
     
     public static ConnectionRequesterPort createRequesterClient(String url){
+
+        prepareBus(url);
+
+
         // set logging
         LoggingInInterceptor in = new LoggingInInterceptor();
         in.setPrettyLogging(true);
@@ -80,7 +91,25 @@ public class ClientUtil {
         
         return client;
     }
-    
+
+    public static void prepareBus(String url) {
+        SpringContext.getInstance().initContext("config/beans.xml");
+        ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
+
+        SpringBusFactory bf = new SpringBusFactory();
+        Bus bus;
+        if (url.toLowerCase().startsWith("https")) {
+            System.setProperty("javax.net.ssl.trustStore","DoNotUsecacerts");
+            bus = bf.createBus(cc.getSslBus());
+        } else {
+            bus = bf.createBus(cc.getBus());
+        }
+        SpringBusFactory.setDefaultBus(bus);
+
+
+    }
+
+
     public static  Holder<CommonHeaderType> makeClientHeader(){
         CommonHeaderType hd = new CommonHeaderType();
         hd.setRequesterNSA("urn:oscars:nsa:client");
