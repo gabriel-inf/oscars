@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+    <bean id="httpConfig"
+          class="net.es.oscars.nsibridge.config.HttpConfig"
+          scope="singleton">
+        <property name="url" value="http://localhost:8500/"/>
+        <property name="bus" value="/etc/oscars/NsiBridge/conf/server-bus.xml"/>
+        <property name="sslBus" value="/etc/oscars/NsiBridge/conf/server-bus-ssl.xml"/>
+    </bean>
+
+    <bean id="oscarsConfig"
+          class="net.es.oscars.nsibridge.config.OscarsConfig"
+          scope="singleton">
+
+        <property name="userDN" value="CN=nsibridge,O=NSI"/>
+        <property name="issuerDN" value="CN=nsibridge,O=NSI"/>
+    </bean>
+
+
+
+    <!-- usually no need to change below this line -->
+
+    <bean id="clientConfig"
+          class="net.es.oscars.nsibridge.config.ClientConfig"
+          scope="singleton">
+        <property name="bus" value="/etc/oscars/NsiBridge/conf/client-bus.xml"/>
+        <property name="sslBus" value="/etc/oscars/NsiBridge/conf/client-bus-ssl.xml"/>
+    </bean>
+
+    <bean id="nsaConfigProvider"
+          class="net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider"
+          init-method="loadConfig"
+          scope="singleton">
+        <property name="filename" value="/etc/oscars/NsiBridge/conf/nsa.json"/>
+    </bean>
+
+    <bean id="nsaStubConfig"
+          class = "net.es.oscars.nsibridge.config.nsa.NSAStubConfig"
+          scope="singleton">
+        <property name="performCallback" value="true"/>
+    </bean>
+
+    <bean id="oscarsStubConfig"
+          class="net.es.oscars.nsibridge.config.OscarsStubConfig"
+          scope="singleton">
+        <property name="stub" value="false"/>
+        <property name="resvDelayMillis" value="5000"/>
+        <property name="queryDelayMillis" value="200" />
+        <property name="cancelDelayMillis" value="5000" />
+        <property name="setupDelayMillis" value="5000" />
+        <property name="teardownDelayMillis" value="5000" />
+        <property name="authDelayMillis" value="100" />
+        <property name="responseDelayMillis" value="100" />
+    </bean>
+
+    <bean id="timingConfig"
+          class="net.es.oscars.nsibridge.config.TimingConfig"
+          scope="singleton">
+        <property name="resvTimeout" value="300"/>
+        <property name="taskInterval" value="1"/>
+        <property name="oscarsTimingConfig" ref="oscarsTimingConfig" />
+
+    </bean>
+    <bean id="oscarsTimingConfig"
+          class="net.es.oscars.nsibridge.config.OscarsTimingConfig"
+          scope="singleton">
+        <property name="submitTimeout" value="15"/>
+        <property name="pollInterval" value="1"/>
+        <property name="pollTimeout" value="60"/>
+
+    </bean>
+
+
+</beans>

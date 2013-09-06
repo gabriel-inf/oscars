@@ -1,0 +1,17 @@
+{
+    "local": {
+        "nsaId":            "urn:ogf:network:nsa:testdomain-1.net",
+        "protocolVersion":  "application/vdn.ogf.nsi.cs.v2.provider+soap",
+        "serviceType":      "http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE",
+        "stps": [
+            {
+                "stpId":        "urn:ogf:network:testdomain-1.net:2013:stp1",
+                "oscarsId":     "urn:ogf:network:domain=testdomain-1:node=node-1-1:port=ge-1/1/0:link=*"
+            },
+            {
+                "stpId":        "urn:ogf:network:testdomain-1.net:2013:stp2",
+                "oscarsId":     "urn:ogf:network:domain=testdomain-1:node=node-1-2:port=ge-1/1/0:link=*"
+            }
+        ]
+    }
+}
