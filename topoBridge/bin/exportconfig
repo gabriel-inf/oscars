@@ -64,6 +64,5 @@ if [ ! -f $DST_DIR/$LOG4J_PROPS_MESSAGE ] ; then
 fi
 
 # copy the topology descriptions
-cp $SRC_DIR/*.xml $DST_DIR
-
+cp -n $SRC_DIR/testdomain-*.xml $DST_DIR
 

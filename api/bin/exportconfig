@@ -83,9 +83,14 @@ if [ ! -f $DST_DIR/client-cxf-DEV.xml ] ; then
     cp $SRC_DIR/client-cxf-DEV.xml   $DST_DIR/client-cxf-DEV.xml
 fi
 
-# Copy keystore property file 
-cp $SRC_DIR/clientKeystore.properties $DST_DIR/clientKeystore.properties
-cp $SRC_DIR/serverKeystore.properties $DST_DIR/serverKeystore.properties
+# Copy keystore property file
+if [ ! -f $DST_DIR/clientKeystore.properties ] ; then
+  cp $SRC_DIR/clientKeystore.properties $DST_DIR/clientKeystore.properties
+fi
+
+if [ ! -f $DST_DIR/serverKeystore.properties ] ; then
+  cp $SRC_DIR/serverKeystore.properties $DST_DIR/serverKeystore.properties
+fi
 
 # log4j
 if [ ! -f $DST_DIR/$LOG4J_PROPS_INFO ] ; then

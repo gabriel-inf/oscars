@@ -24,12 +24,12 @@ fi
 
 # Create configuration directory and copy config files
 mkdir -p $DST_DIR
-cp ${SRC_DIR}/config.yaml ${DST_DIR}/config.yaml
-cp ${SRC_DIR}/template/config/client-cxf.xml ${DST_DIR}/client-cxf.xml
-cp ${SRC_DIR}/template/config/server-cxf.xml ${DST_DIR}/server-cxf.xml
+cp -n ${SRC_DIR}/config.yaml ${DST_DIR}/config.yaml
+cp -n ${SRC_DIR}/template/config/client-cxf.xml ${DST_DIR}/client-cxf.xml
+cp -n ${SRC_DIR}/template/config/server-cxf.xml ${DST_DIR}/server-cxf.xml
 
 # log4j
 mkdir -p $DST_LOGDIR
-sed s,template.log,${DST_LOGDIR}/${SERVICE}.log, < ${SRC_DIR}/log4j.properties > ${DST_DIR}/log4j.properties
-
-
+if [ ! -f ${DST_DIR}/log4j.properties ] ; then
+ sed s,template.log,${DST_LOGDIR}/${SERVICE}.log, < ${SRC_DIR}/log4j.properties > ${DST_DIR}/log4j.properties
+fi

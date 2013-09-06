@@ -27,8 +27,9 @@ fi
 if [ ! -f $OSCARS_HOME/$SERVICE/conf/log4j.properties ]; then
     cp $OSCARS_DIST/stubPCE/config/log4j.properties $OSCARS_HOME/$SERVICE/conf/log4j.properties
 fi
-sed s,$SERVICE.log,$OSCARS_HOME/logs/$SERVICE.log, < $OSCARS_DIST/stubPCE/config/log4j.properties > $OSCARS_HOME/$SERVICE/conf/log4j.properties
-
+if [ ! -f $OSCARS_HOME/$SERVICE/conf/log4j.properties ] ; then
+  sed s,$SERVICE.log,$OSCARS_HOME/logs/$SERVICE.log, < $OSCARS_DIST/stubPCE/config/log4j.properties > $OSCARS_HOME/$SERVICE/conf/log4j.properties
+fi
 
 # log4j
 mkdir -p $OSCARS_HOME/logs
