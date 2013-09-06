@@ -26,6 +26,8 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.Schedul
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.OrderedStpType;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpListType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
@@ -305,7 +307,6 @@ public class NSI_OSCARS_Translation {
         }
         
         //Set P2P fields
-        
         EthernetVlanType evtsType = new EthernetVlanType();
         evtsType.setCapacity(bandwidth);
         evtsType.setDirectionality(DirectionalityType.BIDIRECTIONAL); //change if oscars extended in future
@@ -314,7 +315,7 @@ public class NSI_OSCARS_Translation {
         StpType destStp = new StpType();
         
         String nsaId = findNsaId();
-        if(findNsaId() != null){
+        if(nsaId != null){
             sourceStp.setNetworkId(nsaId);
             destStp.setNetworkId(nsaId);
         }
@@ -330,6 +331,21 @@ public class NSI_OSCARS_Translation {
             if(PathTools.isVlanHop(hops.get(hops.size() - 1))){
                 String destVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();;
                 evtsType.setDestVLAN(Integer.valueOf(destVlan));
+            }
+
+            //set ero
+            StpListType ero = new StpListType();
+            evtsType.setEro(ero);
+            for(int i = 1; i < hops.size() - 2; i++){
+                OrderedStpType ordStp = new OrderedStpType();
+                StpType hopStp = new StpType();
+                if(nsaId != null){
+                    hopStp.setNetworkId(nsaId);
+                }
+                hopStp.setLocalId(findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(i))).getStpId());
+                ordStp.setOrder(i);
+                ordStp.setStp(hopStp);
+                ero.getOrderedSTP().add(ordStp);
             }
         }else if(pathInfo.getLayer2Info() != null){
             sourceStp.setLocalId(findStpByOSCARSId(pathInfo.getLayer2Info().getSrcEndpoint()).getStpId());
