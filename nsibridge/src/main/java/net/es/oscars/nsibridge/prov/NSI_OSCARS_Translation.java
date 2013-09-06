@@ -273,6 +273,9 @@ public class NSI_OSCARS_Translation {
         //TODO: Actually determine the correct version
         criteriaType.setVersion(1);
         
+        //set serviceType. only one allowed currently, so just pull from config
+        criteriaType.setServiceType(findServiceType());
+        
         //Determine if we should use UserConstraint or ReservedConstraint
         long startTime = 0;
         long endTime = 0;
@@ -421,6 +424,15 @@ public class NSI_OSCARS_Translation {
         NsaConfig nc = np.getConfig("local");
         
         return nc.getNsaId();
+    }
+    
+    public static String findServiceType(){
+        SpringContext sc = SpringContext.getInstance();
+        ApplicationContext ax = sc.getContext();
+        NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
+        NsaConfig nc = np.getConfig("local");
+        
+        return nc.getServiceType();
     }
 
     public static List<QueryRecursiveResultType> querySummToRecursive(
