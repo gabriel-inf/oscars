@@ -46,14 +46,15 @@ mvn -DskipTests --projects %{mvn_project_list} install
 mkdir -p %{buildroot}/%{install_base}/target
 mkdir -p %{buildroot}/%{install_base}/bin
 mkdir -p %{buildroot}/etc/init.d
-mkdir -p %{buildroot}/%{oscars_home}/conf/
+mkdir -p %{buildroot}/%{oscars_home}/%{service_name}/conf/
+mkdir -p %{buildroot}/%{oscars_home}/%{service_name}/data/
 cp %{package_name}/target/*.jar %{buildroot}/%{install_base}/target/
 install -m 755 %{package_name}/bin/* %{buildroot}/%{install_base}/bin/
 install -m 755 %{package_name}/scripts/oscars-%{package_name} %{buildroot}/etc/init.d/oscars-%{package_name}
-install -m 755 %{package_name}/config/* %{buildroot}/%{oscars_home}/%{service_name}/conf/
+install -m 755 %{package_name}/config/rpm_defaults/* %{buildroot}/%{oscars_home}/%{service_name}/conf/
 perl -e 's/^vers=/#vers=/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 perl -e 's/%{package_name}-\$vers/%{package_name}/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
-perl -e 's/file:\.\/config/file:\/etc\/oscars\/%{service_name}/conf/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
+perl -e 's/file:\.\/config/file:\/etc\/oscars\/%{service_name}\/conf/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 
 %post
 mkdir -p %{run_dir}
@@ -81,7 +82,7 @@ chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
 %files
 %defattr(-,oscars,oscars,-)
 %config(noreplace) %{oscars_home}/%{service_name}/conf/*
-%config(noreplace) %{oscars_home}/%{service_name}/data/*
+%config(noreplace) %{oscars_home}/%{service_name}/data/.
 %{install_base}/target/*
 %{install_base}/bin/*
 /etc/init.d/oscars-%{package_name}
