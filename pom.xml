@@ -17,6 +17,7 @@
         <module>common-logging</module>
         <module>database</module>
         <module>api</module>
+        <module>nsibridge</module>
         <module>authN</module>
         <module>authZ</module>
         <module>resourceManager</module>

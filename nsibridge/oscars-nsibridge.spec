@@ -1,6 +1,6 @@
 %define package_name nsibridge
 %define service_name NsiBridgeService
-%define mvn_project_list utils,%{package_name}
+%define mvn_project_list common-logging,common-soap,utils,%{package_name}
 %define install_base /opt/oscars/%{package_name}
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
@@ -50,7 +50,7 @@ mkdir -p %{buildroot}/%{oscars_home}/conf/
 cp %{package_name}/target/*.jar %{buildroot}/%{install_base}/target/
 install -m 755 %{package_name}/bin/* %{buildroot}/%{install_base}/bin/
 install -m 755 %{package_name}/scripts/oscars-%{package_name} %{buildroot}/etc/init.d/oscars-%{package_name}
-install -m 755 %{package_name}/config/* %{buildroot}/%{oscars_home}/conf/
+install -m 755 %{package_name}/config/* %{buildroot}/%{oscars_home}/%{service_name}/conf/
 perl -e 's/^vers=/#vers=/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 perl -e 's/%{package_name}-\$vers/%{package_name}/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 perl -e 's/file:\.\/config/file:\/etc\/oscars\/%{service_name}/conf/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
