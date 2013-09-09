@@ -1,7 +1,7 @@
 #!/bin/bash
 
 debugFlags="" 
-javaFlags="-Xmx256m -Djava.net.preferIPv4Stack=true -jar target/nsibridge-1.0.one-jar.jar"
+javaFlags="-Xmx256m -Djava.net.preferIPv4Stack=true -Dlog4j.configuration=file:./config/log4j.properties -jar target/nsibridge-1.0.one-jar.jar"
 if [ -n "$1" ]; then
   if [ "$1" == "-d" ]; then 
     debugFlags="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
