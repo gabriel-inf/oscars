@@ -248,7 +248,7 @@ public class DB_Util {
             log.info("connection record was found while starting reserve() for connectionId: " + connId);
         } else {
             EntityManager em = PersistenceHolder.getEntityManager();
-            log.info("creating new connection record for connectionId: " + connId);
+            log.info("creating new connection record for connectionId: " + connId+ " reqNSA: "+requesterNSA);
             em.getTransaction().begin();
             cr = new ConnectionRecord();
             cr.setConnectionId(connId);
@@ -325,9 +325,10 @@ public class DB_Util {
         em.flush();
 
         String query = "SELECT c FROM ConnectionRecord c WHERE c.connectionId  = '"+connectionId+"'";
-        if(requester != null){
+        if (requester != null) {
             query += " AND c.requesterNSA = '" + requester + "'";
         }
+        // log.debug(query);
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
         em.getTransaction().commit();
 
@@ -361,11 +362,12 @@ public class DB_Util {
             query += " WHERE c.requesterNSA = '" + requester + "'";
         }
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();
+        em.getTransaction().commit();
+
         for (ConnectionRecord cr: recordList) {
             em.refresh(cr);
             results.add(cr);
         }
-        em.getTransaction().commit();
 
 
         return results;
@@ -376,7 +378,7 @@ public class DB_Util {
         em.getEntityManagerFactory().getCache().evictAll();
         em.getTransaction().begin();
         String query = "SELECT c FROM ConnectionRecord c WHERE c.nsiGlobalGri = '"+nsiGlobalGri+"'";
-        if(requester != null){
+        if (requester != null) {
             query += " AND c.requesterNSA = '" + requester + "'";
         }
         List<ConnectionRecord> recordList = em.createQuery(query, ConnectionRecord.class).getResultList();

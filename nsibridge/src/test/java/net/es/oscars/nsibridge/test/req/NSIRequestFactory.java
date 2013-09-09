@@ -12,6 +12,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
+import net.es.oscars.nsibridge.test.cuke.HelperSteps;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -103,10 +104,23 @@ public class NSIRequestFactory {
         } else {
             inHeader.setCorrelationId(corrId);
         }
-        inHeader.setRequesterNSA("urn:ogf:network:nsa:starlight");
-        inHeader.setProviderNSA("urn:ogf:network:nsa:esnet");
+        if (HelperSteps.getValue("requesterNSA") != null) {
+            inHeader.setRequesterNSA(HelperSteps.getValue("requesterNSA"));
+        } else {
+            inHeader.setRequesterNSA("urn:ogf:network:nsa:starlight");
+        }
 
-        inHeader.setReplyTo("http://localhost:8088/ConnectionRequester");
+        if (HelperSteps.getValue("requesterNSA") != null) {
+            inHeader.setProviderNSA(HelperSteps.getValue("providerNSA"));
+        } else {
+            inHeader.setProviderNSA("urn:ogf:network:nsa:esnet");
+        }
+
+        if (HelperSteps.getValue("replyTo") != null) {
+            inHeader.setReplyTo(HelperSteps.getValue("replyTo"));
+        } else {
+            inHeader.setReplyTo("http://localhost:8088/ConnectionRequester");
+        }
         return inHeader;
     }
 

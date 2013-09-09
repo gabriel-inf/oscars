@@ -30,9 +30,9 @@ public class QuerySteps {
         String corrId = HelperSteps.getValue("corrId");
 
         QueryType qt = new QueryType();
+        CommonHeaderType ht = NSIRequestFactory.makeHeader(corrId);
+
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
-        CommonHeaderType ht = new CommonHeaderType();
-        ht.setRequesterNSA("foo");
         outHolder.value = ht;
         qt.getConnectionId().add(connId);
 

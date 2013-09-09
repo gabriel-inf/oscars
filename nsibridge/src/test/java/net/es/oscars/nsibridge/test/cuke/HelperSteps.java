@@ -32,7 +32,15 @@ public class HelperSteps {
         submitException = val;
     }
 
+    @When("^I set the current NSA requester to \"([^\"]*)\"$")
+    public void I_set_the_current_NSA_requester_to(String arg1) throws Throwable {
+        store.put("requesterNSA", arg1);
+    }
 
+    @When("^I set the current NSA provider to \"([^\"]*)\"$")
+    public void I_set_the_current_NSA_provider_to(String arg1) throws Throwable {
+        store.put("providerNSA", arg1);
+    }
     @When("^I set the current connId to: \"([^\"]*)\"$")
     public void I_set_the_current_connId_to(String arg1) throws Throwable {
         store.put("connId", arg1);

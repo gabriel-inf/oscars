@@ -208,8 +208,10 @@ public class RequestProcessor {
         for(String connId : request.getQuery().getConnectionId()){
             hasFilters = true;
             ConnectionRecord cr = DB_Util.getConnectionRecord(connId, requester);
-            if(cr != null){
+            if (cr != null){
                 connRecords.add(cr);
+            } else {
+                log.info("no record found for connId: "+request.getQuery().getConnectionId()+ " reqNSA: "+requester);
             }
         }
 
