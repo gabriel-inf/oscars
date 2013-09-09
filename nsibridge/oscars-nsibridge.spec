@@ -33,6 +33,7 @@ The OSCARS NSI Bridge provides access to OSCARS through the Network Services Int
 
 %prep
 %setup -q -n oscars-%{version}-%{relnum}
+perl -e 's/jdbc:hsqldb:file:db\/nsi\.hsqldb/jdbc:hsqldb:file:\/etc\/oscars\/%{service_name}\/data\/nsi.hsqldb/g' -pi %{package_name}/src/main/resources/hibernate.xml 
 
 %clean
 rm -rf %{buildroot}
