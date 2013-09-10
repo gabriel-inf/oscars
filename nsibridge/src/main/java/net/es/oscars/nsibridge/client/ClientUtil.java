@@ -93,7 +93,11 @@ public class ClientUtil {
     }
 
     public static void prepareBus(String url) {
-        SpringContext.getInstance().initContext("config/beans.xml");
+        String beansFile = System.getProperty("nsibridge.beans");
+        if(beansFile == null || "".equals(beansFile)){
+            beansFile = "config/beans.xml";
+        }
+        SpringContext.getInstance().initContext(beansFile);
         ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
 
         SpringBusFactory bf = new SpringBusFactory();
