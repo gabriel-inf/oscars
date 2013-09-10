@@ -23,6 +23,6 @@ if [ -z "$jarfile" ]; then
     echo "Starting ${shortname} with version:$vers context:$context"
 fi
 
-java -Djava.net.preferIPv4Stack=true -Xmx512m -jar $jarfile&
+java -Djava.net.preferIPv4Stack=true -Xmx512m -Dnsibridge.beans=file:/etc/oscars/NsiBridgeService/conf/beans.xml -jar $jarfile&
 echo $! > $pidfile
 

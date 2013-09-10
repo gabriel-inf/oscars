@@ -81,7 +81,11 @@ public class Invoker implements Runnable {
 
         System.out.println("Initializing Spring... ");
         SpringContext sc = SpringContext.getInstance();
-        ApplicationContext ax = sc.initContext("config/beans.xml");
+        String beansFile = System.getProperty("nsibridge.beans");
+        if(beansFile == null || "".equals(beansFile)){
+            beansFile = "config/beans.xml";
+        }
+        ApplicationContext ax = sc.initContext(beansFile);
 
 
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
