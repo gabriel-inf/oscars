@@ -34,7 +34,12 @@ public class ProviderServer {
         String busConfigFile = conf.getBus();
 
         SpringBusFactory factory = new SpringBusFactory();
+        boolean useSSL = false;
         if (url.toLowerCase().startsWith("https")) {
+            useSSL = true;
+        }
+
+        if (useSSL) {
             factory.createBus(sslBusConfigFile);
         } else {
             factory.createBus(busConfigFile);
@@ -58,7 +63,6 @@ public class ProviderServer {
         sf.setProperties(props);
 
 
-
         LoggingInInterceptor in = new LoggingInInterceptor();
         in.setPrettyLogging(true);
 
@@ -68,6 +72,17 @@ public class ProviderServer {
         sf.getFeatures().add(f);
         sf.getInInterceptors().add(in);
         sf.getOutInterceptors().add(out);
+
+        /*
+        OscarsHttpBasicAuthNInInterceptor basicInt = OscarsHttpBasicAuthNInInterceptor.getInstance();
+        sf.getInInterceptors().add(basicInt);
+        */
+
+        if (useSSL) {
+            OscarsCertInInterceptor certInt = OscarsCertInInterceptor.getInstance();
+            sf.getInInterceptors().add(certInt);
+        }
+
 
         sf.setServiceClass(ConnectionProviderPort.class);
         sf.setAddress(url);

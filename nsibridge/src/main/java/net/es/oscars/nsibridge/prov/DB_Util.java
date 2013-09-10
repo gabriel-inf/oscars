@@ -242,7 +242,7 @@ public class DB_Util {
 
 
 
-    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri, String notifyUrl) throws ServiceException {
+    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri, String notifyUrl, String subjectDN, String issuerDN) throws ServiceException {
         ConnectionRecord cr = getConnectionRecord(connId);
         if (cr != null) {
             log.info("connection record was found while starting reserve() for connectionId: " + connId);
@@ -255,6 +255,8 @@ public class DB_Util {
             cr.setNsiGlobalGri(nsiGlobalGri);
             cr.setRequesterNSA(requesterNSA);
             cr.setNotifyUrl(notifyUrl);
+            cr.setSubjectDN(subjectDN);
+            cr.setIssuerDN(issuerDN);
             em.persist(cr);
             em.getTransaction().commit();
         }

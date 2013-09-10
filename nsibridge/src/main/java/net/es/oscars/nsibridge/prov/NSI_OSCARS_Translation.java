@@ -247,7 +247,7 @@ public class NSI_OSCARS_Translation {
         //Set details of reservation based on query
         try {
             QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(cr.getOscarsGri());
-            QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
+            QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, cr.getSubjectDN(), cr.getIssuerDN());
             if(reply == null || reply.getReservationDetails() == null){
                 throw new TranslationException("No matching OSCARS reservation found with oscars GRI " + cr.getOscarsGri());
             }

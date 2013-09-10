@@ -14,16 +14,6 @@
         <property name="sslBus" value="config/server-bus-ssl.xml"/>
     </bean>
 
-    <bean id="oscarsConfig"
-          class="net.es.oscars.nsibridge.config.OscarsConfig"
-          scope="singleton">
-
-        <property name="userDN" value="foo.net:user"/>
-        <property name="issuerDN" value="foo.net:issuer"/>
-    </bean>
-
-
-
     <!-- usually no need to change below this line -->
 
     <bean id="clientConfig"
@@ -57,6 +47,15 @@
         <property name="teardownDelayMillis" value="5000" />
         <property name="authDelayMillis" value="100" />
         <property name="responseDelayMillis" value="100" />
+        <property name="secConfig" ref="oscarsStubSecConfig" />
+    </bean>
+
+    <bean id="oscarsStubSecConfig"
+          class="net.es.oscars.nsibridge.config.OscarsStubSecConfig"
+          scope="singleton">
+
+        <property name="userDN" value="CN=client, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown"/>
+        <property name="issuerDN" value="CN=client, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown"/>
     </bean>
 
     <bean id="timingConfig"

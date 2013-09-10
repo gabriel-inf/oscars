@@ -1,11 +1,11 @@
 package net.es.oscars.nsibridge.config;
 
 
-public class OscarsConfig {
+public class OscarsStubSecConfig {
     protected String userDN = "";
     protected String issuerDN = "";
 
-    public OscarsConfig(){
+    public OscarsStubSecConfig(){
 
     };
 

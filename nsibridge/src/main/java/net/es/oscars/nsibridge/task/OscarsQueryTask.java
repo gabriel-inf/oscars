@@ -61,7 +61,7 @@ public class OscarsQueryTask extends Task  {
             }
             if (qc != null) {
                 try {
-                    QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
+                    QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, cr.getSubjectDN(), cr.getIssuerDN());
 
                     log.debug("connId: "+connId+"gri: "+reply.getReservationDetails().getGlobalReservationId());
 

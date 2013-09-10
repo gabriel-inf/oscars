@@ -35,7 +35,7 @@ public class OscarsSteps {
     public void submit_a_new_OSCARS_reserve_request() throws Throwable {
         OscarsProxy op = OscarsProxy.getInstance();
         ResCreateContent rcc = new ResCreateContent();
-        CreateReply cr = op.sendCreate(rcc);
+        CreateReply cr = op.sendCreate(rcc, "foo", "bar");
         gri = cr.getGlobalReservationId();
     }
 
@@ -67,7 +67,9 @@ public class OscarsSteps {
         assertThat(connGri, notNullValue());
 
         QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(connGri);
-        QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
+
+        // FIXME
+        QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, "foo", "bar");
         EntityManager em = PersistenceHolder.getEntityManager();
 
         OscarsStatusRecord or = new OscarsStatusRecord();

@@ -4,20 +4,15 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import net.es.oscars.nsibridge.config.OscarsConfig;
+import net.es.oscars.nsibridge.config.OscarsStubSecConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
-import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
-import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.sched.Schedule;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -37,16 +32,8 @@ public class EnvironmentSteps {
         sc.initContext("src/test/resources/config/beans.xml");
 
         OscarsProxy op = OscarsProxy.getInstance();
+        op.initialize();
 
-        ApplicationContext ax = SpringContext.getInstance().getContext();
-        OscarsConfig oc =  ax.getBean("oscarsConfig", OscarsConfig.class);
-        OscarsStubConfig os = ax.getBean("oscarsStubConfig", OscarsStubConfig.class);
-
-        op.setOscarsConfig(oc);
-        OscarsProxy.getInstance().setOscarsStubConfig(os);
-
-        assertThat(op.getOscarsConfig(), notNullValue());
-        assertThat(op.getOscarsStubConfig(), notNullValue());
 
         Schedule sch = Schedule.getInstance();
         sch.start();

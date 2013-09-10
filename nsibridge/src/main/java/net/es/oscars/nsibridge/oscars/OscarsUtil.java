@@ -44,7 +44,7 @@ public class OscarsUtil {
         }
 
         try {
-            CreateReply reply = OscarsProxy.getInstance().sendCreate(rc);
+            CreateReply reply = OscarsProxy.getInstance().sendCreate(rc, cr.getSubjectDN(), cr.getIssuerDN());
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
@@ -67,7 +67,7 @@ public class OscarsUtil {
         }
         if (cp != null) {
             try {
-                CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp);
+                CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp, cr.getSubjectDN(), cr.getIssuerDN());
             } catch (OSCARSServiceException ex) {
                 addOscarsRecord(cr, null, new Date(), "FAILED");
                 log.error(ex.getMessage(), ex);
@@ -90,7 +90,7 @@ public class OscarsUtil {
         }
         if (cp != null) {
             try {
-                TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp);
+                TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp, cr.getSubjectDN(), cr.getIssuerDN());
             } catch (OSCARSServiceException ex) {
                 addOscarsRecord(cr, null, new Date(), "FAILED");
                 log.error(ex.getMessage(), ex);
@@ -110,7 +110,7 @@ public class OscarsUtil {
 
         CancelResContent rc = NSI_OSCARS_Translation.makeOscarsCancel(oscarsGri);
         try {
-            CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc);
+            CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc, cr.getSubjectDN(), cr.getIssuerDN());
         } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, null, new Date(), "FAILED");
             log.error(ex.getMessage(), ex);
@@ -128,7 +128,7 @@ public class OscarsUtil {
 
         if (qc != null) {
             try {
-                QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc);
+                QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, cr.getSubjectDN(), cr.getIssuerDN());
                 String oscStatus =  reply.getReservationDetails().getStatus();
 
                 log.debug("query result for connId: "+cr.getConnectionId()+" gri: "+oscarsGri+" status: "+oscStatus);
@@ -167,7 +167,7 @@ public class OscarsUtil {
         }
 
         try {
-            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc);
+            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, cr.getSubjectDN(), cr.getIssuerDN());
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {

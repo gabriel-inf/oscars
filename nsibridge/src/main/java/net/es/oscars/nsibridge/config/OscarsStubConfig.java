@@ -9,6 +9,7 @@ public class OscarsStubConfig {
     protected long teardownDelayMillis;
     protected long authDelayMillis;
     protected long responseDelayMillis;
+    protected OscarsStubSecConfig secConfig;
 
     public boolean isStub() {
         return stub;
@@ -74,5 +75,13 @@ public class OscarsStubConfig {
 
     public void setResponseDelayMillis(long responseDelayMillis) {
         this.responseDelayMillis = responseDelayMillis;
+    }
+
+    public OscarsStubSecConfig getSecConfig() {
+        return secConfig;
+    }
+
+    public void setSecConfig(OscarsStubSecConfig secConfig) {
+        this.secConfig = secConfig;
     }
 }

@@ -8,11 +8,11 @@ import joptsimple.OptionSet;
 
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
+import net.es.oscars.nsibridge.config.OscarsStubSecConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
-import net.es.oscars.nsibridge.config.OscarsConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
 import net.es.oscars.nsibridge.soap.impl.ProviderServer;
@@ -102,15 +102,12 @@ public class Invoker implements Runnable {
             // System.out.println("stp :"+stp.getStpId());
         }
 
-        OscarsConfig oc = ax.getBean("oscarsConfig", OscarsConfig.class);
         OscarsStubConfig os = ax.getBean("oscarsStubConfig", OscarsStubConfig.class);
         HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
 
 
 
         try {
-            OscarsProxy.getInstance().setOscarsConfig(oc);
-            OscarsProxy.getInstance().setOscarsStubConfig(os);
             OscarsProxy.getInstance().initialize();
         } catch (OSCARSServiceException e) {
             e.printStackTrace();

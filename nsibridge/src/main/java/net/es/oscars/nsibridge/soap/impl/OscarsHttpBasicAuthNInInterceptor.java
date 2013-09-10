@@ -1,11 +1,5 @@
 package net.es.oscars.nsibridge.soap.impl;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import org.apache.cxf.binding.soap.interceptor.SoapHeaderInterceptor;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.endpoint.Endpoint;
@@ -14,66 +8,60 @@ import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.ws.addressing.EndpointReferenceType;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Required;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * CXF Interceptor that provides HTTP Basic Authentication validation.
- *
- * Based on the concepts outline here:
- *    http://chrisdail.com/2008/03/31/apache-cxf-with-http-basic-authentication
- *
- * @author CDail
- */
-public class BasicAuthAuthorizationInterceptor extends SoapHeaderInterceptor {
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.util.Arrays;
+import java.util.Map;
 
-    protected Logger log = Logger.getLogger(getClass());
+public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
 
-    /** Map of allowed users to this system with their corresponding passwords. */
-    private Map<String,String> users;
-
-    @Required
-    public void setUsers(Map<String, String> users) {
-        this.users = users;
+    protected static final Logger log = LoggerFactory.getLogger(OscarsHttpBasicAuthNInInterceptor.class);
+    private static OscarsHttpBasicAuthNInInterceptor instance;
+    private OscarsHttpBasicAuthNInInterceptor() {}
+    public static OscarsHttpBasicAuthNInInterceptor getInstance() {
+        if (instance == null) instance = new OscarsHttpBasicAuthNInInterceptor();
+        return instance;
     }
 
-    @Override public void handleMessage(Message message) throws Fault {
+    @Override
+    public void handleMessage(Message message) throws Fault {
         // This is set by CXF
         AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
-
-        // If the policy is not set, the user did not specify credentials
-        // A 401 is sent to the client to indicate that authentication is required
+        // If the policy is not set, the user did not specify
+        // credentials. A 401 is sent to the client to indicate
+        // that authentication is required
         if (policy == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("User attempted to log in with no credentials");
-            }
+            log.info("no HTTP Basic credentials set from user");
             sendErrorResponse(message, HttpURLConnection.HTTP_UNAUTHORIZED);
             return;
         }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Logging in use: " + policy.getUserName());
-        }
-
-        // Verify the password
-        String realPassword = users.get(policy.getUserName());
-        if (realPassword == null || !realPassword.equals(policy.getPassword())) {
-            log.warn("Invalid username or password for user: " + policy.getUserName());
+        String username = policy.getUserName();
+        String password = policy.getPassword();
+        if (!checkLogin(username, password)) {
+            log.warn("Invalid username or password");
             sendErrorResponse(message, HttpURLConnection.HTTP_FORBIDDEN);
         }
     }
 
-    @SuppressWarnings("unchecked")
+
+    private boolean checkLogin(String username, String password) {
+        log.debug("http basic: u:"+username+" p: "+password);
+        return true;
+    }
+
+
     private void sendErrorResponse(Message message, int responseCode) {
         Message outMessage = getOutMessage(message);
         outMessage.put(Message.RESPONSE_CODE, responseCode);
-
         // Set the response headers
-        Map<String, List<String>> responseHeaders =
-            (Map<String, List<String>>)message.get(Message.PROTOCOL_HEADERS);
+        Map responseHeaders = (Map) message.get(Message.PROTOCOL_HEADERS);
         if (responseHeaders != null) {
             responseHeaders.put("WWW-Authenticate", Arrays.asList(new String[]{"Basic realm=realm"}));
-            responseHeaders.put("Content-Length", Arrays.asList(new String[]{"0"}));
+            responseHeaders.put("Content-length", Arrays.asList(new String[]{"0"}));
         }
         message.getInterceptorChain().abort();
         try {
@@ -99,8 +87,7 @@ public class BasicAuthAuthorizationInterceptor extends SoapHeaderInterceptor {
     private Conduit getConduit(Message inMessage) throws IOException {
         Exchange exchange = inMessage.getExchange();
         EndpointReferenceType target = exchange.get(EndpointReferenceType.class);
-        Conduit conduit =
-            exchange.getDestination().getBackChannel(inMessage, null, target);
+        Conduit conduit = exchange.getDestination().getBackChannel(inMessage, null, target);
         exchange.setConduit(conduit);
         return conduit;
     }
