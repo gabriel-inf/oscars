@@ -71,7 +71,13 @@ public class Invoker implements Runnable {
 
         try {
             ContextConfig.getInstance().setContext(context);
-            ContextConfig.getInstance().loadManifest(new File("./config/manifest.yaml"));
+            String manifestFile = System.getProperty("nsibridge.manifest");
+            if(manifestFile == null || "".equals(manifestFile)){
+                manifestFile = "./config/manifest.yaml";
+            }else{
+                manifestFile = manifestFile.replaceFirst("file:", "");
+            }
+            ContextConfig.getInstance().loadManifest(new File(manifestFile));
         } catch (ConfigException e) {
             e.printStackTrace();
             Invoker.setKeepRunning(false);
