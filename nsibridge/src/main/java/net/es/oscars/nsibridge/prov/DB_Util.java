@@ -190,7 +190,7 @@ public class DB_Util {
     }
 
     public static boolean restoreStateMachines(String connId) throws ServiceException {
-        log.info("restoring state machines for connId: "+connId);
+        // log.info("restoring state machines for connId: "+connId);
         boolean restoredLife = false;
         boolean restoredProv = false;
         boolean restoredResv = false;
@@ -236,7 +236,7 @@ public class DB_Util {
             NSI_Life_State ls = new NSI_Life_State();
             ls.setState(cr.getLifecycleState());
             lsm.setState(ls);
-            log.debug("  restored lsm state: "+lsm.getState().value());
+            // log.debug("  restored lsm state: "+lsm.getState().value());
             restoredLife = true;
         }
 
@@ -244,7 +244,7 @@ public class DB_Util {
             NSI_Prov_State ps = new NSI_Prov_State();
             ps.setState(cr.getProvisionState());
             psm.setState(ps);
-            log.debug("  restored psm state: "+psm.getState().value());
+            // log.debug("  restored psm state: "+psm.getState().value());
 
             restoredProv = true;
         }
@@ -253,7 +253,7 @@ public class DB_Util {
             NSI_Resv_State rs = new NSI_Resv_State();
             rs.setState(cr.getReserveState());
             rsm.setState(rs);
-            log.debug("  restored rsm state: "+rsm.getState().value());
+            // log.debug("  restored rsm state: "+rsm.getState().value());
 
             restoredResv = true;
         }
