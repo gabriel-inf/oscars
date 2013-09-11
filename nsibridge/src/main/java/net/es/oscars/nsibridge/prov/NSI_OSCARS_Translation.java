@@ -257,25 +257,37 @@ public class NSI_OSCARS_Translation {
         NSI_Resv_SM rsm = smh.findNsiResvSM(cr.getConnectionId());
         NSI_Life_SM lsm = smh.findNsiLifeSM(cr.getConnectionId());
         NSI_Prov_SM psm = smh.findNsiProvSM(cr.getConnectionId());
-        LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
-        ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
-        ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
         DataPlaneStatusType dst = new DataPlaneStatusType();
-        dst.setVersion(1); //TODO: get this for real
-        dst.setVersionConsistent(true);//always true for uPA 
-        //for now just link dataplane state to provision state since we don't have way to get this directly
-        if(ProvisionStateEnumType.PROVISIONED.equals(pst.value()) ||
-                ProvisionStateEnumType.RELEASING.equals(pst.value())){
-            dst.setActive(true);
-        }else{
-            dst.setActive(false);
+        //null checks to avoid errors, especially in stub mode
+        if(lsm != null && lsm.getState() != null){
+            LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
+            cst.setLifecycleState(lst);
         }
-        cst.setProvisionState(pst);
-        cst.setLifecycleState(lst);
-        cst.setReservationState(rst);
-        cst.setDataPlaneStatus(dst);
+        if(psm != null && psm.getState() != null){
+           //for now just link dataplane state to provision state since we don't have way to get this directly
+            ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
+            if(ProvisionStateEnumType.PROVISIONED.equals(pst.value()) ||
+                    ProvisionStateEnumType.RELEASING.equals(pst.value())){
+                dst.setActive(true);
+            }else{
+                dst.setActive(false);
+            }
+            cst.setProvisionState(pst);
+        }
+        if(rsm != null && rsm.getState() != null){
+            ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
+            cst.setReservationState(rst);
+        }
+        dst.setVersion(1); //TODO: get this for real
+        dst.setVersionConsistent(true);//always true for uPA         
+        cst.setDataPlaneStatus(dst); //TODO: get this for real
         resultType.setConnectionStates(cst);
 
+        //May not be GRI if there was a failure before hitting OSCARS
+        if(cr.getOscarsGri() == null){
+            return resultType;
+        }
+        
         //Set details of reservation based on query
         try {
             QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(cr.getOscarsGri());
