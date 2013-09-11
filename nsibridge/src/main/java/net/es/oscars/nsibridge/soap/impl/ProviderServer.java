@@ -35,7 +35,7 @@ public class ProviderServer {
 
 
 
-        System.out.println("starting provider server at "+url);
+        System.out.println("Starting ConnectionProvider SOAP server at "+url+" ..");
 
         ConnectionProvider cp = new ConnectionProvider();
         JaxWsServerFactoryBean sf = new JaxWsServerFactoryBean();
@@ -81,7 +81,7 @@ public class ProviderServer {
         server = sf.create();
         server.start();
         this.setRunning(true);
-        System.out.println("    ... provider server started");
+        System.out.println("    .. SOAP server started.");
     }
 
     public void stop() {

@@ -117,8 +117,11 @@ public class Invoker implements Runnable {
 
 
         try {
+            System.out.print("Connecting to OSCARS...");
             OscarsProxy.getInstance().initialize();
+            System.out.println(" connected.");
         } catch (OSCARSServiceException e) {
+            System.out.println(" not connected!");
             e.printStackTrace();
             Invoker.setKeepRunning(false);
         }
@@ -136,6 +139,8 @@ public class Invoker implements Runnable {
             e.printStackTrace();
             Invoker.setKeepRunning(false);
         }
+
+        System.out.println("NSI Bridge ready to receive requests.");
 
         Runtime.getRuntime().addShutdownHook(
                 new Thread() {
