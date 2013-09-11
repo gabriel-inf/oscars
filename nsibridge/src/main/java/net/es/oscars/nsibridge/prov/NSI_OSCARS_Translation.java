@@ -63,7 +63,25 @@ public class NSI_OSCARS_Translation {
         log.debug("modify gri: "+oscarsGri);
 
         ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
-        EthernetVlanType evts = (EthernetVlanType) crit.getAny().get(0);
+        EthernetVlanType evts = null;
+        for (Object o : crit.getAny()) {
+            if (o instanceof EthernetVlanType ) {
+                evts = (EthernetVlanType) o;
+            } else {
+                try {
+                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
+                    evts = payload.getValue();
+                } catch (ClassCastException ex) {
+                    evts = null;
+                }
+
+            }
+        }
+
+        if (evts == null) {
+            throw new TranslationException("no evts element!");
+        }
+
         Long capacity = evts.getCapacity();
         int bandwidth = capacity.intValue();
 
