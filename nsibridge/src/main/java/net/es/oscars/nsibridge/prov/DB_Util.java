@@ -13,10 +13,16 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
+import net.es.oscars.nsibridge.state.life.NSI_Life_TH;
+import net.es.oscars.nsibridge.state.life.NSI_UP_Life_Impl;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_State;
+import net.es.oscars.nsibridge.state.prov.NSI_Prov_TH;
+import net.es.oscars.nsibridge.state.prov.NSI_UP_Prov_Impl;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
+import net.es.oscars.nsibridge.state.resv.NSI_Resv_TH;
+import net.es.oscars.nsibridge.state.resv.NSI_UP_Resv_Impl;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -200,16 +206,29 @@ public class DB_Util {
         if (lsm == null) {
             lsm = new NSI_Life_SM(connId);
             smh.getLifeStateMachines().put(connId, lsm);
+            NSI_Life_TH lth = new NSI_Life_TH();
+            lsm.setTransitionHandler(lth);
+            NSI_UP_Life_Impl lml = new NSI_UP_Life_Impl(connId);
+            lth.setMdl(lml);
+
         }
         NSI_Prov_SM psm = smh.findNsiProvSM(connId);
         if (psm == null) {
             psm = new NSI_Prov_SM(connId);
             smh.getProvStateMachines().put(connId, psm);
+            NSI_Prov_TH pth = new NSI_Prov_TH();
+            psm.setTransitionHandler(pth);
+            NSI_UP_Prov_Impl pml = new NSI_UP_Prov_Impl(connId);
+            pth.setMdl(pml);
         }
         NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
         if (rsm == null) {
             rsm = new NSI_Resv_SM(connId);
             smh.getResvStateMachines().put(connId, rsm);
+            NSI_Resv_TH rth = new NSI_Resv_TH();
+            rsm.setTransitionHandler(rth);
+            NSI_UP_Resv_Impl rml = new NSI_UP_Resv_Impl(connId);
+            rth.setMdl(rml);
         }
 
         // if we have restored the state

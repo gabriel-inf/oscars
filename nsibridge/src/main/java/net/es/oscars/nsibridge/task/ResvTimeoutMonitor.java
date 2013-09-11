@@ -59,7 +59,7 @@ public class ResvTimeoutMonitor implements Job {
             NSI_Resv_SM rsm;
             try {
                 DB_Util.restoreStateMachines(connId);
-                 rsm = smh.findNsiResvSM(connId);
+                rsm = smh.findNsiResvSM(connId);
                 if (rsm == null) {
                     log.error("no RSM found for "+connId);
                     continue;
