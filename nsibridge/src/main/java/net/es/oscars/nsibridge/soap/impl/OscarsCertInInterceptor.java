@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
@@ -19,8 +20,7 @@ import org.apache.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.List;
-import java.util.Map;
+
 
 public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
@@ -103,18 +103,25 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
     private boolean verifyCert(X509Certificate cert) {
+        String certSubjectDN = cert.getSubjectDN().toString();
+        String certIssuerDN = cert.getIssuerDN().toString();
 
-        log.debug("issuer: "+cert.getIssuerDN());
-        log.debug("subject: "+cert.getSubjectDN());
+        log.debug("s: "+certSubjectDN+" i: "+certIssuerDN);
+        certSubjectDN  = OscarsUtil.normalizeDN(certSubjectDN);
+        certIssuerDN = OscarsUtil.normalizeDN(certIssuerDN);
+
+        log.debug("normalized: s: "+certSubjectDN+" i: "+certIssuerDN);
+
+
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
-            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNRequest(mp, cert.getSubjectDN().toString(), cert.getIssuerDN().toString());
+            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNRequest(mp, certSubjectDN, certIssuerDN);
             if (attrs == null || attrs.getSubjectAttribute() == null || attrs.getSubjectAttribute().isEmpty()) {
                 log.info("no user attributes found");
                 return false;
             }
-            subjectDN = cert.getSubjectDN().toString();
-            issuerDN = cert.getIssuerDN().toString();
+            subjectDN = certSubjectDN;
+            issuerDN = certIssuerDN;
 
         } catch (Exception ex) {
             log.error(ex);
@@ -126,9 +133,13 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
 
     private boolean verifyDNs(String subjectDN, String issuerDN) {
+        log.debug("s: "+subjectDN+" i: "+issuerDN);
+        issuerDN  = OscarsUtil.normalizeDN(issuerDN);
+        subjectDN = OscarsUtil.normalizeDN(subjectDN);
 
-        log.debug("issuer: "+issuerDN);
-        log.debug("subject: "+subjectDN);
+        log.debug("normalized: s: "+subjectDN+" i: "+issuerDN);
+
+
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
             SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNRequest(mp, subjectDN, issuerDN);

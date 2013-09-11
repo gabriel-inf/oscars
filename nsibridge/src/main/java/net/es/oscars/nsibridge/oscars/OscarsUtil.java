@@ -9,11 +9,10 @@ import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
-import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import net.es.oscars.utils.task.sched.Workflow;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
@@ -197,7 +196,31 @@ public class OscarsUtil {
 
     }
 
+    public static String normalizeDN(String dn) {
+        // incoming format:
+        // /C=US/ST=CA/L=Berkeley/O=ESnet/OU=ANTG/CN=MaintDB
+        // desired format:
+        // "CN=MaintDB, OU=ANTG, O=ESnet, L=Berkeley, ST=CA, C=US";
+        HashMap<String, String> pieces = new HashMap<String, String>();
+        String[] parts;
+        parts = StringUtils.split("\\/", dn);
+        for (String part : parts) {
+            part = part.trim();
+            String[] subParts = StringUtils.split("=", part);
+            pieces.put(subParts[0], subParts[1]);
+        }
+        String result = "";
+        result += "CN="+pieces.get("CN");
+        result += ", OU="+pieces.get("OU");
+        result += ", O="+pieces.get("O");
+        result += ", L="+pieces.get("L");
+        result += ", ST="+pieces.get("ST");
+        result += ", C="+pieces.get("C");
 
+        return result;
+
+
+    }
 
 
 
