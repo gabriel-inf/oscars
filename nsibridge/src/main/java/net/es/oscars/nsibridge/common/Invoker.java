@@ -114,6 +114,17 @@ public class Invoker implements Runnable {
             Invoker.setKeepRunning(false);
         }
 
+
+        EntityManager em = PersistenceHolder.getEntityManager();
+
+
+        try {
+            ProviderServer ps = ProviderServer.makeServer(hc);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+
         Schedule ts = Schedule.getInstance();
 
         try {
@@ -126,17 +137,6 @@ public class Invoker implements Runnable {
         } catch (SchedulerException e) {
             e.printStackTrace();
             Invoker.setKeepRunning(false);
-        }
-
-
-        EntityManager em = PersistenceHolder.getEntityManager();
-
-
-        try {
-            ProviderServer ps = ProviderServer.makeServer(hc);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.exit(1);
         }
 
         Runtime.getRuntime().addShutdownHook(

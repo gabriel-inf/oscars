@@ -45,6 +45,13 @@ public class ResvTimeoutMonitor implements Job {
 
             String connId = cr.getConnectionId();
 
+            List<ResvRecord> rrs = ConnectionRecord.getUncommittedResvRecords(cr);
+            if (rrs == null || rrs.size() == 0) {
+                log.debug("no uncommitted resvRecords for connId:"+connId);
+                continue;
+            }
+
+
             if (cr.getReserveState() == null) {
                 log.debug("no reserve state for connId: " + connId);
                 continue;
@@ -54,6 +61,7 @@ public class ResvTimeoutMonitor implements Job {
                 DB_Util.restoreStateMachines(connId);
                  rsm = smh.findNsiResvSM(connId);
                 if (rsm == null) {
+                    log.error("no RSM found for "+connId);
                     continue;
                 }
             } catch (ServiceException ex) {
@@ -62,19 +70,12 @@ public class ResvTimeoutMonitor implements Job {
             }
 
 
-
-
-
             if (!cr.getReserveState().equals(ReservationStateEnumType.RESERVE_HELD)) {
                 continue;
             }
 
 
-            List<ResvRecord> rrs = ConnectionRecord.getUncommittedResvRecords(cr);
-            if (rrs == null || rrs.size() != 1) {
-                log.error("could not find uncommitted resvRecords for connId:"+connId);
-                continue;
-            }
+
 
             ResvRecord rr = rrs.get(0);
             Date submittedAt = rr.getSubmittedAt();
@@ -83,7 +84,11 @@ public class ResvTimeoutMonitor implements Job {
             Long resvTimeout = new Double(tx.getResvTimeout()).longValue();
 
 
-            if (submittedAt.getTime() + (resvTimeout * 1000) < now.getTime()) {
+            Long timeoutMs = submittedAt.getTime() + resvTimeout * 1000;
+            Date timeout = new Date(timeoutMs);
+
+
+            if (timeout.before(now)) {
                 log.debug("timed out connId: "+connId+" RR v: "+rr.getVersion()+" timeout:" +resvTimeout);
                 try {
                     rsm.process(NSI_Resv_Event.RESV_TIMEOUT, UUID.randomUUID().toString());
