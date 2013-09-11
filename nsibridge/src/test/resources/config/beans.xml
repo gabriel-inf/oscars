@@ -10,7 +10,9 @@
           scope="singleton">
 
         <property name="url" value="http://localhost:8501/"/>
-        <property name="bus" value="config/jetty.xml"/>
+        <property name="bus" value="config/server-bus.xml"/>
+        <property name="sslBus" value="config/server-bus-ssl.xml"/>
+        <property name="trustedSSLProxy" value="" />
     </bean>
 
 

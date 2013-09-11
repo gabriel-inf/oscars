@@ -3,25 +3,24 @@ package net.es.oscars.nsibridge.soap.impl;
 
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
+import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import oasis.names.tc.saml._2_0.assertion.AttributeType;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.security.transport.TLSSessionInfo;
-import org.apache.cxf.transport.http.MessageTrustDecider;
-import org.apache.cxf.transport.http.URLConnectionInfo;
+import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.cxf.transport.http.UntrustedURLConnectionIOException;
-import org.apache.cxf.transport.https.HttpsURLConnectionInfo;
 import org.apache.log4j.Logger;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.net.HttpURLConnection;
+import javax.servlet.http.HttpServletRequest;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Map;
 
 public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
@@ -47,51 +46,38 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     private String subjectDN;
     private String issuerDN;
 
+    private final String idnHeader = "SSL_CLIENT_I_DN";
+    private final String sdnHeader = "SSL_CLIENT_S_DN";
+
+
     public void handleMessage(Message message) throws Fault {
+        HttpConfig config = SpringContext.getInstance().getContext().getBean("httpConfig", HttpConfig.class);
+        String trustedProxy = config.getTrustedSSLProxy();
+        if (trustedProxy  != null && !trustedProxy.isEmpty() ) {
+            log.debug("trusting an SSL proxy to set SSL headers");
+            trustedProxy = trustedProxy.toLowerCase().trim();
 
 
-        if (isRequestor(message)) {
-            try {
-                HttpURLConnection connection =
-                        (HttpURLConnection) message.get("http.connection");
 
-                if (connection instanceof HttpsURLConnection) {
-                    final MessageTrustDecider orig = message.get(MessageTrustDecider.class);
-                    MessageTrustDecider trust = new MessageTrustDecider() {
-                        public void establishTrust(String conduitName,
-                                                   URLConnectionInfo connectionInfo,
-                                                   Message message)
-                                throws UntrustedURLConnectionIOException {
-                            if (orig != null) {
-                                orig.establishTrust(conduitName, connectionInfo, message);
-                            }
-                            HttpsURLConnectionInfo info = (HttpsURLConnectionInfo)connectionInfo;
+            HttpServletRequest httpRequest = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
+            String remoteHost = httpRequest.getRemoteHost().toLowerCase().trim();
+            log.debug("remote: "+remoteHost+" trusted: "+trustedProxy);
 
-                            if (info.getServerCertificates() == null
-                                    || info.getServerCertificates().length == 0) {
-                                throw new UntrustedURLConnectionIOException(
-                                        "No server certificates were found"
-                                );
-                            } else {
-                                X509Certificate[] x509Certs = (X509Certificate[])info.getServerCertificates();
-                                if (!verifyCert(x509Certs[0])) {
-                                    throw new UntrustedURLConnectionIOException(
-                                            "The client certificate does not match the defined cert constraints"
-                                    );
-                                }
-                            }
-                        }
-                    };
-                    message.put(MessageTrustDecider.class, trust);
-                } else {
-                    throw new UntrustedURLConnectionIOException(
-                            "TLS is not in use"
-                    );
-                }
-            } catch (UntrustedURLConnectionIOException ex) {
+
+            if (!remoteHost.equals(trustedProxy)) {
+                UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("incoming request not from trusted SSL proxy");
                 throw new Fault(ex);
             }
+
+            String issuerDN = httpRequest.getHeader(idnHeader);
+            String subjectDN = httpRequest.getHeader(sdnHeader);
+            if (!verifyDNs(subjectDN, issuerDN)) {
+                UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("untrusted subject / issuer DN headers set by SSL proxy");
+                 throw new Fault(ex);
+            }
+
         } else {
+
             try {
                 TLSSessionInfo tlsInfo = message.get(TLSSessionInfo.class);
                 final Certificate[] certs = tlsInfo.getPeerCertificates();
@@ -111,6 +97,9 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
                 throw new Fault(ex);
             }
         }
+
+
+
     }
 
     private boolean verifyCert(X509Certificate cert) {
@@ -133,6 +122,30 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
         return true;
     }
+
+
+
+    private boolean verifyDNs(String subjectDN, String issuerDN) {
+
+        log.debug("issuer: "+issuerDN);
+        log.debug("subject: "+subjectDN);
+        try {
+            MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
+            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNRequest(mp, subjectDN, issuerDN);
+            if (attrs == null || attrs.getSubjectAttribute() == null || attrs.getSubjectAttribute().isEmpty()) {
+                log.info("no user attributes found");
+                return false;
+            }
+            this.subjectDN = subjectDN;
+            this.issuerDN = issuerDN;
+
+        } catch (Exception ex) {
+            log.error(ex);
+            return false;
+        }
+        return true;
+    }
+
 
     public String getSubjectDN() {
         return subjectDN;

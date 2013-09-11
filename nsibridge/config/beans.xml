@@ -12,6 +12,7 @@
         <property name="url" value="https://jupiter.es.net:8500/"/>
         <property name="bus" value="config/server-bus.xml"/>
         <property name="sslBus" value="config/server-bus-ssl.xml"/>
+        <property name="trustedSSLProxy" value="" />
     </bean>
 
     <!-- usually no need to change below this line -->

@@ -12,6 +12,7 @@
         <property name="url" value="http://localhost:8500/"/>
         <property name="bus" value="/etc/oscars/NsiBridgeService/conf/server-bus.xml"/>
         <property name="sslBus" value="/etc/oscars/NsiBridgeService/conf/server-bus-ssl.xml"/>
+        <property name="trustedSSLProxy" value="" />
     </bean>
 
 

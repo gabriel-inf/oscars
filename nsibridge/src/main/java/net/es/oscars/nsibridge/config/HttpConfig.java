@@ -5,7 +5,15 @@ public class HttpConfig {
     protected String url;
     protected String bus;
     protected String sslBus;
+    protected String trustedSSLProxy;
 
+    public String getTrustedSSLProxy() {
+        return trustedSSLProxy;
+    }
+
+    public void setTrustedSSLProxy(String trustedSSLProxy) {
+        this.trustedSSLProxy = trustedSSLProxy;
+    }
 
     public String getUrl() {
         return url;
