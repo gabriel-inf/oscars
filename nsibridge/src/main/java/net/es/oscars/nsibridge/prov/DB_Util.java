@@ -199,14 +199,17 @@ public class DB_Util {
         NSI_Life_SM lsm = smh.findNsiLifeSM(connId);
         if (lsm == null) {
             lsm = new NSI_Life_SM(connId);
+            smh.getLifeStateMachines().put(connId, lsm);
         }
         NSI_Prov_SM psm = smh.findNsiProvSM(connId);
         if (psm == null) {
             psm = new NSI_Prov_SM(connId);
+            smh.getProvStateMachines().put(connId, psm);
         }
         NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
         if (rsm == null) {
             rsm = new NSI_Resv_SM(connId);
+            smh.getResvStateMachines().put(connId, rsm);
         }
 
         // if we have restored the state
