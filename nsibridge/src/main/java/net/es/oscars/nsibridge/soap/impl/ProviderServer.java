@@ -37,8 +37,6 @@ public class ProviderServer {
 
         System.out.println("starting provider server at "+url);
 
-
-
         ConnectionProvider cp = new ConnectionProvider();
         JaxWsServerFactoryBean sf = new JaxWsServerFactoryBean();
 
@@ -52,16 +50,6 @@ public class ProviderServer {
                         });
         sf.setProperties(props);
 
-
-        LoggingInInterceptor in = new LoggingInInterceptor();
-        in.setPrettyLogging(true);
-
-        LoggingOutInterceptor out = new LoggingOutInterceptor();
-        out.setPrettyLogging(true);
-        Feature f = new LoggingFeature();
-        sf.getFeatures().add(f);
-        sf.getInInterceptors().add(in);
-        sf.getOutInterceptors().add(out);
 
         /*
         OscarsHttpBasicAuthNInInterceptor basicInt = OscarsHttpBasicAuthNInInterceptor.getInstance();
