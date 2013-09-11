@@ -49,16 +49,19 @@ public class ResvTimeoutMonitor implements Job {
                 log.debug("no reserve state for connId: " + connId);
                 continue;
             }
-
-
-            NSI_Resv_SM rsm = smh.findNsiResvSM(connId);
-            if (rsm == null) {
-
-                // log.debug("examining connId: "+connId+" saved RSM: "+cr.getReserveState());
-            } else {
-                // log.debug("examining connId: "+connId+" saved RSM: "+cr.getReserveState()+" obj rsm: "+rsm.getState().value());
-
+            NSI_Resv_SM rsm;
+            try {
+                DB_Util.restoreStateMachines(connId);
+                 rsm = smh.findNsiResvSM(connId);
+                if (rsm == null) {
+                    continue;
+                }
+            } catch (ServiceException ex) {
+                log.error(ex.toString(), ex);
+                continue;
             }
+
+
 
 
 
