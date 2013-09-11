@@ -47,7 +47,7 @@ public class ResvTimeoutMonitor implements Job {
 
             List<ResvRecord> rrs = ConnectionRecord.getUncommittedResvRecords(cr);
             if (rrs == null || rrs.size() == 0) {
-                log.debug("no uncommitted resvRecords for connId:"+connId);
+                // log.debug("no uncommitted resvRecords for connId:"+connId);
                 continue;
             }
 
