@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.prov;
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
@@ -100,6 +101,25 @@ public class NSI_OSCARS_Translation {
     }
 
 
+    public static ModifyResContent makeOscarsRollback(ResvRecord resvRecord, String oscarsGri) throws TranslationException {
+        log.debug("rollback gri: "+oscarsGri);
+
+        Long capacity = resvRecord.getCapacity();
+        int bandwidth = capacity.intValue();
+
+        Long startTime = resvRecord.getStartTime().getTime() / 1000;
+        Long endTime = resvRecord.getEndTime().getTime() / 1000;
+
+        ModifyResContent mrc = new ModifyResContent();
+        mrc.setGlobalReservationId(oscarsGri);
+        UserRequestConstraintType urc = new UserRequestConstraintType();
+        mrc.setUserRequestConstraint(urc);
+        urc.setBandwidth(bandwidth);
+        urc.setStartTime(startTime);
+        urc.setEndTime(endTime);
+
+        return mrc;
+    }
 
 
 

@@ -4,6 +4,7 @@ import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
@@ -176,6 +177,41 @@ public class OscarsUtil {
             throw new ServiceException("Failed to modify reservation");
         }
     }
+
+    public static void submitRollback(ConnectionRecord cr) throws TranslationException, ServiceException  {
+        log.debug("submitRollback start");
+        ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+
+        ModifyResContent mc = null;
+        try {
+            mc = NSI_OSCARS_Translation.makeOscarsRollback(rr, cr.getOscarsGri());
+            log.debug("translated NSI to OSCARS");
+        } catch (TranslationException ex) {
+            log.error("could not translate NSI request");
+
+            log.error(ex.getMessage(), ex);
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
+            throw ex;
+        }
+
+        if (mc == null) {
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
+            throw new TranslationException("null result in translation");
+        }
+
+        try {
+            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, cr.getSubjectDN(), cr.getIssuerDN());
+            log.debug("connId: "+cr.getConnectionId()+" gri: "+reply.getGlobalReservationId());
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), reply.getStatus());
+        } catch (OSCARSServiceException ex) {
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
+
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException("Failed to modify reservation");
+        }
+    }
+
+
 
     public static OscarsStatusRecord addOscarsRecord(ConnectionRecord cr, String gri, Date date, String status) {
         String connId = cr.getConnectionId();

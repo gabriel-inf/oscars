@@ -36,12 +36,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         connectionId = connId;
     }
 
-    @Override
-    public UUID localRollback(String correlationId) {
-        // TODO
-        return null;
-    }
-
 
     @Override
     public UUID localCheck(String correlationId) {
@@ -148,84 +142,60 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
     @Override
     public UUID localAbort(String correlationId) {
+        log.debug("starting local abort");
 
         UUID taskId = null;
-        boolean okAbort = true;
 
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Resv_SM rsm = smh.getResvStateMachines().get(connectionId);
-        String exString = "";
+        long now = new Date().getTime();
 
-        ConnectionRecord cr = null;
-        try {
-            NSI_Util.isConnectionOK(connectionId);
-            cr = DB_Util.getConnectionRecord(connectionId);
-            if (cr.getOscarsGri() == null) {
-                okAbort = false;
-            }
-        } catch (ServiceException e) {
-            log.error(e);
-            okAbort = false;
-        }
+        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
+        Workflow wf = Workflow.getInstance();
+        Double d = (tc.getTaskInterval() * 1000);
+
+        Long when = now + d.longValue();
+
+        SMTransitionTask sm = new SMTransitionTask();
+        sm.setCorrelationId(correlationId);
+        sm.setSmt(StateMachineType.RSM);
+        sm.setConnectionId(connectionId);
+        sm.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_CF);
 
         try {
-            DB_Util.abortResvRecord(connectionId);
-            Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_CF, correlationId);
-            taskId = taskIds.iterator().next();
-            DB_Util.persistStateMachines(connectionId);
-        } catch (ServiceException ex) {
-            exString = ex.toString();
-            log.error(ex);
-
-            okAbort = false;
-        } catch (StateException ex) {
-            exString = ex.toString();
-            log.error(ex);
-            okAbort = false;
-        }
-
-
-        if (!okAbort) {
-            try {
-                DB_Util.saveException(connectionId, correlationId, exString);
-                Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_ABORT_FL, correlationId);
-                taskId = taskIds.iterator().next();
-                DB_Util.persistStateMachines(connectionId);
-            } catch (StateException ex) {
-                log.error(ex);
-            } catch (ServiceException ex) {
-                log.error(ex);
-            }
+            taskId = wf.schedule(sm , when);
+        } catch (TaskException e) {
+            e.printStackTrace();
         }
         return taskId;
+    }
 
 
-        // TODO: cancel OR rollback modify
+    @Override
+    public UUID localRollback(String correlationId) {
+        UUID taskId = null;
+        log.debug("starting local rollback/ cancel");
 
-        /*
+
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
 
-        // submit the oscars cancel()
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
 
 
-        OscarsCancelTask ost = new OscarsCancelTask();
+        OscarsCancelOrModifyTask ost = new OscarsCancelOrModifyTask();
         ost.setCorrelationId(correlationId);
-        ost.setOscarsOp(OscarsOps.CANCEL);
-        ost.setSmt(StateMachineType.RSM);
-        ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_CF);
-        ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_ABORT_FL);
+        ost.setConnectionId(connectionId);
 
         try {
             taskId = wf.schedule(ost, when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
-        */
-
+        return taskId;
     }
+
+
+
     @Override
     public UUID sendRsvCF(String correlationId) {
         UUID taskId = null;
@@ -239,8 +209,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         sendNsiMsg.setCorrId(correlationId);
         sendNsiMsg.setConnId(connectionId);
         sendNsiMsg.setMessage(CallbackMessages.RESV_CF);
-
-
 
         try {
             taskId = wf.schedule(sendNsiMsg, when);
@@ -345,12 +313,6 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
     public UUID sendRsvTimeout(String correlationId) {
 
         UUID taskId = null;
-
-        try {
-            DB_Util.abortResvRecord(connectionId);
-        } catch (ServiceException ex) {
-            log.error(ex);
-        }
 
         long now = new Date().getTime();
         Workflow wf = Workflow.getInstance();
