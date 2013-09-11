@@ -68,7 +68,7 @@ public class OscarsUtil {
             try {
                 CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp, cr.getSubjectDN(), cr.getIssuerDN());
             } catch (OSCARSServiceException ex) {
-                addOscarsRecord(cr, null, new Date(), "FAILED");
+                addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
                 log.error(ex.getMessage(), ex);
                 throw new ServiceException("could not submit setup");
             }
@@ -91,7 +91,7 @@ public class OscarsUtil {
             try {
                 TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp, cr.getSubjectDN(), cr.getIssuerDN());
             } catch (OSCARSServiceException ex) {
-                addOscarsRecord(cr, null, new Date(), "FAILED");
+                addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
                 log.error(ex.getMessage(), ex);
                 throw new ServiceException("could not submit setup");
             }
@@ -150,27 +150,27 @@ public class OscarsUtil {
 
         ModifyResContent mc = null;
         try {
-            mc = NSI_OSCARS_Translation.makeOscarsModify(resvRequest);
+            mc = NSI_OSCARS_Translation.makeOscarsModify(resvRequest, cr.getOscarsGri());
             log.debug("translated NSI to OSCARS");
         } catch (TranslationException ex) {
             log.error("could not translate NSI request");
 
             log.error(ex.getMessage(), ex);
-            addOscarsRecord(cr, null, new Date(), "FAILED");
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
             throw ex;
         }
 
         if (mc == null) {
-            addOscarsRecord(cr, null, new Date(), "FAILED");
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
             throw new TranslationException("null result in translation");
         }
 
         try {
             ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, cr.getSubjectDN(), cr.getIssuerDN());
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
-            addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
-            addOscarsRecord(cr, null, new Date(), "FAILED");
+            addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
 
             log.error(ex.getMessage(), ex);
             throw new ServiceException("Failed to modify reservation");

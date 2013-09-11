@@ -165,8 +165,13 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
 
             try {
                 OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
-                if (os.equals(OscarsStates.RESERVED)) {
+                if (os.equals(OscarsStates.RESERVED) || os.equals(OscarsStates.ACTIVE)) {
                     this.getStateMachine().process(this.successEvent, this.correlationId);
+                    this.onSuccess();
+                    DB_Util.persistStateMachines(connId);
+                    return;
+                }  else {
+                    this.getStateMachine().process(this.failEvent, this.correlationId);
                     this.onSuccess();
                     DB_Util.persistStateMachines(connId);
                     return;

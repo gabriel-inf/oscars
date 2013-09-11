@@ -59,12 +59,26 @@ public class NSI_OSCARS_Translation {
 
     }
 
-    public static ModifyResContent makeOscarsModify(ResvRequest req) throws TranslationException {
+    public static ModifyResContent makeOscarsModify(ResvRequest req, String oscarsGri) throws TranslationException {
+        log.debug("modify gri: "+oscarsGri);
+
+        ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
+        EthernetVlanType evts = (EthernetVlanType) crit.getAny().get(0);
+        Long capacity = evts.getCapacity();
+        int bandwidth = capacity.intValue();
+
+        Long startTime = crit.getSchedule().getStartTime().toGregorianCalendar().getTimeInMillis() / 1000;
+        Long endTime = crit.getSchedule().getEndTime().toGregorianCalendar().getTimeInMillis() / 1000;
 
         ModifyResContent mrc = new ModifyResContent();
-        throw new TranslationException("modify not implemented");
-        // TODO
-        // return mrc;
+        mrc.setGlobalReservationId(oscarsGri);
+        UserRequestConstraintType urc = new UserRequestConstraintType();
+        mrc.setUserRequestConstraint(urc);
+        urc.setBandwidth(bandwidth);
+        urc.setStartTime(startTime);
+        urc.setEndTime(endTime);
+
+        return mrc;
     }
 
 

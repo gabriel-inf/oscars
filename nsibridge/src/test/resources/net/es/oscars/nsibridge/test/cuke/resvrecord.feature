@@ -9,7 +9,7 @@ Feature: reservation records
         When I submit reserve
         Then the last submit has not thrown an exception
         Then I can find 1 resvRecord entries
-        Then the resvRecord committed field is "false"
+        Then the resvRecord with version 0 "has" been committed
 
         Then I wait up to 10000 ms until the "RSM" state is: "ReserveHeld"
 
@@ -17,7 +17,7 @@ Feature: reservation records
         When I submit reserveCommit
         Then the last submit has not thrown an exception
         Then I can find 1 resvRecord entries
-        Then the resvRecord committed field is "true"
+        Then the resvRecord with version 0 "has" been committed
         Given I clear all existing tasks
 
 
@@ -29,7 +29,7 @@ Feature: reservation records
         When I submit reserve
         Then the last submit has not thrown an exception
         Then I can find 1 resvRecord entries
-        Then the resvRecord committed field is "false"
+        Then the resvRecord with version 0 "has" been committed
 
         Then I wait up to 10000 ms until the "RSM" state is: "ReserveHeld"
 

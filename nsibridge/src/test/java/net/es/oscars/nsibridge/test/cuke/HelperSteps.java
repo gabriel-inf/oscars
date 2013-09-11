@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -92,7 +93,12 @@ public class HelperSteps {
         resvRequest.getReserveType().getCriteria().setVersion(version);
     }
 
+    @When("^I set the capacity to (\\d+)$")
+    public void I_set_the_capacity_to(int arg1) throws Throwable {
+        EthernetVlanType evt = (EthernetVlanType) resvRequest.getReserveType().getCriteria().getAny().get(0);
+        evt.setCapacity(arg1);
 
+    }
 
     @When("^I set \"([^\"]*)\" time to (\\d+) sec$")
     public void I_set_time_to_sec(String timeType, int secs) throws Throwable {

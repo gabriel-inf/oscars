@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.state.resv;
 
 
+import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
@@ -49,10 +50,8 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         UUID taskId = null;
 
 
-        ConnectionRecord cr = null;
         try {
             NSI_Util.isConnectionOK(connectionId);
-            cr = DB_Util.getConnectionRecord(connectionId);
         } catch (ServiceException e) {
             try {
                 NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
@@ -62,6 +61,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         }
 
         RequestHolder rh = RequestHolder.getInstance();
+        ResvRequest rr = rh.findResvRequest(correlationId);
 
 
         OscarsResvOrModifyTask ost = new OscarsResvOrModifyTask();
@@ -70,12 +70,12 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         ost.setSuccessEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_CF);
         ost.setFailEvent(NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
         ost.setSmt(StateMachineType.RSM);
-        ost.setOscarsOp(OscarsOps.RESERVE);
+        ost.setOscarsOp(rr.getOscarsOp());
 
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
-        log.info("scheduling Modify / Resv for connId:" + connectionId + ", will run in " + d + "ms");
+        log.info("scheduling "+rr.getOscarsOp()+" for connId:" + connectionId + ", will run in " + d + "ms");
         try {
             taskId = wf.schedule(ost, when);
             log.info("task id: "+taskId);
