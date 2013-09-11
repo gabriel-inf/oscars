@@ -117,5 +117,9 @@ public class HelperSteps {
 
     }
 
+    public static void store(String key, String value) {
+        store.put(key, value);
+    }
+
 
 }

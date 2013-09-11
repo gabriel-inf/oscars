@@ -1,4 +1,3 @@
-@wip
 Feature: set up oscars circuit when start time comes, tear down after end time
 
     Scenario: set up when start time arrives

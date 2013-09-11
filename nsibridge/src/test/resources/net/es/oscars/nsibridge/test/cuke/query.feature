@@ -1,4 +1,3 @@
-@wip
 Feature: query reservation
 
     Scenario: query a new reservation

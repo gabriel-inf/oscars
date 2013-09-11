@@ -203,12 +203,12 @@ public class OscarsUtil {
         // "CN=MaintDB, OU=ANTG, O=ESnet, L=Berkeley, ST=CA, C=US";
         HashMap<String, String> pieces = new HashMap<String, String>();
         String[] parts;
-        parts = StringUtils.split("\\/", dn);
+        parts = dn.split("\\/");
 
         for (String part : parts) {
             part = part.trim();
-            String[] subParts = StringUtils.split("=", part);
-            if (subParts.length > 1) {
+            String[] subParts = part.split("=");
+            if (subParts.length == 2) {
                 pieces.put(subParts[0], subParts[1]);
             }
         }
