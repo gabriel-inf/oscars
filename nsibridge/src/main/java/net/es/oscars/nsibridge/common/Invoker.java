@@ -105,16 +105,6 @@ public class Invoker implements Runnable {
         OscarsStubConfig os = ax.getBean("oscarsStubConfig", OscarsStubConfig.class);
         HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
 
-
-
-        try {
-            OscarsProxy.getInstance().initialize();
-        } catch (OSCARSServiceException e) {
-            e.printStackTrace();
-            Invoker.setKeepRunning(false);
-        }
-
-
         EntityManager em = PersistenceHolder.getEntityManager();
 
 
@@ -123,6 +113,14 @@ public class Invoker implements Runnable {
         } catch (Exception ex) {
             ex.printStackTrace();
             System.exit(1);
+        }
+
+
+        try {
+            OscarsProxy.getInstance().initialize();
+        } catch (OSCARSServiceException e) {
+            e.printStackTrace();
+            Invoker.setKeepRunning(false);
         }
 
         Schedule ts = Schedule.getInstance();
