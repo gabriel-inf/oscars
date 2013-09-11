@@ -204,10 +204,13 @@ public class OscarsUtil {
         HashMap<String, String> pieces = new HashMap<String, String>();
         String[] parts;
         parts = StringUtils.split("\\/", dn);
+
         for (String part : parts) {
             part = part.trim();
             String[] subParts = StringUtils.split("=", part);
-            pieces.put(subParts[0], subParts[1]);
+            if (subParts.length > 1) {
+                pieces.put(subParts[0], subParts[1]);
+            }
         }
         String result = "";
         result += "CN="+pieces.get("CN");
