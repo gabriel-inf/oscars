@@ -36,7 +36,7 @@
                           file="/etc/oscars/keystores/oscars.jks"/>
         </sec:trustManagers>
         <sec:keyManagers keyPassword="changeit">
-            <sec:keyStore type="JKS" password="client-keystore"
+            <sec:keyStore type="JKS" password="changeit"
                           file="/etc/oscars/keystores/oscars.jks"/>
         </sec:keyManagers>
 
