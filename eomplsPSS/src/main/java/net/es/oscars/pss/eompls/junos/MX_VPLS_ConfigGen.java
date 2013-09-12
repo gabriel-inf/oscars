@@ -40,7 +40,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             case STATUS:
                 return this.getStatus(action, deviceId);
             case MODIFY:
-                throw new PSSException("Modify not supported");
+                return this.getModify(action, deviceId);
         }
         throw new PSSException("Invalid action type");
     }
@@ -60,21 +60,17 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
     }
     public String getSetup(PSSAction action, String deviceId) throws PSSException {
         log.debug("getSetup start");
-        
-        ResDetails res = action.getRequest().getSetupReq().getReservation();
-        
 
         return this.onSetup(action, deviceId);
     }
-    
-    
+    public String getModify(PSSAction action, String deviceId) throws PSSException {
+        log.debug("getSetup start");
+        return this.onModify(action, deviceId);
+    }
+
+
     public String getTeardown(PSSAction action, String deviceId) throws PSSException {
         log.debug("getTeardown start");
-        
-        ResDetails res = action.getRequest().getTeardownReq().getReservation();
-        
-
-
         return this.onTeardown(action, deviceId);
     }
     
@@ -85,6 +81,23 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         return config;
     }
 
+
+    private String onModify(PSSAction action, String deviceId) throws PSSException {
+
+        ResDetails res = action.getRequest().getModifyReq().getReservation();
+        String gri = res.getGlobalReservationId();
+        MX_VPLS_TemplateParams params = this.getModifyTemplateParams(res);
+        if (params == null) {
+            this.onError("could not generate template parameters for modify!");
+        }
+        String devModifyConfig = this.generateConfig(params, ActionType.MODIFY);
+        if (devModifyConfig == null ) {
+            this.onError("could not fill template for modify!");
+        }
+
+        return devModifyConfig;
+
+    }
 
     private String onSetup(PSSAction action, String deviceId) throws PSSException {
 
@@ -366,6 +379,50 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         return params;
     }
+    private MX_VPLS_TemplateParams getModifyTemplateParams(ResDetails res) throws PSSException  {
+
+        SDNNameGenerator ng = SDNNameGenerator.getInstance();
+        String gri = res.getGlobalReservationId();
+
+        ReservedConstraintType rc = res.getReservedConstraint();
+        PathInfo pi = rc.getPathInfo();
+        Integer bw = rc.getBandwidth();
+        String description = res.getDescription();
+
+
+        // bandwidth in Mbps
+        Long lspBandwidth = 1000000L*bw;
+        Long policerBandwidthLimit = lspBandwidth;
+        Long policerBurstSizeLimit = lspBandwidth / 10;
+        if (policerBandwidthLimit < 8000L) {
+            policerBandwidthLimit = 8000L;
+        }
+        if (policerBandwidthLimit > 50000000000L) {
+            policerBandwidthLimit = 50000000000L;
+        }
+
+        if (policerBurstSizeLimit < 1500L) {
+            policerBurstSizeLimit = 1500L;
+        }
+        if (policerBurstSizeLimit > 100000000000L) {
+            policerBurstSizeLimit = 100000000000L;
+        }
+
+        String policerName;
+        policerName             = ng.getPolicerName(gri, description);
+
+        HashMap policer = new HashMap();
+
+        policer.put("name", policerName);
+        policer.put("bandwidth_limit", policerBandwidthLimit);
+        policer.put("burst_size_limit", policerBurstSizeLimit);
+
+        MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
+        params.setPolicer(policer);
+        return params;
+
+
+    }
 
     private MX_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers ids) throws PSSException  {
 
@@ -398,8 +455,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         String statsFilterName;
         String policingFilterName;
 
-
-        EoMPLSClassFactory ecf = EoMPLSClassFactory.getInstance();
 
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
@@ -576,6 +631,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             templateFile = "junos-mx-vpls-setup.txt";
         } else if (phase.equals(ActionType.TEARDOWN)) {
             templateFile = "junos-mx-vpls-teardown.txt";
+        } else if (phase.equals(ActionType.MODIFY)) {
+            templateFile = "junos-mx-vpls-modify.txt";
         } else {
             this.onError("invalid phase");
         }

@@ -1,0 +1,7 @@
+configure private
+
+edit firewall policer ${policer.name}
+set if-exceeding bandwidth-limit ${policer.bandwidth_limit?string.computer}
+set if-exceeding burst-size-limit ${policer.burst_size_limit?string.computer}
+
+commit and-quit

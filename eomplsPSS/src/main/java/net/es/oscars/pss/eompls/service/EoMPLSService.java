@@ -38,9 +38,26 @@ public class EoMPLSService implements CircuitService {
     public List<PSSAction> modify(List<PSSAction> actions) throws PSSException {
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
         for (PSSAction action : actions) {
-            action.setStatus(ActionStatus.FAIL);
+            ResDetails res = action.getRequest().getModifyReq().getReservation();
+
+            String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+            String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+            boolean sameDevice = srcDeviceId.equals(dstDeviceId);
+
+            if (!sameDevice) {
+                log.debug("source edge device id is: "+srcDeviceId+", starting modify..");
+                action = this.processActionForDevice(action, srcDeviceId);
+                log.debug("destination edge device id is: "+dstDeviceId+", starting modify..");
+                action = this.processActionForDevice(action, dstDeviceId);
+            } else {
+                log.debug("only device id is: "+srcDeviceId+", starting same-device modify..");
+                action = this.processActionForDevice(action, dstDeviceId);
+
+            }
+            action.setStatus(ActionStatus.SUCCESS);
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
+
         }
         return results;
     }
@@ -172,7 +189,7 @@ public class EoMPLSService implements CircuitService {
             faultReport.setGri(res.getGlobalReservationId());
             faultReport.setErrorType(ErrorReport.SYSTEM);
             if (action.getActionType().equals(ActionType.MODIFY)) {
-                faultReport.setErrorCode(ErrorCodes.UNKNOWN);
+                faultReport.setErrorCode(ErrorCodes.PATH_MODIFY_FAILED);
             } else if (action.getActionType().equals(ActionType.SETUP)) {
                 faultReport.setErrorCode(ErrorCodes.PATH_SETUP_FAILED);
             } else if (action.getActionType().equals(ActionType.STATUS)) {

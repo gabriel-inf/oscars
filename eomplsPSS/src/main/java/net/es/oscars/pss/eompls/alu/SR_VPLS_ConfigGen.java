@@ -52,9 +52,15 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
             case STATUS:
                 return this.getStatus(action, deviceId);
             case MODIFY:
-                throw new PSSException("Modify not supported");
+                return this.getModify(action, deviceId);
         }
         throw new PSSException("Invalid action type");
+    }
+
+
+    private String getModify(PSSAction action, String deviceId) throws PSSException {
+        log.debug("getTeardown start");
+        return this.onModify(action, deviceId);
     }
     
     private String getStatus(PSSAction action, String deviceId) throws PSSException {
@@ -69,8 +75,22 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
     public String getTeardown(PSSAction action, String deviceId) throws PSSException {
         log.debug("getTeardown start");
         return this.onTeardown(action, deviceId);
-
     }
+
+    private String onModify(PSSAction action, String deviceId) throws PSSException {
+
+        ResDetails res = action.getRequest().getModifyReq().getReservation();
+        String gri = res.getGlobalReservationId();
+        SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.retrieve(gri, deviceId);
+        if (ids == null) {
+            this.onError("no saved identifiers found for gri: "+gri+" device: "+deviceId);
+        }
+        SR_VPLS_TemplateParams params = this.getModifyTemplateParams(res, ids);
+        String modifyConfig = this.generateConfig(params, ActionType.MODIFY);
+
+        return modifyConfig;
+    }
+
 
     private String onSetup(PSSAction action, String deviceId) throws PSSException {
 
@@ -80,8 +100,6 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
 
         String[] deviceIds =  { srcDeviceId, dstDeviceId };
-
-
 
 
         // TODO: just one SDP for now; fix for multipoint.
@@ -171,6 +189,8 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
             templateFile = "alu-vpls-setup.txt";
         } else if (phase.equals(ActionType.TEARDOWN)) {
             templateFile = "alu-vpls-teardown.txt";
+        } else if (phase.equals(ActionType.MODIFY)) {
+            templateFile = "alu-vpls-modify.txt";
         } else {
             this.onError("invalid phase");
         }
@@ -187,6 +207,22 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
         return config;
     }
 
+    private SR_VPLS_TemplateParams getModifyTemplateParams(ResDetails res, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
+        SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
+
+        ReservedConstraintType rc = res.getReservedConstraint();
+        Integer bw = rc.getBandwidth();
+        Long ingQosBandwidth = 1L*bw;
+
+        HashMap ingqos = new HashMap();
+        ingqos.put("id", ids.getQosId().toString());
+        ingqos.put("bandwidth", ingQosBandwidth);
+
+
+        params.setIngqos(ingqos);
+        return params;
+
+    }
 
     private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_DomainIdentifiers gids, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
         String gri = res.getGlobalReservationId();
