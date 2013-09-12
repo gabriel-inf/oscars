@@ -237,31 +237,47 @@ public class OscarsUtil {
         // /C=US/ST=CA/L=Berkeley/O=ESnet/OU=ANTG/CN=MaintDB
         // desired format:
         // "CN=MaintDB, OU=ANTG, O=ESnet, L=Berkeley, ST=CA, C=US";
-        HashMap<String, String> pieces = new HashMap<String, String>();
-        String[] parts;
-        parts = dn.split("\\/");
-
-        for (String part : parts) {
-            part = part.trim();
-            String[] subParts = part.split("=");
-            if (subParts.length == 2) {
-                pieces.put(subParts[0], subParts[1]);
+        
+        //if DN does not start with / then it is already in the desired form
+        dn = dn.trim();
+        if(!dn.startsWith("/")){
+            return dn;
+        }
+        
+        //remove leading slash
+        dn = dn.replaceFirst("^\\/", "");
+        String result = "";
+        String[] parts = dn.split("\\/");
+        if(parts[parts.length - 1].startsWith("CN=")){
+            //if ends with CN then reverse
+            for(int i = parts.length - 1; i >= 0; i--){
+                //don't add comma if first element or doesn't contain =. 
+                if(i != parts.length - 1 && parts[i].contains("=")){
+                    result += ", ";
+                }
+               //Compensates for edge case where part contains a /
+                if(!parts[i].contains("=")){
+                    result += "/";
+                }
+                result += parts[i];
+            }
+        }else{
+            for(int i = 0; i < parts.length; i++){
+                //don't add comma if first element or doesn't contain =. 
+                
+                if(i != 0 && parts[i].contains("=")){
+                    result += ", ";
+                }
+                //Compensates for edge case where part contains a /
+                if(!parts[i].contains("=")){
+                    result += "/";
+                }
+                result += parts[i];
             }
         }
-        String result = "";
-        result += "CN="+pieces.get("CN");
-        result += ", OU="+pieces.get("OU");
-        result += ", O="+pieces.get("O");
-        result += ", L="+pieces.get("L");
-        result += ", ST="+pieces.get("ST");
-        result += ", C="+pieces.get("C");
 
         return result;
-
-
     }
-
-
 
     public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr, UUID taskId) throws TranslationException {
         HashSet<OscarsOps> ops = new HashSet<OscarsOps>();

@@ -107,6 +107,11 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         String certIssuerDN = cert.getIssuerDN().toString();
 
         log.debug("s: "+certSubjectDN+" i: "+certIssuerDN);
+        certSubjectDN  = OscarsUtil.normalizeDN(certSubjectDN);
+        certIssuerDN = OscarsUtil.normalizeDN(certIssuerDN);
+
+        log.debug("normalized: s: "+certSubjectDN+" i: "+certIssuerDN);
+
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();

@@ -24,7 +24,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.Common
 public class QueryCLIClient {
     public static void main(String[] args){
         //initialize input variables
-        String url = "http://localhost:8500/nsi-v2/ConnectionServiceProvider";
+        String url = "https://localhost:8500/nsi-v2/ConnectionServiceProvider";
         String[] connectionIds = new String[0];
         String[] gris = new String[0];
         Holder<CommonHeaderType> header = ClientUtil.makeClientHeader();

@@ -25,7 +25,7 @@ public class ReserveCLIClient {
     
     public static void main(String[] args){
       //initialize input variables
-        String url = "http://localhost:8500/nsi-v2/ConnectionServiceProvider";
+        String url = "https://localhost:8500/nsi-v2/ConnectionServiceProvider";
         Holder<String> connectionId = null;
         String globalReservationId = null;
         String description = null;
