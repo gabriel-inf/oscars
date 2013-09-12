@@ -19,6 +19,7 @@ import net.es.oscars.pss.eompls.junos.MX_VPLS_TemplateParams;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
 import net.es.oscars.pss.eompls.util.VPLS_DomainIdentifiers;
+import net.es.oscars.pss.soap.gen.ModifyReqContent;
 import net.es.oscars.pss.soap.gen.SetupReqContent;
 import net.es.oscars.pss.soap.gen.TeardownReqContent;
 import net.es.oscars.pss.util.ClassFactory;
@@ -39,7 +40,7 @@ import java.util.HashMap;
 public class VPLSTest {
     private Logger log = Logger.getLogger(VPLSTest.class);
 
-    @BeforeClass(groups = { "alu-vpls", "mx-vpls", "vpls" })
+    @BeforeClass(groups = { "alu-vpls", "mx-vpls", "vpls", "modify" })
     private void configure() throws ConfigException, PSSException {
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         cc.loadManifest(new File("src/test/resources/"+ ConfigDefaults.MANIFEST));
@@ -387,6 +388,10 @@ public class VPLSTest {
         output     = alucg.getSetup(action, srcDeviceId);
         System.out.println(output);
         log.debug("done setup same ALU");
+
+
+
+
         log.debug("starting teardown same ALU");
         output    = alucg.getTeardown(action, srcDeviceId);
         System.out.println(output);
@@ -415,4 +420,48 @@ public class VPLSTest {
     }
 
 
+    @Test(groups = { "vpls", "modify" })
+
+    public void testModify() throws PSSException, ConfigException  {
+
+        String output;
+        String srcDeviceId;
+        ResDetails rd;
+        SR_VPLS_ConfigGen alucg = new SR_VPLS_ConfigGen();
+        MX_VPLS_ConfigGen mxcg = new MX_VPLS_ConfigGen();
+
+        rd = RequestFactory.getSameALU();
+        srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+
+        SetupReqContent srq = new SetupReqContent();
+
+        PSSAction setupAction = new PSSAction();
+        setupAction.setActionType(ActionType.SETUP);
+        PSSRequest setupReq = new PSSRequest();
+        setupAction.setRequest(setupReq);
+
+        setupReq.setSetupReq(srq);
+        srq.setReservation(rd);
+        alucg.getSetup(setupAction, srcDeviceId);
+        mxcg.getSetup(setupAction, srcDeviceId);
+
+
+        ModifyReqContent mrq = new ModifyReqContent();
+
+        PSSAction modAction = new PSSAction();
+        modAction.setActionType(ActionType.MODIFY);
+        PSSRequest modReq = new PSSRequest();
+        modAction.setRequest(modReq);
+        rd.getReservedConstraint().setBandwidth(rd.getReservedConstraint().getBandwidth()*10);
+
+        modReq.setModifyReq(mrq);
+        mrq.setReservation(rd);
+
+        output = alucg.getModify(modAction, srcDeviceId);
+        System.out.println(output);
+
+        output = mxcg.getModify(modAction, srcDeviceId);
+        System.out.println(output);
+
+    }
 }

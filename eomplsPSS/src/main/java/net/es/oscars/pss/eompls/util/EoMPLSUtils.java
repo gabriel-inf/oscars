@@ -38,10 +38,14 @@ public class EoMPLSUtils {
         ReservedConstraintType rc = res.getReservedConstraint();
         PathInfo pi = rc.getPathInfo();
         List<CtrlPlaneHopContent> localHops;
+        String localDomainId = PathTools.getLocalDomainId();
         try {
-            localHops = PathTools.getLocalHops(pi.getPath(), PathTools.getLocalDomainId());
+            localHops = PathTools.getLocalHops(pi.getPath(), localDomainId);
         } catch (OSCARSServiceException e) {
             throw new PSSException(e);
+        }
+        if (localHops == null || localHops.size() == 0) {
+            throw new PSSException("no local hops found! local domain: "+localDomainId);
         }
        
         CtrlPlaneLinkContent ingressLink = localHops.get(0).getLink();

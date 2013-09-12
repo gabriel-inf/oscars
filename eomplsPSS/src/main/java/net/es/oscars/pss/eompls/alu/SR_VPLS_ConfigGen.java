@@ -58,7 +58,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
     }
 
 
-    private String getModify(PSSAction action, String deviceId) throws PSSException {
+    public String getModify(PSSAction action, String deviceId) throws PSSException {
         log.debug("getTeardown start");
         return this.onModify(action, deviceId);
     }
