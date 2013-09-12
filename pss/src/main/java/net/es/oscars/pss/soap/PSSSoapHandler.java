@@ -137,7 +137,7 @@ public class PSSSoapHandler implements PSSPortType {
         PSSReplyContent resp = new PSSReplyContent();
         PSSAction act = new PSSAction();
         String gri = modifyReq.getReservation().getGlobalReservationId();
-        log.info("setup.gri["+gri+"].start");
+        log.info("modify.gri["+gri+"].start");
 
         PSSRequest req = new PSSRequest();
         req.setModifyReq(modifyReq);
@@ -147,7 +147,7 @@ public class PSSSoapHandler implements PSSPortType {
         act.setActionType(ActionType.MODIFY);
 
         resp.setGlobalReservationId(gri);
-        resp.setStatus("NOTIMPLEMENTED");
+        resp.setStatus("INPROGRESS");
         resp.setReplyType(PSSRequest.PSSRequestTypes.MODIFY.toString());
         resp.setTransactionId(req.getId());
         req.setReply(resp);
