@@ -298,9 +298,17 @@ public class NSI_OSCARS_Translation {
             ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
             cst.setReservationState(rst);
         }
-        dst.setVersion(1); //TODO: get this for real
+        int version = 0;
+        if(cr.getResvRecords() != null){
+            for (ResvRecord resvRec : cr.getResvRecords()) {
+                if(resvRec.getVersion() > version){
+                    version = resvRec.getVersion();
+                }
+            }
+        }
+        dst.setVersion(version);
         dst.setVersionConsistent(true);//always true for uPA         
-        cst.setDataPlaneStatus(dst); //TODO: get this for real
+        cst.setDataPlaneStatus(dst);
         resultType.setConnectionStates(cst);
 
         //May not be GRI if there was a failure before hitting OSCARS
