@@ -31,93 +31,18 @@ public class EoMPLSService implements CircuitService {
     private Logger log = Logger.getLogger(EoMPLSService.class);
     public static final String SVC_ID = "eompls";
 
-    /**
-     * Always fails (for now)
-     * @throws PSSException 
-     */
     public List<PSSAction> modify(List<PSSAction> actions) throws PSSException {
-        ArrayList<PSSAction> results = new ArrayList<PSSAction>();
-        for (PSSAction action : actions) {
-            ResDetails res = action.getRequest().getModifyReq().getReservation();
-
-            String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-            String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-            boolean sameDevice = srcDeviceId.equals(dstDeviceId);
-
-            if (!sameDevice) {
-                log.debug("source edge device id is: "+srcDeviceId+", starting modify..");
-                action = this.processActionForDevice(action, srcDeviceId);
-                log.debug("destination edge device id is: "+dstDeviceId+", starting modify..");
-                action = this.processActionForDevice(action, dstDeviceId);
-            } else {
-                log.debug("only device id is: "+srcDeviceId+", starting same-device modify..");
-                action = this.processActionForDevice(action, dstDeviceId);
-
-            }
-            action.setStatus(ActionStatus.SUCCESS);
-            results.add(action);
-            ClassFactory.getInstance().getWorkflow().update(action);
-
-        }
-        return results;
+        return processActions(actions, ActionType.MODIFY);
     }
     
     public List<PSSAction> setup(List<PSSAction> actions) throws PSSException {
-        ArrayList<PSSAction> results = new ArrayList<PSSAction>();
-
-        for (PSSAction action : actions) {
-            ResDetails res = action.getRequest().getSetupReq().getReservation();
-            
-            String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-            String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-            boolean sameDevice = srcDeviceId.equals(dstDeviceId);
-            
-            if (!sameDevice) {
-                log.debug("source edge device id is: "+srcDeviceId+", starting setup..");
-                action = this.processActionForDevice(action, srcDeviceId);
-                log.debug("destination edge device id is: "+dstDeviceId+", starting setup..");
-                action = this.processActionForDevice(action, dstDeviceId);
-            } else {
-                log.debug("only device id is: "+srcDeviceId+", starting same-device setup..");
-                action = this.processActionForDevice(action, dstDeviceId);
-                
-            }
-            action.setStatus(ActionStatus.SUCCESS);
-            results.add(action);
-            ClassFactory.getInstance().getWorkflow().update(action);
-            
-        }
-        return results;
+        return processActions(actions, ActionType.SETUP);
     }
     
     public List<PSSAction> teardown(List<PSSAction> actions) throws PSSException {
-        ArrayList<PSSAction> results = new ArrayList<PSSAction>();
-
-        for (PSSAction action : actions) {
-            ResDetails res = action.getRequest().getTeardownReq().getReservation();
-            
-            String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
-            String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
-            boolean sameDevice = srcDeviceId.equals(dstDeviceId);            
-            if (!sameDevice) {
-                log.debug("source edge device id is: "+srcDeviceId+", starting teardown..");
-                action = this.processActionForDevice(action, srcDeviceId);
-                log.debug("destination edge device id is: "+dstDeviceId+", starting teardown..");
-                action = this.processActionForDevice(action, dstDeviceId);
-            } else {
-                log.debug("only device id is: "+srcDeviceId+", starting same-device teardown..");
-                action = this.processActionForDevice(action, dstDeviceId);
-                
-            }
-                
-            action.setStatus(ActionStatus.SUCCESS);
-            results.add(action);
-            ClassFactory.getInstance().getWorkflow().update(action);
-            
-        }
-        return results;
+        return processActions(actions, ActionType.TEARDOWN);
     }
-    
+
     // TODO: implement status checking
     public List<PSSAction> status(List<PSSAction> actions) {
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
@@ -128,8 +53,56 @@ public class EoMPLSService implements CircuitService {
         }
         return results;
     }
-    
-    
+
+
+
+
+    private List<PSSAction> processActions(List<PSSAction> actions, ActionType actionType) throws PSSException {
+        ArrayList<PSSAction> results = new ArrayList<PSSAction>();
+
+        for (PSSAction action : actions) {
+            ResDetails res = null;
+            switch (actionType) {
+                case MODIFY:
+                    res = action.getRequest().getModifyReq().getReservation();
+                    break;
+                case SETUP:
+                    res = action.getRequest().getSetupReq().getReservation();
+                    break;
+                case TEARDOWN:
+                    res = action.getRequest().getTeardownReq().getReservation();
+                    break;
+                case STATUS:
+                    res = action.getRequest().getSetupReq().getReservation();
+                    break;
+                default:
+                    throw new PSSException("invalid actiontype: "+actionType);
+            }
+
+
+            String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+            String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+            boolean sameDevice = srcDeviceId.equals(dstDeviceId);
+            if (!sameDevice) {
+                log.debug("source edge device id is: "+srcDeviceId+", starting "+actionType);
+                action = this.processActionForDevice(action, srcDeviceId);
+                log.debug("destination edge device id is: "+dstDeviceId+", starting "+actionType);
+                action = this.processActionForDevice(action, dstDeviceId);
+            } else {
+                log.debug("only device id is: "+srcDeviceId+", starting same-device "+actionType);
+                action = this.processActionForDevice(action, dstDeviceId);
+
+            }
+
+            action.setStatus(ActionStatus.SUCCESS);
+            results.add(action);
+            ClassFactory.getInstance().getWorkflow().update(action);
+
+        }
+        return results;
+    }
+
+
     
     private PSSAction processActionForDevice(PSSAction action, String deviceId) throws PSSException {
         String errorMessage = null;
