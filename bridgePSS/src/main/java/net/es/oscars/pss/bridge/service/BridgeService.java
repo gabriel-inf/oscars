@@ -32,16 +32,20 @@ public class BridgeService implements CircuitService {
     private Logger log = Logger.getLogger(BridgeService.class);
     public static final String SVC_ID = "bridge";
 
-    /**
-     * Always fails (for now)
-     * @throws PSSException 
-     */
     public List<PSSAction> modify(List<PSSAction> actions) throws PSSException {
         ArrayList<PSSAction> results = new ArrayList<PSSAction>();
         for (PSSAction action : actions) {
-            action.setStatus(ActionStatus.FAIL);
+            ResDetails res = action.getRequest().getModifyReq().getReservation();
+            List<String> deviceIds = BridgeUtils.getDeviceIds(res);
+
+            for (String deviceId : deviceIds) {
+                action = this.processActionForDevice(action, deviceId);
+            }
+
+            action.setStatus(ActionStatus.SUCCESS);
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
+
         }
         return results;
     }
@@ -162,7 +166,7 @@ public class BridgeService implements CircuitService {
             faultReport.setGri(res.getGlobalReservationId());
             faultReport.setErrorType(ErrorReport.SYSTEM);
             if (action.getActionType().equals(ActionType.MODIFY)) {
-                faultReport.setErrorCode(ErrorCodes.UNKNOWN);
+                faultReport.setErrorCode(ErrorCodes.PATH_MODIFY_FAILED);
             } else if (action.getActionType().equals(ActionType.SETUP)) {
                 faultReport.setErrorCode(ErrorCodes.PATH_SETUP_FAILED);
             } else if (action.getActionType().equals(ActionType.STATUS)) {

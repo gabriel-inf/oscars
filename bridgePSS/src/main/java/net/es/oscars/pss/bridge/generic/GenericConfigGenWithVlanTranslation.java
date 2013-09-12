@@ -32,13 +32,13 @@ public class GenericConfigGenWithVlanTranslation implements TemplateDeviceConfig
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
         switch (action.getActionType()) {
             case SETUP :
-                return this.getSetup(action, deviceId);
+                return this.getActionConfig(action, deviceId);
             case TEARDOWN:
-                return this.getTeardown(action, deviceId);
+                return this.getActionConfig(action, deviceId);
             case STATUS:
                 return this.getStatus(action, deviceId);
             case MODIFY:
-                throw new PSSException("Modify not supported");
+                return this.getActionConfig(action, deviceId);
         }
         throw new PSSException("Invalid action type");
     }
@@ -48,34 +48,44 @@ public class GenericConfigGenWithVlanTranslation implements TemplateDeviceConfig
         return "";
     }
 
-    
-    
-    private String getTeardown(PSSAction action, String deviceId) throws PSSException {
-        log.debug("getTeardown start");
-        
-        ResDetails res = action.getRequest().getTeardownReq().getReservation();
+    private String getActionConfig(PSSAction action, String deviceId) throws PSSException {
+        ActionType at = action.getActionType();
+        log.debug("getActionConfig start for "+at+" at "+deviceId);
+
+        ResDetails res;
+
+        switch (at) {
+            case SETUP:
+                res = action.getRequest().getSetupReq().getReservation();
+                break;
+            case TEARDOWN:
+                res = action.getRequest().getTeardownReq().getReservation();
+                break;
+            case MODIFY:
+                res = action.getRequest().getModifyReq().getReservation();
+                break;
+            default:
+                throw new PSSException("bad actiontype: "+at);
+        }
+
         if (templateConfig == null) {
             throw new PSSException("no root template config!");
         } else if (templateConfig.getTemplates() == null || templateConfig.getTemplates().isEmpty()) {
             throw new PSSException("no template config!");
 
-        } else if (templateConfig.getTemplates().get(ActionType.TEARDOWN.toString()) == null) {
-            throw new PSSException("no template config for SETUP");
+        } else if (templateConfig.getTemplates().get(at.toString()) == null) {
+            throw new PSSException("no template config for "+at);
         }
-        String templateFile = templateConfig.getTemplates().get(ActionType.TEARDOWN.toString());
-
-
-
+        String templateFile = templateConfig.getTemplates().get(at.toString());
 
         String portA;
         String portZ;
         String vlanA;
         String vlanZ;
+
         String gri = res.getGlobalReservationId();
         String description = res.getDescription();
         int bandwidth = res.getReservedConstraint().getBandwidth();
-
-
 
         DeviceBridge db = BridgeUtils.getDeviceBridge(deviceId, res);
         portA = db.getPortA();
@@ -94,65 +104,13 @@ public class GenericConfigGenWithVlanTranslation implements TemplateDeviceConfig
         root.put("gri", gri);
         root.put("bandwidth", bandwidth);
 
-
         String config       = TemplateUtils.generateConfig(root, templateFile);
-        log.debug("getTeardown done");
-        return config;
-
-
-
-    }
-    private String getSetup(PSSAction action, String deviceId) throws PSSException {
-        log.debug("getSetup start");
-
-        ResDetails res = action.getRequest().getSetupReq().getReservation();
-        if (templateConfig == null) {
-            throw new PSSException("no root template config!");
-        } else if (templateConfig.getTemplates() == null || templateConfig.getTemplates().isEmpty()) {
-            throw new PSSException("no template config!");
-
-        } else if (templateConfig.getTemplates().get(ActionType.SETUP.toString()) == null) {
-            throw new PSSException("no template config for SETUP");
-        }
-        String templateFile = templateConfig.getTemplates().get(ActionType.SETUP.toString());
-
-
-
-
-        String portA;
-        String portZ;
-        String vlanA;
-        String vlanZ;
-        String gri = res.getGlobalReservationId();
-        String description = res.getDescription();
-        int bandwidth = res.getReservedConstraint().getBandwidth();
-
-
-
-        DeviceBridge db = BridgeUtils.getDeviceBridge(deviceId, res);
-        portA = db.getPortA();
-        portZ = db.getPortZ();
-        vlanA = db.getVlanA();
-        vlanZ = db.getVlanZ();
-
-
-        Map root = new HashMap();
-
-        root.put("vlanA", vlanA);
-        root.put("vlanZ", vlanZ);
-        root.put("portA", portA);
-        root.put("portZ", portZ);
-        root.put("description", description);
-        root.put("gri", gri);
-        root.put("bandwidth", bandwidth);
-
-
-        String config       = TemplateUtils.generateConfig(root, templateFile);
-        log.debug("getSetup done");
+        log.debug("getActionConfig done");
         return config;
     }
-    
-    
+
+
+
     
     public void setConfig(GenericConfig config) throws PSSException {
         // TODO Auto-generated method stub
