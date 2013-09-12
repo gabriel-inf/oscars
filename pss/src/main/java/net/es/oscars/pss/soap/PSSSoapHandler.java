@@ -134,35 +134,48 @@ public class PSSSoapHandler implements PSSPortType {
 
 
     public void modify(ModifyReqContent modifyReq) {
+
+        log.info("modify.start");
+        System.out.println(modifyReq);
         PSSReplyContent resp = new PSSReplyContent();
         PSSAction act = new PSSAction();
-        String gri = modifyReq.getReservation().getGlobalReservationId();
-        log.info("modify.gri["+gri+"].start");
-
-        PSSRequest req = new PSSRequest();
-        req.setModifyReq(modifyReq);
-        req.setRequestType(PSSRequest.PSSRequestTypes.MODIFY);
-
-        act.setRequest(req);
-        act.setActionType(ActionType.MODIFY);
-
-        resp.setGlobalReservationId(gri);
-        resp.setStatus("INPROGRESS");
-        resp.setReplyType(PSSRequest.PSSRequestTypes.MODIFY.toString());
-        resp.setTransactionId(req.getId());
-        req.setReply(resp);
         try {
             ClassFactory.getInstance().configure();
+            ClassFactory.getInstance().health();
         } catch (PSSException e) {
             log.error(e);
             return;
         }
         Notifier notifier = ClassFactory.getInstance().getNotifier();
-        
+
         try {
-            notifier.process(act);
-        } catch (PSSException e) {
-            log.error("failed to return failure reply " + e.getMessage());
+
+            String gri = modifyReq.getReservation().getGlobalReservationId();
+            log.info("modify.gri["+gri+"].start");
+
+            PSSRequest req = new PSSRequest();
+            req.setRequestType(PSSRequest.PSSRequestTypes.MODIFY);
+            req.setModifyReq(modifyReq);
+            ClassFactory.getInstance().getValidator().validate(req);
+
+            resp.setGlobalReservationId(gri);
+            resp.setStatus("INPROGRESS");
+            resp.setReplyType(PSSRequest.PSSRequestTypes.MODIFY.toString());
+            resp.setTransactionId(req.getId());
+            req.setReply(resp);
+
+            act.setRequest(req);
+            act.setActionType(ActionType.MODIFY);
+            ClassFactory.getInstance().getWorkflow().add(act);
+
+        } catch (Exception ex) {
+            String message = handleException(ex);
+            resp.setStatus("FAILED: " + message);
+            try {
+                notifier.process(act);
+            } catch (PSSException e) {
+                log.error("failed to return failure reply " + e.getMessage());
+            }
         }
     }
 
