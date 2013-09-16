@@ -24,16 +24,17 @@ import net.es.oscars.utils.topology.PathTools;
  */
 public class CoordNotifier implements Notifier {
     private Logger log = Logger.getLogger(CoordNotifier.class);
+    private static CoordClient coordClient = null;
+
     // private GenericConfig config = null;
     /**
      * Checks the status of the PSSAction and sends
      * a PSSReply message to the Coordinator with the results of the action
      * 
-     * @param PSSAction the action that has finishRunning or failed
+     * @param action PSSAction the action that has finishRunning or failed
      */
     public PSSAction process(PSSAction action) throws PSSException {
         log.info("CoordNotifier:start");
-        CoordClient cl;
 
         try {
             String coord = null;
@@ -54,7 +55,9 @@ public class CoordNotifier implements Notifier {
             URL coordURL = new URL(coord);
             URL wsdlURL = new URL(coord + "?wsdl");
             log.debug("calling Coordinator at " + coordURL.toString());
-            cl = CoordClient.getClient(coordURL, wsdlURL);
+            if (coordClient == null) {
+                coordClient = CoordClient.getClient(coordURL, wsdlURL);
+            }
             PSSReplyContent reply = new PSSReplyContent();
             if (action.getStatus() == ActionStatus.SUCCESS) {
                 reply.setStatus(PSSConstants.SUCCESS);
@@ -98,7 +101,7 @@ public class CoordNotifier implements Notifier {
             }
 
             Object[] req = new Object[]{reply};
-            cl.invoke("PSSReply", req);
+            coordClient.invoke("PSSReply", req);
         } catch (Exception e) {
             e.printStackTrace();
             throw new PSSException(e.getMessage());
