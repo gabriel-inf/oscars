@@ -2,6 +2,3 @@ exit all
 
 configure qos sap-ingress ${ingqos.id} queue 2 rate max cir ${ingqos.bandwidth?string.computer}000
 exit all
-
-admin rollback save
-admin save
