@@ -5,6 +5,7 @@ import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.pss.api.DeviceConfigGenerator;
+import net.es.oscars.pss.api.PostCommitConfigGen;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.config.GenericConfig;
@@ -34,14 +35,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SR_VPLS_ConfigGen implements DeviceConfigGenerator {
+public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfigGen {
     private Logger log = Logger.getLogger(SR_VPLS_ConfigGen.class);
     public SR_VPLS_ConfigGen() throws ConfigException, PSSException {
         VlanGroupConfig.configure();
 
     }
 
-
+    public String getPostCommitConfig(PSSAction action, String deviceId) {
+        return "admin rollback save\n" +
+               "admin save\n";
+    }
 
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
         switch (action.getActionType()) {

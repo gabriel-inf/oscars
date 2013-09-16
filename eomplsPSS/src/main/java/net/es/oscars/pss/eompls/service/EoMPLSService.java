@@ -3,14 +3,11 @@ package net.es.oscars.pss.eompls.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.es.oscars.pss.api.*;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.common.soap.gen.OSCARSFaultReport;
-import net.es.oscars.pss.api.CircuitService;
-import net.es.oscars.pss.api.Connector;
-import net.es.oscars.pss.api.DeviceConfigGenerator;
-import net.es.oscars.pss.api.Verifier;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSCommand;
 import net.es.oscars.pss.beans.PSSException;
@@ -96,12 +93,73 @@ public class EoMPLSService implements CircuitService {
 
             action.setStatus(ActionStatus.SUCCESS);
             results.add(action);
+            // this notifies the coordinator we have succeeded
             ClassFactory.getInstance().getWorkflow().update(action);
 
+            // now if there's a post-commit for this action, do it
+            if (!sameDevice) {
+                processPostCommitActionForDevice(action, srcDeviceId);
+                log.debug("destination edge device id is: "+dstDeviceId+", starting "+actionType+" post-commit command");
+                processPostCommitActionForDevice(action, dstDeviceId);
+            } else {
+                log.debug("only device id is: "+srcDeviceId+", starting same-device "+actionType+" post-commit command");
+                processPostCommitActionForDevice(action, dstDeviceId);
+
+            }
         }
         return results;
     }
 
+    private void processPostCommitActionForDevice(PSSAction action, String deviceId) {
+        String errorMessage = null;
+        OSCARSFaultReport faultReport = new OSCARSFaultReport ();
+        faultReport.setDomainId(PathTools.getLocalDomainId());
+
+
+        DeviceConfigGenerator cg;
+        try {
+            cg = ConnectorUtils.getDeviceConfigGenerator(deviceId, SVC_ID);
+        } catch (PSSException e) {
+            log.error(e);
+            return;
+        }
+        PostCommitConfigGen pcg;
+        if (cg instanceof PostCommitConfigGen) {
+            pcg = (PostCommitConfigGen) cg;
+        } else {
+            return;
+        }
+
+
+
+        String deviceCommand = pcg.getPostCommitConfig(action, deviceId);
+        String deviceAddress = null;
+        Connector conn = null;
+        try {
+            deviceAddress = ConnectorUtils.getDeviceAddress(deviceId);
+            conn = ClassFactory.getInstance().getDeviceConnectorMap().getDeviceConnector(deviceId);
+        } catch (PSSException ex) {
+            log.error(ex.getMessage(), ex);
+            return;
+        }
+        log.debug("connector for "+deviceId+" is: "+conn.getClass());
+
+        if (ConfigHolder.getInstance().getBaseConfig().getCircuitService().isStub()) {
+            log.debug("stub mode! connector will not send commands");
+        }
+
+
+        PSSCommand comm = new PSSCommand();
+        comm.setDeviceCommand(deviceCommand);
+        comm.setDeviceAddress(deviceAddress);
+        try {
+            conn.sendCommand(comm);
+        } catch (PSSException e) {
+            log.error("post-commit command failed");
+        }
+        log.info("sent post-commit command!");
+
+    }
 
     
     private PSSAction processActionForDevice(PSSAction action, String deviceId) throws PSSException {
@@ -176,7 +234,7 @@ public class EoMPLSService implements CircuitService {
             ClassFactory.getInstance().getWorkflow().update(action);
             throw e;
         }
-        System.out.println("sent command!");
+        log.info("sent command!");
         return action;
     }
     
