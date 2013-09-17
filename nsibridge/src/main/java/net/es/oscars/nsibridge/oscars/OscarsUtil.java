@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
 import java.util.*;
 
 public class OscarsUtil {
@@ -47,6 +48,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new TranslationException(ex.getMessage());
@@ -78,6 +82,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new ServiceException(ex.getMessage());
@@ -108,6 +115,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new ServiceException(ex.getMessage());
@@ -134,6 +144,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new ServiceException(ex.getMessage());
@@ -158,6 +171,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new TranslationException(ex.getMessage());
@@ -187,6 +203,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new TranslationException(ex.getMessage());
@@ -226,6 +245,9 @@ public class OscarsUtil {
         SubjectAttributes attrs = null;
         try {
             attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (XMLStreamException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
         } catch (JAXBException ex) {
             log.error(ex.getMessage(), ex);
             throw new TranslationException(ex.getMessage());
