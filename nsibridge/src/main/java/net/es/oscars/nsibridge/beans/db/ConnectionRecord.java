@@ -191,6 +191,7 @@ public class ConnectionRecord {
         return results;
     }
 
+    @Column(length = 50000)
     public String getOscarsAttributes() {
         return oscarsAttributes;
     }
